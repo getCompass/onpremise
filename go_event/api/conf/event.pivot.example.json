@@ -1,0 +1,22 @@
+{
+	"source_identifier": "go_event",
+	"source_type": "service",
+	"event_queue": "${RABBIT_QUEUE}",
+	"event_exchange": "${RABBIT_QUEUE}",
+	"event_service": {
+		"rabbit_key": "service",
+		"method": "event.dispatch",
+		"queue": "${SERVICE_RABBIT_QUEUE}",
+		"exchange": "${SERVICE_RABBIT_EXCHANGE}"
+	},
+	"subscriber_storage": {
+		"db": "system",
+		"table": "go_event_subscriber_list"
+	},
+	"subscription_list": [],
+	"event_discrete_courier_count": ${COURIER_COUNT},
+	"event_discrete_courier_delay": ${DELIVERY_DELAY},
+	"task_discrete_courier_count": ${COURIER_COUNT},
+	"task_discrete_courier_delay": ${DELIVERY_DELAY},
+    	"per_delivery_limit": ${PER_DELIVERY_LIMIT}
+}

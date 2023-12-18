@@ -1,0 +1,12 @@
+.idea
+.status
+
+src/Modules/vendor
+src/Modules/composer.lock
+/src/Compass/Janus/private/custom.php
+/src/Compass/Janus/private/main.php
+/private/custom.php
+/private/main.php
+/cron/.cronjob
+
+logs

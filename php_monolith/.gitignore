@@ -1,0 +1,14 @@
+/gdump/backup
+.idea
+.DS_Store
+/private/main.php
+/private/custom.php
+/dev/php/*
+!/dev/php/example.php
+/src/Modules/vendor/*
+
+/logs/*
+!/logs/cron/.gitkeep
+!/logs/exception/.gitkeep
+!/logs/info/.gitkeep
+!/logs/nginx/.gitkeep

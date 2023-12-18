@@ -1,0 +1,11 @@
+{
+	"logging_level": ${LOGGING_LEVEL},
+	"server_type": "${SERVER_TYPE}",
+	"tcp_port": ${TCP_PORT},
+	"grpc_port": ${GRPC_PORT},
+	"rabbit_queue": "${RABBIT_QUEUE}",
+	"rabbit_exchange": "${RABBIT_EXCHANGE}",
+	"socket_key_me": "${SOCKET_KEY_GO_RATING}",
+	"capacity_limit": 10000,
+	"world_config_path": "/config"
+}

@@ -1,0 +1,164 @@
+{
+	"event_message_rule_list": {
+		"user.auth_authorization_success": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"user.auth_logout_success": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"user.security_phone_changed": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"user.security_email_changed": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"user.profile_name_changed": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"user.profile_photo_changed": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"system.init_notice_bot": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"member.employee_metric_delta": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"member.achievement_received": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"member.anniversary_reached": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+				}
+			}
+		],
+		"member.member_onboarding": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+				}
+			}
+		],
+		"employee.editor_employee_metric_noticed": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"member.editor_feedback_requested": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"member.work_time_auto_logged": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"company_rating.worksheet_rating_fixed": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"company_rating.action_total_fixed": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"company_rating.employee_metric_total_fixed": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		],
+		"user_company.user_joined_company": [
+			{
+				"rule_for": "receiver_user_id",
+				"type": "black_list",
+				"data": {
+					"list": []
+				}
+			}
+		]
+	}
+}

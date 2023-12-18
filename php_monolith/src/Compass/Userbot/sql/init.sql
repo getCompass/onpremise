@@ -1,0 +1,4 @@
+/* @formatter:off */
+
+CREATE SCHEMA IF NOT EXISTS `userbot_main` DEFAULT CHARACTER SET utf8;
+CREATE SCHEMA IF NOT EXISTS `userbot_service` DEFAULT CHARACTER SET utf8;

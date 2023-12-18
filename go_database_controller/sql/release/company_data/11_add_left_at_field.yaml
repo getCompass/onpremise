@@ -1,0 +1,395 @@
+databaseName: company_data
+tableList:
+  - name: member_list
+    fieldList:
+      user_id: { type: bigint }
+      role: { type: int, default: 0 }
+      npc_type: { type: int, default: 0 }
+      permissions: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      company_joined_at: { type: int, default: 0 }
+      left_at: { type: int, default: 0 }
+      full_name_updated_at: { type: int, default: 0 }
+      mbti_type: { type: varchar(10), default: '' }
+      full_name: { type: varchar(255), default: '' }
+      short_description: { type: varchar(255), default: '' }
+      avatar_file_key: { type: varchar(255), default: '' }
+      comment: { type: varchar(400), default: '' }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ user_id, role, npc_type, permissions, created_at, updated_at, company_joined_at, left_at, full_name_updated_at, mbti_type, full_name, short_description,
+                  avatar_file_key, comment, extra ]
+    indexList:
+      PRIMARY: { fields: [ user_id ], uniq: 1 }
+      mbti_type_by_role: { fields: [ mbti_type, role ] }
+      get_by_npc_type: { fields: [ npc_type,company_joined_at ] }
+      npc_type.full_name: { fields: [ npc_type,full_name ] }
+      npc_type.role.company_joined_at: { fields: [ npc_type,role,company_joined_at ] }
+    engine: innodb
+    charset: utf8mb4
+  - name: member_notification_list
+    fieldList:
+      user_id: { type: bigint }
+      snoozed_until: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      token: { type: varchar(40), default: '' }
+      device_list: { type: json, default: "JSON_ARRAY()" }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ user_id, snoozed_until, created_at, updated_at, token, device_list, extra ]
+    indexList:
+      PRIMARY: { fields: [ user_id ], uniq: 1 }
+    engine: innodb
+    charset: utf8
+  - name: session_active_list
+    fieldList:
+      session_uniq: { type: varchar(255) }
+      user_id: { type: bigint, default: 0 }
+      user_company_session_token: { type: varchar(255), default: '' }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      login_at: { type: int, default: 0 }
+      ip_address: { type: varchar(45), default: '' }
+      user_agent: { type: varchar(255), default: '' }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ session_uniq, user_id, user_company_session_token, created_at, updated_at, login_at, ip_address, user_agent, extra ]
+    indexList:
+      PRIMARY: { fields: [ session_uniq ], uniq: 1 }
+      user_company_session_token: { fields: [ user_company_session_token ] }
+      user_id: { fields: [ user_id ] }
+    engine: InnoDB
+    charset: utf8
+  - name: session_history_list
+    fieldList:
+      session_uniq: { type: varchar(255) }
+      user_id: { type: bigint, default: 0 }
+      user_company_session_token: { type: varchar(255), default: '' }
+      status: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      login_at: { type: int, default: 0 }
+      logout_at: { type: int, default: 0 }
+      ip_address: { type: varchar(45), default: '' }
+      user_agent: { type: varchar(255), default: '' }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ session_uniq, user_id, user_company_session_token, status, created_at, login_at, logout_at, ip_address, user_agent, extra ]
+    indexList:
+      PRIMARY: { fields: [ session_uniq ], uniq: 1 }
+      user_id: { fields: [ user_id ] }
+      user_company_session_token: { fields: [ user_company_session_token ] }
+    engine: InnoDB
+    charset: utf8
+  - name: entry_list
+    fieldList:
+      entry_id: { type: int, extra: auto_increment }
+      entry_type: { type: tinyint, default: 0 }
+      user_id: { type: bigint, default: 0 }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ entry_id, entry_type, user_id, created_at ]
+    indexList:
+      PRIMARY: { fields: [ entry_id ], uniq: 1 }
+    engine: innodb
+    charset: utf8
+  - name: entry_join_link_list
+    fieldList:
+      entry_id: { type: int }
+      join_link_uniq: { type: varchar(12), default: '' }
+      inviter_user_id: { type: bigint, default: 0 }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ entry_id, join_link_uniq, inviter_user_id, created_at ]
+    indexList:
+      PRIMARY: { fields: [ entry_id ], uniq: 1 }
+      join_link_uniq: { fields: [ join_link_uniq ] }
+    engine: innodb
+    charset: utf8
+  - name: join_link_list
+    fieldList:
+      join_link_uniq: { type: varchar(12) }
+      is_postmoderation: { type: tinyint(1), default: 0 }
+      status: { type: tinyint, default: 0 }
+      type: { type: tinyint, default: 0 }
+      can_use_count: { type: int, default: 0 }
+      expires_at: { type: int, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ join_link_uniq, is_postmoderation, status, type, can_use_count, expires_at, creator_user_id, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ join_link_uniq ], uniq: 1 }
+      get_by_type_and_status: { fields: [ type, status ] }
+      get_created_by_user_id_and_status: { fields: [ creator_by_user_id, status, created_at ] }
+      get_status_expires: { fields: [ status, expires_at ] }
+    engine: innodb
+    charset: utf8
+  - name: hiring_request
+    fieldList:
+      hiring_request_id: { type: int, extra: auto_increment }
+      status: { type: tinyint, default: 0 }
+      join_link_uniq: { type: varchar(12), default: '' }
+      entry_id: { type: int, default: 0 }
+      hired_by_user_id: { type: bigint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      candidate_user_id: { type: bigint, default: 0 }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ hiring_request_id, status, join_link_uniq, entry_id, hired_by_user_id, created_at, updated_at, candidate_user_id, extra ]
+    indexList:
+      PRIMARY: { fields: [ hiring_request_id ], uniq: 1 }
+      entry_id: { fields: [ entry_id ] }
+      candidate_user_id: { fields: [ candidate_user_id ] }
+      status.created_at: { fields: [ status,created_at ] }
+    engine: InnoDB
+    charset: utf8
+  - name: hiring_conversation_preset
+    fieldList:
+      hiring_conversation_preset_id: { type: int, extra: auto_increment }
+      status: { type: tinyint, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      title: { type: varchar(80), default: '' }
+      conversation_list: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ hiring_conversation_preset_id, status, creator_user_id, created_at, updated_at, title, conversation_list ]
+    indexList:
+      PRIMARY: { fields: [ hiring_conversation_preset_id ], uniq: 1 }
+      user_status: { fields: [ creator_user_id,status ] }
+    engine: InnoDB
+    charset: utf8
+  - name: dismissal_request
+    fieldList:
+      dismissal_request_id: { type: int, extra: auto_increment }
+      status: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      dismissal_user_id: { type: bigint, default: 0 }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ dismissal_request_id, status, created_at, updated_at, creator_user_id, dismissal_user_id, extra ]
+    indexList:
+      PRIMARY: { fields: [ dismissal_request_id ], uniq: 1 }
+      dismissal_user_id: { fields: [ dismissal_user_id ] }
+    engine: InnoDB
+    charset: utf8
+  - name: company_config
+    fieldList:
+      key: { type: varchar(255) }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      value: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ key, created_at, updated_at, value ]
+    indexList:
+      PRIMARY: { fields: [ key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: company_dynamic
+    fieldList:
+      key: { type: varchar(255) }
+      value: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ key, value, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ key ], uniq: 1 }
+    engine: innodb
+    charset: utf8
+  - name: rating_member_hour_list
+    fieldList:
+      user_id: { type: bigint }
+      hour_start: { type: int }
+      is_disabled_alias: { type: tinyint(1), default: 0 }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ user_id, hour_start, is_disabled_alias, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [ user_id, hour_start ], uniq: 1 }
+      hour_start: { fields: [ hour_start ] }
+    engine: innodb
+    charset: utf8
+  - name: rating_member_day_list
+    fieldList:
+      user_id: { type: bigint }
+      day_start: { type: int }
+      is_disabled_alias: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ user_id, day_start, is_disabled_alias, created_at, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [ user_id, day_start ], uniq: 1 }
+      day_start: { fields: [ day_start ] }
+    engine: innodb
+    charset: utf8
+  - name: rating_day_list
+    fieldList:
+      day_start: { type: int }
+      general_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ day_start, general_count, created_at, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [ day_start ], uniq: 1 }
+    engine: innodb
+    charset: utf8
+  - name: file_list
+    fieldList:
+      meta_id: { type: int }
+      year: { type: int }
+      month: { type: int }
+      file_type: { type: tinyint, default: 0 }
+      file_source: { type: int, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      is_cdn: { type: tinyint(1), default: 0 }
+      node_id: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      size_kb: { type: int, default: 0 }
+      user_id: { type: bigint, default: 0 }
+      file_hash: { type: varchar(40), default: '' }
+      mime_type: { type: varchar(255), default: '' }
+      file_name: { type: varchar(255), default: '' }
+      file_extension: { type: varchar(255), default: '' }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ meta_id, year, month, file_type, file_source, is_deleted, is_cdn, node_id, created_at, updated_at, size_kb, user_id, file_hash, mime_type, file_name, file_extension, extra ]
+    indexList:
+      PRIMARY: { fields: [ meta_id,year,month ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: preview_list
+    fieldList:
+      preview_hash: { type: varchar(255) }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ preview_hash, is_deleted, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ preview_hash ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: exit_list
+    fieldList:
+      exit_task_id: { type: int }
+      user_id: { type: bigint, default: 0 }
+      status: { type: tinyint, default: 0 }
+      step: { type: tinyint unsigned, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ exit_task_id, user_id, status, step, created_at, updated_at, extra ]
+    indexList:
+      PRIMARY: { fields: [ exit_task_id ], uniq: 1 }
+      status: { fields: [ status ] }
+    engine: innodb
+    charset: utf8
+  - name: hibernation_delay_token_list
+    fieldList:
+      token_uniq: { type: varchar(12) }
+      user_id: { type: bigint }
+      hibernation_delayed_till: { type: int }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ token_uniq, user_id, hibernation_delayed_till, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ token_uniq, user_id ], uniq: 1 }
+      hibernation_delayed_till: { fields: [ hibernation_delayed_till ] }
+    engine: innodb
+    charset: utf8
+  - name: userbot_list
+    fieldList:
+      userbot_id: { type: char(32), default: '' }
+      status_alias: { type: tinyint, default: '0' }
+      user_id: { type: bigint, default: '0' }
+      created_at: { type: int, default: '0' }
+      updated_at: { type: int, default: '0' }
+      extra: { type: json }
+    fieldOrder: [ userbot_id, status_alias, user_id, created_at, updated_at, extra ]
+    indexList:
+      PRIMARY: { fields: [ userbot_id ], uniq: 1 }
+      get_by_user_id: { fields: [ user_id ] }
+    engine: innodb
+    charset: utf8
+  - name: userbot_conversation_rel
+    fieldList:
+      row_id: { type: int, extra: auto_increment }
+      userbot_id: { type: char(32), default: '' }
+      conversation_type: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      conversation_map: { type: varchar(255), default: '' }
+    fieldOrder: [ row_id, userbot_id, conversation_type, created_at, conversation_map ]
+    indexList:
+      PRIMARY: { fields: [ row_id ], uniq: 1 }
+      get_by_userbot_id_and_conversation: { fields: [ userbot_id, conversation_map ] }
+    engine: InnoDB
+    charset: utf8
+  - name: userbot_conversation_history
+    fieldList:
+      row_id: { type: int, extra: auto_increment }
+      userbot_id: { type: char(32), default: '' }
+      action_type: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      conversation_map: { type: varchar(255), default: '' }
+    fieldOrder: [ row_id, userbot_id, action_type, created_at, updated_at, conversation_map ]
+    indexList:
+      PRIMARY: { fields: [ row_id ], uniq: 1 }
+      get_by_userbot_id_and_conversation: { fields: [ userbot_id, conversation_map ] }
+    engine: InnoDB
+    charset: utf8
+  - name: remind_list
+    fieldList:
+      remind_id: { type: bigint }
+      type: { type: tinyint, default: '0' }
+      is_done: { type: tinyint(1), default: '0' }
+      remind_at: { type: int, default: '0' }
+      creator_user_id: { type: bigint, default: '0' }
+      created_at: { type: int, default: '0' }
+      updated_at: { type: int, default: '0' }
+      recipient_id: { type: varchar(255), default: '' }
+      data: { type: json }
+    fieldOrder: [ remind_id, type, is_done, remind_at, creator_user_id, created_at, updated_at, recipient_id, data ]
+    indexList:
+      PRIMARY: { fields: [ remind_id ], uniq: 1 }
+    engine: innodb
+    charset: utf8
+  - name: premium_payment_request_list
+    fieldList:
+      requested_by_user_id: { type: bigint }
+      is_payed: { type: tinyint, default: '0' }
+      requested_at: { type: int, default: '0' }
+      created_at: { type: int, default: '0' }
+      updated_at: { type: int, default: '0' }
+    fieldOrder: [ requested_by_user_id, is_payed, requested_at, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ requested_by_user_id ], uniq: 1 }
+      requested_at.is_payed.requested_by_user_id: { fields: [ requested_at, is_payed, requested_by_user_id ] }
+    engine: innodb
+    charset: utf8
+  - name: premium_payment_request_menu
+    fieldList:
+      user_id: { type: bigint }
+      requested_by_user_id: { type: bigint }
+      is_unread: { type: tinyint, default: '0' }
+      created_at: { type: int, default: '0' }
+      updated_at: { type: int, default: '0' }
+    fieldOrder: [ user_id, requested_by_user_id, is_unread, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ user_id, requested_by_user_id ], uniq: 1 }
+      user_id.is_unread: { fields: [ user_id, is_unread ] }
+    engine: innodb
+    charset: utf8
+  - name: member_menu
+    fieldList:
+      notification_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint }
+      action_user_id: { type: bigint }
+      type: { type: int, default: 0 }
+      is_unread: { type: tinyint, default: '0' }
+      created_at: { type: int, default: '0' }
+      updated_at: { type: int, default: '0' }
+    fieldOrder: [ notification_id, user_id, action_user_id, type, is_unread, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ notification_id ], uniq: 1 }
+      user_id.action_user_id.type: { fields: [ user_id, action_user_id, type ] }
+      user_id.is_unread.type: { fields: [ user_id, is_unread, type ] }
+    engine: innodb
+    charset: utf8

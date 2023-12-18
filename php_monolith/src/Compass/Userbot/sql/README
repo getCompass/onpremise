@@ -1,0 +1,24 @@
+Инструкция по работе с sql миграциями
+
+Система миграций не умеет создавать и удалять базы данных, поэтому создание баз данных вынесено в отдельный файл
+
+Для создания миграции нужно из корня проекта набрать команду:
+
+docker run -v $(pwd)/sql:/db -w /db docker-registry.skn.dev/backend_compass_dev/go_migration:latest create -ext sql -dir pivot_company -seq company_observer
+
+Создадутся 2 пустых файла, в них нужно добавить sql код который нужно написать sql код для миграции
+up - это для того чтобы накатить миграцию
+down - это для того чтобы откатиться на версию назад
+
+Для миграции нужно набрать команду:
+ВАЖНО: Если не указывать {version}, то накатятся все миграции
+docker run -v $(pwd)/sql:/db -w /db --network scripts_service_network docker-registry.skn.dev/backend_compass_dev/go_migration:latest -path pivot_service -database mysql://root:root2@tcp\(mysql:3306\)/pivot_service?tls=false up {version,optional}
+
+Переместиться к определенной версии
+ВАЖНО: Если не указывать {version}, то миграции откатятся к 0
+docker run -v $(pwd)/sql:/db -w /db --network scripts_service_network docker-registry.skn.dev/backend_compass_dev/go_migration:latest -path pivot_service -database mysql://root:root2@tcp\(mysql:3306\)/pivot_service?tls=false down {version}
+
+
+Переместиться к определенной версии, без накатки sql кода
+docker run -v $(pwd)/sql:/db -w /db --network scripts_service_network docker-registry.skn.dev/backend_compass_dev/go_migration:latest -path pivot_service -database mysql://root:root2@tcp\(mysql:3306\)/pivot_service?tls=false force {version}
+

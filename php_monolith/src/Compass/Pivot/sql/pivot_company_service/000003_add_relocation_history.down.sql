@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS `pivot_company_service`.`relocation_history`;

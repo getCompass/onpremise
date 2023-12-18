@@ -1,0 +1,5 @@
+# general
+* * * * *  /usr/local/bin/php /app/src/Compass/Userbot/api/cron/general.php start bot0 > /dev/null 2>&1 &
+
+# cron command queue
+* * * * *  /usr/local/bin/php /app/src/Compass/Userbot/api/cron/command_queue.php start bot0 now > /dev/null 2>&1 &

@@ -1,0 +1,11 @@
+##########################################################
+# php_announcements
+##########################################################
+
+# крон переотправки анонсов
+* * * * * /usr/local/bin/php -dxdebug.start_with_request=0 /app/src/Compass/Announcement/api/cron/announcements_resender.php start bot0 now > /dev/null 2>&1 &
+* * * * * /usr/local/bin/php -dxdebug.start_with_request=0 /app/src/Compass/Announcement/api/cron/announcements_resender.php start bot1 now > /dev/null 2>&1 &
+
+# крон чистки истекших анонсов
+* * * * * /usr/local/bin/php -dxdebug.start_with_request=0 /app/src/Compass/Announcement/api/cron/expired_announcement_cleaner.php start bot0 now > /dev/null 2>&1 &
+* * * * * /usr/local/bin/php -dxdebug.start_with_request=0 /app/src/Compass/Announcement/api/cron/expired_announcement_cleaner.php start bot1 now > /dev/null 2>&1 &

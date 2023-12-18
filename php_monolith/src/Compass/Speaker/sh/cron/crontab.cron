@@ -1,0 +1,2 @@
+# general
+* * * * *  /usr/local/bin/php /app/src/Compass/Speaker/api/cron/general.php start bot0 > /dev/null 2>&1 &

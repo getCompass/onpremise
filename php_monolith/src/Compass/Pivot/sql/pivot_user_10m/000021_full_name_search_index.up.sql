@@ -1,0 +1,10 @@
+ALTER TABLE `pivot_user_10m`.`user_list_1` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_2` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_3` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_4` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_5` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_6` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_7` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_8` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_9` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';
+ALTER TABLE `pivot_user_10m`.`user_list_10` ADD FULLTEXT INDEX `full_name.search` (`full_name`) COMMENT 'Индекс для поиска по full_name';

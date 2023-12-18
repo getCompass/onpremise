@@ -1,0 +1,17 @@
+.idea
+.DS_Store
+main
+./event
+!/doc/uml/controller/event
+main.pid
+/api/conf/conf.json
+/api/conf/sharding.json
+/api/conf/test_define.json
+/api/conf/event.json
+/api/conf/socket.json
+/api/conf/message_rule.json
+/connect.sh
+/dev/_go/*
+!/dev/_go/example.go
+/logs
+/tests/_output

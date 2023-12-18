@@ -1,0 +1,6 @@
+#Запустить дебаг в контейнере
+ kill <pid go сервиса>
+ Для готового пакета: dlv --headless --listen=:${DEBUG_PORT} --api-version=2 --wd /app --accept-multiclient exec /app/rating --  -confdir=/conf -logsdir=/app/logs -executabledir=/app
+ Для нескомпиленного кода: dlv --headless --listen=:${DEBUG_PORT} --api-version=2 --wd /app --accept-multiclient debug /app --  -confdir=/conf -logsdir=/app/logs/ -executabledir=/app
+#Когда вы закончили дебаг, отрубите процесс дебага, приложение вернется в нормально состояние(либо убивайте дебаг через GoLand при отключении от сервера)
+ kill <pid dlv сервиса>

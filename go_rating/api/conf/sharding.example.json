@@ -1,0 +1,44 @@
+{
+	"mysql": {
+		"conversation": {
+			"db": "${MYSQL_CONVERSATION_DATABASE_NAME}",
+			"mysql": {
+				"host": "${MYSQL_HOST}",
+				"port": ${MYSQL_PORT},
+				"user": "${MYSQL_USER}",
+				"pass": "${MYSQL_PASS}",
+				"ssl": false,
+				"max_connections": 5
+			},
+			"schemas": {}
+		},
+		"global": {
+			"db": "${MYSQL_GLOBAL_DATABASE_NAME}",
+			"mysql": {
+				"host": "${MYSQL_HOST}",
+				"port": ${MYSQL_PORT},
+				"user": "${MYSQL_USER}",
+				"pass": "${MYSQL_PASS}",
+				"ssl": false,
+				"max_connections": 3
+			},
+			"schemas": {}
+		}
+	},
+	"rabbit": {
+		"local": {
+			"host": "${RABBIT_HOST}",
+			"port": "${RABBIT_PORT}",
+			"user": "${RABBIT_USER}",
+			"pass": "${RABBIT_PASS}"
+		},
+		"service": {
+			"host": "${RABBIT_HOST}",
+			"port": "${RABBIT_PORT}",
+			"user": "${RABBIT_USER}",
+			"pass": "${RABBIT_PASS}"
+		}
+	},
+	"go": {
+	}
+}

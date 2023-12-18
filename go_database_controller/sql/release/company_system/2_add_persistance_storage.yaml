@@ -1,0 +1,167 @@
+databaseName: company_system
+tableList:
+  - name: migration_release_database_list
+    fieldList:
+      full_database_name: { type: varchar(255) }
+      database_name: { type: varchar(255), default: '' }
+      is_completed: { type: int, default: 0 }
+      current_version: { type: int, default: 0 }
+      previous_version: { type: int, default: 0 }
+      expected_version: { type: int, default: 0 }
+      highest_version: { type: int, default: 0 }
+      last_migrated_type: { type: int, default: 0 }
+      last_migrated_at: { type: int, default: 0 }
+      last_migrated_file: { type: varchar(255), default: '' }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ full_database_name, database_name, is_completed, current_version, previous_version, expected_version, highest_version, last_migrated_type,
+                  last_migrated_at, last_migrated_file, created_at ]
+    indexList:
+      PRIMARY: { fields: [ full_database_name ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: migration_cleaning_database_list
+    fieldList:
+      full_database_name: { type: varchar(255) }
+      database_name: { type: varchar(255), default: '' }
+      is_completed: { type: int, default: 0 }
+      current_version: { type: int, default: 0 }
+      previous_version: { type: int, default: 0 }
+      expected_version: { type: int, default: 0 }
+      highest_version: { type: int, default: 0 }
+      last_migrated_type: { type: int, default: 0 }
+      last_migrated_at: { type: int, default: 0 }
+      last_migrated_file: { type: varchar(255), default: '' }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ full_database_name, database_name, is_completed, current_version, previous_version, expected_version, highest_version, last_migrated_type,
+                  last_migrated_at, last_migrated_file, created_at ]
+    indexList:
+      PRIMARY: { fields: [ full_database_name ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: observer_member
+    fieldList:
+      user_id: { type: bigint }
+      need_work: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ user_id, need_work, created_at, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [ user_id ], uniq: 1 }
+      need_work: { fields: [ need_work ] }
+    engine: InnoDB
+    charset: utf8
+  - name: antispam_ip
+    fieldList:
+      ip_address: { type: varchar(45) }
+      key: { type: varchar(255) }
+      is_stat_sent: { type: tinyint(1), default: 0 }
+      count: { type: int, default: 0 }
+      expires_at: { type: int, default: 0 }
+    fieldOrder: [ ip_address, key, is_stat_sent, count, expires_at ]
+    indexList:
+      PRIMARY: { fields: [ ip_address,key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: antispam_user
+    fieldList:
+      user_id: { type: bigint }
+      key: { type: varchar(255) }
+      is_stat_sent: { type: tinyint(1), default: 0 }
+      count: { type: int, default: 0 }
+      expires_at: { type: int, default: 0 }
+    fieldOrder: [ user_id, key, is_stat_sent, count, expires_at ]
+    indexList:
+      PRIMARY: { fields: [ user_id,key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: antispam_phone
+    fieldList:
+      phone_number: { type: varchar(60) }
+      key: { type: varchar(255) }
+      is_stat_sent: { type: tinyint(1), default: 0 }
+      count: { type: int, default: 0 }
+      expires_at: { type: int, default: 0 }
+    fieldOrder: [ phone_number, key, is_stat_sent, count, expires_at ]
+    indexList:
+      PRIMARY: { fields: [ phone_number,key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: auto_increment
+    fieldList:
+      key: { type: varchar(255) }
+      value: { type: bigint, default: 0 }
+    fieldOrder: [ key, value ]
+    indexList:
+      PRIMARY: { fields: [ key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: datastore
+    fieldList:
+      key: { type: varchar(255) }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ key, extra ]
+    indexList:
+      PRIMARY: { fields: [ key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: go_event_subscriber_list
+    fieldList:
+      subscriber: { type: varchar(255) }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      subscription_list: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ subscriber, created_at, updated_at, subscription_list ]
+    indexList:
+      PRIMARY: { fields: [ subscriber ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: auto_increment
+    fieldList:
+      key: { type: varchar(255) }
+      value: { type: bigint, default: 0 }
+    fieldOrder: [ key, value ]
+    indexList:
+      PRIMARY: { fields: [ key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: async_task
+    fieldList:
+      async_task_id: { type: bigint }
+      is_failed: { type: tinyint(1), default: 0 }
+      task_type: { type: int }
+      need_work_at: { type: int }
+      error_count: { type: int, default: 0 }
+      created_at: { type: int }
+      updated_at: { type: int, default: 0 }
+      module: { type: varchar(64) }
+      group: { type: varchar(64) }
+      name: { type: varchar(128) }
+      unique_key: { type: varchar(256) }
+      data: { type: json, default: "JSON_OBJECT()" }
+    fieldOrder: [ async_task_id, is_failed, task_type, need_work_at, error_count, created_at, updated_at, module, group, name, unique_key, data ]
+    indexList:
+      PRIMARY: { fields: [ key ], uniq: 1 }
+      uniq_protector: { fields: [ unique_key ], uniq: 1 }
+      get_by_need_work: { fields: [ is_failed, need_work_at ] }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: async_task_history
+    fieldList:
+      async_task_id: { type: bigint }
+      is_failed: { type: tinyint(1), default: 0 }
+      task_type: { type: int }
+      need_work_at: { type: int }
+      error_count: { type: int, default: 0 }
+      created_at: { type: int }
+      updated_at: { type: int, default: 0 }
+      module: { type: varchar(64) }
+      group: { type: varchar(64) }
+      name: { type: varchar(128) }
+      unique_key: { type: varchar(256) }
+      data: { type: json, default: "JSON_OBJECT()" }
+    fieldOrder: [ async_task_id, is_failed, task_type, need_work_at, error_count, created_at, updated_at, module, group, name, unique_key, data ]
+    indexList:
+      PRIMARY: { fields: [ key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4

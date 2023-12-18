@@ -1,0 +1,4 @@
+.git
+.gitignore
+.gitlab-ci.yml
+tag.gitlab-ci.yml

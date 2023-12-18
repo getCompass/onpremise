@@ -1,0 +1,6 @@
+{
+	"GO_TEST_PORT": 15384,
+	"GO_TEST_SLEEP": 50,
+	"GO_TALKING_URL": "ws://example.com/ws",
+	"SERVER_NAME": "${SERVER_NAME}"
+}

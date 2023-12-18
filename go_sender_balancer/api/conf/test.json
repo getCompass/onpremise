@@ -1,0 +1,31 @@
+{
+  "talking.setToken": {},
+  "talking.sendEvent": {},
+  "talking.addTaskPushNotification": {},
+  "talking.getOnlineUsers": {},
+  "talking.sendTypingEvent": {},
+  "talking.getOnlineConnectionsByUserId": {},
+  "talking.closeConnectionsByUserId": {},
+  "talking.addUsersToThread": {},
+  "talking.sendThreadTypingEvent": {},
+  "talking.sendCreateThreadTypingEvent": {},
+  "broadcast.sendEvent": {},
+  "broadcast.sendPush": {},
+  "broadcast.sendTypingEvent": {},
+  "broadcast.getOnlineConnectionsByUserId": {},
+  "broadcast.closeConnectionsByUserId": {},
+  "broadcast.addUsersToThread": {},
+  "broadcast.sendThreadTypingEvent": {},
+  "broadcast.sendCreateThreadTypingEvent": {},
+  "broadcast.sendVoIP": {},
+  "test.openConnect": {},
+  "test.closeConnect": {},
+  "test.getEventList": {
+    "ws_event_list": "?[]s"
+  },
+  "test.clearEventList": {},
+  "test.getStatus": {
+    "ws_status": "?d"
+  },
+  "test.sendWsEvent": {}
+}

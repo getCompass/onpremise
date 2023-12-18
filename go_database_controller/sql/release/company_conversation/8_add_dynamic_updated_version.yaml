@@ -1,0 +1,351 @@
+databaseName: company_conversation
+tableList:
+  - name: conversation_meta
+    fieldList:
+      meta_id: { type: int }
+      year: { type: int }
+      allow_status: { type: tinyint, default: 0 }
+      type: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      avatar_file_map: { type: varchar(255), default: '' }
+      conversation_name: { type: varchar(80), default: '' }
+      users: { type: json, default: "JSON_ARRAY()" }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ meta_id, year, allow_status, type, created_at, updated_at, creator_user_id, avatar_file_map, conversation_name, users, extra ]
+    indexList:
+      PRIMARY: { fields: [ meta_id,year ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: conversation_file
+    fieldList:
+      file_uuid: { type: varchar(40) }
+      row_id: { type: int, extra: auto_increment }
+      conversation_map: { type: varchar(255), default: '' }
+      file_map: { type: varchar(255), default: '' }
+      file_type: { type: tinyint, default: 0 }
+      parent_type: { type: tinyint, default: 0 }
+      conversation_message_created_at: { type: int, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      user_id: { type: bigint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      parent_message_map: { type: varchar(255), default: '' }
+      conversation_message_map: { type: varchar(255), default: '' }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ file_uuid, row_id, conversation_map, file_map, file_type, parent_type, conversation_message_created_at, is_deleted, user_id, created_at,
+                  updated_at,parent_message_map, conversation_message_map, extra ]
+    indexList:
+      PRIMARY: { fields: [ file_uuid ], uniq: 1 }
+      get_files: { fields: [ conversation_map, is_deleted, row_id, user_id, file_type, parent_type, conversation_message_created_at] }
+      get_by_row_id: { fields: [ row_id ] }
+      conversation_message_map: { fields: [ conversation_message_map ] }
+    engine: InnoDB
+    charset: utf8
+  - name: conversation_dynamic
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      is_locked: { type: tinyint(1), default: 0 }
+      last_block_id: { type: int, default: 0 }
+      start_block_id: { type: int, default: 0 }
+      total_message_count: { type: int, default: 0 }
+      file_count: { type: int, default: 0 }
+      image_count: { type: int, default: 0 }
+      video_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      messages_updated_at: { type: int, default: 0 }
+      reactions_updated_at: { type: int, default: 0 }
+      threads_updated_at: { type: int, default: 0 }
+      messages_updated_version: { type: int, default: 0 }
+      reactions_updated_version: { type: int, default: 0 }
+      threads_updated_version: { type: int, default: 0 }
+      user_mute_info: { type: json, default: "JSON_ARRAY()" }
+      user_clear_info: { type: json, default: "JSON_ARRAY()" }
+      user_file_clear_info: { type: json, default: "JSON_ARRAY()" }
+      conversation_clear_info: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ conversation_map, is_locked, last_block_id, start_block_id, total_message_count, file_count, image_count, video_count, created_at, updated_at,
+                  messages_updated_at, reactions_updated_at, threads_updated_at, messages_updated_version, reactions_updated_version, threads_updated_version,
+                  user_mute_info, user_clear_info, user_file_clear_info, conversation_clear_info ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: conversation_invite_list
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      invite_map: { type: varchar(255) }
+      status: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      user_id: { type: bigint, default: 0 }
+      sender_user_id: { type: bigint, default: 0 }
+    fieldOrder: [ conversation_map, invite_map, status, created_at, updated_at, user_id, sender_user_id ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map, invite_map ], uniq: 1 }
+      conversation_map: { fields: [ conversation_map ] }
+      user_id: { fields: [ user_id ] }
+      sender_user_id: { fields: [ sender_user_id ] }
+      status: { fields: [ status ] }
+    engine: InnoDB
+    charset: utf8
+  - name: message_block
+    sharding: month
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      block_id: { type: int }
+      message_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      closed_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ conversation_map, block_id, message_count, created_at, updated_at, closed_at, data ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map, block_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: message_block_reaction_list
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      block_id: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      reaction_data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ conversation_map, block_id, created_at, updated_at, reaction_data ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map, block_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: message_user_hidden_rel
+    fieldList:
+      user_id: { type: bigint }
+      message_map: { type: varchar(255) }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ user_id, message_map, created_at ]
+    indexList:
+      PRIMARY: { fields: [ user_id, message_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: message_repost_thread_rel
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      message_map: { type: varchar(255) }
+      receiver_thread_map: { type: varchar(255), default: '' }
+      user_id: { type: bigint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      deleted_at: { type: int, default: 0 }
+    fieldOrder: [ conversation_map, message_map, receiver_thread_map, user_id, is_deleted, created_at, updated_at, deleted_at ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map, message_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: message_report_history
+    fieldList:
+      report_id: { type: int, extra: auto_increment }
+      message_map: { type: varchar(255), default: '' }
+      user_id: { type: bigint, default: 0 }
+      reason: { type: varchar(256), default: '' }
+    fieldOrder: [ report_id, message_map, user_id, reason ]
+    indexList:
+      PRIMARY: { fields: [ report_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: invite_list
+    fieldList:
+      meta_id: { type: int }
+      year: { type: int }
+      type: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ meta_id, year, type, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ meta_id, year ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: invite_group_via_single
+    fieldList:
+      invite_map: { type: varchar(255) }
+      status: { type: tinyint, default: 0 }
+      inactive_reason: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      user_id: { type: bigint, default: 0 }
+      sender_user_id: { type: bigint, default: 0 }
+      conversation_name: { type: varchar(80), default: '' }
+      avatar_file_map: { type: varchar(255), default: '' }
+      group_conversation_map: { type: varchar(255), default: '' }
+      single_conversation_map: { type: varchar(255), default: '' }
+    fieldOrder: [ invite_map, status, inactive_reason, created_at, updated_at, user_id, sender_user_id, conversation_name, avatar_file_map, group_conversation_map,
+                  single_conversation_map ]
+    indexList:
+      PRIMARY: { fields: [ invite_map ], uniq: 1 }
+      user_conversation_sender_UNIQUE: { fields: [ user_id,sender_user_id,group_conversation_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: user_left_menu
+    fieldList:
+      user_id: { type: bigint }
+      conversation_map: { type: varchar(255) }
+      is_favorite: { type: tinyint(1), default: 0 }
+      is_mentioned: { type: tinyint(1), default: 0 }
+      is_muted: { type: tinyint(1), default: 0 }
+      muted_until: { type: int, default: 0 }
+      is_hidden: { type: tinyint(1), default: 0 }
+      is_leaved: { type: tinyint(1), default: 0 }
+      allow_status_alias: { type: tinyint, default: 0 }
+      leave_reason: { type: tinyint, default: 0 }
+      role: { type: tinyint, default: 0 }
+      type: { type: tinyint, default: 0 }
+      unread_count: { type: int, default: 0 }
+      mention_count: { type: int, default: 0 }
+      is_have_notice: { type: tinyint(1), default: 0 }
+      member_count: { type: int, default: 0 }
+      version: { type: int, default: 0 }
+      clear_until: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      opponent_user_id: { type: bigint, default: 0 }
+      conversation_name: { type: varchar(80), default: '' }
+      avatar_file_map: { type: varchar(255), default: '' }
+      last_read_message_map: { type: varchar(255), default: '' }
+      last_message: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ user_id, conversation_map, is_favorite, is_mentioned, is_muted, muted_until, is_hidden, is_leaved, allow_status_alias, leave_reason, role, type,
+                  unread_count, mention_count, is_have_notice, member_count, version, clear_until, created_at, updated_at, opponent_user_id, conversation_name, avatar_file_map,
+                  last_read_message_map, last_message ]
+    indexList:
+      PRIMARY: { fields: [ user_id, conversation_map ], uniq: 1 }
+      get_managed: { fields: [ user_id,role,updated_at ] }
+      get_opponents: { fields: [ user_id,opponent_user_id,is_hidden ] }
+      get_allowed: { fields: [ user_id,is_hidden,allow_status_alias,type,is_favorite,updated_at ] }
+      get_left_menu: { fields: [ user_id,is_hidden,is_favorite,is_mentioned,updated_at ] }
+      get_unread_menu: { fields: [ user_id,is_hidden,is_have_notice,is_mentioned,updated_at ] }
+      get_versioned_menu: { fields: [ user_id,version ] }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: user_inbox
+    fieldList:
+      user_id: { type: bigint }
+      message_unread_count: { type: int, default: 0 }
+      conversation_unread_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ user_id, message_unread_count, conversation_unread_count, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ user_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: user_single_uniq
+    fieldList:
+      user1_id: { type: bigint }
+      user2_id: { type: bigint }
+      conversation_map: { type: varchar(255), default: '' }
+    fieldOrder: [ user1_id, user2_id, conversation_map ]
+    indexList:
+      PRIMARY: { fields: [ user1_id,user2_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: user_invite_rel
+    fieldList:
+      user_id: { type: bigint }
+      invite_map: { type: varchar(255) }
+      status: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      sender_user_id: { type: bigint, default: 0 }
+      group_conversation_map: { type: varchar(255), default: '' }
+    fieldOrder: [ user_id, invite_map, status, created_at, updated_at, sender_user_id, group_conversation_map ]
+    indexList:
+      PRIMARY: { fields: [ user_id, invite_map ], uniq: 1 }
+      get_by_user_id_and_status: { fields: [ user_id,status ] }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: user_dynamic
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      user_id: { type: bigint }
+      count_sender_active_invite: { type: int unsigned }
+      created_at: { type: int }
+      updated_at: { type: int }
+    fieldOrder: [ conversation_map, user_id, count_sender_active_invite, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map, user_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: member_conversation_type_rel
+    fieldList:
+      row_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      type: { type: int, default: 0 }
+      conversation_map: { type: varchar(255), default: '' }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ row_id, user_id, type, conversation_map, created_at ]
+    indexList:
+      PRIMARY: { fields: [ row_id ], uniq: 1 }
+      get_by_user_id_and_type: { fields: [ user_id,type ] }
+    engine: InnoDB
+    charset: utf8
+  - name: message_repost_conversation_rel
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      message_map: { type: varchar(255) }
+      reciever_conversation_map: { type: varchar(255), default: '' }
+      user_id: { type: bigint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      deleted_at: { type: int, default: 0 }
+    fieldOrder: [ conversation_map, message_map, reciever_conversation_map, user_id, is_deleted, created_at, updated_at, deleted_at ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map, message_map ], uniq: 1 }
+      get_existing_repost: { fields: [ conversation_map, is_deleted ] }
+    engine: InnoDB
+    charset: utf8
+  - name: message_thread_rel
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      message_map: { type: varchar(255) }
+      thread_map: { type: varchar(255), default: '' }
+      block_id: { type: bigint, default: 0 }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ conversation_map, message_map, thread_map, block_id, extra ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map, message_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: message_block_remind_list
+    fieldList:
+      conversation_map: { type: varchar(255) }
+      block_id: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      remind_data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ conversation_map, block_id, created_at, updated_at, remind_data ]
+    indexList:
+      PRIMARY: { fields: [ conversation_map, block_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: conversation_preview
+    fieldList:
+      parent_type: { type: tinyint }
+      parent_message_map: { type: varchar(255) }
+      is_deleted: { type: tinyint }
+      conversation_message_created_at: { type: int }
+      parent_message_created_at: { type: int }
+      created_at: { type: int }
+      updated_at: { type: int }
+      user_id: { type: bigint }
+      preview_map: { type: varchar(255) }
+      conversation_map: { type: varchar(255) }
+      conversation_message_map: { type: varchar(255) }
+      link_list: { type: json, default: "JSON_ARRAY()" }
+      hidden_by_user_list: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ parent_type, parent_message_map, is_deleted, conversation_message_created_at, parent_message_created_at, created_at, updated_at, user_id, preview_map, conversation_map, conversation_message_map, link_list, hidden_by_user_list ]
+    indexList:
+      PRIMARY: { fields: [ parent_type, parent_message_map ], uniq: 1 }
+      get_previews: { fields: [ conversation_map, is_deleted, parent_message_map, parent_type, conversation_message_created_at, user_id ] }
+      conversation_message_map: { fields: [ conversation_message_map ] }
+    engine: InnoDB
+    charset: utf8mb4

@@ -1,0 +1,59 @@
+<?php
+
+namespace Compass\Conversation;
+
+/**
+ * класс для работы с историей репостов из одного диалога (conversation_map)
+ * в диалог получатель ($reciever_conversation_map)
+ */
+class Type_Conversation_RepostRel {
+
+	// функция для добавления записи в историю
+	public static function add(string $conversation_map, string $receiver_conversation_map, string $message_map, int $user_id):void {
+
+		Gateway_Db_CompanyConversation_MessageRepostConversationRel::insert([
+			"conversation_map"          => $conversation_map,
+			"message_map"               => $message_map,
+			"reciever_conversation_map" => $receiver_conversation_map,
+			"user_id"                   => $user_id,
+			"is_deleted"                => 0,
+			"created_at"                => time(),
+			"updated_at"                => 0,
+			"deleted_at"                => 0,
+		]);
+	}
+
+	// функция для добавления нескольких записей в историю
+	public static function addList(string $conversation_map, string $receiver_conversation_map, array $message_map_list, int $user_id):void {
+
+		$set = [];
+		foreach ($message_map_list as $v) {
+
+			$set[] = [
+				"conversation_map"          => $conversation_map,
+				"message_map"               => $v,
+				"reciever_conversation_map" => $receiver_conversation_map,
+				"user_id"                   => $user_id,
+				"is_deleted"                => 0,
+				"created_at"                => time(),
+				"updated_at"                => 0,
+				"deleted_at"                => 0,
+			];
+		}
+
+		if (count($set) > 0) {
+			Gateway_Db_CompanyConversation_MessageRepostConversationRel::insertArray($set);
+		}
+	}
+
+	// функция для помечания удаленной записи об истории
+	// - conversation_map - диалог которому принадлежат репостнутые сообщения
+	// - message_map - само сообщение с репостом
+	public static function setMessageDeleted(string $conversation_map, string $message_map):void {
+
+		Gateway_Db_CompanyConversation_MessageRepostConversationRel::set($conversation_map, $message_map, [
+			"is_deleted" => 1,
+			"deleted_at" => time(),
+		]);
+	}
+}

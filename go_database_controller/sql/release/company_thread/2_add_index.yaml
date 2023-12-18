@@ -1,0 +1,155 @@
+databaseName: company_thread
+tableList:
+  - name: thread_meta
+    fieldList:
+      meta_id: { type: int }
+      year: { type: int }
+      is_private: { type: tinyint(1), default: 0 }
+      is_mono: { type: tinyint(1), default: 0 }
+      is_readonly: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      message_count: { type: int, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      users: { type: json, default: "JSON_ARRAY()" }
+      source_parent_rel: { type: json, default: "JSON_ARRAY()" }
+      parent_rel: { type: json, default: "JSON_ARRAY()" }
+      sender_order: { type: json, default: "JSON_ARRAY()" }
+      last_sender_data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ meta_id, year, is_private, is_mono, is_readonly, created_at, updated_at, message_count, creator_user_id, users, source_parent_rel, parent_rel, sender_order,
+                  last_sender_data ]
+    indexList:
+      PRIMARY: { fields: [ meta_id, year ], uniq: 1 }
+      get_by_meta_id_year_creator_user_id: { fields: [ meta_id,year,creator_user_id ] }
+    engine: InnoDB
+    charset: utf8
+  - name: thread_follower_list
+    fieldList:
+      thread_map: { type: varchar(255) }
+      follower_list: { type: json, default: "JSON_ARRAY()" }
+      unfollower_list: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ thread_map, follower_list, unfollower_list ]
+    indexList:
+      PRIMARY: { fields: [ thread_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: thread_dynamic
+    fieldList:
+      thread_map: { type: varchar(255) }
+      is_locked: { type: tinyint(1), default: 0 }
+      last_block_id: { type: int, default: 0 }
+      start_block_id: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      user_mute_info: { type: json, default: "JSON_ARRAY()" }
+      user_hide_list: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ thread_map, is_locked, last_block_id, start_block_id, created_at, updated_at, user_mute_info, user_hide_list ]
+    indexList:
+      PRIMARY: { fields: [ thread_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: message_block
+    sharding: month
+    fieldList:
+      thread_map: { type: varchar(255) }
+      block_id: { type: int }
+      message_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      closed_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ thread_map, block_id, message_count, created_at, updated_at, closed_at, data ]
+    indexList:
+      PRIMARY: { fields: [ thread_map,block_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: message_block_reaction_list
+    fieldList:
+      thread_map: { type: varchar(255) }
+      block_id: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      reaction_data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ thread_map, block_id, created_at, updated_at, reaction_data ]
+    indexList:
+      PRIMARY: { fields: [ thread_map, block_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8mb4
+  - name: message_report_history
+    fieldList:
+      report_id: { type: int, extra: auto_increment }
+      message_map: { type: varchar(255), default: '' }
+      user_id: { type: bigint,default: 0 }
+      reason: { type: varchar(256), default: '' }
+    fieldOrder: [ report_id, message_map, user_id, reason ]
+    indexList:
+      PRIMARY: { fields: [ report_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: message_repost_conversation_rel
+    fieldList:
+      thread_map: { type: varchar(255) }
+      message_map: { type: varchar(255) }
+      reciever_conversation_map: { type: varchar(255), default: '' }
+      user_id: { type: bigint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      deleted_at: { type: int, default: 0 }
+    fieldOrder: [ thread_map, message_map, reciever_conversation_map, user_id, is_deleted, created_at, updated_at, deleted_at ]
+    indexList:
+      PRIMARY: { fields: [ thread_map, message_map ], uniq: 1 }
+      get_existing_repost: { fields: [ thread_map,is_deleted ] }
+    engine: InnoDB
+    charset: utf8
+  - name: message_repost_thread_rel
+    fieldList:
+      thread_map: { type: varchar(255) }
+      message_map: { type: varchar(255) }
+      receiver_thread_map: { type: varchar(255), default: '' }
+      user_id: { type: bigint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      deleted_at: { type: int, default: 0 }
+    fieldOrder: [ thread_map, message_map, receiver_thread_map, user_id, is_deleted, created_at, updated_at, deleted_at ]
+    indexList:
+      PRIMARY: { fields: [ thread_map, message_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: user_inbox
+    fieldList:
+      user_id: { type: bigint }
+      message_unread_count: { type: int, default: 0 }
+      thread_unread_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ user_id, message_unread_count, thread_unread_count, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ user_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: user_thread_menu
+    fieldList:
+      user_id: { type: bigint }
+      thread_map: { type: varchar(255) }
+      source_parent_type: { type: tinyint, default: 0 }
+      is_hidden: { type: tinyint(1), default: 0 }
+      is_follow: { type: tinyint(1), default: 0 }
+      is_muted: { type: tinyint(1), default: 0 }
+      is_favorite: { type: tinyint(1), default: 0 }
+      unread_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      source_parent_map: { type: varchar(255), default: '' }
+      last_read_message_map: { type: varchar(255), default: '' }
+      parent_rel: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ user_id, thread_map, source_parent_type, is_hidden, is_follow, is_muted, is_favorite, unread_count, created_at, updated_at, source_parent_map,
+                  last_read_message_map, parent_rel ]
+    indexList:
+      PRIMARY: { fields: [ user_id, thread_map ], uniq: 1 }
+      get_thread_menu: { fields: [ user_id,is_hidden,updated_at,created_at ] }
+      get_total_unread: { fields: [ user_id,is_hidden,unread_count ] }
+      get_favorite: { fields: [ user_id,is_hidden,is_favorite,updated_at ] }
+    engine: InnoDB
+    charset: utf8

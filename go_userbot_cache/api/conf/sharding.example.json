@@ -1,0 +1,18 @@
+{
+	"mysql": {},
+	"rabbit": {
+		"local": {
+			"host": "${RABBIT_HOST}",
+			"port": "${RABBIT_PORT}",
+			"user": "${RABBIT_USER}",
+			"pass": "${RABBIT_PASS}"
+		},
+		"bus": {
+			"host": "${RABBIT_HOST}",
+			"port": "${RABBIT_PORT}",
+			"user": "${RABBIT_USER}",
+			"pass": "${RABBIT_PASS}"
+		}
+	},
+	"go": {}
+}

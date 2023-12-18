@@ -1,0 +1,41 @@
+databaseName: space_search
+tableList:
+  - name: entity_search_id_rel
+    sharding: hash
+    fieldList:
+      entity_id: { type: varchar(40) }
+      search_id: { type: bigint, extra: auto_increment }
+      entity_type: { type: int }
+      entity_map: { type: varchar(255) }
+    fieldOrder: [ entity_id, search_id, entity_type, entity_map ]
+    indexList:
+      PRIMARY: { fields: [ entity_id ], uniq: 1 }
+      search_id: { fields: [ search_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: index_task_queue
+    fieldList:
+      task_id: { type: bigint }
+      type: { type: int }
+      error_count: { type: int, default: 0 }
+      created_at: { type: int }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_OBJECT()" }
+    fieldOrder: [ task_id, type, error_count, created_at, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [ task_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: entity_preparation_task_queue
+    fieldList:
+      task_id: { type: bigint }
+      type: { type: int }
+      error_count: { type: int, default: 0 }
+      created_at: { type: int }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_OBJECT()" }
+    fieldOrder: [ task_id, type, error_count, created_at, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [ task_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8

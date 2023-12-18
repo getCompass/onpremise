@@ -1,0 +1,413 @@
+<?php
+
+namespace Compass\Conversation;
+
+use BaseFrame\Exception\Request\ParamException;
+use BaseFrame\Exception\Domain\ParseFatalException;
+
+/**
+ * класс, который регулирует, какие дейсвия можно совершать с определенными типами диалогов
+ */
+class Type_Conversation_Action {
+
+	public const LEAVE_FROM_CONVERSATION                       = "LEAVE_FROM_CONVERSATION";
+	public const KICK_FROM_CONVERSATION                        = "KICK_FROM_CONVERSATION";
+	public const REMOVE_FROM_FAVORITES                         = "REMOVE_FROM_FAVORITES";
+	public const REMOVE_CONVERSATION                           = "REMOVE_CONVERSATION";
+	public const CLEAR_CONVERSATION                            = "CLEAR_CONVERSATION";
+	public const CLEAR_CONVERSATION_FOR_ALL                    = "CLEAR_CONVERSATION_FOR_ALL";
+	public const UNCLEAR_CONVERSATION                          = "UNCLEAR_CONVERSATION";
+	public const MUTE_CONVERSATION                             = "MUTE_CONVERSATION";
+	public const GET_SEARCH_BY_QUERY                           = "GET_SEARCH_BY_QUERY";
+	public const WIKI_PAGE_SHARING                             = "WIKI_PAGE_SHARING";
+	public const SEND_INVITE_FROM_CONVERSATION                 = "SEND_INVITE_FROM_CONVERSATION";
+	public const ADD_MESSAGE_FROM_CONVERSATION                 = "ADD_MESSAGE_FROM_CONVERSATION";
+	public const EDIT_MESSAGE_FROM_CONVERSATION                = "EDIT_MESSAGE_FROM_CONVERSATION";
+	public const DELETE_MESSAGE_FROM_CONVERSATION              = "DELETE_MESSAGE_FROM_CONVERSATION";
+	public const HIDE_MESSAGE_FROM_CONVERSATION                = "HIDE_MESSAGE_FROM_CONVERSATION";
+	public const ADD_QUOTE_FROM_CONVERSATION                   = "ADD_QUOTE_FROM_CONVERSATION";
+	public const ADD_REPOST_FROM_CONVERSATION                  = "ADD_REPOST_FROM_CONVERSATION";
+	public const CHANGE_ROLE_USER_FROM_CONVERSATION            = "CHANGE_ROLE_USER_FROM_CONVERSATION";
+	public const CHANGE_AVATAR_FROM_CONVERSATION               = "CHANGE_AVATAR_FROM_CONVERSATION";
+	public const CHANGE_NAME_FROM_CONVERSATION                 = "CHANGE_NAME_FROM_CONVERSATION";
+	public const CHANGE_DESCRIPTION_FROM_CONVERSATION          = "CHANGE_DESCRIPTION_FROM_CONVERSATION";
+	public const EXACTING_MESSAGE_FROM_CONVERSATION            = "EXACTING_MESSAGE_FROM_CONVERSATION";
+	public const COMMIT_WORKED_HOURS_MESSAGE_FROM_CONVERSATION = "COMMIT_WORKED_HOURS_MESSAGE_FROM_CONVERSATION";
+	public const SET_MESSAGE_AS_LAST_FROM_CONVERSATION         = "SET_MESSAGE_AS_LAST_FROM_CONVERSATION";
+	public const REACTION_TO_MESSAGE_FROM_CONVERSATION         = "REACTION_TO_MESSAGE_FROM_CONVERSATION";
+	public const REPORT_MESSAGE_FROM_CONVERSATION              = "REPORT_MESSAGE_FROM_CONVERSATION";
+	public const GET_FILES_FROM_CONVERSATION                   = "GET_FILES_FROM_CONVERSATION";
+	public const GET_PREVIEWS_FROM_CONVERSATION                = "GET_PREVIEWS_FROM_CONVERSATION";
+	public const GET_INVITED_FROM_CONVERSATION                 = "GET_INVITED_FROM_CONVERSATION";
+	public const REVOKE_INVITE_FROM_CONVERSATION               = "REVOKE_INVITE_FROM_CONVERSATION";
+	public const SET_OPTIONS_FROM_CONVERSATION                 = "SET_OPTIONS_FROM_CONVERSATION";
+	public const SHARE_MEMBER_FROM_CONVERSATION                = "SHARE_MEMBER_FROM_CONVERSATION";
+	public const REMIND_CREATE_FROM_CONVERSATION               = "REMIND_CREATE_FROM_CONVERSATION";
+	public const REMIND_REMOVE_FROM_CONVERSATION               = "REMIND_REMOVE_FROM_CONVERSATION";
+
+	// описывает возможные действия над конкретными типами диалогов
+	protected const _ALLOWED_FOR_ACTIONS = [
+
+		// эти диалогов можно удалить (применимо для сингл диалогов)
+		self::REMOVE_CONVERSATION                           => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+		],
+
+		// из этих диалогов можно выйти
+		self::LEAVE_FROM_CONVERSATION                       => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// из этих диалогов нельзя кикнуть пользователя
+		self::KICK_FROM_CONVERSATION                        => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// эти диалоги можно удалять из избранного
+		self::REMOVE_FROM_FAVORITES                         => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// эти диалоги можно очищать
+		self::CLEAR_CONVERSATION                            => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_SUPPORT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// эти диалоги можно очищать
+		self::CLEAR_CONVERSATION_FOR_ALL                    => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// эти диалоги можно очищать
+		self::UNCLEAR_CONVERSATION                          => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_SUPPORT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// эти диалоги можно мутить
+		self::MUTE_CONVERSATION                             => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// эти диалоги можно получить во время поиска по запросу
+		self::GET_SEARCH_BY_QUERY                           => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в эти дилоги можно делиться заметками
+		self::WIKI_PAGE_SHARING                             => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в этим диалоги можно отправлять приглашение
+		self::SEND_INVITE_FROM_CONVERSATION                 => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// в эти диалоги можно писать сообщения
+		self::ADD_MESSAGE_FROM_CONVERSATION                 => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_SUPPORT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в этих диалогах можно редактировать сообщения
+		self::EDIT_MESSAGE_FROM_CONVERSATION                => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в этих диалогах можно удалять сообщения
+		self::DELETE_MESSAGE_FROM_CONVERSATION              => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_PUBLIC_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в этих диалогах можно скрывать сообщения
+		self::HIDE_MESSAGE_FROM_CONVERSATION                => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_SUPPORT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в эти дилаоги можно отправлять цитаты
+		self::ADD_QUOTE_FROM_CONVERSATION                   => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в эти диалоги можно отправлять репосты
+		self::ADD_REPOST_FROM_CONVERSATION                  => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в этих диалогах можно менять роль пользователю
+		self::CHANGE_ROLE_USER_FROM_CONVERSATION            => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// этим диалогам можно менять аватар
+		self::CHANGE_AVATAR_FROM_CONVERSATION               => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// этим диалогам можно менять имя
+		self::CHANGE_NAME_FROM_CONVERSATION                 => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// в этих диалогам можно менять описание
+		self::CHANGE_DESCRIPTION_FROM_CONVERSATION          => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// по сообщениям этого диалога можно проявлять требовательность
+		self::EXACTING_MESSAGE_FROM_CONVERSATION            => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+		],
+
+		// по сообщениям этого диалога можно коммитить время
+		self::COMMIT_WORKED_HOURS_MESSAGE_FROM_CONVERSATION => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+		],
+
+		// по сообщениям этого диалога можно установить последнее сообщение в левом меню
+		self::SET_MESSAGE_AS_LAST_FROM_CONVERSATION         => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_SUPPORT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// к сообщениям данного диалога работают реакции
+		self::REACTION_TO_MESSAGE_FROM_CONVERSATION         => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_SUPPORT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+		],
+
+		// на сообщения в данных диалогах можно пожаловаться
+		self::REPORT_MESSAGE_FROM_CONVERSATION              => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+		],
+
+		// можно получить файлы в данном диалоге
+		self::GET_FILES_FROM_CONVERSATION                   => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+			CONVERSATION_TYPE_GROUP_SUPPORT,
+		],
+
+		// можно получить превью в данном диалоге
+		self::GET_PREVIEWS_FROM_CONVERSATION                => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+			CONVERSATION_TYPE_GROUP_SUPPORT,
+		],
+
+		// можно получить список приглащенных в диалоге
+		self::GET_INVITED_FROM_CONVERSATION                 => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// можно отозвать инвайт в диалог
+		self::REVOKE_INVITE_FROM_CONVERSATION               => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// можно устанавливать опции диалогу
+		self::SET_OPTIONS_FROM_CONVERSATION                 => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+		],
+
+		// можно отправлять контанты пользователей
+		self::SHARE_MEMBER_FROM_CONVERSATION                => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+		],
+
+		// можно создавать Напоминания
+		self::REMIND_CREATE_FROM_CONVERSATION               => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+		],
+
+		// можно удалять Напоминания
+		self::REMIND_REMOVE_FROM_CONVERSATION               => [
+			CONVERSATION_TYPE_SINGLE_DEFAULT,
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_SINGLE_NOTES,
+			CONVERSATION_TYPE_GROUP_RESPECT,
+		],
+	];
+
+	// коды ошибок, которые возникают при невозможности выполнения действия над диалогм
+	protected const _ALLOWED_FOR_ACTIONS_ERROR_CODES = [
+		"DEFAULT" => 400,
+	];
+
+	// описывает действия, которые нельзя выполнить с конкретными типами диалогов
+	protected const _NOT_ALLOWED_FOR_ACTIONS = [
+
+		// эти диалоги нельзя получить во время поиска по запросу
+		self::GET_SEARCH_BY_QUERY => [],
+	];
+
+	// проверяет, может ли текущий пользователь определенное совершить действия на конкретным диалогом
+	public static function assertAction(int $conversation_type, string $action):void {
+
+		if (!self::isValidForAction($conversation_type, $action)) {
+
+			$error_code = self::getIsValidForActionErrorCode($action);
+			throw new ParamException("you can not perform this action with this conversation error_code: $error_code");
+		}
+	}
+
+	// проверяет, может ли текущий пользователь определенное совершить действия на конкретным диалогом
+	public static function isValidForAction(int $conversation_type, string $action):bool {
+
+		if (!isset(self::_ALLOWED_FOR_ACTIONS[$action])) {
+			throw new ParseFatalException("incorrect action");
+		}
+
+		return in_array($conversation_type, self::_ALLOWED_FOR_ACTIONS[$action]);
+	}
+
+	// возвращает код ошибки для невозможного действия над диалогом
+	public static function getIsValidForActionErrorCode(string $action):int {
+
+		return self::_ALLOWED_FOR_ACTIONS_ERROR_CODES[$action] ?? self::_ALLOWED_FOR_ACTIONS_ERROR_CODES["DEFAULT"];
+	}
+
+	// получаем типы диалогов, доступные для определенного действия
+	public static function getTypesAllowedForAction(string $action):array {
+
+		return self::_ALLOWED_FOR_ACTIONS[$action] ?? [];
+	}
+
+	// получаем типы диалогов, недоступные для определенного действия
+	public static function getTypesNotAllowedForAction(string $action):array {
+
+		return self::_NOT_ALLOWED_FOR_ACTIONS[$action] ?? [];
+	}
+}

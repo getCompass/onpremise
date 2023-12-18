@@ -1,0 +1,38 @@
+databaseName: company_temp
+tableList:
+  - name: preview_redirect_checker_log
+    fieldList:
+      log_id: { type: int, extra: auto_increment }
+      status: { type: tinyint, default: 0 }
+      count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      total_time: { type: int, default: 0 }
+      user_id: { type: bigint, default: 0 }
+      original_link: { type: varchar(255), default: '' }
+      body: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ log_id, status, count, created_at, total_time, user_id, original_link, body ]
+    indexList:
+      PRIMARY: { fields: [ log_id ], uniq: 1 }
+      status: { fields: [ status ] }
+      original_link: { fields: [ original_link ] }
+    engine: innodb
+    charset: utf8
+  - name: preview_parser_log
+    fieldList:
+      log_id: { type: int, extra: auto_increment }
+      status: { type: tinyint, default: 0 }
+      count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      total_time: { type: int, default: 0 }
+      user_id: { type: bigint, default: 0 }
+      original_link: { type: varchar(255), default: '' }
+      html: { type: longtext }
+      body: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ log_id, status, count, created_at, total_time, user_id, original_link, html, body ]
+    indexList:
+      PRIMARY: { fields: [ log_id ], uniq: 1 }
+      status: { fields: [ status ] }
+      created_at: { fields: [ created_at ] }
+      original_link: { fields: [ original_link ] }
+    engine: innodb
+    charset: utf8

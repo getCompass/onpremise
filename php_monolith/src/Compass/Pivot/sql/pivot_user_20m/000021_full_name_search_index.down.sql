@@ -1,0 +1,10 @@
+ALTER TABLE `pivot_user_20m`.`user_list_11` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_12` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_13` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_14` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_15` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_16` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_17` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_18` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_19` DROP INDEX `full_name.search`;
+ALTER TABLE `pivot_user_20m`.`user_list_20` DROP INDEX `full_name.search`;

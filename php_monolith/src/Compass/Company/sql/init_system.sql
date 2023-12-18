@@ -1,0 +1,1 @@
+CREATE SCHEMA IF NOT EXISTS `system_compass_company` DEFAULT CHARACTER SET utf8;

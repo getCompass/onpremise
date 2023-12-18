@@ -1,0 +1,194 @@
+@layer reset, base, tokens, recipes, utilities;
+
+@font-face {
+	font-family: "Lato Regular";
+	src: url('fonts/lato/Lato-Regular.woff2') format('woff2'),
+	url('fonts/lato/Lato-Regular.woff') format('woff'),
+	url('fonts/lato/Lato-Regular.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Lato SemiBold";
+	src: url('fonts/lato/Lato-Semibold.woff2') format('woff2'),
+	url('fonts/lato/Lato-Semibold.woff') format('woff'),
+	url('fonts/lato/Lato-Semibold.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Lato Bold";
+	src: url('fonts/lato/Lato-Bold.woff2') format('woff2'),
+	url('fonts/lato/Lato-Bold.woff') format('woff'),
+	url('fonts/lato/Lato-Bold.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Lato Black";
+	src: url('fonts/lato/Lato-Black.woff2') format('woff2'),
+	url('fonts/lato/Lato-Black.woff') format('woff'),
+	url('fonts/lato/Lato-Black.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+:root {
+	--font-lato-regular: 'Lato Regular', sans-serif;
+	--font-lato-semibold: 'Lato SemiBold', sans-serif;
+	--font-lato-bold: 'Lato Bold', sans-serif;
+	--font-lato-black: 'Lato Black', sans-serif;
+}
+
+/* для Webkit браузеров типа Chrome, Safari и новых версий Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* для Firefox */
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+
+.invisible-scrollbar {
+	overflow: scroll;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.invisible-scrollbar::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+	display: none; /* Chrome, Safari, newer versions of Edge */
+}
+
+.h100vh {
+	height: 100vh;
+}
+
+.h100dvh {
+	height: 100vh;
+	height: 100dvh;
+}
+
+.main-bg {
+	width: 100%;
+	overflow: hidden;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.main-bg::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+	display: none; /* Chrome, Safari, newer versions of Edge */
+}
+
+.animated-bg-desktop {
+	height: 100%;
+	position: absolute;
+	left: -50%;
+	width: 8700px;
+	background: url("../src/img/background.svg") repeat center;
+	animation: moveBackground 25s linear infinite;
+}
+
+.animated-bg-mobile {
+	height: 100vh;
+	position: absolute;
+	left: -50%;
+	width: 8700px;
+	background: url("../src/img/background.svg") repeat center;
+	animation: moveBackground 45s linear infinite;
+}
+
+@keyframes moveBackground {
+	to {
+		transform: translateX(-2175px);
+	}
+}
+
+.toast-container {
+	overflow: hidden;
+	transition: opacity 0.5s ease-out;
+	opacity: 1;
+	position: absolute;
+	z-index: 0;
+	pointer-events: none;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	padding-top: 12px;
+	padding-right: 12px;
+	padding-left: 12px;
+	text-align: center;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	background-color: #ffffff;
+}
+
+.toast-container.popup {
+	z-index: 9999;
+}
+
+.toast-container.mobile {
+	padding-top: 16px;
+	padding-right: 16px;
+	padding-left: 16px;
+}
+
+.toast {
+	position: relative;
+	width: 100%;
+	font-family: var(--font-lato-semibold);
+	font-weight: 700;
+	font-size: 13px;
+	line-height: 18px;
+	padding: 8px;
+	text-align: center;
+	color: #ffffff;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.toast.mobile {
+	font-size: 14px;
+	line-height: 20px;
+	padding: 8px 12px;
+	line-height: 20px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	border-radius: 8px;
+}
+
+.toast.success {
+	background-color: rgba(5, 196, 107, 1);
+}
+
+.toast.info {
+	background-color: rgba(103, 115, 128, 1);
+}
+
+.toast.warning {
+	background-color: rgba(255, 138, 0, 1);
+}
+
+.confirm_code_next_button .next_button_svg_icon path {
+	fill: #2574a9;
+}
+
+.confirm_code_next_button:hover .next_button_svg_icon path {
+	fill: #1d5c86;
+}

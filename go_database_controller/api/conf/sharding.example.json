@@ -1,0 +1,19 @@
+{
+  "mysql": {
+    "domino_service": {
+      "db": "domino_service",
+      "mysql": {
+        "host": "${MYSQL_HOST}:${MYSQL_PORT}",
+        "user": "${MYSQL_USER}",
+        "pass": "${MYSQL_PASS}",
+        "ssl": false,
+        "max_connections": 1
+      },
+      "schemas": {}
+    }
+  },
+  "manticore": {
+    "host": "${MANTICORE_HOST}",
+    "port": "${MANTICORE_PORT}"
+  }
+}

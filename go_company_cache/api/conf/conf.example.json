@@ -1,0 +1,11 @@
+{
+	"logging_level": ${LOGGING_LEVEL},
+	"server_type": "${SERVER_TYPE}",
+	"tcp_port": ${TCP_PORT},
+	"grpc_port": ${GRPC_PORT},
+	"rabbit_queue": "${RABBIT_QUEUE}",
+	"rabbit_exchange": "${RABBIT_EXCHANGE}",
+	"capacity_limit": 10000,
+	"world_config_path": "/config",
+	"get_member_timeout_ms": ${GO_COMPANY_CACHE_GET_MEMBER_TIMEOUT_MS}
+}

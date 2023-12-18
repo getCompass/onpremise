@@ -1,0 +1,186 @@
+databaseName: company_call
+tableList:
+  - name: call_meta
+    fieldList:
+      meta_id: { type: int, extra: auto_increment }
+      creator_user_id: { type: bigint unsigned, default: 0 }
+      is_finished: { type: tinyint(1), default: 0 }
+      type: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      started_at: { type: int, default: 0 }
+      finished_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      extra: { type: json, default: "JSON_ARRAY()" }
+      users: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ meta_id, creator_user_id, is_finished, type, created_at, started_at, finished_at, updated_at, extra, users ]
+    indexList:
+      PRIMARY: { fields: [ meta_id ], uniq: 1 }
+    engine: innodb
+    charset: utf8
+  - name: call_history
+    fieldList:
+      user_id: { type: bigint unsigned }
+      call_map: { type: varchar(255) }
+      type: { type: tinyint, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      created_at: { type: int, default: 0 }
+      started_at: { type: int, default: 0 }
+      finished_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ user_id, call_map, type, creator_user_id, created_at, started_at, finished_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ user_id,call_map ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: call_monitoring_dialing
+    fieldList:
+      user_id: { type: bigint }
+      call_map: { type: varchar(255) }
+      need_work: { type: int, default: 0 }
+      error_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ user_id, call_map, need_work, error_count, created_at ]
+    indexList:
+      PRIMARY: { fields: [ user_id,call_map ], uniq: 1 }
+      need_work: { fields: [ need_work ] }
+    engine: innodb
+    charset: utf8
+  - name: call_monitoring_establishing_connect
+    fieldList:
+      call_map: { type: varchar(255) }
+      user_id: { type: bigint }
+      need_work: { type: int, default: 0 }
+      error_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ call_map, user_id, need_work, error_count, created_at ]
+    indexList:
+      PRIMARY: { fields: [ call_map, user_id ], uniq: 1 }
+      need_work: { fields: [ need_work ] }
+    engine: innodb
+    charset: utf8
+  - name: janus_connection_list
+    fieldList:
+      session_id: { type: bigint }
+      handle_id: { type: bigint }
+      user_id: { type: bigint, default: 0 }
+      publisher_user_id: { type: bigint, default: 0 }
+      connection_uuid: { type: varchar(36), default: '' }
+      status: { type: tinyint, default: 0 }
+      quality_state: { type: tinyint, default: 0 }
+      is_publisher: { type: tinyint(1), default: 0 }
+      is_send_video: { type: tinyint(1), default: 0 }
+      is_send_audio: { type: tinyint(1), default: 0 }
+      is_use_relay: { type: tinyint(1), default: 0 }
+      publisher_upgrade_count: { type: int unsigned, default: 0 }
+      node_id: { type: int, default: 0 }
+      audio_packet_loss: { type: int, default: 0 }
+      video_packet_loss: { type: int, default: 0 }
+      audio_bad_quality_counter: { type: int, default: 0 }
+      video_bad_quality_counter: { type: int, default: 0 }
+      audio_loss_counter: { type: int, default: 0 }
+      video_loss_counter: { type: int, default: 0 }
+      last_ping_at: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      participant_id: { type: bigint, default: 0 }
+      room_id: { type: bigint, default: 0 }
+      call_map: { type: varchar(255), default: '' }
+    fieldOrder: [ session_id, handle_id, user_id, publisher_user_id, connection_uuid, status, quality_state, is_publisher, is_send_video, is_send_audio, is_use_relay,
+                  publisher_upgrade_count, node_id, audio_packet_loss, video_packet_loss, audio_bad_quality_counter, video_bad_quality_counter, audio_loss_counter,
+                  video_loss_counter, last_ping_at, created_at, updated_at, participant_id, room_id, call_map ]
+    indexList:
+      PRIMARY: { fields: [ session_id, handle_id ], uniq: 1 }
+      connection_uuid: { fields: [ connection_uuid ] }
+      user_id_call_map_is_publisher: { fields: [ user_id, call_map, is_publisher ] }
+      call_map: { fields: [ call_map ] }
+      call_map_publisher_user_id: { fields: [ call_map, participant_id ] }
+      call_map_is_publisher: { fields: [ call_map, is_publisher ] }
+    engine: innodb
+    charset: utf8
+  - name: janus_room
+    fieldList:
+      room_id: { type: bigint }
+      call_map: { type: varchar(255), default: '' }
+      node_id: { type: int, default: 0 }
+      bitrate: { type: bigint, default: 0 }
+      session_id: { type: bigint, default: 0 }
+      handle_id: { type: bigint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ room_id, call_map, node_id, bitrate, session_id, handle_id, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ room_id ], uniq: 1 }
+      call_map: { fields: [ call_map ] }
+    engine: innodb
+    charset: utf8
+  - name: analytic_list
+    fieldList:
+      call_map: { type: varchar(255) }
+      user_id: { type: bigint }
+      report_call_id: { type: int, default: 0 }
+      reconnect_count: { type: int, default: 0 }
+      middle_quality_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      task_id: { type: bigint, default: 0 }
+      last_row_id: { type: bigint unsigned, default: 0 }
+    fieldOrder: [ call_map, user_id, report_call_id, reconnect_count, middle_quality_count, created_at, updated_at, task_id, last_row_id ]
+    indexList:
+      PRIMARY: { fields: [ call_map, user_id ], uniq: 1 }
+      task_id: { fields: [ task_id ] }
+      get_all: { fields: [ created_at ] }
+      get_all_by_user_id: { fields: [ user_id, created_at ] }
+      get_by_user_id_report_call_id: { fields: [ user_id, report_call_id, created_at ] }
+    engine: innodb
+    charset: utf8
+  - name: analytic_queue
+    fieldList:
+      task_id: { type: bigint, extra: auto_increment }
+      call_map: { type: varchar(255), default: '' }
+      user_id: { type: bigint, default: 0 }
+      need_work: { type: int, default: 0 }
+      error_count: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ task_id, call_map, user_id, need_work, error_count, created_at]
+    indexList:
+      PRIMARY: { fields: [ task_id ], uniq: 1 }
+      call_map: { fields: [ call_map, user_id ] }
+      cron_call_analytics: { fields: [ need_work ] }
+    engine: innodb
+    charset: utf8
+  - name: report_connection_list
+    fieldList:
+      report_id: { type: int, extra: auto_increment }
+      call_map: { type: varchar(255), default: '' }
+      call_id: { type: int, default: 0 }
+      user_id: { type: bigint, default: 0 }
+      status: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      reason: { type: varchar(256), default: '' }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ report_id, call_map, call_id, user_id, status, created_at, updated_at, reason, extra ]
+    indexList:
+      PRIMARY: { fields: [ report_id ], uniq: 1 }
+      get_by_call_map: { fields: [ call_map ] }
+      created_at: { fields: [ created_at ] }
+      status_user_id: { fields: [ status, user_id ] }
+    engine: innodb
+    charset: utf8mb4
+  - name: call_tester_queue
+    fieldList:
+      test_id: { type: bigint, extra: auto_increment }
+      status: { type: tinyint, default: '0' }
+      need_work: { type: int, default: '0' }
+      stage: { type: tinyint, default: '1' }
+      error_count: { type: int, default: '0' }
+      created_at: { type: int, default: '0' }
+      updated_at: { type: int, default: '0' }
+      finished_at: { type: int, default: '0' }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ test_id, status, need_work, stage, error_count, created_at, updated_at, finished_at, extra ]
+    indexList:
+      PRIMARY: { fields: [ test_id ], uniq: 1 }
+      cron_call_tester_queue: { fields: [ status ] }
+    engine: innodb
+    charset: utf8mb4

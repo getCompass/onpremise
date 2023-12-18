@@ -1,0 +1,19 @@
+/gdump/backup
+.idea
+.DS_Store
+/private/main.php
+/private/custom.php
+/private/public.php
+/www/static/jscss
+/www/files/*
+/dev/php/*
+!/dev/php/example.php
+/src/Modules/vendor/*
+/src/Modules/composer.lock
+
+# для того чтобы не создавать эти папки вручную при инсталле фреймворка
+/logs/*
+!/logs/cron/.gitkeep
+!/logs/exception/.gitkeep
+!/logs/info/.gitkeep
+!/logs/nginx/.gitkeep

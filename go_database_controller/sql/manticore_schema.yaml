@@ -1,0 +1,3 @@
+manticoreTableList:
+  - name: main
+    migration_path: main

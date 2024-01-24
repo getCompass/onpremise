@@ -1,0 +1,24 @@
+{
+	"string_store": {
+		"unknown": {
+			"ru": "не установлено",
+			"en": "unknown"
+		},
+		"employee.editor_anniversary_reached": {
+			"ru": "Сотрудник сегодня празднует %year_count% <<plural::ru::numeric||%year_count%||год//года//лет>> работы в компании",
+			"en": "%employee_name% is celebrating %year_count% years in the company today"
+		},
+		"employee.editor_worksheet_fixed": {
+			"ru": "Рейтинг рабочих часов за прошедшую неделю",
+			"en": "Weekly worksheet rating"
+		},
+		"rating.company_employee_metric_fixed": {
+			"ru": "Активность компании за прошлый месяц",
+			"en": "Last month company activity"
+		},
+		"wiki.password_attempt_limit_exceeded": {
+			"ru": "*%user_name%* попытался зайти в заметку.",
+			"en": "*%user_name%* tried to get access"
+		}
+	}
+}

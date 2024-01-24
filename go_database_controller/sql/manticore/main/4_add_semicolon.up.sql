@@ -1,0 +1,1 @@
+alter table `main_{space_id}` charset_table = '0..9, non_cjk, :, <, >, /, cjk, U+0406->U+0456, U+0456, U+0407->U+0457, U+0457, U+0490->U+0491, U+0491, U+0401->U+0415, U+0451->U+0435';

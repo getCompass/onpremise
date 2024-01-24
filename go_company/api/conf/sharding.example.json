@@ -1,0 +1,31 @@
+{
+	"mysql": {
+		"ssl": false,
+		"max_connections": 5,
+		"db_list": [
+			"company_conversation",
+			"company_thread",
+			"company_data"
+		]
+	},
+	"rabbit": {
+		"local": {
+			"host": "${RABBIT_HOST}",
+			"port": "${RABBIT_PORT}",
+			"user": "${RABBIT_USER}",
+			"pass": "${RABBIT_PASS}"
+		},
+		"service": {
+			"host": "${RABBIT_HOST}",
+			"port": "${RABBIT_PORT}",
+			"user": "${RABBIT_USER}",
+			"pass": "${RABBIT_PASS}"
+		}
+	},
+	"go": {
+		"sender": {
+			"host": "${GO_SENDER_HOST}",
+			"port": "${TCP_PORT}"
+		}
+	}
+}

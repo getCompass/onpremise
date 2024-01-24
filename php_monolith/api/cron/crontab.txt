@@ -1,0 +1,3 @@
+
+# general
+* * * * *  bash -l -c "/usr/local/bin/php -dxdebug.start_with_request=0 /app/api/cron/general.php start bot0 > /dev/null 2>&1"

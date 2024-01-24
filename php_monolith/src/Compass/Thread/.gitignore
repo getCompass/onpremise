@@ -1,0 +1,25 @@
+/gdump/backup
+.idea
+/connect.sh
+.DS_Store
+/private/main.php
+/private/custom.php
+/codeception/tests/_output/
+/codeception/tests/_support/_generated/
+/dev/php/*
+!/dev/php/example.php
+
+/api/conf/tariff.php
+
+# для того чтобы не создавать эти папки вручную при инсталле фреймворка
+/logs/*
+!/logs/cron/.gitkeep
+!/logs/exception/.gitkeep
+!/logs/info/.gitkeep
+!/logs/nginx/.gitkeep
+
+/cache/*
+!/cache/upload/.gitkeep
+!/cache/utest/.gitkeep
+
+/doc/db/*.mwb.bak

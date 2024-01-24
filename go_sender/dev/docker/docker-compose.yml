@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  go_sender:
+    image: golang:1.14
+    privileged: true
+    expose:
+      - "17300"
+    networks:
+      - server
+    volumes: # {общие папки {папка_на_хосте:папка_на_докере}}
+      - ../../:/home/go_sender/
+    entrypoint: go run /home/go_sender/main.go -confdir=/home/go_sender/api/conf
+networks:
+  server:

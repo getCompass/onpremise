@@ -1,0 +1,8 @@
+.git
+.gitignore
+.idea
+.status
+.gitlab-ci.yml
+tag.gitlab-ci.yml
+
+logs

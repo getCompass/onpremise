@@ -1,0 +1,28 @@
+[
+	{
+		"name": "test",
+		"section": "test",
+		"type": "simple",
+		"title": "Тестовая заметка, отдастся только на тестовом сервере",
+		"description": "Для того чтобы ...",
+		"file_key": "dpc1.n57rXUbBjyNeFb2PkUC3hn2WebD8Om6F3AyUpzTq3SKTucQqiJ4KutujueEd9rp/QSgXnvsGuppZMKdhEn02D6d/AGlKrRVu4DuWUDS8wOjb05FBvdo2tXtklBZLHvHFeKCYYOHefdnqith8fB+7cUbfffjZIxK75OEpyjnRVWSudq0SduT6gzUQHgsCx4oCvctwHtE7smge1NxV4QOTqK3NOix5dyFIE3m2+m8xm4c=",
+		"file_type": "video",
+		"file_width": 360,
+		"file_height": 360,
+		"file_name": "video.mp4",
+		"version": 1
+	},
+	{
+		"name": "create_note",
+		"section": "wiki",
+		"type": "simple",
+		"title": "Создание заметки",
+		"description": "Для того чтобы ...",
+		"file_key": "dpc1.n57rXUbBjyNeFb2PkUC3hn2WebD8Om6F3AyUpzTq3SKTucQqiJ4KutujueEd9rp/QSgXnvsGuppZMKdhEn02D6d/AGlKrRVu4DuWUDS8wOjb05FBvdo2tXtklBZLHvHFeKCYYOHefdnqith8fB+7cUbfffjZIxK75OEpyjnRVWSudq0SduT6gzUQHgsCx4oCvctwHtE7smge1NxV4QOTqK3NOix5dyFIE3m2+m8xm4c=",
+		"file_type": "video",
+		"file_width": 360,
+		"file_height": 360,
+		"file_name": "video.mp4",
+		"version": 1
+	}
+]

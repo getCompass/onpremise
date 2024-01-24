@@ -1,0 +1,12 @@
+.idea
+.DS_Store
+main
+main.pid
+/userbot_cache
+/api/conf/conf.json
+/api/conf/sharding.json
+/api/conf/test_define.json
+/dev/_go/*
+!/dev/_go/example.go
+/logs
+/logs/*

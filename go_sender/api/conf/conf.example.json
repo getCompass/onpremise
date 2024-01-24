@@ -1,0 +1,23 @@
+{
+	"logging_level": ${LOGGING_LEVEL},
+	"server_type": "${SERVER_TYPE}",
+	"role": "${ROLE}",
+	"current_server": "${CURRENT_SERVER}",
+	"tcp_port": ${TCP_PORT},
+	"grpc_port": ${GRPC_PORT},
+	"is_has_balancer": ${IS_HAS_BALANCER},
+	"rabbit_queue": "${RABBIT_QUEUE}",
+	"rabbit_exchange": "${RABBIT_EXCHANGE}",
+	"rabbit_sender_balancer_queue": "${GO_SENDER_BALANCER_QUEUE}",
+	"rabbit_sender_balancer_exchange": "${GO_SENDER_BALANCER_EXCHANGE}",
+	"websocket_port": ${WS_PORT},
+	"websocket_tls": false,
+	"websocket_cert_file_path": "key.cert",
+	"websocket_key_file_path": "key.key",
+	"websocket_passphrase": "",
+	"custom_salt": "${SALT_SENDER_HASH}",
+	"listen_address": "127.0.0.1",
+	"socket_key_me": "${SOCKET_KEY_GO_SENDER}",
+	"capacity_limit": 10000,
+	"world_config_path": "/config"
+}

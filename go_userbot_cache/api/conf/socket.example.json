@@ -1,0 +1,8 @@
+{
+	"socket_url": {
+		"php_pivot": "${ENTRYPOINT_PIVOT}"
+	},
+	"socket_module": {
+		"php_pivot": "/api/socket/pivot/"
+	}
+}

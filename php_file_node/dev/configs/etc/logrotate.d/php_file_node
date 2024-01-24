@@ -1,0 +1,13 @@
+/home/php_file_node/logs/nginx/access.log {
+        daily
+        su snogme snogme
+        missingok
+        rotate 7
+        compress
+        compressoptions -9
+        copytruncate
+        nodelaycompress
+        notifempty
+        create 0640 snogme
+        sharedscripts
+}

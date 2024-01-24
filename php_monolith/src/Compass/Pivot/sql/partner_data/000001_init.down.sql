@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS `partner_data`.`invite_code_list`;

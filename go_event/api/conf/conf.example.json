@@ -1,0 +1,17 @@
+{
+	"logging_level": ${LOGGING_LEVEL},
+	"server_type": "${SERVER_TYPE}",
+	"tcp_port": ${TCP_PORT},
+	"grpc_port": ${GRPC_PORT},
+	"rabbit_queue": "${RABBIT_QUEUE}",
+	"rabbit_exchange": "${RABBIT_EXCHANGE}",
+	"company_locale": "${COMPANY_LOCALE}",
+	"auth_bot_user_id": ${AUTH_BOT_USER_ID},
+	"test_bot_user_id": ${TEST_BOT_USER_ID},
+	"wiki_bot_user_id": ${WIKI_BOT_USER_ID},
+	"socket_key_me": "${SOCKET_KEY_GO_EVENT}",
+	"capacity_limit": 10000,
+	"world_config_path": "/config",
+	"current_server": "${CURRENT_SERVER}",
+	"service_role_set": "${SERVICE_ROLE_SET}"
+}

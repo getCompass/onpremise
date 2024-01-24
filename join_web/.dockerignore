@@ -1,0 +1,7 @@
+.git
+.idea
+.gitignore
+.gitlab-ci.yml
+tag.gitlab-ci.yml
+.editorconfig
+README.md

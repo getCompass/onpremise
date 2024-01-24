@@ -1,0 +1,93 @@
+{
+	"source_identifier": "go_event",
+	"source_type": "service",
+	"event_queue": "${RABBIT_QUEUE}",
+	"event_exchange": "${RABBIT_QUEUE}",
+	"event_service": {
+		"rabbit_key": "service",
+		"method": "event.dispatch",
+		"queue": "${SERVICE_RABBIT_QUEUE}",
+		"exchange": "${SERVICE_RABBIT_EXCHANGE}"
+	},
+	"subscriber_storage": {
+		"db": "system",
+		"table": "go_event_subscriber_list"
+	},
+	"subscription_list": [
+		{
+			"subscriber": "php_conversation",
+			"subscription_list": [
+				{
+					"trigger_type": 5,
+					"event": "message.send_system_rating_message_to_user",
+					"extra": {
+						"module": "php_company",
+						"type": 1,
+						"group": "default",
+						"error_limit": 5
+					}
+				},
+				{
+					"trigger_type": 5,
+					"event": "system.subscriptions_refreshing_requested",
+					"extra": {
+						"module": "php_conversation",
+						"type": 4,
+						"group": "default",
+						"error_limit": 0
+					}
+				}
+			]
+		},
+		{
+			"subscriber": "php_company",
+			"subscription_list": [
+				{
+					"trigger_type": 5,
+					"event": "system.subscriptions_refreshing_requested",
+					"extra": {
+						"module": "php_company",
+						"type": 4,
+						"group": "default",
+						"error_limit": 0
+					}
+				}
+			]
+		},
+		{
+			"subscriber": "php_thread",
+			"subscription_list": [
+				{
+					"trigger_type": 5,
+					"event": "system.subscriptions_refreshing_requested",
+					"extra": {
+						"module": "php_thread",
+						"type": 4,
+						"group": "default",
+						"error_limit": 0
+					}
+				}
+			]
+		},
+		{
+			"subscriber": "php_speaker",
+			"subscription_list": [
+				{
+					"trigger_type": 5,
+					"event": "system.subscriptions_refreshing_requested",
+					"extra": {
+						"module": "php_speaker",
+						"type": 4,
+						"group": "default",
+						"error_limit": 0
+					}
+				}
+			]
+		}
+	],
+	"event_discrete_courier_count": ${COURIER_COUNT},
+	"event_discrete_courier_delay": ${DELIVERY_DELAY},
+	"task_discrete_courier_count": ${COURIER_COUNT},
+	"task_discrete_courier_delay": ${DELIVERY_DELAY},
+    	"per_delivery_limit": ${PER_DELIVERY_LIMIT}
+}

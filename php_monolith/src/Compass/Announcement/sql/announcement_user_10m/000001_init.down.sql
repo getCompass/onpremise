@@ -1,0 +1,22 @@
+USE `announcement_user_10m`;
+
+DROP TABLE IF EXISTS `user_announcement_0`;
+DROP TABLE IF EXISTS `user_announcement_1`;
+DROP TABLE IF EXISTS `user_announcement_2`;
+DROP TABLE IF EXISTS `user_announcement_3`;
+DROP TABLE IF EXISTS `user_announcement_4`;
+DROP TABLE IF EXISTS `user_announcement_5`;
+DROP TABLE IF EXISTS `user_announcement_6`;
+DROP TABLE IF EXISTS `user_announcement_7`;
+DROP TABLE IF EXISTS `user_announcement_8`;
+DROP TABLE IF EXISTS `user_announcement_9`;
+DROP TABLE IF EXISTS `user_company_0`;
+DROP TABLE IF EXISTS `user_company_1`;
+DROP TABLE IF EXISTS `user_company_2`;
+DROP TABLE IF EXISTS `user_company_3`;
+DROP TABLE IF EXISTS `user_company_4`;
+DROP TABLE IF EXISTS `user_company_5`;
+DROP TABLE IF EXISTS `user_company_6`;
+DROP TABLE IF EXISTS `user_company_7`;
+DROP TABLE IF EXISTS `user_company_8`;
+DROP TABLE IF EXISTS `user_company_9`;

@@ -1,0 +1,176 @@
+{
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"require": {
+		"nikic/php-parser": "v4.13.0",
+		"backend_compass_dev_2/pivot_protobuf_schemes": "1.1.4",
+		"backend_compass_dev_2/company_protobuf_schemes": "1.1.1",
+		"backend_compass_dev_2/company_utils": "1.1.1",
+		"service/php_base_frame": "1.1.1",
+		"paragonie/constant_time_encoding": "v2.5.0",
+		"backend_compass_dev_2/php_analytic_utils": "1.0.0",
+		"backend_compass_dev_2/compass_space": "1.0.0",
+		"service/phone_carrier_lookup": "1.0.0",
+		"get_compass/userbot": "dev-master#e361e5334aebf23753f4af25e42f086c30173414",
+		"wamania/php-stemmer": "v3.0.0",
+		"phpseclib/phpseclib": "3.0.16",
+		"service/announcement_template": "1.0.0",
+		"phpoffice/phpword": "0.18.3",
+		"phpoffice/phpspreadsheet": "1.22.0",
+		"smalot/pdfparser": "v2.5.0"
+	},
+	"scripts": {
+		"post-update-cmd": ["echo Delete all .git directories in vendor.", "rm -rf vendor/**/**/.git"],
+		"post-install-cmd": ["echo Delete all .git directories in vendor.", "rm -rf vendor/**/**/.git"]
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php_base_frame"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/company_protobuf_schemes"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/company_utils"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php_analytic_utils"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/space_management"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php-stemmer"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/portable-utf8"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/portable-ascii"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/polyfill-php72"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/polyfill-mbstring"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/polyfill-intl-normalizer"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/polyfill-intl-grapheme"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/polyfill-iconv"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/PHP-Parser"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php-amqplib"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phpseclib"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/constant_time_encoding"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/random_compat"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/grpc-php"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/protobuf-php"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/announcement_template"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/pivot_protobuf_schemes"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phone_carrier_lookup"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompass/php_lib_userbot"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phpspreadsheet"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/pdfparser"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/htmlpurifier"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/laminas-escaper"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/zipstream-php"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/PHPComplex"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/PHPMatrix"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php-enum"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/http-client"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/http-factory"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/http-message"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/simple-cache"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phpword"
+		}
+	]
+}

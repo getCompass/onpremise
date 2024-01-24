@@ -1,0 +1,12 @@
+databaseName: company_call
+tableList:
+  - name: call_ip_last_connection_issue
+    fieldList:
+      ip_address_int: { type: int unsigned, default: 0 }
+      last_happened_at: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+    fieldOrder: [ ip_address_int, last_happened_at, created_at ]
+    indexList:
+      PRIMARY: { fields: [ ip_address_int ], uniq: 1 }
+    engine: innodb
+    charset: utf8

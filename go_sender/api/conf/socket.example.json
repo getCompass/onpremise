@@ -1,0 +1,10 @@
+{
+	"socket_url": {
+		"go_pusher": "${ENTRYPOINT_PIVOT}",
+		"php_company": "${ENTRYPOINT_DOMINO}"
+	},
+	"socket_module": {
+		"go_pusher": "/api/socket/pusher/",
+		"php_company": "/api/socket/company/"
+	}
+}

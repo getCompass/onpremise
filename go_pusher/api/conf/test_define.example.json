@@ -1,0 +1,8 @@
+{
+	"server_type": "${SERVER_TYPE}",
+	"go_mock_host": "http://${GO_MOCK_SERVICE_URL}",
+	"api_url": "http://${SERVER_NAME}",
+	"is_push_mock_enable": ${IS_PUSH_MOCK_ENABLE},
+	"tls": false,
+	"crt_file_path": ""
+}

@@ -1,0 +1,236 @@
+{
+	"electron": [
+		{
+			"announcement_delivery_method": "action",
+			"announcement": {
+				"version_before_need_show": "0.0.0",
+				"show_time_interval": 0,
+				"timer_after_need_show": 1546290000,
+				"timer_after_stop_show": 4070898000
+			},
+			"body_type": "need_update_app",
+			"body": {
+				"title": "{title}",
+				"description": "{description}",
+				"buttons": [
+					{
+						"action": "#update",
+						"title": "{button1_title}"
+					},
+					{
+						"action": "#skip",
+						"title": "{button2_title}"
+					}
+				]
+			},
+			"lang": {
+				"plural_type": "date_dh",
+				"ru": {
+					"title": "Уважаемые друзья!",
+					"description": "Мы подготовили большое обновление, улучшив стабильность и безопасность Compass. Текущая версия приложения перестанет поддерживаться через {date}.",
+					"button1_title": "Обновить и перезапустить",
+					"button2_title": "Позже"
+				},
+				"en": {
+					"title": "Dear friends!",
+					"description": "We have prepared a major update, improving the stability and security of Compass. The current version of the application will no longer be supported after {date}.",
+					"button1_title": "Update and restart",
+					"button2_title": "Later"
+				}
+			}
+		},
+		{
+			"announcement_delivery_method": "cmd",
+			"announcement": {
+				"version_before_need_show": "0.0.0",
+				"timer_after_need_show": 1546290000
+			},
+			"body_type": "force_update_app",
+			"body": {
+				"title": "{title}",
+				"description": "{description}",
+				"buttons": [
+					{
+						"action": "#update",
+						"title": "{button1_title}"
+					},
+					{
+						"action": "#exit",
+						"title": "{button2_title}"
+					}
+				]
+			},
+			"lang": {
+				"plural_type": "date_dh",
+				"ru": {
+					"title": "Уважаемые друзья",
+					"description": "Мы подготовили большое обновление, улучшив стабильность и безопасность Compass.\nТекущая версия приложения устарела и более не поддерживается.",
+					"button1_title": "Обновить и перезапустить",
+					"button2_title": "Выйти"
+				},
+				"en": {
+					"title": "Dear friends!",
+					"description": "We have prepared a big update, improved stability and security.\nThe current version of the application is outdated and is no longer used.",
+					"button1_title": "Update and restart",
+					"button2_title": "Exit"
+				}
+			}
+		}
+	],
+	"iphone": [
+		{
+			"announcement_delivery_method": "action",
+			"announcement": {
+				"version_before_need_show": "0.0",
+				"show_time_interval": 0,
+				"timer_after_need_show": 1546290000,
+				"timer_after_stop_show": 4070898000
+			},
+			"body_type": "need_update_app",
+			"body": {
+				"title": "{title}",
+				"description": "{description}",
+				"buttons": [
+					{
+						"action": "#update",
+						"title": "{button1_title}"
+					},
+					{
+						"action": "#skip",
+						"title": "{button2_title}"
+					}
+				]
+			},
+			"lang": {
+				"plural_type": "date_dh",
+				"ru": {
+					"title": "Уважаемые друзья!",
+					"description": "Мы подготовили большое обновление, улучшив стабильность и безопасность Compass. Текущая версия приложения перестанет поддерживаться через {date}.",
+					"button1_title": "Обновить и перезапустить",
+					"button2_title": "Позже"
+				},
+				"en": {
+					"title": "Dear friends!",
+					"description": "We have prepared a major update, improving the stability and security of Compass. The current version of the application will no longer be supported after {date}.",
+					"button1_title": "Update and restart",
+					"button2_title": "Later"
+				}
+			}
+		},
+		{
+			"announcement_delivery_method": "cmd",
+			"announcement": {
+				"version_before_need_show": "0.0",
+				"timer_after_need_show": 1546290000
+			},
+			"body_type": "force_update_app",
+			"body": {
+				"title": "{title}",
+				"description": "{description}",
+				"buttons": [
+					{
+						"action": "#update",
+						"title": "{button1_title}"
+					},
+					{
+						"action": "#exit",
+						"title": "{button2_title}"
+					}
+				]
+			},
+			"lang": {
+				"plural_type": "date_dh",
+				"ru": {
+					"title": "Уважаемые друзья",
+					"description": "Мы подготовили большое обновление, улучшив стабильность и безопасность Compass.\nТекущая версия приложения устарела и более не поддерживается.",
+					"button1_title": "Обновить и перезапустить",
+					"button2_title": "Выйти"
+				},
+				"en": {
+					"title": "Dear friends!",
+					"description": "We have prepared a big update, improved stability and security.\nThe current version of the application is outdated and is no longer used.",
+					"button1_title": "Update and restart",
+					"button2_title": "Exit"
+				}
+			}
+		}
+	],
+	"android": [
+		{
+			"announcement_delivery_method": "action",
+			"announcement": {
+				"version_before_need_show": "0.0.0",
+				"show_time_interval": 0,
+				"timer_after_need_show": 1546290000,
+				"timer_after_stop_show": 4070898000
+			},
+			"body_type": "need_update_app",
+			"body": {
+				"title": "{title}",
+				"description": "{description}",
+				"buttons": [
+					{
+						"action": "#update",
+						"title": "{button1_title}"
+					},
+					{
+						"action": "#skip",
+						"title": "{button2_title}"
+					}
+				]
+			},
+			"lang": {
+				"plural_type": "date_dh",
+				"ru": {
+					"title": "Уважаемые друзья!",
+					"description": "Мы подготовили большое обновление, улучшив стабильность и безопасность Compass. Текущая версия приложения перестанет поддерживаться через {date}.",
+					"button1_title": "Обновить и перезапустить",
+					"button2_title": "Позже"
+				},
+				"en": {
+					"title": "Dear friends!",
+					"description": "We have prepared a major update, improving the stability and security of Compass. The current version of the application will no longer be supported after {date}.",
+					"button1_title": "Update and restart",
+					"button2_title": "Later"
+				}
+			}
+		},
+		{
+			"announcement_delivery_method": "cmd",
+			"announcement": {
+				"version_before_need_show": "0.0.0",
+				"timer_after_need_show": 1546290000
+			},
+			"body_type": "force_update_app",
+			"body": {
+				"title": "{title}",
+				"description": "{description}",
+				"buttons": [
+					{
+						"action": "#update",
+						"title": "{button1_title}"
+					},
+					{
+						"action": "#exit",
+						"title": "{button2_title}"
+					}
+				]
+			},
+			"lang": {
+				"plural_type": "date_dh",
+				"ru": {
+					"title": "Уважаемые друзья",
+					"description": "Мы подготовили большое обновление, улучшив стабильность и безопасность Compass.\nТекущая версия приложения устарела и более не поддерживается.",
+					"button1_title": "Обновить и перезапустить",
+					"button2_title": "Выйти"
+				},
+				"en": {
+					"title": "Dear friends!",
+					"description": "We have prepared a big update, improved stability and security.\nThe current version of the application is outdated and is no longer used.",
+					"button1_title": "Update and restart",
+					"button2_title": "Exit"
+				}
+			}
+		}
+	]
+}

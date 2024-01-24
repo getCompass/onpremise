@@ -1,0 +1,106 @@
+{
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"require": {
+		"phpseclib/phpseclib": "3.0.16",
+		"nikic/php-parser": "v4.10.2",
+		"service/php_base_frame": "1.0.0",
+		"phpoffice/phpword": "0.18.3",
+		"phpoffice/phpspreadsheet": "1.22.0",
+		"smalot/pdfparser": "v2.5.0"
+	},
+	"scripts": {
+		"post-update-cmd": ["echo Delete all .git directories in vendor.", "rm -rf vendor/**/**/.git"],
+		"post-install-cmd": ["echo Delete all .git directories in vendor.", "rm -rf vendor/**/**/.git"]
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php_base_frame"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php_analytic_utils"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/PHP-Parser"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php-amqplib"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phpseclib"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/grpc-php"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/constant_time_encoding"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/random_compat"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phpspreadsheet"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/pdfparser"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/htmlpurifier"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/laminas-escaper"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/zipstream-php"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/PHPComplex"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/PHPMatrix"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php-enum"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/http-client"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/http-factory"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/http-message"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/simple-cache"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/polyfill-mbstring"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phpword"
+		}
+	]
+}

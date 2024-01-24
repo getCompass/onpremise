@@ -1,0 +1,11 @@
+{
+	"logging_level": ${LOGGING_LEVEL},
+	"server_uid":"${SERVER_UID}",
+	"server_type": "${SERVER_TYPE}",
+	"tcp_port": ${TCP_PORT},
+	"grpc_port": ${GRPC_PORT},
+	"http_port": ${HTTP_PORT},
+	"rabbit_queue": "${RABBIT_QUEUE}",
+	"rabbit_exchange": "${RABBIT_EXCHANGE}",
+    	"socket_key_me": "${SOCKET_KEY_GO_PUSHER}"
+}

@@ -1,0 +1,49 @@
+{
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "phpseclib/phpseclib": "3.0.16",
+    "nikic/php-parser": "v4.10.2",
+    "service/php_base_frame": "1.0.0"
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "echo Delete all .git directories in vendor.",
+      "rm -rf vendor/**/**/.git"
+    ],
+    "post-install-cmd": [
+      "echo Delete all .git directories in vendor.",
+      "rm -rf vendor/**/**/.git"
+    ]
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/getCompassUtils/php_base_frame"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/getCompassUtils/php_analytic_utils"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/getCompassUtils/PHP-Parser"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/getCompassUtils/php-amqplib"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/getCompassUtils/phpseclib"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/getCompassUtils/constant_time_encoding"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/getCompassUtils/random_compat"
+    }
+  ]
+}

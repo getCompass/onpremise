@@ -1,0 +1,17 @@
+databaseList:
+  - name: company_call
+    migration_path: company_call
+  - name: company_conversation
+    migration_path: company_conversation
+  - name: company_data
+    migration_path: company_data
+  - name: company_member
+    migration_path: company_member
+  - name: company_system
+    migration_path: company_system
+  - name: company_temp
+    migration_path: company_temp
+  - name: company_thread
+    migration_path: company_thread
+  - name: space_search
+    migration_path: space_search

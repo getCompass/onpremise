@@ -1,0 +1,41 @@
+{
+  "mysql": {
+    "pivot_user_10m": {
+      "db": "pivot_user_10m",
+      "mysql": {
+        "host": "${MYSQL_HOST}:${MYSQL_PORT}",
+        "user": "${MYSQL_USER}",
+        "pass": "${MYSQL_PASS}",
+        "ssl": false,
+        "max_connections": 50
+      },
+      "schemas": {}
+    },
+    "pivot_user_20m": {
+      "db": "pivot_user_20m",
+      "mysql": {
+        "host": "${MYSQL_HOST}:${MYSQL_PORT}",
+        "user": "${MYSQL_USER}",
+        "pass": "${MYSQL_PASS}",
+        "ssl": false,
+        "max_connections": 50
+      },
+      "schemas": {}
+    }
+  },
+  "rabbit": {
+    "local": {
+      "host": "${RABBIT_HOST}",
+      "port": "${RABBIT_PORT}",
+      "user": "${RABBIT_USER}",
+      "pass": "${RABBIT_PASS}"
+    },
+    "bus": {
+      "host": "${RABBIT_HOST}",
+      "port": "${RABBIT_PORT}",
+      "user": "${RABBIT_USER}",
+      "pass": "${RABBIT_PASS}"
+    }
+  },
+  "go": {}
+}

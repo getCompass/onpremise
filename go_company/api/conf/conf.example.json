@@ -1,0 +1,15 @@
+{
+	"logging_level": ${LOGGING_LEVEL},
+	"server_type": "${SERVER_TYPE}",
+	"tcp_port": ${TCP_PORT},
+	"grpc_port": ${GRPC_PORT},
+	"rabbit_queue": "${RABBIT_QUEUE}",
+	"rabbit_exchange": "${RABBIT_EXCHANGE}",
+	"notice_bot_user_id": ${NOTICE_BOT_USER_ID},
+	"notice_bot_token": "${NOTICE_BOT_TOKEN}",
+	"notice_endpoint": "${NOTICE_ENDPOINT}",
+	"notice_channel": "${NOTICE_CHANNEL_KEY}",
+	"socket_key_me": "${SOCKET_KEY_GO_COMPANY}",
+	"capacity_limit": 10000,
+	"world_config_path": "/config"
+}

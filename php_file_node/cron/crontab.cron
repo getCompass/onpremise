@@ -1,0 +1,2 @@
+# general
+* * * * *  bash -l -c "/usr/local/bin/php /app/src/Application/Cron/General.php start bot0 > /dev/null 2>&1"

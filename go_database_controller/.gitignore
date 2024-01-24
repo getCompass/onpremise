@@ -1,0 +1,10 @@
+.idea
+.DS_Store
+main
+!/sql/manticore/main
+main.pid
+/api/conf/conf.json
+/api/conf/sharding.json
+/dev/_go/*
+!/dev/_go/example.go
+/logs

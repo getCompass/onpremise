@@ -1,0 +1,17 @@
+{
+	"system.cpuProfile": {},
+	"system.status": {
+		"goroutines": "?d",
+		"memory": "?d",
+		"memory_kb": "?s",
+		"memory_mb": "?s",
+		"name": "?s",
+		"uptime": "?d"
+	},
+	"system.traceGoroutine": {},
+	"system.traceMemory": {},
+	"system.reloadSharding": {},
+	"pusher.sendPush": {},
+	"pusher.sendVoipPush": {},
+	"pusher.updateBadge": {}
+}

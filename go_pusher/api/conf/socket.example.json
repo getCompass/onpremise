@@ -1,0 +1,10 @@
+{
+	"socket_url": {
+		"php_pivot": "${ENTRYPOINT_PIVOT}",
+		"go_push_sender": "${PUSH_SENDER_URL}"
+	},
+	"socket_module": {
+		"php_pivot": "/api/socket/pivot/",
+		"go_push_sender": "/api/socket/push/"
+	}
+}

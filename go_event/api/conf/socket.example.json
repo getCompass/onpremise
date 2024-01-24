@@ -1,0 +1,29 @@
+{
+	"compass_socket_url": "${ENTRYPOINT_DOMINO}",
+	"compass_socket_module": {
+		"php_company": "/api/socket/company/",
+		"php_conversation": "/api/socket/conversation/",
+		"php_thread": "/api/socket/thread/",
+		"php_speaker": "/api/socket/speaker/"
+	},
+	"partner_socket_url": "${ENTRYPOINT_PIVOT}",
+	"partner_socket_module": {
+		"php_partner": "/api/socket/partner/"
+	},
+	"partner_web_socket_url": "${PARTNER_WEB_PROTOCOL}://${PARTNER_WEB_DOMAIN}/",
+	"partner_web_socket_module": {
+		"php_partner_web": "/api/socket/"
+	},
+	"pivot_socket_url": "${ENTRYPOINT_PIVOT}",
+	"pivot_socket_module": {
+		"php_pivot": "/api/socket/pivot/"
+	},
+	"billing_socket_url": "${BILLING_PROTOCOL}://${BILLING_DOMAIN}/",
+	"billing_socket_module": {
+		"php_billing": "api/socket/"
+	},
+	"crm_socket_url": "${ENTRYPOINT_PIVOT}",
+	"crm_socket_module": {
+		"php_crm": "/api/socket/crm/"
+	}
+}

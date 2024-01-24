@@ -1,0 +1,33 @@
+{
+	"mysql": {},
+	"rabbit": {
+		"local": {
+			"host": "${RABBIT_HOST}",
+			"port": "${RABBIT_PORT}",
+			"user": "${RABBIT_USER}",
+			"pass": "${RABBIT_PASS}"
+		},
+		"bus": {
+			"host": "${RABBIT_HOST}",
+			"port": "${RABBIT_PORT}",
+			"user": "${RABBIT_USER}",
+			"pass": "${RABBIT_PASS}"
+		}
+	},
+	"go": {
+		"sender": {
+			"nodes": [
+				{
+					"id": 0,
+					"host": "${GO_SENDER_HOST}",
+					"port": "${GO_SENDER_TCP_PORT}",
+					"limit": 0
+				}
+			]
+		},
+		"pusher": {
+			"host": "${GO_PUSHER_HOST}",
+			"port": "${GO_PUSHER_TCP_PORT}"
+		}
+	}
+}

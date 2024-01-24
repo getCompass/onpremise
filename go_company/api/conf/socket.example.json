@@ -1,0 +1,10 @@
+{
+  "socket_url": {
+    "php_pivot": "${ENTRYPOINT_PIVOT}",
+    "php_company": "${ENTRYPOINT_DOMINO}"
+  },
+  "socket_module": {
+    "php_pivot": "/api/socket/pivot/",
+    "php_company": "/api/socket/company/"
+  }
+}

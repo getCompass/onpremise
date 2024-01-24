@@ -1,0 +1,224 @@
+databaseName: company_member
+tableList:
+  - name: usercard_achievement_list
+    fieldList:
+      achievement_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      type: { type: tinyint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      header_text: { type: varchar(255), default: '' }
+      description_text: { type: varchar(10000), default: '' }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ achievement_id, user_id, creator_user_id, type, is_deleted, created_at, updated_at, header_text, description_text, data ]
+    indexList:
+      PRIMARY: { fields: [achievement_id], uniq: 1 }
+      get_by_user_id_is_deleted: { fields: [ user_id,is_deleted ] }
+    engine: InnoDB
+    charset: utf8
+  - name: usercard_dynamic
+    fieldList:
+      user_id: { type: bigint }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ user_id, created_at, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [user_id], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: usercard_exactingness_list
+    fieldList:
+      exactingness_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      type: { type: tinyint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ exactingness_id, user_id, creator_user_id, type, is_deleted, created_at, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [exactingness_id], uniq: 1 }
+      get_by_creator_user_and_is_deleted_and_created_at: { fields: [ creator_user_id,is_deleted,created_at ] }
+      get_by_user_id_is_deleted: { fields: [ user_id,is_deleted ] }
+    engine: InnoDB
+    charset: utf8
+  - name: usercard_loyalty_list
+    fieldList:
+      loyalty_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      comment_text: { type: varchar(10000), default: '' }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ loyalty_id, user_id, creator_user_id, is_deleted, created_at, updated_at, comment_text, data ]
+    indexList:
+      PRIMARY: { fields: [loyalty_id], uniq: 1 }
+      get_by_user_id_is_deleted: { fields: [ user_id,is_deleted ] }
+    engine: InnoDB
+    charset: utf8
+  - name: usercard_month_plan_list
+    fieldList:
+      row_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      type: { type: int, default: 0 }
+      plan_value: { type: int, default: 0 }
+      user_value: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ row_id, user_id, type, plan_value, user_value, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [row_id], uniq: 1 }
+      get_by_user_and_type_and_created_at: { fields: [ user_id,type,created_at ] }
+    engine: InnoDB
+    charset: utf8
+  - name: usercard_respect_list
+    fieldList:
+      respect_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      type: { type: tinyint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      respect_text: { type: varchar(10000), default: '' }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ respect_id, user_id, creator_user_id, type, is_deleted, created_at, updated_at, respect_text, data ]
+    indexList:
+      PRIMARY: { fields: [respect_id], uniq: 1 }
+      get_by_user_id_is_deleted: { fields: [ user_id,is_deleted ] }
+      get_by_creator_user_and_is_deleted_and_created_at: { fields: [ creator_user_id,is_deleted,created_at ] }
+    engine: InnoDB
+    charset: utf8
+  - name: usercard_sprint_list
+    fieldList:
+      sprint_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      creator_user_id: { type: bigint, default: 0 }
+      is_success: { type: tinyint(1), default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      started_at: { type: int, default: 0 }
+      end_at: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      header_text: { type: varchar(255), default: '' }
+      description_text: { type: varchar(10000), default: '' }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ sprint_id, user_id, creator_user_id, is_success, is_deleted, started_at, end_at, created_at, updated_at, header_text, description_text, data ]
+    indexList:
+      PRIMARY: { fields: [sprint_id], uniq: 1 }
+      get_by_user_id_and_is_deleted: { fields: [ user_id,is_deleted ] }
+    engine: InnoDB
+    charset: utf8
+  - name: usercard_worked_hour_list
+    fieldList:
+      worked_hour_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      day_start_at: { type: int, default: 0 }
+      type: { type: tinyint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      value_1000: { type: int, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      data: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ worked_hour_id, user_id, day_start_at, type, is_deleted, value_1000, created_at, updated_at, data ]
+    indexList:
+      PRIMARY: { fields: [worked_hour_id], uniq: 1 }
+      get_by_user_id_day_start_at: { fields: [ user_id,day_start_at ] }
+      get_by_user_id_is_deleted: { fields: [ user_id,is_deleted ] }
+    engine: InnoDB
+    charset: utf8
+  - name: usercard_member_rel
+    fieldList:
+      row_id: { type: int, extra: auto_increment }
+      user_id: { type: bigint, default: 0 }
+      role: { type: tinyint, default: 0 }
+      recipient_user_id: { type: bigint, default: 0 }
+      is_deleted: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+    fieldOrder: [ row_id, user_id, role, recipient_user_id, is_deleted, created_at, updated_at ]
+    indexList:
+      PRIMARY: { fields: [ row_id ], uniq: 1 }
+      user_id_and_recipient_user_id: { fields: [ user_id,recipient_user_id, ] }
+      get_by_user_id_role_is_deleted: { fields: [ user_id,role,is_deleted ] }
+    engine: InnoDB
+    charset: utf8
+  - name: security_list
+    fieldList:
+      user_id: { type: bigint }
+      is_pin_required: { type: tinyint(1), default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      last_enter_pin_at: { type: int, default: 0 }
+      pin_hash_version: { type: int, default: 0 }
+      pin_hash: { type: varchar(40), default: '' }
+    fieldOrder: [ user_id, is_pin_required, created_at, updated_at, last_enter_pin_at, pin_hash_version, pin_hash ]
+    indexList:
+      PRIMARY: { fields: [ user_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: security_pin_enter_history
+    fieldList:
+      try_enter_id: { type: bigint }
+      user_id: { type: bigint, default: 0 }
+      status: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      enter_pin_hash_version: { type: int, default: 0 }
+      enter_pin_hash: { type: varchar(40), default: '' }
+      user_company_session_token: { type: varchar(255), default: '' }
+    fieldOrder: [ try_enter_id, user_id, status, created_at, enter_pin_hash_version, enter_pin_hash, user_company_session_token ]
+    indexList:
+      PRIMARY: { fields: [ try_enter_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: security_pin_change_history
+    fieldList:
+      user_id: { type: bigint }
+      created_at: { type: int, default: 0 }
+      previous_pin_hash_version: { type: int, default: 0 }
+      new_pin_hash_version: { type: int, default: 0 }
+      previous_pin_hash: { type: varchar(40), default: '' }
+      new_pin_hash: { type: varchar(40), default: '' }
+      ua_hash: { type: varchar(64), default: '' }
+      ip_address: { type: varchar(45), default: '' }
+    fieldOrder: [ user_id, created_at, previous_pin_hash_version, new_pin_hash_version, previous_pin_hash, new_pin_hash, ua_hash, ip_address ]
+    indexList:
+      PRIMARY: { fields: [ user_id,created_at ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: security_pin_restore_story
+    fieldList:
+      restore_id: { type: int }
+      user_id: { type: bigint, default: 0 }
+      status: { type: tinyint, default: 0 }
+      created_at: { type: int, default: 0 }
+      updated_at: { type: int, default: 0 }
+      need_confirm_at: { type: int, default: 0 }
+      ua_hash: { type: varchar(64), default: '' }
+      ip_address: { type: varchar(45), default: '' }
+      extra: { type: json, default: "JSON_ARRAY()" }
+    fieldOrder: [ restore_id, user_id, status, created_at, updated_at, need_confirm_at, ua_hash, ip_address, extra ]
+    indexList:
+      PRIMARY: { fields: [ restore_id ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+  - name: security_pin_confirm_story
+    fieldList:
+      confirm_key: { type: varchar(255) }
+      user_id: { type: bigint, default: '0' }
+      status: { type: tinyint }
+      created_at: { type: int, default: '0' }
+      updated_at: { type: int, default: '0' }
+      expires_at: { type: int, default: '0' }
+    fieldOrder: [ confirm_key, user_id, status, created_at, updated_at, expires_at ]
+    indexList:
+      PRIMARY: { fields: [ confirm_key ], uniq: 1 }
+    engine: InnoDB
+    charset: utf8
+

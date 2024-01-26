@@ -12,9 +12,10 @@ import (
 
 // GlobalIsolation структура контекста компании
 type GlobalIsolation struct {
-	config         *conf.ConfigStruct
-	shardingConfig *conf.ShardingStruct
-	BalancerConn   *balancer.Conn
+	config            *conf.ConfigStruct
+	shardingConfig    *conf.ShardingStruct
+	BalancerConn      *balancer.Conn
+	EmptyBalancerConn *balancer.Conn
 }
 
 // GetConfig возвращает ид компании для изоляции
@@ -41,9 +42,10 @@ func MakeGlobalIsolationIsolation(config *conf.ConfigStruct, shardingConfig *con
 	}
 
 	context := GlobalIsolation{
-		config:         config,
-		shardingConfig: shardingConfig,
-		BalancerConn:   balancer.MakeBalancerConn(config.RabbitSenderBalancerQueue, config.NodeId, config.IsHasBalancer, rabbitConn),
+		config:            config,
+		shardingConfig:    shardingConfig,
+		BalancerConn:      balancer.MakeBalancerConn(config.RabbitSenderBalancerQueue, config.NodeId, config.IsHasBalancer, rabbitConn),
+		EmptyBalancerConn: balancer.MakeBalancerConn("", 0, false, nil),
 	}
 
 	return &context

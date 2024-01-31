@@ -29,6 +29,7 @@ showAjax([
 	"status"   => "ok",
 	"response" => [
 		"start_url" => (string) PUBLIC_ENTRYPOINT_START . "/",
+		"version"   => ON_PREMISE_VERSION,
 		"url_list"  => (object) $url_list,
 	],
 ]);

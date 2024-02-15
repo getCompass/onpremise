@@ -3,22 +3,28 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Request\CompanyNotServedException;
+
 /**
  * Выполняет принятие приглашения по ссылке.
  */
 class Domain_Company_Action_JoinLink_Join {
-	
+
 	/**
 	 * Принимаем ссылку
 	 *
 	 * @long - try ... catch
 	 *
-	 * @throws Gateway_Socket_Exception_CompanyIsNotServed
-	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
+	 * @throws Domain_User_Exception_Onboarding_NotAllowedStatus
+	 * @throws Domain_User_Exception_Onboarding_NotAllowedType
+	 * @throws CompanyNotServedException
+	 * @throws \cs_RowIsEmpty
+	 * @throws \cs_SocketRequestIsFailed
 	 * @throws cs_CompanyIsHibernate
 	 * @throws cs_ExitTaskInProgress
 	 * @throws cs_JoinLinkIsNotActive
 	 * @throws cs_Text_IsTooLong
+	 * @throws cs_UserNotFound
 	 */
 	public static function run(
 		Struct_Db_PivotUser_User                         $user_info,
@@ -44,7 +50,7 @@ class Domain_Company_Action_JoinLink_Join {
 		Domain_Company_Entity_JoinLink_AcceptedHistory::add($join_link_uniq, $user_id, $company_id, $response->entry_id, $session_uniq);
 
 		// добавляем или обновляем связь пользователь-приглашение
-		$is_need_insert = $user_join_link_rel === false || !Domain_Company_Entity_JoinLink_UserRel::isInviteRevoked($user_join_link_rel);
+		$is_need_insert = $user_join_link_rel === false;
 		Domain_Company_Entity_JoinLink_UserRel::insertOrUpdate($join_link_uniq, $user_id, $company_id, $response->entry_id, $response->is_postmoderation, $is_need_insert);
 
 		// обновляем статус если он изменился
@@ -55,11 +61,15 @@ class Domain_Company_Action_JoinLink_Join {
 		// если пользователь еще не переходил ни по чьим ссылкам
 		// то в качестве пригласившего партнера – устанавливаем владельца ссылки, по которой перешел пользователь
 		if ($user_info->invited_by_partner_id === 0) {
-			$user_info = self::_acceptJoinLinkFirstTime($user_id, $response->inviter_user_id, $response->inviter_user_id);
+
+			$user_info = static::_acceptJoinLinkFirstTime($user_id, $response->inviter_user_id, $response->inviter_user_id);
+
+			// проверим, быть может это приглашение мы показали с помощью атрибуции – тогда обновим результат в аналитике
+			Type_Phphooker_Main::onUserEnteringFirstCompany($user_id, $company_id, $response->entry_id);
 		}
 
 		// начинаем онбординг
-		self::_startOnboarding($user_info, $company_id, $response->user_space_role, $response->is_postmoderation);
+		static::_startOnboarding($user_id, $company_id, $response->user_space_role, $response->is_postmoderation);
 		return [$response, $user_info];
 	}
 
@@ -119,7 +129,7 @@ class Domain_Company_Action_JoinLink_Join {
 	 * @throws \parseException
 	 * @throws cs_UserNotFound
 	 */
-	protected static function _startOnboarding(Struct_Db_PivotUser_User $user, int $space_id, int $user_space_role, bool $is_postmoderation):void {
+	protected static function _startOnboarding(int $user_id, int $space_id, int $user_space_role, bool $is_postmoderation):void {
 
 		$data = [
 			"space_id" => $space_id,
@@ -127,16 +137,16 @@ class Domain_Company_Action_JoinLink_Join {
 
 		if ($user_space_role === Domain_Company_Entity_User_Member::ROLE_GUEST) {
 
-			Domain_User_Action_Onboarding_Activate::do($user, Domain_User_Entity_Onboarding::TYPE_SPACE_GUEST, $data);
+			Domain_User_Action_Onboarding_ActivateIfNotExist::do($user_id, Domain_User_Entity_Onboarding::TYPE_SPACE_GUEST, $data);
 			return;
 		}
 
 		if ($is_postmoderation) {
 
-			Domain_User_Action_Onboarding_Activate::do($user, Domain_User_Entity_Onboarding::TYPE_SPACE_JOIN_REQUEST, $data);
+			Domain_User_Action_Onboarding_ActivateIfNotExist::do($user_id, Domain_User_Entity_Onboarding::TYPE_SPACE_JOIN_REQUEST, $data);
 			return;
 		}
 
-		Domain_User_Action_Onboarding_Activate::do($user, Domain_User_Entity_Onboarding::TYPE_SPACE_MEMBER, $data);
+		Domain_User_Action_Onboarding_ActivateIfNotExist::do($user_id, Domain_User_Entity_Onboarding::TYPE_SPACE_MEMBER, $data);
 	}
 }

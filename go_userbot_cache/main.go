@@ -5,11 +5,8 @@ package main
 // -------------------------------------------------------
 
 import (
-	"go_userbot_cache/api/conf"
 	"go_userbot_cache/api/observer"
 	"go_userbot_cache/www"
-	"net/http"
-	_ "net/http/pprof"
 )
 
 // основаная функция
@@ -17,18 +14,6 @@ func main() {
 
 	// стартуем микросервис
 	start()
-
-	// врубаем ендпоинт для профайлера на тестовом
-	if conf.GetConfig().ServerType == "test-server" {
-
-		go func() {
-
-			err := http.ListenAndServe("0.0.0.0:6060", nil)
-			if err != nil {
-				return
-			}
-		}()
-	}
 
 	observer.Work()
 

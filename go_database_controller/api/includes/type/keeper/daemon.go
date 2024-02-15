@@ -32,7 +32,24 @@ func Start(portValue int32) error {
 
 	time.Sleep(500 * time.Millisecond)
 
-	if err = GenerateComposeConfig(); err != nil {
+	// получаем все порты, занятые компаниями, в мире
+	portList, err := port_registry.GetAllCompanyPortList()
+	if err != nil {
+		return err
+	}
+
+	// если не осталось портов - удаляем стак
+	if len(portList) < 1 {
+
+		if err = Delete(); err != nil {
+			return err
+		}
+
+		log.Infof("Не осталось mysql контейнеров, удалили стак!")
+		return nil
+	}
+
+	if err = GenerateComposeConfig(portList); err != nil {
 		return err
 	}
 
@@ -49,8 +66,25 @@ func Stop(portValue int32) error {
 
 	log.Infof("пытаюсь остановить контейнер на порте %d...", portValue)
 
+	// получаем все порты, занятые компаниями, в мире
+	portList, err := port_registry.GetAllCompanyPortList()
+	if err != nil {
+		return err
+	}
+
+	// если не осталось портов - удаляем стак
+	if len(portList) < 1 {
+
+		if err = Delete(); err != nil {
+			return err
+		}
+
+		log.Infof("Не осталось mysql контейнеров, удалили стак!")
+		return nil
+	}
+
 	// удаляем контейнер
-	if err := GenerateComposeConfig(); err != nil {
+	if err := GenerateComposeConfig(portList); err != nil {
 		return err
 	}
 
@@ -69,6 +103,7 @@ func Stop(portValue int32) error {
 	return nil
 }
 
+// Update обновляем стак
 func Update() error {
 
 	cmdStr := "/usr/bin/docker stack deploy " +
@@ -84,6 +119,24 @@ func Update() error {
 	if err := startPipe.Exec(); err != nil {
 
 		log.Infof("не смог подняться стак с mysql")
+		return err
+	}
+
+	return nil
+}
+
+// Delete удаляем стак
+func Delete() error {
+
+	cmdStr := "/usr/bin/docker stack rm " +
+		fmt.Sprintf("%s-%s-company", conf.GetConfig().StackNamePrefix, conf.GetConfig().DominoId)
+
+	// запускаем команду удаления стака
+	deleteCmd := exec.Command("sh", "-c", cmdStr)
+	deletePipe := sh.MakePipe(sh.MakeCommand(deleteCmd, 10*time.Second))
+	if err := deletePipe.Exec(); err != nil {
+
+		log.Infof("не смогли удалить стак с mysql")
 		return err
 	}
 

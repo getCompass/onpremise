@@ -222,7 +222,7 @@ class Domain_Thread_Scenario_Socket {
 		$comment = Domain_Remind_Action_FilteredComment::do($comment);
 
 		// получаем данные для отправки Напоминания
-		[$thread_meta_row, $original_message] = self::_getMessageForSendRemind($message_map, $remind_type, $sender_user_id);
+		[$thread_meta_row, $original_message] = self::_getMessageForSendRemind($message_map, $remind_type, $sender_user_id, $creator_user_id);
 
 		// проверяем на возможность отправки
 		Domain_Thread_Action_Message_CheckForSendRemind::do($original_message, $sender_user_id);
@@ -272,7 +272,7 @@ class Domain_Thread_Scenario_Socket {
 	 * @throws cs_ParentMessage_IsDeleted
 	 * @throws cs_Thread_ParentEntityNotFound
 	 */
-	protected static function _getMessageForSendRemind(string $message_map, int $remind_type, int $sender_user_id):array {
+	protected static function _getMessageForSendRemind(string $message_map, int $remind_type, int $sender_user_id, int $creator_user_id):array {
 
 		// если Напоминание было создано на родительском сообщении с отправкой в тред,
 		// то первым делом проверяем наличие треда, и создаём если тот отсутствует
@@ -302,9 +302,18 @@ class Domain_Thread_Scenario_Socket {
 			$original_message["thread_message_index"] = 0;
 		} else {
 
-			// получаем мету треда
-			$thread_map      = \CompassApp\Pack\Message\Thread::getThreadMap($message_map);
-			$thread_meta_row = Type_Thread_Meta::getOne($thread_map);
+			$thread_map = \CompassApp\Pack\Message\Thread::getThreadMap($message_map);
+
+			// проверяем, может создатель Напоминания уже не имеет доступа к треду
+			try {
+				$thread_meta_row = Helper_Threads::getMetaIfUserMember($thread_map, $creator_user_id);
+			} catch (cs_Thread_UserNotMember|cs_Message_HaveNotAccess|cs_Message_IsDeleted|cs_Conversation_IsBlockedOrDisabled) {
+
+				Domain_Thread_Action_Follower_Unfollow::do($creator_user_id, $thread_map, true);
+
+				// далее получаем мету треда без проверки доступов
+				$thread_meta_row = Type_Thread_Meta::getOne($thread_map);
+			}
 
 			// получаем сообщение-оригинал для Напоминания
 			$block_id         = \CompassApp\Pack\Message\Thread::getBlockId($message_map);

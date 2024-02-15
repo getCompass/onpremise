@@ -17,7 +17,7 @@ func MakeConnection(ctx context.Context, host string, user string, pass string, 
 
 	conn, err := mysql.CreateMysqlConnection(ctx, dbKey, host, user, pass, mysqlMaxConn, false)
 	if err != nil {
-		return nil, err
+		panic(err.Error())
 	}
 
 	return &DbConn{

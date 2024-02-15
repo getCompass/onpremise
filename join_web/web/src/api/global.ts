@@ -22,8 +22,11 @@ export function useApiGlobalDoStart() {
 		queryKey: ["global/start"],
 		queryFn: async () => {
 
-			const result = await ofetch<APIResponse<ApiGlobalDoStart>>("/api/onpremiseweb/global/start/", {
+			const result = await ofetch<APIResponse<ApiGlobalDoStart>>("/pivot/api/onpremiseweb/global/start/", {
 				method: "POST",
+				headers: {
+					"x-compass-captcha-method": "enterprise_google",
+				},
 			});
 
 			setProfile({

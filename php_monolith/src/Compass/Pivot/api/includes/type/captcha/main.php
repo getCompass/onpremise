@@ -15,7 +15,7 @@ abstract class Type_Captcha_Main {
 	 * Проверка капчи
 	 *
 	 */
-	abstract public function check(string $captcha, string $platform):bool;
+	abstract public function check(string $captcha, string $platform, string $user_action = ""):bool;
 
 	/**
 	 * Получить публчиный ключ для каптчи.
@@ -28,8 +28,15 @@ abstract class Type_Captcha_Main {
 	 */
 	public static function init():Type_Captcha_Main {
 
+		$recaptcha_special_header = getHeader("HTTP_X_COMPASS_CAPTCHA_METHOD");
+		$recaptcha_special_header = mb_strtolower($recaptcha_special_header);
+
 		if (getConfig("CAPTCHA_PROVIDER_LIST") === [] && ServerProvider::isTest()) {
-			return new Type_Captcha_GoogleMock();
+			return $recaptcha_special_header == Type_Captcha_EnterpriseGoogle::NAME ? new Type_Captcha_EnterpriseGoogleMock() : new Type_Captcha_GoogleMock();
+		}
+
+		if ($recaptcha_special_header == Type_Captcha_EnterpriseGoogle::NAME) {
+			return new Type_Captcha_EnterpriseGoogle();
 		}
 
 		return new Type_Captcha_Google();
@@ -42,7 +49,7 @@ abstract class Type_Captcha_Main {
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
 	 */
-	public static function assertCaptcha(string|false $grecaptcha_response):void {
+	public static function assertCaptcha(string|false $grecaptcha_response, bool $is_from_web = false):void {
 
 		// если нет конфига - то и делать здесь нечего
 		if (getConfig("CAPTCHA_PROVIDER_LIST") === [] && !ServerProvider::isTest()) {
@@ -54,6 +61,9 @@ abstract class Type_Captcha_Main {
 		}
 
 		$platform = Type_Api_Platform::getPlatform(getUa());
+		if ($is_from_web) {
+			$platform = Type_Api_Platform::PLATFORM_OTHER;
+		}
 
 		// проверяем капчу
 		if (self::init()->check($grecaptcha_response, $platform) === false) {

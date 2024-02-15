@@ -51,7 +51,7 @@ class Domain_Www_Scenario_Api {
 
 			/** @var Struct_Db_PivotUser_User $inviter_user_info */
 			[$invite_link_rel_row, $company, $inviter_user_info] = Domain_Company_Action_JoinLink_ValidateLegacy::do(0, $link);
-		} catch (cs_IncorrectJoinLink|cs_JoinLinkNotFound $e) {
+		} catch (cs_IncorrectJoinLink | cs_JoinLinkNotFound $e) {
 
 			// инкрементим блокировку, если ссылка некорректная или не существует
 			Type_Antispam_Ip::checkAndIncrementBlock(Type_Antispam_Ip::INCORRECT_INVITELINK);
@@ -59,7 +59,8 @@ class Domain_Www_Scenario_Api {
 		}
 
 		// получаем аватар
-		$avatar_file_url = "";
+		$avatar_file_url                   = "";
+		$inviter_avatar_image_version_list = [];
 		if (mb_strlen($inviter_user_info->avatar_file_map) > 0) {
 
 			$file_list = Gateway_Socket_PivotFileBalancer::getFileList([$inviter_user_info->avatar_file_map]);
@@ -67,16 +68,17 @@ class Domain_Www_Scenario_Api {
 			// проверяем что список файлов не пустой
 			if (count($file_list) > 0) {
 
-				$file            = array_shift($file_list);
-				$image_version   = array_shift($file["data"]["image_version_list"]);
-				$avatar_file_url = $image_version["url"];
+				$file                              = array_shift($file_list);
+				$inviter_avatar_image_version_list = $file["data"]["image_version_list"];
+				$image_version                     = array_shift($file["data"]["image_version_list"]);
+				$avatar_file_url                   = $image_version["url"];
 			}
 		}
 
 		// получаем цвет аватара, на случай если у пользователя нет аватара
 		$avatar_color_id = Type_User_Main::getAvatarColorId($inviter_user_info->extra);
 
-		return [$inviter_user_info->user_id, $inviter_user_info->full_name, $avatar_file_url, $avatar_color_id];
+		return [$inviter_user_info->user_id, $inviter_user_info->full_name, $avatar_file_url, $avatar_color_id, $inviter_avatar_image_version_list];
 	}
 
 	/**

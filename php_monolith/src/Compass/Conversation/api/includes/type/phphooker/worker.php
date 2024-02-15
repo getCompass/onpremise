@@ -232,6 +232,32 @@ class Type_Phphooker_Worker {
 				$this->_doClearParentMessageListCache($params["message_map_list"]);
 				return true;
 
+			// обновляем last_message пользователей при обновлении/удалении последнего сообщения
+			case Type_Phphooker_Main::TASK_TYPE_UPDATE_LAST_MESSAGE_ON_DELETE_IF_DISABLED_SHOW_MESSAGE:
+
+				$result = true;
+
+				foreach ($params["users"] as $k => $_) {
+
+					$temp   = $this->_updateLastMessageOnDeleteIfDisabledShowDeleteMessage($k, $params["conversation_map"], $params["message"]);
+					$result = $result && $temp;
+				}
+
+				return $result;
+
+			// обновляем last_message пользователей при отключении показа удаленных сообщений в диалоге
+			case Type_Phphooker_Main::TASK_TYPE_DISABLE_SYSTEM_DELETED_MESSAGE_CONVERSATION:
+
+				$result = true;
+
+				foreach ($params["users"] as $k => $_) {
+
+					$temp   = $this->_updateLastMessageIfDisabledShowDeleteMessage($k, $params["conversation_map"]);
+					$result = $result && $temp;
+				}
+
+				return $result;
+
 			default:
 				throw new ParseFatalException("Unhandled task_type [$task_type] in " . __METHOD__);
 		}
@@ -831,7 +857,7 @@ class Type_Phphooker_Worker {
 
 		try {
 			Helper_Conversations::checkIsAllowed($single_conversation_map, $single_meta_row, $inviter_user_id);
-		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted|Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
+		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted | Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return false;
 		}
 
@@ -855,7 +881,7 @@ class Type_Phphooker_Worker {
 
 		try {
 			Helper_Invites::setInactiveAllUserInviteToConversation($user_id, $conversation_map, $inactive_reason, $is_remove_user);
-		} catch (cs_InviteStatusIsNotExpected|ReturnFatalException) {
+		} catch (cs_InviteStatusIsNotExpected | ReturnFatalException) {
 			return false;
 		}
 
@@ -867,7 +893,7 @@ class Type_Phphooker_Worker {
 
 		try {
 			Helper_Invites::setDeclinedAllUserInviteToConversation($user_id, $conversation_map);
-		} catch (cs_InviteStatusIsNotExpected|ReturnFatalException) {
+		} catch (cs_InviteStatusIsNotExpected | ReturnFatalException) {
 			return false;
 		}
 
@@ -957,6 +983,221 @@ class Type_Phphooker_Worker {
 		[$status] = Gateway_Socket_Thread::doCall("threads.doUnfollowThreadListByConversationMap", [
 			"conversation_map" => $conversation_map,
 		], $user_id);
+
+		return true;
+	}
+
+	/**
+	 * обновляем last_message в left_menu при обновлении сообщения
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @long много проверок
+	 */
+	protected function _updateLastMessageOnDeleteIfDisabledShowDeleteMessage(int $user_id, string $conversation_map, array $message):bool {
+
+		$message_type = Type_Conversation_Message_Main::getHandler($message)::getType($message);
+		if ($message_type !== CONVERSATION_MESSAGE_TYPE_DELETED) {
+			return true;
+		}
+
+		// получаем запись из левого меню
+		Gateway_Db_CompanyConversation_Main::beginTransaction();
+		$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getForUpdate($user_id, $conversation_map);
+		if (!isset($left_menu_row["user_id"])) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return false;
+		}
+
+		// проверяем, быть может пользователь покинул диалог
+		if ($left_menu_row["is_leaved"] == 1) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		// проверяем не пустой ли last_message
+		if(!isset($left_menu_row["last_message"]["message_map"])){
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		// если пользователь не может просматривать сообщение (например скрыл его)
+		if (Type_Conversation_Message_Main::getHandler($message)::isMessageHiddenForUser($message, $user_id)) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		$conversation_dynamic = Domain_Conversation_Entity_Dynamic::get($conversation_map);
+		if ($conversation_dynamic["last_block_id"] < 1) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		$clear_until = Domain_Conversation_Entity_Dynamic::getClearUntil($conversation_dynamic["user_clear_info"], $conversation_dynamic["conversation_clear_info"], $user_id);
+
+		// если дата создания сообщения раньше, чем отметка до которой пользователь очистил диалог
+		if (Type_Conversation_Message_Main::getHandler($message)::getCreatedAt($message) < $clear_until) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		// получаем индексы сообщений, и обновляем запись левого меню если нужно
+		$current_message_conversation_message_index = $this->_getCurrentMessageConversationIndex($message);
+		$last_message_conversation_message_index    = $this->_getLastMessageConversationIndex($left_menu_row["last_message"]);
+
+		$set                 = [];
+		$set["last_message"] = [];
+
+		if (Type_Conversation_Message_Main::getHandler($message)::isUserMention($message, $user_id)) {
+
+			$mention_count        = $left_menu_row["mention_count"] - 1;
+			$set["mention_count"] = $mention_count;
+			$set["updated_at"]    = time();
+
+			if ($mention_count < 1) {
+				$set["is_mentioned"] = 0;
+			}
+		}
+
+		// если пользователь сейчас упомянут - но в отредактированном сообщении его измениили, снимем
+		if ($left_menu_row["is_mentioned"] == 1 && !Type_Conversation_Message_Main::getHandler($message)::isUserMention($message, $user_id)) {
+
+			$mention_count        = $left_menu_row["mention_count"] - 1;
+			$set["mention_count"] = $mention_count;
+			$set["updated_at"]    = time();
+
+			if ($mention_count < 1) {
+				$set["is_mentioned"] = 0;
+			}
+		}
+
+		// если менялось не последнее сообщение в чате
+		if (!Type_Conversation_Utils::isExistLastMessage($left_menu_row) || !$this->_isNeedUpdateLeftMenuOnMessageUpdate($current_message_conversation_message_index, $last_message_conversation_message_index)) {
+
+			// если меняли меншен, обновленяем его
+			if (isset($set["mention_count"]) && ($set["mention_count"] != $left_menu_row["mention_count"])) {
+
+				$left_menu_row            = array_merge($left_menu_row, $set);
+				$left_menu_row["version"] = Domain_User_Action_Conversation_UpdateLeftMenu::do($user_id, $conversation_map, $set);
+				Gateway_Db_CompanyConversation_Main::commitTransaction();
+
+				$this->_sendWsLeftMenuUpdated($user_id, $left_menu_row);
+				return true;
+			}
+
+			// иначе просто выходим
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		$left_menu_row            = array_merge($left_menu_row, $set);
+		$left_menu_row["version"] = Domain_User_Action_Conversation_UpdateLeftMenu::do($user_id, $conversation_map, $set);
+		Gateway_Db_CompanyConversation_Main::commitTransaction();
+
+		$this->_sendWsLeftMenuUpdated($user_id, $left_menu_row);
+
+		return true;
+	}
+
+	/**
+	 * обновляем last_message в left_menu при отключении показа удаленных сообщений
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws cs_Message_IsNotExist
+	 * @long много проверок
+	 */
+	protected function _updateLastMessageIfDisabledShowDeleteMessage(int $user_id, string $conversation_map):bool {
+
+		// получаем запись из левого меню
+		Gateway_Db_CompanyConversation_Main::beginTransaction();
+		$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getForUpdate($user_id, $conversation_map);
+		if (!isset($left_menu_row["user_id"])) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return false;
+		}
+
+		// проверяем, быть может пользователь покинул диалог
+		if ($left_menu_row["is_leaved"] == 1) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		// проверяем не пустой ли last_message
+		if(!isset($left_menu_row["last_message"]["message_map"])){
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		$dynamic_row = Domain_Conversation_Entity_Dynamic::get($conversation_map);
+		$block_row   = Domain_Conversation_Entity_Message_Block_Get::getBlockRow($conversation_map, $left_menu_row["last_message"]["message_map"], $dynamic_row, true);
+		$message     = Domain_Conversation_Entity_Message_Block_Message::get($left_menu_row["last_message"]["message_map"], $block_row);
+
+		$message_type = Type_Conversation_Message_Main::getHandler($message)::getType($message);
+		if ($message_type !== CONVERSATION_MESSAGE_TYPE_DELETED) {
+			return true;
+		}
+
+		$set["last_message"] = [];
+
+		if (Type_Conversation_Message_Main::getHandler($message)::isUserMention($message, $user_id)) {
+
+			$mention_count        = $left_menu_row["mention_count"] - 1;
+			$set["mention_count"] = $mention_count;
+			$set["updated_at"]    = time();
+
+			if ($mention_count < 1) {
+				$set["is_mentioned"] = 0;
+			}
+		}
+
+		// если пользователь сейчас упомянут - но в отредактированном сообщении его измениили, снимем
+		if ($left_menu_row["is_mentioned"] == 1 && !Type_Conversation_Message_Main::getHandler($message)::isUserMention($message, $user_id)) {
+
+			$mention_count        = $left_menu_row["mention_count"] - 1;
+			$set["mention_count"] = $mention_count;
+			$set["updated_at"]    = time();
+
+			if ($mention_count < 1) {
+				$set["is_mentioned"] = 0;
+			}
+		}
+
+		// если нету last_message в левом меню
+		if (!Type_Conversation_Utils::isExistLastMessage($left_menu_row)) {
+
+			// если меняли меншен, обновленяем его
+			if (isset($set["mention_count"]) && ($set["mention_count"] != $left_menu_row["mention_count"])) {
+
+				$left_menu_row            = array_merge($left_menu_row, $set);
+				$left_menu_row["version"] = Domain_User_Action_Conversation_UpdateLeftMenu::do($user_id, $conversation_map, $set);
+				Gateway_Db_CompanyConversation_Main::commitTransaction();
+
+				$this->_sendWsLeftMenuUpdated($user_id, $left_menu_row);
+				return true;
+			}
+
+			// иначе просто выходим
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		$left_menu_row            = array_merge($left_menu_row, $set);
+		$left_menu_row["version"] = Domain_User_Action_Conversation_UpdateLeftMenu::do($user_id, $conversation_map, $set);
+		Gateway_Db_CompanyConversation_Main::commitTransaction();
+
+		$this->_sendWsLeftMenuUpdated($user_id, $left_menu_row);
 
 		return true;
 	}

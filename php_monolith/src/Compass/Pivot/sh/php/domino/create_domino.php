@@ -110,7 +110,7 @@ try {
 // создаем доминошку
 try {
 
-	Domain_Domino_Action_Create::do($domino_id, $tier, $is_company_creating_allowed, $go_database_controller_port, $url, $code_host, $database_host);
+	Domain_Domino_Action_Create::do($domino_id, $tier, $is_company_creating_allowed, $go_database_controller_port, $url, $database_host, $code_host);
 } catch (cs_NotCreatedDominoTable) {
 
 	console(redText("Не удалось создать доминошку " . $domino_id));

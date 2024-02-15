@@ -674,6 +674,7 @@ class Gateway_Socket_Conversation extends Gateway_Socket_Default {
 				10011   => new Gateway_Socket_Exception_Conversation_UserIsNotMember("user is not conversation member"),
 				10018   => new Gateway_Socket_Exception_Conversation_IsLocked("conversation is locked"),
 				2418001 => new Gateway_Socket_Exception_Conversation_MessageListIsEmpty("message list is empty"),
+				552     => new Domain_Thread_Exception_Message_RepostLimitExceeded("exceeded the limit on the number of quoted messages"),
 				default => new ReturnFatalException("unexpected error code")
 			};
 		}

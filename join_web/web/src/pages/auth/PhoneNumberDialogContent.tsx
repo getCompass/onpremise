@@ -81,8 +81,9 @@ const PhoneNumberDialogContentDesktop = ({
 			try {
 
 				// @ts-ignore
-				grecaptcha.render(node, {
+				grecaptcha.enterprise.render(node, {
 					sitekey: captchaPublicKey,
+					action: "check_captcha",
 					callback: function (grecaptchaResponse: string) {
 						setGrecaptchaResponse(grecaptchaResponse);
 					},
@@ -96,7 +97,10 @@ const PhoneNumberDialogContentDesktop = ({
 		if (node !== null && showCaptchaState === "rendered") {
 
 			// @ts-ignore
-			grecaptcha.reset();
+			if (grecaptcha.enterprise.reset !== undefined) {
+				// @ts-ignore
+				grecaptcha.enterprise.reset();
+			}
 		}
 	}, [showCaptchaState, captchaPublicKey]);
 
@@ -262,8 +266,9 @@ const PhoneNumberDialogContentMobile = ({
 			try {
 
 				// @ts-ignore
-				grecaptcha.render(node, {
+				grecaptcha.enterprise.render(node, {
 					sitekey: captchaPublicKey,
+					action: "check_captcha",
 					callback: function (grecaptchaResponse: string) {
 						setGrecaptchaResponse(grecaptchaResponse);
 					},
@@ -277,7 +282,10 @@ const PhoneNumberDialogContentMobile = ({
 		if (node !== null && showCaptchaState === "rendered") {
 
 			// @ts-ignore
-			grecaptcha.reset();
+			if (grecaptcha.enterprise.reset !== undefined) {
+				// @ts-ignore
+				grecaptcha.enterprise.reset();
+			}
 		}
 	}, [showCaptchaState, captchaPublicKey]);
 
@@ -561,7 +569,10 @@ const PhoneNumberDialogContent = () => {
 								if (showCaptchaState === "rendered") {
 
 									// @ts-ignore
-									grecaptcha.reset();
+									if (grecaptcha.enterprise.reset !== undefined) {
+										// @ts-ignore
+										grecaptcha.enterprise.reset();
+									}
 								}
 								return;
 							}
@@ -600,7 +611,10 @@ const PhoneNumberDialogContent = () => {
 					if (showCaptchaState === "rendered") {
 
 						// @ts-ignore
-						grecaptcha.reset();
+						if (grecaptcha.enterprise.reset !== undefined) {
+							// @ts-ignore
+							grecaptcha.enterprise.reset();
+						}
 					}
 					return;
 				}

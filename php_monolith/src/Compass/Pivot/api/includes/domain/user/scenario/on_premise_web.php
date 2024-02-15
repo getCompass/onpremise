@@ -108,16 +108,15 @@ class Domain_User_Scenario_OnPremiseWeb {
 			$auth_story = Domain_User_Entity_AuthStory::getFromSessionCache($phone_number)
 				->assertNotExpired()
 				->assertPhoneNumber($phone_number);
-
 		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|cs_PhoneNumberIsNotEqual|cs_CookieIsEmpty) {
 
 			if ($existing_user_id === 0) {
 
-				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartRegister($phone_number, $grecaptcha_response);
+				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartRegister($phone_number, $grecaptcha_response, true);
 				$auth_story_data = Domain_User_Action_Register::do($phone_number, $user_id);
 			} else {
 
-				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartLogin($phone_number, $grecaptcha_response);
+				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartLogin($phone_number, $grecaptcha_response, true);
 				$auth_story_data = Domain_User_Action_Login::do($existing_user_id, $phone_number);
 			}
 
@@ -139,9 +138,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		return [
 			$auth_story->getAuthInfo(Domain_User_Entity_AuthStory::ONPREMISE_ERROR_COUNT_LIMIT, Domain_User_Entity_AuthStory::ONPREMISE_RESEND_COUNT_LIMIT),
-			$validation_result ?? false
+			$validation_result ?? false,
 		];
-
 	}
 
 	/**
@@ -208,7 +206,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		return [
 			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
-			Type_User_Main::isEmptyProfile($user_id)
+			Type_User_Main::isEmptyProfile($user_id),
 		];
 	}
 
@@ -239,9 +237,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 					$invite_accept_info = [
 						$join_link_rel_row,
 						Gateway_Bus_PivotCache::getUserInfo($user_id),
-						$validation_result
+						$validation_result,
 					];
-
 				} catch (\Exception) {
 					// ничего не делаем, стоит тут как-то ошибку выкинуть, но пока ничего не делаем
 				}
@@ -327,7 +324,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 			->assertResendCountLimitNotExceeded(Domain_User_Entity_AuthStory::ONPREMISE_RESEND_COUNT_LIMIT)
 			->assertResendIsAvailable();
 
-		Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartResend($story->getPhoneNumber(), $grecaptcha_response);
+		Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartResend($story->getPhoneNumber(), $grecaptcha_response, true);
 
 		$story_data = Domain_User_Action_Resend::do($story->getStoryData());
 		$story      = new Domain_User_Entity_AuthStory($story_data);
@@ -347,7 +344,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		return [
 			$story->getAuthInfo(Domain_User_Entity_AuthStory::ONPREMISE_ERROR_COUNT_LIMIT, Domain_User_Entity_AuthStory::ONPREMISE_RESEND_COUNT_LIMIT),
-			$story->getPhoneNumber()
+			$story->getPhoneNumber(),
 		];
 	}
 

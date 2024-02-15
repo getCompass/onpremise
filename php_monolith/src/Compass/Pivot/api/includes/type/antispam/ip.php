@@ -75,7 +75,7 @@ class Type_Antispam_Ip {
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
 	 */
-	public static function incrementAndAssertRecaptchaIfBlocked(array $block_key, string|false $grecaptcha_response):void {
+	public static function incrementAndAssertRecaptchaIfBlocked(array $block_key, string|false $grecaptcha_response, bool $is_from_web = false):void {
 
 		if (Type_Antispam_User::needCheckIsBlocked()) {
 			return;
@@ -84,7 +84,7 @@ class Type_Antispam_Ip {
 		try {
 			self::checkAndIncrementBlock($block_key);
 		} catch (BlockException) {
-			Type_Captcha_Main::assertCaptcha($grecaptcha_response);
+			Type_Captcha_Main::assertCaptcha($grecaptcha_response, $is_from_web);
 		}
 	}
 

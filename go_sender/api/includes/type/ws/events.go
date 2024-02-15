@@ -190,6 +190,7 @@ func createAnalyticItemByConnection(connection *ConnectionStruct, event string) 
 		CreatedAt: functions.GetCurrentTimeStamp(),
 		EventName: event,
 		Platform:  connection.platform,
+		CompanyId: connection.CompanyId,
 	}
 
 	return analyticItem

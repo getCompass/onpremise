@@ -61,7 +61,6 @@ input[type="number"] {
 
 .invisible-scrollbar {
 	overflow: scroll;
-	scrollbar-width: none; /* Firefox */
 	-ms-overflow-style: none; /* IE and Edge */
 }
 
@@ -69,6 +68,15 @@ input[type="number"] {
 	width: 0;
 	height: 0;
 	display: none; /* Chrome, Safari, newer versions of Edge */
+}
+
+/* Wrap new scrollbar properties in @supports rule for browsers without `::-webkit-scrollbar-*` support */
+/* This way chrome won't override `::-webkit-scrollbar-*` selectors */
+@supports not selector(::-webkit-scrollbar) {
+	* {
+		scrollbar-width: none;
+		-ms-overflow-style: none; /* IE and Edge */
+	}
 }
 
 .h100vh {

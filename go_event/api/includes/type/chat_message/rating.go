@@ -24,7 +24,7 @@ type RatingCompanyMetricCountItemStruct struct {
 	Count      int    `json:"count"`
 }
 
-// данные для отправки сообщений с метриками карточки карточки
+//  данные для отправки сообщений с метриками карточки карточки
 type RatingCompanyEmployeeMetricMessage struct {
 	Text                string                               `json:"text"`
 	Type                string                               `json:"type"`

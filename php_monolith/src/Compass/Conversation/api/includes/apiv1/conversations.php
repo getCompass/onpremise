@@ -1441,18 +1441,17 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		}
 
-		return $this->_doDeleteMessageList($conversation_map, $meta_row["type"], $message_map_list, $meta_row["users"]);
+		return $this->_doDeleteMessageList($conversation_map, $meta_row["type"], $message_map_list, $meta_row);
 	}
 
 	// удаляем список сообщений
-	protected function _doDeleteMessageList(string $conversation_map, int $conversation_type, array $message_map_list, array $users):array {
+	protected function _doDeleteMessageList(string $conversation_map, int $conversation_type, array $message_map_list, array $meta_row):array {
 
 		// по умолчанию считаем, что для администратора с правами удаления сообщений разрешено удалять сообщение
 		$is_force_delete = Permission::canDeleteMessage($this->role, $this->permissions);
 
 		try {
-
-			Helper_Conversations::deleteMessageList($this->user_id, $conversation_map, $conversation_type, $message_map_list, $users, $is_force_delete);
+			Helper_Conversations::deleteMessageList($this->user_id, $conversation_map, $conversation_type, $message_map_list, $meta_row, $is_force_delete);
 		} catch (cs_Message_UserHaveNotPermission) {
 			return $this->error(514, "You are not allowed to do this action");
 		} catch (cs_Message_IsNotAllowForDelete) {

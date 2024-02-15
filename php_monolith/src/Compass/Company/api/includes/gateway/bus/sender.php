@@ -919,15 +919,15 @@ class Gateway_Bus_Sender {
 
 			$need_push = false;
 
-			if ($type === Domain_Member_Entity_Menu::ACTIVE_MEMBER) {
+			if ($type === Domain_Member_Entity_Menu::ACTIVE_MEMBER){
 				$need_push = NEED_SEND_ACTIVE_MEMBER_PUSH === true;
 			}
 
-			if ($type === Domain_Member_Entity_Menu::JOIN_REQUEST) {
+			if ($type === Domain_Member_Entity_Menu::JOIN_REQUEST){
 				$need_push = NEED_SEND_JOIN_REQUEST_PUSH === true;
 			}
 
-			if ($type === Domain_Member_Entity_Menu::GUEST_MEMBER) {
+			if ($type === Domain_Member_Entity_Menu::GUEST_MEMBER){
 				$need_push = NEED_SEND_GUEST_MEMBER_PUSH === true;
 			}
 

@@ -173,11 +173,16 @@ class Domain_Company_Scenario_Socket {
 			Domain_User_Action_Onboarding_Clear::do($space->created_by_user_id, Domain_User_Entity_Onboarding::TYPE_SPACE_CREATOR);
 		}
 
-		// отправляем пользователю WS событие, что его уволили
-		Gateway_Bus_SenderBalancer::userFired($user_id, $company_id, $reason);
+		// если аккаунт пользователя был удален
+		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
+		if (!Type_User_Main::isDisabledProfile($user_info->extra)) {
+
+			// отправляем пользователю WS событие, что его уволили
+			Gateway_Bus_SenderBalancer::userFired($user_id, $company_id, $reason);
+		}
 
 		// пушим событие в партнерку и crm
-		Domain_Partner_Entity_Event_UserLeavedSpace::create($user_id, $company_id);
+		Domain_Partner_Entity_Event_UserLeftSpace::create($user_id, $company_id, $user_role);
 		Domain_Crm_Entity_Event_SpaceLeaveMember::create($company_id, $user_id, $user_role);
 
 		// если пользователь покинул команду после пробывания в ней не больше суток, то проверим
@@ -261,9 +266,14 @@ class Domain_Company_Scenario_Socket {
 		// получаем данные по тому кто пригласил
 		$user_info = Gateway_Bus_PivotCache::getUserInfo($inviter_user_id);
 		$user_info = Struct_User_Info::createStruct($user_info);
-		$company = Domain_Company_Entity_Company::get($company_id);
+		$company   = Domain_Company_Entity_Company::get($company_id);
 		$push_data = Domain_Company_Entity_Push::makeRejectedPushData($company_id, $company->name);
 		Gateway_Bus_SenderBalancer::companyStatusRejected($user_id, $user_info, $company_id, $company->name, $push_data);
+
+		// помечаем в аналитике join-space что заявка отменена
+		// делаем для всех случаев тк это дешевле, чем делать доп. выборки из базы чтобы отфильтровать лишние кейсы
+		// это действие ничему не навредит
+		Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserPostModerationRequestCanceled($user_id);
 	}
 
 	/**

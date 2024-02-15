@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * Гасим mysql компании при удаления
  */
@@ -35,8 +37,8 @@ class Domain_Company_Action_ServiceTask_DeleteCompany implements Domain_Company_
 		Domain_Domino_Action_StopCompany::run($domino_registry_row, $company_row, "deleteCompany");
 
 		// удаляем поисковый индекс компании
-		// ВНИМАНИЕ! не работает на тестовых серверах так как ломает миграции после пересоздания компании
-		if (!isTestServer()) {
+		// ВНИМАНИЕ! делаем исключение для CI и локального окружения, чтобы после пересоздания компании не ломались миграции
+		if (!ServerProvider::isCi() && !ServerProvider::isLocal()) {
 			Gateway_Bus_DatabaseController::dropSearchTable($domino_registry_row, $company_row->company_id);
 		}
 

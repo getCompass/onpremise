@@ -274,7 +274,8 @@ class Domain_Conversation_Feed_Scenario_Api {
 	public static function getBatchingThreads(int $user_id, array $batch_thread_list, bool $is_restricted_access):array {
 
 		// получаем данные для батчинга
-		[$block_id_list_by_conversation_map, $empty_conversation_map_list, $action_users, $meta_list, $dynamic_list] =
+		$action_users = [];
+		[$block_id_list_by_conversation_map, $empty_conversation_map_list, $users, $meta_list, $dynamic_list] =
 			Domain_Conversation_Feed_Action_GetDataForBatching::run($user_id, $batch_thread_list, $is_restricted_access);
 
 		$feed_threads_list = [];
@@ -283,7 +284,7 @@ class Domain_Conversation_Feed_Scenario_Api {
 		}
 
 		if (count($block_id_list_by_conversation_map) < 1) {
-			return [$feed_threads_list, []];
+			return [$feed_threads_list, $action_users];
 		}
 
 		// получаем батчингом данные по тредам
@@ -293,6 +294,10 @@ class Domain_Conversation_Feed_Scenario_Api {
 
 		foreach ($thread_meta_list_by_conversation_map as $conversation_map => $thread_meta_list) {
 			$feed_threads_list[] = Apiv2_Format::feedThreads($conversation_map, $thread_meta_list, $thread_menu_list_by_conversation_map[$conversation_map]);
+
+			if (count($thread_meta_list) > 0) {
+				$action_users = $users;
+			}
 		}
 
 		return [$feed_threads_list, $action_users];

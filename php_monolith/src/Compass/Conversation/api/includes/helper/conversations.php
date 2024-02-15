@@ -931,6 +931,7 @@ class Helper_Conversations {
 
 		// получаем сообщения
 		$reposted_message_list = [];
+		$message_count         = 0;
 		foreach ($message_map_list as $v) {
 
 			try {
@@ -941,6 +942,15 @@ class Helper_Conversations {
 
 			// подготавливаем сообщение к репосту
 			$reposted_message_list = Type_Message_Utils::prepareMessageForRepostOrQuoteV2($reposted_message, $reposted_message_list);
+
+			// инкрементим количество выбранных для репоста сообщений
+			$message_count++;
+
+			// для репоста/цитаты подсчитываем также сообщения в репостнутых/процитированных
+			$message_count = self::_incMessageListCountIfRepostOrQuote($message_count, $reposted_message);
+
+			// если достигли лимита сообщений для репоста - выдаём exception cs_Message_Limit
+			self::_throwIfExceededSelectedMessageLimit($message_count);
 		}
 
 		// чанкуем сообщения для репоста
@@ -1500,6 +1510,7 @@ class Helper_Conversations {
 
 		foreach ($message_reaction_list as $reaction_name => $user_list) {
 
+			asort($user_list);
 			$reaction_user_list[$reaction_name] = array_keys($user_list);
 			foreach ($user_list as $updated_at_ms) {
 				$reaction_last_edited_at = max($reaction_last_edited_at, $updated_at_ms);
@@ -1812,15 +1823,15 @@ class Helper_Conversations {
 	}
 
 	// хелпер для удаления нескольких сообщения
-	public static function deleteMessageList(int   $user_id, string $conversation_map, int $conversation_type,
-							     array $message_map_list, array $users,
-							     bool  $is_force_delete = false):array {
+	public static function deleteMessageList(int $user_id, string $conversation_map, int $conversation_type,
+							     array $message_map_list, array $meta_row,
+							     bool $is_force_delete = false):array {
 
 		$dynamic_row = Domain_Conversation_Entity_Dynamic::get($conversation_map);
 		self::_throwIfConversationIsLocked($dynamic_row);
 
 		$message_map_list_grouped_by_block_id = self::_groupMessageMapListByBlockId($message_map_list);
-		$participant_role                     = Type_Conversation_Meta_Users::getRole($user_id, $users);
+		$participant_role                     = Type_Conversation_Meta_Users::getRole($user_id, $meta_row["users"]);
 
 		// удаляем все сообщения
 		/** @var Struct_Db_CompanyConversation_ConversationDynamic $dynamic */
@@ -1829,12 +1840,12 @@ class Helper_Conversations {
 			$conversation_type,
 			$message_map_list_grouped_by_block_id,
 			$user_id,
-			$users,
+			$meta_row,
 			$participant_role,
 			$is_force_delete);
 
 		// отправляем ws ивент и лог об успешном удалении сообщений
-		self::_sendEventAboutDeletedMessageList($conversation_map, $message_map_list, $users, $dynamic->messages_updated_version);
+		self::_sendEventAboutDeletedMessageList($conversation_map, $message_map_list, $meta_row["users"], $dynamic->messages_updated_version);
 
 		// формируем список сообщений для возврата
 		$message_list = [];
@@ -1879,7 +1890,7 @@ class Helper_Conversations {
 	 * @long
 	 */
 	protected static function _doDeleteMessageList(string $conversation_map, int $conversation_type, array $message_map_list_grouped_by_block_id,
-								     int    $user_id, array $users, int $user_role, bool $is_force_delete = false):array {
+								     int $user_id, array $meta_row, int $user_role, bool $is_force_delete = false):array {
 
 		// проходимся по всем сообщениям сгруппированным по block_id и формируем массивы
 		$block_row_grouped_by_block_id       = [];
@@ -1926,11 +1937,11 @@ class Helper_Conversations {
 			$message_list_grouped_by_message_map,
 			$message_map_list_for_thread_delete,
 			$thread_map_list,
-			$users);
+			$meta_row);
 	}
 
 	// удаляем сообщения диалога в зависимости от его типа
-	protected static function _doDeleteMessageListDependedByConversationType(int   $user_id, string $conversation_map, int $conversation_type, int $block_id,
+	protected static function _doDeleteMessageListDependedByConversationType(int $user_id, string $conversation_map, int $conversation_type, int $block_id,
 													 array $message_map_list, int $user_role, bool $is_force_delete = false):array {
 
 		// если это диалог публичный
@@ -1949,8 +1960,13 @@ class Helper_Conversations {
 			$is_force_delete);
 	}
 
-	// после удаления сообщений удаляем файлы и треды которые были к ним прикреплены, а так же обновляем левое меню
-	protected static function _afterDeleteMessageList(int $user_id, string $conversation_map, int $conversation_type, array $message_list_grouped_by_message_map, array $message_map_list, array $thread_map_list, array $users):array {
+	/**
+	 * после удаления сообщений удаляем файлы и треды которые были к ним прикреплены, а так же обновляем левое меню
+	 *
+	 * @long
+	 * @return array
+	 */
+	protected static function _afterDeleteMessageList(int $user_id, string $conversation_map, int $conversation_type, array $message_list_grouped_by_message_map, array $message_map_list, array $thread_map_list, array $meta_row):array {
 
 		// отправляем задачу на удаление тредов
 		Domain_Conversation_Action_Message_Thread_DeleteList::do($thread_map_list, $message_map_list);
@@ -1964,8 +1980,14 @@ class Helper_Conversations {
 		// актуализируем левое меню, если это диалог не типа public
 		if (!Type_Conversation_Meta::isSubtypeOfPublicGroup($conversation_type)) {
 
-			$last_message = self::_getLastMessageForMessageDelete($message_list_grouped_by_message_map);
-			Type_Phphooker_Main::updateLastMessageOnMessageUpdate($conversation_map, $last_message, $users);
+			$deleted_last_message = self::_getLastMessageForMessageDelete($message_list_grouped_by_message_map);
+
+			// если удалены сообщения в групповом диалоге в котором отключено отображение удаленных сообщений
+			if (Type_Conversation_Meta::isSubtypeOfGroup($conversation_type) && !Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($meta_row["extra"])) {
+				Type_Phphooker_Main::updateLastMessageOnDeleteIfDisabledShowDeleteMessage($conversation_map, $deleted_last_message, $meta_row["users"]);
+			} else {
+				Type_Phphooker_Main::updateLastMessageOnMessageUpdate($conversation_map, $deleted_last_message, $meta_row["users"]);
+			}
 		}
 
 		// если удалены сообщения типа респект, требовательность, рабочие часы, то удаляем их и в карточке
@@ -1974,7 +1996,7 @@ class Helper_Conversations {
 		return [$message_list_grouped_by_message_map, $dynamic];
 	}
 
-	// послучаем последнее сообщение из списка сообщений
+	// получаем последнее сообщение из списка сообщений
 	protected static function _getLastMessageForMessageDelete(array $message_list_grouped_by_message_map):array {
 
 		// сортируем по block message index от большего к меньшему

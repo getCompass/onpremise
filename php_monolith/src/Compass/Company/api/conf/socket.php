@@ -206,7 +206,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_PARTNER,
 		"allow_methods" => [
-			"hiring.joinlink.add",
+			"company.member.getAll",
 		],
 	],
 	"intercom"      => [

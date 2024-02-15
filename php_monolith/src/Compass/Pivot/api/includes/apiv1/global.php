@@ -32,6 +32,7 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 * @throws \userAccessException
+	 * @long
 	 */
 	public function doStart():array {
 
@@ -52,6 +53,7 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 				$announcement_initial_token,
 				$userbot_preferences,
 				$client_connection_token,
+				$captcha_public_key,
 			]
 				= Domain_User_Scenario_Api::doStart($this->user_id, $app_version);
 		} catch (cs_PlatformNotFound) {
@@ -81,6 +83,7 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 			$call_preferences,
 			$userbot_preferences,
 			$client_connection_token,
+			$captcha_public_key,
 		));
 	}
 

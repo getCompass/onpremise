@@ -8,7 +8,7 @@ namespace Compass\Company;
 abstract class Gateway_Socket_Default {
 
 	// получаем подпись из массива параметров
-	protected static function _doCall(string $url, string $method, array $params, int $user_id = 0):array {
+	protected static function _doCall(string $url, string $method, array $params, int $user_id = 0, int $company_id = COMPANY_ID):array {
 
 		// переводим в json параметры
 		$json_params = toJson($params);
@@ -18,7 +18,7 @@ abstract class Gateway_Socket_Default {
 			\BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_KEY, SOCKET_KEY_COMPANY, $json_params
 		);
 
-		return \BaseFrame\Socket\Main::doCall($url, $method, $json_params, $signature, CURRENT_MODULE, COMPANY_ID, $user_id);
+		return \BaseFrame\Socket\Main::doCall($url, $method, $json_params, $signature, CURRENT_MODULE, $company_id, $user_id);
 	}
 
 	/**

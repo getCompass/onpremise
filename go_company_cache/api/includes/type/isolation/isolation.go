@@ -63,7 +63,7 @@ func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64,
 	isolation, err := MakeIsolation(companyContext, companyId, companyConfig, cancel, mysqlMaxConn, globalIsolation)
 	if err != nil {
 
-		log.Errorf("Failed to create isolation for %d", companyId)
+		log.Errorf("Failed to create isolation for %d. Error: %d", companyId, err)
 		return nil, nil
 	}
 

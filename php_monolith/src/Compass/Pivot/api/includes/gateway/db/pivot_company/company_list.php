@@ -371,6 +371,32 @@ class Gateway_Db_PivotCompany_CompanyList extends Gateway_Db_PivotCompany_Main {
 	}
 
 	/**
+	 * Получаем список созданных компаний за промежуток времени
+	 *
+	 * @return Struct_Db_PivotCompany_Company[]
+	 */
+	public static function getByInterval(int $from_date, int $to_date):array {
+
+		// получаем количество команд
+		$count = self::getCountByInterval($from_date, $to_date);
+
+		$shard_key  = self::_getDbKey(1);
+		$table_name = self::_getTableKey(1);
+
+		// запрос проверен на EXPLAIN (INDEX=`created_at`)
+		$query    = "SELECT * FROM `?p` WHERE `created_at` BETWEEN ?i AND ?i AND `created_by_user_id` != ?i LIMIT ?i";
+		$row_list = ShardingGateway::database($shard_key)->getAll($query, $table_name, $from_date, $to_date, 0, $count);
+
+		// собираем массив объектов
+		$output_list = [];
+		foreach ($row_list as $row) {
+			$output_list[] = self::_rowToObject($row);
+		}
+
+		return $output_list;
+	}
+
+	/**
 	 * Получаем количество созданных компаний за промежуток времени
 	 */
 	public static function getCountByInterval(int $from_date, int $to_date):int {

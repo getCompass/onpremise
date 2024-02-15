@@ -116,8 +116,8 @@ class Domain_SpaceTariff_Scenario_Socket {
 			$payment_user_agent,
 		);
 
-		// оповещаем CRM о новой оплате
-		self::_notifyCrmOnPayment($activation_item, $payment_id, $payed_currency, $payed_amount, $net_amount_rub, $payment_method, $payment_price_type, $tariff);
+		// оповещаем о новой оплате
+		self::_notifyOnPayment($activation_item, $payment_id, $payed_currency, $payed_amount, $net_amount_rub, $payment_method, $payment_price_type, $tariff);
 	}
 
 	/**
@@ -142,24 +142,25 @@ class Domain_SpaceTariff_Scenario_Socket {
 	}
 
 	/**
-	 * Оповещаем CRM о новой оплате
+	 * Оповещаем о новой оплате
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	protected static function _notifyCrmOnPayment(Struct_SpaceTariff_ActivationItem $activation_item,
-								    string                            $payment_id,
-								    string                            $payed_currency,
-								    int                               $payed_amount,
-								    int                               $net_amount_rub,
-								    string                            $payment_method,
-								    int                               $payment_price_type,
-								    Domain_SpaceTariff_Tariff         $tariff):void {
+	protected static function _notifyOnPayment(Struct_SpaceTariff_ActivationItem $activation_item,
+								 string                            $payment_id,
+								 string                            $payed_currency,
+								 int                               $payed_amount,
+								 int                               $net_amount_rub,
+								 string                            $payment_method,
+								 int                               $payment_price_type,
+								 Domain_SpaceTariff_Tariff         $tariff):void {
 
 		// если активировали тариф из CRM, то оповещать не стоит
 		if ($payment_method === self::_BILLING_PAYMENT_METHOD_CRM) {
 			return;
 		}
 
+		// оповещаем CRM
 		Gateway_Socket_Crm::onNewPayment(
 			$activation_item->space_id,
 			$payment_id,
@@ -168,11 +169,13 @@ class Domain_SpaceTariff_Scenario_Socket {
 			$net_amount_rub,
 			$payment_method,
 			$payment_price_type,
-			$tariff->memberCount()->getLimit(),
+			$tariff->memberCount(),
 			$activation_item->alteration->prolongation_value,
-			$tariff->memberCount()->getActiveTill(),
-			$tariff->memberCount()->isTrial(time()),
-			$tariff->memberCount()->isActive(time()) && !$tariff->memberCount()->isFree(time()),
+		);
+
+		// оповещаем партнерскую программу
+		Domain_Partner_Entity_Event_SpacePayment::create(
+			$activation_item->space_id, $payment_id, $tariff->memberCount(), $activation_item->alteration->prolongation_value
 		);
 	}
 }

@@ -165,8 +165,9 @@ class Cron_Phphooker extends \Cron_Default {
 				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_ON_USER_REGISTERED  => $this->_sendBitrixOnUserRegistered($task_id, $params["user_id"], $params["force_stage_id"]),
 				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_ON_USER_CHANGE_INFO => $this->_sendBitrixOnUserChangeData($task_id, $params["user_id"], $params["changed_data"]),
 				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_USER_CAMPAIGN_DATA  => $this->_sendBitrixUserCampaignData($task_id, $params["user_id"]),
-				Type_Phphooker_Main::TASK_TYPE_ACCEPT_FIRST_JOIN_LINK          => $this->_onAcceptFirstJoinLink($params["user_id"], $params["join_link_uniq"]),
+				Type_Phphooker_Main::TASK_TYPE_ACCEPT_FIRST_JOIN_LINK          => true, // удалить через 1 релиз
 				Type_Phphooker_Main::TASK_TYPE_ON_USER_LEFT_SPACE_EARLY        => $this->_onUserLeftSpaceEarly($params["user_id"], $params["company_id"], $params["entry_id"]),
+				Type_Phphooker_Main::TASK_TYPE_USER_ENTERING_FIRST_SPACE       => $this->_onUserJoinFirstSpace($params["user_id"], $params["company_id"], $params["entry_id"]),
 				default                                                        => throw new ParseFatalException("Unhandled task_type [{$task_type}] in " . __METHOD__),
 			};
 		} catch (\Exception $e) {
@@ -190,7 +191,7 @@ class Cron_Phphooker extends \Cron_Default {
 	 *
 	 * @return bool
 	 * @throws cs_CompanyIncorrectCompanyId
-	 * @throws cs_RowIsEmpty
+	 * @throws \cs_RowIsEmpty
 	 */
 	protected function _doUpdateUserCompanyInfo(int $user_id, string $client_launch_uuid):bool {
 
@@ -228,7 +229,7 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Задача исключения пользователя из компании.
 	 *
-	 * @throws cs_RowIsEmpty
+	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws \returnException|cs_CompanyUserIsNotFound
 	 */
@@ -274,7 +275,7 @@ class Cron_Phphooker extends \Cron_Default {
 	 * @throws cs_CompanyIncorrectCompanyId
 	 * @throws cs_CompanyNotExist
 	 * @throws cs_HiringRequestNotPostmoderation
-	 * @throws cs_RowIsEmpty
+	 * @throws \cs_RowIsEmpty
 	 * @throws \cs_SocketRequestIsFailed
 	 * @throws \parseException
 	 * @throws \returnException
@@ -550,32 +551,6 @@ class Cron_Phphooker extends \Cron_Default {
 	}
 
 	/**
-	 * При принятии пользователем первой ссылки-приглашении в команду
-	 *
-	 * @return bool
-	 * @throws ParseFatalException
-	 */
-	protected function _onAcceptFirstJoinLink(int $user_id, string $join_link_uniq):bool {
-
-		if (ServerProvider::isOnPremise()) {
-			return true;
-		}
-
-		// получаем информацию о посещении, которое привело пользователя к регистрации в приложении
-		[$link, $source_id, $is_direct_reg] = Domain_User_Entity_Attribution::getUserCampaignRelData($user_id);
-
-		// если в содержимом ссылки содержится уникальная часть ссылки-приглашения, которую принял пользователь, то обновим результат в аналитике
-		if (inHtml($link, $join_link_uniq)) {
-
-			Domain_User_Entity_Attribution_JoinSpaceAnalytics::updateUserJoinSpaceAnalyticsResult(
-				$user_id, Domain_User_Entity_Attribution_JoinSpaceAnalytics::RESULT_FULL_MATCHES_FOUND__INVITE_ACCEPTED
-			);
-		}
-
-		return true;
-	}
-
-	/**
 	 * Пользователь покинул пространство слишком рано
 	 *
 	 * @return bool
@@ -584,6 +559,14 @@ class Cron_Phphooker extends \Cron_Default {
 	protected function _onUserLeftSpaceEarly(int $user_id, int $company_id, int $entry_id):bool {
 
 		if (ServerProvider::isOnPremise()) {
+			return true;
+		}
+
+		// получаем информацию о пользователе
+		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
+
+		// проверяем, нужно ли собирать аналитику по пользователю
+		if (!Domain_User_Entity_Attribution_JoinSpaceAnalytics::shouldCollectAnalytics($user_info)) {
 			return true;
 		}
 
@@ -608,9 +591,81 @@ class Cron_Phphooker extends \Cron_Default {
 		if (inHtml($link, $company_join_link_user_rel->join_link_uniq)) {
 
 			// обновим результат в аналитике
-			Domain_User_Entity_Attribution_JoinSpaceAnalytics::updateUserJoinSpaceAnalyticsResult(
-				$user_id, Domain_User_Entity_Attribution_JoinSpaceAnalytics::RESULT_FULL_MATCHES_FOUND__INVITE_ACCEPTED__USER_LEFT_SPACE
-			);
+			Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserLeftSpaceAfterAcceptMatchedInvite($user_id);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Пользователь вступил в первое пространство
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 * @long большая логика с различными сценариями
+	 */
+	protected function _onUserJoinFirstSpace(int $user_id, int $company_id, int $entry_id):bool {
+
+		if (ServerProvider::isOnPremise()) {
+			return true;
+		}
+
+		// получаем информацию о пользователе
+		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
+
+		// проверяем, нужно ли собирать аналитику по пользователю
+		if (!Domain_User_Entity_Attribution_JoinSpaceAnalytics::shouldCollectAnalytics($user_info)) {
+			return true;
+		}
+
+		// получаем информацию о команде
+		$company = Domain_Company_Entity_Company::get($company_id);
+
+		// получаем информацию о посещении, которое привело пользователя к регистрации в приложении
+		[$link, $source_id, $is_direct_reg] = Domain_User_Entity_Attribution::getUserCampaignRelData($user_id);
+
+		// если пользователь создатель команды
+		if ($company->created_by_user_id === $user_id) {
+
+			// если пользователь пришел по посещению join-страницы, но в итоге создал первую команду – значит он ее заигнорировал
+			if (inHtml($link, "join")) {
+				Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserIgnoreMatchedJoinLink($user_id);
+			} else {
+
+				// иначе фиксируем что пользователь создал свою команду
+				Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserCreateFirstSpace($user_id);
+			}
+
+			return true;
+		}
+
+		// дальше остается логика когда пользователь вступил в команду:
+
+		// если ссылка пустая или не содержит /join/, то фиксируем, что пользователь вступил в команду
+		if ($link == "" || !inHtml($link, "join")) {
+
+			Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserJoinFirstSpace($user_id);
+			return true;
+		}
+
+		// получаем ссылку по которой пользователь попал в команду
+		try {
+			$company_join_link_user_rel = Gateway_Db_PivotData_CompanyJoinLinkUserRel::getByEntryUserCompany($entry_id, $user_id, $company_id);
+		} catch (\cs_RowIsEmpty) {
+
+			// если ничего не нашли, то завершаем
+			return true;
+		}
+
+		// если в содержимом ссылки-посещения содержится уникальная часть ссылки-приглашения, которую принял пользователь
+		if (inHtml($link, $company_join_link_user_rel->join_link_uniq)) {
+
+			// фиксируем что пользователь принял предложенное приглашение
+			Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserAcceptMatchedJoinLink($user_id);
+		} else {
+
+			// иначе фиксируем что пользователь проигнорировал предложение
+			Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserIgnoreMatchedJoinLink($user_id);
 		}
 
 		return true;

@@ -12,13 +12,14 @@ namespace Compass\Pivot;
 class Www_Format {
 
 	// информация по ссылке-приглашению
-	public static function inviteLinkInfo(int $inviter_user_id, string $inviter_full_name, string $inviter_avatar_url, int $avatar_color_id):array {
+	public static function inviteLinkInfo(int $inviter_user_id, string $inviter_full_name, string $inviter_avatar_url, int $avatar_color_id, array $inviter_avatar_image_version_list):array {
 
 		return [
-			"inviter_user_id"    => (int) $inviter_user_id,
-			"inviter_full_name"  => (string) $inviter_full_name,
-			"inviter_avatar_url" => (string) $inviter_avatar_url,
-			"avatar_color"       => (string) \BaseFrame\Domain\User\Avatar::getColorOutput($avatar_color_id),
+			"inviter_user_id"                   => (int) $inviter_user_id,
+			"inviter_full_name"                 => (string) $inviter_full_name,
+			"inviter_avatar_url"                => (string) $inviter_avatar_url,
+			"avatar_color"                      => (string) \BaseFrame\Domain\User\Avatar::getColorOutput($avatar_color_id),
+			"inviter_avatar_image_version_list" => (array) $inviter_avatar_image_version_list,
 		];
 	}
 }

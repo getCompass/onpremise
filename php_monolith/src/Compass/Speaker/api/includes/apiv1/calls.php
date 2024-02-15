@@ -30,6 +30,11 @@ class ApiV1_Calls extends \BaseFrame\Controller\Api {
 		"tryKick",
 	];
 
+	public const MEMBER_ACTIVITY_METHOD_LIST = [
+		"tryInit",
+		"doAccept",
+	];
+
 	// максимальное количество звонков в запросе
 	protected const _MAX_CALLS_COUNT = 50;
 

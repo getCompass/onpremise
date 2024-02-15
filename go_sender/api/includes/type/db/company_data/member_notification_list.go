@@ -35,7 +35,16 @@ func (dbConn *DbConn) GetMemberNotificationList(ctx context.Context, userIdList 
 	queryCtx, cancel := context.WithTimeout(ctx, mysql.QueryTimeout)
 
 	results, err := dbConn.Conn.QueryContext(queryCtx, query, queryArgs...)
-	defer func() { _ = results.Close(); defer cancel() }()
+
+	defer func() {
+
+		if results != nil {
+			_ = results.Close()
+		}
+
+		cancel()
+	}()
+
 	if err != nil {
 		return nil, fmt.Errorf("неудачный запрос: %s в базу %s Error: %v", query, dbKey, err)
 	}

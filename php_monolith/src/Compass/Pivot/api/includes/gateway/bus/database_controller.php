@@ -389,7 +389,7 @@ class Gateway_Bus_DatabaseController {
 	 */
 	protected static function _waitResponseRoutine(Struct_Db_PivotCompanyService_DominoRegistry $domino, string $routine_key, int $status, string $message, int $deadline):void {
 
-		while ($status === static::_ROUTINE_STATUS_PENDING && $deadline > time()) {
+		while ($status === static::_ROUTINE_STATUS_PENDING || $deadline < time()) {
 
 			$request = new \DatabaseControllerGrpc\GetRoutineStatusRequest([
 				"routine_key" => $routine_key,

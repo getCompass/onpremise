@@ -10,9 +10,9 @@ class Struct_Dto_User_Action_Attribution_Detect_JoinSpaceAnalytics {
 
 	public function __construct(
 		public int    $user_id,
-		public int    $result,
+		public int    $result_mask,
 		public string $matched_visit_id,
-		public int    $matched_percentage,
+		public string $traffic_type,
 
 		/**
 		 * здесь хранится мапа следующего формата: [$visit_id] => [
@@ -33,8 +33,8 @@ class Struct_Dto_User_Action_Attribution_Detect_JoinSpaceAnalytics {
 	public function format():array {
 
 		$formatted_data = [
-			"matched_percentage"   => $this->matched_percentage,
 			"selection_visit_list" => [],
+			"traffic_type"         => $this->traffic_type,
 		];
 
 		foreach ($this->visit_parameters_comparing_result_map as $visit_id => $compare_parameter_list) {
@@ -47,7 +47,7 @@ class Struct_Dto_User_Action_Attribution_Detect_JoinSpaceAnalytics {
 
 		return [
 			"user_id"          => $this->user_id,
-			"result"           => $this->result,
+			"result_mask"      => $this->result_mask,
 			"matched_visit_id" => $this->matched_visit_id,
 			"data"             => $formatted_data,
 		];

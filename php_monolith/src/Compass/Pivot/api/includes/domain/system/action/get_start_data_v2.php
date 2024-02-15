@@ -124,7 +124,7 @@ class Domain_System_Action_GetStartDataV2 {
 
 			// если версию не передали - отдаем текущую версию эмодзи от сервера
 			if (!isset($config["version"])) {
-				$config["version"] = EMOJI_VERSION_LIST[$locale];
+				$config["version"] = \Compass\Pivot\EMOJI_VERSION_LIST[$locale];
 			}
 
 			$lang    = \BaseFrame\System\Locale::getLang($locale);

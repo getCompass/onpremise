@@ -293,7 +293,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 
 		try {
 			$member_id_list = Domain_Conversation_Scenario_Api::getInvited($this->user_id, $this->role, $this->method_version, $conversation_map);
-		} catch (Domain_Member_Exception_ActionNotAllowed|UserIsGuest) {
+		} catch (Domain_Member_Exception_ActionNotAllowed | UserIsGuest) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		}
 
@@ -589,12 +589,12 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 * установить опции для группового диалога
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
-	 * @throws \BaseFrame\Exception\Request\ParamException
+	 * @throws BlockException
+	 * @throws ParamException
 	 * @throws \blockException
-	 * @throws \cs_DecryptHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
+	 * @throws ParseFatalException
 	 */
 	public function setOptions():array {
 
@@ -637,7 +637,6 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 
 		// меняем опции группы
 		Helper_Groups::doChangeOptions($conversation_map, $meta_row, $modifiable_options);
-
 		return $this->ok();
 	}
 
@@ -649,6 +648,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 * @param int|false $need_system_message_on_dismissal
 	 * @param int|false $is_need_show_system_message_on_invite_and_join
 	 * @param int|false $is_need_show_system_message_on_leave_and_kicked
+	 * @param int|false $is_need_show_system_deleted_message
 	 *
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \blockException

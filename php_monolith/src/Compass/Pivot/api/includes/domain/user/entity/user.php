@@ -60,4 +60,18 @@ class Domain_User_Entity_User {
 
 		return mb_strlen($user_info->full_name) < 1;
 	}
+
+	/**
+	 * Проверяем, является ли пользователь тестовым зарегистрированным QA
+	 *
+	 * @return bool
+	 */
+	public static function isQATestUser(Struct_Db_PivotUser_User $user_info):bool {
+
+		if (TEST_USER_NAME_PREFIX === "") {
+			return false;
+		}
+
+		return inHtml($user_info->full_name, TEST_USER_NAME_PREFIX);
+	}
 }

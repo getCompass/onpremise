@@ -1036,13 +1036,13 @@ class Type_Conversation_Message_Handler_Default {
 
 	// создать сообщение типа "текстовое сообщение для репоста из треда"
 	public static function makeThreadRepostItemText(
-		int $sender_user_id,
+		int    $sender_user_id,
 		string $text,
 		string $client_message_id,
-		int $created_at,
-		array $mention_user_id_list = [],
+		int    $created_at,
+		array  $mention_user_id_list = [],
 		string $platform = self::WITHOUT_PLATFORM,
-		array $link_list = []
+		array  $link_list = []
 	):array {
 
 		// формируем стандартную структуру сообщения и добавляем текст
@@ -1544,6 +1544,11 @@ class Type_Conversation_Message_Handler_Default {
 			return $push_body;
 		}
 
+		// если формируем пуш для сообщения о годовщине
+		if (Type_Conversation_Message_Main::getHandler($message)::getType($message) === CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_ANNIVERSARY) {
+			return $push_body;
+		}
+
 		// если формируем пуш для group диалога
 		if (Type_Conversation_Meta::isSubtypeOfGroup($conversation_type)) {
 			$push_body = $full_name . ": " . $push_body;
@@ -1573,7 +1578,8 @@ class Type_Conversation_Message_Handler_Default {
 		$push_locale = new Body(Message::CONVERSATION_ENTITY);
 
 		// если формируем пуш для group диалога
-		if (Type_Conversation_Meta::isSubtypeOfGroup($conversation_type)) {
+		if (Type_Conversation_Meta::isSubtypeOfGroup($conversation_type)
+			&& Type_Conversation_Message_Main::getHandler($message)::getType($message) !== CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_ANNIVERSARY) {
 			$push_locale = $push_locale->setIsGroup()->addArg($full_name);
 		}
 
@@ -1753,6 +1759,9 @@ class Type_Conversation_Message_Handler_Default {
 
 			case CONVERSATION_MESSAGE_TYPE_DISMISSAL_REQUEST:
 				return "Заявка на увольнение";
+
+			case CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_ANNIVERSARY:
+				return "Участник сегодня празднует годовщину";
 
 			case CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND:
 
@@ -3997,12 +4006,12 @@ class Type_Conversation_Message_Handler_Default {
 
 	// привязать отработанные часы к сообщению
 	public static function attachWorkedHours(
-		array $message,
-		int $worked_hours_id,
+		array  $message,
+		int    $worked_hours_id,
 		string $day_start_at_iso,
-		int $worked_hours_created_at = null,
-		bool $is_user_sender = true,
-		int $message_created_at = null
+		int    $worked_hours_created_at = null,
+		bool   $is_user_sender = true,
+		int    $message_created_at = null
 	):array {
 
 		$data = [
@@ -4301,11 +4310,11 @@ class Type_Conversation_Message_Handler_Default {
 	// -------------------------------------------------------
 	public static function prepareForFormatLegacy(
 		array $message,
-		int $user_id = 0,
+		int   $user_id = 0,
 		array $thread_rel_list = [],
 		array $reaction_user_list = [],
-		int $last_reaction_updated_ms = 0,
-		bool $is_need_child_thread_for_deleted_message = false,
+		int   $last_reaction_updated_ms = 0,
+		bool  $is_need_child_thread_for_deleted_message = false,
 	):array {
 
 		self::_checkVersion($message);
@@ -5078,10 +5087,10 @@ class Type_Conversation_Message_Handler_Default {
 	// если к сообщению есть тред - прикрепляем
 	protected static function _attachThreadIfExist(
 		array $output,
-		bool $is_need_child_thread_for_deleted_message,
+		bool  $is_need_child_thread_for_deleted_message,
 		array $message,
 		array $thread_rel_list,
-		int $user_id
+		int   $user_id
 	):array {
 
 		// если к сообщению существует тред

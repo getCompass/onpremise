@@ -77,9 +77,10 @@ class Type_Thread_Utils {
 	protected static function _makeDefaultThreadMetaOutput(array $meta_row, int $user_id, bool $is_force_new_thread_meta):array {
 
 		$output = [
-			"thread_map" => $meta_row["thread_map"],
-			"created_at" => $meta_row["created_at"],
-			"updated_at" => $meta_row["updated_at"],
+			"thread_map"  => $meta_row["thread_map"],
+			"is_readonly" => $meta_row["is_readonly"],
+			"created_at"  => $meta_row["created_at"],
+			"updated_at"  => $meta_row["updated_at"],
 		];
 
 		// если передан заголовок - прикрепляем last_sender_data и всегда возвращаем полное количество сообщений
@@ -114,7 +115,7 @@ class Type_Thread_Utils {
 
 		// добавляем отправителей
 		$output["last_sender_user_list"] = array_slice($sender_user_list, -5);
-		$output["sender_user_list"]      = self::getSenderUserList($meta_row["sender_order"], false);
+		$output["sender_user_list"]      = $sender_user_list;
 
 		return $output;
 	}

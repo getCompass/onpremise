@@ -271,7 +271,7 @@ class Gateway_Db_CompanyData_MemberList extends Gateway_Db_CompanyData_Main {
 	/**
 	 * метод для получения списка участников по списку ролей
 	 *
-	 * @return \\CompassApp\Domain\Member\Struct\Main[]
+	 * @return \CompassApp\Domain\Member\Struct\Main[]
 	 */
 	public static function getListByRoles(array $roles, int $limit = 1, int $offset = 0):array {
 

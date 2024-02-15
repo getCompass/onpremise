@@ -18,10 +18,6 @@ echo "wait" > status
 envsubst < /app/private/custom.local.php > /app/private/custom.php
 envsubst < /app/private/main.local.php > /app/private/main.php
 
-if [[ "${IS_LOCAL}" == "true" ]] || [[ "${DEV_SERVER}" == "true" ]]; then
-  chown -R www-data:www-data /app/www/files
-fi
-
 chmod 777 /tmp/files
 
 cd /app && runuser -l billy -c "sh install.sh"

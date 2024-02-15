@@ -2,7 +2,13 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\BlockException;
+use BaseFrame\Exception\Request\CompanyIsHibernatedException;
+use BaseFrame\Exception\Request\CompanyIsRelocatingException;
+use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Entity\Member;
 
@@ -341,9 +347,23 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Действия при удалении аккаунта пользователя
 	 *
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws BusFatalException
+	 * @throws CompanyIsHibernatedException
+	 * @throws CompanyIsRelocatingException
+	 * @throws ParamException
+	 * @throws \apiAccessException
+	 * @throws \busException
+	 * @throws \cs_CompanyUserIsNotOwner
+	 * @throws \cs_RowIsEmpty
+	 * @throws \cs_UserIsNotMember
+	 * @throws \paramException
 	 * @throws \parseException
+	 * @throws \queryException
 	 * @throws \returnException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws cs_IncorrectDismissalRequestId
+	 * @throws cs_PlatformNotFound
 	 */
 	public static function deleteUser(int $user_id):void {
 
@@ -352,6 +372,12 @@ class Domain_User_Scenario_Socket {
 
 		// удаляем запрос на оплату премиума, если таковой был
 		Domain_Premium_Action_PaymentRequest_Delete::do($user_id);
+
+		// получаем роль
+		$user_info = Gateway_Bus_CompanyCache::getMember($user_id);
+
+		// удаляемся из компании
+		Domain_User_Scenario_Api::doLeaveCompany($user_id, $user_info->role, true);
 	}
 
 	/**

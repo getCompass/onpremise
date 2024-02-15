@@ -7,14 +7,15 @@ require_once __DIR__ . "/../start.php";
 \Compass\Pivot\Type_Session_Main::startSession();
 
 $url_list = [
-	"pivot"        => PUBLIC_ENTRYPOINT_PIVOT . "/",
-	"announcement" => PUBLIC_ENTRYPOINT_ANNOUNCEMENT . "/",
-	"billing"      => PUBLIC_ENTRYPOINT_BILLING . "/",
-	"partner"      => PUBLIC_ENTRYPOINT_PARTNER . "/",
-	"captcha"      => PUBLIC_ENTRYPOINT_CAPTCHA . "/",
-	"join"         => PUBLIC_ENTRYPOINT_JOIN . "/",
-	"invite"       => PUBLIC_ENTRYPOINT_INVITE . "/",
-	"solution"     => PUBLIC_ENTRYPOINT_SOLUTION . "/",
+	"pivot"              => PUBLIC_ENTRYPOINT_PIVOT . "/",
+	"announcement"       => PUBLIC_ENTRYPOINT_ANNOUNCEMENT . "/",
+	"billing"            => PUBLIC_ENTRYPOINT_BILLING . "/",
+	"partner"            => PUBLIC_ENTRYPOINT_PARTNER . "/",
+	"captcha"            => PUBLIC_ENTRYPOINT_CAPTCHA . "/",
+	"captcha_enterprise" => PUBLIC_ENTRYPOINT_CAPTCHA_ENTERPRISE . "/",
+	"join"               => PUBLIC_ENTRYPOINT_JOIN . "/",
+	"invite"             => PUBLIC_ENTRYPOINT_INVITE . "/",
+	"solution"           => PUBLIC_ENTRYPOINT_SOLUTION . "/",
 ];
 
 foreach ($url_list as &$url) {
@@ -28,7 +29,7 @@ foreach ($url_list as &$url) {
 showAjax([
 	"status"   => "ok",
 	"response" => [
-		"start_url" => (string) PUBLIC_ENTRYPOINT_START . "/",
+		"start_url" => (string) PUBLIC_ENTRYPOINT_PIVOT . "/",
 		"version"   => ON_PREMISE_VERSION,
 		"url_list"  => (object) $url_list,
 	],

@@ -19,7 +19,7 @@ class Domain_Member_Action_AddNotification {
 		// если уведомление предназначено для определенной группы - отправляем только ей
 		$owner_list = match (isset(Domain_Member_Entity_Menu::NOTIFICATION_PERMISSION_REQUIREMENTS[$type])) {
 
-			true => Domain_User_Action_Member_GetByPermissions::do([Domain_Member_Entity_Menu::NOTIFICATION_PERMISSION_REQUIREMENTS[$type]]),
+			true    => Domain_User_Action_Member_GetByPermissions::do([Domain_Member_Entity_Menu::NOTIFICATION_PERMISSION_REQUIREMENTS[$type]]),
 			default => Domain_User_Action_Member_GetUserRoleList::do([\CompassApp\Domain\Member\Entity\Member::ROLE_ADMINISTRATOR]),
 		};
 
@@ -71,10 +71,13 @@ class Domain_Member_Action_AddNotification {
 		}
 
 		$push_data = match ($type) {
-			Domain_Member_Entity_Menu::JOIN_REQUEST => Domain_Space_Entity_Push::makeJoinRequestPushData($data["action_user_full_name"], $data["company_name"]),
-			Domain_Member_Entity_Menu::ACTIVE_MEMBER => Domain_Space_Entity_Push::makeActiveMemberPushData($data["action_user_full_name"], $data["company_name"]),
-			Domain_Member_Entity_Menu::GUEST_MEMBER => Domain_Space_Entity_Push::makeGuestMemberPushData($data["action_user_full_name"], $data["company_name"]),
-			default => [],
+			Domain_Member_Entity_Menu::JOIN_REQUEST  => Domain_Space_Entity_Push::makeJoinRequestPushData(
+				$data["action_user_full_name"], $data["company_name"], $extra->getHiringRequestId()),
+			Domain_Member_Entity_Menu::ACTIVE_MEMBER => Domain_Space_Entity_Push::makeActiveMemberPushData(
+				$data["action_user_full_name"], $data["company_name"]),
+			Domain_Member_Entity_Menu::GUEST_MEMBER  => Domain_Space_Entity_Push::makeGuestMemberPushData(
+				$data["action_user_full_name"], $data["company_name"]),
+			default                                  => [],
 		};
 
 		// шлем событие всем администраторам о новом уведомлении

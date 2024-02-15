@@ -33,6 +33,7 @@ class Type_Phphooker_Main {
 	public const TASK_TYPE_SEND_BITRIX_USER_CAMPAIGN_DATA  = 51; // задача получения и отправки в Bitrix данных по рекламной кампании, с которой пользователь пришел в приложение
 	public const TASK_TYPE_ACCEPT_FIRST_JOIN_LINK          = 52; // при принятии первой ссылки-пригалшения в команду
 	public const TASK_TYPE_ON_USER_LEFT_SPACE_EARLY        = 53; // пользователь покинул пространство слишком рано
+	public const TASK_TYPE_USER_ENTERING_FIRST_SPACE       = 54; // пользователь вступил в первую команду
 
 	# endregion
 	##########################################################
@@ -299,22 +300,23 @@ class Type_Phphooker_Main {
 	}
 
 	/**
-	 * совершаем некоторые действия при принятии пользователем первой ссылки-приглашении в команду
-	 */
-	public static function onAcceptFirstJoinLink(int $user_id, string $join_link_uniq):void {
-
-		self::_addFromApi(self::TASK_TYPE_ACCEPT_FIRST_JOIN_LINK, time(), [
-			"user_id"        => $user_id,
-			"join_link_uniq" => $join_link_uniq,
-		]);
-	}
-
-	/**
 	 * совершаем некоторые действия в случае если пользователь покинул пространство слишком рано
 	 */
 	public static function onUserLeftSpaceEarly(int $user_id, int $company_id, int $entry_id):void {
 
 		self::_addFromApi(self::TASK_TYPE_ON_USER_LEFT_SPACE_EARLY, time(), [
+			"user_id"    => $user_id,
+			"company_id" => $company_id,
+			"entry_id"   => $entry_id,
+		]);
+	}
+
+	/**
+	 * Событие, когда пользователь попал в свою первую команду
+	 */
+	public static function onUserEnteringFirstCompany(int $user_id, int $company_id, int $entry_id):void {
+
+		self::_addFromApi(self::TASK_TYPE_USER_ENTERING_FIRST_SPACE, time(), [
 			"user_id"    => $user_id,
 			"company_id" => $company_id,
 			"entry_id"   => $entry_id,

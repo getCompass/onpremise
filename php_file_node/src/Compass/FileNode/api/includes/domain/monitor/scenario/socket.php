@@ -5,6 +5,7 @@ namespace Compass\FileNode;
 use BaseFrame\Monitor\Core;
 use BaseFrame\Monitor\MetricAggregator;
 use BaseFrame\Monitor\Helper\Metric;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * Сценарии мониторинга для prometheus
@@ -31,7 +32,9 @@ class Domain_Monitor_Scenario_Socket {
 		self::_collectPostUploadQueue($metric_aggregator, "post_upload_document", FILE_TYPE_DOCUMENT, $need_work);
 
 		// отправляем
-		Core::flush();
+		if (!ServerProvider::isCi()) {
+			Core::flush();
+		}
 		return $prometheus_sender->metricToString();
 	}
 

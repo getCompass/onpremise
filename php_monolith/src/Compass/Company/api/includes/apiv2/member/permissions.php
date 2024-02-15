@@ -161,6 +161,8 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 			throw new \BaseFrame\Exception\Request\CaseException(2209007, "member deleted account");
 		} catch (Domain_Member_Exception_IncorrectUserId) {
 			throw new \BaseFrame\Exception\Request\ParamException("incorrect user_id");
+		} catch (\CompassApp\Domain\Member\Exception\UserIsGuest) {
+			throw new \BaseFrame\Exception\Request\CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action");
 		}
 
 		return $this->ok();

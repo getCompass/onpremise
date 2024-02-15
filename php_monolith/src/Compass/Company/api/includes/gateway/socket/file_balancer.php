@@ -79,6 +79,6 @@ class Gateway_Socket_FileBalancer extends Gateway_Socket_Default {
 			$url = self::_getSocketPivotUrl("files");
 		}
 
-		return self::_doCall($url, $method, $params, $user_id);
+		return self::_doCall($url, $method, $params, $user_id, $company_id);
 	}
 }

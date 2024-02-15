@@ -21,7 +21,7 @@ class Onpremiseweb_Global extends \BaseFrame\Controller\Api {
 		return $this->ok([
 			"is_authorized"      => (int) $is_authorized,
 			"need_fill_profile"  => (int) $need_fill_profile,
-			"captcha_public_key" => (string) Type_Captcha_Main::init()->getPublicCaptchaKey(),
+			"captcha_public_key" => (string) Type_Captcha_Main::init()->getPublicCaptchaKey(Type_Api_Platform::PLATFORM_OTHER),
 		]);
 	}
 }

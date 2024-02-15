@@ -93,7 +93,7 @@ class Domain_Link_Scenario_Api {
 			/** @var bool $is_postmoderation */
 			[
 				$invite_link_rel, $company, $inviter_user_info, $entry_option, $is_postmoderation, $is_waiting_for_postmoderation, $is_exit_status_in_progress,
-			] = self::_validateJoinLinkV4($user_id, $link);
+			] = Domain_Company_Action_JoinLink_ValidateV4::do($user_id, $link);
 
 			// добавляем в историю валидацию ссылки
 			Domain_Company_Entity_JoinLink_ValidateHistory::add($user_id, $invite_link_rel->join_link_uniq, $session_uniq, $link);
@@ -124,57 +124,4 @@ class Domain_Link_Scenario_Api {
 		];
 	}
 
-	/**
-	 * Валидирует ссылку.
-	 *
-	 * @param int    $user_id
-	 * @param string $link
-	 *
-	 * @return array
-	 *
-	 * @throws Domain_Link_Exception_SupportCompanyTemporarilyUnavailable
-	 * @throws Domain_Company_Exception_IsHibernated
-	 * @throws Domain_Company_Exception_IsRelocating
-	 * @throws cs_CompanyIncorrectCompanyId
-	 * @throws cs_CompanyNotExist
-	 * @throws cs_IncorrectJoinLink
-	 * @throws cs_JoinLinkIsNotActive
-	 * @throws cs_JoinLinkIsUsed
-	 * @throws cs_JoinLinkNotFound
-	 * @throws cs_UserAlreadyInCompany
-	 * @throws cs_UserNotFound
-	 */
-	protected static function _validateJoinLinkV4(int $user_id, string $link):array {
-
-		try {
-
-			return Domain_Company_Action_JoinLink_ValidateV4::do($user_id, $link);
-		} catch (cs_JoinLinkIsUsed|cs_JoinLinkIsNotActive $e) {
-
-			// выбрасываем другое исключение, если это попытка вступить в компанию поддержки партнерской программы
-			self::_throwOnAttemptJoinToSupportCompany($link);
-
-			throw $e;
-		}
-	}
-
-	/**
-	 * Выбрасываем исключение, если пытаются присоединиться в компанию паддержки партнерской программы
-	 *
-	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
-	 */
-	protected static function _throwOnAttemptJoinToSupportCompany(string $link):void {
-
-		// если партнерская программа отключена, то ничего не делаем
-		if (!IS_PARTNER_WEB_ENABLED || ServerProvider::isOnPremise()) {
-			return;
-		}
-
-		// если это попытка присоединиться в компанию поддержки, то обрабатываем сценарий по-особому
-		[$support_company_join_link, $valid_till] = Gateway_Socket_Partner::getSupportCompanyLink();
-
-		if ($support_company_join_link === $link) {
-			throw new Domain_Link_Exception_SupportCompanyTemporarilyUnavailable($valid_till);
-		}
-	}
 }

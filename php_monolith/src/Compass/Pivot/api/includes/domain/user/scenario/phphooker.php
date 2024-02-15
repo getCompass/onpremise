@@ -167,17 +167,6 @@ class Domain_User_Scenario_Phphooker {
 			return;
 		}
 
-		// этот ивент шлем пока только в партнерку
-		if ($action == Type_User_Analytics::FIRST_PROFILE_SET) {
-
-			// получаем информацию по аттрибуции
-			[$source_type, $source_extra] = Domain_User_Entity_Attribution::getUserSourceData($user_id);
-
-			// отправляем в партнерку событие о регистрации пользователя
-			Domain_Partner_Entity_Event_UserRegistered::create($user_id, $source_type, $source_extra, $user_info->created_at);
-			return;
-		}
-
 		// получаем список активных компаний пользователя
 		$user_company_list    = Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id);
 		$user_company_id_list = array_column($user_company_list, "company_id");

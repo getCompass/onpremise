@@ -1,5 +1,7 @@
 <?php
 
+namespace Compass\Thread;
+
 // @formatter:off
 // ----
 // private/custom.php
@@ -7,4 +9,4 @@
 // ----
 
 // соль для threads.getMenu/threads.getMenuItem
-define("SALT_THREAD_LIST"			, "${SALT_THREAD_LIST}");
+define(__NAMESPACE__ . "\SALT_THREAD_LIST"			, "${SALT_THREAD_LIST}");

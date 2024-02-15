@@ -45,7 +45,7 @@ class Helper_Single {
 	public static function createIfNotExist(int $user_id, int $opponent_user_id, bool $is_hidden_for_user = false, bool $is_hidden_for_opponent = true, bool $is_enable_antispam = false, int $method_version = 1, bool $is_forcing_creation = false):array {
 
 		// получаем информацию об участниках диалога
-		/** @var \CompassApp\Domain\Member\Struct\Short[] $users_info_list */
+		/** @var \CompassApp\Domain\Member\Struct\Main[] $users_info_list */
 		[$users_info_list, $initiator_npc_type] = self::_tryGetUsersInfoOnCreateSingle($user_id, $opponent_user_id);
 
 		// проверяем существование диалога, создаем если нет
@@ -70,7 +70,14 @@ class Helper_Single {
 				!$is_forcing_creation && Domain_Member_Entity_Permission::check($user_id, Permission::IS_ADD_SINGLE_ENABLED);
 			}
 
-			$allow_status = $users_info_list[$user_id]->role == Member::ROLE_GUEST ? ALLOW_STATUS_NEED_CHECK : ALLOW_STATUS_GREEN_LIGHT;
+			// если инициатор диалога - гость, или оппонент диалога покинул группу или удалил аккаунт
+			// то allow_status необходимо проверить
+			// в остальных случаях зелёный свет
+			$is_initiator_guest  = $users_info_list[$user_id]->role == Member::ROLE_GUEST;
+			$is_opponent_left    = $users_info_list[$opponent_user_id]->role == Member::ROLE_LEFT;
+			$is_opponent_deleted = \CompassApp\Domain\Member\Entity\Extra::getIsDeleted($users_info_list[$opponent_user_id]->extra);
+
+			$allow_status = $is_initiator_guest || $is_opponent_left || $is_opponent_deleted ? ALLOW_STATUS_NEED_CHECK : ALLOW_STATUS_GREEN_LIGHT;
 
 			// создаем диалог
 			$meta_row = self::_createMeta(
@@ -266,10 +273,16 @@ class Helper_Single {
 		return [$users_info_list, $initiator_npc_type];
 	}
 
-	// пробуем получить информацию о пользователе
+	/**
+	 * пробуем получить информацию о пользователе
+	 *
+	 * @param array $user_id_list
+	 *
+	 * @return \CompassApp\Domain\Member\Struct\Main[]
+	 */
 	protected static function _tryGetUserInfo(array $user_id_list):array {
 
-		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList($user_id_list, false);
+		$user_info_list = Gateway_Bus_CompanyCache::getMemberList($user_id_list);
 
 		foreach ($user_id_list as $user_id) {
 
@@ -281,7 +294,7 @@ class Helper_Single {
 	}
 
 	// создаем сингл диалог если его никогда не существовало
-	protected static function _createMeta(int $conversation_type, int $user_id, int $user_npc, \CompassApp\Domain\Member\Struct\Short $opponent_user_info, int $allow_status = ALLOW_STATUS_GREEN_LIGHT):array {
+	protected static function _createMeta(int $conversation_type, int $user_id, int $user_npc, \CompassApp\Domain\Member\Struct\Main $opponent_user_info, int $allow_status = ALLOW_STATUS_GREEN_LIGHT):array {
 
 		// проверяем, что можно создать сингл с указанным юзером
 		self::_throwIfOpponentIsNotValidForAction($opponent_user_info, Type_User_Action::CREATE_SINGLE);
@@ -309,7 +322,7 @@ class Helper_Single {
 	// --------------
 
 	// проверяет, подходит ли пользователь для выполнения указанного действия НАД ним
-	protected static function _throwIfOpponentIsNotValidForAction(\CompassApp\Domain\Member\Struct\Short $opponent_info, string $action):void {
+	protected static function _throwIfOpponentIsNotValidForAction(\CompassApp\Domain\Member\Struct\Main $opponent_info, string $action):void {
 
 		// проверяем тип пользователя и возможность выполения действия НАД ним
 		if (!Type_User_Action::isValidForAction($opponent_info->npc_type, $action)) {

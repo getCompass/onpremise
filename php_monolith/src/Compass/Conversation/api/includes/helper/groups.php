@@ -55,8 +55,8 @@ class Helper_Groups {
 	 * @throws ParseFatalException
 	 */
 	public static function doJoin(string $conversation_map, int $user_id, int|false $member_role = false, int|false $member_permissions = false,
-						int    $inviter_user_id = 0, int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT, bool $is_favorite = false,
-						bool   $is_mentioned = false, string $userbot_id = "", bool $is_need_silent = false):array {
+						int $inviter_user_id = 0, int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT, bool $is_favorite = false,
+						bool $is_mentioned = false, string $userbot_id = "", bool $is_need_silent = false):array {
 
 		// если пользователь администратор всех групп - добавляем в группу как администратора
 		if (Permission::isGroupAdministrator($member_role, $member_permissions)) {
@@ -146,7 +146,7 @@ class Helper_Groups {
 	// действия после вступления пользователя в группе
 	// @long
 	protected static function _onJoinUserToGroup(string $conversation_map, int $user_id,
-								   array  $users, int $inviter_user_id, int $role):void {
+								   array $users, int $inviter_user_id, int $role):void {
 
 		// обновляем количество пользователей в left_menu, очищаем meta кэш и отправляем событие пользователю, что добавлен диалог в левом меню
 		Type_Phphooker_Main::updateMembersCount($conversation_map, $users);
@@ -595,6 +595,11 @@ class Helper_Groups {
 
 		// отправляем событие участникам
 		Gateway_Bus_Sender::conversationGroupChangedOptions($talking_user_list, $conversation_map, $actual_option_list);
+
+		// если была выключена опцию is_need_show_system_deleted_message, актуализируем левое меню если необходимо
+		if (Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($meta_row["extra"]) && !Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($extra)) {
+			Type_Phphooker_Main::doDisableSystemDeletedMessageConversation($conversation_map, $meta_row["users"]);
+		}
 	}
 
 	// актуализируем поле extra с учетом изменяемых опций

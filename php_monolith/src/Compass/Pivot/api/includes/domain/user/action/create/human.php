@@ -145,6 +145,9 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 		// отправляем в crm событие о регистрации пользователя
 		Domain_Crm_Entity_Event_UserRegistration::create($data->user->user_id);
 
+		// отправляем в партнерскую программу событие о регистрации пользователя
+		Domain_Partner_Entity_Event_UserRegistered::create($data->user->user_id);
+
 		return $data;
 	}
 }

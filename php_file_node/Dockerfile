@@ -43,7 +43,7 @@ RUN apt-get update && apt-get install -y wget git perl libperl-dev libgd3 libgd-
 RUN apt-get update && apt-get install -y libmemcached-dev gettext default-mysql-client zlib1g-dev netcat cron libzip-dev
 RUN apt-get update && apt-get install -y git
 
-RUN apt install /tmp/prebuild/libhwy0_0.17.0-11_amd64.deb && apt install /tmp/prebuild/libhwy-dev_0.17.0-11_amd64.deb
+RUN apt install /tmp/prebuild/libhwy0_0.17.0-11_amd64.deb && apt install /tmp/prebuild/libhwy-dev_0.17.0-11_amd64.deb && apt install /tmp/prebuild/php/zip_1.22.2-1_amd64.deb
 RUN apt install /tmp/prebuild/libjxl_0.8_amd64.deb && apt install /tmp/prebuild/libjxl-dev_0.8_amd64.deb && apt install /tmp/prebuild/libjxl-gdk-pixbuf_0.8_amd64.deb
 RUN cd /tmp && tar -zxf pcre-8.45.tar.gz && cd pcre-8.45 && ./configure && make && make install \
         && cd /tmp && tar -zxf zlib-1.2.11.tar.gz && cd zlib-1.2.11 && ./configure && make && make install \

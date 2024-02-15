@@ -26,7 +26,7 @@ class Type_Captcha_Google extends Type_Captcha_Main {
 	 * проверить, что пользователь прошел проверку
 	 *
 	 */
-	public function check(string $captcha, string $platform):bool {
+	public function check(string $captcha, string $platform, string $user_action = ""):bool {
 
 		$captcha_provider_config = $this->_getConfig();
 

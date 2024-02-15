@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Server\ServerProvider;
+use Tariff\Plan\MemberCount\MemberCount;
 
 /**
  * класс-интерфейс для работы с модулем CRM
@@ -14,18 +15,15 @@ class Gateway_Socket_Crm extends Gateway_Socket_Default {
 	 * @long
 	 */
 	public static function onNewPayment(
-		int    $space_id,
-		string $payment_id,
-		string $payed_currency,
-		int    $payed_amount,
-		int    $net_amount_rub,
-		string $payment_method,
-		int    $payment_price_type,
-		int    $tariff_member_limit,
-		int    $tariff_prolongation_duration,
-		int    $tariff_active_till,
-		bool   $tariff_is_trial,
-		bool   $tariff_is_paid,
+		int         $space_id,
+		string      $payment_id,
+		string      $payed_currency,
+		int         $payed_amount,
+		int         $net_amount_rub,
+		string      $payment_method,
+		int         $payment_price_type,
+		MemberCount $member_count,
+		int         $tariff_prolongation_duration,
 	):void {
 
 		if (ServerProvider::isOnPremise()) {
@@ -43,11 +41,11 @@ class Gateway_Socket_Crm extends Gateway_Socket_Default {
 				"net_amount_rub"               => $net_amount_rub,
 				"payment_method"               => $payment_method,
 				"payment_price_type"           => $payment_price_type,
-				"tariff_member_limit"          => $tariff_member_limit,
+				"tariff_member_limit"          => $member_count->getLimit(),
 				"tariff_prolongation_duration" => $tariff_prolongation_duration,
-				"tariff_active_till"           => $tariff_active_till,
-				"tariff_is_trial"              => $tariff_is_trial,
-				"tariff_is_paid"               => $tariff_is_paid,
+				"tariff_active_till"           => $member_count->getActiveTill(),
+				"tariff_is_trial"              => $member_count->isTrial(time()),
+				"tariff_is_paid"               => $member_count->isActive(time()) && !$member_count->isFree(time()),
 			]);
 		} catch (\cs_SocketRequestIsFailed $e) {
 

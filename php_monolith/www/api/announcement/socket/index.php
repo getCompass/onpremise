@@ -15,4 +15,3 @@ if (!isset($post_data["method"]) ||
 }
 
 showAjax(Application\Entrypoint\Socket::processRequest("Announcement", $_POST["method"], "announcement", $_POST, false));
-

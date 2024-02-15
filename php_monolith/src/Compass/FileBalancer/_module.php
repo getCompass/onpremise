@@ -51,6 +51,8 @@ include_once FILEBALANCER_MODULE_ROOT . "_module/sharding.php";
 
 if (CURRENT_SERVER == CLOUD_SERVER) {
 
+	\CompassApp\Company\HibernationHandler::init(NEED_COMPANY_HIBERNATE, COMPANY_HIBERNATION_DELAYED_TIME);
+
 	\CompassApp\Company\CompanyHandler::init(COMPANY_ID);
 	if (isCLi()) {
 

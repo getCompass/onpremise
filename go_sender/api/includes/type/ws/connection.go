@@ -135,6 +135,7 @@ func NewConnection(
 		EndAt:     0,
 		EventName: "open_ws",
 		Platform:  c.platform,
+		CompanyId: c.CompanyId,
 	}
 
 	analyticItem.OnOpenWsConnect()
@@ -402,6 +403,7 @@ func (connection *ConnectionStruct) closeConnection(messageType int, err error) 
 		TimeMs:    timeMs,
 		EventName: "close_ws",
 		Platform:  connection.analyticsData.Platform,
+		CompanyId: connection.CompanyId,
 	}
 
 	analyticItem.OnCloseWsConnect()

@@ -3,9 +3,9 @@
 namespace Compass\Pivot;
 
 /**
- * класс, описывающий поведение любого алгоритма для определения рекламной кампании
+ * абстрактный класс, содержит логику по сравнению параметров регистрации и посещения
  */
-abstract class Domain_User_Entity_Attribution_DetectAlgorithm_Abstract {
+abstract class Domain_User_Entity_Attribution_Comparator_Abstract {
 
 	/** список всех параметров, по которым осуществляется поиск совпадений */
 	public const PARAMETER_IP_ADDRESS          = "ip_address";
@@ -15,31 +15,31 @@ abstract class Domain_User_Entity_Attribution_DetectAlgorithm_Abstract {
 	public const PARAMETER_SCREEN_AVAIL_WIDTH  = "screen_avail_width";
 	public const PARAMETER_SCREEN_AVAIL_HEIGHT = "screen_avail_height";
 
-	/** @var int[] список параметров, используемых для расчета процента совпадения */
-	protected const _MATCHING_PARAMETER_LIST = [];
+	/** @var int[] список параметров, используемых для сравнения */
+	protected const _COMPARING_PARAMETER_LIST = [];
 
 	/**
-	 * выбираем класс с алгоритмом, с помощью которого будем определять рекламную кампанию
+	 * выбираем класс, с помощью которого будем сравнивать параметры
 	 *
 	 * @param string $platform
 	 *
 	 * @return static
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public static function chooseAlgorithm(string $platform):self {
+	public static function choose(string $platform):self {
 
 		return match ($platform) {
 			Type_Api_Platform::PLATFORM_ELECTRON,
-			Type_Api_Platform::PLATFORM_OTHER => new Domain_User_Entity_Attribution_DetectAlgorithm_Desktop(),
+			Type_Api_Platform::PLATFORM_OTHER => new Domain_User_Entity_Attribution_Comparator_Desktop(),
 			Type_Api_Platform::PLATFORM_ANDROID,
 			Type_Api_Platform::PLATFORM_IOS,
-			Type_Api_Platform::PLATFORM_IPAD  => new Domain_User_Entity_Attribution_DetectAlgorithm_Mobile(),
+			Type_Api_Platform::PLATFORM_IPAD  => new Domain_User_Entity_Attribution_Comparator_Mobile(),
 			default                           => throw new \BaseFrame\Exception\Domain\ParseFatalException("unexpected platform ($platform)"),
 		};
 	}
 
 	/**
-	 * высчитываем процент совпадения
+	 * высчитываем процент совпадающих параметров
 	 *
 	 * @param Struct_Db_PivotAttribution_UserAppRegistration $registration_log
 	 * @param Struct_Db_PivotAttribution_LandingVisit        $visit_log
@@ -54,19 +54,13 @@ abstract class Domain_User_Entity_Attribution_DetectAlgorithm_Abstract {
 
 		$matched_parameters_count        = 0;
 		$parameter_comparing_result_list = [];
-		foreach (static::_MATCHING_PARAMETER_LIST as $parameter_name) {
+		foreach (static::_COMPARING_PARAMETER_LIST as $parameter_name) {
 
-			// получаем значения из двух сравниваемых логов
-			$visit_value        = $this->_getParameterValue($visit_log, $parameter_name);
-			$registration_value = $this->_getParameterValue($registration_log, $parameter_name);
-			$is_equal           = $visit_value == $registration_value;
-
-			$parameter_comparing_result_list[] = new Struct_Dto_User_Entity_Attribution_DetectAlghoritm_ParameterComparingResult(
-				$parameter_name, $visit_value, $registration_value, $is_equal
-			);
+			$result                            = $this->compareByParameter($registration_log, $visit_log, $parameter_name);
+			$parameter_comparing_result_list[] = $result;
 
 			// если значения не совпадают
-			if (!$is_equal) {
+			if (!$result->is_equal) {
 				continue;
 			}
 
@@ -75,8 +69,27 @@ abstract class Domain_User_Entity_Attribution_DetectAlgorithm_Abstract {
 		}
 
 		return new Struct_Dto_User_Entity_Attribution_DetectAlghoritm_Result(
-			round($matched_parameters_count / count(static::_MATCHING_PARAMETER_LIST) * 100),
+			round($matched_parameters_count / count(static::_COMPARING_PARAMETER_LIST) * 100),
 			$parameter_comparing_result_list
+		);
+	}
+
+	/**
+	 * Сравниваем по конкретному параметру
+	 *
+	 * @return Struct_Dto_User_Entity_Attribution_DetectAlghoritm_ParameterComparingResult
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 */
+	public function compareByParameter(Struct_Db_PivotAttribution_UserAppRegistration $user_app_registration, Struct_Db_PivotAttribution_LandingVisit $visit, string $parameter_name):Struct_Dto_User_Entity_Attribution_DetectAlghoritm_ParameterComparingResult {
+
+		// получаем значения из двух сравниваемых логов
+		$registration_value = $this->_getParameterValue($user_app_registration, $parameter_name);
+		$visit_value        = $this->_getParameterValue($visit, $parameter_name);
+
+		$is_equal = $visit_value == $registration_value;
+
+		return new Struct_Dto_User_Entity_Attribution_DetectAlghoritm_ParameterComparingResult(
+			$parameter_name, $visit_value, $registration_value, $is_equal
 		);
 	}
 
@@ -89,7 +102,7 @@ abstract class Domain_User_Entity_Attribution_DetectAlgorithm_Abstract {
 	protected function _getParameterValue(Struct_Db_PivotAttribution_UserAppRegistration|Struct_Db_PivotAttribution_LandingVisit $log, string $parameter_name):mixed {
 
 		// если передали левачный параметр
-		if (!in_array($parameter_name, static::_MATCHING_PARAMETER_LIST)) {
+		if (!in_array($parameter_name, static::_COMPARING_PARAMETER_LIST)) {
 			throw new \BaseFrame\Exception\Domain\ParseFatalException("unexpected parameter ($parameter_name)");
 		}
 

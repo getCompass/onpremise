@@ -253,8 +253,13 @@ func calculateAnswerTimeByLocalTime(sentAt int64, localSentAt string, microConve
 		timeWorkingStartAt := makeTimeWorkingStartAt(workingHoursStart, timeLocalSentAt)
 		secondsFromStartWorkDay := timeLocalSentAt.Unix() - timeWorkingStartAt.Unix()
 
+		secondsFromEndWorkDay := int64(0)
+
+		// если написали до окончания прошлого рабочего дня - считаем сколько времени прошло от момента написания до окончания рабочего дня
 		timeWorkingEndAt := makeTimeWorkingStartAt(workingHoursEnd, timeMicroConversationLocalStartAt)
-		secondsFromEndWorkDay := timeWorkingEndAt.Unix() - timeMicroConversationLocalStartAt.Unix()
+		if timeMicroConversationLocalStartAt.Unix() < timeWorkingEndAt.Unix() {
+			secondsFromEndWorkDay = timeWorkingEndAt.Unix() - timeMicroConversationLocalStartAt.Unix()
+		}
 
 		// корректируем время ответа
 		return secondsFromEndWorkDay + secondsFromStartWorkDay

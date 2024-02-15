@@ -106,8 +106,15 @@ func startPivotEnv(ctx context.Context, globalIsolation *GlobalIsolation.GlobalI
 	go shutdownEnv(ctx, isolation)
 }
 
-// запускаем pivot env
-func startDominoEnv(ctx context.Context, globalIsolation *GlobalIsolation.GlobalIsolation, companyContextList *Isolation.CompanyEnvList, companyId int64, config *conf.CompanyConfigStruct) {
+// запускаем domino env
+func startDominoEnv(ctx context.Context, globalIsolation *GlobalIsolation.GlobalIsolation, companyContextList *Isolation.CompanyEnvList, companyId int64, config *conf.CompanyConfigStruct) (isSuccess bool) {
+
+	defer func() {
+
+		if err := recover(); err != nil {
+			log.Error(fmt.Sprintf("Recovered. Error during isolation %d initialization: %s", companyId, err))
+		}
+	}()
 
 	host := fmt.Sprintf("%s:%d", config.Mysql.Host, config.Mysql.Port)
 	companyDataConn, err := company_data.MakeConnection(ctx, host, config.Mysql.User, config.Mysql.Pass, globalIsolation.GetShardingConfig().Mysql.MaxConnections)
@@ -130,6 +137,9 @@ func startDominoEnv(ctx context.Context, globalIsolation *GlobalIsolation.Global
 	observer.WorkCompanyObserver(companyCtx, isolation)
 
 	go shutdownEnv(ctx, isolation)
+	isSuccess = true
+
+	return isSuccess
 }
 
 // shutdown окружение, когда сработает контекст закроются коннекты

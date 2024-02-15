@@ -24,9 +24,6 @@ class Domain_Domino_Action_StopCompany {
 	 */
 	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompany_Company $company, string $unbind_reason = ""):void {
 
-		// генерим конфиг мускула для компании в активном состоянии
-		Domain_Domino_Action_Config_UpdateMysql::do($company, $domino, need_force_update: true);
-
 		try {
 
 			// пытаемся получить активный порт, если такого нет, то останавливать нечего

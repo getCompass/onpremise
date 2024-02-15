@@ -7,8 +7,38 @@ namespace Compass\Pivot;
  */
 class Type_Space_ActionAnalytics {
 
+	/** @var int ID пользователя, по которому отправляем аналитику */
+	protected int $_user_id;
+
+	/** @var bool Флаг, нужно ли отправлять аналитику по этому пользователю */
+	protected bool $_should_send_analytics;
+
+	protected static ?self $_instance = null;
+
+	protected function __construct(int $user_id) {
+
+		// получаем информацию о пользователе
+		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
+
+		$this->_user_id               = $user_id;
+		$this->_should_send_analytics = !Domain_User_Entity_User::isQATestUser($user_info);
+	}
+
+	/**
+	 * @return static
+	 */
+	public static function init(int $user_id):self {
+
+		if (is_null(self::$_instance)) {
+			self::$_instance = new self($user_id);
+		}
+
+		return self::$_instance;
+	}
+
 	protected const _EVENT_KEY = "space_action";
 
+	/** список всех логируемых действий */
 	public const CREATED                    = 1; // Пространство создано
 	public const START_TRIAL                = 2; // В пространстве Запущен триал
 	public const END_TRIAL                  = 3; // Триал окончен
@@ -24,9 +54,14 @@ class Type_Space_ActionAnalytics {
 	/**
 	 * Пишем аналитику по действиям пользователя
 	 */
-	public static function send(int $space_id, int $user_id, int $action):void {
+	public function send(int $space_id, int $action):void {
 
 		if (isTestServer() && !isBackendTest() && !isLocalServer()) {
+			return;
+		}
+
+		// если не нужно отправлять аналитику по этому пользователю
+		if (!$this->_should_send_analytics) {
 			return;
 		}
 
@@ -34,7 +69,7 @@ class Type_Space_ActionAnalytics {
 			"space_id"   => $space_id,
 			"created_at" => time(),
 			"action"     => $action,
-			"user_id"    => $user_id,
+			"user_id"    => $this->_user_id,
 		]);
 	}
 }

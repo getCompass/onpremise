@@ -24,6 +24,7 @@ type PushStruct struct {
 	EntityType        string           `json:"entity_type,omitempty"`
 	EntityData        interface{}      `json:"entity_data,omitempty"`
 	Category          string           `json:"category,omitempty"`
+	JoinRequestId     int64            `json:"join_request_id,omitempty"`
 }
 
 // создать тестовый пуш

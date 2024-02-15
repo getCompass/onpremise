@@ -190,37 +190,8 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_PARTNER,
 		"allow_methods" => [
-			"partner.getUserAvatarFileLink",
-			"partner.getUserCompanyList",
-			"partner.getLastRegistrations",
-			"partner.getCompanyInfo",
-			"invitelink.create",
-			"invitelink.edit",
-			"invitelink.remove",
-			"invitelink.add",
-			"invitelink.delete",
-			"user.getInfoForPartner",
-			"partner.getUserInfoByPhoneNumber",
-			"partner.getUserInfo",
-			"partner.getOwnerSpaceList",
-			"partner.getSpaceInfo",
-		],
-	],
-	"partner_web"      => [
-		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
-		"auth_key"      => SOCKET_KEY_PARTNER_WEB,
-		"allow_methods" => [
-			"partner.getUserInfoByPhoneNumber",
-			"partner.getUserInfo",
-			"partner.getUserInfoList",
-			"partner.getOwnerSpaceList",
-			"partner.getMemberSpaceList",
-			"partner.checkCanAttachSpace",
-			"partner.getSpaceInfo",
-			"partner.sendToGroupSupport",
-			"partner.createSupportCompanyJoinLink",
-			"partner.setSpaceAttached",
-			"partner.setSpaceDetached",
+			"partner.sendSms",
+			"partner.resendSms",
 		],
 	],
 	"userbot"          => [
@@ -302,7 +273,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"bothub.getEventCountInfo",
 		],
 	],
-	"www"           => [
+	"www"              => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_WWW,
 		"allow_methods" => [

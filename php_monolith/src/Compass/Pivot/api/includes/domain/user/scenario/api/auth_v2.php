@@ -63,18 +63,29 @@ class Domain_User_Scenario_Api_AuthV2 {
 		// получаем ip_address пользователя
 		$ip_address = getIp();
 
-		// сохраняем цифровой отпечаток пользователя и определяем страничку, по которой он пришел в приложение
+		// сохраняем цифровой отпечаток пользователя
 		$user_app_registration_attr = Domain_User_Entity_Attribution::saveUserAppRegistrationLog(
 			$user_id, $ip_address, $platform, $platform_os, $timezone_utc_offset, $screen_avail_width, $screen_avail_height, $user_info->created_at
 		);
-		$result                     = Domain_User_Action_Attribution_Detect::do($user_app_registration_attr);
 
-		// в зависимости от кейса формируем соответствующий ответ
-		return match ($result->join_space_case) {
-			Domain_User_Action_Attribution_Detect::JOIN_SPACE_CASE_OPEN_JOIN_LINK     => self::_prepareOpenJoinLinkOutput($user_id, $session_uniq, $result->matched_visit),
-			Domain_User_Action_Attribution_Detect::JOIN_SPACE_CASE_OPEN_ENTERING_LINK => ["action" => self::ATTRIBUTION_ACTION_OPEN_ENTERING_LINK, "data" => (object) []],
-			Domain_User_Action_Attribution_Detect::JOIN_SPACE_CASE_OPEN_DASHBOARD     => ["action" => self::ATTRIBUTION_ACTION_OPEN_DASHBOARD, "data" => (object) []],
-			default                                                                   => throw new ParseFatalException("unexpected behaviour"),
+		// определяем тип трафика
+		$user_attribution_traffic = Domain_User_Entity_Attribution_Traffic_TypeDetector::detect($user_app_registration_attr);
+
+		// определяем нужно ли собирать аналитику по пользователю
+		$user_attribution_traffic->setCollectAnalyticsFlag(Domain_User_Entity_Attribution_JoinSpaceAnalytics::shouldCollectAnalytics($user_info));
+
+		// определяем посещение с которого пришел пользователь по правилам типа трафика
+		$user_attribution_traffic->detectMatchedVisit();
+
+		// получаем действие, которое нужно выполнить клиентскому приложению
+		$client_action = $user_attribution_traffic->getClientAction();
+
+		// в зависимости от действия формируем соответствующий ответ
+		return match ($client_action) {
+			Domain_User_Entity_Attribution_Traffic_Abstract::CLIENT_ACTION_OPEN_DASHBOARD     => ["action" => self::ATTRIBUTION_ACTION_OPEN_DASHBOARD, "data" => (object) []],
+			Domain_User_Entity_Attribution_Traffic_Abstract::CLIENT_ACTION_OPEN_ENTERING_LINK => ["action" => self::ATTRIBUTION_ACTION_OPEN_ENTERING_LINK, "data" => (object) []],
+			Domain_User_Entity_Attribution_Traffic_Abstract::CLIENT_ACTION_OPEN_JOIN_LINK     => self::_prepareOpenJoinLinkOutput($user_id, $session_uniq, $user_attribution_traffic->getMatchedVisit()),
+			default                                                                           => throw new ParseFatalException("unexpected behaviour"),
 		};
 	}
 

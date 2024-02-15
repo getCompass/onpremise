@@ -162,6 +162,10 @@ class Domain_Member_Scenario_Event {
 
 			// снимаем уведомление на меню гости для всех админов
 			Domain_Member_Action_UndoNotification::do($event_data->user_id, Domain_Member_Entity_Menu::GUEST_MEMBER);
+
+			// отправляем события в crm и партнерскую программу
+			Domain_Crm_Entity_Event_SpaceMemberRolePermissionsChanged::create(\CompassApp\System\Company::getCompanyId(), $event_data->user_id, $member_short->role, $member_short->permissions);
+			Domain_Partner_Entity_Event_SpaceMemberRoleChanged::create(\CompassApp\System\Company::getCompanyId(), $event_data->user_id, $member_short->role);
 		}
 
 		return Type_Task_Struct_Response::build(Type_Task_Handler::DELIVERY_STATUS_DONE);

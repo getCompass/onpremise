@@ -3,7 +3,10 @@
 namespace Compass\Company;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\ParamException;
+use CompassApp\Domain\Member\Entity\Member;
+use CompassApp\Domain\Member\Exception\ActionNotAllowed;
 
 /**
  * Сценарии компании для Socket API
@@ -136,23 +139,29 @@ class Domain_Company_Scenario_Socket {
 	 * @param int $user_id
 	 * @param int $deleted_at
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
 	 * @throws \apiAccessException
 	 * @throws \busException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws \queryException
+	 * @throws BusFatalException
+	 * @throws ActionNotAllowed
 	 */
 	public static function delete(int $user_id, int $deleted_at):void {
 
 		$user = Gateway_Bus_CompanyCache::getMember($user_id);
 
-		// проверяем, что пользователь собственник компании
-		\CompassApp\Domain\Member\Entity\Permission::assertCanDeleteSpace($user->role, $user->permissions);
+		// если в компании больше одного пользователя
+		$member_list                = Gateway_Db_CompanyData_MemberList::getAllActiveMemberWithNpcFilter();
+		$space_resident_member_list = array_filter($member_list,
+			static fn(\CompassApp\Domain\Member\Struct\Main $member) => in_array($member->role, Member::SPACE_RESIDENT_ROLE_LIST));
+
+		// если в компании остались другие полноценные участники проверяем права
+		if (count($space_resident_member_list) > 1) {
+
+			// проверяем, что пользователь собственник компании
+			\CompassApp\Domain\Member\Entity\Permission::assertCanDeleteSpace($user->role, $user->permissions);
+		}
 
 		// помечаем компанию как удаленную и разлогиниваем всех
 		Domain_Company_Action_Delete::do($deleted_at);

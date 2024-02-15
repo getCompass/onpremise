@@ -59,6 +59,7 @@ class Domain_Group_Entity_Company {
 		Domain_Company_Entity_Config::HIRING_CONVERSATION_KEY_NAME,
 		Domain_Company_Entity_Config::NOTES_CONVERSATION_KEY_NAME,
 		Domain_Company_Entity_Config::SUPPORT_CONVERSATION_KEY_NAME,
+		Domain_Company_Entity_Config::GENERAL_CONVERSATION_KEY_NAME,
 	];
 
 	// -------------------------------------------------------

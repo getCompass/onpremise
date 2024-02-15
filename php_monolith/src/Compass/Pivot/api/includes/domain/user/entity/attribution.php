@@ -127,6 +127,11 @@ class Domain_User_Entity_Attribution {
 
 		// оптравляем данные в php-collector-server
 		Gateway_Bus_CollectorAgent::init()->add(self::_LANDING_VISIT_COLLECTOR_AGENT_KEY, (array) $langing_visit);
+
+		// если это посещение join-страницы, то инкрементим кол-во посещений
+		if (Domain_Company_Entity_JoinLink_Main::isJoinLink($link)) {
+			Gateway_Bus_CollectorAgent::init()->inc("row78");
+		}
 	}
 
 	/**

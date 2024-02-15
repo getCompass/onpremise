@@ -80,7 +80,7 @@ class Apiv1_Format {
 	 * форматирует ответ для метода doStart
 	 */
 	public static function doStart(array $app_config, string $lang, int $server_time, int $time_zone, string $ws_token, string $ws_url, string $billing_url,
-								   array $notification_preferences, array $call_preferences, array $userbot_preferences, string $client_connection_token):array {
+						 array $notification_preferences, array $call_preferences, array $userbot_preferences, string $client_connection_token, string $captcha_public_key):array {
 
 		return [
 			"server_time"              => (int) $server_time,
@@ -95,6 +95,7 @@ class Apiv1_Format {
 			"userbot_preferences"      => (object) $userbot_preferences,
 			"partner_url"              => (string) PARTNER_URL,
 			"client_connection_token"  => (string) $client_connection_token,
+			"captcha_public_key"       => (string) $captcha_public_key,
 		];
 	}
 
@@ -248,7 +249,7 @@ class Apiv1_Format {
 	 * @throws \parseException
 	 */
 	public static function changePhoneProcessStage1(
-		Domain_User_Entity_ChangePhone_Story    $story,
+		Domain_User_Entity_ChangePhone_Story $story,
 		Domain_User_Entity_ChangePhone_SmsStory $sms_story
 	):array {
 

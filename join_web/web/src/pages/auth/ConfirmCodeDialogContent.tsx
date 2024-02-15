@@ -199,7 +199,10 @@ const DynamicTimer = ({
 					if (showCaptchaState === "rendered") {
 
 						// @ts-ignore
-						grecaptcha.reset();
+						if (grecaptcha.enterprise.reset !== undefined) {
+							// @ts-ignore
+							grecaptcha.enterprise.reset();
+						}
 					}
 					return;
 				}
@@ -523,8 +526,9 @@ const ConfirmCodeDialogContentDesktop = ({
 			try {
 
 				// @ts-ignore
-				grecaptcha.render(node, {
+				grecaptcha.enterprise.render(node, {
 					sitekey: captchaPublicKey,
+					action: "check_captcha",
 					callback: function (grecaptchaResponse: string) {
 						setGrecaptchaResponse(grecaptchaResponse);
 					},
@@ -538,7 +542,10 @@ const ConfirmCodeDialogContentDesktop = ({
 		if (node !== null && showCaptchaState === "rendered") {
 
 			// @ts-ignore
-			grecaptcha.reset();
+			if (grecaptcha.enterprise.reset !== undefined) {
+				// @ts-ignore
+				grecaptcha.enterprise.reset();
+			}
 		}
 	}, [showCaptchaState, captchaPublicKey]);
 
@@ -611,7 +618,9 @@ const ConfirmCodeDialogContentDesktop = ({
 									d="M0.702026 6.82698L4.40703 3.11548L4.80353 3.52498C4.89019 3.61165 4.92269 3.70048 4.90103 3.79148C4.88369 3.87814 4.83819 3.96048 4.76453 4.03848L2.89903 5.89098C2.69536 6.09465 2.50903 6.26148 2.34003 6.39148C2.55669 6.36548 2.78419 6.34381 3.02253 6.32648C3.26519 6.30915 3.51436 6.30048 3.77003 6.30048H12.233V7.35998H3.77003C3.51436 7.35998 3.26519 7.35131 3.02253 7.33398C2.78419 7.31665 2.55669 7.29498 2.34003 7.26898C2.50036 7.39031 2.68669 7.55498 2.89903 7.76298L4.77753 9.63498C4.85553 9.71298 4.90319 9.79531 4.92053 9.88198C4.93786 9.96865 4.90536 10.0553 4.82303 10.142L4.42003 10.558L0.702026 6.82698Z"
 									fill="#2574A9"/>
 							</svg>
-							<styled.span fontSize="13px" lineHeight="18px">{langStringConfirmCodeDialogBackButton}</styled.span>
+							<styled.span fontSize="13px" lineHeight="18px">
+								{langStringConfirmCodeDialogBackButton}
+							</styled.span>
 						</HStack>
 					</Button>
 					{!isAuthBlocked && (
@@ -984,8 +993,9 @@ const ConfirmCodeDialogContentMobile = ({
 			try {
 
 				// @ts-ignore
-				grecaptcha.render(node, {
+				grecaptcha.enterprise.render(node, {
 					sitekey: captchaPublicKey,
+					action: "check_captcha",
 					callback: function (grecaptchaResponse: string) {
 						setGrecaptchaResponse(grecaptchaResponse);
 					},
@@ -999,7 +1009,10 @@ const ConfirmCodeDialogContentMobile = ({
 		if (node !== null && showCaptchaState === "rendered") {
 
 			// @ts-ignore
-			grecaptcha.reset();
+			if (grecaptcha.enterprise.reset !== undefined) {
+				// @ts-ignore
+				grecaptcha.enterprise.reset();
+			}
 		}
 	}, [showCaptchaState, captchaPublicKey]);
 
@@ -1117,7 +1130,9 @@ const ConfirmCodeDialogContentMobile = ({
 									d="M0.86377 6.8639L5.42377 2.2959L5.91177 2.7999C6.01844 2.90657 6.05844 3.0159 6.03177 3.1279C6.01044 3.23456 5.95444 3.3359 5.86377 3.4319L3.56777 5.7119C3.3171 5.96257 3.08777 6.1679 2.87977 6.3279C3.14644 6.2959 3.42644 6.26923 3.71977 6.2479C4.01844 6.22657 4.3251 6.2159 4.63977 6.2159H15.0558V7.5199H4.63977C4.3251 7.5199 4.01844 7.50923 3.71977 7.4879C3.42644 7.46657 3.14644 7.4399 2.87977 7.4079C3.0771 7.55723 3.30644 7.7599 3.56777 8.0159L5.87977 10.3199C5.97577 10.4159 6.03444 10.5172 6.05577 10.6239C6.0771 10.7306 6.0371 10.8372 5.93577 10.9439L5.43977 11.4559L0.86377 6.8639Z"
 									fill="#2574A9"/>
 							</svg>
-							<styled.span fontSize="16px" lineHeight="22px">{langStringConfirmCodeDialogBackButton}</styled.span>
+							<styled.span fontSize="16px" lineHeight="22px">
+								{langStringConfirmCodeDialogBackButton}
+							</styled.span>
 						</HStack>
 					</Button>
 					{!isAuthBlocked && (

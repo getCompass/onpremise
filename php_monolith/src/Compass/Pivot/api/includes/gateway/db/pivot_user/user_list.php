@@ -172,6 +172,8 @@ class Gateway_Db_PivotUser_UserList extends Gateway_Db_PivotUser_Main {
 
 	/**
 	 * Получаем список зарегистрированных пользователей за промежуток времени
+	 *
+	 * @return Struct_Db_PivotUser_User[]
 	 */
 	public static function getAllByInterval(int $from_date, int $to_date):array {
 

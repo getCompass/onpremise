@@ -22,6 +22,8 @@ class Domain_Conversation_Feed_Action_GetLastBlockIdList {
 		if ($start_block_id < $dynamic_row->start_block_id) {
 			$start_block_id = $dynamic_row->start_block_id;
 		}
-		return range($start_block_id, $dynamic_row->last_block_id);
+
+		$block_id_list = range($start_block_id, $dynamic_row->last_block_id);
+		return array_slice($block_id_list, -1 * $block_count, $block_count);
 	}
 }

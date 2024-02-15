@@ -46,7 +46,6 @@ func GetWorldConfig(filePath string) (*CompanyConfigStruct, error) {
 }
 
 // GetCompanyConfig пытается получить готовый конфиг для компании из файла
-//
 //goland:noinspection GoUnusedExportedFunction
 func GetCompanyConfig(companyId int64) (*CompanyConfigStruct, error) {
 

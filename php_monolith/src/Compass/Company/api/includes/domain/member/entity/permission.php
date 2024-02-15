@@ -62,18 +62,22 @@ class Domain_Member_Entity_Permission {
 	 */
 	public static function checkUser(int $user_id, int $member_id, int $permission_key):void {
 
-		$member = Domain_User_Action_Member_GetShort::do($user_id);
+		$user_info = Domain_User_Action_Member_GetShort::do($user_id);
 
-		try {
+		if ($user_id !== $member_id) {
+			Permission::assertCanEditMemberProfile($user_info->role, $user_info->permissions);
+		}
 
-			// проверяем роль пользователя
-			\CompassApp\Domain\Member\Entity\Member::assertUserAdministrator($member->role);
-		} catch (\CompassApp\Domain\Member\Exception\IsNotAdministrator) {
+		if (Permission::hasOneFromPermissionList($user_info->permissions, [
+			Permission::MEMBER_PROFILE_EDIT,
+			Permission::ADMINISTRATOR_MANAGEMENT,
+			Permission::SPACE_SETTINGS,
+		])) {
+			return;
+		}
 
-			// если для самого себя
-			if (($user_id === $member_id) && Permission::hasPermission($member->permissions, $permission_key)) {
-				throw new \CompassApp\Domain\Member\Exception\ActionRestrictForUser("Action restrict for user");
-			}
+		if (($user_id === $member_id) && Permission::hasPermission($user_info->permissions, $permission_key)) {
+			throw new \CompassApp\Domain\Member\Exception\ActionRestrictForUser("Action restrict for user");
 		}
 	}
 }

@@ -215,6 +215,8 @@ func migrateDatabaseUp(database *databaseSchemaStruct, credentials *sharding.DbC
 		if err != nil {
 			return err
 		}
+
+		log.Infof("Накатили миграцию для базы %s", shardDatabaseName)
 	}
 
 	return nil

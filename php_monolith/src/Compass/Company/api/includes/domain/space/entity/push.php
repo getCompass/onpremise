@@ -52,9 +52,9 @@ class Domain_Space_Entity_Push {
 
 	// создаем пуш-уведомление заявки на вступление в компанию
 	#[ArrayShape(["badge_inc_count" => "int", "event_type" => "int", "push_type" => "int", "text_push" => "array"])]
-	public static function makeJoinRequestPushData(string $action_user_full_name, string $company_name):array {
+	public static function makeJoinRequestPushData(string $action_user_full_name, string $company_name, int $join_request_id):array {
 
-		if (!NEED_SEND_JOIN_REQUEST_PUSH){
+		if (!NEED_SEND_JOIN_REQUEST_PUSH) {
 			return [];
 		}
 
@@ -70,6 +70,7 @@ class Domain_Space_Entity_Push {
 				"category"           => self::_CATEGORY,
 				"entity_type"        => self::_DEFAULT_JOIN_REQUEST_NOTIFICATION_TYPE,
 				"company_id"         => COMPANY_ID,
+				"join_request_id"    => $join_request_id,
 				"title"              => "Новая заявка в «{$company_name}»",
 				"title_localization" => $title_localization,
 				"body"               => "{$action_user_full_name} оставил заявку на вступление в команду",
@@ -82,7 +83,7 @@ class Domain_Space_Entity_Push {
 	#[ArrayShape(["badge_inc_count" => "int", "event_type" => "int", "push_type" => "int", "text_push" => "array"])]
 	public static function makeGuestMemberPushData(string $action_user_full_name, string $company_name):array {
 
-		if (!NEED_SEND_GUEST_MEMBER_PUSH){
+		if (!NEED_SEND_GUEST_MEMBER_PUSH) {
 			return [];
 		}
 

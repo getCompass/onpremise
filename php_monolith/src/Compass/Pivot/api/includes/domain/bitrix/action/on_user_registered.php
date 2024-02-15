@@ -76,7 +76,7 @@ class Domain_Bitrix_Action_OnUserRegistered {
 		$stage_id = !is_null($force_stage_id) ? $force_stage_id : BITRIX_USER_REGISTERED_STAGE_ID;
 
 		// тестовая ли регистрация
-		$is_test_registration = inHtml($user_info->full_name, BITRIX_TEST_USER_NAME);
+		$is_test_registration = inHtml($user_info->full_name, TEST_USER_NAME_PREFIX);
 
 		// создаем сущность сделки
 		$deal = $bitrix_client->crmDealAdd([

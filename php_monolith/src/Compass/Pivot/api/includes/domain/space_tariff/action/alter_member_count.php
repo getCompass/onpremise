@@ -112,6 +112,7 @@ class Domain_SpaceTariff_Action_AlterMemberCount {
 
 		// оповещаем об изменении тарифного плана в пространстве
 		Domain_Crm_Entity_Event_SpaceTariffAltered::create($space_id);
+		Domain_Partner_Entity_Event_SpaceTariffAltered::create($space_id);
 
 		return $tariff;
 	}

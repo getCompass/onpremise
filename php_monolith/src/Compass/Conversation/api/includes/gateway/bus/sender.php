@@ -1237,7 +1237,7 @@ class Gateway_Bus_Sender {
 			if ($status->code !== \Grpc\STATUS_OK) {
 				throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
 			}
-		} catch (\Error | BusFatalException) {
+		} catch (\Error | \Exception | BusFatalException) {
 
 			Type_System_Admin::log("go_sender", "go_sender call grpc on {$grpc_method_name}");
 

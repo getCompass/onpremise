@@ -175,7 +175,7 @@ class Cron_General_Utils {
 	/**
 	 * отправляем статистику
 	 *
-	 * @long
+	 * @long собираем данные для графиков
 	 */
 	public static function sendStat(int $day_start):void {
 
@@ -183,20 +183,23 @@ class Cron_General_Utils {
 			return;
 		}
 
-		$company_id          = 2;
-		$company_count_chart = self::_getStatByDay(self::$_company_count_by_day_table_name, $day_start);
-		$user_count_chart    = self::_getOnlineUsersStatByDay($day_start);
-		$action_count_chart  = self::_getStatByDay(self::$_action_count_by_day_table_name, $day_start);
+		$company_id                  = 2;
+		$created_company_count_chart = self::_getStatByDay(self::$_company_count_by_day_table_name, $day_start);
+		$active_company_count_chart  = self::_getActiveSpaceChartData($day_start - DAY14, $day_start);
+		$user_count_chart            = self::_getOnlineUsersStatByDay($day_start);
+		$action_count_chart          = self::_getStatByDay(self::$_action_count_by_day_table_name, $day_start);
 
 		$free_count = Gateway_Db_PivotCompanyService_CompanyInitRegistry::getVacantCount();
 		$params     = [
-			"company_count_chart" => toJson($company_count_chart),
-			"user_count_chart"    => toJson($user_count_chart),
-			"action_count_chart"  => toJson($action_count_chart),
-			"company_count"       => $company_count_chart[0][1],
-			"full_company_count"  => $company_count_chart[0][1] + $free_count,
-			"user_count"          => $user_count_chart[0][1],
-			"action_count"        => $action_count_chart[0][1],
+			"created_company_count_chart" => toJson($created_company_count_chart),
+			"active_company_count_chart"  => toJson($active_company_count_chart),
+			"user_count_chart"            => toJson($user_count_chart),
+			"action_count_chart"          => toJson($action_count_chart),
+			"created_company_count"       => $created_company_count_chart[0][1],
+			"active_company_count"        => $active_company_count_chart[0][1],
+			"total_company_count"         => $created_company_count_chart[0][1] + $free_count,
+			"user_count"                  => $user_count_chart[0][1],
+			"action_count"                => $action_count_chart[0][1],
 		];
 
 		// генерим картинку
@@ -245,6 +248,34 @@ class Cron_General_Utils {
 				$min_day, 0,
 			];
 		}
+		return $output;
+	}
+
+	/**
+	 * Получаем данные по активным командам для заполнения чарта
+	 *
+	 * @return array
+	 */
+	protected static function _getActiveSpaceChartData(int $date_from, int $date_to):array {
+
+		// получаем статистику
+		$row_data = Gateway_Socket_CollectorServer::getRowByDate("pivot", "row73", "day", $date_from, $date_to);
+
+		// сортируем временные метки по убыванию
+		usort($row_data, function(array $a, array $b) {
+
+			return $b["date"] <=> $a["date"];
+		});
+
+		// собираем ответ
+		$output = [];
+		foreach ($row_data as $graph) {
+
+			$output[] = [
+				$graph["date"], $graph["value"],
+			];
+		}
+
 		return $output;
 	}
 
@@ -356,7 +387,7 @@ class Cron_General_HourHandler {
 		Cron_General_Utils::collectStat();
 
 		// на проде шлем статистику для бизнеса каждый час
-		if (ServerProvider::isProduction()) {
+		if (ServerProvider::isProduction() || ServerProvider::isStage()) {
 			self::_sendBusinessStat();
 		}
 
@@ -388,115 +419,21 @@ class Cron_General_HourHandler {
 			return;
 		}
 
-		// формируем сообщение
-		$message = self::_makeBusinessStatMessage();
-		if (mb_strlen($message) < 1) {
+		// если текущий час не кратен 4, то скипаем
+		if (date("G") % 4 != 0) {
 			return;
 		}
 
-		// отправляем
-		try {
-			Domain_System_Entity_Alert::sendBusinessStat(trim($message));
-		} catch (\GetCompass\Userbot\Exception\Request\UnexpectedResponseException $e) {
-
-			// время для бекапов с 5:00 до 5:05, когда кроны не работают и сообщение отправится после
-			if (date("G") == 5 && intval(date("i")) < 5) {
-				return;
-			}
-
-			throw $e;
-		}
-	}
-
-	/**
-	 * Формируем сообщение для отправки
-	 *
-	 * @return string
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
-	 * @throws \parseException
-	 * @long
-	 */
-	protected static function _makeBusinessStatMessage():string {
-
-		// кидаем только каждые 4 часа (00, 04, 08, 12, 16, 20)
-		if ((date("G") % 4) != 0) {
-			return "";
-		}
-
-		$to_date     = hourStart();
-		$from_date   = time() - 60 * 5; // специально делаем -5 минут чтобы в 00:00 взять за предыдущие день/неделю/месяц
-		$day_start   = dayStart($from_date);
-		$week_start  = weekStart($from_date);
-		$month_start = monthStart($from_date);
-
-		// получаем статистику по пользователям
-		$user_count_by_day = Gateway_Db_PivotUser_UserList::getCountByInterval($day_start, $to_date);
-
-		// получаем статистику по компаниям
-		$company_count_by_day = Gateway_Db_PivotCompany_CompanyList::getCountByInterval($day_start, $to_date);
-
-		// получаем статистику по вступившим пользователям
-		$user_joined_count_by_day = Gateway_Socket_CollectorServer::getSpaceActionCount(Type_Space_ActionAnalytics::NEW_MEMBER, $day_start, $to_date);
-		$user_joined_count_by_day = $user_joined_count_by_day - $company_count_by_day; // вычитаем создателей компании из статистики
-
-		// выручка
-		$revenue_list_by_day = Gateway_Socket_Billing::getRevenueStat($day_start, $to_date);
-		$revenue_sum_by_day  = self::_formatRevenueSum($revenue_list_by_day);
-
-		// если 12 часов ночи, то кидаем итоги дня/недели/месяца
+		// если полночь
 		if (date("G") == 0) {
 
-			// получаем статистику по пользователям
-			$user_count_by_week  = Gateway_Db_PivotUser_UserList::getCountByInterval($week_start, $to_date);
-			$user_count_by_month = Gateway_Db_PivotUser_UserList::getCountByInterval($month_start, $to_date);
+			// отправляем большой отчет
+			Domain_Analytic_Action_SendGeneralAnalytics::sendBigReport(dayStart(time() - DAY1));
+		} else {
 
-			// получаем статистику по компаниям
-			$company_count_by_week  = Gateway_Db_PivotCompany_CompanyList::getCountByInterval($week_start, $to_date);
-			$company_count_by_month = Gateway_Db_PivotCompany_CompanyList::getCountByInterval($month_start, $to_date);
-
-			// получаем статистику по вступившим пользователям
-			$user_joined_count_by_week  = Gateway_Socket_CollectorServer::getSpaceActionCount(Type_Space_ActionAnalytics::NEW_MEMBER, $week_start, $to_date);
-			$user_joined_count_by_week  = $user_joined_count_by_week - $company_count_by_week; // вычитаем создателей компании из статистики
-			$user_joined_count_by_month = Gateway_Socket_CollectorServer::getSpaceActionCount(Type_Space_ActionAnalytics::NEW_MEMBER, $month_start, $to_date);
-			$user_joined_count_by_month = $user_joined_count_by_month - $company_count_by_month; // вычитаем создателей компании из статистики
-
-			// выручка
-			$revenue_list_by_week  = Gateway_Socket_Billing::getRevenueStat($week_start, $to_date);
-			$revenue_list_by_month = Gateway_Socket_Billing::getRevenueStat($month_start, $to_date);
-			$revenue_sum_by_week   = self::_formatRevenueSum($revenue_list_by_week);
-			$revenue_sum_by_month  = self::_formatRevenueSum($revenue_list_by_month);
-
-			return <<<EOL
-Reg *{$user_count_by_day}, {$user_count_by_week}, {$user_count_by_month}*
-Cnew *{$company_count_by_day}, {$company_count_by_week}, {$company_count_by_month}*
-Cadd *{$user_joined_count_by_day}, {$user_joined_count_by_week}, {$user_joined_count_by_month}*
-Rev *{$revenue_sum_by_day}, {$revenue_sum_by_week}, {$revenue_sum_by_month}*
-EOL;
+			// иначе отправляем отчет с начала текущего дня
+			Domain_Analytic_Action_SendGeneralAnalytics::sendShortReport(dayStart(), time());
 		}
-
-		// иначе кидаем просто стату за день
-		return "Reg *{$user_count_by_day}*, Cnew *{$company_count_by_day}*, Cadd *{$user_joined_count_by_day}*, Rev *{$revenue_sum_by_day}*";
-	}
-
-	/**
-	 * Форматируем сумму выручки
-	 */
-	protected static function _formatRevenueSum(array $revenue_list):string {
-
-		if (count($revenue_list) < 1) {
-			return "0";
-		}
-
-		// обрезаем копейки и делим на 1000 (специально делаем не сразу /100000, чтобы не путаться)
-		$sum     = floor($revenue_list["amount_rub"] / 100);
-		$revenue = floor($sum / 1000);
-		if ($revenue < 1) {
-			return $revenue;
-		}
-
-		// форматируем
-		return "{$revenue}к";
 	}
 }
 

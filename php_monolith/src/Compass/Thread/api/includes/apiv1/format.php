@@ -90,6 +90,7 @@ class Apiv1_Format {
 	}
 
 	// мета треда
+	// при изменении обязательно добавь изменения в apiv2
 	public static function threadMeta(array $prepared_thread_meta):array {
 
 		$output = self::_makeThreadMeta($prepared_thread_meta);
@@ -125,6 +126,7 @@ class Apiv1_Format {
 
 		$output = [
 			"thread_map"       => (string) $prepared_thread_meta["thread_map"],
+			"is_readonly"      => (int) $prepared_thread_meta["is_readonly"],
 			"created_at"       => (int) $prepared_thread_meta["created_at"],
 			"updated_at"       => (int) $prepared_thread_meta["updated_at"],
 			"message_count"    => (int) $prepared_thread_meta["message_count"],

@@ -39,7 +39,9 @@ export function useApiAuthBegin() {
 				body.append("join_link", join_link);
 			}
 
-			return getResponse<ApiAuthBegin>("auth/begin", body);
+			return getResponse<ApiAuthBegin>("auth/begin", body, {
+				"x-compass-captcha-method": "enterprise_google",
+			});
 		},
 	});
 }
@@ -128,7 +130,9 @@ export function useApiAuthRetry() {
 				body.append("grecaptcha_response", grecaptcha_response);
 			}
 
-			return getResponse<APIAuthInfo>("auth/retry", body);
+			return getResponse<APIAuthInfo>("auth/retry", body, {
+				"x-compass-captcha-method": "enterprise_google",
+			});
 		},
 	});
 }

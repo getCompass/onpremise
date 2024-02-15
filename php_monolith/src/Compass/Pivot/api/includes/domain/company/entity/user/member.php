@@ -196,17 +196,16 @@ class Domain_Company_Entity_User_Member {
 		$company = match ($user_space_role) {
 
 			// если полноценные участники пространства
-			Domain_Company_Entity_User_Member::ROLE_MEMBER, Domain_Company_Entity_User_Member::ROLE_ADMINISTRATOR
-			=> Domain_Company_Entity_Company::incMemberCount($company_id, $npc_type),
+			self::ROLE_MEMBER, self::ROLE_ADMINISTRATOR => Domain_Company_Entity_Company::incMemberCount($company_id, $npc_type),
 
 			// если гость
-			Domain_Company_Entity_User_Member::ROLE_GUEST => Domain_Company_Entity_Company::incGuestCount($company_id, $npc_type),
+			self::ROLE_GUEST                            => Domain_Company_Entity_Company::incGuestCount($company_id, $npc_type),
 
 			// если бот
-			Domain_Company_Entity_User_Member::ROLE_USERBOT => Domain_Company_Entity_Company::get($company_id),
+			self::ROLE_USERBOT                          => Domain_Company_Entity_Company::get($company_id),
 
 			// если пришла неизвестная роль
-			default => throw new ParseFatalException("unexpected user role [$user_space_role]"),
+			default                                     => throw new ParseFatalException("unexpected user role [$user_space_role]"),
 		};
 
 		// ставим пуш токен для компании
@@ -218,22 +217,42 @@ class Domain_Company_Entity_User_Member {
 		// если вступил человек
 		if (Type_User_Main::isHuman($npc_type)) {
 
-			// если участник занимает слов в пространстве
+			// если участник занимает слот в пространстве
 			if (in_array($user_space_role, self::SPACE_RESIDENT_ROLE_LIST)) {
 
-				Type_Space_ActionAnalytics::send($company_id, $user_id, Type_Space_ActionAnalytics::NEW_MEMBER);
 				Type_Space_NewUserJoinedSpace::send($user_id, $user_created_at, $company_id, $company->created_by_user_id);
-				Domain_Partner_Entity_Event_UserJoinedSpace::create($user_id, $company_id, $user_created_at);
 			}
 
-			// для всех случаев – отправляем событие в crm
+			// для всех случаев – фиксируем в аналитике и отправляем событие в crm
+			Type_Space_ActionAnalytics::init($user_id)->send($company_id, Type_Space_ActionAnalytics::NEW_MEMBER);
 			Domain_Crm_Entity_Event_SpaceJoinMember::create($company_id, $user_id, $user_space_role, $user_space_permissions, $user_company->created_at);
+			Domain_Partner_Entity_Event_UserJoinSpace::create($user_id, $company_id, $user_space_role, $user_company->created_at);
 		}
+
+		// совершаем действия, если это первая команда пользователя
+		self::_ifUserEnteringFirstSpace($user_id, $company_id, $entry_id);
 
 		// начинаем онбординг создателя команды
 		self::_startSpaceCreatorOnboarding($company);
 
 		return [$user_company, $company];
+	}
+
+	/**
+	 * Если пользователь попадает в первую команду
+	 */
+	protected static function _ifUserEnteringFirstSpace(int $user_id, int $first_space_id, int $entry_id):void {
+
+		// получаем количество команд пользователя
+		$user_space_list = Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id);
+
+		// если у пользователя не 1 команда, то ничего не делаем – это не интересующий нас случай
+		if (count($user_space_list) !== 1) {
+			return;
+		}
+
+		// выполняем асинхронные действия
+		Type_Phphooker_Main::onUserEnteringFirstCompany($user_id, $first_space_id, $entry_id);
 	}
 
 	/**

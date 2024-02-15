@@ -6,9 +6,9 @@
 		"php_thread": "/api/socket/thread/",
 		"php_speaker": "/api/socket/speaker/"
 	},
-	"partner_socket_url": "${ENTRYPOINT_PIVOT}",
+	"partner_socket_url": "${PUBLIC_ENTRYPOINT_PARTNER}",
 	"partner_socket_module": {
-		"php_partner": "/api/socket/partner/"
+		"php_partner": "/api/socket/"
 	},
 	"partner_web_socket_url": "${PARTNER_WEB_PROTOCOL}://${PARTNER_WEB_DOMAIN}/",
 	"partner_web_socket_module": {

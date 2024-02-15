@@ -43,6 +43,8 @@ class Type_Phphooker_Main {
 	public const TASK_TYPE_CLEAR_THREAD_META_CACHE                                 = 33;
 	public const TASK_TYPE_CLEAR_PARENT_MESSAGE_CACHE                              = 34;
 	public const TASK_TYPE_CLEAR_PARENT_MESSAGE_LIST_CACHE                         = 35;
+	public const TASK_TYPE_UPDATE_LAST_MESSAGE_ON_DELETE_IF_DISABLED_SHOW_MESSAGE  = 36; // обновляем last_message пользователей при удалении и отключенном показе удаленных сообщений
+	public const TASK_TYPE_DISABLE_SYSTEM_DELETED_MESSAGE_CONVERSATION             = 37; // отключен показ системных сообщений об удаленных сообщениях
 
 	# endregion
 	##########################################################
@@ -426,6 +428,29 @@ class Type_Phphooker_Main {
 
 		$event_data = Type_Event_Task_TaskAddedConversation::create(self::TASK_TYPE_CLEAR_PARENT_MESSAGE_LIST_CACHE, [
 			"message_map_list" => $message_map_list,
+		]);
+
+		Gateway_Event_Dispatcher::dispatch($event_data);
+	}
+
+	// обновляем последнее сообщение пользователей при удалении если отключен показ удаленных сообщений
+	public static function updateLastMessageOnDeleteIfDisabledShowDeleteMessage(string $conversation_map, array $message, array $users):void {
+
+		$event_data = Type_Event_Task_TaskAddedConversation::create(self::TASK_TYPE_UPDATE_LAST_MESSAGE_ON_DELETE_IF_DISABLED_SHOW_MESSAGE, [
+			"conversation_map" => $conversation_map,
+			"message"          => $message,
+			"users"            => $users,
+		]);
+
+		Gateway_Event_Dispatcher::dispatch($event_data);
+	}
+
+	// отключен показ системных сообщений об удаленных сообщениях
+	public static function doDisableSystemDeletedMessageConversation(string $conversation_map, array $users):void {
+
+		$event_data = Type_Event_Task_TaskAddedConversation::create(self::TASK_TYPE_DISABLE_SYSTEM_DELETED_MESSAGE_CONVERSATION, [
+			"conversation_map" => $conversation_map,
+			"users"            => $users,
 		]);
 
 		Gateway_Event_Dispatcher::dispatch($event_data);

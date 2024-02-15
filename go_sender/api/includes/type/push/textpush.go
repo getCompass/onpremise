@@ -20,4 +20,5 @@ type TextPushStruct struct {
 	EntityId          string      `json:"entity_id,omitempty"`
 	EntityData        interface{} `json:"entity_data,omitempty"`
 	Type              string      `json:"type,omitempty"`
+	JoinRequestId     int64       `json:"join_request_id,omitempty"`
 }

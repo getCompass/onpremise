@@ -13,8 +13,6 @@ import (
 	"go_sender_balancer/api/includes/type/balancer"
 	"go_sender_balancer/api/observer"
 	"go_sender_balancer/www"
-	"net/http"
-	_ "net/http/pprof"
 	"runtime"
 	"sync"
 )
@@ -29,18 +27,6 @@ func main() {
 
 	// стартуем микросервис
 	start()
-
-	// врубаем ендпоинт для профайлера на тестовом
-	if conf.GetConfig().ServerType == "test-server" {
-
-		go func() {
-
-			err := http.ListenAndServe("0.0.0.0:6060", nil)
-			if err != nil {
-				return
-			}
-		}()
-	}
 
 	// не завершаем работу микросервиса, пока слушается внешнее окружение
 	www.Wait()

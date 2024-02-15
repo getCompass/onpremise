@@ -29,19 +29,13 @@ type templateStruct struct {
 var databaseConfigGenerationMutex sync.Mutex
 
 // GenerateComposeConfig генерируем файл, в котором задаем настройки сервисов базы данных (compose.yaml)
-func GenerateComposeConfig() error {
+func GenerateComposeConfig(portList []*port_registry.PortRegistryStruct) error {
 
 	// блокируем, чтобы конфиги не поломались в результате гонки
 	databaseConfigGenerationMutex.Lock()
 	defer databaseConfigGenerationMutex.Unlock()
 
 	confPath := flags.ExecutableDir + "/etc/mysql_daemon.cnf"
-
-	// получаем все порты, занятые компаниями, в мире
-	portList, err := port_registry.GetAllCompanyPortList()
-	if err != nil {
-		return err
-	}
 
 	// открываем шаблон конфига
 	bs, err := ioutil.ReadFile(flags.ExecutableDir + "/etc/compose.yaml.tpl")

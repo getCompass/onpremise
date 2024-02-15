@@ -188,6 +188,7 @@ class Domain_User_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws \returnException
+	 * @long
 	 */
 	public static function resendCode(int $user_id, string $auth_map, string|false $grecaptcha_response):Struct_User_Auth_Info {
 
@@ -296,7 +297,20 @@ class Domain_User_Scenario_Api {
 		$server_time = time();
 		$time_zone   = intval(date("Z", time()));
 
-		return [$app_config, $server_time, $time_zone, $ws_token, $ws_url, BILLING_URL, $notification_preferences, $call_preferences, $announcement_initial_token, $userbot_preferences, $client_connection_token];
+		return [
+			$app_config,
+			$server_time,
+			$time_zone,
+			$ws_token,
+			$ws_url,
+			BILLING_URL,
+			$notification_preferences,
+			$call_preferences,
+			$announcement_initial_token,
+			$userbot_preferences,
+			$client_connection_token,
+			Type_Captcha_Main::init()->getPublicCaptchaKey(Type_Api_Platform::getPlatform(getUa())),
+		];
 	}
 
 	/**
@@ -406,7 +420,6 @@ class Domain_User_Scenario_Api {
 		if (!$is_operator) {
 
 			Gateway_Socket_Intercom::userSetProfile($user_id, $name, $avatar_file_map);
-			Domain_Partner_Entity_Event_UserUpdatedInfo::create($user_id);
 		}
 
 		// если это не оператор и пользователь впервые заполнил профиль
@@ -591,9 +604,6 @@ class Domain_User_Scenario_Api {
 
 		// отправляем задачу на очистку аватара в intercom
 		Gateway_Socket_Intercom::userDoClearAvatar($user_id);
-
-		// отправляем в партнерку
-		Domain_Partner_Entity_Event_UserUpdatedInfo::create($user_id);
 	}
 
 	/**
@@ -1081,7 +1091,6 @@ class Domain_User_Scenario_Api {
 			Gateway_Socket_Intercom::userProfileDeleted($user_id);
 
 			// отправляем в партнерку
-			Domain_Partner_Entity_Event_UserDeleted::create($user_id);
 			Type_User_ActionAnalytics::send($user_id, Type_User_ActionAnalytics::DELETE_ACCOUNT);
 		}
 	}

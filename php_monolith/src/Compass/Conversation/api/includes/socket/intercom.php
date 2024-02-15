@@ -146,7 +146,7 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 			foreach ($message_key_list as $message_key) {
 				$message_map_list[] = Conversation::doDecrypt($message_key);
 			}
-		} catch (\cs_DecryptHasFailed|\cs_UnpackHasFailed) {
+		} catch (\cs_DecryptHasFailed | \cs_UnpackHasFailed) {
 			throw new ParamException("wrong message key");
 		}
 
@@ -158,10 +158,7 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 
 		// удаляем сообщение
 		try {
-
-			Helper_Conversations::deleteMessageList(
-				$sender_user_id, $conversation_map, $meta_row["type"], $message_map_list, $meta_row["users"], is_force_delete: true
-			);
+			Helper_Conversations::deleteMessageList($sender_user_id, $conversation_map, $meta_row["type"], $message_map_list, $meta_row, is_force_delete: true);
 		} catch (cs_Message_UserHaveNotPermission) {
 			return $this->error(10101, "User have not access to message");
 		} catch (cs_Message_IsNotAllowForDelete) {

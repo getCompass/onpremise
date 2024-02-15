@@ -56,13 +56,16 @@ export class LimitError extends Error {
 
 export function useGetResponse() {
 
-	return async <T>(method: string, body: URLSearchParams) => {
+	return async <T>(method: string, body: URLSearchParams, headerList: Record<string, string> = {}) => {
 
 		try {
 
-			const result = await ofetch<APIResponse<T>>(`/api/onpremiseweb/${method}/`, {
+			const result = await ofetch<APIResponse<T>>(`/pivot/api/onpremiseweb/${method}/`, {
 				method: "POST",
 				body,
+				headers: {
+					...headerList,
+				},
 			});
 
 			if (result.status !== "ok") {

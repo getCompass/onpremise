@@ -1,5 +1,7 @@
 <?php
 
+namespace Compass\FileBalancer;
+
 // @formatter:off
 // ----
 // private/custom.php
@@ -8,5 +10,5 @@
 
 // @formatter:on
 
-define("COMPANY_START_PORT"               		, "${COMPANY_START_PORT}");
-define("MOD_VALUE_FOR_PORT"		   			, "${MOD_VALUE_FOR_PORT}");
+define(__NAMESPACE__ . "\COMPANY_START_PORT" 	, "${COMPANY_START_PORT}");
+define(__NAMESPACE__ . "\MOD_VALUE_FOR_PORT"	, "${MOD_VALUE_FOR_PORT}");

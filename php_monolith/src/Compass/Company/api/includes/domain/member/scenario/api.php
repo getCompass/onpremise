@@ -511,6 +511,8 @@ class Domain_Member_Scenario_Api {
 	 * @throws \cs_CompanyUserIncorrectRole
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
+	 * @throws \CompassApp\Domain\Member\Exception\UserIsGuest
+	 *
 	 */
 	public static function setPermissions(int $user_id, int $member_id, string|false $role, array $permissions, int $method_version):void {
 
@@ -522,6 +524,8 @@ class Domain_Member_Scenario_Api {
 		}
 
 		$member = Gateway_Bus_CompanyCache::getMember($member_id);
+
+		Member::assertUserNotGuest($member->role);
 
 		$role = match ($role) {
 			false   => $method_version < 2 ? $member->role : false,
@@ -732,6 +736,7 @@ class Domain_Member_Scenario_Api {
 
 		// отправляем событие в CRM о смене роли у участника пространства
 		Domain_Crm_Entity_Event_SpaceMemberRolePermissionsChanged::create(\CompassApp\System\Company::getCompanyId(), $member->user_id, $role, $permissions);
+		Domain_Partner_Entity_Event_SpaceMemberRoleChanged::create(\CompassApp\System\Company::getCompanyId(), $member->user_id, $role);
 	}
 
 	/**

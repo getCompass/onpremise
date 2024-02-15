@@ -90,10 +90,13 @@ func (companyEnv *CompanyEnvList) StopEnv(companyId int64) {
 	// удаляем все observer
 	isolation.Cancel()
 
-	// отключаемся от БД
-	err := isolation.CompanyDataConn.Conn.Close()
-	if err != nil {
-		log.Error(err.Error())
+	if isolation.CompanyDataConn != nil {
+
+		// отключаемся от БД
+		err := isolation.CompanyDataConn.Conn.Close()
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 
 	log.Infof("company %d not served", companyId)
@@ -185,7 +188,6 @@ func MakeIsolation(ctx context.Context, companyId int64, companyConfig *conf.Com
 		Context:                 ctx,
 		globalIsolation:         globalIsolation,
 		CompanyDataConn:         companyDataConn,
-		UserConnectionStore:     ws.MakeUserConnectionStore(globalIsolation.BalancerConn),
 		AnalyticStore:           ws.MakeAnalyticStore(),
 		AnalyticWsStore:         analyticsWs.MakeAnalyticWsStore(),
 		PusherConn:              pusherConn,

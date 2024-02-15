@@ -35,10 +35,11 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 			return $this->error(2229009, "you're not a thread member");
 		}
 
-		[$message_list, $previous_block_id_list, $next_block_id_list, $user_list] = $result;
+		[$message_list, $thread_meta, $previous_block_id_list, $next_block_id_list, $user_list] = $result;
 		$this->action->users($user_list);
 
 		return $this->ok([
+			"thread_meta"            => (object) $thread_meta,
 			"message_list"           => array_map(static fn(array $el) => Apiv1_Format::threadMessage($el), $message_list),
 			"previous_block_id_list" => $previous_block_id_list,
 			"next_block_id_list"     => $next_block_id_list,

@@ -15,24 +15,41 @@ class Domain_User_Entity_Attribution_JoinSpaceAnalytics {
 	/** @var string ключ по которому данные о связи пользователь -> посещение отправляются в php-collector-server */
 	protected const _JOIN_SPACE_COLLECTOR_AGENT_KEY = "attribution_join_space_log";
 
-	public const RESULT_NO_MATCHES_FOUND                                     = 0;
-	public const RESULT_SOME_MATCHES_FOUND                                   = 1;
-	public const RESULT_FULL_MATCHES_FOUND__INVITE_NOT_ACCEPTED              = 2;
-	public const RESULT_FULL_MATCHES_FOUND__INVITE_ACCEPTED                  = 3;
-	public const RESULT_FULL_MATCHES_FOUND__INVITE_ACCEPTED__USER_LEFT_SPACE = 8;
+	/** @var string действия по работе с аналитикой */
+	protected const _ACTION_INSERT        = "insert"; // создаем аналитику по пользователю
+	protected const _ACTION_UPDATE_RESULT = "update_result"; // обновляем существующую аналитику по пользователю
+
+	/** все возможные варианты развития событий, фиксируемые в аналитике */
+	protected const _RESULT_MASK_OPEN_DASHBOARD                               = 1 << 0;
+	protected const _RESULT_MASK_OPEN_ENTERING_LINK                           = 1 << 1;
+	protected const _RESULT_MASK_OPEN_JOIN_LINK                               = 1 << 2;
+	protected const _RESULT_MASK_ACCEPT_MATCHED_JOIN_LINK                     = 1 << 3;
+	protected const _RESULT_MASK_IGNORE_MATCHED_JOIN_LINK                     = 1 << 4;
+	protected const _RESULT_MASK_JOIN_FIRST_SPACE                             = 1 << 5;
+	protected const _RESULT_MASK_CREATE_FIRST_SPACE                           = 1 << 6;
+	protected const _RESULT_MASK_LEFT_FIRST_SPACE_AFTER_ACCEPT_MATCHED_INVITE = 1 << 7;
+	protected const _RESULT_MASK_WAITING_POSTMODERATION_JOIN_LINK             = 1 << 8;
 
 	/**
-	 * Получаем нужную константу result по join_space_case @see Domain_User_Action_Attribution_Detect::JOIN_SPACE_CASE_OPEN_DASHBOARD, etc ...
+	 * Нужно ли собирать аналитику по переданному пользователю
 	 *
-	 * @return int
+	 * @return bool
 	 */
-	public static function resolveResultByJoinCase(int $join_space_case):int {
+	public static function shouldCollectAnalytics(Struct_Db_PivotUser_User $user_info):bool {
 
-		return match ($join_space_case) {
-			Domain_User_Action_Attribution_Detect::JOIN_SPACE_CASE_OPEN_DASHBOARD     => self::RESULT_NO_MATCHES_FOUND,
-			Domain_User_Action_Attribution_Detect::JOIN_SPACE_CASE_OPEN_ENTERING_LINK => self::RESULT_SOME_MATCHES_FOUND,
-			Domain_User_Action_Attribution_Detect::JOIN_SPACE_CASE_OPEN_JOIN_LINK     => self::RESULT_FULL_MATCHES_FOUND__INVITE_NOT_ACCEPTED,
-			default                                                                   => throw new ParseFatalException("unexpected join_case = $join_space_case"),
+		return !Domain_User_Entity_User::isQATestUser($user_info);
+	}
+
+	/**
+	 * Получаем нужную константу result по client_action
+	 */
+	public static function resolveResultMaskByClientAction(int $client_action):int {
+
+		return match ($client_action) {
+			Domain_User_Entity_Attribution_Traffic_Abstract::CLIENT_ACTION_OPEN_DASHBOARD     => self::_RESULT_MASK_OPEN_DASHBOARD,
+			Domain_User_Entity_Attribution_Traffic_Abstract::CLIENT_ACTION_OPEN_ENTERING_LINK => self::_RESULT_MASK_OPEN_ENTERING_LINK,
+			Domain_User_Entity_Attribution_Traffic_Abstract::CLIENT_ACTION_OPEN_JOIN_LINK     => self::_RESULT_MASK_OPEN_JOIN_LINK,
+			default                                                                           => throw new ParseFatalException("unexpected join_case = $client_action"),
 		};
 	}
 
@@ -43,23 +60,8 @@ class Domain_User_Entity_Attribution_JoinSpaceAnalytics {
 
 		// оптравляем данные в php-collector-server
 		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
-			"action"         => "insert",
+			"action"         => self::_ACTION_INSERT,
 			"analytics_data" => $join_space_analytics->format(),
-		]);
-	}
-
-	/**
-	 * Обновляем result в аналитике join-space для пользователя
-	 */
-	public static function updateUserJoinSpaceAnalyticsResult(int $user_id, int $result):void {
-
-		// оптравляем данные в php-collector-server
-		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
-			"action"         => "update_result",
-			"analytics_data" => [
-				"user_id" => $user_id,
-				"result"  => $result,
-			],
 		]);
 	}
 
@@ -71,6 +73,109 @@ class Domain_User_Entity_Attribution_JoinSpaceAnalytics {
 	public static function isUserLeftSpaceEarly(int $join_at, int $left_at):bool {
 
 		return $left_at < $join_at + DAY1;
+	}
+
+	/**
+	 * Обновляем result_mask в аналитике join-space; фиксируем что пользователь принял предложенное ему приглашение
+	 */
+	public static function onUserAcceptMatchedJoinLink(int $user_id):void {
+
+		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
+			"action"         => self::_ACTION_UPDATE_RESULT,
+			"analytics_data" => [
+				"user_id"           => $user_id,
+				"append_result_bit" => self::_RESULT_MASK_ACCEPT_MATCHED_JOIN_LINK,
+				"remove_result_bit" => self::_RESULT_MASK_WAITING_POSTMODERATION_JOIN_LINK,
+			],
+		]);
+	}
+
+	/**
+	 * Обновляем result_mask в аналитике join-space; фиксируем что пользователь пригнорировал предложенное ему приглашение
+	 */
+	public static function onUserIgnoreMatchedJoinLink(int $user_id):void {
+
+		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
+			"action"         => self::_ACTION_UPDATE_RESULT,
+			"analytics_data" => [
+				"user_id"           => $user_id,
+				"append_result_bit" => self::_RESULT_MASK_IGNORE_MATCHED_JOIN_LINK,
+				"remove_result_bit" => self::_RESULT_MASK_WAITING_POSTMODERATION_JOIN_LINK,
+			],
+		]);
+	}
+
+	/**
+	 * Обновляем result_mask в аналитике join-space; фиксируем что пользователю вступил в свою первую команду
+	 */
+	public static function onUserJoinFirstSpace(int $user_id):void {
+
+		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
+			"action"         => self::_ACTION_UPDATE_RESULT,
+			"analytics_data" => [
+				"user_id"           => $user_id,
+				"append_result_bit" => self::_RESULT_MASK_JOIN_FIRST_SPACE,
+				"remove_result_bit" => self::_RESULT_MASK_WAITING_POSTMODERATION_JOIN_LINK,
+			],
+		]);
+	}
+
+	/**
+	 * Обновляем result_mask в аналитике join-space; фиксируем что пользователю создал свою первую команду
+	 */
+	public static function onUserCreateFirstSpace(int $user_id):void {
+
+		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
+			"action"         => self::_ACTION_UPDATE_RESULT,
+			"analytics_data" => [
+				"user_id"           => $user_id,
+				"append_result_bit" => self::_RESULT_MASK_CREATE_FIRST_SPACE,
+				"remove_result_bit" => self::_RESULT_MASK_WAITING_POSTMODERATION_JOIN_LINK,
+			],
+		]);
+	}
+
+	/**
+	 * Обновляем result_mask в аналитике join-space; фиксируем что пользователю покинул команду в которую ему предложили вступить
+	 */
+	public static function onUserLeftSpaceAfterAcceptMatchedInvite(int $user_id):void {
+
+		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
+			"action"         => self::_ACTION_UPDATE_RESULT,
+			"analytics_data" => [
+				"user_id"           => $user_id,
+				"append_result_bit" => self::_RESULT_MASK_LEFT_FIRST_SPACE_AFTER_ACCEPT_MATCHED_INVITE,
+			],
+		]);
+	}
+
+	/**
+	 * Обновляем result_mask в аналитике join-space; фиксируем что пользователь ожидает пост-модерации заявки
+	 */
+	public static function onUserWaitingPostModerationJoinLink(int $user_id):void {
+
+		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
+			"action"         => self::_ACTION_UPDATE_RESULT,
+			"analytics_data" => [
+				"user_id"           => $user_id,
+				"append_result_bit" => self::_RESULT_MASK_WAITING_POSTMODERATION_JOIN_LINK,
+			],
+		]);
+	}
+
+	/**
+	 * Обновляем result_mask в аналитике join-space; фиксируем что заявка с пост-модерацией была отменена
+	 * Событие подходит для всех кейсов отклонения заявки с пост-модерацией
+	 */
+	public static function onUserPostModerationRequestCanceled(int $user_id):void {
+
+		Gateway_Bus_CollectorAgent::init()->add(self::_JOIN_SPACE_COLLECTOR_AGENT_KEY, [
+			"action"         => self::_ACTION_UPDATE_RESULT,
+			"analytics_data" => [
+				"user_id"           => $user_id,
+				"remove_result_bit" => self::_RESULT_MASK_WAITING_POSTMODERATION_JOIN_LINK,
+			],
+		]);
 	}
 
 }

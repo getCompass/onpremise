@@ -35,14 +35,18 @@ class Www_Invitelink extends \BaseFrame\Controller\Www {
 		$link = $this->post(\Formatter::TYPE_STRING, "link");
 
 		try {
-			[$inviter_user_id, $inviter_full_name, $inviter_avatar_url, $avatar_color_id] = Domain_Www_Scenario_Api::getInviteLinkInfo($link);
-		} catch (cs_JoinLinkIsUsed|cs_JoinLinkIsNotActive|cs_UserNotFound|BlockException
-		|cs_IncorrectJoinLink|cs_JoinLinkNotFound|Domain_Company_Exception_IsHibernated
-		|Domain_Company_Exception_IsRelocating|Domain_Company_Exception_IsNotServed) {
+
+			[
+				$inviter_user_id, $inviter_full_name, $inviter_avatar_url,
+				$avatar_color_id, $inviter_avatar_image_version_list,
+			] = Domain_Www_Scenario_Api::getInviteLinkInfo($link);
+		} catch (cs_JoinLinkIsUsed | cs_JoinLinkIsNotActive | cs_UserNotFound | BlockException
+		| cs_IncorrectJoinLink | cs_JoinLinkNotFound | Domain_Company_Exception_IsHibernated
+		| Domain_Company_Exception_IsRelocating | Domain_Company_Exception_IsNotServed) {
 
 			return $this->error(1609001, "Invite link information not available");
 		}
 
-		return $this->ok(Www_Format::inviteLinkInfo($inviter_user_id, $inviter_full_name, $inviter_avatar_url, $avatar_color_id));
+		return $this->ok(Www_Format::inviteLinkInfo($inviter_user_id, $inviter_full_name, $inviter_avatar_url, $avatar_color_id, $inviter_avatar_image_version_list));
 	}
 }

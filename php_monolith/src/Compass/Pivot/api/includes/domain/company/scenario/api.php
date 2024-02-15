@@ -58,33 +58,36 @@ class Domain_Company_Scenario_Api {
 			throw new cs_CompanyIncorrectClientCompanyId();
 		}
 
+		// первое ли это пространство у пользователя
+		$is_user_first_company = count($company_list) < 1;
+
 		// выполняем действия по добавлению компании
 		/** @var Struct_Db_PivotCompany_Company $company */
-		$is_need_create_intercom_conversation = count($company_list) < 1; // если пространств нет - нужно создать диалог
+		$is_need_create_intercom_conversation = $is_user_first_company; // если это первое пространство пользователя, то нужно создать диалог в intercom
 		[$company, $user_company] = Domain_Company_Action_Take::do($user_id, $avatar_color_id, $name, $client_company_id, $avatar_file_map, $is_need_create_intercom_conversation);
 
 		// получаем данные связи пользователь-компания
-		$user_company = Struct_User_Company::createFromCompanyStruct($company, Struct_User_Company::ACTIVE_STATUS, $user_company->order);
+		$user_company_api = Struct_User_Company::createFromCompanyStruct($company, Struct_User_Company::ACTIVE_STATUS, $user_company->order);
 
 		// шлем создателю эвент о создании компании
-		Gateway_Bus_SenderBalancer::companyCreated($user_id, Apiv1_Format::userCompany($user_company));
+		Gateway_Bus_SenderBalancer::companyCreated($user_id, Apiv1_Format::userCompany($user_company_api));
 
 		if (!ServerProvider::isOnPremise()) {
 
 			// отправляем в партнерку событие о создании пространства
-			Domain_Partner_Entity_Event_UserCreatedSpace::create($user_id, $user_company->company_id);
-			Domain_Crm_Entity_Event_SpaceCreate::create($user_company->company_id);
+			Domain_Partner_Entity_Event_UserCreateSpace::create($user_id, $user_company_api->company_id);
+			Domain_Crm_Entity_Event_SpaceCreate::create($user_company_api->company_id);
 
-			Type_User_ActionAnalytics::send($user_id, Type_User_ActionAnalytics::ADD_SPACE);
-			Type_Space_ActionAnalytics::send($user_company->company_id, $user_id, Type_Space_ActionAnalytics::CREATED);
-			Type_Phphooker_Main::sendUserAccountLog($user_id, Type_User_Analytics::ADD_SPACE);
-			Type_Phphooker_Main::sendSpaceLog(Type_Space_Analytics::CREATED, $user_company->company_id);
+		Type_User_ActionAnalytics::send($user_id, Type_User_ActionAnalytics::ADD_SPACE);
+		Type_Space_ActionAnalytics::init($user_id)->send($user_company_api->company_id, Type_Space_ActionAnalytics::CREATED);
+		Type_Phphooker_Main::sendUserAccountLog($user_id, Type_User_Analytics::ADD_SPACE);
+		Type_Phphooker_Main::sendSpaceLog(Type_Space_Analytics::CREATED, $user_company_api->company_id);
 
 			// обновляем в битриксе флаг "владелец пространства"
 			Type_Phphooker_Main::sendBitrixOnUserChangedInfo($user_id, [Domain_Bitrix_Action_OnUserChangeData::CHANGED_SPACE_OWN_STATUS => 1]);
 		}
 
-		return $user_company;
+		return $user_company_api;
 	}
 
 	/**
@@ -281,6 +284,9 @@ class Domain_Company_Scenario_Api {
 			);
 
 			$status = Struct_User_Company::POSTMODERATED_STATUS;
+
+			// отправляем в аналитику, что пользователь ждет одобрения заявки на вступление
+			Domain_User_Entity_Attribution_JoinSpaceAnalytics::shouldCollectAnalytics($user_info) && Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserWaitingPostModerationJoinLink($user_id);
 		} else {
 
 			// удаляем компанию из лобби, если вдруг имелась запись
@@ -403,7 +409,7 @@ class Domain_Company_Scenario_Api {
 
 		Type_Phphooker_Main::sendSpaceLog(Type_Space_Analytics::DELETED, $company_id);
 		Type_User_ActionAnalytics::send($user_id, Type_User_ActionAnalytics::DELETE_SPACE);
-		Type_Space_ActionAnalytics::send($company_id, $user_id, Type_Space_ActionAnalytics::DELETED);
+		Type_Space_ActionAnalytics::init($user_id)->send($company_id, Type_Space_ActionAnalytics::DELETED);
 	}
 
 	/**

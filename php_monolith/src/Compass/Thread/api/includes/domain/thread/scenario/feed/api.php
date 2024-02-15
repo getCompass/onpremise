@@ -22,6 +22,7 @@ class Domain_Thread_Scenario_Feed_Api {
 	 * @throws cs_Message_HaveNotAccess
 	 * @throws cs_Thread_UserNotMember
 	 * @throws \BaseFrame\Exception\Request\CaseException
+	 * @long
 	 */
 	public static function getMessages(int $user_id, string $thread_map, array $block_id_list):array {
 
@@ -30,10 +31,11 @@ class Domain_Thread_Scenario_Feed_Api {
 			// получаем мету диалога, она нам по сути не очень-то и нужна,
 			// но тут проверяются права на доступность треда, зарефакторить
 			// все это дело займет много времени, поэтому простите меня
-			Helper_Threads::getMetaIfUserMember($thread_map, $user_id);
+			$meta_row = Helper_Threads::getMetaIfUserMember($thread_map, $user_id);
 		} catch (cs_Conversation_IsBlockedOrDisabled) {
 
 			// игнорируем происходящее, просто сингл-диалог заблокирован на обновление
+			$meta_row = Type_Thread_Meta::getOne($thread_map);
 		}
 
 		// получаем динамику треда,и формируем корректный список блоков для чтения
@@ -80,8 +82,11 @@ class Domain_Thread_Scenario_Feed_Api {
 			}
 		}
 
+		$prepared_thread_meta  = Type_Thread_Utils::prepareThreadMetaForFormat($meta_row, $user_id);
+		$formatted_thread_meta = Apiv2_Format::threadMeta($prepared_thread_meta);
+
 		[$previous_block_id_list, $next_block_id_list] = Domain_Thread_Entity_MessageBlock::getAroundNBlocks($thread_dynamic, $block_id_list);
-		return [$message_list, $previous_block_id_list, $next_block_id_list, array_unique($user_list)];
+		return [$message_list, $formatted_thread_meta, $previous_block_id_list, $next_block_id_list, array_unique($user_list)];
 	}
 
 	/**

@@ -12,7 +12,8 @@ class Socket_System extends \BaseFrame\Controller\Socket {
 	public const ALLOW_METHODS = [
 		"tryPing",
 		"execCompanyUpdateScript",
-		"setCompanyStatus"
+		"setCompanyStatus",
+		"sendMessageWithFile"
 	];
 
 	// -------------------------------------------------------
@@ -50,4 +51,34 @@ class Socket_System extends \BaseFrame\Controller\Socket {
 			"error_log"  => (string) $error_log,
 		]);
 	}
+
+	// оптравляем сообщение с файлом от пользователя
+	public function sendMessageWithFile():array {
+
+		$sender_id        = $this->post(\Formatter::TYPE_STRING, "sender_id");
+		$file_key         = $this->post(\Formatter::TYPE_STRING, "file_key");
+		$conversation_map = $this->post(\Formatter::TYPE_STRING, "conversation_map");
+		$file_map         = \CompassApp\Pack\File::doDecrypt($file_key);
+
+		// формируем сообщение
+		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeFile($sender_id, "", generateUUID(), $file_map);
+
+		$meta_row = Type_Conversation_Meta::get($conversation_map);
+
+		try {
+
+			Helper_Conversations::addMessage(
+				$conversation_map,
+				$message, $meta_row["users"],
+				$meta_row["type"],
+				$meta_row["conversation_name"],
+				$meta_row["extra"]
+			);
+		} catch (cs_ConversationIsLocked) {
+			return $this->error(10018, "Conversation is locked");
+		}
+
+		return $this->ok();
+	}
+
 }

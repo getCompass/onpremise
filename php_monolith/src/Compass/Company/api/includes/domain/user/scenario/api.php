@@ -3,7 +3,10 @@
 namespace Compass\Company;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
-use BaseFrame\Exception\Request\BlockException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\CompanyIsHibernatedException;
+use BaseFrame\Exception\Request\CompanyIsRelocatingException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Server\ServerProvider;
 use CompassApp\Domain\Member\Entity\Permission;
@@ -160,11 +163,11 @@ class Domain_User_Scenario_Api {
 		]);
 
 		// достаём значения
-		$config["is_push_body_display"]                       = $config_list[Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY]["value"];
-		$config["is_extended_employee_card_enabled"]          = $config_list[Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY]["value"];
-		$config["is_general_chat_notification_enabled"]       = $config_list[Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS]["value"];
-		$config["is_add_to_general_chat_on_hiring"]           = $config_list[Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING]["value"];
-		$config["member_count"]                               = $config_list[Domain_Company_Entity_Config::MEMBER_COUNT]["value"];
+		$config["is_push_body_display"]                 = $config_list[Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY]["value"];
+		$config["is_extended_employee_card_enabled"]    = $config_list[Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY]["value"];
+		$config["is_general_chat_notification_enabled"] = $config_list[Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS]["value"];
+		$config["is_add_to_general_chat_on_hiring"]     = $config_list[Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING]["value"];
+		$config["member_count"]                         = $config_list[Domain_Company_Entity_Config::MEMBER_COUNT]["value"];
 
 		return $config;
 	}
@@ -221,7 +224,7 @@ class Domain_User_Scenario_Api {
 
 				Domain_User_Action_Notifications_DeleteDevice::do($user_id, getDeviceId());
 			}
-		} catch (cs_UserNotLoggedIn|\cs_RowIsEmpty) {
+		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty) {
 			// просто ничего не делаем
 		}
 
@@ -236,6 +239,43 @@ class Domain_User_Scenario_Api {
 
 		// закрываем ws
 		Gateway_Bus_Sender::closeConnectionsByDeviceIdWithWait($user_id, getDeviceId(), $routine_key);
+
+		// обновляем бадж с непрочитанными для пользователя
+		$extra = Gateway_Bus_Company_Timer::getExtraForUpdateBadge($user_id);
+		Gateway_Bus_Company_Timer::setTimeout(Gateway_Bus_Company_Timer::UPDATE_BADGE, $user_id, [], $extra);
+	}
+
+	/**
+	 * Разлогиниваем при удалении пользователя
+	 *
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
+	 * @throws \busException
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
+	public static function doLogoutDeletedUser(int $user_id):void {
+
+		$cloud_session_uniq = false;
+		try {
+
+			Domain_User_Entity_Validator::assertLoggedIn($user_id);
+			$cloud_session_uniq = Type_Session_Main::doLogoutSession($user_id);
+		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty) {
+			// просто ничего не делаем
+		}
+
+		if ($cloud_session_uniq === false) {
+			return;
+		}
+
+		// отправляем ивент о том, что пользователь разлогинился из компании
+		Gateway_Event_Dispatcher::dispatch(Type_Event_UserCompany_UserLogoutCompany::create($user_id, $cloud_session_uniq), true);
+
+		$routine_key = Gateway_Bus_Sender::getWaitRoutineKeyForUser($user_id);
+
+		// закрываем ws
+		Gateway_Bus_Sender::closeConnectionsByUserIdWithWait($user_id, $routine_key);
 
 		// обновляем бадж с непрочитанными для пользователя
 		$extra = Gateway_Bus_Company_Timer::getExtraForUpdateBadge($user_id);
@@ -340,12 +380,39 @@ class Domain_User_Scenario_Api {
 			return;
 		}
 
+		// покидаем компанию
+		self::doLeaveCompany($user_id, $user_role);
+	}
+
+	/**
+	 * Покидаем компанию
+	 *
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws BusFatalException
+	 * @throws CompanyIsHibernatedException
+	 * @throws CompanyIsRelocatingException
+	 * @throws \apiAccessException
+	 * @throws \busException
+	 * @throws \cs_CompanyUserIsNotOwner
+	 * @throws \cs_RowIsEmpty
+	 * @throws \cs_UserIsNotMember
+	 * @throws \paramException
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws \returnException
+	 * @throws cs_IncorrectDismissalRequestId
+	 * @throws cs_PlatformNotFound
+	 */
+	public static function doLeaveCompany(int $user_id, int $user_role, bool $is_delete_user = false):void {
+
 		// получаем полноценных пользователей пространства
 		$member_list                = Gateway_Db_CompanyData_MemberList::getAllActiveMemberWithNpcFilter();
 		$space_resident_member_list = array_filter($member_list,
 			static fn(\CompassApp\Domain\Member\Struct\Main $member) => in_array($member->role, Member::SPACE_RESIDENT_ROLE_LIST));
 
-		// если в компании остались другие полноценные участники или покидает компанию гость
+		// если в компании остались другие полноценные участники или покидает компанию гость,
 		// то просто увольняем его; иначе - удаляем компанию
 		if (count($space_resident_member_list) > 1 || $user_role == Member::ROLE_GUEST) {
 
@@ -353,8 +420,12 @@ class Domain_User_Scenario_Api {
 			self::_dismissUser($user_id);
 		} else {
 
-			// разлогиниваем пользователя
-			self::doLogout($user_id);
+			// разлогиниваем в зависимости от условия покидания компании
+			if ($is_delete_user) {
+				self::doLogoutDeletedUser($user_id);
+			} else {
+				self::doLogout($user_id);
+			}
 
 			// удаляем компанию
 			Gateway_Socket_Pivot::deleteCompany($user_id);

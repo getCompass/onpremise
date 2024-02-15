@@ -45,6 +45,11 @@ class Domain_Company_Action_RemoveFromList {
 			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
 				// !!! если вдруг компания неактивна, то продолжаем дальнейшее выполнение на пивоте
 			}
+
+			// помечаем в аналитике join-space что заявка отменена
+			// делаем для всех случаев тк это дешевле, чем делать доп. выборки из базы чтобы отфильтровать лишние кейсы
+			// это действие ничему не навредит
+			Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserPostModerationRequestCanceled($user_id);
 		}
 
 		// удаляем компанию из предбанника

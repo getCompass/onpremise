@@ -61,7 +61,9 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 
 			// сценарий регистрации
 			Gateway_Bus_CollectorAgent::init()->inc("row0");
-			[$auth_info, $validation_result] = Domain_User_Scenario_OnPremiseWeb::beginAuthentication($this->user_id, $phone_number, $grecaptcha_response, $join_link);
+			[$auth_info, $validation_result] = Domain_User_Scenario_OnPremiseWeb::beginAuthentication(
+				$this->user_id, $phone_number, $grecaptcha_response, $join_link
+			);
 		} catch (cs_blockException $e) {
 
 			throw new CaseException(423, "begin method limit exceeded", [
@@ -120,7 +122,9 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 		try {
 
 			/** @var Struct_User_Auth_Info $auth_info */
-			[$auth_info, $phone_number] = Domain_User_Scenario_OnPremiseWeb::resendAuthenticationCode($this->user_id, $auth_map, $grecaptcha_response);
+			[$auth_info, $phone_number] = Domain_User_Scenario_OnPremiseWeb::resendAuthenticationCode(
+				$this->user_id, $auth_map, $grecaptcha_response
+			);
 		} catch (cs_AuthAlreadyFinished) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row17");

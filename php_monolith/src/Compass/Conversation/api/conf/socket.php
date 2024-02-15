@@ -74,6 +74,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"groups.getUserbotGroupInfoList",
 			"antispam.clearAll",
 			"system.execCompanyUpdateScript",
+			"system.sendMessageWithFile",
 			"userbot.addReaction",
 			"userbot.removeReaction",
 			"intercom.addMessageFromSupportBot",

@@ -95,6 +95,9 @@ class Socket_Groups extends \BaseFrame\Controller\Socket {
 
 			// добавляем пользователя в дефолтные группы компании
 			Domain_Group_Action_CompanyDefaultJoin::do($this->user_id, $conversation_role, $is_owner);
+
+			// сортируем чаты в нужном порядке
+			Domain_Group_Action_CompanyDefaultSort::do($this->user_id, $conversation_role, $is_owner);
 		}
 
 		return $this->ok();

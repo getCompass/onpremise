@@ -407,7 +407,7 @@ class Type_Session_Main {
 				Type_Pack_PivotSession::getSessionUniq($pivot_session_map),
 				Type_Pack_PivotSession::getShardId($pivot_session_map),
 				Type_Pack_PivotSession::getTableId($pivot_session_map));
-		} catch (\cs_SessionNotFound|BusFatalException) {
+		} catch (\cs_SessionNotFound) {
 
 			// если нет, чистим куки и перезапускаем старт сессии
 			self::_clearCookie();

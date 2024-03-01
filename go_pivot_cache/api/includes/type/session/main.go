@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_pivot_cache/api/conf"
@@ -18,7 +19,11 @@ func GetUserSessionRow(ctx context.Context, sessionUniq string, tableID string, 
 	if !exist || sessionItem.err != nil {
 
 		// подписываем на канал и ждем пока сессия добавится в кэш
-		waitUntilSessionAddedToCache(ctx, shardID, tableID, sessionUniq)
+		// ожидание вернет ошибку, если случился таймаут
+		err := waitUntilSessionAddedToCache(ctx, shardID, tableID, sessionUniq)
+		if err != nil {
+			return nil, 0, err
+		}
 
 		// если так и не появилась
 		sessionItem, exist = mainSessionStore.getSessionItemFromCache(sessionUniq)
@@ -36,19 +41,20 @@ func GetUserSessionRow(ctx context.Context, sessionUniq string, tableID string, 
 }
 
 // получаем ждем пока в кэше 2 появится инфа
-func waitUntilSessionAddedToCache(ctx context.Context, shardID string, tableID string, sessionUniq string) {
+// если ожидание отваливается по таймауту, отдаем ошибку
+func waitUntilSessionAddedToCache(ctx context.Context, shardID string, tableID string, sessionUniq string) error {
 
 	sub := doSubOnChan(ctx, shardID, tableID, sessionUniq)
 	select {
 	case <-sub:
 
-		return
+		return nil
 
 		// добавляем timeout для прослушки
 	case <-time.After(time.Millisecond * conf.GetConfig().GetUserTimeoutMs):
 
 		log.Errorf("не смогли получить из канала: %v для sessionUniq: %s", sub, sessionUniq)
-		return
+		return fmt.Errorf("не смогли получить из канала: %v для sessionUniq: %s", sub, sessionUniq)
 	}
 }
 

@@ -48,7 +48,7 @@ class Apiv1_Pivot_Auth extends \BaseFrame\Controller\Api {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row4");
 			return $this->error(3, "not valid captcha. Try again");
-		} catch (cs_PhoneNumberIsBlocked $e) {
+		} catch (cs_AuthIsBlocked $e) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row5");
 			return $this->error(1004, "auth blocked", [
@@ -61,7 +61,7 @@ class Apiv1_Pivot_Auth extends \BaseFrame\Controller\Api {
 		}
 
 		// пишем статистику об успешной регистрации авторизации пользователя
-		if ($auth_info->type == Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_REGISTER) {
+		if ($auth_info->auth->type == Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_REGISTER_BY_PHONE_NUMBER) {
 			Gateway_Bus_CollectorAgent::init()->inc("row6");
 		} else {
 			Gateway_Bus_CollectorAgent::init()->inc("row7");
@@ -101,13 +101,13 @@ class Apiv1_Pivot_Auth extends \BaseFrame\Controller\Api {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row12");
 			return $this->error(1, "user already logged in");
-		} catch (cs_PhoneNumberIsBlocked $e) {
+		} catch (cs_AuthIsBlocked $e) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row13");
 			return $this->error(1004, "auth blocked", [
 				"next_attempt" => $e->getNextAttempt(),
 			]);
-		} catch (cs_WrongSmsCode $e) {
+		} catch (cs_WrongCode $e) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row14");
 			return $this->error(7, "incorrect code", [
@@ -156,11 +156,11 @@ class Apiv1_Pivot_Auth extends \BaseFrame\Controller\Api {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row21");
 			return $this->error(3, "not valid captcha. Try again");
-		} catch (cs_ResendSmsCountLimitExceeded) {
+		} catch (cs_ResendCodeCountLimitExceeded) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row22");
 			return $this->error(55, "resend count limit");
-		} catch (cs_PhoneNumberIsBlocked $e) {
+		} catch (cs_AuthIsBlocked $e) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row23");
 			return $this->error(1004, "auth blocked", [

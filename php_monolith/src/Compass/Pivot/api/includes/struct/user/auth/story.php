@@ -10,15 +10,15 @@ namespace Compass\Pivot;
 class Struct_User_Auth_Story {
 
 	public Struct_Db_PivotAuth_Auth      $auth;
-	public Struct_Db_PivotAuth_AuthPhone $auth_phone;
+	public array                         $auth_method_data;
 
 	/**
 	 * Struct_User_Auth_Story constructor.
 	 *
 	 */
-	public function __construct(Struct_Db_PivotAuth_Auth $auth, Struct_Db_PivotAuth_AuthPhone $auth_phone) {
+	public function __construct(Struct_Db_PivotAuth_Auth $auth, array $auth_method_data) {
 
-		$this->auth       = $auth;
-		$this->auth_phone = $auth_phone;
+		$this->auth             = $auth;
+		$this->auth_method_data = $auth_method_data;
 	}
 }

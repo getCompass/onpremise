@@ -41,6 +41,7 @@ const PageInviteAlreadyMember = () => {
                             fs="16"
                             lh="22"
                             textAlign="center"
+							font="regular"
                         >
                             {langStringPageInviteAlreadyMemberDesc}
                         </Text>
@@ -75,6 +76,7 @@ const PageInviteAlreadyMember = () => {
                         fs="14"
                         lh="20"
                         textAlign="center"
+						font="regular"
                     >
                         {langStringPageInviteAlreadyMemberDesc}
                     </Text>

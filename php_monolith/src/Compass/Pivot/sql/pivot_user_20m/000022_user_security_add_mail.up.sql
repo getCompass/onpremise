@@ -1,0 +1,10 @@
+ALTER TABLE `pivot_user_20m`.`user_security_11` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_12` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_13` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_14` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_15` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_16` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_17` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_18` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_19` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;
+ALTER TABLE `pivot_user_20m`.`user_security_20` ADD COLUMN `mail` VARCHAR(256) NOT NULL DEFAULT '' COMMENT 'почта пользователя' AFTER `phone_number`;

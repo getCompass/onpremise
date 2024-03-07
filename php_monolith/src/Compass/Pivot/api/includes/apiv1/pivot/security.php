@@ -104,7 +104,7 @@ class Apiv1_Pivot_Security extends \BaseFrame\Controller\Api {
 		} catch (cs_TwoFaInvalidUser|cs_WrongTwoFaKey) {
 
 			return $this->error(2302, "2fa key is invalid");
-		} catch (cs_WrongSmsCode $e) {
+		} catch (cs_WrongCode $e) {
 
 			return $this->error(7, "incorrect code", [
 				"available_attempts" => $e->getAvailableAttempts(),
@@ -155,7 +155,7 @@ class Apiv1_Pivot_Security extends \BaseFrame\Controller\Api {
 			return $this->error(2300, "2fa key is expired");
 		} catch (cs_TwoFaIsFinished) {
 			return $this->error(2301, "2fa action already finished");
-		} catch (cs_ResendSmsCountLimitExceeded) {
+		} catch (cs_ResendCodeCountLimitExceeded) {
 			return $this->error(55, "resend count limit");
 		} catch (cs_ErrorCountLimitExceeded $e) {
 

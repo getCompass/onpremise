@@ -48,6 +48,9 @@ class Domain_System_Action_GetStartDataV2 {
 		// получаем конфиг с константами
 		$output_data = self::_getAppConfigListIfNeed($need_data_list, $user_id, $output_data);
 
+		// получаем список доступных способов аутентификации
+		$output_data["available_auth_method_list"] = Domain_User_Entity_Auth_Config::getAvailableMethodList();
+
 		// получаем конфиг с фичами для приложения
 		return self::_getFeatureListIfNeed($need_data_list, $user_id, $output_data);
 	}

@@ -1,20 +1,20 @@
 import DialogMobile from "../components/DialogMobile.tsx";
 import useIsMobile from "../lib/useIsMobile.ts";
 import DialogDesktop from "../components/DialogDesktop.tsx";
-import {useCallback, useMemo} from "react";
-import {useNavigateDialog, useNavigatePage} from "../components/hooks.ts";
-import {useLangString} from "../lib/getLangString.ts";
-import {useAtomValue} from "jotai";
-import {joinLinkState, prepareJoinLinkErrorState, profileState} from "../api/_stores.ts";
-import {styled, VStack} from "../../styled-system/jsx";
+import { useCallback, useMemo } from "react";
+import { useNavigateDialog, useNavigatePage } from "../components/hooks.ts";
+import { useLangString } from "../lib/getLangString.ts";
+import { useAtomValue } from "jotai";
+import { joinLinkState, prepareJoinLinkErrorState, profileState } from "../api/_stores.ts";
+import { styled, VStack } from "../../styled-system/jsx";
 import IconLogo from "../components/IconLogo.tsx";
-import {Text} from "../components/text.tsx";
-import {Button} from "../components/button.tsx";
-import {ALREADY_MEMBER_ERROR_CODE, PrepareJoinLinkErrorAlreadyMemberData} from "../api/_types.ts";
+import { Text } from "../components/text.tsx";
+import { Button } from "../components/button.tsx";
+import { ALREADY_MEMBER_ERROR_CODE, PrepareJoinLinkErrorAlreadyMemberData } from "../api/_types.ts";
 
 type WelcomeDialogProps = {
-	navigateToNextPage: () => void,
-}
+	navigateToNextPage: () => void;
+};
 
 const WelcomeDialogDesktop = ({navigateToNextPage}: WelcomeDialogProps) => {
 
@@ -63,6 +63,7 @@ const WelcomeDialogDesktop = ({navigateToNextPage}: WelcomeDialogProps) => {
 						fs="14"
 						lh="20"
 						textAlign="center"
+						font="regular"
 					>
 						<styled.span
 							fontFamily="lato_bold"
@@ -130,6 +131,7 @@ const WelcomeDialogMobile = ({navigateToNextPage}: WelcomeDialogProps) => {
 						fs="16"
 						lh="22"
 						textAlign="center"
+						font="regular"
 					>
 						<styled.span
 							fontFamily="lato_semibold"
@@ -166,7 +168,7 @@ const PageWelcomeJoinLink = () => {
 				return;
 			}
 
-			navigateToDialog("auth_phone_number");
+			navigateToDialog("auth_email_phone_number");
 			return;
 		}
 

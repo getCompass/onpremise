@@ -12,6 +12,9 @@
 # cron_sms_dispatcher
 * * * * *  /usr/local/bin/php -dxdebug.start_with_request=0 /app/src/Compass/Pivot/api/cron/sms/dispatcher.php start bot0 now > /dev/null 2>&1 &
 
+# cron_mail_dispatcher
+* * * * *  /usr/local/bin/php -dxdebug.start_with_request=0 /app/src/Compass/Pivot/api/cron/mail/dispatcher.php start bot0 now > /dev/null 2>&1 &
+
 # cron_sms_provider_observer
 * * * * *  /usr/local/bin/php -dxdebug.start_with_request=0 /app/src/Compass/Pivot/api/cron/sms/provider/observer.php start bot0 now > /dev/null 2>&1 &
 

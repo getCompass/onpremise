@@ -6,7 +6,7 @@
 		"backend_compass_dev_2/pivot_protobuf_schemes": "1.1.4",
 		"backend_compass_dev_2/company_protobuf_schemes": "1.1.1",
 		"backend_compass_dev_2/company_utils": "v1.5.2",
-		"service/php_base_frame": "v1.1.2",
+		"service/php_base_frame": "v1.1.4",
 		"paragonie/constant_time_encoding": "v2.5.0",
 		"backend_compass_dev_2/php_analytic_utils": "1.0.0",
 		"backend_compass_dev_2/compass_space": "1.0.0",
@@ -17,7 +17,8 @@
 		"service/announcement_template": "1.0.0",
 		"phpoffice/phpword": "0.18.3",
 		"phpoffice/phpspreadsheet": "1.22.0",
-		"smalot/pdfparser": "v2.5.0"
+		"smalot/pdfparser": "v2.5.0",
+		"phpmailer/phpmailer": "v6.9.1"
 	},
 	"scripts": {
 		"post-update-cmd": ["echo Delete all .git directories in vendor.", "rm -rf vendor/**/**/.git"],
@@ -26,7 +27,7 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/getCompassUtils/php_base_frame"
+			"url": "https://github.com/getCompassUtils/php_base_frame.git"
 		},
 		{
 			"type": "vcs",
@@ -171,6 +172,10 @@
 		{
 			"type": "vcs",
 			"url": "https://github.com/getCompassUtils/phpword"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/PHPMailer"
 		}
 	]
 }

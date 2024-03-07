@@ -36,6 +36,18 @@ class Type_Antispam_Ip {
 		"expire" => 60 * 15,
 	];
 
+	const BEGIN_INCORRECT_MAIL = [
+		"key"    => "BEGIN_INCORRECT_MAIL",
+		"limit"  => 7,
+		"expire" => 60 * 15,
+	];
+
+	const RESET_PASSWORD_INCORRECT_MAIL = [
+		"key"    => "RESET_PASSWORD_INCORRECT_MAIL",
+		"limit"  => 7,
+		"expire" => 60 * 15,
+	];
+
 	const JOIN_LINK_VALIDATE = [
 		"key"    => "JOIN_LINK_VALIDATE",
 		"limit"  => 10,
@@ -52,7 +64,7 @@ class Type_Antispam_Ip {
 	 *
 	 * @throws \blockException
 	 */
-	public static function checkAndIncrementBlock(array $block_key):void {
+	public static function checkAndIncrementBlock(array $block_key):int {
 
 		// получаем текущее состояние блокировки
 		$ip_address = getIp();
@@ -66,6 +78,8 @@ class Type_Antispam_Ip {
 
 		// обновляем запись
 		self::_set($row["ip_address"], $row["key"], $row["is_stat_sent"], $row["count"] + 1, $row["expires_at"]);
+
+		return $row["count"] + 1;
 	}
 
 	/**
@@ -75,17 +89,21 @@ class Type_Antispam_Ip {
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
 	 */
-	public static function incrementAndAssertRecaptchaIfBlocked(array $block_key, string|false $grecaptcha_response, bool $is_from_web = false):void {
+	public static function incrementAndAssertRecaptchaIfBlocked(array $block_key, string|false $grecaptcha_response, bool $is_from_web = false):int {
 
 		if (Type_Antispam_User::needCheckIsBlocked()) {
-			return;
+			return 0;
 		}
 
 		try {
-			self::checkAndIncrementBlock($block_key);
+			$block_count = self::checkAndIncrementBlock($block_key);
 		} catch (BlockException) {
+
 			Type_Captcha_Main::assertCaptcha($grecaptcha_response, $is_from_web);
+			$block_count = $block_key["limit"];
 		}
+
+		return $block_count;
 	}
 
 	/**

@@ -25,11 +25,23 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 	 *
 	 * @return Struct_Db_PivotUser_User
 	 * @throws Domain_User_Exception_PhoneNumberBinding
+	 * @throws Domain_User_Exception_Mail_BelongAnotherUser
 	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
 	 * @throws cs_DamagedActionException
 	 * @throws \queryException
 	 */
-	public static function do(string $phone_number, string $user_agent, string $ip, string $full_name, string $avatar_file_map, array $extra, int $set_user_id = 0, int $default_partner_id = 0):Struct_Db_PivotUser_User {
+	public static function do(
+		string $phone_number,
+		string $mail,
+		string $password_hash,
+		string $user_agent,
+		string $ip,
+		string $full_name,
+		string $avatar_file_map,
+		array  $extra,
+		int    $set_user_id = 0,
+		int    $default_partner_id = 0
+	):Struct_Db_PivotUser_User {
 
 		return static::effect(static::store(static::prepare(...func_get_args()), $set_user_id, $default_partner_id))->user;
 	}
@@ -38,17 +50,22 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 	 * Создаем сущность пользователя человека.
 	 *
 	 * @throws Domain_User_Exception_PhoneNumberBinding
+	 * @throws Domain_User_Exception_Mail_BelongAnotherUser
 	 * @throws cs_DamagedActionException
 	 */
 	public static function store(Struct_User_Action_Create_Prepare $data, int $set_user_id = 0, int $default_partner_id = 0):Struct_User_Action_Create_Store {
 
 		$parent_data = parent::store($data, $set_user_id, $default_partner_id);
 
-		// цепляем номер телефона к пользователю
-		static::_bindPhoneUniq($parent_data->user->user_id, $parent_data->prepare_data->phone_number_hash);
+		// цепляем номер телефона к пользователю, если есть
+		if ($data->phone_number !== "") {
+			static::_bindPhone($parent_data->user->user_id, $parent_data->prepare_data->phone_number, $parent_data->prepare_data->phone_number_hash, $data->action_time);
+		}
 
-		Gateway_Db_PivotHistoryLogs_UserChangePhoneHistory::insert($parent_data->user->user_id, "", $data->phone_number, "", $data->action_time, 0);
-		Gateway_Db_PivotUser_UserSecurity::insert($parent_data->user->user_id, $data->phone_number, $data->action_time, 0);
+		// цепляем почту к пользователю, если есть
+		if ($data->mail !== "") {
+			static::_bindMail($parent_data->user->user_id, $data->mail, $data->mail_hash, $data->password_hash, $data->action_time);
+		}
 
 		// добавляем запись в таблицу последних регистраций
 		static::_insertToLastRegistration($parent_data->user->user_id, $default_partner_id, $data->ip_address);
@@ -57,13 +74,14 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 	}
 
 	/**
-	 * Обновляет запись для нового номера телефона.
+	 * Цепляем номер телефона за пользователем
+	 *
 	 * @throws Domain_User_Exception_PhoneNumberBinding
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \parseException
+	 * @throws \queryException
 	 */
-	#[\JetBrains\PhpStorm\ArrayShape([Struct_Db_PivotPhone_PhoneUniq::class, "bool"])]
-	protected static function _bindPhoneUniq(int $user_id, string $phone_number_hash):array {
-
-		$is_number_reused = false;
+	protected static function _bindPhone(int $user_id, string $phone_number, string $phone_number_hash, int $action_time):void {
 
 		/** начало транзакции */
 		Gateway_Db_PivotPhone_PhoneUniqList::beginTransaction();
@@ -71,8 +89,7 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 		try {
 
 			// получаем запись на чтение с блокировкой
-			$phone_uniq       = Gateway_Db_PivotPhone_PhoneUniqList::getForUpdate($phone_number_hash);
-			$is_number_reused = true;
+			$phone_uniq = Gateway_Db_PivotPhone_PhoneUniqList::getForUpdate($phone_number_hash);
 
 			// проверим, что номер на текущий момент ни за кем не закреплен
 			if ($phone_uniq->user_id !== 0) {
@@ -93,13 +110,87 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 			// записи нет, это нормально, скорее всего номер новый
-			$phone_uniq = Gateway_Db_PivotPhone_PhoneUniqList::insertOrUpdate($phone_number_hash, $user_id, time(), time(), 1, time(), 0, [$user_id]);
+			Gateway_Db_PivotPhone_PhoneUniqList::insertOrUpdate($phone_number_hash, $user_id, time(), time(), 1, time(), 0, [$user_id]);
 		}
 
 		Gateway_Db_PivotPhone_PhoneUniqList::commitTransaction();
 		/** конец транзакции */
 
-		return [$phone_uniq, $is_number_reused];
+		Gateway_Db_PivotHistoryLogs_UserChangePhoneHistory::insert($user_id, "", $phone_number, "", $action_time, 0);
+
+		try {
+
+			// проверяем - возможно запись уже есть
+			Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
+
+			// обновляем
+			Gateway_Db_PivotUser_UserSecurity::set($user_id, [
+				"phone_number" => $phone_number,
+				"updated_at"   => $action_time,
+			]);
+		} catch (\cs_RowIsEmpty) {
+
+			// создаем
+			Gateway_Db_PivotUser_UserSecurity::insert($user_id, $phone_number, "", $action_time, 0);
+		}
+	}
+
+	/**
+	 * Цепляем почту за пользователем
+	 *
+	 * @throws Domain_User_Exception_Mail_BelongAnotherUser
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
+	protected static function _bindMail(int $user_id, string $mail, string $mail_hash, string $password_hash, int $action_time):void {
+
+		/** начало транзакции */
+		Gateway_Db_PivotMail_MailUniqList::beginTransaction();
+
+		try {
+
+			// получаем запись на чтение с блокировкой
+			$mail_uniq = Gateway_Db_PivotMail_MailUniqList::getForUpdate($mail_hash);
+
+			// проверим, что номер на текущий момент ни за кем не закреплен
+			if ($mail_uniq->user_id !== 0) {
+
+				Gateway_Db_PivotMail_MailUniqList::rollback();
+				throw new Domain_User_Exception_Mail_BelongAnotherUser("mail belong to another user");
+			}
+
+			// обновляем запись
+			Gateway_Db_PivotMail_MailUniqList::set($mail_hash, [
+				"user_id"       => $user_id,
+				"updated_at"    => time(),
+				"password_hash" => $password_hash,
+			]);
+		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
+
+			// записи нет, это нормально, скорее всего номер новый
+			Gateway_Db_PivotMail_MailUniqList::insertOrUpdate(new Struct_Db_PivotMail_MailUniq(
+				$mail_hash, $user_id, $action_time, 0, $password_hash
+			));
+		}
+
+		Gateway_Db_PivotMail_MailUniqList::commitTransaction();
+		/** конец транзакции */
+
+		try {
+
+			// проверяем - возможно запись уже есть
+			Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
+
+			// обновляем
+			Gateway_Db_PivotUser_UserSecurity::set($user_id, [
+				"mail"       => $mail,
+				"updated_at" => $action_time,
+			]);
+		} catch (\cs_RowIsEmpty) {
+
+			// создаем
+			Gateway_Db_PivotUser_UserSecurity::insert($user_id, "", $mail, $action_time, 0);
+		}
 	}
 
 	/**

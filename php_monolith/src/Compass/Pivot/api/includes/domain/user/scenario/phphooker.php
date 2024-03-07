@@ -19,13 +19,13 @@ class Domain_User_Scenario_Phphooker {
 		$auth_story = Domain_User_Entity_AuthStory::getByMap($auth_map);
 
 		// если попытка увенчалась успехом, то завершаем задачу – ничего делать не нужно
-		if ($auth_story->getStoryData()->auth->is_success == 1) {
+		if ($auth_story->isSuccess()) {
 			return;
 		}
 
 		// получаем сотового оператора по номеру телефона, на который отправляли смс
 		try {
-			$phone_number_operator = \PhoneCarrierLookup\Main::getCarrierName($auth_story->getPhoneNumber());
+			$phone_number_operator = \PhoneCarrierLookup\Main::getCarrierName($auth_story->getAuthPhoneHandler()->getPhoneNumber());
 		} catch (CarrierNotFound|\PhoneCarrierLookup\Exception\UnsupportedPhoneNumber) {
 
 			// если не удалось получить, то оставляем пустым
@@ -38,8 +38,8 @@ class Domain_User_Scenario_Phphooker {
 			Type_Sms_Analytics_Story::STORY_TYPE_AUTH,
 			$auth_map,
 			$auth_story->getExpiresAt(),
-			$auth_story->getSmsId(),
-			$auth_story->getPhoneNumber(),
+			$auth_story->getAuthPhoneHandler()->getSmsID(),
+			$auth_story->getAuthPhoneHandler()->getPhoneNumber(),
 			$phone_number_operator
 		);
 	}

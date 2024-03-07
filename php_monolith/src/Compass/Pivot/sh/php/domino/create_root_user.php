@@ -2,6 +2,7 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\InvalidMail;
 use TheSeer\Tokenizer\Exception;
 
 require_once __DIR__ . "/../../../../../../start.php";
@@ -17,14 +18,17 @@ class Domino_CreateRootUser {
 
 	protected string $_phone_number;
 	protected string $_full_name;
+	protected string $_mail;
+	protected string $_password;
 
 	/**
 	 * Запускаем работу скрипта
+	 * @long
 	 */
-	public function run(string $full_name, string $phone_number):void {
+	public function run(string $full_name, string $phone_number, string $mail, string $password):void {
 
 		// если здесь будет true, то в результате функции ничего не выполнится, самое то для dry-run режима
-		$is_dry_run = isDryRun();
+		$is_dry_run = Type_Script_InputHelper::isDry();
 
 		// если мы пытаемся создать root пользователя - проверяем, что такого не существует
 
@@ -33,30 +37,19 @@ class Domino_CreateRootUser {
 		if ($root_user_id !== -1) {
 
 			$user_security = Gateway_Db_PivotUser_UserSecurity::getOne($root_user_id);
-			console(yellowText("Root пользователь уже существует, id {$root_user_id}, телефон $user_security->phone_number"));
+			$message       = "Root пользователь уже существует, id {$root_user_id}, ";
+			$message       .= $user_security->phone_number != "" ? "номер телефона {$user_security->phone_number}, " : "";
+			$message       .= $user_security->mail != "" ? "почта {$user_security->mail}, " : "";
+			console(yellowText($message));
 			exit(0);
 		}
 
-		try {
+		// проверяем, что такой пользователь уже не был зарегистрирован
+		$found_user_id = $this->_findUser($phone_number, $mail);
+		if ($found_user_id === 0) {
 
-			// проверяем что такой пользователь уже не был зарегистрирован
-			$found_user_id = Domain_User_Entity_Phone::getUserIdByPhone($phone_number);
-		} catch (cs_PhoneNumberNotFound) {
-
-			if (!$is_dry_run) {
-				console("Хотим зарегистрировать пользователя с именем {$full_name} и номером телефона {$phone_number}");
-				exit(0);
-			}
-
-			// создаем нового пользователя
-			$user = Domain_User_Action_Create_Human::do($phone_number, \BaseFrame\System\UserAgent::getUserAgent(), getIp(), $full_name, "", [], 0, default_partner_id: 0);
-			Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
-
-			$user_id = $user->user_id;
-
-			Domain_User_Entity_OnpremiseRoot::setUserId($user_id);
-
-			console("Успешно создали пользователя с именем {$full_name}, номером телефона {$phone_number}, user_id {$user_id}");
+			// создаём нового пользователя
+			$this->_createUser($full_name, $phone_number, $mail, $password, $is_dry_run);
 			exit(0);
 		}
 
@@ -65,8 +58,88 @@ class Domino_CreateRootUser {
 		$found_full_name = $found_user_info->full_name;
 		$found_user_id   = $found_user_info->user_id;
 
+		if ($phone_number !== "" && $mail !== "") {
+
+			console(redText("По номеру телефона {$phone_number} и почте {$mail} уже зарегистрирован пользователь с именем {$found_full_name}, user_id {$found_user_id}"));
+			exit(0);
+		}
+
+		if ($phone_number === "" && $mail !== "") {
+
+			console(redText("По почте {$mail} уже зарегистрирован пользователь с именем {$found_full_name}, user_id {$found_user_id}"));
+			exit(0);
+		}
+
 		console(redText("По номеру телефона {$phone_number} уже зарегистрирован пользователь с именем {$found_full_name}, user_id {$found_user_id}"));
 		exit(0);
+	}
+
+	/**
+	 * пробуем получить пользователя, если тот существует
+	 */
+	protected function _findUser(string $phone_number, string $mail):int {
+
+		if ($phone_number !== "") {
+
+			try {
+				return Domain_User_Entity_Phone::getUserIdByPhone($phone_number);
+			} catch (cs_PhoneNumberNotFound) {
+			}
+		}
+
+		if ($mail !== "") {
+
+			try {
+				return Domain_User_Entity_Mail::get($mail)->user_id;
+			} catch (Domain_User_Exception_Mail_NotFound) {
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * создаём пользователя
+	 *
+	 * @throws Domain_User_Exception_PhoneNumberBinding
+	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \queryException
+	 * @throws cs_DamagedActionException
+	 * @throws Domain_User_Exception_Mail_BelongAnotherUser
+	 * @long
+	 */
+	protected function _createUser(string $full_name, string $phone_number, string $mail, string $password, bool $is_dry_run):void {
+
+		if ($is_dry_run) {
+
+			$info_message = "Хотим зарегистрировать пользователя с именем {$full_name}";
+			$info_message .= $mail != "" ? ", почтой {$mail}" : "";
+			$info_message .= $phone_number != "" ? " и номером телефона {$phone_number}" : "";
+			console($info_message);
+			exit(0);
+		}
+
+		// создаём нового пользователя
+		$user = Domain_User_Action_Create_Human::do(
+			$phone_number,
+			$mail,
+			$password != "" ? Domain_User_Entity_Password::makeHash($password) : "",
+			\BaseFrame\System\UserAgent::getUserAgent(),
+			getIp(),
+			$full_name,
+			"",
+			[]
+		);
+		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
+
+		Domain_User_Entity_OnpremiseRoot::setUserId($user->user_id);
+
+		$success_message = "Успешно создали пользователя с именем {$full_name}, ";
+		$success_message .= $phone_number != "" ? "номером телефона {$phone_number}, " : "";
+		$success_message .= $mail != "" ? "почтой {$mail}, " : "";
+		$success_message .= "user_id {$user->user_id}";
+		console($success_message);
 	}
 
 	/**
@@ -74,6 +147,7 @@ class Domino_CreateRootUser {
 	 *
 	 * @return void
 	 * @throws \paramException
+	 * @long
 	 */
 	public function start():void {
 
@@ -89,6 +163,8 @@ class Domino_CreateRootUser {
 
 		$input_full_name    = Type_Script_InputParser::getArgumentValue("--full-name", default: "", required: false);
 		$input_phone_number = Type_Script_InputParser::getArgumentValue("--phone-number", default: "", required: false);
+		$input_mail         = Type_Script_InputParser::getArgumentValue("--mail", default: "", required: false);
+		$input_password     = Type_Script_InputParser::getArgumentValue("--password", default: "", required: false);
 
 		// проверяем, что передали корректные параметры:
 		try {
@@ -116,14 +192,12 @@ class Domino_CreateRootUser {
 
 			if (!isset($this->_phone_number)) {
 
-				$phone_number = $input_phone_number !== ""
-					? $input_phone_number
-					: readline("Введите номер телефона (В международном формате, например: +7999999999): ");
-
 				// проверяем номер телефона
-				new \BaseFrame\System\PhoneNumber($phone_number);
+				if ($input_phone_number !== "") {
+					$input_phone_number = (new \BaseFrame\System\PhoneNumber($input_phone_number))->number();
+				}
 
-				$this->_phone_number = $phone_number;
+				$this->_phone_number = $input_phone_number;
 			}
 		} catch (\BaseFrame\Exception\Domain\InvalidPhoneNumber) {
 
@@ -133,8 +207,62 @@ class Domino_CreateRootUser {
 			return;
 		}
 
+		try {
+
+			if (!isset($this->_mail)) {
+
+				// проверяем почту пользователя
+				if ($input_mail !== "") {
+					$input_mail = (new \BaseFrame\System\Mail($input_mail))->mail();
+				}
+
+				$this->_mail = $input_mail;
+			}
+		} catch (InvalidMail) {
+
+			console(redText("Передана некорректная почта"));
+			$input_mail ? exit(1) : $this->start();
+			$this->start();
+			return;
+		}
+
+		try {
+
+			if (!isset($this->_password)) {
+
+				// проверяем пароль для почты
+				if ($input_password !== "") {
+					Domain_User_Entity_Password::throwIfIncorrect($input_password);
+				}
+
+				$this->_password = $input_password;
+			}
+		} catch (Domain_User_Exception_Password_Incorrect) {
+
+			console(redText("Передан некорректный пароль для почты"));
+			$input_password ? exit(1) : $this->start();
+			$this->start();
+			return;
+		}
+
+		if ($this->_phone_number == "" && $this->_mail == "") {
+
+			console(redText("Номер телефона или почта должны быть заполнены для пользователя"));
+			exit(1);
+		}
+
+		if ($this->_mail != "" && $this->_password == "") {
+
+			console(redText("Для почты необходимо также указать пароль для подтверждения"));
+			exit(1);
+		}
+
+		if ($this->_mail == "" && $this->_password != "") {
+			$this->_password = "";
+		}
+
 		// запускаем скрипт
-		$this->run($this->_full_name, $this->_phone_number);
+		$this->run($this->_full_name, $this->_phone_number, $this->_mail, $this->_password);
 	}
 }
 

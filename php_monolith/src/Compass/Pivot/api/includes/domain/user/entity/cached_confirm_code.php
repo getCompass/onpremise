@@ -7,16 +7,41 @@ namespace Compass\Pivot;
  */
 class Domain_User_Entity_CachedConfirmCode {
 
-	protected const _TYPE_AUTH         = "auth";
-	protected const _TYPE_CHANGE_PHONE = "change_phone";
+	protected const _TYPE_AUTH                    = "auth";
+	protected const _TYPE_AUTH_MAIL_FULL_SCENARIO = "auth_mail_full_scenario";
+	protected const _TYPE_CHANGE_PHONE            = "change_phone";
 
 	/**
 	 * сохраняем в кэш проверочный код для аутентификации
-	 *
 	 */
-	public static function storeAuthCode(string $confirm_code):void {
+	public static function storeAuthCode(string $confirm_code, int $life_time):void {
 
-		self::_storeCode(self::_TYPE_AUTH, Domain_User_Entity_AuthStory::EXPIRE_AT, $confirm_code);
+		self::_store(self::_TYPE_AUTH, $life_time, [
+			"confirm_code" => $confirm_code,
+		]);
+	}
+
+	/**
+	 * сохраняем в кэш параметры full_scenario аутентификации через почту
+	 */
+	public static function storeMailAuthFullScenarioParams(string $confirm_code, string $password, int $life_time):void {
+
+		self::_store(self::_TYPE_AUTH_MAIL_FULL_SCENARIO, $life_time, [
+			"confirm_code" => $confirm_code,
+			"password"     => $password,
+		]);
+	}
+
+	/**
+	 * получаем из кэша параметры full_scenario аутентификации через почту
+	 *
+	 * @throws cs_CacheIsEmpty
+	 */
+	public static function getMailAuthFullScenarioParams():array {
+
+		$data = self::_get(self::_TYPE_AUTH_MAIL_FULL_SCENARIO);
+
+		return [$data["confirm_code"], $data["password"]];
 	}
 
 	/**
@@ -25,10 +50,12 @@ class Domain_User_Entity_CachedConfirmCode {
 	 */
 	public static function storeChangePhoneCode(string $confirm_code, int $stage):void {
 
-		self::_storeCode(
+		self::_store(
 			self::_TYPE_CHANGE_PHONE . "_" . $stage,
 			Domain_User_Entity_ChangePhone_Story::EXPIRE_AFTER,
-			$confirm_code
+			[
+				"confirm_code" => $confirm_code,
+			]
 		);
 	}
 
@@ -36,11 +63,9 @@ class Domain_User_Entity_CachedConfirmCode {
 	 * сохраняем в кэш проверочный код в чистом виде
 	 *
 	 */
-	protected static function _storeCode(string $type, int $expire_after, string $confirm_code):void {
+	protected static function _store(string $type, int $expire_after, array $data):void {
 
-		Type_Session_Main::setCache(self::_getKey($type), [
-			"confirm_code" => $confirm_code,
-		], $expire_after + 3 * 60);
+		Type_Session_Main::setCache(self::_getKey($type), $data, $expire_after + 3 * 60);
 	}
 
 	/**
@@ -50,7 +75,7 @@ class Domain_User_Entity_CachedConfirmCode {
 	 */
 	public static function getAuthCode():string {
 
-		return self::_getCode(self::_TYPE_AUTH);
+		return self::_get(self::_TYPE_AUTH)["confirm_code"];
 	}
 
 	/**
@@ -60,7 +85,7 @@ class Domain_User_Entity_CachedConfirmCode {
 	 */
 	public static function getChangePhoneCode(int $stage):string {
 
-		return self::_getCode(self::_TYPE_CHANGE_PHONE . "_" . $stage);
+		return self::_get(self::_TYPE_CHANGE_PHONE . "_" . $stage)["confirm_code"];
 	}
 
 	/**
@@ -68,14 +93,14 @@ class Domain_User_Entity_CachedConfirmCode {
 	 *
 	 * @throws cs_CacheIsEmpty
 	 */
-	protected static function _getCode(string $type):string {
+	protected static function _get(string $type):array {
 
 		$result = Type_Session_Main::getCache(self::_getKey($type));
 		if ($result === []) {
 			throw new cs_CacheIsEmpty();
 		}
 
-		return $result["confirm_code"];
+		return $result;
 	}
 
 	/**

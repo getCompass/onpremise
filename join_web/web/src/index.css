@@ -59,6 +59,11 @@ input[type="number"] {
 	-moz-appearance: textfield;
 }
 
+input[type="search"] {
+	-webkit-appearance: none;
+	outline-offset: 0;
+}
+
 .invisible-scrollbar {
 	overflow: scroll;
 	-ms-overflow-style: none; /* IE and Edge */
@@ -143,14 +148,15 @@ input[type="number"] {
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
-	background-color: #ffffff;
 }
 
 .toast-container.popup {
 	z-index: 9999;
+	background-color: #ffffff;
 }
 
 .toast-container.mobile {
+	z-index: 9999;
 	padding-top: 16px;
 	padding-right: 16px;
 	padding-left: 16px;

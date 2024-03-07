@@ -209,6 +209,7 @@ const SettingsButton = () => {
 							{/*							borderBottom="1px solid #f0f0f0"*/}
 							{/*							py="16px"*/}
 							{/*							textAlign="start"*/}
+							{/*							font="regular"*/}
 							{/*						>{langStringSettingsChangeLang}</Text>*/}
 							{/*					</HStack>*/}
 							{/*				</SelectTrigger>*/}
@@ -235,6 +236,7 @@ const SettingsButton = () => {
 												color="333e49"
 												borderBottom="1px solid #f0f0f0"
 												py="16px"
+												font="regular"
 											>{langStringSettingsLogout}</Text>
 										</HStack>
 									</DialogTrigger>
@@ -284,6 +286,7 @@ const SettingsButton = () => {
 																lh="22"
 																color="333e49"
 																textAlign="center"
+																font="regular"
 															>{langStringLogoutDialogDesc}</Text>
 														</VStack>
 													</VStack>

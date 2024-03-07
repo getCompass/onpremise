@@ -35,7 +35,7 @@ class Domain_Stage_Scenario_Socket {
 		} catch (cs_PhoneNumberNotFound) {
 
 			// регистрируем
-			$user             = Domain_User_Action_Create_Human::do($phone_number, getUa(), getIp(), "", "", []);
+			$user             = Domain_User_Action_Create_Human::do($phone_number, "", "", getUa(), getIp(), "", "", []);
 			$user_id          = $user->user_id;
 			$is_exist_user_id = 0;
 		}

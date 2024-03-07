@@ -7,20 +7,32 @@ namespace Compass\Pivot;
  */
 class Struct_Db_PivotUser_UserSecurity {
 
-	public int    $user_id;
-	public string $phone_number;
-	public int    $created_at;
-	public int    $updated_at;
-
 	/**
 	 * Struct_Db_PivotUserSecurity_UserSecurity constructor.
 	 *
 	 */
-	public function __construct(int $user_id, string $phone_number, int $created_at, int $updated_at) {
+	public function __construct(
+		public int    $user_id,
+		public string $phone_number,
+		public string $mail,
+		public int    $created_at,
+		public int    $updated_at
+	) {
+	}
 
-		$this->user_id      = $user_id;
-		$this->phone_number = $phone_number;
-		$this->created_at   = $created_at;
-		$this->updated_at   = $updated_at;
+	/**
+	 * конвертируем запись в структуру
+	 *
+	 * @return Struct_Db_PivotUser_UserSecurity
+	 */
+	public static function rowToStruct(array $row):Struct_Db_PivotUser_UserSecurity {
+
+		return new Struct_Db_PivotUser_UserSecurity(
+			(int) $row["user_id"],
+			(string) $row["phone_number"],
+			(string) $row["mail"],
+			(int) $row["created_at"],
+			(int) $row["updated_at"],
+		);
 	}
 }

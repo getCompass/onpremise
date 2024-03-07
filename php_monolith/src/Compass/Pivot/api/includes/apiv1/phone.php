@@ -78,7 +78,7 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 			throw new ParamException("not found code");
 		} catch (cs_PhoneChangeIsExpired|cs_PhoneChangeIsSuccess|cs_PhoneChangeSmsNotFound|cs_PhoneChangeStoryWrongMap) {
 			return $this->error(1301, "change phone active process not found");
-		} catch (cs_WrongSmsCode $e) {
+		} catch (cs_WrongCode $e) {
 
 			return $this->error(1302, "wrong sms code", [
 				"available_attempts" => $e->getAvailableAttempts(),

@@ -24,6 +24,7 @@ class Gateway_Db_PivotUser_UserSecurity extends Gateway_Db_PivotUser_Main {
 	public static function insert(
 		int    $user_id,
 		string $phone_number,
+		string $mail,
 		int    $created_at,
 		int    $updated_at
 	):string {
@@ -34,6 +35,7 @@ class Gateway_Db_PivotUser_UserSecurity extends Gateway_Db_PivotUser_Main {
 		$insert = [
 			"user_id"      => $user_id,
 			"phone_number" => $phone_number,
+			"mail"         => $mail,
 			"created_at"   => $created_at,
 			"updated_at"   => $updated_at,
 		];
@@ -81,12 +83,7 @@ class Gateway_Db_PivotUser_UserSecurity extends Gateway_Db_PivotUser_Main {
 			throw new \cs_RowIsEmpty();
 		}
 
-		return new Struct_Db_PivotUser_UserSecurity(
-			$user_id,
-			$row["phone_number"],
-			$row["created_at"],
-			$row["updated_at"]
-		);
+		return Struct_Db_PivotUser_UserSecurity::rowToStruct($row);
 	}
 
 	/**
@@ -112,12 +109,7 @@ class Gateway_Db_PivotUser_UserSecurity extends Gateway_Db_PivotUser_Main {
 
 			foreach ($list as $row) {
 
-				$output[$row["user_id"]] = new Struct_Db_PivotUser_UserSecurity(
-					$row["user_id"],
-					$row["phone_number"],
-					$row["created_at"],
-					$row["updated_at"]
-				);
+				$output[$row["user_id"]] = Struct_Db_PivotUser_UserSecurity::rowToStruct($row);
 			}
 		}
 

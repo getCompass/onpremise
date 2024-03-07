@@ -37,6 +37,12 @@ class Gateway_Db_PivotAuth_Main {
 		return ShardingGateway::database(self::_getDbKey($shard_id))->rollback();
 	}
 
+	// открыта ли транзакция
+	public static function inTransaction(int $shard_id):bool {
+
+		return ShardingGateway::database(self::_getDbKey($shard_id))->inTransaction();
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------

@@ -385,7 +385,7 @@ class Type_Session_Main {
 		}
 
 		if (Type_Pack_PivotSession::getStatus($pivot_session_map) == self::_SESSION_STATUS_GUEST) {
-			return getDeviceId() . "_" . $key;
+			return self::getSessionUniqBySession() . "_" . $key;
 		}
 
 		return self::getSessionUniqBySession() . "_" . self::getUserIdBySession() . "_" . $key;

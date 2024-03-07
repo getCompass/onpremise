@@ -8,15 +8,49 @@ namespace Compass\Pivot;
 class Domain_User_Entity_Antispam_Auth {
 
 	/**
+	 * Проверяем блокировки по IP адресу перед началом аутентификации
+	 * Используется в аутентификации по почте, etc ...
+	 *
+	 * @throws cs_PlatformNotFound
+	 * @throws cs_RecaptchaIsRequired
+	 * @throws cs_WrongRecaptcha
+	 */
+	public static function checkIpAddressBlocksBeforeStartAuth(string|false $grecaptcha_response, bool $is_from_web):int {
+
+		return Type_Antispam_Ip::incrementAndAssertRecaptchaIfBlocked(
+			Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::getAuthLimitsByServer()),
+			$grecaptcha_response,
+			$is_from_web
+		);
+	}
+
+	/**
+	 * Проверяем блокировки по IP адресу при вводе пароля
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws cs_PlatformNotFound
+	 * @throws cs_RecaptchaIsRequired
+	 * @throws cs_WrongRecaptcha
+	 */
+	public static function checkIpAddressBlocksOnEnterPassword(string|false $grecaptcha_response, bool $is_from_web):void {
+
+		Type_Antispam_Ip::incrementAndAssertRecaptchaIfBlocked(
+			Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::getEnterPasswordLimitsByServer()),
+			$grecaptcha_response,
+			$is_from_web
+		);
+	}
+
+	/**
 	 * Проверяем блокировки перед началом логина
 	 *
 	 * @throws \blockException
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws cs_AuthIsBlocked
 	 */
-	public static function checkBlocksBeforeStartLogin(string $phone_number, string|false $grecaptcha_response, bool $is_from_web = false):void {
+	public static function checkBlocksBeforeStartLoginByPhoneNumber(string $phone_number, string|false $grecaptcha_response, bool $is_from_web = false):void {
 
 		$phone_number_hash = Type_Hash_PhoneNumber::makeHash($phone_number);
 
@@ -37,9 +71,9 @@ class Domain_User_Entity_Antispam_Auth {
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
 	 * @throws cs_ActionNotAvailable
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws cs_AuthIsBlocked
 	 */
-	public static function checkBlocksBeforeStartRegister(string $phone_number, string|false $grecaptcha_response, bool $is_from_web = false):void {
+	public static function checkBlocksBeforeStartRegisterByPhoneNumber(string $phone_number, string|false $grecaptcha_response, bool $is_from_web = false):void {
 
 		if ($phone_number == IOS_TEST_PHONE ||
 			$phone_number == ELECTRON_TEST_PHONE ||
@@ -84,7 +118,7 @@ class Domain_User_Entity_Antispam_Auth {
 		}
 
 		Type_Antispam_Ip::incrementAndAssertRecaptchaIfBlocked(
-			Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::AUTH),
+			Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::START_AUTH),
 			$grecaptcha_response,
 			$is_from_web,
 		);
@@ -97,7 +131,7 @@ class Domain_User_Entity_Antispam_Auth {
 	public static function successAuth(string $phone_number):void {
 
 		Type_Antispam_Ip::decrement(
-			Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::AUTH),
+			Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::START_AUTH),
 		);
 		Type_Antispam_Phone::decrement(
 			Type_Hash_PhoneNumber::makeHash($phone_number),
@@ -148,7 +182,7 @@ class Domain_User_Entity_Antispam_Auth {
 	/**
 	 * Блокировки аутентификации
 	 *
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws cs_AuthIsBlocked
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
@@ -169,7 +203,7 @@ class Domain_User_Entity_Antispam_Auth {
 		if ($is_need_check_ip) {
 
 			Type_Antispam_Ip::incrementAndAssertRecaptchaIfBlocked(
-				Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::getLimitsByServer()),
+				Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::getAuthLimitsByServer()),
 				$grecaptcha_response,
 				$is_from_web
 			);

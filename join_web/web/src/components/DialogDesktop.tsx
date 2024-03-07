@@ -1,18 +1,18 @@
-import {generateDialogId} from "./dialog.tsx";
-import {useEffect, useMemo} from "react";
-import {activeDialogIdState, useToastConfig} from "../api/_stores.ts";
-import {useSetAtom} from "jotai";
+import { generateDialogId } from "./dialog.tsx";
+import { RefObject, useEffect, useMemo } from "react";
+import { activeDialogIdState, useToastConfig } from "../api/_stores.ts";
+import { useSetAtom } from "jotai";
 import Toast from "../lib/Toast.tsx";
-import {VStack} from "../../styled-system/jsx";
-import {css} from "../../styled-system/css";
+import { VStack } from "../../styled-system/jsx";
+import { css } from "../../styled-system/css";
 
 type DialogDesktopProps = {
-	content: JSX.Element,
-	overflow: "hidden" | "visible",
-}
+	content: JSX.Element;
+	overflow: "hidden" | "visible";
+	dialogRef?: RefObject<HTMLDivElement>;
+};
 
-const DialogDesktop = ({content, overflow}: DialogDesktopProps) => {
-
+function DialogDesktop({ dialogRef, content, overflow }: DialogDesktopProps) {
 	const dialogId = useMemo(() => generateDialogId(), []);
 	const toastConfig = useToastConfig(dialogId);
 	const setActiveDialogId = useSetAtom(activeDialogIdState);
@@ -31,6 +31,7 @@ const DialogDesktop = ({content, overflow}: DialogDesktopProps) => {
 			})}
 		>
 			<VStack
+				ref={dialogRef}
 				className={css({
 					borderRadius: "8px",
 					padding: "16px",
@@ -45,7 +46,7 @@ const DialogDesktop = ({content, overflow}: DialogDesktopProps) => {
 					overflow: overflow,
 				})}
 			>
-				<Toast toastConfig={toastConfig}/>
+				<Toast toastConfig={toastConfig} />
 				{content}
 			</VStack>
 		</VStack>

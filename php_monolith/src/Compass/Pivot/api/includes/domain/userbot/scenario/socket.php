@@ -47,7 +47,7 @@ class Domain_Userbot_Scenario_Socket {
 		}
 
 		// создаём бота как пользователя приложения
-		$create_user_bot = Domain_User_Action_Create_Userbot::do("", "", getIp(), $userbot_name, $avatar_file_map, []);
+		$create_user_bot = Domain_User_Action_Create_Userbot::do("", "", "", "", getIp(), $userbot_name, $avatar_file_map, []);
 
 		// далее создаём сущность бота
 		return self::_createUserbot(

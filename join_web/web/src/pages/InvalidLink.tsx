@@ -72,6 +72,7 @@ const InvalidLinkMobile = () => {
 					lh="22"
 					color="333e49"
 					textAlign="center"
+					font="regular"
 				>
 					{langStringInvalidLinkDesc}
 				</Text>
@@ -147,6 +148,7 @@ const InvalidLinkDesktop = () => {
 					lh="20"
 					color="333e49"
 					textAlign="center"
+					font="regular"
 				>
 					{langStringInvalidLinkDesc}
 				</Text>

@@ -41,6 +41,7 @@ const PageInviteWaitingForPostModeration = () => {
                             fs="16"
                             lh="22"
                             textAlign="center"
+							font="regular"
                         >
                             {langStringPageInviteWaitingForPostModerationDesc}
                         </Text>
@@ -75,6 +76,7 @@ const PageInviteWaitingForPostModeration = () => {
                         fs="14"
                         lh="20"
                         textAlign="center"
+						font="regular"
                     >
                         {langStringPageInviteWaitingForPostModerationDesc}
                     </Text>

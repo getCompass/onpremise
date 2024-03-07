@@ -49,16 +49,16 @@ class Domain_User_Action_Create_BotList {
 			// создаем бота в соответствии с типом
 			$bot_type = Type_User_Main::getUserType($npc_type);
 			if ($bot_type === Type_User_Main::OUTER_BOT) {
-				$bot = Domain_User_Action_Create_BotOuter::do("", "", getIp(), $name, $avatar_file_map, []);
+				$bot = Domain_User_Action_Create_BotOuter::do("", "", "", "", getIp(), $name, $avatar_file_map, []);
 			} else {
 
 				// в зависимости от типа системного бота
 				$bot = match ($npc_type) {
-					Type_User_Main::NPC_TYPE_SYSTEM_BOT_NOTICE  => Domain_User_Action_Create_Bot::do("", "", getIp(), $name,
+					Type_User_Main::NPC_TYPE_SYSTEM_BOT_NOTICE  => Domain_User_Action_Create_Bot::do("", "", "", "", getIp(), $name,
 						$avatar_file_map, [], $user_id),
-					Type_User_Main::NPC_TYPE_SYSTEM_BOT_REMIND  => Domain_User_Action_Create_RemindBot::do("", "", getIp(), $name,
+					Type_User_Main::NPC_TYPE_SYSTEM_BOT_REMIND  => Domain_User_Action_Create_RemindBot::do("", "", "", "", getIp(), $name,
 						$avatar_file_map, [], $user_id),
-					Type_User_Main::NPC_TYPE_SYSTEM_BOT_SUPPORT => Domain_User_Action_Create_SupportBot::do("", "", getIp(), $name,
+					Type_User_Main::NPC_TYPE_SYSTEM_BOT_SUPPORT => Domain_User_Action_Create_SupportBot::do("", "", "", "", getIp(), $name,
 						$avatar_file_map, [], $user_id),
 					default                                     => throw new ParseFatalException("undefined bot npc_type on create: {$npc_type}"),
 				};

@@ -305,6 +305,7 @@ const PageTempDeepLinkDesktop = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>spaceId</Text>
 					<Input
 						size="default_desktop"
@@ -320,6 +321,7 @@ const PageTempDeepLinkDesktop = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>inviterUserId</Text>
 					<Input
 						size="default_desktop"
@@ -335,6 +337,7 @@ const PageTempDeepLinkDesktop = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>isPostModeration</Text>
 					<SelectorDesktop items={isPostModerationItems} setSelectedValue={setIsPostModeration}/>
 				</VStack>
@@ -343,6 +346,7 @@ const PageTempDeepLinkDesktop = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>role</Text>
 					<SelectorDesktop items={roleItems} setSelectedValue={setRole}/>
 				</VStack>
@@ -351,6 +355,7 @@ const PageTempDeepLinkDesktop = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>isPreviousSpaceMember</Text>
 					<SelectorDesktop items={isPreviousSpaceMemberItems} setSelectedValue={setIsPreviousSpaceMember}/>
 				</VStack>
@@ -359,6 +364,7 @@ const PageTempDeepLinkDesktop = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>env</Text>
 					<SelectorDesktop items={envItems} setSelectedValue={setSelectedEnv}/>
 				</VStack>
@@ -440,6 +446,7 @@ const PageTempDeepLinkMobile = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>spaceId</Text>
 					<Input
 						ref={spaceIdInputRef}
@@ -451,6 +458,7 @@ const PageTempDeepLinkMobile = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>inviterUserId</Text>
 					<Input
 						ref={inviterUserIdInputRef}
@@ -462,6 +470,7 @@ const PageTempDeepLinkMobile = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>isPostModeration</Text>
 					<SelectorMobile items={isPostModerationItems} setSelectedValue={setIsPostModeration}/>
 				</VStack>
@@ -470,6 +479,7 @@ const PageTempDeepLinkMobile = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>role</Text>
 					<SelectorMobile items={roleItems} setSelectedValue={setRole}/>
 				</VStack>
@@ -478,6 +488,7 @@ const PageTempDeepLinkMobile = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>isPreviousSpaceMember</Text>
 					<SelectorMobile items={isPreviousSpaceMemberItems} setSelectedValue={setIsPreviousSpaceMember}/>
 				</VStack>
@@ -486,6 +497,7 @@ const PageTempDeepLinkMobile = () => {
 						w="100%"
 						color="white"
 						textAlign="start"
+						font="regular"
 					>env</Text>
 					<SelectorMobile items={envItems} setSelectedValue={setSelectedEnv}/>
 				</VStack>

@@ -65,7 +65,7 @@ class Domain_User_Action_TwoFa_SendSms {
 		Gateway_Db_PivotAuth_TwoFaPhoneList::insert($two_fa_phone);
 
 		// кэшируем код
-		Domain_User_Entity_CachedConfirmCode::storeAuthCode($sms_code);
+		Domain_User_Entity_CachedConfirmCode::storeAuthCode($sms_code, Domain_User_Entity_TwoFa_TwoFa::EXPIRE_AT);
 
 		return $two_fa_phone;
 	}

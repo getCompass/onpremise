@@ -245,12 +245,12 @@ class Domain_User_Entity_ChangePhone_SmsStory {
 	 *
 	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_InvalidHashStruct
-	 * @throws cs_WrongSmsCode
+	 * @throws cs_WrongCode
 	 */
 	public function assertEqualSmsCode(string $sms_code):self {
 
 		if (!Type_Hash_Code::compareHash($this->phone_change_via_sms_story->sms_code_hash, $sms_code)) {
-			throw new cs_WrongSmsCode();
+			throw new cs_WrongCode();
 		}
 
 		return $this;

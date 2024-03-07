@@ -18,6 +18,7 @@ abstract class Domain_User_Action_Create {
 	 * Создаем пользователя
 	 *
 	 * @param string $phone_number
+	 * @param string $mail
 	 * @param string $user_agent
 	 * @param string $ip
 	 * @param string $full_name
@@ -30,7 +31,7 @@ abstract class Domain_User_Action_Create {
 	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
 	 * @throws cs_DamagedActionException
 	 */
-	public static function do(string $phone_number, string $user_agent, string $ip, string $full_name, string $avatar_file_map, array $extra, int $set_user_id = 0, int $default_partner_id = 0):Struct_Db_PivotUser_User {
+	public static function do(string $phone_number, string $mail, string $password_hash, string $user_agent, string $ip, string $full_name, string $avatar_file_map, array $extra, int $set_user_id = 0, int $default_partner_id = 0):Struct_Db_PivotUser_User {
 
 		return static::effect(static::store(static::prepare(...func_get_args()), $set_user_id, $default_partner_id))->user;
 	}
@@ -49,7 +50,7 @@ abstract class Domain_User_Action_Create {
 	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
 	 * @throws cs_DamagedActionException
 	 */
-	public static function prepare(string $phone_number, string $user_agent, string $ip,
+	public static function prepare(string $phone_number, string $mail, string $password_hash, string $user_agent, string $ip,
 						 string $full_name, string $avatar_file_map, array $extra):Struct_User_Action_Create_Prepare {
 
 		// проверяем, что запускается дочерний класс с переопределенными константными значениями
@@ -80,8 +81,9 @@ abstract class Domain_User_Action_Create {
 		);
 
 		$phone_number_hash = Type_Hash_PhoneNumber::makeHash($phone_number);
+		$mail_hash         = Type_Hash_Mail::makeHash($mail);
 
-		return new Struct_User_Action_Create_Prepare($draft_user, $phone_number, $phone_number_hash, $action_time, $user_agent, $ip);
+		return new Struct_User_Action_Create_Prepare($draft_user, $phone_number, $phone_number_hash, $password_hash, $mail, $mail_hash, $action_time, $user_agent, $ip);
 	}
 
 	/**

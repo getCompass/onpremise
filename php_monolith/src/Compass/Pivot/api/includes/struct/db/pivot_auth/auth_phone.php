@@ -5,7 +5,7 @@ namespace Compass\Pivot;
 /**
  * класс-структура для таблицы pivot_auth_{Y}.auth_phone_list_{m}
  */
-class Struct_Db_PivotAuth_AuthPhone {
+class Struct_Db_PivotAuth_AuthPhone extends Struct_Db_PivotAuth_AuthDefault {
 
 	public string $auth_map;
 	public int    $is_success;

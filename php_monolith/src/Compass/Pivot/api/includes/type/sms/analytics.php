@@ -340,6 +340,11 @@ class Type_Sms_Analytics {
 	 */
 	public static function doPhoneToSecret(string $phone):string {
 
+		// если номер телефона – пустая строка, то ничего не делаем
+		if ($phone === "") {
+			return "";
+		}
+
 		// количество симвовлов которые покажем сначала
 		$visibleCount = 5;
 

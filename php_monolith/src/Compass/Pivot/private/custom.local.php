@@ -103,6 +103,7 @@ define(__NAMESPACE__ . "\COMPASS_SECRET_CAPTCHA_ANDROID"               , "${COMP
 define(__NAMESPACE__ . "\SECRET_CAPTCHA_SITE"                          , "${SECRET_CAPTCHA_SITE}");
 
 define(__NAMESPACE__ . "\SALT_PHONE_NUMBER"                            , "${SALT_PHONE_NUMBER}");
+define(__NAMESPACE__ . "\SALT_MAIL_ADDRESS"                            , "${SALT_MAIL_ADDRESS}");
 define(__NAMESPACE__ . "\SALT_CODE"                                    , [
 	1 => "${SALT_CODE_V1}",
 ]);

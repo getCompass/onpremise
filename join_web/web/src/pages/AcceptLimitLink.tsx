@@ -104,6 +104,7 @@ const AcceptLimitLinkMobile = () => {
 					lh="22"
 					color="333e49"
 					textAlign="center"
+					font="regular"
 				>
 					{langStringAcceptLimitLinkDesc.replace("$TIME", time.toString())}
 				</Text>
@@ -205,6 +206,7 @@ const AcceptLimitLinkDesktop = () => {
 					lh="20"
 					color="333e49"
 					textAlign="center"
+					font="regular"
 				>
 					{langStringAcceptLimitLinkDesc.replace("$TIME", time.toString())}
 				</Text>

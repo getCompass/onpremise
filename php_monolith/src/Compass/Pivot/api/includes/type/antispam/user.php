@@ -188,6 +188,12 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => HOUR2,
 	];
 
+	const AUTH_MAIL_ENTERING_PASSWORD = [
+		"key"    => "AUTH_MAIL_ENTERING_PASSWORD",
+		"limit"  => 7,
+		"expire" => 20 * 60,
+	];
+
 	# endregion
 	##########################################################
 
@@ -198,12 +204,22 @@ class Type_Antispam_User extends Type_Antispam_Main {
 	// PUBLIC
 	// ------------------------------------------------------------
 
+	/**
+	 * получить лимит ключа блокировки
+	 *
+	 * @return int
+	 */
+	public static function getBlockKeyLimit(array $block_key):int {
+
+		return $block_key["limit"];
+	}
+
 	// проверяем на срабатывание блокировок по конкретному ключу
 	// пишем статистику по срабатыванию блокировки если необходимо
-	public static function throwIfBlocked(int $user_id, array $block_key, bool $is_custom_error = false):void {
+	public static function throwIfBlocked(int $user_id, array $block_key, bool $is_custom_error = false):int {
 
 		if (self::needCheckIsBlocked()) {
-			return;
+			return self::getBlockKeyLimit($block_key);
 		}
 
 		// получаем текущее состояние блокировки
@@ -222,6 +238,8 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 		// обновляем запись
 		self::_set($row["user_id"], $row["key"], $row["is_stat_sent"], $row["count"] + 1, $row["expires_at"]);
+
+		return $row["count"] + 1;
 	}
 
 	/**

@@ -15,9 +15,9 @@ use BaseFrame\Exception\Request\ParamException;
  */
 class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 
-	public const ECODE_JL_BAD         = 1711001;
-	public const ECODE_JL_INACTIVE    = 1711002;
-	public const ECODE_JL_TRY_LATER   = 1711005;
+	public const ECODE_JL_BAD       = 1711001;
+	public const ECODE_JL_INACTIVE  = 1711002;
+	public const ECODE_JL_TRY_LATER = 1711005;
 
 	public const ECODE_UJL_ALREADY_ACCEPTED = 1711006;
 	public const ECODE_UJL_ACCEPTED_BEFORE  = 1711002;
@@ -74,13 +74,16 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 		} catch (InvalidPhoneNumber) {
 
 			Type_Antispam_Ip::checkAndIncrementBlock(Type_Antispam_Ip::BEGIN_INCORRECT_PHONE_NUMBER);
-
 			return $this->error(static::ECODE_UAUTH_BAD_PHONE, "invalid phone_number [$phone_number]");
+		} catch (Domain_User_Exception_AuthStory_RegistrationWithoutInvite) {
+
+			Type_Antispam_Ip::checkAndIncrementBlock(Type_Antispam_Ip::BEGIN_INCORRECT_PHONE_NUMBER);
+			return $this->error(1000, "registration is not allowed without invite");
 		} catch (cs_RecaptchaIsRequired) {
 			return $this->error(static::ECODE_GRECPTACHA_REQUIRED, "need grecaptcha_response in request");
 		} catch (cs_WrongRecaptcha) {
 			return $this->error(static::ECODE_GRECPTACHA_INCORRECT, "not valid captcha. Try again");
-		} catch (cs_PhoneNumberIsBlocked $e) {
+		} catch (cs_AuthIsBlocked $e) {
 			return $this->error(static::ECODE_AUTH_BLOCKED, "auth blocked", ["next_attempt" => $e->getNextAttempt(),]);
 		} catch (LocaleTextNotFound|cs_ActionNotAvailable|cs_PlatformNotFound|\blockException $e) {
 			throw new ReturnFatalException("internal error occurred: " . $e->getMessage());
@@ -88,7 +91,7 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 			return $this->error(static::ECODE_JL_TRY_LATER, "try later");
 		} catch (cs_IncorrectJoinLink|cs_JoinLinkNotFound) {
 			return $this->error(static::ECODE_JL_BAD, "bad join link");
-		} catch (cs_JoinLinkIsNotActive){
+		} catch (cs_JoinLinkIsNotActive) {
 			return $this->error(static::ECODE_JL_INACTIVE, "inactive join link");
 		} catch (cs_JoinLinkIsUsed) {
 			return $this->error(static::ECODE_UJL_ACCEPTED_BEFORE, "already user by user");
@@ -99,8 +102,8 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 		}
 
 		return $this->ok([
-			"auth_info"      => Onpremiseweb_Format::authInfo($auth_info, $phone_number),
-			"join_link_info" => $validation_result === false ? "null" : Onpremiseweb_Format::joinLinkInfo($validation_result)
+			"auth_info"      => Onpremiseweb_Format::authInfo($auth_info),
+			"join_link_info" => $validation_result === false ? "null" : Onpremiseweb_Format::joinLinkInfo($validation_result),
 		]);
 	}
 
@@ -122,7 +125,7 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 		try {
 
 			/** @var Struct_User_Auth_Info $auth_info */
-			[$auth_info, $phone_number] = Domain_User_Scenario_OnPremiseWeb::resendAuthenticationCode(
+			$auth_info = Domain_User_Scenario_OnPremiseWeb::resendAuthenticationCode(
 				$this->user_id, $auth_map, $grecaptcha_response
 			);
 		} catch (cs_AuthAlreadyFinished) {
@@ -141,11 +144,11 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row21");
 			return $this->error(static::ECODE_GRECPTACHA_INCORRECT, "not valid captcha. Try again");
-		} catch (cs_ResendSmsCountLimitExceeded) {
+		} catch (cs_ResendCodeCountLimitExceeded) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row22");
 			return $this->error(static::ECODE_UAUTH_RESEND_DENIED, "resend count limit");
-		} catch (cs_PhoneNumberIsBlocked $e) {
+		} catch (cs_AuthIsBlocked $e) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row23");
 			return $this->error(static::ECODE_AUTH_BLOCKED, "auth blocked", [
@@ -162,7 +165,7 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 		}
 
 		Gateway_Bus_CollectorAgent::init()->inc("row25");
-		return $this->ok(Onpremiseweb_Format::authInfo($auth_info, $phone_number));
+		return $this->ok(Onpremiseweb_Format::authInfo($auth_info));
 	}
 
 	/**
@@ -201,13 +204,13 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 
 			// неправильный формат код подтверждения
 			return $this->error(static::ECODE_UAUTH_BAD_CODE, "invalid code format");
-		} catch (cs_PhoneNumberIsBlocked $e) {
+		} catch (cs_AuthIsBlocked $e) {
 
 			// номер заблокирован из-за превышения лимита попыток
 			return $this->error(static::ECODE_AUTH_BLOCKED, "auth blocked", [
 				"next_attempt" => $e->getNextAttempt(),
 			]);
-		} catch (cs_WrongSmsCode $e) {
+		} catch (cs_WrongCode $e) {
 
 			// неправильный код подтверждения
 			return $this->error(static::ECODE_UAUTH_CODE_DENIED, "incorrect code", [

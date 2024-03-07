@@ -1,12 +1,18 @@
 import {Box, HStack, VStack} from "../../../styled-system/jsx";
-import IconLogo from "../../components/IconLogo.tsx";
 import {Input} from "../../components/input.tsx";
 import {Button} from "../../components/button.tsx";
 import {Text} from "../../components/text.tsx";
 import {useLangString} from "../../lib/getLangString.ts";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useAtom, useSetAtom} from "jotai";
-import {activeDialogIdState, authInputState, authState, nameInputState} from "../../api/_stores.ts";
+import {
+	activeDialogIdState,
+	authInputState,
+	authState,
+	confirmPasswordState,
+	nameInputState,
+	passwordInputState
+} from "../../api/_stores.ts";
 import useIsMobile from "../../lib/useIsMobile.ts";
 import {
 	Dialog,
@@ -24,6 +30,8 @@ import {useShowToast} from "../../lib/Toast.tsx";
 import {useAtomValue} from "jotai";
 import {Tooltip, TooltipProvider, TooltipArrow, TooltipContent, TooltipTrigger} from "../../components/tooltip.tsx";
 import dayjs from "dayjs";
+import {CreateProfileIcon80} from "../../components/CreateProfileIcon80.tsx";
+import Preloader16 from "../../components/Preloader16.tsx";
 
 const NextIcon = () => {
 
@@ -164,6 +172,8 @@ const CreateProfileDialogContentDesktop = () => {
 	}, [nameValue]);
 
 	const setAuthInput = useSetAtom(authInputState);
+	const setPasswordInput = useSetAtom(passwordInputState)
+	const setConfirmPassword = useSetAtom(confirmPasswordState)
 	const setAuth = useSetAtom(authState);
 	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
 	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
@@ -172,6 +182,10 @@ const CreateProfileDialogContentDesktop = () => {
 
 	const apiProfileSet = useApiProfileSet();
 	const onClickHandler = useCallback(async (value: string) => {
+
+		if (apiProfileSet.isLoading) {
+			return;
+		}
 
 		try {
 
@@ -230,21 +244,23 @@ const CreateProfileDialogContentDesktop = () => {
 	useEffect(() => {
 
 		setAuthInput("")
+		setPasswordInput("");
+		setConfirmPassword("");
 		setAuth(null);
 	}, []);
 
 	return (
 		<VStack
 			w="100%"
-			gap="24px"
+			gap="22px"
 		>
 			<VStack
 				px="6px"
-				mt="16px"
+				mt="20px"
 				gap="16px"
 				w="100%"
 			>
-				<IconLogo/>
+				<CreateProfileIcon80/>
 				<VStack
 					gap="6px"
 					w="100%"
@@ -259,12 +275,13 @@ const CreateProfileDialogContentDesktop = () => {
 						fs="14"
 						lh="20"
 						textAlign="center"
+						font="regular"
 					>{langStringCreateProfileDialogDesc}</Text>
 				</VStack>
 			</VStack>
 			<VStack
 				w="100%"
-				gap="24px"
+				gap="22px"
 			>
 				<TooltipProvider>
 					<Tooltip
@@ -360,7 +377,7 @@ const CreateProfileDialogContentDesktop = () => {
 					>
 						<DialogTrigger asChild>
 							<Button
-								size="px16py9"
+								size="px16py6"
 								color="f5f5f5"
 								textSize="xl_desktop"
 							>{langStringCreateProfileDialogCancelButton}</Button>
@@ -396,6 +413,7 @@ const CreateProfileDialogContentDesktop = () => {
 											color="333e49"
 											textAlign="start"
 											w="100%"
+											font="regular"
 										>{langStringCreateProfileDialogConfirmCancelDesktopDesc}
 										</Text>
 										<HStack
@@ -442,17 +460,22 @@ const CreateProfileDialogContentDesktop = () => {
 						</Portal>
 					</Dialog>
 					<Button
-						size="px16py9"
+						size="px16py6"
 						disabled={name.trim().length < 1}
 						textSize="xl_desktop"
+						minW="101px"
 						onClick={() => onClickHandler(name.replace(/[^а-яА-яёЁa-zA-Z0-9ẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñœ\-' ]/g, "").trim())}
 					>
-						<HStack
-							gap="4px"
-						>
-							<Box>{langStringCreateProfileDialogConfirmButton}</Box>
-							<NextIcon/>
-						</HStack>
+						{apiProfileSet.isLoading ? (
+							<Box py="3.5px"><Preloader16/></Box>
+						) : (
+							<HStack
+								gap="4px"
+							>
+								<Box>{langStringCreateProfileDialogConfirmButton}</Box>
+								<NextIcon/>
+							</HStack>
+						)}
 					</Button>
 				</HStack>
 			</VStack>
@@ -505,6 +528,8 @@ const CreateProfileDialogContentMobile = () => {
 	}, [nameValue]);
 
 	const setAuthInput = useSetAtom(authInputState)
+	const setPasswordInput = useSetAtom(passwordInputState)
+	const setConfirmPassword = useSetAtom(confirmPasswordState)
 	const setAuth = useSetAtom(authState);
 	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
 	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
@@ -513,6 +538,10 @@ const CreateProfileDialogContentMobile = () => {
 
 	const apiProfileSet = useApiProfileSet();
 	const onClickHandler = useCallback(async (value: string) => {
+
+		if (apiProfileSet.isLoading) {
+			return;
+		}
 
 		try {
 
@@ -546,6 +575,8 @@ const CreateProfileDialogContentMobile = () => {
 	useEffect(() => {
 
 		setAuthInput("")
+		setPasswordInput("");
+		setConfirmPassword("");
 		setAuth(null)
 	}, []);
 	const apiAuthLogout = useApiAuthLogout();
@@ -615,7 +646,7 @@ const CreateProfileDialogContentMobile = () => {
 				gap="16px"
 				w="100%"
 			>
-				<IconLogo/>
+				<CreateProfileIcon80/>
 				<VStack
 					gap="4px"
 					w="100%"
@@ -630,6 +661,7 @@ const CreateProfileDialogContentMobile = () => {
 						fs="16"
 						lh="22"
 						textAlign="center"
+						font="regular"
 					>{langStringCreateProfileDialogDesc}</Text>
 				</VStack>
 			</VStack>
@@ -760,14 +792,19 @@ const CreateProfileDialogContentMobile = () => {
 						<Button
 							size="px16py9"
 							disabled={name.trim().length < 1}
+							minW="107px"
 							onClick={() => onClickHandler(name.replace(/[^а-яА-яёЁa-zA-Z0-9ẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñœ\-' ]/g, "").trim())}
 						>
-							<HStack
-								gap="4px"
-							>
-								<Box>{langStringCreateProfileDialogConfirmButton}</Box>
-								<NextIcon/>
-							</HStack>
+							{apiProfileSet.isLoading ? (
+								<Box py="5px"><Preloader16/></Box>
+							) : (
+								<HStack
+									gap="4px"
+								>
+									<Box>{langStringCreateProfileDialogConfirmButton}</Box>
+									<NextIcon/>
+								</HStack>
+							)}
 						</Button>
 					</HStack>
 				)}
@@ -781,9 +818,9 @@ const CreateProfileDialogContent = () => {
 	const isMobile = useIsMobile();
 	if (isMobile) {
 		return <CreateProfileDialogContentMobile/>
-	} else {
-		return <CreateProfileDialogContentDesktop/>
 	}
+
+	return <CreateProfileDialogContentDesktop/>
 }
 
 export default CreateProfileDialogContent;

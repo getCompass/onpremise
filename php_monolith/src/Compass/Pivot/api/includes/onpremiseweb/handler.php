@@ -24,6 +24,8 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 	// поддерживаемые группы методов (при создании новой группы заносятся вручную)
 	public const ALLOW_CONTROLLERS = [
 		"auth",
+		"auth_mail",
+		"security_mail",
 		"profile",
 		"global",
 		"joinlink",
@@ -33,6 +35,8 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 	public const ALLOWED_NOT_AUTHORIZED = [
 		"global",
 		"auth",
+		"auth_mail",
+		"security_mail",
 		"joinlink",
 	];
 
@@ -43,8 +47,20 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 		"auth.retry",
 		"auth.confirm",
 		"auth.logout",
+		"auth.mail.begin",
 		"joinlink.prepare",
 		"profile.set",
+		"auth.mail.confirmShortAuthPassword",
+		"auth.mail.confirmFullAuthPassword",
+		"auth.mail.confirmFullAuthCode",
+		"auth.mail.resendFullAuthCode",
+		"auth.mail.tryResetPassword",
+		"auth.mail.confirmResetPassword",
+		"auth.mail.finishResetPassword",
+		"security.mail.tryResetPassword",
+		"security.mail.confirmResetPassword",
+		"security.mail.resendResetPasswordCode",
+		"security.mail.finishResetPassword",
 	];
 
 	/**
@@ -52,7 +68,7 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 	 */
 	public function getServedRoutes():array {
 
-		return static::ALLOW_CONTROLLERS;
+		return array_map(static fn(string $method) => str_replace("_", ".", $method), static::ALLOW_CONTROLLERS);
 	}
 
 	/**
@@ -92,6 +108,7 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 			\BaseFrame\Router\Middleware\ValidateRequest::class,
 			\BaseFrame\Router\Middleware\ModifyHandler::class,
 			\BaseFrame\Router\Middleware\SetExceptionHandler::class,
+			Middleware_OnPremiseWebAccess::class,
 			Middleware_OnPremiseWebAuthorization::class,
 			\BaseFrame\Router\Middleware\InitializeController::class,
 			Middleware_AddCustomAction::class,

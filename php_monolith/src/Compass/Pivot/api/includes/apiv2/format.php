@@ -53,6 +53,9 @@ class Apiv2_Format {
 		$output["feature_list"] = isset($start_data["feature_list"])
 			? (array) $start_data["feature_list"] : [];
 
+		// список доступных способов аутентификации
+		$output["available_auth_method_list"] = $start_data["available_auth_method_list"];
+
 		return $output;
 	}
 

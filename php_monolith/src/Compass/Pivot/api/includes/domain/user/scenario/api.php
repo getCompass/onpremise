@@ -34,7 +34,7 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_WrongRecaptcha
 	 * @throws \queryException
 	 * @throws \returnException
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws cs_AuthIsBlocked
 	 * @throws cs_ActionNotAvailable
 	 */
 	public static function startAuth(int $user_id, string $phone_number, string|false $grecaptcha_response):Struct_User_Auth_Info {
@@ -47,25 +47,24 @@ class Domain_User_Scenario_Api {
 			// получаем значение из кеша, если есть, иначе дальше начнем регистрацию/логин
 			return Domain_User_Entity_AuthStory::getFromSessionCache($phone_number)
 				->assertNotExpired()
-				->assertPhoneNumber($phone_number)
+				->assertAuthParameter($phone_number)
 				->getAuthInfo();
-		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|cs_PhoneNumberIsNotEqual) {
+		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual) {
 
 			// пробуем залогинить, если такого номера нет, то регистрируем
 			try {
 
 				// получаем user_id по номеру
 				$user_id = Domain_User_Entity_Phone::getUserIdByPhone($phone_number);
-				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartLogin($phone_number, $grecaptcha_response);
-				$auth_story_data = Domain_User_Action_Login::do($user_id, $phone_number);
+				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartLoginByPhoneNumber($phone_number, $grecaptcha_response);
+				$auth_story = Domain_User_Action_Auth_PhoneNumber::beginLogin($user_id, $phone_number);
 			} catch (cs_PhoneNumberNotFound) {
 
-				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartRegister($phone_number, $grecaptcha_response);
-				$auth_story_data = Domain_User_Action_Register::do($phone_number, $user_id);
+				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartRegisterByPhoneNumber($phone_number, $grecaptcha_response);
+				$auth_story = Domain_User_Action_Auth_PhoneNumber::beginRegistration($phone_number);
 			}
 
 			// сохраняем в кэш, отдаем данные для пользователя
-			$auth_story = new Domain_User_Entity_AuthStory($auth_story_data);
 			$auth_story->storeInSessionCache();
 			return $auth_story->getAuthInfo();
 		}
@@ -90,10 +89,10 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_InvalidConfirmCode
 	 * @throws cs_InvalidHashStruct
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws cs_AuthIsBlocked
 	 * @throws cs_UserAlreadyLoggedIn
 	 * @throws cs_WrongAuthKey
-	 * @throws cs_WrongSmsCode
+	 * @throws cs_WrongCode
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws \returnException
@@ -110,22 +109,29 @@ class Domain_User_Scenario_Api {
 
 		try {
 
-			// проверяем все параметры аутентификации
-			$story->assertNotExpired()->assertNotFinishedYet()->assertErrorCountLimitNotExceeded()->assertEqualCode($code);
-		} catch (cs_WrongSmsCode $e) {
+			// делаем общие для всех типов аутентификаций проверки
+			$story->assertNotExpired()->assertNotFinishedYet();
+
+			// делаем проверки свойственные аутентификации по номеру телефона
+			$story->getAuthPhoneHandler()
+				->assertErrorCountLimitNotExceeded(Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber::SAAS_ERROR_COUNT_LIMIT)
+				->assertEqualCode($code, Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber::SAAS_ERROR_COUNT_LIMIT);
+		} catch (cs_WrongCode $e) {
 
 			// записываем в историю ошибку подтверждения и обновляем кэш
-			$story_data = Domain_User_Entity_StoryHandler_WrongCode::handle($story->getStoryData());
-			$story      = new Domain_User_Entity_AuthStory($story_data);
+			$story->getAuthPhoneHandler()->handleWrongCode();
 			$story->storeInSessionCache();
+
 			throw $e;
+		} catch (Domain_User_Exception_AuthStory_ErrorCountLimitExceeded) {
+			throw new cs_AuthIsBlocked($story->getExpiresAt());
 		}
 
 		$user_id = $story->getUserId();
 
 		// фиксируем в аналитике, что пользователь использовал код из смс
 		Type_Sms_Analytics_Story::onConfirm(
-			$user_id, Type_Sms_Analytics_Story::STORY_TYPE_AUTH, $auth_map, $story->getExpiresAt(), $story->getSmsId(), $story->getPhoneNumber()
+			$user_id, Type_Sms_Analytics_Story::STORY_TYPE_AUTH, $auth_map, $story->getExpiresAt(), $story->getAuthPhoneHandler()->getSmsID(), $story->getAuthPhoneHandler()->getPhoneNumber()
 		);
 
 		// увеличиваем счетчик использованных кодов из смс
@@ -137,14 +143,14 @@ class Domain_User_Scenario_Api {
 			try {
 
 				// проверяем, может номер уже зарегистрирован
-				$user_id = Domain_User_Entity_Phone::getUserIdByPhone($story->getPhoneNumber());
+				$user_id = Domain_User_Entity_Phone::getUserIdByPhone($story->getAuthPhoneHandler()->getPhoneNumber());
 				Type_User_Notifications::updateUserIdForDevice($user_id, getDeviceId());
 			} catch (cs_PhoneNumberNotFound) {
 
 				$default_partner_id = 0;
 
 				// регистрируем
-				$user    = Domain_User_Action_Create_Human::do($story->getPhoneNumber(), getUa(), getIp(), "", "", [], 0, $default_partner_id);
+				$user    = Domain_User_Action_Create_Human::do($story->getAuthPhoneHandler()->getPhoneNumber(), "", "", getUa(), getIp(), "", "", [], 0, $default_partner_id);
 				$user_id = $user->user_id;
 
 				Type_Phphooker_Main::sendUserAccountLog($user_id, Type_User_Analytics::REGISTERED);
@@ -152,24 +158,46 @@ class Domain_User_Scenario_Api {
 		} else {
 
 			// добавляем в историю, что пользователь залогинился
-			Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getPhoneNumber(), getDeviceId(), getUa());
+			Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getType(), $story->getAuthPhoneHandler()->getPhoneNumber(), getDeviceId(), getUa());
 
 			// обновляем user_id для текущего девайса
 			Type_User_Notifications::updateUserIdForDevice($user_id, getDeviceId());
 		}
 
 		// чистим кэш и выдаем сессию
-		$story->clearAuthCacheByPhoneNumber();
+		$story->clearAuthCache();
 		Type_Session_Main::doLoginSession($user_id);
 		Type_User_ActionAnalytics::sessionStart($user_id);
 
 		// устанавливаем, что аутентификация прошла успешно
-		Domain_User_Entity_StoryHandler_AuthSuccess::handle($story->getStoryData(), $user_id);
-		Domain_User_Entity_Antispam_Auth::successAuth($story->getPhoneNumber());
+		$story->handleSuccess($user_id);
+		Domain_User_Entity_Antispam_Auth::successAuth($story->getAuthPhoneHandler()->getPhoneNumber());
+		self::_onSuccessAuth($story, $user_id);
 
 		// проверяем пустой ли профиль пользователя, отдаем ошибку
 		self::_throwIfProfileIsEmpty($user_id);
 		return $user_id;
+	}
+
+	/**
+	 * после успешной аутентификации
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \queryException
+	 */
+	protected static function _onSuccessAuth(Domain_User_Entity_AuthStory $story, int $user_id):void {
+
+		// добавляем аутентификацию в историю
+		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
+
+		// пишем статистику по введенной смс
+		Gateway_Bus_CollectorAgent::init()->add("sms_history", [
+			"uniq_key"     => $story->getAuthPhoneHandler()->getSmsID(),
+			"is_success"   => 1,
+			"resend_count" => $story->getAuthPhoneHandler()->getResendCount(),
+			"error_count"  => $story->getAuthPhoneHandler()->getErrorCount(),
+			"created_at"   => $story->getAuthPhoneHandler()->getCreatedAt(),
+		]);
 	}
 
 	/**
@@ -178,10 +206,10 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_AuthAlreadyFinished
 	 * @throws cs_AuthIsExpired
 	 * @throws cs_IncorrectSaltVersion
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws cs_AuthIsBlocked
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_RecaptchaIsRequired
-	 * @throws cs_ResendSmsCountLimitExceeded
+	 * @throws cs_ResendCodeCountLimitExceeded
 	 * @throws cs_ResendWillBeAvailableLater
 	 * @throws cs_UserAlreadyLoggedIn
 	 * @throws cs_WrongRecaptcha
@@ -201,28 +229,35 @@ class Domain_User_Scenario_Api {
 			throw new ReturnFatalException("auth with provided auth_key does not exist");
 		}
 
+		// делаем общие для всех типов аутентификаций проверки
 		$story->assertNotExpired()
-			->assertNotFinishedYet()
-			->assertErrorCountLimitNotExceeded()
-			->assertResendCountLimitNotExceeded()
-			->assertResendIsAvailable();
+			->assertNotFinishedYet();
 
-		Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartResend($story->getPhoneNumber(), $grecaptcha_response);
+		// делаем проверки свойственные аутентификации по номеру телефона
+		try {
 
-		$story_data = Domain_User_Action_Resend::do($story->getStoryData());
-		$story      = new Domain_User_Entity_AuthStory($story_data);
+			$story->getAuthPhoneHandler()
+				->assertErrorCountLimitNotExceeded(Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber::SAAS_ERROR_COUNT_LIMIT)
+				->assertResendCountLimitNotExceeded()
+				->assertResendIsAvailable();
+		} catch (Domain_User_Exception_AuthStory_ErrorCountLimitExceeded) {
+			throw new cs_AuthIsBlocked($story->getExpiresAt());
+		}
 
+		Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartResend($story->getAuthPhoneHandler()->getPhoneNumber(), $grecaptcha_response);
+
+		$story = Domain_User_Action_Auth_PhoneNumber::resend($story);
 		$story->storeInSessionCache();
 
-		$phone_number_obj = new \BaseFrame\System\PhoneNumber($story->getPhoneNumber());
+		$phone_number_obj = new \BaseFrame\System\PhoneNumber($story->getAuthPhoneHandler()->getPhoneNumber());
 
 		Type_Phphooker_Main::onSmsResent(
 			$user_id,
 			$phone_number_obj->obfuscate(),
-			Domain_User_Entity_AuthStory::RESEND_COUNT_LIMIT - $story->getStoryData()->auth_phone->resend_count,
+			$story->getAuthPhoneHandler()->getAvailableResendCount(),
 			"auth",
 			\BaseFrame\Conf\Country::get($phone_number_obj->countryCode())->getLocalizedName(),
-			$story->getStoryData()->auth_phone->sms_id,
+			$story->getAuthPhoneHandler()->getSmsID(),
 		);
 
 		return $story->getAuthInfo();
@@ -509,7 +544,7 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_TwoFaIsExpired
 	 * @throws cs_TwoFaIsFinished
 	 * @throws \cs_UnpackHasFailed
-	 * @throws cs_WrongSmsCode
+	 * @throws cs_WrongCode
 	 * @throws cs_WrongTwoFaKey
 	 * @throws \parseException
 	 * @throws \returnException
@@ -526,7 +561,7 @@ class Domain_User_Scenario_Api {
 				->assertErrorCountLimitNotExceeded()
 				->assertEqualCode($sms_code)
 				->assertPhoneConfirmed();
-		} catch (cs_WrongSmsCode $e) {
+		} catch (cs_WrongCode $e) {
 
 			Domain_User_Action_TwoFa_HandleWrongCode::do($story);
 
@@ -552,7 +587,7 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_RecaptchaIsRequired
-	 * @throws cs_ResendSmsCountLimitExceeded
+	 * @throws cs_ResendCodeCountLimitExceeded
 	 * @throws cs_ResendWillBeAvailableLater
 	 * @throws cs_TwoFaInvalidUser
 	 * @throws cs_TwoFaIsExpired
@@ -778,7 +813,7 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_PhoneChangeStoryWrongMap
 	 * @throws \cs_UnpackHasFailed
 	 * @throws cs_UserPhoneSecurityNotFound
-	 * @throws cs_WrongSmsCode
+	 * @throws cs_WrongCode
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws \returnException
@@ -821,14 +856,14 @@ class Domain_User_Scenario_Api {
 			// выкидываем ошибку о том, что смена номера временно заблокирована (из-за превышения кол-ва ошибок)
 			$e->setNextAttempt($story->getExpiresAt());
 			throw $e;
-		} catch (cs_WrongSmsCode) {
+		} catch (cs_WrongCode) {
 
 			// увеличиваем счетчик, и если не осталось попыток, выкидываем блокировку
 			$available_attempts = Domain_User_Action_ChangePhone_IncrementError::do($sms_story, $story);
 			if ($available_attempts === 0) {
 				throw new cs_PhoneChangeSmsErrorCountExceeded($story->getExpiresAt());
 			}
-			throw new cs_WrongSmsCode($available_attempts);
+			throw new cs_WrongCode($available_attempts);
 		}
 	}
 
@@ -1145,8 +1180,8 @@ class Domain_User_Scenario_Api {
 		Domain_Company_Entity_Company::assertUserIsCreator($space, $user_id);
 
 		// проверяем, может у пользователя уже есть активный или завершённый онбординг
-		$user             = Gateway_Bus_PivotCache::getUserInfo($space->created_by_user_id);
-		$onboarding_list  = Type_User_Main::getOnboardingList($user->extra);
+		$user            = Gateway_Bus_PivotCache::getUserInfo($space->created_by_user_id);
+		$onboarding_list = Type_User_Main::getOnboardingList($user->extra);
 
 		foreach ($onboarding_list as $onboarding) {
 

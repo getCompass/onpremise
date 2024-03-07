@@ -16,10 +16,10 @@ export const tooltip = defineSlotRecipe({
 		style: {
 			desktop: {
 				content: {
-					px: "8px",
-					py: "6px",
-					fontSize: "13px",
-					lineHeight: "18px",
+					px: "12px",
+					py: "8px",
+					fontSize: "14px",
+					lineHeight: "20px",
 				},
 			},
 			mobile: {

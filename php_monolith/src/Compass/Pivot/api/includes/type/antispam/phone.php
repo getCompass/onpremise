@@ -31,7 +31,7 @@ class Type_Antispam_Phone {
 	 * проверяем на срабатывание блокировок по конкретному ключу
 	 * пишем статистику по срабатыванию блокировки если необходимо
 	 *
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws cs_AuthIsBlocked
 	 */
 	public static function checkAndIncrementBlock(string $phone_number_hash, array $block_key):void {
 
@@ -41,7 +41,7 @@ class Type_Antispam_Phone {
 		// если превысили лимит - выбрасываем исключение
 		if ($row["count"] >= $block_key["limit"]) {
 
-			throw new cs_PhoneNumberIsBlocked(
+			throw new cs_AuthIsBlocked(
 				$row["expires_at"],
 				"Phone [{$phone_number_hash}] blocked with key: '{$block_key["key"]}'"
 			);
@@ -54,7 +54,7 @@ class Type_Antispam_Phone {
 	/**
 	 * узнать сработала ли блокировка без инкремента
 	 *
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws cs_AuthIsBlocked
 	 */
 	public static function check(string $phone_number_hash, array $block_key):array {
 
@@ -64,7 +64,7 @@ class Type_Antispam_Phone {
 		// если превысили лимит - блокировка сработала, возвращаем ошибку
 		if ($row["count"] >= $block_key["limit"]) {
 
-			throw new cs_PhoneNumberIsBlocked(
+			throw new cs_AuthIsBlocked(
 				$row["expires_at"],
 				"Phone [{$phone_number_hash}] blocked with key: '{$block_key["key"]}'"
 			);

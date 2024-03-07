@@ -29,6 +29,18 @@ export const input = defineRecipe({
                     color: "b4b4b4",
                 },
             },
+			hstack_input: {
+				borderColor: "transparent",
+				borderWidth: "0px",
+				bgColor: "f8f8f8",
+				color: "333e49",
+				outline: "none",
+				fontFamily: "lato_regular",
+				fontWeight: "normal",
+				_placeholder: {
+					color: "b4b4b4",
+				},
+			},
             error_default: {
                 borderColor: "red",
                 borderWidth: "1px",
@@ -98,8 +110,10 @@ export const input = defineRecipe({
             },
         },
         size: {
+			hstack_default_mobile: {w: "100%", fontSize: "16px", lineHeight: "22px"},
+			hstack_default_desktop: {w: "100%", fontSize: "16px", lineHeight: "18px"},
             default: {px: "12px", py: "11px", w: "100%", fontSize: "16px", lineHeight: "22px"},
-            default_desktop: {px: "14px", py: "9px", w: "100%", fontSize: "16px", lineHeight: "18px"},
+            default_desktop: {px: "14px", py: "8px", w: "100%", fontSize: "16px", lineHeight: "18px"},
             pinInput: {w: "36px", h: "56px", minW: "36px", fontSize: "40px", lineHeight: "40px"},
             pinInputMobileSmall: {w: "30px", h: "46px", minW: "30px", fontSize: "31px", lineHeight: "31px"},
             pinInput_desktop: {w: "36px", h: "51px", minW: "36px", fontSize: "42px", lineHeight: "50px"},

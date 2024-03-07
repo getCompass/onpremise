@@ -33,14 +33,55 @@ class Apiv1_Pivot_Format {
 	 */
 	public static function authInfo(Struct_User_Auth_Info $auth_info):array {
 
-		return [
-			"auth_map"           => (string) $auth_info->auth_map,
-			"next_resend"        => (int) $auth_info->next_resend,
-			"available_attempts" => (int) $auth_info->available_attempts,
-			"expire_at"          => (int) $auth_info->expire_at,
-			"phone_mask"         => (string) $auth_info->phone_mask,
-			"type"               => (int) $auth_info->type,
+		// собираем сущность для ответа
+		$output = [
+			"auth_map" => (string) $auth_info->auth_map,
+			"type"     => (int) $auth_info->auth->type,
+			"data"     => (object) self::_formatAuthInfoData($auth_info),
 		];
+
+		// если это аутентификация по номеру телефона, то поддерживаем старых клиентов
+		// возвращаем структуру по старинке
+		if (Domain_User_Entity_AuthStory::isPhoneNumberAuth($auth_info->auth->type)) {
+
+			$output["next_resend"]        = (int) $auth_info->getAuthPhoneEntity()->getNextResendAt();
+			$output["available_attempts"] = (int) $auth_info->getAuthPhoneEntity()->getAvailableAttempts(Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber::SAAS_ERROR_COUNT_LIMIT);
+			$output["expire_at"]          = (int) $auth_info->auth->expires_at;
+			$output["phone_mask"]         = (string) (new \BaseFrame\System\PhoneNumber($auth_info->getAuthPhoneEntity()->getPhoneNumber()))->obfuscate();
+		}
+
+		return $output;
+	}
+
+	/**
+	 * форматируем поле data для сущности auth_info
+	 *
+	 * @return array
+	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
+	 */
+	protected static function _formatAuthInfoData(Struct_User_Auth_Info $auth_info):array {
+
+		$output = [];
+
+		if (Domain_User_Entity_AuthStory::isPhoneNumberAuth($auth_info->auth->type)) {
+
+			$output = [
+				"next_resend"        => (int) $auth_info->getAuthPhoneEntity()->getNextResendAt(),
+				"available_attempts" => (int) $auth_info->getAuthPhoneEntity()->getAvailableAttempts(Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber::SAAS_ERROR_COUNT_LIMIT),
+				"expire_at"          => (int) $auth_info->auth->expires_at,
+				"phone_mask"         => (string) (new \BaseFrame\System\PhoneNumber($auth_info->getAuthPhoneEntity()->getPhoneNumber()))->obfuscate(),
+			];
+		}
+
+		if (Domain_User_Entity_AuthStory::isMailAuth($auth_info->auth->type)) {
+			$output = [];
+		}
+
+		if (Domain_User_Entity_AuthStory::isMailResetPassword($auth_info->auth->type)) {
+			$output = [];
+		}
+
+		return $output;
 	}
 
 	/**

@@ -72,6 +72,7 @@ const InactiveLinkMobile = () => {
 					lh="22"
 					color="333e49"
 					textAlign="center"
+					font="regular"
 				>
 					{langStringInactiveLinkDesc}
 				</Text>
@@ -147,6 +148,7 @@ const InactiveLinkDesktop = () => {
 					lh="20"
 					color="333e49"
 					textAlign="center"
+					font="regular"
 				>
 					{langStringInactiveLinkDesc}
 				</Text>

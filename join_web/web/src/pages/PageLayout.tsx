@@ -83,7 +83,7 @@ const PageLayoutMobile = ({isLoading, children}: PageLayoutProps) => {
 			userSelect="none"
 			bgColor="393a4d"
 			fontFamily="lato_regular"
-			className={`main-bg ${!isLoading && activePage === "auth" && (activeDialog === "auth_phone_number" || activeDialog === "auth_confirm_code" || activeDialog === "auth_create_profile") ? "h100vh" : "h100dvh"}`}
+			className={`main-bg ${!isLoading && activePage === "auth" && (activeDialog === "auth_email_phone_number" || activeDialog === "auth_phone_number_confirm_code" || activeDialog === "auth_email_confirm_code" || activeDialog === "auth_create_profile") ? "h100vh" : "h100dvh"}`}
 		>
 			<Box
 				bgColor="393a4d"

@@ -394,16 +394,16 @@ $CONFIG["SHARDING_MYSQL"] = [
 				"user_last_call_8"                   => "user_id,company_id,call_key,is_finished,type,created_at,updated_at,extra",
 				"user_last_call_9"                   => "user_id,company_id,call_key,is_finished,type,created_at,updated_at,extra",
 				"user_last_call_10"                  => "user_id,company_id,call_key,is_finished,type,created_at,updated_at,extra",
-				"user_security_1"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_2"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_3"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_4"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_5"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_6"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_7"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_8"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_9"                    => "user_id,phone_number,created_at,updated_at",
-				"user_security_10"                   => "user_id,phone_number,created_at,updated_at",
+				"user_security_1"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_2"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_3"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_4"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_5"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_6"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_7"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_8"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_9"                    => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_10"                   => "user_id,phone_number,mail,created_at,updated_at",
 				"user_company_session_token_list_1"  => "user_company_session_token,user_id,session_uniq,status,company_id,created_at,updated_at",
 				"user_company_session_token_list_2"  => "user_company_session_token,user_id,session_uniq,status,company_id,created_at,updated_at",
 				"user_company_session_token_list_3"  => "user_company_session_token,user_id,session_uniq,status,company_id,created_at,updated_at",
@@ -563,16 +563,16 @@ $CONFIG["SHARDING_MYSQL"] = [
 				"user_last_call_18"                  => "user_id,company_id,call_key,is_finished,type,created_at,updated_at,extra",
 				"user_last_call_19"                  => "user_id,company_id,call_key,is_finished,type,created_at,updated_at,extra",
 				"user_last_call_20"                  => "user_id,company_id,call_key,is_finished,type,created_at,updated_at,extra",
-				"user_security_11"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_12"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_13"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_14"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_15"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_16"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_17"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_18"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_19"                   => "user_id,phone_number,created_at,updated_at",
-				"user_security_20"                   => "user_id,phone_number,created_at,updated_at",
+				"user_security_11"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_12"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_13"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_14"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_15"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_16"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_17"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_18"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_19"                   => "user_id,phone_number,mail,created_at,updated_at",
+				"user_security_20"                   => "user_id,phone_number,mail,created_at,updated_at",
 				"user_company_session_token_list_11" => "user_company_session_token,user_id,session_uniq,status,company_id,created_at,updated_at",
 				"user_company_session_token_list_12" => "user_company_session_token,user_id,session_uniq,status,company_id,created_at,updated_at",
 				"user_company_session_token_list_13" => "user_company_session_token,user_id,session_uniq,status,company_id,created_at,updated_at",
@@ -836,6 +836,7 @@ $CONFIG["SHARDING_MYSQL"] = [
 			"tables"        => [
 				"auth_list"       => "auth_uniq,user_id,is_success,type,created_at,updated_at,expires_at,ua_hash,ip_address",
 				"auth_phone_list" => "auth_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
+				"auth_mail_list"  => "auth_map,is_success,has_password,has_code,resend_count,password_error_count,code_error_count,created_at,updated_at,next_resend_at,message_id,code_hash,mail",
 				"2fa_list"        => "2fa_map,user_id,company_id,is_active,is_success,action_type,created_at,updated_at,expires_at",
 				"2fa_phone_list"  => "2fa_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
 			],
@@ -858,6 +859,7 @@ $CONFIG["SHARDING_MYSQL"] = [
 			"tables"        => [
 				"auth_list"       => "auth_uniq,user_id,is_success,type,created_at,updated_at,expires_at,ua_hash,ip_address",
 				"auth_phone_list" => "auth_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
+				"auth_mail_list"  => "auth_map,is_success,has_password,has_code,resend_count,password_error_count,code_error_count,created_at,updated_at,next_resend_at,message_id,code_hash,mail",
 				"2fa_list"        => "2fa_map,user_id,company_id,is_active,is_success,action_type,created_at,updated_at,expires_at",
 				"2fa_phone_list"  => "2fa_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
 			],
@@ -880,6 +882,7 @@ $CONFIG["SHARDING_MYSQL"] = [
 			"tables"        => [
 				"auth_list"       => "auth_uniq,user_id,is_success,type,created_at,updated_at,expires_at,ua_hash,ip_address",
 				"auth_phone_list" => "auth_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
+				"auth_mail_list"  => "auth_map,is_success,has_password,has_code,resend_count,password_error_count,code_error_count,created_at,updated_at,next_resend_at,message_id,code_hash,mail",
 				"2fa_list"        => "2fa_map,user_id,company_id,is_active,is_success,action_type,created_at,updated_at,expires_at",
 				"2fa_phone_list"  => "2fa_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
 			],
@@ -902,6 +905,7 @@ $CONFIG["SHARDING_MYSQL"] = [
 			"tables"        => [
 				"auth_list"       => "auth_uniq,user_id,is_success,type,created_at,updated_at,expires_at,ua_hash,ip_address",
 				"auth_phone_list" => "auth_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
+				"auth_mail_list"  => "auth_map,is_success,has_password,has_code,resend_count,password_error_count,code_error_count,created_at,updated_at,next_resend_at,message_id,code_hash,mail",
 				"2fa_list"        => "2fa_map,user_id,company_id,is_active,is_success,action_type,created_at,updated_at,expires_at",
 				"2fa_phone_list"  => "2fa_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
 			],
@@ -924,6 +928,7 @@ $CONFIG["SHARDING_MYSQL"] = [
 			"tables"        => [
 				"auth_list"       => "auth_uniq,user_id,is_success,type,created_at,updated_at,expires_at,ua_hash,ip_address",
 				"auth_phone_list" => "auth_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
+				"auth_mail_list"  => "auth_map,is_success,has_password,has_code,resend_count,password_error_count,code_error_count,created_at,updated_at,next_resend_at,message_id,code_hash,mail",
 				"2fa_list"        => "2fa_map,user_id,company_id,is_active,is_success,action_type,created_at,updated_at,expires_at",
 				"2fa_phone_list"  => "2fa_map,is_success,resend_count,error_count,created_at,updated_at,next_resend_at,sms_id,sms_code_hash,phone_number",
 			],
@@ -1195,6 +1200,48 @@ $CONFIG["SHARDING_MYSQL"] = [
 	##########################################################
 
 	##########################################################
+	# region pivot_mail - база данных, хранящая почты
+	##########################################################
+
+	"pivot_mail" => [
+		"db"      => "pivot_mail",
+		"mysql"   => [
+			"host" => MYSQL_PIVOT_MAIL_HOST,
+			"user" => MYSQL_PIVOT_MAIL_USER,
+			"pass" => MYSQL_PIVOT_MAIL_PASS,
+			"ssl"  => MYSQL_PIVOT_MAIL_SSL,
+		],
+		"schemas" => [
+			"sharding_info" => [
+				"type" => \shardingConf::SHARDING_TYPE_NONE,
+				"data" => [],
+			],
+			"tables"        => [
+				"mail_uniq_list_0" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_1" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_2" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_3" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_4" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_5" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_6" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_7" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_8" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_9" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_a" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_b" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_c" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_d" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_e" => "mail_hash,user_id,created_at,updated_at,password_hash",
+				"mail_uniq_list_f" => "mail_hash,user_id,created_at,updated_at,password_hash",
+			],
+		],
+	],
+
+	##########################################################
+	# endregion
+	##########################################################
+
+	##########################################################
 	# region pivot_sms_service - база данных, для работы смс сервиса
 	##########################################################
 
@@ -1215,6 +1262,33 @@ $CONFIG["SHARDING_MYSQL"] = [
 				"send_queue"        => "sms_id,stage,need_work,error_count,created_at_ms,updated_at,expires_at,phone_number,provider_id,text,extra",
 				"provider_list"     => "provider_id,is_available,is_deleted,created_at,updated_at,extra",
 				"observer_provider" => "provider_id,need_work,created_at,extra",
+			],
+		],
+	],
+
+	##########################################################
+	# endregion
+	##########################################################
+
+	##########################################################
+	# region pivot_mail_service - база данных, для работы сервиса отправки писем
+	##########################################################
+
+	"pivot_mail_service" => [
+		"db"      => "pivot_mail_service",
+		"mysql"   => [
+			"host" => MYSQL_PIVOT_MAIL_SERVICE_HOST,
+			"user" => MYSQL_PIVOT_MAIL_SERVICE_USER,
+			"pass" => MYSQL_PIVOT_MAIL_SERVICE_PASS,
+			"ssl"  => MYSQL_PIVOT_MAIL_SERVICE_SSL,
+		],
+		"schemas" => [
+			"sharding_info" => [
+				"type" => \shardingConf::SHARDING_TYPE_NONE,
+				"data" => [],
+			],
+			"tables"        => [
+				"send_queue"        => "message_id,stage,need_work,error_count,created_at_ms,updated_at,task_expire_at,mail,title,content,extra",
 			],
 		],
 	],

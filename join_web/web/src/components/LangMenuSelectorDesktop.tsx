@@ -173,6 +173,7 @@ const LangMenuSelectorDesktop = () => {
 												fs="15"
 												lh="22"
 												color="333e49"
+												font="regular"
 											>{item.label}</Text>
 										</HStack>
 									</MenuItem>

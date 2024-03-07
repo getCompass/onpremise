@@ -45,6 +45,7 @@ const DialogMobile = ({content, overflow, isNeedExtraPaddingBottom}: DialogMobil
 					outline: "none",
 					position: "relative",
 					borderRadius: "15px",
+					maxWidth: "382px",
 					width: "100%",
 					overflow: overflow,
 				})}

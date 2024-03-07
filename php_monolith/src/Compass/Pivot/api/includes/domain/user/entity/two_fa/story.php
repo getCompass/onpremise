@@ -165,13 +165,13 @@ class Domain_User_Entity_TwoFa_Story {
 	 *
 	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_InvalidHashStruct
-	 * @throws cs_WrongSmsCode
+	 * @throws cs_WrongCode
 	 */
 	public function assertEqualCode(string $code):self {
 
 		if (!Type_Hash_Code::compareHash($this->two_fa_phone->sms_code_hash, $code)) {
 
-			throw new cs_WrongSmsCode(
+			throw new cs_WrongCode(
 				$this->getAvailableAttempts() - 1,
 				$this->getTwoFaInfo()->expires_at,
 			);
@@ -185,12 +185,12 @@ class Domain_User_Entity_TwoFa_Story {
 	 *
 	 * @return $this
 	 *
-	 * @throws cs_ResendSmsCountLimitExceeded
+	 * @throws cs_ResendCodeCountLimitExceeded
 	 */
 	public function assertResendCountLimitNotExceeded():self {
 
 		if ($this->two_fa_phone->resend_count >= self::RESEND_COUNT_LIMIT) {
-			throw new cs_ResendSmsCountLimitExceeded();
+			throw new cs_ResendCodeCountLimitExceeded();
 		}
 
 		return $this;

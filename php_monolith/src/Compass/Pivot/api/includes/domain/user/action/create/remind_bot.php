@@ -16,7 +16,8 @@ class Domain_User_Action_Create_RemindBot extends Domain_User_Action_Create {
 	 *
 	 * @throws cs_DamagedActionException
 	 */
-	public static function prepare(string $phone_number, string $user_agent, string $ip, string $full_name, string $avatar_file_map, array $extra):Struct_User_Action_Create_Prepare {
+	public static function prepare(string $phone_number, string $mail, string $password_hash, string $user_agent, string $ip,
+						 string $full_name, string $avatar_file_map, array $extra):Struct_User_Action_Create_Prepare {
 
 		// проверяем, что запускается дочерний класс с переопределенными константными значениями
 		static::_assertClassValues();
@@ -37,7 +38,7 @@ class Domain_User_Action_Create_RemindBot extends Domain_User_Action_Create {
 			$extra
 		);
 
-		return new Struct_User_Action_Create_Prepare($draft_user, $phone_number, "", $action_time, $user_agent, $ip);
+		return new Struct_User_Action_Create_Prepare($draft_user, $phone_number, "", $mail, "", $password_hash, $action_time, $user_agent, $ip);
 	}
 
 	/**

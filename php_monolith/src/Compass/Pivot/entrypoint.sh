@@ -148,6 +148,12 @@ migrate -path "${SCRIPT_PATH}/sql/pivot_rating_20m" -database mysql://${MYSQL_US
 migrate -path "${SCRIPT_PATH}/sql/pivot_attribution" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_attribution?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/pivot_attribution" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_attribution?tls=false version
 
+migrate -path "${SCRIPT_PATH}/sql/pivot_mail" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_mail?tls=false up
+migrate -path "${SCRIPT_PATH}/sql/pivot_mail" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_mail?tls=false version
+
+migrate -path "${SCRIPT_PATH}/sql/pivot_mail_service" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_mail_service?tls=false up
+migrate -path "${SCRIPT_PATH}/sql/pivot_mail_service" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_mail_service?tls=false version
+
 # запускаем всякие служебные скрипты
 runuser -l www-data -c "php ${SCRIPT_PATH}/sh/php/config/init_config.php"
 runuser -l www-data -c "php ${SCRIPT_PATH}/sh/php/config/init_config_v2.php"

@@ -81,7 +81,7 @@ class Domain_Intercom_Scenario_Socket {
 		}
 
 		// создаем оператора
-		$user_info = Domain_User_Action_Create_Operator::do("", "", getIp(), $full_name, $avatar_file_map, []);
+		$user_info = Domain_User_Action_Create_Operator::do("", "", "", "", getIp(), $full_name, $avatar_file_map, []);
 		return $user_info->user_id;
 	}
 

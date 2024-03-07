@@ -2,37 +2,32 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\RowNotFoundException;
+
 /**
  * Класс для получения данных об истории аутентификаций
- *
- * Class Domain_User_Entity_AuthStory
  */
 class Domain_User_Entity_AuthStory {
 
-	protected Struct_Db_PivotAuth_Auth      $auth;
-	protected Struct_Db_PivotAuth_AuthPhone $auth_phone;
+	/** возможные типы аутентификации: */
+	public const AUTH_STORY_TYPE_REGISTER_BY_PHONE_NUMBER = 1; // тип регистрации через номер телефона
+	public const AUTH_STORY_TYPE_LOGIN_BY_PHONE_NUMBER    = 2; // тип авторизации через номер телефона
+	public const AUTH_STORY_TYPE_REGISTER_BY_MAIL         = 3; // тип регистрации через почту
+	public const AUTH_STORY_TYPE_LOGIN_BY_MAIL            = 4; // тип авторизации через почту
+	public const AUTH_STORY_TYPE_RESET_PASSWORD_BY_MAIL   = 5; // тип для сброса пароля через почту из под неавторизованного пользователя
 
-	public const NEXT_ATTEMPT_AFTER = 60;      // через сколько доступна пересылка смски
-	public const EXPIRE_AT          = 60 * 20; // через сколько истекает попытка входа/регистрации
-
-	public const AUTH_STORY_TYPE_REGISTER = 1; // тип регистрации
-	public const AUTH_STORY_TYPE_LOGIN    = 2; // тип аутентификации
-
-	public const RESEND_COUNT_LIMIT           = 3; // лимит переотправки смс
-	public const ERROR_COUNT_LIMIT            = 3; // лимит на кол-во ошибок
-	public const ONPREMISE_RESEND_COUNT_LIMIT = 7; // лимит переотправки смс для онпремайза
-	public const ONPREMISE_ERROR_COUNT_LIMIT  = 7; // лимит на кол-во ошибок для онпремайза
-
-	public const AUTH_STATUS_SUCCESS = 1; // успешная аутентификация
+	/** возможные статусы аутентификации для истории: */
+	public const HISTORY_AUTH_STATUS_SUCCESS = 1; // успешная аутентификация
 
 	/**
 	 * Domain_User_Entity_AuthStory constructor.
-	 *
 	 */
-	public function __construct(Struct_User_Auth_Story $story) {
+	public function __construct(
+		protected Struct_Db_PivotAuth_Auth                           $_auth,
+		protected Domain_User_Entity_AuthStory_MethodHandler_Default $_auth_method_entity,
+	) {
 
-		$this->auth       = $story->auth;
-		$this->auth_phone = $story->auth_phone;
 	}
 
 	/**
@@ -42,23 +37,23 @@ class Domain_User_Entity_AuthStory {
 	 *
 	 * @throws cs_CacheIsEmpty
 	 */
-	public static function getFromSessionCache(string $phone_number):self {
+	public static function getFromSessionCache(string $auth_parameter):self {
 
-		$cached_story = Type_Session_Main::getCache(self::class);
+		$cache = Type_Session_Main::getCache(self::class);
 
-		if (!isset($cached_story[$phone_number])) {
+		if (!isset($cache[$auth_parameter])) {
 			throw new cs_CacheIsEmpty();
 		}
 
-		// получаем историю по номеру телефона
-		$cached_story_by_number = $cached_story[$phone_number];
+		// получаем историю по параметру аутентификации
+		$cached_auth_story = $cache[$auth_parameter];
 
-		$story = new Struct_User_Auth_Story(
-			new Struct_Db_PivotAuth_Auth(...array_values($cached_story_by_number["auth"])),
-			new Struct_Db_PivotAuth_AuthPhone(...array_values($cached_story_by_number["auth_phone"]))
+		$auth = new Struct_Db_PivotAuth_Auth(...array_values($cached_auth_story["auth"]));
+
+		return new static(
+			$auth,
+			Domain_User_Entity_AuthStory_MethodHandler_Default::init($auth, $cached_auth_story["auth_method_data"])
 		);
-
-		return new static($story);
 	}
 
 	/**
@@ -72,15 +67,46 @@ class Domain_User_Entity_AuthStory {
 
 		try {
 
-			$auth       = Gateway_Db_PivotAuth_AuthList::getOne($auth_map);
-			$auth_phone = Gateway_Db_PivotAuth_AuthPhoneList::getOne($auth_map);
-		} catch (\cs_RowIsEmpty) {
+			$auth        = Gateway_Db_PivotAuth_AuthList::getOne($auth_map);
+			$auth_method = Domain_User_Entity_AuthStory_MethodHandler_Default::get($auth, $auth_map);
+		} catch (\cs_RowIsEmpty|RowNotFoundException) {
 			throw new cs_WrongAuthKey();
 		}
 
-		$story = new Struct_User_Auth_Story($auth, $auth_phone);
+		return new static(
+			$auth,
+			$auth_method
+		);
+	}
 
-		return new static($story);
+	/**
+	 * получаем класс-хендлер аутентификации по номеру
+	 *
+	 * @return Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber|Domain_User_Entity_AuthStory_MethodHandler_Default
+	 * @throws ParseFatalException
+	 */
+	public function getAuthPhoneHandler():Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber|Domain_User_Entity_AuthStory_MethodHandler_Default {
+
+		if (false === ($this->_auth_method_entity instanceof Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber)) {
+			throw new ParseFatalException("unexpected behaviour");
+		}
+
+		return $this->_auth_method_entity;
+	}
+
+	/**
+	 * получаем класс-хендлер аутентификации по почте
+	 *
+	 * @return Domain_User_Entity_AuthStory_MethodHandler_Mail|Domain_User_Entity_AuthStory_MethodHandler_Default
+	 * @throws ParseFatalException
+	 */
+	public function getAuthMailHandler():Domain_User_Entity_AuthStory_MethodHandler_Mail|Domain_User_Entity_AuthStory_MethodHandler_Default {
+
+		if (false === ($this->_auth_method_entity instanceof Domain_User_Entity_AuthStory_MethodHandler_Mail)) {
+			throw new ParseFatalException("unexpected behaviour");
+		}
+
+		return $this->_auth_method_entity;
 	}
 
 	/**
@@ -88,26 +114,18 @@ class Domain_User_Entity_AuthStory {
 	 *
 	 * @return $this
 	 */
-	public function clearAuthCacheByPhoneNumber():self {
+	public function clearAuthCache():self {
 
 		$cache = Type_Session_Main::getCache(self::class);
 
-		if (!isset($cache[$this->auth_phone->phone_number])) {
+		if (!isset($cache[$this->_auth_method_entity->getAuthParameter()])) {
 			return $this;
 		}
 
-		unset($cache[$this->auth_phone->phone_number]);
-		Type_Session_Main::setCache(self::class, $cache, self::EXPIRE_AT);
+		unset($cache[$this->_auth_method_entity->getAuthParameter()]);
+		Type_Session_Main::setCache(self::class, $cache, $this->_auth_method_entity::STORY_LIFE_TIME);
 
 		return $this;
-	}
-
-	/**
-	 * очистить кэш, лежащий по ключу сессии
-	 */
-	public static function clearAuthCache():void {
-
-		Type_Session_Main::clearCache(self::class);
 	}
 
 	/**
@@ -119,25 +137,75 @@ class Domain_User_Entity_AuthStory {
 
 		$cache = Type_Session_Main::getCache(self::class);
 
-		$cache[$this->auth_phone->phone_number] = [
-			"auth"       => $this->auth,
-			"auth_phone" => $this->auth_phone,
+		$cache[$this->_auth_method_entity->getAuthParameter()] = [
+			"auth"             => $this->_auth,
+			"auth_method_data" => $this->_auth_method_entity->authEntityToArray(),
 		];
-		Type_Session_Main::setCache(self::class, $cache, self::EXPIRE_AT);
+		Type_Session_Main::setCache(self::class, $cache, $this->_auth_method_entity::STORY_LIFE_TIME);
 
 		return $this;
 	}
 
 	/**
-	 * получить структурные данные об аутентификации
+	 * создаем аутентификацию
 	 *
+	 * @return static
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \queryException
+	 * @throws cs_IncorrectSaltVersion
 	 */
-	public function getStoryData():Struct_User_Auth_Story {
+	public static function create(int $user_id, int $type, int $expires_at, array $auth_method_data):static {
 
-		return new Struct_User_Auth_Story(
-			$this->auth,
-			$this->auth_phone
+		// данные для новой записи
+		$auth_uniq = generateUUID();
+		$time      = time();
+
+		// данные для шардинга
+		$shard_id = Type_Pack_Auth::getShardIdByTime($time);
+		$table_id = Type_Pack_Auth::getTableIdByTime($time);
+		$auth_map = Type_Pack_Auth::doPack($auth_uniq, $shard_id, $table_id, $time);
+
+		Gateway_Db_PivotAuth_Main::beginTransaction($shard_id);
+
+		// вставляем запись об аутентификации пользователя
+		$auth = new Struct_Db_PivotAuth_Auth(
+			$auth_uniq, $user_id, 0, $type, $time, 0, $expires_at, Type_Hash_UserAgent::makeHash(getUa()), getIp()
 		);
+		Gateway_Db_PivotAuth_AuthList::insert($auth);
+
+		$auth_method_data["auth_map"] = $auth_map;
+		$auth_method                  = Domain_User_Entity_AuthStory_MethodHandler_Default::init($auth, $auth_method_data);
+		$auth_method->create();
+
+		Gateway_Db_PivotAuth_Main::commitTransaction($shard_id);
+
+		return new static($auth, $auth_method);
+	}
+
+	/**
+	 * получаем продолжительность жизни попытки
+	 *
+	 * @return int
+	 */
+	public function getLifeTime():int {
+
+		return $this->_auth_method_entity::STORY_LIFE_TIME;
+	}
+
+	/**
+	 * проверяем, что телефоны совпадают
+	 *
+	 * @return $this
+	 *
+	 * @throws cs_PhoneNumberIsNotEqual
+	 */
+	public function assertAuthParameter(string $auth_parameter):self {
+
+		if ($this->_auth_method_entity->getAuthParameter() !== $auth_parameter) {
+			throw new Domain_User_Exception_AuthStory_AuthParameterNotEqual("auth parameter not equal");
+		}
+
+		return $this;
 	}
 
 	/**
@@ -149,7 +217,7 @@ class Domain_User_Entity_AuthStory {
 	 */
 	public function assertNotExpired():self {
 
-		if ($this->auth->expires_at < time()) {
+		if ($this->_auth->expires_at < time()) {
 			throw new cs_AuthIsExpired();
 		}
 
@@ -157,19 +225,29 @@ class Domain_User_Entity_AuthStory {
 	}
 
 	/**
-	 * проверяем, что телефоны совпадают
+	 * получить данные об аутентификации для пользователя
 	 *
-	 * @return $this
-	 *
-	 * @throws cs_PhoneNumberIsNotEqual
 	 */
-	public function assertPhoneNumber(string $phone_number):self {
+	public function getAuthInfo():Struct_User_Auth_Info {
 
-		if ($this->auth_phone->phone_number !== $phone_number) {
-			throw new cs_PhoneNumberIsNotEqual();
-		}
+		return new Struct_User_Auth_Info(
+			$this->getAuthMap(),
+			$this->_auth,
+			$this->_auth_method_entity
+		);
+	}
 
-		return $this;
+	public function getAuthMap():string {
+
+		return $this->_auth_method_entity->getAuthMap();
+	}
+
+	/**
+	 * получаем время, когда протухнет попытка
+	 */
+	public function getExpiresAt():string {
+
+		return $this->_auth->expires_at;
 	}
 
 	/**
@@ -181,7 +259,7 @@ class Domain_User_Entity_AuthStory {
 	 */
 	public function assertNotFinishedYet():self {
 
-		if ($this->auth->is_success) {
+		if ($this->_auth->is_success) {
 			throw new cs_AuthAlreadyFinished();
 		}
 
@@ -189,110 +267,44 @@ class Domain_User_Entity_AuthStory {
 	}
 
 	/**
-	 * проверяем, что лимит ошибок не превышен
+	 * проверяем, что переданный тип совпадает типу аутентификации
 	 *
 	 * @return $this
-	 *
-	 * @throws cs_PhoneNumberIsBlocked
+	 * @throws Domain_User_Exception_AuthStory_TypeMismatch
 	 */
-	public function assertErrorCountLimitNotExceeded(int $error_count_limit = self::ERROR_COUNT_LIMIT):self {
+	public function assertType(array $expected_type_list):self {
 
-		if ($this->auth_phone->error_count >= $error_count_limit) {
-			throw new cs_PhoneNumberIsBlocked($this->auth->expires_at);
+		if (!in_array($this->_auth->type, $expected_type_list)) {
+			throw new Domain_User_Exception_AuthStory_TypeMismatch();
 		}
 
 		return $this;
-	}
-
-	/**
-	 * проверяем, что код совпадает
-	 *
-	 * @return $this
-	 *
-	 * @throws cs_IncorrectSaltVersion
-	 * @throws cs_InvalidHashStruct
-	 * @throws cs_WrongSmsCode
-	 */
-	public function assertEqualCode(string $code, int $error_count_limit = self::ERROR_COUNT_LIMIT):self {
-
-		if (!Type_Hash_Code::compareHash($this->auth_phone->sms_code_hash, $code)) {
-
-			throw new cs_WrongSmsCode(
-				$this->getAvailableAttempts($error_count_limit) - 1,
-				$this->auth->expires_at
-			);
-		}
-
-		return $this;
-	}
-
-	/**
-	 * проверяем, что число переотправок не превышено
-	 *
-	 * @return $this
-	 *
-	 * @throws cs_ResendSmsCountLimitExceeded
-	 */
-	public function assertResendCountLimitNotExceeded(int $resend_count_limit = self::RESEND_COUNT_LIMIT):self {
-
-		if ($this->auth_phone->resend_count >= $resend_count_limit) {
-			throw new cs_ResendSmsCountLimitExceeded();
-		}
-
-		return $this;
-	}
-
-	/**
-	 * проверяем, что переотправка доступна
-	 *
-	 * @return $this
-	 *
-	 * @throws cs_ResendWillBeAvailableLater
-	 */
-	public function assertResendIsAvailable():self {
-
-		if ($this->auth_phone->next_resend_at > time()) {
-			throw new cs_ResendWillBeAvailableLater($this->auth_phone->next_resend_at);
-		}
-
-		return $this;
-	}
-
-	/**
-	 * получить данные об аутентификации для пользователя
-	 *
-	 */
-	public function getAuthInfo(int $error_count_limit = self::ERROR_COUNT_LIMIT, int $resend_count_limit = self::RESEND_COUNT_LIMIT):Struct_User_Auth_Info {
-
-		$available_attempts = $this->getAvailableAttempts($error_count_limit);
-		$next_resend        = $this->getNextResend($resend_count_limit);
-
-		return new Struct_User_Auth_Info(
-			$this->auth_phone->auth_map,
-			$next_resend,
-			$available_attempts,
-			$this->auth->expires_at,
-			(new \BaseFrame\System\PhoneNumber($this->auth_phone->phone_number))->obfuscate(),
-			$this->auth->type
-		);
 	}
 
 	/**
 	 * получаем user_id пользователя, который логинится
-	 *
 	 */
 	public function getUserId():int {
 
-		return $this->auth->user_id;
+		return $this->_auth->user_id;
 	}
 
 	/**
-	 * получаем номер телефона пользователя, который логинится
-	 *
+	 * получаем type аутентификации
 	 */
-	public function getPhoneNumber():string {
+	public function getType():int {
 
-		return $this->auth_phone->phone_number;
+		return $this->_auth->type;
+	}
+
+	/**
+	 * завершена ли успешно аутентификация
+	 *
+	 * @return bool
+	 */
+	public function isSuccess():bool {
+
+		return (bool) $this->_auth->is_success;
 	}
 
 	/**
@@ -301,43 +313,67 @@ class Domain_User_Entity_AuthStory {
 	 */
 	public function isNeedToCreateUser():bool {
 
-		return $this->auth->type === self::AUTH_STORY_TYPE_REGISTER;
+		return in_array($this->_auth->type, [
+			self::AUTH_STORY_TYPE_REGISTER_BY_PHONE_NUMBER,
+			self::AUTH_STORY_TYPE_REGISTER_BY_MAIL,
+		]);
 	}
 
 	/**
-	 * получаем доступное кол-во попыток
+	 * Обновляем аутентификацию при ее успешном завершении
 	 *
+	 * @return $this
+	 * @throws \parseException
 	 */
-	public function getAvailableAttempts(int $error_count_limit = self::ERROR_COUNT_LIMIT):int {
+	public function handleSuccess(int $user_id, array $additional_update_auth_method_entity_field_list = []):self {
 
-		return $error_count_limit - $this->auth_phone->error_count;
+		$this->_auth->user_id    = $user_id;
+		$this->_auth->is_success = 1;
+		$this->_auth->updated_at = time();
+		Gateway_Db_PivotAuth_AuthList::set($this->getAuthInfo()->auth_map, [
+			"user_id"    => $this->_auth->user_id,
+			"is_success" => $this->_auth->is_success,
+			"updated_at" => $this->_auth->updated_at,
+		]);
+
+		$this->_auth_method_entity->handleSuccess($user_id, $additional_update_auth_method_entity_field_list);
+
+		return $this;
 	}
 
 	/**
-	 * получаем время, когда можно сделать следующую переотправку
+	 * это аутентификация по номеру телефона
 	 *
+	 * @return bool
 	 */
-	public function getNextResend(int $resend_count_limit = self::RESEND_COUNT_LIMIT):int {
+	public static function isPhoneNumberAuth(int $auth_type):bool {
 
-		if ($this->auth_phone->resend_count == $resend_count_limit) {
-			return 0;
-		}
-		return $this->auth_phone->next_resend_at;
+		return in_array($auth_type, [
+			self::AUTH_STORY_TYPE_REGISTER_BY_PHONE_NUMBER,
+			self::AUTH_STORY_TYPE_LOGIN_BY_PHONE_NUMBER,
+		]);
 	}
 
 	/**
-	 * получаем sms_id
+	 * это аутентификация по почте
+	 *
+	 * @return bool
 	 */
-	public function getSmsId():string {
+	public static function isMailAuth(int $auth_type):bool {
 
-		return $this->auth_phone->sms_id;
+		return in_array($auth_type, [
+			self::AUTH_STORY_TYPE_REGISTER_BY_MAIL,
+			self::AUTH_STORY_TYPE_LOGIN_BY_MAIL,
+		]);
 	}
 
 	/**
-	 * получаем время, когда протухнет попытка
+	 * это сброс пароля по почте
+	 *
+	 * @return bool
 	 */
-	public function getExpiresAt():string {
+	public static function isMailResetPassword(int $auth_type):bool {
 
-		return $this->auth->expires_at;
+		return $auth_type === self::AUTH_STORY_TYPE_RESET_PASSWORD_BY_MAIL;
 	}
 }

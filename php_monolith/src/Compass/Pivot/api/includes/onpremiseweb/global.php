@@ -16,12 +16,13 @@ class Onpremiseweb_Global extends \BaseFrame\Controller\Api {
 	 */
 	public function start():array {
 
-		[$is_authorized, $need_fill_profile] = Domain_User_Scenario_OnPremiseWeb::start($this->user_id);
+		[$is_authorized, $need_fill_profile, $available_auth_method_list] = Domain_User_Scenario_OnPremiseWeb::start($this->user_id);
 
 		return $this->ok([
-			"is_authorized"      => (int) $is_authorized,
-			"need_fill_profile"  => (int) $need_fill_profile,
-			"captcha_public_key" => (string) Type_Captcha_Main::init()->getPublicCaptchaKey(Type_Api_Platform::PLATFORM_OTHER),
+			"is_authorized"              => (int) $is_authorized,
+			"need_fill_profile"          => (int) $need_fill_profile,
+			"captcha_public_key"         => (string) Type_Captcha_Main::init()->getPublicCaptchaKey(Type_Api_Platform::PLATFORM_OTHER),
+			"available_auth_method_list" => (array) $available_auth_method_list,
 		]);
 	}
 }

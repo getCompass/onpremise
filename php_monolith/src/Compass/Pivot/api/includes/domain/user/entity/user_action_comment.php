@@ -42,10 +42,13 @@ class Domain_User_Entity_UserActionComment {
 	 *
 	 * @throws \queryException
 	 */
-	public static function addUserLoginAction(int $user_id, string $phone_number, string $device_id, string $user_agent):void {
+	public static function addUserLoginAction(int $user_id, int $auth_type, string $auth_parameteer, string $device_id, string $user_agent):void {
+
+		$phone_number = Domain_User_Entity_AuthStory::isPhoneNumberAuth($auth_type) ? $auth_parameteer : "";
+		$mail         = Domain_User_Entity_AuthStory::isMailAuth($auth_type) ? $auth_parameteer : "";
 
 		$extra = self::initExtra();
-		self::setData($extra, ["phone_number" => $phone_number, "device_id" => $device_id, "user_agent" => $user_agent]);
+		self::setData($extra, ["phone_number" => $phone_number, "mail" => $mail, "device_id" => $device_id, "user_agent" => $user_agent]);
 
 		self::addAction($user_id, self::USER_LOGIN, $extra);
 	}

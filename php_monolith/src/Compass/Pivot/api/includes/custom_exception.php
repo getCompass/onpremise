@@ -108,9 +108,9 @@ class cs_RowNotUpdated extends \Exception {
 }
 
 /**
- * неверный код из смс
+ * неверный секрет
  */
-class cs_WrongSmsCode extends \Exception {
+class cs_WrongCode extends \Exception {
 
 	private int $available_attempts;
 	private int $next_attempt;
@@ -239,7 +239,7 @@ class cs_ErrorCountLimitExceeded extends \Exception {
 /**
  * превышен лимит переотправок смс
  */
-class cs_ResendSmsCountLimitExceeded extends \Exception {
+class cs_ResendCodeCountLimitExceeded extends \Exception {
 
 }
 
@@ -708,9 +708,9 @@ class cs_FaqNotFound extends \Exception {
 }
 
 /**
- * Class cs_PhoneNumberIsBlocked
+ * попытка аутентификации заблокирована
  */
-class cs_PhoneNumberIsBlocked extends BlockException {
+class cs_AuthIsBlocked extends BlockException {
 
 	/** @var int время для следующей попытки */
 	private int $next_attempt;

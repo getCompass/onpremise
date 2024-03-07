@@ -33,6 +33,7 @@ const NeedFinishSpaceLeavingBeforeJoinDesktop = () => {
 					color="white"
 					fs="14"
 					lh="20"
+					font="regular"
 				>{langStringNotFinishedSpaceLeavingDesc}</Text>
 			</VStack>
 		</Center>
@@ -72,6 +73,7 @@ const NeedFinishSpaceLeavingBeforeJoinMobile = () => {
 						color="white"
 						fs="16"
 						lh="22"
+						font="regular"
 					>{langStringNotFinishedSpaceLeavingDesc}</Text>
 				</VStack>
 			</Center>

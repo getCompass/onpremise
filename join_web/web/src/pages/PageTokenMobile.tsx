@@ -170,17 +170,17 @@ const AppStoreIcon = () => {
 
 type StepTwoContentProps = {
 	childBlockWidth: number;
+	isStoreMenuOpen: boolean;
+	setStoreMenuOpen: (value: boolean) => void;
 };
 
-const StepTwoContent = ({ childBlockWidth }: StepTwoContentProps) => {
+const StepTwoContent = ({ childBlockWidth, isStoreMenuOpen, setStoreMenuOpen }: StepTwoContentProps) => {
 	const langStringPageTokenStep2DescPt1Mobile = useLangString("page_token.step_2.desc_pt1_mobile");
 	const langStringPageTokenStep2DescPt2Mobile = useLangString("page_token.step_2.desc_pt2_mobile");
 	const langStringPageTokenStep2ButtonMobile = useLangString("page_token.step_2.button_mobile");
 	const langStringPageTokenMobileStoresAppstore = useLangString("page_token.mobile_stores.appstore");
 	const langStringPageTokenMobileStoresGooglePlay = useLangString("page_token.mobile_stores.google_play");
 	const langStringPageTokenMobileStoresAppGallery = useLangString("page_token.mobile_stores.app_gallery");
-
-	const [isStoreMenuOpen, setStoreMenuOpen] = useState(false);
 
 	const onClickHandler = useCallback(() => {
 		setStoreMenuOpen(true);
@@ -221,6 +221,8 @@ const StepTwoContent = ({ childBlockWidth }: StepTwoContentProps) => {
 			default:
 				break;
 		}
+
+		setTimeout(() => setStoreMenuOpen(false), 500);
 	}, []);
 
 	return (
@@ -251,10 +253,6 @@ const StepTwoContent = ({ childBlockWidth }: StepTwoContentProps) => {
 			<Menu
 				isOpen={isStoreMenuOpen}
 				onSelect={({ value }) => onSelectHandler(value)}
-				onClose={() => setStoreMenuOpen(false)}
-				onFocusOutside={() => setStoreMenuOpen(false)}
-				onInteractOutside={() => setStoreMenuOpen(false)}
-				onPointerDownOutside={() => setStoreMenuOpen(false)}
 				positioning={{ placement: "top", offset: { mainAxis: 10 } }}
 			>
 				<VStack w="100%" gap="0px">
@@ -264,7 +262,14 @@ const StepTwoContent = ({ childBlockWidth }: StepTwoContentProps) => {
 							opacity: "0%",
 						}}
 					/>
-					<Button size="full" color="05c46b" onClick={() => onClickHandler()}>
+					<Button
+						size="full"
+						color="05c46b"
+						onClick={(event) => {
+							event.stopPropagation();
+							onClickHandler();
+						}}
+					>
 						{langStringPageTokenStep2ButtonMobile}
 					</Button>
 				</VStack>
@@ -273,6 +278,7 @@ const StepTwoContent = ({ childBlockWidth }: StepTwoContentProps) => {
 						style={{
 							// @ts-ignore
 							"--positioner-width": `${childBlockWidth}px`,
+							zIndex: "999999",
 						}}
 					>
 						<MenuContent>
@@ -313,9 +319,10 @@ const StepTwoContent = ({ childBlockWidth }: StepTwoContentProps) => {
 type StepOneContentProps = {
 	scrollableParentBlockRef: any;
 	parentBlockRef: any;
+	setStoreMenuOpen: (value: boolean) => void;
 };
 
-const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef }: StepOneContentProps) => {
+const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenuOpen }: StepOneContentProps) => {
 	const langStringPageTokenStep1RegisterDescPt1 = useLangString("page_token.step_1.register_desc_pt1");
 	const langStringPageTokenStep1RegisterDescPt2 = useLangString("page_token.step_1.register_desc_pt2");
 	const langStringPageTokenStep1RegisterButton = useLangString("page_token.step_1.register_button");
@@ -410,7 +417,7 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef }: StepOneCon
 			<Button
 				ref={copyButtonRef}
 				size="full"
-				onClick={() => {
+				onClick={(event) => {
 					if (isRegistration) {
 						if (!apiAuthGenerateToken.data || !parentBlockRef.current) {
 							return;
@@ -423,7 +430,9 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef }: StepOneCon
 						);
 						return;
 					} else {
+						event.stopPropagation();
 						window.location.replace(`getcompassonpremise://`);
+						setStoreMenuOpen(true);
 					}
 				}}
 			>
@@ -455,6 +464,7 @@ const PageTokenMobile = () => {
 	const setNameInput = useSetAtom(nameInputState);
 	const setAuth = useSetAtom(authState);
 	const [isPasswordChanged, setIsPasswordChanged] = useAtom(isPasswordChangedState);
+	const [isStoreMenuOpen, setStoreMenuOpen] = useState(false);
 
 	const isJoinLink = useIsJoinLink();
 	const joinLink = useAtomValue(joinLinkState);
@@ -520,6 +530,7 @@ const PageTokenMobile = () => {
 				h="100%"
 				className="invisible-scrollbar"
 				position="relative"
+				onClick={() => setStoreMenuOpen(false)}
 			>
 				<HStack w="100%" justify="end">
 					<LogoutButtonMobile />
@@ -543,10 +554,15 @@ const PageTokenMobile = () => {
 							<StepOneContent
 								scrollableParentBlockRef={scrollableParentBlockRef}
 								parentBlockRef={parentBlockRef}
+								setStoreMenuOpen={setStoreMenuOpen}
 							/>
 						</Box>
 						<Box w="100%" bgColor="434455" p="16px" rounded="12px">
-							<StepTwoContent childBlockWidth={childBlockWidth} />
+							<StepTwoContent
+								childBlockWidth={childBlockWidth}
+								isStoreMenuOpen={isStoreMenuOpen}
+								setStoreMenuOpen={setStoreMenuOpen}
+							/>
 						</Box>
 					</VStack>
 				</VStack>

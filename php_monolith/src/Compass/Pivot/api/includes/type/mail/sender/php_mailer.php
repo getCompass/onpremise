@@ -13,8 +13,9 @@ use PHPMailer\PHPMailer\SMTP;
  */
 class Type_Mail_Sender_PhpMailer extends Type_Mail_Sender_AbstractProvider {
 
-	public const ENCRYPTION_TLS = "tls";
-	public const ENCRYPTION_SSL = "ssl";
+	public const ENCRYPTION_NONE = "";
+	public const ENCRYPTION_TLS  = "tls";
+	public const ENCRYPTION_SSL  = "ssl";
 
 	/** @var int уровень дебага */
 	protected int $_debug_level = SMTP::DEBUG_OFF;
@@ -30,20 +31,33 @@ class Type_Mail_Sender_PhpMailer extends Type_Mail_Sender_AbstractProvider {
 	 */
 	public function __construct(string $host, int $port, string $encryption, string $username, string $password, string $from_address, string $from_name) {
 
-		if (!in_array($encryption, [self::ENCRYPTION_TLS, self::ENCRYPTION_SSL])) {
+		if (!in_array($encryption, [self::ENCRYPTION_NONE, self::ENCRYPTION_TLS, self::ENCRYPTION_SSL])) {
 			throw new ParseFatalException("passed incorrect encryption [$encryption] parameter");
 		}
 
 		$mailer            = new PHPMailer(true);
 		$mailer->SMTPDebug = $this->_debug_level;
 		$mailer->isSMTP();
-		$mailer->CharSet    = self::_CHARSET;
-		$mailer->Host       = $host;
-		$mailer->SMTPAuth   = true;
-		$mailer->Username   = $username;
-		$mailer->Password   = $password;
-		$mailer->SMTPSecure = $encryption;
-		$mailer->Port       = $port;
+		$mailer->CharSet = self::_CHARSET;
+		$mailer->Host    = $host;
+
+		// значение по умолчанию
+		$mailer->SMTPAuth = false;
+
+		// если передали данные для аутентификации
+		if (mb_strlen($username) > 0 || mb_strlen($password) > 0) {
+
+			$mailer->SMTPAuth = true;
+			$mailer->Username = $username;
+			$mailer->Password = $password;
+		}
+
+		// если передан тип шифрования
+		if ($encryption !== self::ENCRYPTION_NONE) {
+			$mailer->SMTPSecure = $encryption;
+		}
+
+		$mailer->Port = $port;
 		$mailer->setFrom($from_address, $from_name);
 		$mailer->isHTML(true);
 

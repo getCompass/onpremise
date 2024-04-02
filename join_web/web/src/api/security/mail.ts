@@ -25,7 +25,7 @@ export type ApiSecurityMailTryResetPassword = {
 };
 
 export function useApiSecurityMailTryResetPassword() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useMutation({
 		retry: false,
@@ -60,7 +60,7 @@ export type ApiSecurityMailConfirmResetPasswordArgs = {
 export type ApiSecurityMailConfirmResetPassword = {};
 
 export function useApiSecurityMailConfirmResetPassword() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 	const { navigateToDialog } = useNavigateDialog();
 
 	return useMutation({
@@ -99,7 +99,7 @@ export type ApiSecurityMailFinishResetPassword = {
 };
 
 export function useApiSecurityMailFinishResetPassword() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 	const isJoinLink = useIsJoinLink();
 	const setAuth = useSetAtom(authState);
 	const setFirstAuth = useSetAtom(firstAuthState);
@@ -158,7 +158,7 @@ export type ApiSecurityMailResendResetPasswordCode = {
 };
 
 export function useApiSecurityMailResendResetPasswordCode() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useMutation({
 		retry: false,

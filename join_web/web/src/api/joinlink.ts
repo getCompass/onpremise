@@ -7,7 +7,7 @@ export type ApiJoinLinkPrepare = {
 };
 
 export function useApiJoinLinkPrepare(raw_join_link: string) {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useQuery({
 		retry: false,
@@ -33,7 +33,7 @@ type ApiJoinLinkAcceptArgs = {
 };
 
 export function useApiJoinLinkAccept() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useMutation({
 		retry: false,

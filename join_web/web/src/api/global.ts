@@ -1,14 +1,16 @@
 import {useQuery} from "@tanstack/react-query";
 import {ofetch} from "ofetch";
-import {APIResponse} from "./_types.ts";
+import {APIResponse, ApiGlobalStartDictionaryData, ApiUserInfoData} from "./_types.ts";
 import {useSetAtom} from "jotai";
-import {availableAuthMethodListState, captchaPublicKeyState, profileState} from "./_stores.ts";
+import {availableAuthMethodListState, captchaPublicKeyState, profileState, dictionaryDataState, userInfoDataState} from "./_stores.ts";
 
 type ApiGlobalDoStart = {
 	is_authorized: number,
 	need_fill_profile: number,
 	captcha_public_key: string,
 	available_auth_method_list: string[],
+	dictionary: ApiGlobalStartDictionaryData
+	user_info: ApiUserInfoData|null
 }
 
 export function useApiGlobalDoStart() {
@@ -16,6 +18,8 @@ export function useApiGlobalDoStart() {
 	const setProfile = useSetAtom(profileState);
 	const setCaptchaPublicKey = useSetAtom(captchaPublicKeyState);
 	const setAvailableAuthMethodList = useSetAtom(availableAuthMethodListState);
+	const setStartDictionaryDataState = useSetAtom(dictionaryDataState);
+	const setUserInfoDataState = useSetAtom(userInfoDataState);
 
 	return useQuery({
 
@@ -32,6 +36,10 @@ export function useApiGlobalDoStart() {
 			});
 
 			setAvailableAuthMethodList(result.response.available_auth_method_list);
+
+			setStartDictionaryDataState(result.response.dictionary)
+
+			setUserInfoDataState(result.response.user_info)
 
 			setProfile({
 				is_authorized: result.response.is_authorized === 1,

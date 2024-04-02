@@ -1,9 +1,12 @@
-import { PropsWithChildren, useEffect, useMemo } from "react";
+import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
+	activeDialogIdState,
 	authInputState,
+	authSsoState,
 	authState,
 	isLoadedState,
+	isNeedShowCreateProfileDialogAfterSsoRegistrationState,
 	joinLinkState,
 	loadingState,
 	prepareJoinLinkErrorState,
@@ -13,7 +16,7 @@ import { useApiGlobalDoStart } from "../api/global.ts";
 import { useNavigateDialog, useNavigatePage } from "../components/hooks.ts";
 import useIsJoinLink from "../lib/useIsJoinLink.ts";
 import { useApiJoinLinkPrepare } from "../api/joinlink.ts";
-import { ApiError } from "../api/_index.ts";
+import { ApiError, NetworkError, ServerError } from "../api/_index.ts";
 import {
 	ALREADY_MEMBER_ERROR_CODE,
 	APIAuthInfoDataTypeRegisterLoginByPhoneNumber,
@@ -31,6 +34,10 @@ import {
 } from "../api/_types.ts";
 import dayjs from "dayjs";
 import { useAtom } from "jotai/index";
+import { useApiFederationSsoAuthGetStatus, useApiPivotAuthSsoBegin } from "../api/auth/sso.ts";
+import { useShowToast } from "../lib/Toast.tsx";
+import { useLangString } from "../lib/getLangString.ts";
+import { plural } from "../lib/plural.ts";
 
 export default function GlobalStartProvider({ children }: PropsWithChildren) {
 	const apiGlobalDoStart = useApiGlobalDoStart();
@@ -42,12 +49,32 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 	const [isLoaded, setIsLoaded] = useAtom(isLoadedState);
 	const authInput = useAtomValue(authInputState);
 	const auth = useAtomValue(authState);
-	const setPrepareJoinLinkError = useSetAtom(prepareJoinLinkErrorState);
+	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
 	const { is_authorized, need_fill_profile } = useAtomValue(profileState);
+	const isNeedShowCreateProfileDialogAfterSsoRegistration = useAtomValue(
+		isNeedShowCreateProfileDialogAfterSsoRegistrationState
+	);
+	const authSso = useAtomValue(authSsoState);
+	const setAuthSso = useSetAtom(authSsoState);
+	const apiFederationSsoAuthGetStatus = useApiFederationSsoAuthGetStatus();
+	const apiPivotAuthSsoBegin = useApiPivotAuthSsoBegin();
 
 	const isJoinLink = useIsJoinLink();
 	const rawJoinLink = useMemo(() => (isJoinLink ? window.location.href : ""), [window.location.href]);
 	const apiJoinLinkPrepare = useApiJoinLinkPrepare(rawJoinLink);
+	const [toastText, setToastText] = useState("");
+	const [toastStatus, setToastStatus] = useState("");
+
+	const activeDialogId = useAtomValue(activeDialogIdState);
+	const showToast = useShowToast(activeDialogId);
+	const langStringErrorsServerError = useLangString("errors.server_error");
+	const langStringErrorsSsoError = useLangString("errors.sso_error");
+	const langStringErrorsAuthSsoMethodDisabled = useLangString("errors.auth_method_disabled");
+	const langStringErrorsSsoLimitError = useLangString("errors.sso_limit_error");
+	const langStringErrorsSsoRegistrationWithoutInvite = useLangString("errors.sso_registration_without_invite");
+	const langStringOneMinute = useLangString("one_minute");
+	const langStringTwoMinutes = useLangString("two_minutes");
+	const langStringFiveMinutes = useLangString("five_minutes");
 
 	const authInputValue = useMemo(() => {
 		const [authValue, expiresAt] = authInput.split("__|__") || ["", 0];
@@ -58,6 +85,182 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 
 		return authValue;
 	}, [authInput]);
+
+	/**
+	 * Продолжаем попытку аутентификации через SSO, если она имеется
+	 */
+	async function continueAuthSsoAttemptIfExists() {
+		// проверяем наличие активной sso аутентификации
+		if (authSso === undefined || authSso === null || authSso.state == "none") {
+			return;
+		}
+
+		if (apiFederationSsoAuthGetStatus.isLoading || apiPivotAuthSsoBegin.isLoading) {
+			return;
+		}
+
+		try {
+			const responseGetStatus = await apiFederationSsoAuthGetStatus.mutateAsync({
+				sso_auth_token: authSso.data.sso_auth_token,
+				signature: authSso.data.signature,
+			});
+
+			// если статус, что попытка в процессе, то ничего не делаем
+			if (responseGetStatus.status === "wait") {
+				return;
+			}
+
+			// если статус, что попытка протухла или уже завершена, то почистим кэш и дальше ничего не продолжаем
+			if (responseGetStatus.status === "expired" || responseGetStatus.status === "completed") {
+				setAuthSso(null);
+				return;
+			}
+		} catch (error) {
+			// сафари дурак и при переходе по ссылке не дожидаясь выполнения getStatus стопает его, чтобы не уничтожать инфу о попытке - выходим здесь
+			if (error instanceof NetworkError) {
+				return;
+			}
+
+			// уничтожаем информацию о попытке
+			setAuthSso(null);
+
+			if (error instanceof ServerError) {
+				setToastText(langStringErrorsSsoError);
+				setToastStatus("warning");
+				return;
+			}
+
+			if (error instanceof ApiError) {
+				if (error.error_code === 1708118) {
+					setToastText(langStringErrorsAuthSsoMethodDisabled);
+					setToastStatus("warning");
+					return;
+				}
+				if (error.error_code === 1000) {
+					setToastText(langStringErrorsSsoRegistrationWithoutInvite);
+					setToastStatus("warning");
+					return;
+				}
+
+				if (error.error_code === LIMIT_ERROR_CODE) {
+					setToastText(
+						langStringErrorsSsoLimitError.replace(
+							"$MINUTES",
+							`${Math.ceil((error.expires_at - dayjs().unix()) / 60)}${plural(
+								Math.ceil((error.expires_at - dayjs().unix()) / 60),
+								langStringOneMinute,
+								langStringTwoMinutes,
+								langStringFiveMinutes
+							)}`
+						)
+					);
+					setToastStatus("warning");
+					return;
+				}
+			}
+		}
+
+		try {
+			await apiPivotAuthSsoBegin.mutateAsync({
+				sso_auth_token: authSso.data.sso_auth_token,
+				signature: authSso.data.signature,
+				join_link:
+					prepareJoinLinkError === null || prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
+						? window.location.href
+						: undefined,
+			});
+		} catch (error) {
+			// сафари дурак и при переходе по ссылке не дожидаясь выполнения getStatus стопает его, чтобы не уничтожать инфу о попытке - выходим здесь
+			if (error instanceof NetworkError) {
+				return;
+			}
+
+			// уничтожаем информацию о попытке
+			setAuthSso(null);
+
+			if (error instanceof ServerError) {
+				setToastText(langStringErrorsServerError);
+				setToastStatus("warning");
+				return;
+			}
+
+			if (error instanceof ApiError) {
+				if (error.error_code === 1708118) {
+					setToastText(langStringErrorsAuthSsoMethodDisabled);
+					setToastStatus("warning");
+					return;
+				}
+				if (error.error_code === 1000) {
+					setToastText(langStringErrorsSsoRegistrationWithoutInvite);
+					setToastStatus("warning");
+					return;
+				}
+
+				if (error.error_code === LIMIT_ERROR_CODE) {
+					setToastText(
+						langStringErrorsSsoLimitError.replace(
+							"$MINUTES",
+							`${Math.ceil((error.expires_at - dayjs().unix()) / 60)}${plural(
+								Math.ceil((error.expires_at - dayjs().unix()) / 60),
+								langStringOneMinute,
+								langStringTwoMinutes,
+								langStringFiveMinutes
+							)}`
+						)
+					);
+					setToastStatus("warning");
+					return;
+				}
+			}
+		}
+	}
+
+	useEffect(() => {
+		if (isLoaded) {
+			return;
+		}
+
+		const isLoading =
+			apiGlobalDoStart.isFetching ||
+			!apiGlobalDoStart.data ||
+			is_authorized === null ||
+			(isJoinLink && apiJoinLinkPrepare.isLoading) ||
+			(authSso !== undefined &&
+				authSso !== null &&
+				authSso.state !== "none" &&
+				(apiFederationSsoAuthGetStatus.isLoading || apiPivotAuthSsoBegin.isLoading));
+		if (!isLoading) {
+			setTimeout(() => {
+				setLoading(isLoading);
+				setIsLoaded(true);
+			}, 500); // всегда минимум 500ms показываем экран загрузки, даже если быстро загрузились
+		} else {
+			setLoading(isLoading);
+		}
+	}, [
+		apiGlobalDoStart.isLoading,
+		apiGlobalDoStart.data,
+		apiJoinLinkPrepare.isLoading,
+		is_authorized,
+		authSso,
+		apiFederationSsoAuthGetStatus.isLoading,
+		apiPivotAuthSsoBegin.isLoading,
+		isLoaded,
+	]);
+
+	useEffect(() => {
+		if (toastText === "" || toastStatus === "" || activeDialogId === "") {
+			return;
+		}
+
+		showToast(toastText, toastStatus);
+		setToastText("");
+		setToastStatus("");
+	}, [toastText, toastStatus, activeDialogId]);
+
+	useEffect(() => {
+		continueAuthSsoAttemptIfExists();
+	}, [authSso]);
 
 	useEffect(() => {
 		if (isJoinLink) {
@@ -101,26 +304,14 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 			}
 		}
 
-		const isLoading =
-			!apiGlobalDoStart.data || is_authorized === null || (isJoinLink && apiJoinLinkPrepare.isLoading);
-		if (!isLoading) {
-			setTimeout(() => {
-				setLoading(isLoading);
-				setIsLoaded(true);
-			}, 500); // всегда минимум 500ms показываем экран загрузки, даже если быстро загрузились
-		} else {
-			setLoading(isLoading);
-		}
-
 		if (is_authorized) {
-			if (need_fill_profile) {
+			if (need_fill_profile || isNeedShowCreateProfileDialogAfterSsoRegistration) {
 				navigateToPage("auth");
 				navigateToDialog("auth_create_profile");
 			} else {
 				navigateToPage("token");
 			}
 		} else {
-
 			if (
 				auth !== null &&
 				(auth.type === APIAuthTypeRegisterByPhoneNumber || auth.type === APIAuthTypeLoginByPhoneNumber) &&
@@ -198,7 +389,15 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 				}
 			}
 		}
-	}, [apiGlobalDoStart, apiJoinLinkPrepare, is_authorized, isLoaded]);
+	}, [
+		apiGlobalDoStart.data,
+		apiJoinLinkPrepare.isLoading,
+		apiJoinLinkPrepare.error,
+		apiJoinLinkPrepare.data,
+		is_authorized,
+		isLoaded,
+		isNeedShowCreateProfileDialogAfterSsoRegistration,
+	]);
 
 	return <>{children}</>;
 }

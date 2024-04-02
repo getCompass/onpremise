@@ -54,13 +54,15 @@ export class LimitError extends Error {
 	}
 }
 
-export function useGetResponse() {
+export type GET_RESPONSE_MODULE = "pivot" | "federation";
+
+export function useGetResponse(module: GET_RESPONSE_MODULE) {
 
 	return async <T>(method: string, body: URLSearchParams, headerList: Record<string, string> = {}) => {
 
 		try {
 
-			const result = await ofetch<APIResponse<T>>(`/pivot/api/onpremiseweb/${method}/`, {
+			const result = await ofetch<APIResponse<T>>(`/${module}/api/onpremiseweb/${method}/`, {
 				method: "POST",
 				body,
 				headers: {

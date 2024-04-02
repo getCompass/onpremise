@@ -19,7 +19,7 @@ export type ApiAuthPhoneNumberBegin = {
 
 export function useApiAuthPhoneNumberBegin() {
 
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useMutation({
 
@@ -60,7 +60,7 @@ export type ApiAuthPhoneNumberConfirm = {
 
 export function useApiAuthPhoneNumberConfirm() {
 
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 	const isJoinLink = useIsJoinLink();
 	const setAuth = useSetAtom(authState)
 	const setFirstAuth = useSetAtom(firstAuthState);
@@ -114,7 +114,7 @@ type ApiAuthPhoneNumberRetryArgs = {
 
 export function useApiAuthPhoneNumberRetry() {
 
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useMutation({
 

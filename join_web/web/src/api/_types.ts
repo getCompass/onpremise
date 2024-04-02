@@ -28,6 +28,17 @@ export function getLangFullName(langCode: Lang): string {
 	return LANG_MAP[langCode] || "";
 }
 
+// словарь с текстами, возвращаемый в api-методе /global/start/
+export type ApiGlobalStartDictionaryData = {
+	auth_sso_start_button_text: string,
+}
+
+// информация о пользователе, возвращаемая в различных api-методах
+export type ApiUserInfoData = {
+	user_id: number,
+	full_name: string,
+}
+
 export const isValidEmail = (email: string): boolean => {
 	// регулярное выражение для проверки электронной почты
 	// это выражение проверяет, что email начинается с английских букв, цифр, точек, подчеркиваний или дефисов
@@ -126,3 +137,12 @@ export type APIResponse<T> = {
 	response: T;
 	status: "ok" | "error";
 };
+
+export type AuthSsoInfo = {
+	state: "none" | "in_progress",
+	data: {
+		link: string,
+		sso_auth_token: string,
+		signature: string,
+	}
+}

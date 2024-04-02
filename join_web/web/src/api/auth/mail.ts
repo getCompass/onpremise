@@ -19,7 +19,7 @@ export type ApiAuthMailBegin = {
 };
 
 export function useApiAuthMailBegin() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useMutation({
 		retry: false,
@@ -57,7 +57,7 @@ export type ApiAuthMailConfirmShortAuthPassword = {
 };
 
 export function useApiAuthMailConfirmShortAuthPassword() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 	const isJoinLink = useIsJoinLink();
 	const setAuth = useSetAtom(authState);
 	const setFirstAuth = useSetAtom(firstAuthState);
@@ -125,7 +125,7 @@ export type ApiAuthMailConfirmFullAuthPassword = {
 };
 
 export function useApiAuthMailConfirmFullAuthPassword() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 	const setAuth = useSetAtom(authState);
 	const { navigateToDialog } = useNavigateDialog();
 
@@ -167,7 +167,7 @@ export type ApiAuthMailConfirmFullAuthCode = {
 };
 
 export function useApiAuthMailConfirmFullAuthCode() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 	const isJoinLink = useIsJoinLink();
 	const setAuth = useSetAtom(authState);
 	const setFirstAuth = useSetAtom(firstAuthState);
@@ -235,7 +235,7 @@ export type ApiAuthMailResendFullAuthCode = {
 };
 
 export function useApiAuthMailResendFullAuthCode() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useMutation({
 		retry: false,
@@ -257,7 +257,7 @@ type ApiAuthMailCancelArgs = {
 export type ApiAuthMailCancel = {};
 
 export function useApiAuthMailCancel() {
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 	const setAuth = useSetAtom(authState);
 	const setPasswordInput = useSetAtom(passwordInputState);
 	const setConfirmPassword = useSetAtom(confirmPasswordState);

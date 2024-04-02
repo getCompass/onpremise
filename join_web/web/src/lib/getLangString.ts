@@ -21,6 +21,7 @@ const LANG_CONFIG: LangConfig = {
 			desc_email: "Для авторизации введите email:",
 			desc_phone_number: "Для авторизации введите номер телефона:",
 			desc_email_phone_number: "Для авторизации введите email или номер телефона:",
+			desc_sso: "Для авторизации нажмите\nкнопку ниже:",
 			input_placeholder_email: "Email",
 			input_placeholder_phone_number: "Телефон",
 			input_placeholder_email_phone_number: "Email или телефон",
@@ -210,10 +211,12 @@ const LANG_CONFIG: LangConfig = {
 		errors: {
 			network_error: "Нет подключения к интернету",
 			server_error: "Ошибка соединения. Попробуйте ещё раз.",
+			sso_error: "Авторизация через SSO недоступна. Обратитесь к руководителю или системному администратору.",
 			incorrect_captcha: "Не удалось пройти капчу, попробуйте снова",
 			email_limit_error: "Достигнут лимит ввода email. Попробуйте через $MINUTES.",
 			phone_number_limit_error: "Достигнут лимит ввода номера. Попробуйте через $MINUTES.",
 			phone_number_email_limit_error: "Достигнут лимит ввода номера или email. Попробуйте через $MINUTES.",
+			sso_limit_error: "Достигнут лимит входа через SSO. Попробуйте через $MINUTES.",
 			phone_number_email_incorrect_phone_email_error: "Введён некорректный номер телефона или email",
 			phone_number_incorrect_phone_error: "Введён некорректный номер телефона",
 			email_incorrect_email_error: "Введён некорректный email",
@@ -227,6 +230,10 @@ const LANG_CONFIG: LangConfig = {
 			confirm_code_incorrect_code_two_attempts: " попытки",
 			confirm_code_incorrect_code_five_attempts: " попыток",
 			create_profile_incorrect_name_error: "Некорректное имя.",
+			auth_method_disabled:
+				"Авторизация через SSO недоступна. Обратитесь к руководителю или системному администратору.",
+			sso_registration_without_invite:
+				"Регистрация через SSO недоступна. Обратитесь к руководителю или системному администратору для получения ссылки-приглашения.",
 		},
 		one_hour: " час",
 		two_hours: " часа",

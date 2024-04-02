@@ -5,7 +5,7 @@ import useIsJoinLink from "../lib/useIsJoinLink.ts";
 
 export function useApiAuthLogout() {
 
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 	const queryClient = useQueryClient();
 	const isJoinLink = useIsJoinLink();
 	const {navigateToPage} = useNavigatePage();
@@ -39,7 +39,7 @@ export type ApiAuthGenerateToken = {
 
 export function useApiAuthGenerateToken(join_link_uniq?: string) {
 
-	const getResponse = useGetResponse();
+	const getResponse = useGetResponse("pivot");
 
 	return useQuery({
 

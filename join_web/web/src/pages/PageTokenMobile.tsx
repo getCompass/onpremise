@@ -514,6 +514,11 @@ const PageTokenMobile = () => {
 			return;
 		}
 
+		// если уже совершаем запрос
+		if (apiJoinLinkAccept.isLoading) {
+			return;
+		}
+
 		apiJoinLinkAccept.mutateAsync({ join_link_uniq: joinLink.join_link_uniq });
 	}, []);
 

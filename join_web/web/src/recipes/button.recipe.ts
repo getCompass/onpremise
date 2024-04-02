@@ -188,6 +188,22 @@ export const button = defineRecipe({
 					},
 				},
 			},
+			"d05dbd": {
+				bgColor: "#d05dbd",
+				color: "#ffffff",
+				_enabled: {
+					_active: {
+						bgColor: "#c73db1",
+						color: "#ffffff",
+					},
+					["@media (hover: hover) and (pointer: fine)"]: {
+						"&:hover": {
+							bgColor: "#c73db1",
+							color: "#ffffff",
+						}
+					},
+				},
+			},
 		},
 		size: {
 			px0py0: {px: "0px", py: "0px"},

@@ -3,7 +3,7 @@ FROM docker.getcompass.ru/service/php-8:8.1.25-6-devonpremise
 ARG BRANCH
 
 RUN apk update && apk add --no-cache curl-dev
-ARG COUNT=30
+ARG COUNT=54
 COPY --chown=www-data:www-data . /app
 
 COPY --from=packages /tmp/migrate /usr/local/bin/migrate

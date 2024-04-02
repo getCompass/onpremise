@@ -9,6 +9,7 @@ class Struct_Db_PivotPhone_PhoneUniq {
 
 	public string $phone_number_hash;
 	public int    $user_id;
+	public bool   $has_sso_account;
 	public int    $binding_count;
 	public int    $last_binding_at;
 	public int    $last_unbinding_at;
@@ -20,10 +21,11 @@ class Struct_Db_PivotPhone_PhoneUniq {
 	 * Struct_Db_PivotPhone_PhoneUniq constructor.
 	 *
 	 */
-	public function __construct(string $phone_number_hash, int $user_id, int $binding_count, int $last_binding_at, int $last_unbinding_at, int $created_at, int $updated_at, array $previous_user_list) {
+	public function __construct(string $phone_number_hash, int $user_id, bool $has_sso_account, int $binding_count, int $last_binding_at, int $last_unbinding_at, int $created_at, int $updated_at, array $previous_user_list) {
 
 		$this->phone_number_hash  = $phone_number_hash;
 		$this->user_id            = $user_id;
+		$this->has_sso_account    = $has_sso_account;
 		$this->binding_count      = $binding_count;
 		$this->last_binding_at    = $last_binding_at;
 		$this->last_unbinding_at  = $last_unbinding_at;

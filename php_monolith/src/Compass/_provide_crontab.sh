@@ -23,4 +23,6 @@ CRONTAB+=$(bash "${SCRIPT_PATH}/Company/provide_crontab.sh");
 CRONTAB+="\r\n"
 CRONTAB+=$(bash "${SCRIPT_PATH}/Speaker/provide_crontab.sh");
 CRONTAB+="\r\n"
+CRONTAB+=$(bash "${SCRIPT_PATH}/Federation/provide_crontab.sh");
+CRONTAB+="\r\n"
 echo "${CRONTAB}";

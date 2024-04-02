@@ -9,19 +9,24 @@ namespace Compass\Pivot;
 class Domain_User_Action_Auth_PhoneNumber {
 
 	/**
-	 * Получаем user_id по номеру
+	 * Получаем пользователя по номеру
 	 *
-	 * @return int
+	 * @return array
 	 */
-	public static function resolveUserID(string $phone_number):int {
+	public static function resolveUser(string $phone_number):array {
+
+		$user_id         = 0;
+		$has_sso_account = false;
 
 		try {
-			$user_id = Domain_User_Entity_Phone::getUserIdByPhone($phone_number);
+
+			$phone_uniq       = Domain_User_Entity_Phone::getUserPhone($phone_number);
+			$user_id         = $phone_uniq->user_id;
+			$has_sso_account = $phone_uniq->has_sso_account;
 		} catch (cs_PhoneNumberNotFound) {
-			$user_id = 0;
 		}
 
-		return $user_id;
+		return [$user_id, $has_sso_account];
 	}
 
 	/**

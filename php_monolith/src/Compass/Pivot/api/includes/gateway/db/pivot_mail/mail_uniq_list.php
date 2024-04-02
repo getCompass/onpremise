@@ -14,20 +14,37 @@ class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 	/**
 	 * Добавляет новую запись в базу
 	 */
+	public static function insertIgnore(Struct_Db_PivotMail_MailUniq $mail_uniq):void {
+
+		$insert = [
+			"mail_hash"       => $mail_uniq->mail_hash,
+			"user_id"         => $mail_uniq->user_id,
+			"has_sso_account" => intval($mail_uniq->has_sso_account),
+			"created_at"      => $mail_uniq->created_at,
+			"updated_at"      => $mail_uniq->updated_at,
+			"password_hash"   => $mail_uniq->password_hash,
+		];
+		ShardingGateway::database(self::_getDbKey())->insert(self::_getTableKey($mail_uniq->mail_hash), $insert);
+	}
+
+	/**
+	 * Добавляет новую запись в базу
+	 */
 	public static function insertOrUpdate(Struct_Db_PivotMail_MailUniq $mail_uniq):void {
 
 		$insert = [
-			"mail_hash"     => $mail_uniq->mail_hash,
-			"user_id"       => $mail_uniq->user_id,
-			"created_at"    => $mail_uniq->created_at,
-			"updated_at"    => $mail_uniq->updated_at,
-			"password_hash" => $mail_uniq->password_hash,
+			"mail_hash"       => $mail_uniq->mail_hash,
+			"user_id"         => $mail_uniq->user_id,
+			"has_sso_account" => intval($mail_uniq->has_sso_account),
+			"created_at"      => $mail_uniq->created_at,
+			"updated_at"      => $mail_uniq->updated_at,
+			"password_hash"   => $mail_uniq->password_hash,
 		];
 		ShardingGateway::database(self::_getDbKey())->insertOrUpdate(self::_getTableKey($mail_uniq->mail_hash), $insert);
 	}
 
 	/**
-	 * Метод для обновления записи
+	 * Метод для обновления записи по PK
 	 *
 	 * @throws \parseException
 	 */
@@ -43,6 +60,25 @@ class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 		// EXPLAIN: INDEX PRIMARY
 		$query = "UPDATE `?p` SET ?u WHERE `mail_hash` = ?s LIMIT ?i";
 		return ShardingGateway::database(self::_getDbKey())->update($query, self::_getTableKey($mail_hash), $set, $mail_hash, 1);
+	}
+
+	/**
+	 * Метод для обновления записи по PK и user_id
+	 *
+	 * @throws \parseException
+	 */
+	public static function setByMailAndUserId(string $mail_hash, int $user_id, array $set):int {
+
+		foreach ($set as $field => $_) {
+
+			if (!property_exists(Struct_Db_PivotMail_MailUniq::class, $field)) {
+				throw new ParseFatalException("attempt to set unknown field");
+			}
+		}
+
+		// EXPLAIN: INDEX PRIMARY
+		$query = "UPDATE `?p` SET ?u WHERE `mail_hash` = ?s AND `user_id` = ?i LIMIT ?i";
+		return ShardingGateway::database(self::_getDbKey())->update($query, self::_getTableKey($mail_hash), $set, $mail_hash, $user_id, 1);
 	}
 
 	/**

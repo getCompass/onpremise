@@ -50,4 +50,14 @@ abstract class Gateway_Socket_Default {
 		$socket_module_config = getConfig("SOCKET_MODULE");
 		return $socket_url_config["collector_server"] . $socket_module_config["collector"]["socket_path"];
 	}
+
+	/**
+	 * Получаем url
+	 */
+	protected static function _getSocketFederationUrl():string {
+
+		$socket_url_config    = getConfig("SOCKET_URL");
+		$socket_module_config = getConfig("SOCKET_MODULE");
+		return $socket_url_config["federation"] . $socket_module_config["federation"]["socket_path"];
+	}
 }

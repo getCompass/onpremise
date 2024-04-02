@@ -14,7 +14,7 @@ class Gateway_Db_PivotPhone_PhoneUniqList extends Gateway_Db_PivotPhone_Main {
 	/**
 	 * Добавляет новую запись в базу.
 	 */
-	public static function insertOrUpdate(string $phone_number_hash, int $user_id, int $created_at, int $updated_at, int $binding_count, int $last_binding_at, int $last_unbinding_at, array $previous_user_list):Struct_Db_PivotPhone_PhoneUniq {
+	public static function insertOrUpdate(string $phone_number_hash, int $user_id, bool $has_sso_account, int $created_at, int $updated_at, int $binding_count, int $last_binding_at, int $last_unbinding_at, array $previous_user_list):Struct_Db_PivotPhone_PhoneUniq {
 
 		$shard_key  = self::_getDbKey();
 		$table_name = self::_getTableKey($phone_number_hash);
@@ -22,6 +22,7 @@ class Gateway_Db_PivotPhone_PhoneUniqList extends Gateway_Db_PivotPhone_Main {
 		$insert = [
 			"phone_number_hash"  => $phone_number_hash,
 			"user_id"            => $user_id,
+			"has_sso_account"    => intval($has_sso_account),
 			"binding_count"      => $binding_count,
 			"last_binding_at"    => $last_binding_at,
 			"last_unbinding_at"  => $last_unbinding_at,
@@ -55,6 +56,25 @@ class Gateway_Db_PivotPhone_PhoneUniqList extends Gateway_Db_PivotPhone_Main {
 		// EXPLAIN: INDEX PRIMARY
 		$query = "UPDATE `?p` SET ?u WHERE `phone_number_hash` = ?s LIMIT ?i";
 		return ShardingGateway::database($shard_key)->update($query, $table_name, $set, $phone_number_hash, 1);
+	}
+
+	/**
+	 * Метод для обновления записи по PK и user_id
+	 *
+	 * @throws \parseException
+	 */
+	public static function setByPhoneAndUserId(string $phone_number_hash, int $user_id, array $set):int {
+
+		foreach ($set as $field => $_) {
+
+			if (!property_exists(Struct_Db_PivotPhone_PhoneUniq::class, $field)) {
+				throw new ParseFatalException("attempt to set unknown field");
+			}
+		}
+
+		// EXPLAIN: INDEX PRIMARY
+		$query = "UPDATE `?p` SET ?u WHERE `phone_number_hash` = ?s AND `user_id` = ?i LIMIT ?i";
+		return ShardingGateway::database(self::_getDbKey())->update($query, self::_getTableKey($phone_number_hash), $set, $phone_number_hash, $user_id, 1);
 	}
 
 	/**

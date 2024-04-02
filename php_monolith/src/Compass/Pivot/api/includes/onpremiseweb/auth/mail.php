@@ -29,14 +29,15 @@ class Onpremiseweb_Auth_Mail extends \BaseFrame\Controller\Api {
 	public const ECODE_GRECPTACHA_REQUIRED  = 1708200; // нужно ввести каптчу
 	public const ECODE_GRECPTACHA_INCORRECT = 1708201; // каптча не пройдена
 
-	public const ECODE_UAUTH_LOGGED        = 1708100; // пользователь уже авторизован
-	public const ECODE_UAUTH_BAD_CODE      = 1708112; // неверный код
-	public const ECODE_UAUTH_CODE_DENIED   = 1708113; // неверный код
-	public const ECODE_UAUTH_RESEND_PAUSED = 1708114; // переотправку нужно подождать
-	public const ECODE_UAUTH_BAD_MAIL      = 1708115; // некорректная почта
-	public const ECODE_UAUTH_BAD_PASSWORD  = 1708116; // неверный пароль
-	public const ECODE_UAUTH_BAD_INCORRECT = 1708117; // некорректный пароль
-	public const ECODE_UAUTH_RESEND_DENIED = 1708199; // переотправку нужно подождать
+	public const ECODE_UAUTH_LOGGED          = 1708100; // пользователь уже авторизован
+	public const ECODE_UAUTH_BAD_CODE        = 1708112; // неверный код
+	public const ECODE_UAUTH_CODE_DENIED     = 1708113; // неверный код
+	public const ECODE_UAUTH_RESEND_PAUSED   = 1708114; // переотправку нужно подождать
+	public const ECODE_UAUTH_BAD_MAIL        = 1708115; // некорректная почта
+	public const ECODE_UAUTH_BAD_PASSWORD    = 1708116; // неверный пароль
+	public const ECODE_UAUTH_BAD_INCORRECT   = 1708117; // некорректный пароль
+	public const ECODE_UAUTH_RESEND_DENIED   = 1708199; // переотправку нужно подождать
+	public const ECODE_UAUTH_REDIRECT_TO_SSO = 1708119; // перенаправляем на способ аутентификации через SSO
 
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
@@ -107,6 +108,8 @@ class Onpremiseweb_Auth_Mail extends \BaseFrame\Controller\Api {
 			return $this->error(static::ECODE_UJL_ALREADY_ACCEPTED, "already company member");
 		} catch (cs_UserNotFound $e) {
 			throw new ReturnFatalException("unhandled error {$e->getMessage()}");
+		} catch (Domain_User_Exception_AuthStory_RedirectToSso) {
+			return $this->error(static::ECODE_UAUTH_REDIRECT_TO_SSO, "redirect to sso");
 		}
 
 		return $this->ok([

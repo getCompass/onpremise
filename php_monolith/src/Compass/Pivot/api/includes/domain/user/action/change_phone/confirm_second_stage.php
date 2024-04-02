@@ -150,7 +150,7 @@ class Domain_User_Action_ChangePhone_ConfirmSecondStage {
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 			// записи нет, это нормально, скорее всего номер новый
-			Gateway_Db_PivotPhone_PhoneUniqList::insertOrUpdate($new_phone_number_hash, $user_id, time(), 0, 1, time(), 0, [$user_id]);
+			Gateway_Db_PivotPhone_PhoneUniqList::insertOrUpdate($new_phone_number_hash, $user_id, false, time(), 0, 1, time(), 0, [$user_id]);
 		} catch (Domain_User_Exception_PhoneNumberBinding $e) {
 
 			// новый номер нельзя использовать
@@ -203,6 +203,7 @@ class Domain_User_Action_ChangePhone_ConfirmSecondStage {
 		// фиксируем пользователя в историю и обновляем запись
 		Gateway_Db_PivotPhone_PhoneUniqList::set($old_phone_number_hash, [
 			"user_id"           => 0,
+			"has_sso_account"   => 0,
 			"last_unbinding_at" => time(),
 			"updated_at"        => time(),
 		]);
@@ -229,6 +230,7 @@ class Domain_User_Action_ChangePhone_ConfirmSecondStage {
 		$phone_uniq->previous_user_list[] = $user_id;
 		Gateway_Db_PivotPhone_PhoneUniqList::set($new_phone_number_hash, [
 			"user_id"            => $user_id,
+			"has_sso_account"    => 0,
 			"binding_count"      => $phone_uniq->binding_count + 1,
 			"last_binding_at"    => time(),
 			"updated_at"         => time(),

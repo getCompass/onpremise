@@ -46,7 +46,7 @@ class Domain_User_Scenario_OnPremiseWeb_Security_Mail {
 		$mail = (new \BaseFrame\System\Mail($mail))->mail();
 
 		// получаем user_id по почте
-		$existing_user_id = Domain_User_Action_Auth_Mail::resolveUserID($mail);
+		[$existing_user_id, $has_sso_account] = Domain_User_Action_Auth_Mail::resolveUser($mail);
 
 		// если не нашли пользователя, то нужно обязательно проверить актуальность ссылки-приглашения
 		if ($existing_user_id === 0) {

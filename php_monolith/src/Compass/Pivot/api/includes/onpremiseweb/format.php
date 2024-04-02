@@ -70,4 +70,17 @@ class Onpremiseweb_Format {
 			"is_exit_status_in_progress"    => (int) $link_validation_result->is_exit_status_in_progress,
 		];
 	}
+
+	/**
+	 * Форматируем сущность пользователя
+	 *
+	 * @return array
+	 */
+	public static function userInfo(Struct_Db_PivotUser_User $user_info):array {
+
+		return [
+			"user_id"   => (int) $user_info->user_id,
+			"full_name" => (string) $user_info->full_name,
+		];
+	}
 }

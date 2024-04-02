@@ -184,14 +184,20 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	const TRY_AUTHENTICATION_TOKEN = [
 		"key"    => "TRY_AUTHENTICATION_TOKEN",
-		"limit"  => 7,
-		"expire" => HOUR2,
+		"limit"  => 30,
+		"expire" => 15 * 60,
 	];
 
 	const AUTH_MAIL_ENTERING_PASSWORD = [
 		"key"    => "AUTH_MAIL_ENTERING_PASSWORD",
 		"limit"  => 7,
 		"expire" => 20 * 60,
+	];
+
+	const AUTH_SSO = [
+		"key"    => "AUTH_SSO",
+		"limit"  => 7,
+		"expire" => 15 * 60,
 	];
 
 	# endregion

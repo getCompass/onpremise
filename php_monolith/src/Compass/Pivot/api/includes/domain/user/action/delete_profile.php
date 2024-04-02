@@ -35,6 +35,7 @@ class Domain_User_Action_DeleteProfile {
 		Domain_User_Entity_Phone::delete($user_id);
 		Gateway_Db_PivotPhone_PhoneUniqList::set(Type_Hash_PhoneNumber::makeHash($phone_number), [
 			"user_id"           => 0,
+			"has_sso_account"   => 0,
 			"last_unbinding_at" => time(),
 			"updated_at"        => time(),
 		]);

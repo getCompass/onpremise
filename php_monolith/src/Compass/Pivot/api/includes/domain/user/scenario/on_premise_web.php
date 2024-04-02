@@ -22,11 +22,31 @@ class Domain_User_Scenario_OnPremiseWeb {
 		// доступные способы аутентификации
 		$available_auth_method_list = Domain_User_Entity_Auth_Config::getAvailableMethodList();
 
+		// собираем словарь
+		$dictionary = self::_prepareStartDictionary();
+
+		// если пользователь не авторизован
 		if ($user_id === 0) {
-			return [false, false, $available_auth_method_list];
+			return [false, null, false, $dictionary, $available_auth_method_list];
 		}
 
-		return [true, Type_User_Main::isEmptyProfile($user_id), $available_auth_method_list];
+		// получаем информацию о пользователе
+		$user_info = Type_User_Main::get($user_id);
+
+		return [true, $user_info, Domain_User_Entity_User::isEmptyProfile($user_info), $dictionary, $available_auth_method_list];
+	}
+
+	/**
+	 * собираем словарь dictionary, который возвращаем в global/start
+	 *
+	 * @return array
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 */
+	protected static function _prepareStartDictionary():array {
+
+		return [
+			"auth_sso_start_button_text" => Domain_User_Entity_Auth_Config::getSsoStartButtonText(),
+		];
 	}
 
 	/**
@@ -64,7 +84,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 		$phone_number = (new \BaseFrame\System\PhoneNumber($phone_number))->number();
 
 		// получаем user_id по номеру
-		$existing_user_id = Domain_User_Action_Auth_PhoneNumber::resolveUserID($phone_number);
+		[$existing_user_id, $has_sso_account] = Domain_User_Action_Auth_PhoneNumber::resolveUser($phone_number);
+		self::_redirectAuthToSsoIfNeeded($existing_user_id, $has_sso_account);
 
 		// если не нашли пользователя, то нужно обязательно проверить актуальность ссылки-приглашения
 		if ($existing_user_id === 0) {
@@ -136,6 +157,31 @@ class Domain_User_Scenario_OnPremiseWeb {
 			$auth_story->getAuthInfo(),
 			$validation_result ?? false,
 		];
+	}
+
+	/**
+	 * перенаправляем на способ аутентификации через SSO
+	 *
+	 * @throws Domain_User_Exception_AuthStory_RedirectToSso
+	 */
+	protected static function _redirectAuthToSsoIfNeeded(int $existing_user_id, bool $has_sso_account):void {
+
+		// если не нашли пользователя, то ничего не делаем
+		if ($existing_user_id < 1) {
+			return;
+		}
+
+		// если к этому пользователю не привязан SSO аккаунт, то ничего не делаем
+		if (!$has_sso_account) {
+			return;
+		}
+
+		// если отключена аутентификация через SSO, то ничего не делаем
+		if (!Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)) {
+			return;
+		}
+
+		throw new Domain_User_Exception_AuthStory_RedirectToSso();
 	}
 
 	/**
@@ -362,9 +408,9 @@ class Domain_User_Scenario_OnPremiseWeb {
 		// делаем проверки свойственные аутентификации по номеру телефона
 		try {
 
+			self::_throwIfResendCountLimitExceeded($story);
 			$story->getAuthPhoneHandler()
 				->assertErrorCountLimitNotExceeded(Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber::ON_PREMISE_ERROR_COUNT_LIMIT)
-				->assertResendCountLimitNotExceeded()
 				->assertResendIsAvailable();
 		} catch (Domain_User_Exception_AuthStory_ErrorCountLimitExceeded) {
 			throw new cs_AuthIsBlocked($story->getExpiresAt());
@@ -387,6 +433,21 @@ class Domain_User_Scenario_OnPremiseWeb {
 		);
 
 		return $story->getAuthInfo();
+	}
+
+	/**
+	 * проверяем, достигнут ли лимит переотправки кода
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws Domain_User_Exception_AuthStory_ResendCountLimitExceeded
+	 */
+	protected static function _throwIfResendCountLimitExceeded(Domain_User_Entity_AuthStory $story):void {
+
+		try {
+			$story->getAuthPhoneHandler()->assertResendCountLimitNotExceeded();
+		} catch (cs_ResendCodeCountLimitExceeded) {
+			throw new Domain_User_Exception_AuthStory_ResendCountLimitExceeded($story->getExpiresAt());
+		}
 	}
 
 	/**

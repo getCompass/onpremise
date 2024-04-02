@@ -62,7 +62,8 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		$mail = (new \BaseFrame\System\Mail($mail))->mail();
 
 		// получаем user_id по почте
-		$existing_user_id = Domain_User_Action_Auth_Mail::resolveUserID($mail);
+		[$existing_user_id, $has_sso_account] = Domain_User_Action_Auth_Mail::resolveUser($mail);
+		self::_redirectAuthToSsoIfNeeded($existing_user_id, $has_sso_account);
 
 		// если не нашли пользователя
 		if ($existing_user_id === 0) {
@@ -111,6 +112,31 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 			$validation_result ?? false,
 			self::resolveScenario($story->getType()),
 		];
+	}
+
+	/**
+	 * перенаправляем на способ аутентификации через SSO
+	 *
+	 * @throws Domain_User_Exception_AuthStory_RedirectToSso
+	 */
+	protected static function _redirectAuthToSsoIfNeeded(int $existing_user_id, bool $has_sso_account):void {
+
+		// если не нашли пользователя, то ничего не делаем
+		if ($existing_user_id < 1) {
+			return;
+		}
+
+		// если к этому пользователю не привязан SSO аккаунт, то ничего не делаем
+		if (!$has_sso_account) {
+			return;
+		}
+
+		// если отключена аутентификация через SSO, то ничего не делаем
+		if (!Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)) {
+			return;
+		}
+
+		throw new Domain_User_Exception_AuthStory_RedirectToSso();
 	}
 
 	/**

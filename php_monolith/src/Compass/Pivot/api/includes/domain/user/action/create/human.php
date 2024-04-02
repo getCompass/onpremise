@@ -102,6 +102,7 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 			$phone_uniq->previous_user_list[] = $user_id;
 			Gateway_Db_PivotPhone_PhoneUniqList::set($phone_number_hash, [
 				"user_id"            => $user_id,
+				"has_sso_account"    => 0,
 				"binding_count"      => $phone_uniq->binding_count + 1,
 				"last_binding_at"    => time(),
 				"updated_at"         => time(),
@@ -110,7 +111,7 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 			// записи нет, это нормально, скорее всего номер новый
-			Gateway_Db_PivotPhone_PhoneUniqList::insertOrUpdate($phone_number_hash, $user_id, time(), time(), 1, time(), 0, [$user_id]);
+			Gateway_Db_PivotPhone_PhoneUniqList::insertOrUpdate($phone_number_hash, $user_id, false, time(), time(), 1, time(), 0, [$user_id]);
 		}
 
 		Gateway_Db_PivotPhone_PhoneUniqList::commitTransaction();
@@ -161,15 +162,16 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 
 			// обновляем запись
 			Gateway_Db_PivotMail_MailUniqList::set($mail_hash, [
-				"user_id"       => $user_id,
-				"updated_at"    => time(),
-				"password_hash" => $password_hash,
+				"user_id"         => $user_id,
+				"has_sso_account" => 0,
+				"updated_at"      => time(),
+				"password_hash"   => $password_hash,
 			]);
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 			// записи нет, это нормально, скорее всего номер новый
 			Gateway_Db_PivotMail_MailUniqList::insertOrUpdate(new Struct_Db_PivotMail_MailUniq(
-				$mail_hash, $user_id, $action_time, 0, $password_hash
+				$mail_hash, $user_id, false, $action_time, 0, $password_hash
 			));
 		}
 

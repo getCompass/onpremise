@@ -32,6 +32,7 @@ bash "/app/src/Compass/FileBalancer/init_submodule.sh" "FileBalancer" || exit 1;
 bash "/app/src/Compass/Pivot/init_submodule.sh" "Pivot" || exit 1;
 bash "/app/src/Compass/Userbot/init_submodule.sh" "Userbot" || exit 1;
 bash "/app/src/Compass/Announcement/init_submodule.sh" "Announcement" || exit 1;
+bash "/app/src/Compass/Federation/init_submodule.sh" "Federation" || exit 1;
 
 # раздаем права, инициализируем пустые директории
 cd /app && sh install.sh

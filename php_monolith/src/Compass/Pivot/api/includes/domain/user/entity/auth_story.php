@@ -16,6 +16,7 @@ class Domain_User_Entity_AuthStory {
 	public const AUTH_STORY_TYPE_REGISTER_BY_MAIL         = 3; // тип регистрации через почту
 	public const AUTH_STORY_TYPE_LOGIN_BY_MAIL            = 4; // тип авторизации через почту
 	public const AUTH_STORY_TYPE_RESET_PASSWORD_BY_MAIL   = 5; // тип для сброса пароля через почту из под неавторизованного пользователя
+	public const AUTH_STORY_TYPE_AUTH_BY_SSO              = 6; // тип аутентификации через SSO
 
 	/** возможные статусы аутентификации для истории: */
 	public const HISTORY_AUTH_STATUS_SUCCESS = 1; // успешная аутентификация
@@ -110,6 +111,21 @@ class Domain_User_Entity_AuthStory {
 	}
 
 	/**
+	 * получаем класс-хендлер аутентификации по SSO
+	 *
+	 * @return Domain_User_Entity_AuthStory_MethodHandler_Sso|Domain_User_Entity_AuthStory_MethodHandler_Default
+	 * @throws ParseFatalException
+	 */
+	public function getAuthSsoHandler():Domain_User_Entity_AuthStory_MethodHandler_Sso|Domain_User_Entity_AuthStory_MethodHandler_Default {
+
+		if (false === ($this->_auth_method_entity instanceof Domain_User_Entity_AuthStory_MethodHandler_Sso)) {
+			throw new ParseFatalException("unexpected behaviour");
+		}
+
+		return $this->_auth_method_entity;
+	}
+
+	/**
 	 * чистим кеш по номеру телефона
 	 *
 	 * @return $this
@@ -197,7 +213,7 @@ class Domain_User_Entity_AuthStory {
 	 *
 	 * @return $this
 	 *
-	 * @throws cs_PhoneNumberIsNotEqual
+	 * @throws Domain_User_Exception_AuthStory_AuthParameterNotEqual
 	 */
 	public function assertAuthParameter(string $auth_parameter):self {
 
@@ -237,6 +253,11 @@ class Domain_User_Entity_AuthStory {
 		);
 	}
 
+	/**
+	 * получаем map-идентификатор аутентификации
+	 *
+	 * @return string
+	 */
 	public function getAuthMap():string {
 
 		return $this->_auth_method_entity->getAuthMap();
@@ -313,6 +334,11 @@ class Domain_User_Entity_AuthStory {
 	 */
 	public function isNeedToCreateUser():bool {
 
+		// если это аутентификация через SSO
+		if ($this->_auth->type === self::AUTH_STORY_TYPE_AUTH_BY_SSO) {
+			return $this->_auth->user_id === 0;
+		}
+
 		return in_array($this->_auth->type, [
 			self::AUTH_STORY_TYPE_REGISTER_BY_PHONE_NUMBER,
 			self::AUTH_STORY_TYPE_REGISTER_BY_MAIL,
@@ -365,6 +391,16 @@ class Domain_User_Entity_AuthStory {
 			self::AUTH_STORY_TYPE_REGISTER_BY_MAIL,
 			self::AUTH_STORY_TYPE_LOGIN_BY_MAIL,
 		]);
+	}
+
+	/**
+	 * это аутентификация по SSO
+	 *
+	 * @return bool
+	 */
+	public static function isSsoAuth(int $auth_type):bool {
+
+		return $auth_type == self::AUTH_STORY_TYPE_AUTH_BY_SSO;
 	}
 
 	/**

@@ -9,6 +9,7 @@ $CONFIG["SOCKET_URL"] = [
 	"partner"          => ENTRYPOINT_PARTNER,
 	"intercom"         => ENTRYPOINT_INTERCOM,
 	"collector_server" => ENTRYPOINT_ANALYTIC,
+	"federation"       => ENTRYPOINT_FEDERATION,
 	"crm"              => ENTRYPOINT_PIVOT,
 ];
 
@@ -46,6 +47,9 @@ $CONFIG["SOCKET_MODULE"] = [
 	],
 	"crm"           => [
 		"socket_path" => "/api/socket/crm/",
+	],
+	"federation"    => [
+		"socket_path" => "/api/socket/federation/",
 	],
 ];
 

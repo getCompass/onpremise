@@ -14,19 +14,24 @@ use BaseFrame\System\Locale;
 class Domain_User_Action_Auth_Mail {
 
 	/**
-	 * Получаем user_id по почте
+	 * Получаем пользователя по почте
 	 *
-	 * @return int
+	 * @return array
 	 */
-	public static function resolveUserID(string $mail):int {
+	public static function resolveUser(string $mail):array {
+
+		$user_id         = 0;
+		$has_sso_account = false;
 
 		try {
-			$user_id = Domain_User_Entity_Mail::get($mail)->user_id;
+
+			$mail_uniq       = Domain_User_Entity_Mail::get($mail);
+			$user_id         = $mail_uniq->user_id;
+			$has_sso_account = $mail_uniq->has_sso_account;
 		} catch (Domain_User_Exception_Mail_NotFound) {
-			$user_id = 0;
 		}
 
-		return $user_id;
+		return [$user_id, $has_sso_account];
 	}
 
 	/**

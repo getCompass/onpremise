@@ -16,6 +16,9 @@ class Domain_User_Entity_Auth_Config {
 	/** ключ для получения конфига с параметрами аутентификации через почту */
 	protected const _KEY_AUTH_MAIL = "AUTH_MAIL";
 
+	/** ключ для получения конфига с параметрами аутентификации через SSO */
+	protected const _KEY_AUTH_SSO = "AUTH_SSO";
+
 	/**
 	 * получаем список доступных способов аутентификации
 	 *
@@ -73,6 +76,17 @@ class Domain_User_Entity_Auth_Config {
 	public static function isMailAuthorization2FAEnabled():bool {
 
 		return self::_getConfig(self::_KEY_AUTH_MAIL)["authorization_2fa_enabled"];
+	}
+
+	/**
+	 * получаем текст для кнопки начала аутентификации через SSO
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 */
+	public static function getSsoStartButtonText():string {
+
+		return self::_getConfig(self::_KEY_AUTH_SSO)["start_button_text"];
 	}
 
 	/**

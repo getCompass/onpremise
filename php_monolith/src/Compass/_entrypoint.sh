@@ -19,4 +19,5 @@ function cleanup() { trap - SIGINT SIGTERM ERR EXIT; }
 #
 bash "${SCRIPT_PATH}/Userbot/entrypoint.sh" || die "userbot entrypoint error";
 bash "${SCRIPT_PATH}/Announcement/entrypoint.sh" || die "announcement entrypoint error";
+bash "${SCRIPT_PATH}/Federation/entrypoint.sh" || die "federation entrypoint error";
 bash "${SCRIPT_PATH}/Pivot/entrypoint.sh" || die "pivot entrypoint error";

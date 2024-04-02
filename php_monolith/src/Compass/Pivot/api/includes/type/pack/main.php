@@ -223,6 +223,11 @@ class Type_Pack_Main {
 				continue;
 			}
 
+			// если null, то ничего неделаем
+			if (is_null($v)) {
+				continue;
+			}
+
 			// выбрасываем ошибку если пришел незакодированный map
 			self::_throwIfArrayElementIsJson($k, $v);
 		}

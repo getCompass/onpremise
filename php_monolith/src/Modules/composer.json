@@ -6,7 +6,7 @@
 		"backend_compass_dev_2/pivot_protobuf_schemes": "1.1.4",
 		"backend_compass_dev_2/company_protobuf_schemes": "1.1.1",
 		"backend_compass_dev_2/company_utils": "v1.5.2",
-		"service/php_base_frame": "v1.1.4",
+		"service/php_base_frame": "v1.1.5",
 		"paragonie/constant_time_encoding": "v2.5.0",
 		"backend_compass_dev_2/php_analytic_utils": "1.0.0",
 		"backend_compass_dev_2/compass_space": "1.0.0",

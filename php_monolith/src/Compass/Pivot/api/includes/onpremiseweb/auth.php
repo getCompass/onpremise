@@ -29,12 +29,13 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 	public const ECODE_GRECPTACHA_REQUIRED  = 1708200; // нужно ввести каптчу
 	public const ECODE_GRECPTACHA_INCORRECT = 1708201; // каптча не пройдена
 
-	public const ECODE_UAUTH_LOGGED        = 1708100; // пользователь уже авторизован
-	public const ECODE_UAUTH_BAD_PHONE     = 1708111; // неверный номер телефона
-	public const ECODE_UAUTH_BAD_CODE      = 1708112; // неверный код
-	public const ECODE_UAUTH_CODE_DENIED   = 1708113; // неверный код
-	public const ECODE_UAUTH_RESEND_PAUSED = 1708114; // переотправку нужно подождать
-	public const ECODE_UAUTH_RESEND_DENIED = 1708199; // переотправку нужно подождать
+	public const ECODE_UAUTH_LOGGED          = 1708100; // пользователь уже авторизован
+	public const ECODE_UAUTH_BAD_PHONE       = 1708111; // неверный номер телефона
+	public const ECODE_UAUTH_BAD_CODE        = 1708112; // неверный код
+	public const ECODE_UAUTH_CODE_DENIED     = 1708113; // неверный код
+	public const ECODE_UAUTH_RESEND_PAUSED   = 1708114; // переотправку нужно подождать
+	public const ECODE_UAUTH_RESEND_DENIED   = 1708199; // переотправку нужно подождать
+	public const ECODE_UAUTH_REDIRECT_TO_SSO = 1708119; // перенаправляем на способ аутентификации через SSO
 
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
@@ -99,6 +100,8 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 			return $this->error(static::ECODE_UJL_ALREADY_ACCEPTED, "already company member");
 		} catch (cs_UserNotFound $e) {
 			throw new ReturnFatalException("unhandled error {$e->getMessage()}");
+		} catch (Domain_User_Exception_AuthStory_RedirectToSso) {
+			return $this->error(static::ECODE_UAUTH_REDIRECT_TO_SSO, "redirect to sso");
 		}
 
 		return $this->ok([
@@ -144,10 +147,12 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row21");
 			return $this->error(static::ECODE_GRECPTACHA_INCORRECT, "not valid captcha. Try again");
-		} catch (cs_ResendCodeCountLimitExceeded) {
+		} catch (Domain_User_Exception_AuthStory_ResendCountLimitExceeded $e) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row22");
-			return $this->error(static::ECODE_UAUTH_RESEND_DENIED, "resend count limit");
+			return $this->error(static::ECODE_UAUTH_RESEND_DENIED, "resend count limit", [
+				"next_attempt" => $e->getNextAttempt(),
+			]);
 		} catch (cs_AuthIsBlocked $e) {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row23");

@@ -25,6 +25,7 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 	public const ALLOW_CONTROLLERS = [
 		"auth",
 		"auth_mail",
+		"auth_sso",
 		"security_mail",
 		"profile",
 		"global",
@@ -36,6 +37,7 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 		"global",
 		"auth",
 		"auth_mail",
+		"auth_sso",
 		"security_mail",
 		"joinlink",
 	];
@@ -48,6 +50,7 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 		"auth.confirm",
 		"auth.logout",
 		"auth.mail.begin",
+		"auth.sso.begin",
 		"joinlink.prepare",
 		"profile.set",
 		"auth.mail.confirmShortAuthPassword",

@@ -9,11 +9,16 @@
 
 <h3 align="center">Быстрый корпоративный мессенджер на вашем сервере</h3>
 
-</br>
+<p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://getcompass.ru/static/github/ru/bg_dark.png">
+      <img src="https://getcompass.ru/static/github/ru/bg_light.png" width="100%" height="100%" alt="">
+    </picture>
+</p>
 
 ## 🚀 Установка и настройка
 
-В репозитории представлен исходный код приложения Compass On-premise.
+В репозитории представлен исходный код приложения [Compass On-premise](https://getcompass.ru/on-premise).
 
 Вы можете самостоятельно собрать его в контейнер Docker или использовать готовый контейнер из [репозитория](https://github.com/getCompass/onpremise-installer), чтобы легко установить мессенджер по [инструкции](https://doc-onpremise.getcompass.ru/?utm_source=github&utm_medium=downloads-and-settings&source_id=github).
 

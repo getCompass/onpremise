@@ -83,6 +83,8 @@ define(__NAMESPACE__ . "\SOCKET_KEY_BILLING"                           , "${SOCK
 define(__NAMESPACE__ . "\SOCKET_KEY_WEBSTAT"                           , "${SOCKET_KEY_WEBSTAT}");
 define(__NAMESPACE__ . "\SOCKET_KEY_BOTHUB"                            , "${SOCKET_KEY_BOTHUB}");
 
+define(__NAMESPACE__ . "\INTEGRATION_AUTHORIZATION_TOKEN"                , "${INTEGRATION_AUTHORIZATION_TOKEN}");
+
 // -------------------------------------------------------
 // SALT ДЛЯ УПАКОВЩИКОВ ПРОЕКТА
 // -------------------------------------------------------

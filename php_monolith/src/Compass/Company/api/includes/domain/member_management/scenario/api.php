@@ -304,6 +304,8 @@ class Domain_MemberManagement_Scenario_Api {
 		// отмечаем в intercom, что пользователь покинул пространство
 		$config = Domain_Company_Action_Config_Get::do(Domain_Company_Entity_Config::MEMBER_COUNT);
 		Gateway_Socket_Intercom::userLeaved($dismissal_user_id, $config["value"] ?? 0);
+
+		Gateway_Event_Dispatcher::dispatch(Type_Event_UserCompany_UserLeftCompany::create($dismissal_user_id), true);
 	}
 
 	/**

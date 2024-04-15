@@ -4,6 +4,7 @@ namespace Compass\Company;
 
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Request\ParamException;
+use CompassApp\Domain\Member\Entity\Permission;
 
 /**
  * контроллер для работы учатниками компании
@@ -16,6 +17,7 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 		"addByRole",
 		"setMemberCount",
 		"updateUserInfo",
+		"updateMemberInfo",
 		"getUserInfo",
 		"getUserRoleList",
 		"logoutUserSessionList",
@@ -30,6 +32,7 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 		"deleteUser",
 		"getActivityCountList",
 		"getAll",
+		"setPermissions",
 	];
 
 	/**
@@ -248,6 +251,26 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	}
 
 	/**
+	 * Обновляем данные карточки в компании пользователя
+	 *
+	 * @return array
+	 * @throws ParamException
+	 * @throws \cs_UserIsNotMember
+	 */
+	public function updateMemberInfo():array {
+
+		$user_id        = $this->post(\Formatter::TYPE_INT, "user_id");
+		$description    = $this->post(\Formatter::TYPE_STRING, "description", false);
+		$status         = $this->post(\Formatter::TYPE_STRING, "status", false);
+		$badge_content  = $this->post(\Formatter::TYPE_STRING, "badge_content", false);
+		$badge_color_id = $this->post(\Formatter::TYPE_INT, "badge_color_id", false);
+
+		Domain_User_Scenario_Socket::updateMemberInfo($user_id, $description, $status, $badge_content, $badge_color_id);
+
+		return $this->ok();
+	}
+
+	/**
 	 * Получаем информацию о пользователе
 	 */
 	public function getUserInfo():array {
@@ -438,5 +461,31 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 		return $this->ok([
 			"member_list" => (array) $member_list,
 		]);
+	}
+
+	/**
+	 * Устанавливаем разрешения участнику пространства
+	 *
+	 * Внимание! Метод работает даже с гостями, так что нужно быть аккуратным
+	 *
+	 * @return array
+	 */
+	public function setPermissions():array {
+
+		$permissions = $this->post(\Formatter::TYPE_JSON, "permissions", []);
+
+		try {
+			Domain_Member_Scenario_Socket::setPermissions($this->user_id, $permissions);
+		} catch (\cs_CompanyUserIncorrectRole) {
+			throw new ParamException("incorrect role");
+		} catch (\cs_RowIsEmpty|\CompassApp\Domain\Member\Exception\IsLeft) {
+			throw new \BaseFrame\Exception\Request\CaseException(2209006, "member not found");
+		} catch (\CompassApp\Domain\Member\Exception\AccountDeleted) {
+			throw new \BaseFrame\Exception\Request\CaseException(2209007, "member deleted account");
+		} catch (Domain_Member_Exception_IncorrectUserId) {
+			throw new ParamException("incorrect user_id");
+		}
+
+		return $this->ok();
 	}
 }

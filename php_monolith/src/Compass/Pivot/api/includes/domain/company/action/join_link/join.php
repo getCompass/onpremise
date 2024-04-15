@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Request\CompanyNotServedException;
@@ -33,6 +32,7 @@ class Domain_Company_Action_JoinLink_Join {
 		Struct_Db_PivotData_CompanyJoinLinkUserRel|false $user_join_link_rel,
 		string                                           $session_uniq,
 		string                                           $comment,
+		bool                                             $force_postmoderation
 	):array {
 
 		$user_id        = $user_info->user_id;
@@ -43,7 +43,7 @@ class Domain_Company_Action_JoinLink_Join {
 		$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
 
 		$response = Gateway_Socket_Company::acceptJoinLink(
-			$user_id, $join_link_uniq, $comment, $company_id, $company->domino_id, $private_key, $user_info
+			$user_id, $join_link_uniq, $comment, $company_id, $company->domino_id, $private_key, $user_info, $force_postmoderation
 		);
 
 		// создаем запись в истории принятия ссылки приглашения в компанию

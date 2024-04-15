@@ -82,6 +82,28 @@ class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 	}
 
 	/**
+	 * метод для получения записи
+	 *
+	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
+	 */
+	public static function getOneWithUserId(string $mail_hash):Struct_Db_PivotMail_MailUniq {
+
+		$db_key     = self::_getDbKey();
+		$table_name = self::_getTableKey($mail_hash);
+
+		// формируем и осуществляем запрос
+		// проверил запрос в EXPLAIN: key=PRIMARY
+		$query = "SELECT * FROM `?p` WHERE `mail_hash`=?s AND `user_id`!=?i LIMIT ?i";
+		$row   = ShardingGateway::database($db_key)->getOne($query, $table_name, $mail_hash, 0, 1);
+
+		if (!isset($row["mail_hash"])) {
+			throw new \BaseFrame\Exception\Gateway\RowNotFoundException("mail not found");
+		}
+
+		return Struct_Db_PivotMail_MailUniq::rowToStruct($row);
+	}
+
+	/**
 	 * Метод для чтения записи по PK
 	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
 	 */
@@ -128,8 +150,8 @@ class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 	/**
 	 * Возвращает шард таблицы по хэшу номера.
 	 */
-	protected static function _getTableKey(string $phone_hash):string {
+	protected static function _getTableKey(string $mail_hash):string {
 
-		return self::_TABLE_KEY . "_" . substr($phone_hash, -1);
+		return self::_TABLE_KEY . "_" . substr($mail_hash, -1);
 	}
 }

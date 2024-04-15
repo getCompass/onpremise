@@ -2,6 +2,8 @@
 
 namespace Compass\Company;
 
+use CompassApp\System\Company;
+
 /**
  * Событие — пользователь присоединился к компании.
  *
@@ -38,7 +40,7 @@ class Type_Event_UserCompany_UserJoinedCompany {
 		$company_name = Domain_Company_Action_Config_Get::do(Domain_Company_Entity_Config::COMPANY_NAME)["value"];
 
 		$event_data = Struct_Event_UserCompany_UserJoinedCompany::build(
-			$user_id, $hiring_request, $entry_type, $company_inviter_user_id, $company_name, $locale, $approved_by_user_id,
+			$user_id, Company::getCompanyId(), $hiring_request, $entry_type, $company_inviter_user_id, $company_name, $locale, $approved_by_user_id,
 			$is_user_already_was_in_company, $is_need_create_intercom_conversation, $ip, $user_agent
 		);
 		return Type_Event_Base::create(self::EVENT_TYPE, $event_data);

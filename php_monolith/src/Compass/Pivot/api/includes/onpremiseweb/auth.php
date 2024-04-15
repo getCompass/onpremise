@@ -194,7 +194,7 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 
 			// сценарий подтверждения смс
 			Gateway_Bus_CollectorAgent::init()->inc("row8");
-			[$authentication_token, $is_empty_profile] = Domain_User_Scenario_OnPremiseWeb::confirmAuthentication(
+			[$authentication_token, $is_empty_profile, $integration_action_list] = Domain_User_Scenario_OnPremiseWeb::confirmAuthentication(
 				$this->user_id, $auth_map, $sms_code, $join_link_uniq
 			);
 		} catch (cs_AuthAlreadyFinished) {
@@ -231,8 +231,9 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 		}
 
 		return $this->ok([
-			"authentication_token" => $authentication_token,
-			"need_fill_profile"    => (int) $is_empty_profile,
+			"authentication_token"    => $authentication_token,
+			"need_fill_profile"       => (int) $is_empty_profile,
+			"integration_action_list" => (array) $integration_action_list,
 		]);
 	}
 

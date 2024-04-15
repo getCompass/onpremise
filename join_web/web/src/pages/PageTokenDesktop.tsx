@@ -341,11 +341,12 @@ type StepOneContentProps = {
 };
 
 const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneContentProps) => {
+	const langStringPageTokenLifeTimeDesktop = useLangString("token_life_time_desktop");
 	const langStringPageTokenStep1RegisterDescPt1 = useLangString("page_token.step_1.register_desc_pt1");
 	const langStringPageTokenStep1RegisterDescPt2 = useLangString("page_token.step_1.register_desc_pt2");
 	const langStringPageTokenStep1RegisterButton = useLangString("page_token.step_1.register_button");
 	const langStringPageTokenStep1LoginDescPt1 = useLangString("page_token.step_1.login_desc_pt1");
-	const langStringPageTokenStep1LoginDescPt2 = useLangString("page_token.step_1.login_desc_pt2");
+	const langStringPageTokenStep1LoginDescPt2Desktop = useLangString("page_token.step_1.login_desc_pt2_desktop");
 	const langStringPageTokenStep1LoginButton = useLangString("page_token.step_1.login_button");
 
 	const tokenBoxRef = useRef<HTMLDivElement>(null);
@@ -371,7 +372,7 @@ const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneCo
 	};
 
 	return (
-		<VStack gap="16px">
+		<VStack gap="0px">
 			<HStack w="100%" gap="16px" justify="space-between">
 				<HStack gap="12px">
 					<Text
@@ -398,7 +399,7 @@ const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneCo
 						<br />
 						{isRegistration
 							? langStringPageTokenStep1RegisterDescPt2
-							: langStringPageTokenStep1LoginDescPt2}
+							: langStringPageTokenStep1LoginDescPt2Desktop}
 					</Text>
 				</HStack>
 				<Button size="px21py6" textSize="xl_desktop" ref={parentButtonRef} onClick={() => onClickHandler()}>
@@ -406,7 +407,16 @@ const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneCo
 				</Button>
 			</HStack>
 			{apiAuthGenerateToken.isLoading || !apiAuthGenerateToken.data ? (
-				<VStack w="100%" bgColor="000000.01" rounded="8px" px="10px" py="8px" gap="4px" alignItems="start">
+				<VStack
+					w="100%"
+					bgColor="000000.01"
+					rounded="8px"
+					px="10px"
+					py="8px"
+					gap="4px"
+					alignItems="start"
+					mt="16px"
+				>
 					<Box w="100%" h="16px" bgColor="434455" rounded="3px" />
 					<Box w="48%" h="16px" bgColor="434455" rounded="3px" />
 				</VStack>
@@ -419,6 +429,7 @@ const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneCo
 					px="12px"
 					py="8px"
 					cursor="pointer"
+					mt="16px"
 					onClick={() => {
 						if (tokenBoxRef.current) {
 							copyToClipboard(
@@ -434,6 +445,9 @@ const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneCo
 					</Text>
 				</Box>
 			)}
+			<Text style="lato_14_20_400" letterSpacing="-0.15px" color="f8f8f8" opacity="50%" mt="12px">
+				{langStringPageTokenLifeTimeDesktop}
+			</Text>
 		</VStack>
 	);
 };

@@ -2,6 +2,10 @@
 
 namespace Application\System;
 
+use Application\System\ExceptionSender\Compass;
+use Application\System\ExceptionSender\Legacy;
+use Application\System\ExceptionSender\ProviderInterface;
+
 /**
  * модель для отслеживания возникающих exceptions
  */
@@ -161,9 +165,28 @@ class Monitoring {
 	// отправляем exceptions
 	protected static function _notify(array $logs):void {
 
-		// отправляем ошибки
+		// получаем провайдера
+		$exception_sender_provider = self::_provideExceptionSener();
+		if (is_null($exception_sender_provider)) {
+			return;
+		}
+
 		$text = implode("\n", $logs);
-		Notice::sendGroup(NOTICE_CHANNEL_KEY, $text);
+		$exception_sender_provider::send($text);
+	}
+
+	// получаем провайдера для отправки исключений
+	protected static function _provideExceptionSener():?ProviderInterface {
+
+		if (!defined("EXCEPTION_NOTICE_PROVIDER")) {
+			return null;
+		}
+
+		return match (EXCEPTION_NOTICE_PROVIDER) {
+			Legacy::PROVIDER  => new Legacy(),
+			Compass::PROVIDER => new Compass(),
+			default           => null,
+		};
 	}
 
 	// обновляем курсор в базе

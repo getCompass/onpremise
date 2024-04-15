@@ -341,6 +341,49 @@ class Gateway_Socket_Company {
 	}
 
 	/**
+	 * Отправляет запрос на изменение данных участника для компании.
+	 *
+	 * @throws Gateway_Socket_Exception_CompanyIsNotServed
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
+	 * @throws cs_CompanyIsHibernate
+	 * @throws cs_SocketRequestIsFailed
+	 * @long
+	 */
+	public static function updateMemberInfo(string $domino_id, int $company_id, string $private_key, int $user_id, string|false $description, string|false $status, string|false $badge_content, string|false $badge_color_id):void {
+
+		if ($description === false && $status === false && $badge_content === false && $badge_color_id === false) {
+			return;
+		}
+
+		$params = [
+			"user_id" => $user_id,
+		];
+		if ($description !== false) {
+			$params["description"] = $description;
+		}
+		if ($status !== false) {
+			$params["status"] = $status;
+		}
+		if ($badge_content !== false) {
+			$params["badge_content"] = $badge_content;
+		}
+		if ($badge_color_id !== false) {
+			$params["badge_color_id"] = $badge_color_id;
+		}
+		[$status, $response] = self::_call("company.member.updateMemberInfo", $params, 0, $company_id, $domino_id, $private_key);
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw new ParseFatalException("passed unknown error_code");
+		}
+	}
+
+	/**
 	 * Выполняем действия при создании компании
 	 *
 	 * @param int                 $creator_user_id
@@ -925,7 +968,7 @@ class Gateway_Socket_Company {
 	 */
 	public static function acceptJoinLink(
 		int $user_id, string $invite_link_uniq, string $comment,
-		int $company_id, string $domino_id, string $private_key, Struct_Db_PivotUser_User $user_info
+		int $company_id, string $domino_id, string $private_key, Struct_Db_PivotUser_User $user_info, bool $force_postmoderation
 	):Struct_Dto_Socket_Company_AcceptJoinLinkResponse {
 
 		$params = [
@@ -939,6 +982,7 @@ class Gateway_Socket_Company {
 			"avg_screen_time"              => Type_User_Main::getAvgScreenTime($user_info->extra),
 			"total_action_count"           => Type_User_Main::getTotalActionCount($user_info->extra),
 			"avg_message_answer_time"      => Type_User_Main::getAvgMessageAnswerTime($user_info->extra),
+			"force_postmoderation"         => (int) $force_postmoderation,
 		];
 
 		// отправим запрос на удаление из списка
@@ -2059,6 +2103,43 @@ class Gateway_Socket_Company {
 		}
 
 		return [$response["user"]["description"], $response["user"]["badge"], $response["user"]["role"]];
+	}
+
+	/**
+	 * устанавливаем права участнику пространства
+	 *
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
+	 * @throws cs_CompanyIsHibernate
+	 * @throws cs_SocketRequestIsFailed
+	 * @throws cs_UserNotFound
+	 */
+	public static function setMemberPermissions(Struct_Db_PivotCompany_Company $space, int $user_id, array $permissions):void {
+
+		$params = [
+			"permissions" => toJson($permissions),
+		];
+		[$status, $response] = self::_call(
+			"company.member.setPermissions", $params, $user_id, $space->company_id, $space->domino_id, Domain_Company_Entity_Company::getPrivateKey($space->extra)
+		);
+
+		if ($status !== "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			if ($response["error_code"] == 2209006) {
+				throw new cs_UserNotFound("member not found");
+			}
+
+			if ($response["error_code"] == 2209007) {
+				throw new cs_UserNotFound("member deleted account");
+			}
+
+			throw new ParseFatalException("passed unknown error_code");
+		}
 	}
 
 	// -------------------------------------------------------

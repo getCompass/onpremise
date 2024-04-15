@@ -25,6 +25,31 @@ class Domain_User_Entity_Mail {
 	}
 
 	/**
+	 * Получаем запись с почтой пользователя
+	 *
+	 * @return Struct_Db_PivotMail_MailUniq
+	 * @throws Domain_User_Exception_Mail_NotFound
+	 */
+	public static function getUserMail(string $mail):Struct_Db_PivotMail_MailUniq {
+
+		try {
+			return Gateway_Db_PivotMail_MailUniqList::getOneWithUserId(Type_Hash_Mail::makeHash($mail));
+		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
+			throw new Domain_User_Exception_Mail_NotFound("there is no record for passed mail");
+		}
+	}
+
+	/**
+	 * Получить user_id владельца почты
+	 *
+	 * @throws Domain_User_Exception_Mail_NotFound
+	 */
+	public static function getUserIdByMail(string $mail):int {
+
+		return self::getUserMail($mail)->user_id;
+	}
+
+	/**
 	 * получаем почту пользователя
 	 */
 	public static function getByUserId(int $user_id):string {

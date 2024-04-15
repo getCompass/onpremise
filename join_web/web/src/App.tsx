@@ -13,7 +13,9 @@ import AcceptLimitLink from "./pages/AcceptLimitLink.tsx";
 import {
 	ALREADY_MEMBER_ERROR_CODE,
 	INACTIVE_LINK_ERROR_CODE,
-	LIMIT_ERROR_CODE, NEED_FINISH_SPACE_LEAVING_BEFORE_JOIN
+	LIMIT_ERROR_CODE,
+	NEED_FINISH_SPACE_LEAVING_BEFORE_JOIN,
+	PrepareJoinLinkErrorAlreadyMemberData,
 } from "./api/_types.ts";
 import PageInviteAlreadyMember from "./pages/PageInviteAlreadyMember.tsx";
 import PageWelcomeJoinLink from "./pages/PageWelcomeJoinLink.tsx";
@@ -92,6 +94,11 @@ const Page = () => {
 				}
 
 				if (prepareJoinLinkError.error_code === ALREADY_MEMBER_ERROR_CODE) {
+
+					if ((prepareJoinLinkError.data as PrepareJoinLinkErrorAlreadyMemberData).is_postmoderation == 1) {
+						return <PageInviteWaitingForPostModeration/>;
+					}
+
 					return <PageInviteAlreadyMember/>;
 				}
 

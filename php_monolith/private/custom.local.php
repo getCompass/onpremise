@@ -44,6 +44,7 @@ define("ENTRYPOINT_USERBOT"				, "${ENTRYPOINT_USERBOT}");
 define("ENTRYPOINT_INTERCOM"			, "${ENTRYPOINT_INTERCOM}");
 define("ENTRYPOINT_PARTNER"				, "${ENTRYPOINT_PARTNER}");
 define("ENTRYPOINT_DOMINO"				, "${ENTRYPOINT_DOMINO}");
+define("ENTRYPOINT_INTEGRATION"			, "${ENTRYPOINT_INTEGRATION}");
 
 // точки входа для api/backdoor запросов (протокол PUBLIC_PROTOCOL)
 define("PUBLIC_ENTRYPOINT_START"			, "${PUBLIC_ENTRYPOINT_START}");
@@ -70,15 +71,23 @@ define("PUBLIC_WEBSOCKET_DOMINO"		      , "${PUBLIC_WEBSOCKET_DOMINO}");
 define("PUBLIC_WEBSOCKET_ANNOUNCEMENT"		, "${PUBLIC_WEBSOCKET_ANNOUNCEMENT}");
 
 define("PUBLIC_ADDRESS_GLOBAL"			, "${PUBLIC_ADDRESS_GLOBAL}");
+
 // -------------------------------------------------------
-// noticebot
+// ОТПРАВКА ИСКЛЮЧЕНИЙ
 // -------------------------------------------------------
 
-// константы для уведомлений
-define("NOTICE_ENDPOINT"                  , "${NOTICE_ENDPOINT}");
-define("NOTICE_BOT_USER_ID"               , "${NOTICE_BOT_USER_ID}");
-define("NOTICE_BOT_TOKEN"                 , "${NOTICE_BOT_TOKEN}");
-define("NOTICE_CHANNEL_KEY"     		, "${NOTICE_CHANNEL_KEY}");
+define("EXCEPTION_NOTICE_PROVIDER"                    , "${EXCEPTION_NOTICE_PROVIDER}");
+
+// устарелый провайдер
+define("LEGACY_NOTICE_PROVIDER_ENDPOINT"              , "${LEGACY_NOTICE_PROVIDER_ENDPOINT}");
+define("LEGACY_NOTICE_PROVIDER_BOT_USER_ID"           , "${LEGACY_NOTICE_PROVIDER_BOT_USER_ID}");
+define("LEGACY_NOTICE_PROVIDER_BOT_TOKEN"             , "${LEGACY_NOTICE_PROVIDER_BOT_TOKEN}");
+define("LEGACY_NOTICE_PROVIDER_CHANNEL_KEY"           , "${LEGACY_NOTICE_PROVIDER_CHANNEL_KEY}");
+
+// отправка в Compass
+define("COMPASS_NOTICE_PROVIDER_ENDPOINT"             , "${COMPASS_NOTICE_PROVIDER_ENDPOINT}");
+define("COMPASS_NOTICE_PROVIDER_BOT_TOKEN"            , "${COMPASS_NOTICE_PROVIDER_BOT_TOKEN}");
+define("COMPASS_NOTICE_PROVIDER_CHAT_ID"              , "${COMPASS_NOTICE_PROVIDER_CHAT_ID}");
 
 // -------------------------------------------------------
 // КЛЮЧИ ШИФРОВАНИЯ OPENSSL
@@ -175,6 +184,8 @@ define("SOCKET_KEY_PIVOT"          			      , "${SOCKET_KEY_PIVOT}");
 define("SOCKET_KEY_CRM"		      	, "${SOCKET_KEY_CRM}");
 define("SOCKET_KEY_FILE_NODE"             , "${SOCKET_KEY_FILE_NODE}");
 define("SOCKET_KEY_WWW"						, "${SOCKET_KEY_WWW}");
+
+define("INTEGRATION_AUTHORIZATION_TOKEN"        	, "${INTEGRATION_AUTHORIZATION_TOKEN}");
 
 define("GLOBAL_ANNOUNCEMENT_PRIVATE_KEY"	, "${GLOBAL_ANNOUNCEMENT_PRIVATE_KEY}");
 define("COMPANY_ANNOUNCEMENT_PRIVATE_KEY"	, "${COMPANY_ANNOUNCEMENT_PRIVATE_KEY}");

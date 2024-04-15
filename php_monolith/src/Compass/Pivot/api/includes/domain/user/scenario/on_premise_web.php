@@ -25,15 +25,18 @@ class Domain_User_Scenario_OnPremiseWeb {
 		// собираем словарь
 		$dictionary = self::_prepareStartDictionary();
 
+		// собираем ограничения
+		$restrictions = self::_prepareRestrictions();
+
 		// если пользователь не авторизован
 		if ($user_id === 0) {
-			return [false, null, false, $dictionary, $available_auth_method_list];
+			return [false, null, false, $dictionary, $available_auth_method_list, $restrictions];
 		}
 
 		// получаем информацию о пользователе
 		$user_info = Type_User_Main::get($user_id);
 
-		return [true, $user_info, Domain_User_Entity_User::isEmptyProfile($user_info), $dictionary, $available_auth_method_list];
+		return [true, $user_info, Domain_User_Entity_User::isEmptyProfile($user_info), $dictionary, $available_auth_method_list, $restrictions];
 	}
 
 	/**
@@ -46,6 +49,17 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		return [
 			"auth_sso_start_button_text" => Domain_User_Entity_Auth_Config::getSsoStartButtonText(),
+		];
+	}
+
+	/**
+	 * Собираем ограничения
+	 * @return array
+	 */
+	protected static function _prepareRestrictions():array {
+
+		return [
+			"profile" => (array) Type_Restrictions_Config::getProfileRestrictions(),
 		];
 	}
 
@@ -235,8 +249,11 @@ class Domain_User_Scenario_OnPremiseWeb {
 			throw new cs_AuthIsBlocked($story->getExpiresAt());
 		}
 
-		/** @noinspection PhpUnusedLocalVariableInspection */
-		[$user_id, $invite_accept_info] = $story->isNeedToCreateUser()
+		/**
+		 * @noinspection PhpUnusedLocalVariableInspection
+		 * @var Struct_Integration_Notifier_Response_OnUserRegistered|null $integration_response
+		 */
+		[$user_id, $invite_accept_info, $integration_response] = $story->isNeedToCreateUser()
 			? static::_confirmNotRegisteredUserAuthentication($story, $join_link_uniq)
 			: static::_confirmRegisteredUserAuthentication($story->getUserId(), $story, $join_link_uniq);
 
@@ -254,6 +271,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 		return [
 			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
 			Type_User_Main::isEmptyProfile($user_id),
+			!is_null($integration_response) ? $integration_response->action_list : [],
 		];
 	}
 
@@ -330,11 +348,12 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		// добавляем в историю, что пользователь залогинился
 		Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getType(), $story->getAuthPhoneHandler()->getPhoneNumber(), getDeviceId(), getUa());
-		return [$user_id, $invite_accept_info ?? false];
+		return [$user_id, $invite_accept_info ?? false, null];
 	}
 
 	/**
 	 * Выполняет кусок логики для создания нового пользователя и подтверждения аутентификации.
+	 * @long
 	 */
 	protected static function _confirmNotRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, string|false $join_link_uniq):array {
 
@@ -374,10 +393,17 @@ class Domain_User_Scenario_OnPremiseWeb {
 		$validation_result = Domain_Link_Entity_Link::validateBeforeRegistration($join_link_rel_row);
 
 		// регистрируем и отмечаем в истории событие
-		$user = Domain_User_Action_Create_Human::do($story->getAuthPhoneHandler()->getPhoneNumber(), "", "", getUa(), getIp(), "", "", [], 0, 0);
+		$user                 = Domain_User_Action_Create_Human::do($story->getAuthPhoneHandler()->getPhoneNumber(), "", "", getUa(), getIp(), "", "", [], 0, 0);
+		$integration_response = Domain_Integration_Entity_Notifier::onUserRegistered(new Struct_Integration_Notifier_Request_OnUserRegistered(
+			user_id: $user->user_id,
+			auth_method: Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_REGISTER_BY_PHONE_NUMBER,
+			registered_by_phone_number: $story->getAuthPhoneHandler()->getPhoneNumber(),
+			registered_by_mail: "",
+			join_link_uniq: $validation_result->invite_link_rel->join_link_uniq,
+		));
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
-		return [$user->user_id, [$join_link_rel_row, $user, $validation_result]];
+		return [$user->user_id, [$join_link_rel_row, $user, $validation_result], $integration_response];
 	}
 
 	/**

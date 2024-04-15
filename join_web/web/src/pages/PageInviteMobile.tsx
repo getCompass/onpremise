@@ -321,8 +321,9 @@ type StepOneContentProps = {
 };
 
 const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenuOpen }: StepOneContentProps) => {
+	const langStringPageTokenLifeTimeMobile = useLangString("token_life_time_mobile");
 	const langStringPageTokenStep1LoginDescPt1 = useLangString("page_token.step_1.login_desc_pt1");
-	const langStringPageTokenStep1LoginDescPt2 = useLangString("page_token.step_1.login_desc_pt2");
+	const langStringPageTokenStep1LoginDescPt2Mobile = useLangString("page_token.step_1.login_desc_pt2_mobile");
 	const langStringPageTokenStep1LoginButton = useLangString("page_token.step_1.login_button");
 
 	const copyButtonRef = useRef<HTMLButtonElement>(null);
@@ -375,7 +376,7 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 					<styled.span fontFamily="lato_semibold" fontWeight="700">
 						{langStringPageTokenStep1LoginDescPt1}
 					</styled.span>
-					{langStringPageTokenStep1LoginDescPt2}
+					{langStringPageTokenStep1LoginDescPt2Mobile}
 				</Text>
 			</HStack>
 			{apiAuthGenerateToken.isLoading || !apiAuthGenerateToken.data ? (
@@ -456,6 +457,9 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 					langStringPageTokenStep1LoginButton
 				)}
 			</Button>
+			<Text style="lato_14_20_400" color="f8f8f8" opacity="50%">
+				{langStringPageTokenLifeTimeMobile}
+			</Text>
 		</VStack>
 	);
 };

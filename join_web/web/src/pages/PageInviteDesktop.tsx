@@ -277,6 +277,7 @@ const StepOneContent = ({
 	parentButtonRef,
 	joinLinkAcceptIsLoading,
 }: StepOneContentProps) => {
+	const langStringPageTokenLifeTimeDesktop = useLangString("token_life_time_desktop");
 	const langStringPageInviteOpenCompassDesktopTitlePt1 = useLangString("page_invite.open_compass_desktop.title_pt1");
 	const langStringPageInviteOpenCompassDesktopTitlePt2 = useLangString("page_invite.open_compass_desktop.title_pt2");
 	const langStringPageInviteOpenCompassDesktopButton = useLangString("page_invite.open_compass_desktop.button");
@@ -317,7 +318,7 @@ const StepOneContent = ({
 	const apiAuthGenerateToken = useApiAuthGenerateToken(joinLink === null ? undefined : joinLink.join_link_uniq);
 
 	return (
-		<VStack gap="16px">
+		<VStack gap="0px">
 			<HStack w="100%" gap="16px" justify="space-between">
 				<HStack gap="8px">
 					<Text
@@ -348,7 +349,7 @@ const StepOneContent = ({
 				</Button>
 			</HStack>
 			{apiAuthGenerateToken.isLoading || !apiAuthGenerateToken.data || joinLinkAcceptIsLoading ? (
-				<VStack w="100%" bgColor="000000.01" rounded="8px" px="12px" py="8px" gap="4px" alignItems="start">
+				<VStack w="100%" bgColor="000000.01" rounded="8px" px="12px" py="8px" gap="4px" alignItems="start" mt="16px">
 					<Box w="504px" h="16px" bgColor="434455" rounded="3px" />
 					<Box w="48%" h="16px" bgColor="434455" rounded="3px" />
 				</VStack>
@@ -361,6 +362,7 @@ const StepOneContent = ({
 					px="12px"
 					py="8px"
 					cursor="pointer"
+					mt="16px"
 					onClick={() => {
 						if (tokenBoxRef.current && scrollableParentBlockRef.current) {
 							copyToClipboard(
@@ -376,6 +378,9 @@ const StepOneContent = ({
 					</Text>
 				</Box>
 			)}
+			<Text style="lato_14_20_400" letterSpacing="-0.15px" color="f8f8f8" opacity="50%" mt="12px">
+				{langStringPageTokenLifeTimeDesktop}
+			</Text>
 		</VStack>
 	);
 };

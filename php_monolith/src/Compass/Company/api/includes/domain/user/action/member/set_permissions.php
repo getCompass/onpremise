@@ -2,8 +2,12 @@
 
 namespace Compass\Company;
 
-use \CompassApp\Domain\Member\Entity\Member;
-use \CompassApp\Domain\Member\Entity\Permission;
+use BaseFrame\Exception\Domain\LocaleTextNotFound;
+use BaseFrame\System\Locale;
+use CompassApp\Domain\Member\Entity\Member;
+use CompassApp\Domain\Member\Entity\Permission;
+use CompassApp\Domain\Member\Exception\IsLeft;
+use CompassApp\Domain\Member\Struct\Main;
 
 /**
  * Action для установки прав
@@ -19,23 +23,24 @@ class Domain_User_Action_Member_SetPermissions {
 	/**
 	 * Изменить роль пользователю
 	 *
-	 * @param \CompassApp\Domain\Member\Struct\Main $member
-	 * @param int|false                             $role
-	 * @param array                                 $enabled_permission_list
-	 * @param array                                 $disabled_permission_list
+	 * @param Main      $member
+	 * @param int|false $role
+	 * @param array     $enabled_permission_list
+	 * @param array     $disabled_permission_list
 	 *
 	 * @return array
-	 * @throws \CompassApp\Domain\Member\Exception\IsLeft
+	 * @throws LocaleTextNotFound
+	 * @throws IsLeft
 	 * @throws \busException
 	 * @throws \parseException
 	 */
-	public static function do(\CompassApp\Domain\Member\Struct\Main $member, int|false $role, array $enabled_permission_list = [], array $disabled_permission_list = []):array {
+	public static function do(Main $member, int|false $role, array $enabled_permission_list = [], array $disabled_permission_list = []):array {
 
 		// проверяем, что пользователю можно менять роль (не кикнули)
 		Member::assertIsNotLeftRole($member->role);
 
-		$permissions = self::_setPermissions($member, $role, $enabled_permission_list, $disabled_permission_list);
-		$role        = self::_setRole($permissions);
+		$permissions = self::resolvePermissionsMask($member, $role, $enabled_permission_list, $disabled_permission_list);
+		$role        = self::resolveRoleByPermissionsMask($permissions);
 
 		// обновляем роль и права участника, если они реально изменились
 		if ($member->role !== $role || $member->permissions !== $permissions) {
@@ -54,7 +59,7 @@ class Domain_User_Action_Member_SetPermissions {
 	 *
 	 * @return int
 	 */
-	protected static function _setRole(int $permissions):int {
+	public static function resolveRoleByPermissionsMask(int $permissions):int {
 
 		// если при удалении неадминских прав у нас ничего не остается - мы обычный пользователь
 		if (Permission::removePermissionListFromMask($permissions, Permission::ALLOWED_PERMISSION_PROFILE_CARD_LIST) === Permission::DEFAULT) {
@@ -67,14 +72,14 @@ class Domain_User_Action_Member_SetPermissions {
 	/**
 	 * Установить права в маске
 	 *
-	 * @param \CompassApp\Domain\Member\Struct\Main $member
-	 * @param int                                   $role
-	 * @param array                                 $enabled_permission_list
-	 * @param array                                 $disabled_permission_list
+	 * @param Main  $member
+	 * @param int   $role
+	 * @param array $enabled_permission_list
+	 * @param array $disabled_permission_list
 	 *
 	 * @return int
 	 */
-	protected static function _setPermissions(\CompassApp\Domain\Member\Struct\Main $member, int $role, array $enabled_permission_list, array $disabled_permission_list):int {
+	public static function resolvePermissionsMask(Main $member, int $role, array $enabled_permission_list, array $disabled_permission_list):int {
 
 		$permissions = $member->permissions;
 
@@ -98,17 +103,35 @@ class Domain_User_Action_Member_SetPermissions {
 		$permissions = Permission::addPermissionListToMask($permissions, $enabled_permission_list);
 		$permissions = Permission::removePermissionListFromMask($permissions, $disabled_permission_list);
 
-		// если понизили до участника - забираем права
+		// если понизили до участника - забираем права, оставляя только неадминские если они были
 		if ($role === Member::ROLE_MEMBER) {
-			$permissions = Permission::DEFAULT;
-		}
 
-		// если повысили до администратора - убираем запрет на редактирование своей карточки пользователя
-		if ($permissions !== Permission::DEFAULT) {
-			$permissions = Permission::removePermissionListFromMask($permissions, Permission::ALLOWED_PERMISSION_PROFILE_CARD_LIST);
+			$profile_card_permission_list = [];
+			$profile_card_permission_list = self::_setProfileCardPermissionListIfNeed($profile_card_permission_list, $permissions);
+			$permissions                  = Permission::addPermissionListToMask(Permission::DEFAULT, $profile_card_permission_list);
 		}
 
 		return $permissions;
+	}
+
+	/**
+	 * Устанавливаем права карточки пользователя (неадминские), если необходимо
+	 *
+	 * @return array
+	 */
+	protected static function _setProfileCardPermissionListIfNeed(array $profile_card_permission_list, int $permissions):array {
+
+		if (Permission::hasPermission(Permission::RESTRICT_BADGE_PROFILE_EDIT, $permissions)) {
+			$profile_card_permission_list[] = Permission::RESTRICT_BADGE_PROFILE_EDIT;
+		}
+		if (Permission::hasPermission(Permission::RESTRICT_STATUS_PROFILE_EDIT, $permissions)) {
+			$profile_card_permission_list[] = Permission::RESTRICT_STATUS_PROFILE_EDIT;
+		}
+		if (Permission::hasPermission(Permission::RESTRICT_DESCRIPTION_PROFILE_EDIT, $permissions)) {
+			$profile_card_permission_list[] = Permission::RESTRICT_DESCRIPTION_PROFILE_EDIT;
+		}
+
+		return $profile_card_permission_list;
 	}
 
 	/**
@@ -133,12 +156,12 @@ class Domain_User_Action_Member_SetPermissions {
 	/**
 	 * Показываем администраторские анонсы
 	 *
-	 * @param \CompassApp\Domain\Member\Struct\Main $member
-	 * @param int                                   $role
+	 * @param Main $member
+	 * @param int  $role
 	 *
 	 * @return void
 	 */
-	protected static function _showAdministratorAnnouncements(\CompassApp\Domain\Member\Struct\Main $member, int $role):void {
+	protected static function _showAdministratorAnnouncements(Main $member, int $role):void {
 
 		$add_user_id_list    = [];
 		$remove_user_id_list = [];

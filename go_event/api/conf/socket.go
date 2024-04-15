@@ -12,18 +12,20 @@ import (
 
 // структура конфига
 type SocketConfigStruct struct {
-	CompassSocketUrl       string            `json:"compass_socket_url"`
-	CompassSocketModule    map[string]string `json:"compass_socket_module"`
-	PartnerSocketUrl       string            `json:"partner_socket_url"`
-	PartnerSocketModule    map[string]string `json:"partner_socket_module"`
-	PartnerWebSocketUrl    string            `json:"partner_web_socket_url"`
-	PartnerWebSocketModule map[string]string `json:"partner_web_socket_module"`
-	PivotSocketUrl         string            `json:"pivot_socket_url"`
-	PivotSocketModule      map[string]string `json:"pivot_socket_module"`
-	BillingSocketUrl       string            `json:"billing_socket_url"`
-	BillingSocketModule    map[string]string `json:"billing_socket_module"`
-	CrmSocketUrl           string            `json:"crm_socket_url"`
-	CrmSocketModule        map[string]string `json:"crm_socket_module"`
+	CompassSocketUrl        string            `json:"compass_socket_url"`
+	CompassSocketModule     map[string]string `json:"compass_socket_module"`
+	PartnerSocketUrl        string            `json:"partner_socket_url"`
+	PartnerSocketModule     map[string]string `json:"partner_socket_module"`
+	PartnerWebSocketUrl     string            `json:"partner_web_socket_url"`
+	PartnerWebSocketModule  map[string]string `json:"partner_web_socket_module"`
+	PivotSocketUrl          string            `json:"pivot_socket_url"`
+	PivotSocketModule       map[string]string `json:"pivot_socket_module"`
+	BillingSocketUrl        string            `json:"billing_socket_url"`
+	BillingSocketModule     map[string]string `json:"billing_socket_module"`
+	CrmSocketUrl            string            `json:"crm_socket_url"`
+	CrmSocketModule         map[string]string `json:"crm_socket_module"`
+	IntegrationSocketUrl    string            `json:"integration_socket_url"`
+	IntegrationSocketModule map[string]string `json:"integration_socket_module"`
 }
 
 // переменная содержащая конфигурацию
@@ -140,6 +142,12 @@ func GetModuleSocketUrl(module string) (string, error) {
 	crmModuleSocketPath, isCrmModuleExist := socketConfig.CrmSocketModule[module]
 	if isCrmModuleExist {
 		return socketConfig.CrmSocketUrl + crmModuleSocketPath, nil
+	}
+
+	// получаем ссылку
+	integrationModuleSocketPath, isIntegrationModuleExist := socketConfig.IntegrationSocketModule[module]
+	if isIntegrationModuleExist {
+		return socketConfig.IntegrationSocketUrl + integrationModuleSocketPath, nil
 	}
 
 	return "", fmt.Errorf("unknown module %s", module)

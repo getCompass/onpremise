@@ -13,6 +13,9 @@ class Struct_Event_UserCompany_UserJoinedCompany extends Struct_Default {
 	/** @var int ид пользователя */
 	public int $user_id;
 
+	/** @var int ид компании куда вступил пользователь */
+	public int $company_id;
+
 	/** @var int способ присоединения к компании */
 	public int $entry_type;
 
@@ -61,12 +64,13 @@ class Struct_Event_UserCompany_UserJoinedCompany extends Struct_Default {
 	 * @return static
 	 * @throws ParseFatalException
 	 */
-	public static function build(int    $user_id, array $hiring_request, int $entry_type, int $company_inviter_user_id, string $company_name, string $locale,
+	public static function build(int    $user_id, int $company_id, array $hiring_request, int $entry_type, int $company_inviter_user_id, string $company_name, string $locale,
 					     int    $approved_by_user_id = 0, bool $is_user_already_was_in_company = false, bool $is_need_create_intercom_conversation = false,
 					     string $ip = "", string $user_agent = ""):static {
 
 		return new static([
 			"user_id"                              => $user_id,
+			"company_id"                           => $company_id,
 			"entry_type"                           => $entry_type,
 			"company_inviter_user_id"              => $company_inviter_user_id,
 			"approved_by_user_id"                  => $approved_by_user_id,

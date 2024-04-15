@@ -15,7 +15,7 @@ class Onpremiseweb_Auth_Sso extends \BaseFrame\Controller\Api {
 	public const ECODE_JL_INACTIVE  = 1711002;
 	public const ECODE_JL_TRY_LATER = 1711005;
 
-	public const ECODE_UJL_ACCEPTED_BEFORE  = 1711002;
+	public const ECODE_UJL_ACCEPTED_BEFORE = 1711002;
 
 	public const ECODE_AUTH_EXPIRED          = 1708300; // процесс авторизации просрочен
 	public const ECODE_UAUTH_LOGGED          = 1708100; // пользователь уже авторизован
@@ -46,7 +46,8 @@ class Onpremiseweb_Auth_Sso extends \BaseFrame\Controller\Api {
 		$join_link      = $this->post(\Formatter::TYPE_STRING, "join_link", false);
 
 		try {
-			[$authentication_token, $is_empty_profile, $user_info] = Domain_User_Scenario_OnPremiseWeb_Auth_Sso::begin($this->user_id, $sso_auth_token, $signature, $join_link);
+			[$authentication_token, $is_empty_profile, $user_info, $integration_action_list] = Domain_User_Scenario_OnPremiseWeb_Auth_Sso
+				::begin($this->user_id, $sso_auth_token, $signature, $join_link);
 		} catch (cs_UserAlreadyLoggedIn) {
 			return $this->error(static::ECODE_UAUTH_LOGGED, "user already logged in");
 		} catch (Domain_User_Exception_AuthMethodDisabled) {
@@ -73,9 +74,10 @@ class Onpremiseweb_Auth_Sso extends \BaseFrame\Controller\Api {
 		}
 
 		return $this->ok([
-			"authentication_token" => (string) $authentication_token,
-			"need_fill_profile"    => (int) $is_empty_profile,
-			"user_info"            => (object) Onpremiseweb_Format::userInfo($user_info),
+			"authentication_token"    => (string) $authentication_token,
+			"need_fill_profile"       => (int) $is_empty_profile,
+			"user_info"               => (object) Onpremiseweb_Format::userInfo($user_info),
+			"integration_action_list" => (array) $integration_action_list,
 		]);
 	}
 }

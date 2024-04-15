@@ -62,4 +62,6 @@ define("SALT_ANALYTIC"                    , "${SALT_ANALYTIC}");
 // количество потоков видео (обычно равно количеству ядер процессора
 define("VIDEO_PROCESS_THREAD_COUNT"		, "${VIDEO_PROCESS_THREAD_COUNT}");
 
+define("INTEGRATION_AUTHORIZATION_TOKEN"  , "${INTEGRATION_AUTHORIZATION_TOKEN}");
+
 // @formatter:on <чтобы автоформатирование не убирало табы>

@@ -126,8 +126,9 @@ class Domain_JoinLink_Scenario_Socket {
 	 * @throws \returnException
 	 * @long
 	 */
-	public static function acceptInvite(int $user_id, string $invite_link_uniq, string $comment, string $full_name, string $avatar_file_key, int $avatar_color_id,
-							string $locale, bool $is_force_exit_task_not_exist, int $avg_screen_time, int $total_action_count, int $avg_message_answer_time):array {
+	public static function acceptInvite(int    $user_id, string $invite_link_uniq, string $comment, string $full_name, string $avatar_file_key, int $avatar_color_id,
+							string $locale, bool $is_force_exit_task_not_exist, int $avg_screen_time, int $total_action_count, int $avg_message_answer_time,
+							bool   $force_postmoderation):array {
 
 		// смотрим, что компания не удалена
 		Domain_Company_Entity_Dynamic::assertCompanyIsNotDeleted();
@@ -147,6 +148,9 @@ class Domain_JoinLink_Scenario_Socket {
 		if (Domain_User_Entity_TaskExit::isExitStatusInProgress($user_id) && !$is_force_exit_task_not_exist) {
 			throw new cs_MemberExitTaskInProgress();
 		}
+
+		// устанавливаем постмодерацию, если принудительно требуют этого
+		$join_link->entry_option = $force_postmoderation ? Domain_JoinLink_Entity_Main::ENTRY_OPTION_NEED_POSTMODERATION : $join_link->entry_option;
 
 		/** @var Struct_Db_CompanyData_JoinLink $join_link */
 		[$join_link, $is_trial_activated, $status, $entry_id, $entry_type, $hiring_request_id] =

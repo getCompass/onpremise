@@ -41,16 +41,16 @@ class Gateway_Notice_Sender {
 	protected static function _call(string $method, array $payload):void {
 
 		$payload["method"]      = $method;
-		$payload["bot_user_id"] = NOTICE_BOT_USER_ID;
+		$payload["bot_user_id"] = LEGACY_NOTICE_PROVIDER_BOT_USER_ID;
 
 		$json    = toJson($payload);
 		$ar_post = [
 			"payload"   => $json,
-			"signature" => hash_hmac("sha256", $json, NOTICE_BOT_TOKEN),
+			"signature" => hash_hmac("sha256", $json, LEGACY_NOTICE_PROVIDER_BOT_TOKEN),
 		];
 
 		$curl     = new \Curl();
-		$response = $curl->post(NOTICE_ENDPOINT, $ar_post);
+		$response = $curl->post(LEGACY_NOTICE_PROVIDER_ENDPOINT, $ar_post);
 		$response = fromJson($response);
 
 		if (!isset($response["status"]) || $response["status"] != "ok") {

@@ -109,7 +109,8 @@ const LANG_CONFIG: LangConfig = {
 				register_desc_pt2: " и вставьте его в приложении.",
 				register_button: "Скопировать",
 				login_desc_pt1: "Откройте приложение Compass",
-				login_desc_pt2: " и при необходимости введите секретный код.",
+				login_desc_pt2_desktop: " и при необходимости введите секретный код.",
+				login_desc_pt2_mobile: " и введите секретный код.",
 				login_button: "Открыть Compass",
 			},
 			step_2: {
@@ -235,6 +236,8 @@ const LANG_CONFIG: LangConfig = {
 			sso_registration_without_invite:
 				"Регистрация через SSO недоступна. Обратитесь к руководителю или системному администратору для получения ссылки-приглашения.",
 		},
+		token_life_time_desktop: "Код действителен в течение 10 минут.",
+		token_life_time_mobile: "Код действителен 10 минут.",
 		one_hour: " час",
 		two_hours: " часа",
 		five_hours: " часов",

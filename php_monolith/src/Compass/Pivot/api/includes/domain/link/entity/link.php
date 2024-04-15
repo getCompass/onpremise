@@ -111,7 +111,6 @@ class Domain_Link_Entity_Link {
 			if ($is_exit_status_in_progress == 1) {
 				throw new cs_ExitTaskInProgress("user has not finished exit the company yet");
 			}
-
 		} catch (cs_JoinLinkIsUsed|cs_JoinLinkNotFound|cs_JoinLinkIsNotActive $e) {
 
 			// если пользователь является участником пространства, то говорим, что пользователь уже участник
@@ -130,23 +129,25 @@ class Domain_Link_Entity_Link {
 			throw $e;
 		}
 
+		// проверяем, ожидает ли пользователь post-модерацию заявки на вступление в пространство
+		$is_waiting_for_postmoderation = Domain_Company_Entity_User_Member::isWaitingForPostmoderation($user_id, $company->company_id);
+
 		// выбрасываем исключение, если пользователь является участником пространства, в которое ведет активная ссылка-приглашение,
 		//  или если пользователь находится на постмодерации
 		// если пользователь не участник пространства, то ничего не делаем
-		if (Domain_Company_Entity_User_Member::isMember($user_id, $invite_link_rel_row->company_id) ||
-			Domain_Company_Entity_User_Member::isWaitingForPostmoderation($user_id, $invite_link_rel_row->company_id)) {
+		if (Domain_Company_Entity_User_Member::isMember($user_id, $invite_link_rel_row->company_id) || $is_waiting_for_postmoderation) {
 
 			/** @var Struct_Db_PivotUser_User $inviter_user_info */
 			$answer = Domain_Company_Entity_JoinLink_Main::getJoinLinkInfo($company, $user_id, $invite_link_rel_row->join_link_uniq);
 			[$inviter_user_info, $entry_option, $is_postmoderation, $is_exit_status_in_progress, $was_member] = $answer;
 
+			// если на пивоте есть информация, что пользователь ожидает одобрения вступления
+			$is_postmoderation |= $is_waiting_for_postmoderation;
+
 			throw new cs_UserAlreadyInCompany(
 				$user_id, $invite_link_rel_row->company_id, $inviter_user_info->user_id, $inviter_user_info->full_name, $is_postmoderation, $entry_option, $was_member
 			);
 		}
-
-		// проверяем, ожидает ли пользователь post-модерацию заявки на вступление в пространство
-		$is_waiting_for_postmoderation = Domain_Company_Entity_User_Member::isWaitingForPostmoderation($user_id, $company->company_id);
 
 		return new Struct_Link_ValidationResult(
 			$invite_link_rel_row, $user_join_link_rel, $company, $inviter_user_info, $entry_option,
@@ -158,7 +159,7 @@ class Domain_Link_Entity_Link {
 	 * Проверяет, использовал ли пользователь это приглашение ранее.
 	 * @throws cs_JoinLinkIsUsed
 	 */
-	public static function assertWasAcceptedByUser(Struct_Db_PivotData_CompanyJoinLinkRel $invite_link_rel_row, int $user_id): Struct_Db_PivotData_CompanyJoinLinkUserRel|false {
+	public static function assertWasAcceptedByUser(Struct_Db_PivotData_CompanyJoinLinkRel $invite_link_rel_row, int $user_id):Struct_Db_PivotData_CompanyJoinLinkUserRel|false {
 
 		try {
 			$invite_link_row = Domain_Company_Entity_JoinLink_UserRel::getByInviteLink($invite_link_rel_row->join_link_uniq, $user_id, $invite_link_rel_row->company_id);

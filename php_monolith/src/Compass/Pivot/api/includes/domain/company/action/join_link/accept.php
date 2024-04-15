@@ -35,7 +35,7 @@ class Domain_Company_Action_JoinLink_Accept {
 	 * @throws \userAccessException
 	 * @throws cs_RowDuplication
 	 */
-	public static function doV1(int $user_id, string $join_link_uniq, string $comment, string $session_uniq):array {
+	public static function do(int $user_id, string $join_link_uniq, string $comment, string $session_uniq, bool $force_postmoderation):array {
 
 		// получаем ссылку
 		$invite_link_rel_row = self::_getJoinLink($join_link_uniq);
@@ -53,56 +53,7 @@ class Domain_Company_Action_JoinLink_Accept {
 		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
 
 		// принимаем ссылку
-		return self::_acceptLink($user_id, $join_link_uniq, $comment, $session_uniq, $company, $invite_link_rel_row, $user_info);
-	}
-
-	/**
-	 * Выполняем
-	 *
-	 * @param int    $user_id
-	 * @param string $join_link_uniq
-	 * @param string $comment
-	 * @param string $session_uniq
-	 *
-	 * @return array
-	 * @throws Domain_Company_Exception_IsHibernated
-	 * @throws Domain_Company_Exception_IsNotServed
-	 * @throws Domain_Company_Exception_IsRelocating
-	 * @throws \busException
-	 * @throws cs_CompanyIncorrectCompanyId
-	 * @throws cs_CompanyNotExist
-	 * @throws cs_ExitTaskInProgress
-	 * @throws cs_IncorrectJoinLink
-	 * @throws cs_JoinLinkIsNotActive
-	 * @throws cs_JoinLinkIsUsed
-	 * @throws cs_Text_IsTooLong
-	 * @throws cs_UserAlreadyInCompany
-	 * @throws cs_UserNotFound
-	 * @throws \parseException
-	 * @throws \queryException
-	 * @throws \returnException
-	 * @throws \userAccessException
-	 * @throws cs_RowDuplication
-	 */
-	public static function do(int $user_id, string $join_link_uniq, string $comment, string $session_uniq):array {
-
-		// получаем ссылку
-		$invite_link_rel_row = self::_getJoinLink($join_link_uniq);
-
-		// получаем компанию
-		$company = Domain_Company_Entity_Company::get($invite_link_rel_row->company_id);
-
-		// проверяем, что компания активна
-		Domain_Company_Entity_Company::assertCompanyActive($company);
-
-		// проверяем, что ссылку можно использовать
-		self::_validateLink($user_id, $join_link_uniq, $company);
-
-		// получаем информацию по пользователю
-		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
-
-		// принимаем ссылку
-		return self::_acceptLink($user_id, $join_link_uniq, $comment, $session_uniq, $company, $invite_link_rel_row, $user_info);
+		return self::_acceptLink($user_id, $join_link_uniq, $comment, $session_uniq, $company, $invite_link_rel_row, $user_info, $force_postmoderation);
 	}
 
 	/**
@@ -208,7 +159,8 @@ class Domain_Company_Action_JoinLink_Accept {
 		string                                 $session_uniq,
 		Struct_Db_PivotCompany_Company         $company,
 		Struct_Db_PivotData_CompanyJoinLinkRel $invite_link_rel_row,
-		Struct_Db_PivotUser_User               $user_info
+		Struct_Db_PivotUser_User               $user_info,
+		bool                                   $force_postmoderation
 	):array {
 
 		$company_id = $invite_link_rel_row->company_id;
@@ -222,7 +174,15 @@ class Domain_Company_Action_JoinLink_Accept {
 			$user_join_link_rel = false;
 		}
 
-		[$response, $user_info] = Domain_Company_Action_JoinLink_Join::run($user_info, $invite_link_rel_row, $company, $user_join_link_rel, $session_uniq, $comment);
+		[$response, $user_info] = Domain_Company_Action_JoinLink_Join::run(
+			$user_info,
+			$invite_link_rel_row,
+			$company,
+			$user_join_link_rel,
+			$session_uniq,
+			$comment,
+			$force_postmoderation
+		);
 		return [$company_id, $company, $response, $user_info];
 	}
 }

@@ -2,6 +2,7 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Entity\Member;
 
@@ -37,6 +38,10 @@ class Domain_Member_Scenario_Api {
 	 * @throws \queryException|\CompassApp\Domain\Member\Exception\ActionRestrictForUser
 	 */
 	public static function setDescription(int $user_id, int $role, int $permissions, int $modified_user_id, string $description, int $method_version):void {
+
+		if (!Type_Restrictions_Config::isDescriptionChangeEnabled()) {
+			throw new ActionRestrictedException("action is restricted");
+		}
 
 		Member::assertUserNotGuest($role);
 		Domain_Member_Entity_Permission::checkSpace($user_id, $method_version, Permission::IS_SET_MEMBER_PROFILE_ENABLED);
@@ -92,6 +97,10 @@ class Domain_Member_Scenario_Api {
 	 */
 	public static function setStatus(int $user_id, int $method_version, int $role, int $permissions, int $modified_user_id, string $status):void {
 
+		if (!Type_Restrictions_Config::isStatusChangeEnabled()) {
+			throw new ActionRestrictedException("action is restricted");
+		}
+
 		Domain_User_Entity_Validator::assertValidUserId($modified_user_id);
 		$status = Domain_Member_Entity_Sanitizer::sanitizeStatus($status);
 		Domain_Member_Entity_Permission::checkSpace($user_id, $method_version, Permission::IS_SET_MEMBER_PROFILE_ENABLED);
@@ -143,6 +152,10 @@ class Domain_Member_Scenario_Api {
 	public static function setBadge(int $user_id, int $role, int $permissions, int $modified_user_id, int|false $color_id, string|false $content, int $method_version):void {
 
 		Member::assertUserNotGuest($role);
+
+		if (!Type_Restrictions_Config::isBadgeChangeEnabled()) {
+			throw new ActionRestrictedException("action is restricted");
+		}
 
 		Domain_Member_Entity_Permission::checkSpace($user_id, $method_version, Permission::IS_SET_MEMBER_PROFILE_ENABLED);
 		Domain_User_Entity_Validator::assertValidUserId($modified_user_id);
@@ -365,13 +378,18 @@ class Domain_Member_Scenario_Api {
 	 * @throws \returnException
 	 * @long
 	 */
-	public static function setDescriptionBadgeAndJoinTime(int $role, int $permissions, int $modified_user_id, string|false $description, int|false $time,
+	public static function setDescriptionBadgeAndJoinTime(int       $role, int $permissions, int $modified_user_id, string|false $description, int|false $time,
 										int|false $color_id, string|false $content):void {
 
 		Member::assertUserNotGuest($role);
 		Domain_User_Entity_Validator::assertValidUserId($modified_user_id);
 
 		if ($description !== false) {
+
+			if (!Type_Restrictions_Config::isDescriptionChangeEnabled()) {
+				throw new ActionRestrictedException("action is restricted");
+			}
+
 			$description = Domain_Member_Entity_Sanitizer::sanitizeDescription($description);
 		}
 
@@ -382,6 +400,10 @@ class Domain_Member_Scenario_Api {
 		}
 
 		if ($color_id !== false || $content !== false) {
+
+			if (!Type_Restrictions_Config::isBadgeChangeEnabled()) {
+				throw new ActionRestrictedException("action is restricted");
+			}
 
 			$content = Domain_Member_Entity_Sanitizer::sanitizeBadgeContent($content);
 			Domain_Member_Entity_Validator::assertBadge($color_id, $content);
@@ -420,7 +442,7 @@ class Domain_Member_Scenario_Api {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \queryException
 	 */
-	public static function getList(int $user_id, int $role, int $method_version, string $query, int $limit, int $offset, array $filter_npc_type,
+	public static function getList(int   $user_id, int $role, int $method_version, string $query, int $limit, int $offset, array $filter_npc_type,
 						 array $filter_role = [], string $sort_field = ""):array {
 
 		// проверяем параметры
@@ -528,7 +550,7 @@ class Domain_Member_Scenario_Api {
 		Member::assertUserNotGuest($member->role);
 
 		$role = match ($role) {
-			false   => $method_version < 2 ? $member->role : false,
+			false => $method_version < 2 ? $member->role : false,
 			default => Member::formatRoleToInt($role)
 		};
 
@@ -564,8 +586,8 @@ class Domain_Member_Scenario_Api {
 	protected static function _preparePermissionList(array $permissions, int $method_version):array {
 
 		$permissions_output_version = match ($method_version) {
-			1       => 1,
-			2       => 2,
+			1 => 1,
+			2 => 2,
 			default => Permission::CURRENT_PERMISSIONS_OUTPUT_SCHEMA_VERSION,
 		};
 
@@ -790,7 +812,7 @@ class Domain_Member_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public static function setProfile(int $user_id, int $role, int $permissions, int $modified_user_id, string|false $description, string|false $status,
+	public static function setProfile(int       $user_id, int $role, int $permissions, int $modified_user_id, string|false $description, string|false $status,
 						    int|false $badge_color_id, string|false $badge_content):void {
 
 		// если гость пытается поменять бейдж или описание
@@ -872,6 +894,10 @@ class Domain_Member_Scenario_Api {
 			// если пользователь гость, то ругаемся
 			Member::assertUserNotGuest($modified_user_role);
 
+			if (!Type_Restrictions_Config::isDescriptionChangeEnabled()) {
+				throw new ActionRestrictedException("action is restricted");
+			}
+
 			try {
 
 				Domain_Member_Entity_Permission::checkUser($user_id, $modified_user_id, Permission::RESTRICT_DESCRIPTION_PROFILE_EDIT);
@@ -899,6 +925,10 @@ class Domain_Member_Scenario_Api {
 	protected static function _checkStatus(int $user_id, int $modified_user_id, string|false $status, array $output):array {
 
 		if ($status !== false) {
+
+			if (!Type_Restrictions_Config::isStatusChangeEnabled()) {
+				throw new ActionRestrictedException("action is restricted");
+			}
 
 			try {
 
@@ -931,6 +961,10 @@ class Domain_Member_Scenario_Api {
 
 			// если пользователь гость, то ругаемся
 			Member::assertUserNotGuest($modified_user_role);
+
+			if (!Type_Restrictions_Config::isBadgeChangeEnabled()) {
+				throw new ActionRestrictedException("action is restricted");
+			}
 
 			try {
 

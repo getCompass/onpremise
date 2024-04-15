@@ -11,6 +11,7 @@ $CONFIG["SOCKET_URL"] = [
 	"collector_server" => ENTRYPOINT_ANALYTIC,
 	"federation"       => ENTRYPOINT_FEDERATION,
 	"crm"              => ENTRYPOINT_PIVOT,
+	"integration"      => ENTRYPOINT_INTEGRATION,
 ];
 
 // конфиг с query для обращения к определенному модулю
@@ -50,6 +51,9 @@ $CONFIG["SOCKET_MODULE"] = [
 	],
 	"federation"    => [
 		"socket_path" => "/api/socket/federation/",
+	],
+	"integration"   => [
+		"socket_path" => "/api/socket/integration/",
 	],
 ];
 

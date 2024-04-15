@@ -18,4 +18,11 @@ declare(strict_types = 1);
 
 namespace Compass\Pivot;
 
-return [new Apiv1_Handler(), new Apiv2_Handler(), new Socket_Handler(), new Www_Handler(), new Onpremiseweb_Handler()];
+return [
+	new Apiv1_Handler(),
+	new Apiv2_Handler(),
+	new Socket_Handler(),
+	new Www_Handler(),
+	new Onpremiseweb_Handler(),
+	new Integration_Handler(),
+];

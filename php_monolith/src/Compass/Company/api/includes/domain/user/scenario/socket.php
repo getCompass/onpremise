@@ -11,6 +11,7 @@ use BaseFrame\Exception\Request\CompanyIsRelocatingException;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Entity\Member;
+use CompassApp\Domain\Member\Exception\UserIsGuest;
 
 /**
  * Сценарии пользователя для socket методов
@@ -167,6 +168,47 @@ class Domain_User_Scenario_Socket {
 
 		Domain_Member_Action_SetPivotData::do($user_id, $full_name, $avatar_file_key, $avatar_color_id, $avg_screen_time, $total_action_count, $avg_message_answer_time
 			, $profile_created_at, $disabled_at, $client_launch_uuid, $is_deleted);
+	}
+
+	/**
+	 * Обновляем информацию участника
+	 */
+	public static function updateMemberInfo(int $user_id, string|false $description, string|false $status, int|false $badge_color_id, string|false $badge_content):void {
+
+		// валидируем user_id
+		Domain_User_Entity_Validator::assertValidUserId($user_id);
+
+		// проверяем что пользователь участник компании
+		try {
+			$member = Gateway_Bus_CompanyCache::getMember($user_id);
+		} catch (\cs_RowIsEmpty) {
+			throw new \cs_UserIsNotMember();
+		}
+
+		try {
+			Member::assertUserNotGuest($member->role);
+		} catch (UserIsGuest) {
+
+			// гостю эти параметры не меняем
+			$description    = false;
+			$badge_color_id = false;
+			$badge_content  = false;
+		}
+
+		if ($description !== false) {
+			$description = Domain_Member_Entity_Sanitizer::sanitizeDescription($description);
+		}
+
+		if ($status !== false) {
+			$status = Domain_Member_Entity_Sanitizer::sanitizeStatus($status);
+		}
+
+		if ($badge_color_id !== false || $badge_content !== false) {
+			$badge_content = Domain_Member_Entity_Sanitizer::sanitizeBadgeContent($badge_content);
+			Domain_Member_Entity_Validator::assertBadgeColor($badge_color_id);
+		}
+
+		Domain_Member_Action_SetProfile::do($user_id, $description, $status, $badge_color_id, $badge_content);
 	}
 
 	/**

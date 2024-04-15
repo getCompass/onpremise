@@ -18,4 +18,4 @@ declare(strict_types = 1);
 
 namespace Compass\FileNode;
 
-return [new Apiv1_Handler(), new Apiv2_Handler(), new Socket_Handler(), new Userbot_Handler()];
+return [new Apiv1_Handler(), new Apiv2_Handler(), new Socket_Handler(), new Userbot_Handler(), new Integration_Handler()];

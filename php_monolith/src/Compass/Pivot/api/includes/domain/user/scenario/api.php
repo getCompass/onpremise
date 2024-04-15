@@ -2,6 +2,7 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 use BaseFrame\Server\ServerProvider;
 use JetBrains\PhpStorm\ArrayShape;
 use BaseFrame\Exception\Domain\ReturnFatalException;
@@ -635,6 +636,10 @@ class Domain_User_Scenario_Api {
 	 */
 	public static function doClearAvatar(int $user_id):void {
 
+		if (!Type_Restrictions_Config::isAvatarChangeEnabled()) {
+			throw new ActionRestrictedException("action is restricted");
+		}
+
 		Domain_User_Action_ClearAvatar::do($user_id);
 
 		// отправляем задачу на очистку аватара в intercom
@@ -755,6 +760,10 @@ class Domain_User_Scenario_Api {
 	 * @throws \queryException
 	 */
 	public static function changePhoneStep1(int $user_id, string $session_uniq):array {
+
+		if (!Type_Restrictions_Config::isPhoneChangeEnabled()) {
+			throw new ActionRestrictedException("action is restricted");
+		}
 
 		// проверяем кэш, если пусто, или успешно завершена, или запись устарела, создаем новую
 		try {

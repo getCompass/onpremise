@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Request\ParamException;
+use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 
 /**
  * контроллер для методов профиля компаса
@@ -35,6 +36,14 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::PROFILE_SET);
 
+		if ($name !== false && !Type_Restrictions_Config::isNameChangeEnabled()) {
+			return $this->error(855, "action is restricted");
+		}
+
+		if ($avatar_file_map !== false && !Type_Restrictions_Config::isAvatarChangeEnabled()) {
+			return $this->error(855, "action is restricted");
+		}
+
 		try {
 			$user_info = Domain_User_Scenario_Api::setProfile($this->user_id, $name, $avatar_file_map);
 		} catch (\cs_InvalidProfileName) {
@@ -65,7 +74,11 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::PROFILE_SET);
 
-		Domain_User_Scenario_Api::doClearAvatar($this->user_id);
+		try {
+			Domain_User_Scenario_Api::doClearAvatar($this->user_id);
+		} catch (ActionRestrictedException) {
+			return $this->error(855, "action is restricted");
+		}
 
 		return $this->ok();
 	}

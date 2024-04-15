@@ -69,7 +69,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 
 		// в зависимости от кейса регистрируем и/или авторизуем пользователя
 		$is_need_to_create_user = $story->isNeedToCreateUser();
-		$user_id                = $is_need_to_create_user
+
+		/** @var Struct_Integration_Notifier_Response_OnUserRegistered|null $integration_response */
+		[$user_id, $integration_response] = $is_need_to_create_user
 			? static::_confirmNotRegisteredUserAuthentication($sso_account_data, $join_link_uniq)
 			: static::_confirmRegisteredUserAuthentication($story, $join_link_uniq);
 
@@ -77,7 +79,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		// и актуализируем, если сменилась
 		if (!$is_need_to_create_user) {
 
-			$was_actualize   = self::_actualizeMailIfNeeded($user_id, $sso_account_data);
+			$was_actualize = self::_actualizeMailIfNeeded($user_id, $sso_account_data);
 
 			// если удалось актуализировать почту, то помечаем что в mail_uniq или phone_uniq
 			// требуется актуализировать флаг has_sso_account
@@ -101,17 +103,22 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		$story->handleSuccess($user_id);
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
 
+		// если при наличии интеграции – там произошло обновление профиля, то не просим в клиенте заполнять профиль
+		$is_need_to_create_user = !is_null($integration_response) && in_array(Domain_Integration_Entity_Notifier::ACTION_UPDATE_USER_PROFILE, array_column($integration_response->action_list, "action"))
+			? false : $is_need_to_create_user;
+
 		return [
 			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
 			$is_need_to_create_user,
 			Type_User_Main::get($user_id),
+			!is_null($integration_response) ? $integration_response->action_list : [],
 		];
 	}
 
 	/**
 	 * Выполняет кусок логики подтверждения аутентификации для уже зарегистрированного пользователя.
 	 */
-	protected static function _confirmRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, string|false $join_link_uniq):int {
+	protected static function _confirmRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, string|false $join_link_uniq):array {
 
 		$user_id = $story->getUserId();
 
@@ -137,13 +144,13 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		// добавляем в историю, что пользователь залогинился
 		Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getType(), $story->getAuthSsoHandler()->getAuthParameter(), getDeviceId(), getUa());
 
-		return $user_id;
+		return [$user_id, null];
 	}
 
 	/**
 	 * Выполняет кусок логики для создания нового пользователя и подтверждения аутентификации.
 	 */
-	protected static function _confirmNotRegisteredUserAuthentication(Struct_User_Auth_Sso_AccountData $sso_account_data, string|false $join_link_uniq):int {
+	protected static function _confirmNotRegisteredUserAuthentication(Struct_User_Auth_Sso_AccountData $sso_account_data, string|false $join_link_uniq):array {
 
 		// без ссылки не создаем нового пользователя
 		if ($join_link_uniq === false) {
@@ -168,10 +175,17 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		$full_name    = trim($sso_account_data->first_name . " " . $sso_account_data->last_name);
 
 		// регистрируем и отмечаем в истории событие
-		$user = Domain_User_Action_Create_Human::do($phone_number, $mail, "", getUa(), getIp(), $full_name, "", [], 0, 0);
+		$user                 = Domain_User_Action_Create_Human::do($phone_number, $mail, "", getUa(), getIp(), $full_name, "", [], 0, 0);
+		$integration_response = Domain_Integration_Entity_Notifier::onUserRegistered(new Struct_Integration_Notifier_Request_OnUserRegistered(
+			user_id: $user->user_id,
+			auth_method: Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_AUTH_BY_SSO,
+			registered_by_phone_number: $phone_number,
+			registered_by_mail: $mail,
+			join_link_uniq: $join_link_rel_row->join_link_uniq,
+		));
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
-		return $user->user_id;
+		return [$user->user_id, $integration_response];
 	}
 
 	/**

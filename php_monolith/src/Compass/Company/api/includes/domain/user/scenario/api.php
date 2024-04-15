@@ -430,6 +430,8 @@ class Domain_User_Scenario_Api {
 			// удаляем компанию
 			Gateway_Socket_Pivot::deleteCompany($user_id);
 		}
+
+		Gateway_Event_Dispatcher::dispatch(Type_Event_UserCompany_UserLeftCompany::create($user_id), true);
 	}
 
 	/**

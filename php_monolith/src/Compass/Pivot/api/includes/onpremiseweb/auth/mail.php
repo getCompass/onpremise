@@ -157,7 +157,7 @@ class Onpremiseweb_Auth_Mail extends \BaseFrame\Controller\Api {
 
 		try {
 
-			[$authentication_token, $is_empty_profile] = Domain_User_Scenario_OnPremiseWeb_Auth_Mail
+			[$authentication_token, $is_empty_profile, $integration_action_list] = Domain_User_Scenario_OnPremiseWeb_Auth_Mail
 				::confirmShortAuthPassword($this->user_id, $auth_map, $password, $grecaptcha_response, $join_link_uniq);
 		} catch (cs_AuthAlreadyFinished) {
 
@@ -198,8 +198,9 @@ class Onpremiseweb_Auth_Mail extends \BaseFrame\Controller\Api {
 		}
 
 		return $this->ok([
-			"authentication_token" => (string) $authentication_token,
-			"need_fill_profile"    => (int) $is_empty_profile,
+			"authentication_token"    => (string) $authentication_token,
+			"need_fill_profile"       => (int) $is_empty_profile,
+			"integration_action_list" => (array) $integration_action_list,
 		]);
 	}
 
@@ -323,7 +324,7 @@ class Onpremiseweb_Auth_Mail extends \BaseFrame\Controller\Api {
 
 		try {
 
-			[$authentication_token, $is_empty_profile] = Domain_User_Scenario_OnPremiseWeb_Auth_Mail
+			[$authentication_token, $is_empty_profile, $integration_action_list] = Domain_User_Scenario_OnPremiseWeb_Auth_Mail
 				::confirmFullAuthCode($this->user_id, $auth_map, $code, $join_link_uniq);
 		} catch (Domain_User_Exception_AuthStory_StageNotAllowed|Domain_User_Exception_AuthStory_TypeMismatch) {
 			throw new ParamException("bad application behaviour");
@@ -361,8 +362,9 @@ class Onpremiseweb_Auth_Mail extends \BaseFrame\Controller\Api {
 		}
 
 		return $this->ok([
-			"authentication_token" => (string) $authentication_token,
-			"need_fill_profile"    => (int) $is_empty_profile,
+			"authentication_token"    => (string) $authentication_token,
+			"need_fill_profile"       => (int) $is_empty_profile,
+			"integration_action_list" => (array) $integration_action_list,
 		]);
 	}
 

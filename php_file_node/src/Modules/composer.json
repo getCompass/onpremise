@@ -4,7 +4,7 @@
 	"require": {
 		"phpseclib/phpseclib": "3.0.16",
 		"nikic/php-parser": "v4.10.2",
-		"service/php_base_frame": "1.0.0",
+		"service/php_base_frame": "1.1.6",
 		"phpoffice/phpword": "0.18.3",
 		"phpoffice/phpspreadsheet": "1.22.0",
 		"smalot/pdfparser": "v2.5.0"

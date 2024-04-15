@@ -27,7 +27,7 @@ class Domain_Link_Action_Accept {
 
 		/** @var Struct_Dto_Socket_Company_AcceptJoinLinkResponse $accept_link_response */
 		[$accept_link_response, $user_info] = Domain_Company_Action_JoinLink_Join::run(
-			$user, $join_link_rel_row, $company, $validation_result->user_invite_link_rel, $session_uniq, ""
+			$user, $join_link_rel_row, $company, $validation_result->user_invite_link_rel, $session_uniq, "", false
 		);
 
 		$order = Domain_Company_Entity_User_Order::getMaxOrder($user_id);

@@ -203,8 +203,11 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		}
 
 		// в зависимости от типа аутентификации регистрируем и/или авторизуем пользователя
-		/** @noinspection PhpUnusedLocalVariableInspection */
-		[$user_id, $invite_accept_info] = $story->isNeedToCreateUser()
+		/**
+		 * @noinspection PhpUnusedLocalVariableInspection
+		 * @var Struct_Integration_Notifier_Response_OnUserRegistered|null $integration_response
+		 */
+		[$user_id, $invite_accept_info, $integration_response] = $story->isNeedToCreateUser()
 			? static::_confirmNotRegisteredUserAuthentication($story, Domain_User_Entity_Password::makeHash($password), $join_link_uniq)
 			: static::_confirmRegisteredUserAuthentication($story, $join_link_uniq);
 
@@ -221,6 +224,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		return [
 			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
 			Type_User_Main::isEmptyProfile($user_id),
+			!is_null($integration_response) ? $integration_response->action_list : [],
 		];
 	}
 
@@ -264,11 +268,12 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		// добавляем в историю, что пользователь залогинился
 		Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getType(), $story->getAuthMailHandler()->getMail(), getDeviceId(), getUa());
 
-		return [$user_id, $invite_accept_info ?? false];
+		return [$user_id, $invite_accept_info ?? false, null];
 	}
 
 	/**
 	 * Выполняет кусок логики для создания нового пользователя и подтверждения аутентификации.
+	 * @long
 	 */
 	protected static function _confirmNotRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, string $password_hash, string|false $join_link_uniq):array {
 
@@ -312,10 +317,17 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		$validation_result = Domain_Link_Entity_Link::validateBeforeRegistration($join_link_rel_row);
 
 		// регистрируем и отмечаем в истории событие
-		$user = Domain_User_Action_Create_Human::do("", $story->getAuthMailHandler()->getMail(), $password_hash, getUa(), getIp(), "", "", [], 0, 0);
+		$user                 = Domain_User_Action_Create_Human::do("", $story->getAuthMailHandler()->getMail(), $password_hash, getUa(), getIp(), "", "", [], 0, 0);
+		$integration_response = Domain_Integration_Entity_Notifier::onUserRegistered(new Struct_Integration_Notifier_Request_OnUserRegistered(
+			user_id: $user->user_id,
+			auth_method: Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_REGISTER_BY_MAIL,
+			registered_by_phone_number: "",
+			registered_by_mail: $story->getAuthMailHandler()->getMail(),
+			join_link_uniq: $validation_result->invite_link_rel->join_link_uniq,
+		));
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
-		return [$user->user_id, [$join_link_rel_row, $user, $validation_result]];
+		return [$user->user_id, [$join_link_rel_row, $user, $validation_result], $integration_response];
 	}
 
 	/**
@@ -439,8 +451,11 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		[$confirm_code, $password] = Domain_User_Entity_CachedConfirmCode::getMailAuthFullScenarioParams();
 
 		// в зависимости от типа аутентификации регистрируем и/или авторизуем пользователя
-		/** @noinspection PhpUnusedLocalVariableInspection */
-		[$user_id, $invite_accept_info] = $story->isNeedToCreateUser()
+		/**
+		 * @noinspection PhpUnusedLocalVariableInspection
+		 * @var Struct_Integration_Notifier_Response_OnUserRegistered|null $integration_response
+		 */
+		[$user_id, $invite_accept_info, $integration_response] = $story->isNeedToCreateUser()
 			? static::_confirmNotRegisteredUserAuthentication($story, Domain_User_Entity_Password::makeHash($password), $join_link_uniq)
 			: static::_confirmRegisteredUserAuthentication($story, $join_link_uniq);
 
@@ -459,6 +474,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		return [
 			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
 			Type_User_Main::isEmptyProfile($user_id),
+			!is_null($integration_response) ? $integration_response->action_list : [],
 		];
 	}
 

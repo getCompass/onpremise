@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace Compass\Company;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
  * Структура события «покинул компанию».
  */
@@ -13,23 +15,18 @@ class Struct_Event_UserCompany_UserLeftCompany extends Struct_Default {
 	/** @var int ид пользователя */
 	public int $user_id;
 
-	/** @var int дата вступления в компанию */
-	public int $left_at;
-
-	/** @var string причина ухода */
-	public string $reason;
-
 	/**
 	 * Статический конструктор.
 	 *
-	 * @throws \parseException
+	 * @param int $user_id
+	 *
+	 * @return Struct_Event_UserCompany_UserLeftCompany
+	 * @throws ParseFatalException
 	 */
-	public static function build(int $user_id, int $left_at, string $reason):static {
+	public static function build(int $user_id):static {
 
 		return new static([
 			"user_id" => $user_id,
-			"left_at" => $left_at,
-			"reason"  => $reason,
 		]);
 	}
 }

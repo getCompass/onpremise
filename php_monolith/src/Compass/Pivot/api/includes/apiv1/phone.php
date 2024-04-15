@@ -4,6 +4,7 @@ namespace Compass\Pivot;
 
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\ParamException;
+use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 
 /**
  * Методы для работы с номером телефона
@@ -43,6 +44,8 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 			]);
 		} catch (cs_UserPhoneSecurityNotFound) {
 			throw new ParamException("not found phone for user");
+		} catch (ActionRestrictedException) {
+			return $this->error(855, "action is restricted");
 		}
 
 		return $this->ok(Apiv1_Format::changePhoneProcessStage1($story, $sms_story));

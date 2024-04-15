@@ -265,7 +265,7 @@ class Domain_Company_Scenario_Api {
 		 * @var Struct_Dto_Socket_Company_AcceptJoinLinkResponse $accept_link_response
 		 */
 		[$company_id, $company, $accept_link_response, $user_info] = Domain_Company_Action_JoinLink_Accept::do(
-			$user_id, $join_link_uniq, $comment, $session_uniq
+			$user_id, $join_link_uniq, $comment, $session_uniq, false
 		);
 
 		$order = Domain_Company_Entity_User_Order::getMaxOrder($user_id);

@@ -51,6 +51,7 @@ class Socket_Hiring_InviteLink extends \BaseFrame\Controller\Socket {
 		$avg_screen_time              = $this->post(\Formatter::TYPE_INT, "avg_screen_time", 0);
 		$total_action_count           = $this->post(\Formatter::TYPE_INT, "total_action_count", 0);
 		$avg_message_answer_time      = $this->post(\Formatter::TYPE_INT, "avg_message_answer_time", 0);
+		$force_postmoderation         = $this->post(\Formatter::TYPE_INT, "force_postmoderation", 0);
 
 		if ($is_force_exit_task_not_exist && !isTestServer()) {
 			throw new ParamException("only for test-server");
@@ -60,18 +61,19 @@ class Socket_Hiring_InviteLink extends \BaseFrame\Controller\Socket {
 
 			[$is_postmoderation, $entry_option, $user_space_role, $user_space_permissions, $status, $inviter_user_id, $entry_id, $token] =
 				Domain_JoinLink_Scenario_Socket::acceptInvite(
-				$this->user_id,
-				$invite_link_uniq,
-				$comment,
-				$full_name,
-				$avatar_file_key,
-				$avatar_color_id,
-				$locale,
-				$is_force_exit_task_not_exist,
-				$avg_screen_time,
-				$total_action_count,
-				$avg_message_answer_time,
-			);
+					$this->user_id,
+					$invite_link_uniq,
+					$comment,
+					$full_name,
+					$avatar_file_key,
+					$avatar_color_id,
+					$locale,
+					$is_force_exit_task_not_exist,
+					$avg_screen_time,
+					$total_action_count,
+					$avg_message_answer_time,
+					$force_postmoderation
+				);
 		} catch (cs_CompanyUserIsEmployee|cs_InviteLinkNotActive|cs_InviteLinkNotExist|cs_InviteLinkAlreadyUsed|cs_InviteLinkIdExpired|cs_CompanyIsDeleted) {
 			return $this->error(404, "invite is not active");
 		} catch (cs_Text_IsTooLong) {

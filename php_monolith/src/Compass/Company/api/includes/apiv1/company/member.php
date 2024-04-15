@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Compass\Company;
 
 use BaseFrame\Exception\Request\ParamException;
+use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 use CompassApp\Domain\Member\Entity\Member;
 use CompassApp\Domain\Member\Entity\Permission;
 
@@ -132,7 +133,7 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 
 			return match ($this->method_version) {
 
-				1       => $this->error(655, "not access for action"),
+				1 => $this->error(655, "not access for action"),
 				default => $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action")
 			};
 		} catch (cs_IncorrectUserId) {
@@ -145,6 +146,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 			return $this->error(2106002, "Action restrict for user");
 		} catch (\CompassApp\Domain\Member\Exception\UserIsGuest) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action");
+		} catch (ActionRestrictedException) {
+			return $this->error(855, "action is restricted");
 		}
 
 		return $this->ok();
@@ -182,13 +185,15 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 
 			return match ($this->method_version) {
 
-				1       => $this->error(655, "not access for action"),
+				1 => $this->error(655, "not access for action"),
 				default => $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action")
 			};
 		} catch (cs_IncorrectUserId) {
 			throw new ParamException("incorrect user id");
 		} catch (\CompassApp\Domain\Member\Exception\ActionRestrictForUser) {
 			return $this->error(2106004, "Action restrict for user");
+		} catch (ActionRestrictedException) {
+			return $this->error(855, "action is restricted");
 		}
 
 		return $this->ok();
@@ -263,7 +268,7 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 
 			return match ($this->method_version) {
 
-				1       => $this->error(655, "not access for action"),
+				1 => $this->error(655, "not access for action"),
 				default => $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action")
 			};
 		} catch (cs_IncorrectUserId) {
@@ -276,6 +281,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 			return $this->error(2106003, "Action restrict for user");
 		} catch (\CompassApp\Domain\Member\Exception\UserIsGuest) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action");
+		} catch (ActionRestrictedException) {
+			return $this->error(855, "action is restricted");
 		}
 
 		return $this->ok();
@@ -364,6 +371,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 			return $this->error(2106001, "User delete his account");
 		} catch (\CompassApp\Domain\Member\Exception\UserIsGuest) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action");
+		} catch (ActionRestrictedException) {
+			return $this->error(855, "action is restricted");
 		}
 
 		return $this->ok();
@@ -514,6 +523,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 			]);
 		} catch (\CompassApp\Domain\Member\Exception\UserIsGuest) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action");
+		} catch (ActionRestrictedException) {
+			return $this->error(855, "action is restricted");
 		}
 
 		return $this->ok();

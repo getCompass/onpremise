@@ -9,11 +9,17 @@ use Compass\Conversation\Type_System_Admin;
  */
 class Notice {
 
+	public function __construct(
+		protected string $_endpoint,
+		protected int    $_bot_user_id,
+		protected string $_bot_token,
+	) {
+	}
+
 	/**
 	 * отправить сообщение пользователю
-	 *
 	 */
-	public static function sendUser(int $user_id, string $text):void {
+	public function sendUser(int $user_id, string $text):void {
 
 		self::_call("messages.addSingle", [
 			"user_id" => $user_id,
@@ -23,9 +29,8 @@ class Notice {
 
 	/**
 	 * отправить сообщение в группу
-	 *
 	 */
-	public static function sendGroup(string $conversation_key, string $text):void {
+	public function sendGroup(string $conversation_key, string $text):void {
 
 		self::_call("messages.addGroup", [
 			"conversation_key" => $conversation_key,
@@ -37,19 +42,19 @@ class Notice {
 	// PROTECTED
 	// -------------------------------------------------------
 
-	protected static function _call(string $method, array $payload):void {
+	protected function _call(string $method, array $payload):void {
 
 		$payload["method"]      = $method;
-		$payload["bot_user_id"] = NOTICE_BOT_USER_ID;
+		$payload["bot_user_id"] = $this->_bot_user_id;
 
 		$json    = toJson($payload);
 		$ar_post = [
 			"payload"   => $json,
-			"signature" => hash_hmac("sha256", $json, NOTICE_BOT_TOKEN),
+			"signature" => hash_hmac("sha256", $json, $this->_bot_token),
 		];
 
 		$curl     = new \Curl();
-		$response = $curl->post(NOTICE_ENDPOINT, $ar_post);
+		$response = $curl->post($this->_endpoint, $ar_post);
 		$response = fromJson($response);
 
 		if (!isset($response["status"]) || $response["status"] != "ok") {

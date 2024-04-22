@@ -18,6 +18,10 @@
 	"pivot_socket_module": {
 		"php_pivot": "/api/socket/pivot/"
 	},
+	"premise_socket_url": "${ENTRYPOINT_PREMISE}",
+	"premise_socket_module": {
+		"php_premise": "/api/socket/premise/"
+	},
 	"billing_socket_url": "${BILLING_PROTOCOL}://${BILLING_DOMAIN}/",
 	"billing_socket_module": {
 		"php_billing": "api/socket/"

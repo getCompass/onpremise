@@ -455,8 +455,11 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 */
 	public function getAll():array {
 
+		$is_only_user = $this->post(\Formatter::TYPE_INT, "is_only_user", 1) == 1;
+		$is_need_left = $this->post(\Formatter::TYPE_INT, "is_need_left", 1) == 1;
+
 		// получаем всех участников за все время
-		$member_list = Domain_Member_Scenario_Socket::getAll();
+		$member_list = Domain_Member_Scenario_Socket::getAll($is_only_user, $is_need_left);
 
 		return $this->ok([
 			"member_list" => (array) $member_list,

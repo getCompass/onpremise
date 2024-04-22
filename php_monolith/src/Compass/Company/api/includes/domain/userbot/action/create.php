@@ -20,7 +20,7 @@ class Domain_Userbot_Action_Create {
 		Gateway_Bus_CollectorAgent::init()->inc("row64"); // начало создания бота
 
 		// получаем роль и права которые будут установлены для userbot
-		[$role, $permisions] = Domain_User_Action_AddUserbotToMember::getUserbotPresetRolePermissions();
+		[$role, $permissions] = Domain_User_Action_AddUserbotToMember::getUserbotPresetRolePermissions();
 
 		// создаём пользователя для бота на стороне pivot
 		[
@@ -30,7 +30,7 @@ class Domain_Userbot_Action_Create {
 			$bot_user_id,
 			$avatar_file_key,
 			$npc_type,
-		] = Gateway_Socket_Pivot::createUserbot($userbot_name, $avatar_color_id, $is_react_command, $webhook, $role, $permisions);
+		] = Gateway_Socket_Pivot::createUserbot($userbot_name, $avatar_color_id, $is_react_command, $webhook, $role, $permissions);
 
 		// добавляем бота в таблицу с участниками компании
 		Domain_User_Action_AddUserbotToMember::do($bot_user_id, $npc_type, $userbot_name, $avatar_file_key, $short_description);
@@ -45,6 +45,9 @@ class Domain_Userbot_Action_Create {
 		// отправляем ws-событие о создании бота
 		$developer_user_id_list = Domain_Member_Action_GetAllDevelopers::do();
 		Gateway_Bus_Sender::userbotCreated(Apiv2_Format::userbot($userbot), $bot_user_id, $developer_user_id_list);
+
+		// отправляем ивент в premise-модуль о вступлении в пространство бота
+		Domain_Premise_Entity_Event_SpaceNewMember::create($bot_user_id, $npc_type, $role, $permissions);
 
 		// формируем структуру с чувствительными данными
 		$sensitive_data = new Struct_Domain_Userbot_SensitiveData(

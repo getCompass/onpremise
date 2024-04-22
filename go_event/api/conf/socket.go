@@ -20,6 +20,8 @@ type SocketConfigStruct struct {
 	PartnerWebSocketModule  map[string]string `json:"partner_web_socket_module"`
 	PivotSocketUrl          string            `json:"pivot_socket_url"`
 	PivotSocketModule       map[string]string `json:"pivot_socket_module"`
+	PremiseSocketUrl        string            `json:"premise_socket_url"`
+	PremiseSocketModule     map[string]string `json:"premise_socket_module"`
 	BillingSocketUrl        string            `json:"billing_socket_url"`
 	BillingSocketModule     map[string]string `json:"billing_socket_module"`
 	CrmSocketUrl            string            `json:"crm_socket_url"`
@@ -130,6 +132,12 @@ func GetModuleSocketUrl(module string) (string, error) {
 	pivotModuleSocketPath, isPivotModuleExist := socketConfig.PivotSocketModule[module]
 	if isPivotModuleExist {
 		return socketConfig.PivotSocketUrl + pivotModuleSocketPath, nil
+	}
+
+	// получаем ссылку для модуля из premise
+	premiseModuleSocketPath, isPremiseModuleExist := socketConfig.PremiseSocketModule[module]
+	if isPremiseModuleExist {
+		return socketConfig.PremiseSocketUrl + premiseModuleSocketPath, nil
 	}
 
 	// получаем ссылку для модуля из биллинга

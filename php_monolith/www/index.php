@@ -15,7 +15,8 @@ $url_list = [
 	"captcha_enterprise" => PUBLIC_ENTRYPOINT_CAPTCHA_ENTERPRISE . "/",
 	"join"               => PUBLIC_ENTRYPOINT_JOIN . "/",
 	"invite"             => PUBLIC_ENTRYPOINT_INVITE . "/",
-	"solution"           => PUBLIC_ENTRYPOINT_SOLUTION . "/",
+	"premise"            => PUBLIC_ENTRYPOINT_PREMISE . "/",
+	"solution"		   => "",
 ];
 
 foreach ($url_list as &$url) {
@@ -30,7 +31,7 @@ showAjax([
 	"status"   => "ok",
 	"response" => [
 		"start_url" => (string) PUBLIC_ENTRYPOINT_PIVOT . "/",
-		"version"   => ON_PREMISE_VERSION,
+		"version"   => ONPREMISE_VERSION,
 		"url_list"  => (object) $url_list,
 	],
 ]);

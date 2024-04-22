@@ -45,14 +45,14 @@ func GetByUserDeviceIdList(ctx context.Context, userIdList []int64, deviceList [
 }
 
 // получаем запись из базы для пользователя на обновление
-func GetByDeviceIdForUpdate(tx mysql.TransactionStruct, deviceId string) (map[string]string, error) {
+func GetByDeviceIdForUpdate(ctx context.Context, tx mysql.TransactionStruct, deviceId string) (map[string]string, error) {
 
 	tableKey := getDeviceListTableName(deviceId)
 
 	// делаем запрос
 	// запрос проверен на EXPLAIN (INDEX=`PRIMARY`)
 	query := fmt.Sprintf("SELECT * FROM `%s` WHERE `device_id` = ? LIMIT ? FOR UPDATE", tableKey)
-	row, err := tx.FetchQuery(query, deviceId, 1)
+	row, err := tx.FetchQuery(ctx, query, deviceId, 1)
 	if err != nil {
 		return nil, nil
 	}
@@ -61,7 +61,7 @@ func GetByDeviceIdForUpdate(tx mysql.TransactionStruct, deviceId string) (map[st
 }
 
 // обновляем список токенов
-func UpdateExtra(tx mysql.TransactionStruct, deviceId string, validExtra []byte) error {
+func UpdateExtra(ctx context.Context, tx mysql.TransactionStruct, deviceId string, validExtra []byte) error {
 
 	tableKey := getDeviceListTableName(deviceId)
 
@@ -69,7 +69,7 @@ func UpdateExtra(tx mysql.TransactionStruct, deviceId string, validExtra []byte)
 	// запрос проверен на EXPLAIN (INDEX=`PRIMARY`)
 	query := fmt.Sprintf("UPDATE `%s` SET `extra` = ?, `updated_at` = ? WHERE `device_id` = ? LIMIT ?", tableKey)
 
-	_, err := tx.FetchQuery(query, string(validExtra), functions.GetCurrentTimeStamp(), deviceId, 1)
+	_, err := tx.FetchQuery(ctx, query, string(validExtra), functions.GetCurrentTimeStamp(), deviceId, 1)
 	if err != nil {
 		return err
 	}

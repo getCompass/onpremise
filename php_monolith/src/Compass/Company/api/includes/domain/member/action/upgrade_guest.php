@@ -2,6 +2,7 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Server\ServerProvider;
 use CompassApp\Domain\Member\Entity\Member;
 
 /**
@@ -115,6 +116,11 @@ class Domain_Member_Action_UpgradeGuest {
 
 		// отправляем ивент о смене роли
 		Gateway_Event_Dispatcher::dispatch(Type_Event_UserCompany_MemberRoleChanged::create($member->user_id, $user_id, Member::ROLE_GUEST, $member->role), true);
+
+		// если это on-premise сервер - отправляем данные
+		if (ServerProvider::isOnPremise()) {
+			Domain_Premise_Entity_Event_SpaceChangedMember::create($member->user_id, $member->role, $member->permissions);
+		}
 
 		return [$member, $member_count, $guest_count];
 	}

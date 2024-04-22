@@ -95,7 +95,7 @@ class Domain_User_Action_AddUser {
 		Type_User_Observer::addUserForObserver($user_id);
 
 		// шлем эвент о вступлении пользователя в компанию
-		self::_sendUserJoinedCompanyEvent($user_id, $inviter_user_id, $entry_type, $hiring_request_id, $locale, $approved_by_user_id,
+		self::_sendUserJoinedCompanyEvent($user_id, $inviter_user_id, $npc_type, $role, $permissions, $entry_type, $hiring_request_id, $locale, $approved_by_user_id,
 			$is_user_already_was_in_company, $is_need_create_intercom_conversation, $ip, $user_agent);
 
 		// если активировали триал - оставляем уведомление об этом
@@ -158,22 +158,11 @@ class Domain_User_Action_AddUser {
 	/**
 	 * шлем эвент о вступлении пользователя в компанию
 	 *
-	 * @param int    $user_id
-	 * @param int    $inviter_user_id
-	 * @param int    $entry_type
-	 * @param int    $hiring_request_id
-	 * @param string $locale
-	 * @param int    $approved_by_user_id
-	 * @param bool   $is_user_already_was_in_company
-	 * @param bool   $is_need_create_intercom_conversation
-	 * @param string $ip
-	 * @param string $user_agent
-	 *
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \cs_RowIsEmpty
 	 */
-	protected static function _sendUserJoinedCompanyEvent(int $user_id, int $inviter_user_id, int $entry_type, int $hiring_request_id, string $locale,
+	protected static function _sendUserJoinedCompanyEvent(int $user_id, int $inviter_user_id, int $npc_type, int $role, int $permissions, int $entry_type, int $hiring_request_id, string $locale,
 										int $approved_by_user_id, bool $is_user_already_was_in_company, bool $is_need_create_intercom_conversation,
 										string $ip, string $user_agent):void {
 
@@ -200,6 +189,9 @@ class Domain_User_Action_AddUser {
 			$user_id, $hiring_request, $entry_type, $inviter_user_id, $locale,
 			$approved_by_user_id, $is_user_already_was_in_company, $is_need_create_intercom_conversation, $ip, $user_agent
 		), true);
+
+		// отправляем ивент в premise-модуль о вступлении в команду участника
+		Domain_Premise_Entity_Event_SpaceNewMember::create($user_id, $npc_type, $role, $permissions);
 	}
 
 	/**

@@ -129,7 +129,8 @@ class Domino_CreateRootUser {
 			getIp(),
 			$full_name,
 			"",
-			[]
+			[],
+			is_root: 1
 		);
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 

@@ -18,6 +18,7 @@ class Struct_User_Action_Create_Prepare {
 	 * @param int                      $action_time
 	 * @param string                   $user_agent
 	 * @param string                   $ip_address
+	 * @param int                      $is_root
 	 */
 	public function __construct(
 		/**
@@ -64,6 +65,11 @@ class Struct_User_Action_Create_Prepare {
 		 * ip_address пользователя при регистрации
 		 */
 		public string                   $ip_address,
+
+		/**
+		 * is_root является ли пользователь рутом
+		 */
+		public int                      $is_root = 0,
 	) {
 	}
 }

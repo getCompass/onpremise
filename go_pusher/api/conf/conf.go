@@ -14,7 +14,6 @@ import (
 type ConfigStruct struct {
 	LoggingLevel int    `json:"logging_level"`
 	ServerType   string `json:"server_type"`
-	ServerUid    string `json:"server_uid"`
 	TcpPort      int64  `json:"tcp_port"`
 	GrpcPort     int64  `json:"grpc_port"`
 	HttpPort     int64  `json:"http_port"`
@@ -23,6 +22,11 @@ type ConfigStruct struct {
 	RabbitExchange string `json:"rabbit_exchange"`
 
 	SocketKeyMe string `json:"socket_key_me"`
+
+	// расположение решения saas/premise
+	ServerAccommodation string `json:"server_accommodation"`
+
+	PushMonitoringCompanyId int `json:"push_monitoring_company_id"`
 }
 
 // переменная содержащая конфигурацию

@@ -107,7 +107,7 @@ func updateTokenList(ctx context.Context, deviceId string, badTokenList []string
 		return false
 	}
 
-	row, _ := pivotdata.GetByDeviceIdForUpdate(tx, deviceId)
+	row, _ := pivotdata.GetByDeviceIdForUpdate(ctx, tx, deviceId)
 	if !isRowExist(tx, row) {
 		return true
 	}
@@ -117,7 +117,7 @@ func updateTokenList(ctx context.Context, deviceId string, badTokenList []string
 		return false
 	}
 
-	err = update(tx, deviceId, validTokenList)
+	err = update(ctx, tx, deviceId, validTokenList)
 	if err != nil {
 		return false
 	}
@@ -162,7 +162,7 @@ func makeValidTokenList(rowMap map[string]string, badTokenList []string) (Device
 }
 
 // обновляем запись
-func update(tx mysql.TransactionStruct, deviceId string, device DeviceStruct) error {
+func update(ctx context.Context, tx mysql.TransactionStruct, deviceId string, device DeviceStruct) error {
 
 	// формируем json строку
 	extraFieldJSON, err := json.Marshal(device.ExtraField)
@@ -171,7 +171,7 @@ func update(tx mysql.TransactionStruct, deviceId string, device DeviceStruct) er
 	}
 
 	// обновляем список токенов
-	err = pivotdata.UpdateExtra(tx, deviceId, extraFieldJSON)
+	err = pivotdata.UpdateExtra(ctx, tx, deviceId, extraFieldJSON)
 	if err != nil {
 		return err
 	}

@@ -64,15 +64,23 @@ class Domain_Member_Scenario_Socket {
 	 *
 	 * @return array
 	 */
-	public static function getAll():array {
+	public static function getAll(bool $is_only_user = true, bool $is_need_left = true):array {
 
 		// возвращаем список пользователей с указанными ролями
 		$roles = [
-			Member::ROLE_LEFT,
 			Member::ROLE_GUEST,
 			Member::ROLE_MEMBER,
 			Member::ROLE_ADMINISTRATOR,
 		];
+
+		if ($is_need_left === true) {
+			$roles[] = Member::ROLE_LEFT;
+		}
+
+		if ($is_only_user === false) {
+			$roles[] = Member::ROLE_USERBOT;
+		}
+
 		return Gateway_Db_CompanyData_MemberList::getListByRoles($roles, 10000);
 	}
 

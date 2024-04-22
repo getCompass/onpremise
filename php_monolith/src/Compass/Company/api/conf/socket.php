@@ -116,6 +116,13 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"space.search.tryReindex",
 		],
 	],
+	"premise"       => [
+		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_SSL,
+		"auth_key"      => PIVOT_TO_COMPANY_PUBLIC_KEY,
+		"allow_methods" => [
+			"company.member.getAll",
+		],
+	],
 	"conversation"  => [
 		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_CONVERSATION,

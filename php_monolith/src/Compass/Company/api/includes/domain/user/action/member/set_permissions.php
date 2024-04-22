@@ -44,7 +44,11 @@ class Domain_User_Action_Member_SetPermissions {
 
 		// обновляем роль и права участника, если они реально изменились
 		if ($member->role !== $role || $member->permissions !== $permissions) {
+
 			self::_updateRow($member->user_id, $role, $permissions);
+
+			// отправляем в premise-модуль ивент об изменении роли/прав пользователя
+			Domain_Premise_Entity_Event_SpaceChangedMember::create($member->user_id, $role, $permissions);
 		}
 
 		self::_showAdministratorAnnouncements($member, $role);

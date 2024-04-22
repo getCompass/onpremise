@@ -15,10 +15,10 @@ github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1m
 github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/go-control-plane v0.9.9-0.20210512163311-63b5d3c536b0/go.mod h1:hliV/p42l8fGbc6Y9bQ70uLwIvmJyVE5k4iMKlh8wCQ=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/getCompassUtils/company_protobuf_schemes v1.0.0 h1:A9xhc+mG6P4L2T0iEiXJzvgvcZyshrp1xI/gb4GijsE=
+github.com/getCompassUtils/company_protobuf_schemes v1.0.0 h1:pvn8gngPxVPKe2rPLXgOohqDZzq6HV+nAg0YHUA+duM=
 github.com/getCompassUtils/company_protobuf_schemes v1.0.0/go.mod h1:3udxr/8nx5CLjCQyHt/jxaJGqtHc+d5tdjXysMTC3TE=
-github.com/getCompassUtils/go_base_frame v1.0.0 h1:oDnUO6xv8N1EAv5QLMWy2FtwQhug5PZsknOLrHS5z+o=
-github.com/getCompassUtils/go_base_frame v1.0.0/go.mod h1:vixRV/CrY+4fVul190Cg9FeOEmdhF23C3P7P6VYcLoU=
+github.com/getCompassUtils/go_base_frame v1.0.1 h1:0vCExK4OcekYsbE4CBeAKZX9+gpGx7Me8OoGk/OkjBw=
+github.com/getCompassUtils/go_base_frame v1.0.1/go.mod h1:vixRV/CrY+4fVul190Cg9FeOEmdhF23C3P7P6VYcLoU=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=

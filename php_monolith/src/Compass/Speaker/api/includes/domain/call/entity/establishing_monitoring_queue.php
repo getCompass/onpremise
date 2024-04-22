@@ -9,6 +9,8 @@ namespace Compass\Speaker;
  */
 class Domain_Call_Entity_EstablishingMonitoringQueue {
 
+	public const MONITORING_FINISH_REASON = CALL_FINISH_REASON_LOSE_CONNECTION;
+	
 	/**
 	 * Получаем все записи
 	 */

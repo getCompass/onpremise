@@ -70,4 +70,14 @@ abstract class Gateway_Socket_Default {
 		$socket_module_config = getConfig("SOCKET_MODULE");
 		return $socket_url_config["integration"] . $socket_module_config["integration"]["socket_path"];
 	}
+
+	/**
+	 * Получаем url
+	 */
+	protected static function _getSocketPremiseUrl():string {
+
+		$socket_url_config    = getConfig("SOCKET_URL");
+		$socket_module_config = getConfig("SOCKET_MODULE");
+		return $socket_url_config["premise"] . $socket_module_config["premise"]["socket_path"];
+	}
 }

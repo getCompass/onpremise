@@ -27,21 +27,22 @@ define("DOMINO_ID"				, "${DOMINO_ID}");
 // например, для сессий, при формировании ссылок всегда
 // нужно учитывать, что для приложения может быть указан
 // дополнительный путь после доменного имени
-define("DOMAIN_PIVOT"			, "${PIVOT_DOMAIN}");
-define("DOMAIN_ANNOUNCEMENT"	, "${ANNOUNCEMENT_DOMAIN}");
+define("DOMAIN_PIVOT"				, "${PIVOT_DOMAIN}");
+define("DOMAIN_ANNOUNCEMENT"			, "${ANNOUNCEMENT_DOMAIN}");
 define("DOMAIN_REGEX"           		, "${DOMAIN_REGEX}");
 
 // протоколы для точек входа, сами точки входа уже содержат
 // в себе протоколы, эти константы нужны для ряда редких случав
-define("WEB_PROTOCOL_PRIVATE"	, "${PRIVATE_PROTOCOL}");
-define("WEB_PROTOCOL_PUBLIC"	, "${PUBLIC_PROTOCOL}");
+define("WEB_PROTOCOL_PRIVATE"			, "${PRIVATE_PROTOCOL}");
+define("WEB_PROTOCOL_PUBLIC"			, "${PUBLIC_PROTOCOL}");
 
 // точки входя для сокет-запросов (протокол PRIVATE_PROTOCOL)
 define("ENTRYPOINT_PIVOT"				, "${ENTRYPOINT_PIVOT}");
-define("ENTRYPOINT_ANNOUNCEMENT"		, "${ENTRYPOINT_ANNOUNCEMENT}");
+define("ENTRYPOINT_ANNOUNCEMENT"			, "${ENTRYPOINT_ANNOUNCEMENT}");
 define("ENTRYPOINT_FEDERATION"			, "${ENTRYPOINT_FEDERATION}");
+define("ENTRYPOINT_PREMISE"				, "${ENTRYPOINT_PREMISE}");
 define("ENTRYPOINT_USERBOT"				, "${ENTRYPOINT_USERBOT}");
-define("ENTRYPOINT_INTERCOM"			, "${ENTRYPOINT_INTERCOM}");
+define("ENTRYPOINT_INTERCOM"				, "${ENTRYPOINT_INTERCOM}");
 define("ENTRYPOINT_PARTNER"				, "${ENTRYPOINT_PARTNER}");
 define("ENTRYPOINT_DOMINO"				, "${ENTRYPOINT_DOMINO}");
 define("ENTRYPOINT_INTEGRATION"			, "${ENTRYPOINT_INTEGRATION}");
@@ -50,6 +51,7 @@ define("ENTRYPOINT_INTEGRATION"			, "${ENTRYPOINT_INTEGRATION}");
 define("PUBLIC_ENTRYPOINT_START"			, "${PUBLIC_ENTRYPOINT_START}");
 define("PUBLIC_ENTRYPOINT_PIVOT"			, "${PUBLIC_ENTRYPOINT_PIVOT}");
 define("PUBLIC_ENTRYPOINT_FEDERATION"		, "${PUBLIC_ENTRYPOINT_FEDERATION}");
+define("PUBLIC_ENTRYPOINT_PREMISE"			, "${PUBLIC_ENTRYPOINT_PREMISE}");
 define("PUBLIC_ENTRYPOINT_ANNOUNCEMENT"		, "${PUBLIC_ENTRYPOINT_ANNOUNCEMENT}");
 define("PUBLIC_ENTRYPOINT_ANALYTIC"			, "${PUBLIC_ENTRYPOINT_ANALYTIC}");
 define("PUBLIC_ENTRYPOINT_USERBOT"			, "${PUBLIC_ENTRYPOINT_USERBOT}");
@@ -64,6 +66,7 @@ define("PUBLIC_ENTRYPOINT_JOIN"			, "${PUBLIC_ENTRYPOINT_JOIN}");
 define("PUBLIC_ENTRYPOINT_INVITE"			, "${PUBLIC_ENTRYPOINT_INVITE}");
 define("PUBLIC_ENTRYPOINT_SOLUTION"			, "${PUBLIC_ENTRYPOINT_SOLUTION}");
 define("PUBLIC_ENTRYPOINT_BILLING"        	, "${PUBLIC_ENTRYPOINT_BILLING}");
+define("PUBLIC_ENTRYPOINT_LICENSE"		      , "${PUBLIC_ENTRYPOINT_LICENSE}");
 
 // точки входа для веб-сокет подключений
 define("PUBLIC_WEBSOCKET_PIVOT"			, "${PUBLIC_WEBSOCKET_PIVOT}");
@@ -101,8 +104,8 @@ define("ENCRYPT_KEY_COMPANY_SESSION"	, "${ENCRYPT_KEY_COMPANY_SESSION}"); // к�
 define("ENCRYPT_IV_COMPANY_SESSION"		, "${ENCRYPT_IV_COMPANY_SESSION}");  // вектор шифрования для сущности session_key
 
 // для SESSION - отдельный
-define("ENCRYPT_KEY_PIVOT_SESSION"                    , "${ENCRYPT_KEY_PIVOT_SESSION}"); // ключ шифрования для сущности session_key
-define("ENCRYPT_IV_PIVOT_SESSION"                     , "${ENCRYPT_IV_PIVOT_SESSION}"); // вектор шифрования для сущности session_key
+define("ENCRYPT_KEY_PIVOT_SESSION"        , "${ENCRYPT_KEY_PIVOT_SESSION}"); // ключ шифрования для сущности session_key
+define("ENCRYPT_IV_PIVOT_SESSION"         , "${ENCRYPT_IV_PIVOT_SESSION}");  // вектор шифрования для сущности session_key
 
 // для всего остального - один
 define("ENCRYPT_KEY_DEFAULT"			, "${ENCRYPT_KEY_DEFAULT}"); // ключ
@@ -181,9 +184,10 @@ define("SOCKET_KEY_GO_RATING"          			, "${SOCKET_KEY_GO_RATING}");
 define("SOCKET_KEY_GO_EVENT"					, "${SOCKET_KEY_GO_EVENT}");
 define("SOCKET_KEY_SENDER"          			, "${SOCKET_KEY_GO_SENDER}");
 define("SOCKET_KEY_PIVOT"          			      , "${SOCKET_KEY_PIVOT}");
-define("SOCKET_KEY_CRM"		      	, "${SOCKET_KEY_CRM}");
-define("SOCKET_KEY_FILE_NODE"             , "${SOCKET_KEY_FILE_NODE}");
+define("SOCKET_KEY_CRM"		      			, "${SOCKET_KEY_CRM}");
+define("SOCKET_KEY_FILE_NODE"             		, "${SOCKET_KEY_FILE_NODE}");
 define("SOCKET_KEY_WWW"						, "${SOCKET_KEY_WWW}");
+define("SOCKET_KEY_GO_PUSHER"					, "${SOCKET_KEY_GO_PUSHER}");
 
 define("INTEGRATION_AUTHORIZATION_TOKEN"        	, "${INTEGRATION_AUTHORIZATION_TOKEN}");
 
@@ -267,6 +271,6 @@ define("NEED_SEND_GUEST_MEMBER_PUSH"			, ${NEED_SEND_GUEST_MEMBER_PUSH});
 // имя пользователя используемое для тестирования QA (чтобы отделить от реальных пользователей)
 define("TEST_USER_NAME_PREFIX"                        , "${TEST_USER_NAME_PREFIX}");
 
-define("ON_PREMISE_VERSION"					, ${ON_PREMISE_VERSION});
+define("ONPREMISE_VERSION"                , "${ONPREMISE_VERSION}");
 
 // @formatter:on

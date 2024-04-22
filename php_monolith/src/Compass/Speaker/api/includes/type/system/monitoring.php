@@ -167,7 +167,7 @@ class Type_System_Monitoring {
 
 		// отправляем ошибки
 		$text = implode("\n", $logs);
-		Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_KEY, $text);
+		Gateway_Notice_Sender::sendGroup(LEGACY_NOTICE_PROVIDER_CHANNEL_KEY, $text);
 	}
 
 	// обновляем курсор в базе

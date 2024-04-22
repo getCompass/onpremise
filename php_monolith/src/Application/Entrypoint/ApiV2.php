@@ -23,7 +23,7 @@ class ApiV2 {
 		}
 
 		// получаем обработчик для указанного пути
-		$handler = Resolver::instance()->resolveHandlerByRoute($module_name, "apiv2", $route);
+		$handler = Resolver::instance()->resolveHandlerByRoute($module_name, "apiv2", mb_strtolower($route));
 
 		return $handler->handle($method_name, $post, $user_id);
 	}

@@ -5,6 +5,7 @@ namespace Compass\Speaker;
 // ---------------------------------------------
 // РАБОЧИЕ КЛАССЫ
 // ---------------------------------------------
+use BaseFrame\Server\ServerProvider;
 
 /**
  * команды каждую минуту
@@ -16,7 +17,9 @@ class Cron_General_MinuteHandler {
 		console("-- [minuteHandler] start --");
 
 		// мониторинг ошибок
-		Type_System_Monitoring::work();
+		if (!ServerProvider::isOnPremise()) {
+			Type_System_Monitoring::work();
+		}
 	}
 }
 

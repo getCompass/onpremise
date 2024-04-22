@@ -34,6 +34,18 @@ class Domain_User_Action_AddBot {
 		Gateway_Db_CompanyData_MemberList::insertOrUpdate(
 			$user_id, $role, $npc_type, $permissions, $mbti_type, $full_name, "", $avatar_file_key, $comment, $extra
 		);
+
+		self::_actionsAfterAddBot($user_id, $npc_type, $role, $permissions);
 	}
 
+	/**
+	 * выполняем действия после добавления бота
+	 *
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 */
+	protected static function _actionsAfterAddBot(int $bot_user_id, int $npc_type, int $role, int $permissions):void {
+
+		// отправляем ивент в premise-модуль о вступлении в пространство бота
+		Domain_Premise_Entity_Event_SpaceNewMember::create($bot_user_id, $npc_type, $role, $permissions);
+	}
 }

@@ -432,6 +432,9 @@ class Domain_User_Scenario_Api {
 		}
 
 		Gateway_Event_Dispatcher::dispatch(Type_Event_UserCompany_UserLeftCompany::create($user_id), true);
+
+		// отправляем ивент в premise-модуль
+		Domain_Premise_Entity_Event_SpaceLeftMember::create($user_id);
 	}
 
 	/**

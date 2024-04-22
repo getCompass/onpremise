@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * Действие создание пользователя-человека
  */
@@ -22,6 +24,7 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 	 * @param array  $extra
 	 * @param int    $set_user_id
 	 * @param int    $default_partner_id
+	 * @param int    $is_root
 	 *
 	 * @return Struct_Db_PivotUser_User
 	 * @throws Domain_User_Exception_PhoneNumberBinding
@@ -40,10 +43,14 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 		string $avatar_file_map,
 		array  $extra,
 		int    $set_user_id = 0,
-		int    $default_partner_id = 0
+		int    $default_partner_id = 0,
+		int    $is_root = 0
 	):Struct_Db_PivotUser_User {
 
-		return static::effect(static::store(static::prepare(...func_get_args()), $set_user_id, $default_partner_id))->user;
+		$prepare_data          = static::prepare(...func_get_args());
+		$prepare_data->is_root = $is_root;
+
+		return static::effect(static::store($prepare_data, $set_user_id, $default_partner_id))->user;
 	}
 
 	/**
@@ -240,6 +247,13 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 
 		// отправляем в партнерскую программу событие о регистрации пользователя
 		Domain_Partner_Entity_Event_UserRegistered::create($data->user->user_id);
+
+		if (!ServerProvider::isOnPremise()) {
+			return $data;
+		}
+
+		// отправляем в premise-модуль событие о регистрации пользователя
+		Gateway_Socket_Premise::userRegistered($data->user->user_id, $data->user->npc_type, $data->prepare_data->is_root);
 
 		return $data;
 	}

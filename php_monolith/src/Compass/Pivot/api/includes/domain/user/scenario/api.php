@@ -1137,6 +1137,11 @@ class Domain_User_Scenario_Api {
 			// отправляем в партнерку
 			Type_User_ActionAnalytics::send($user_id, Type_User_ActionAnalytics::DELETE_ACCOUNT);
 		}
+
+		// отправляем событие об удалении профиля в premise-модуль
+		if (ServerProvider::isOnPremise()) {
+			Domain_Premise_Entity_Event_UserProfileDeleted::create($user_id);
+		}
 	}
 
 	/**

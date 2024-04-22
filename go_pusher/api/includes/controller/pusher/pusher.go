@@ -4,12 +4,13 @@ import (
 	"context"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
-	"go_pusher/api/conf"
 	"go_pusher/api/includes/type/analyticspush"
 	"go_pusher/api/includes/type/apns"
 	"go_pusher/api/includes/type/device"
 	"go_pusher/api/includes/type/firebase"
+	"go_pusher/api/includes/type/gwsolution"
 	"go_pusher/api/includes/type/huawei"
+	"go_pusher/api/includes/type/premise"
 	"go_pusher/api/includes/type/push"
 	"go_pusher/api/includes/type/push/badge"
 	"go_pusher/api/includes/type/push/textpush"
@@ -470,17 +471,23 @@ func requestSender(taskType int, providerInfoList []push.ProviderInfo, pushData 
 		return
 	}
 
+	serverInfo, err := premise.GetCurrent()
+
+	if err != nil {
+		log.Errorf("cant request sender to send push. Error: %v", err)
+	}
+
 	pushTask := push.PushTaskStruct{
-		ServerUid:        conf.GetConfig().ServerUid,
+		ServerUid:        serverInfo.ServerUid,
 		Uuid:             functions.GenerateUuid(),
 		Type:             taskType,
 		ProviderInfoList: providerInfoList,
 		PushData:         pushData,
 	}
-	err := socket.SendPush(pushTask)
+	err = gwsolution.SendPush(pushTask)
 
 	if err != nil {
-		log.Errorf("cant request sender to send push %v", pushTask)
+		log.Errorf("cant request sender to send push %v. Error: %v", pushTask, err)
 	}
 
 }

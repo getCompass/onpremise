@@ -12,7 +12,7 @@ use BaseFrame\Search\Query\MatchBuilder;
  */
 class Domain_User_Entity_Search extends MatchBuilder {
 
-	protected const _MIN_QUERY_LEN = 1;
+	protected const _MIN_QUERY_LEN = 2;
 	protected const _MAX_QUERY_LEN = 255;
 
 	/**
@@ -23,7 +23,7 @@ class Domain_User_Entity_Search extends MatchBuilder {
 	public static function validateSearchQuery(string $full_name):void {
 
 		$query_len = mb_strlen(trim($full_name));
-		if ($query_len < self::_MIN_QUERY_LEN || $query_len > self::_MAX_QUERY_LEN) {
+		if ($query_len < 1 || $query_len > self::_MAX_QUERY_LEN) {
 			throw new ParamException("incorrect search query");
 		}
 	}
@@ -47,11 +47,11 @@ class Domain_User_Entity_Search extends MatchBuilder {
 
 		// чистим всю строку от мусора
 		$search_query = self::_clearQuery($search_query);
-		$search_query = self::_escapeQuery($search_query);
 
 		// подготавливаем поисковый запрос именно для fulltext mysql
 		// отрезаем спецсимволы, на которые ругается mysql, подготовливаем слова для поиска
-		$phrase_mod           = trim(preg_replace("/[><()~*:\"&|@+-]/", "", $search_query, -1));
+		$phrase_mod           = trim(preg_replace("/[><()~*:\"';%&|@+-]/", "", $search_query, -1));
+		$phrase_mod           = self::_escapeQuery($phrase_mod);
 		$raw_search_word_list = preg_split("/[\s,.]/", $phrase_mod, -1, PREG_SPLIT_NO_EMPTY);
 
 		// убираем слишком мелкие куски

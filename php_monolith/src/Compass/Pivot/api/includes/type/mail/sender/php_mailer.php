@@ -38,8 +38,9 @@ class Type_Mail_Sender_PhpMailer extends Type_Mail_Sender_AbstractProvider {
 		$mailer            = new PHPMailer(true);
 		$mailer->SMTPDebug = $this->_debug_level;
 		$mailer->isSMTP();
-		$mailer->CharSet = self::_CHARSET;
-		$mailer->Host    = $host;
+		$mailer->CharSet     = self::_CHARSET;
+		$mailer->Host        = $host;
+		$mailer->SMTPAutoTLS = false;
 
 		// значение по умолчанию
 		$mailer->SMTPAuth = false;

@@ -28,3 +28,6 @@ styled-system-static
 
 # dev file
 .vite_php
+
+dist
+web/src/private/custom.ts

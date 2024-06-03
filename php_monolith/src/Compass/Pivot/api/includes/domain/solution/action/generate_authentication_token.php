@@ -7,26 +7,36 @@ namespace Compass\Pivot;
  */
 class Domain_Solution_Action_GenerateAuthenticationToken {
 
-	protected const _TOKEN_TTL = 10 * 60;
+	protected const _TOKEN_TTL = 30 * 60;
 
 	/**
 	 * Генерирует токен авторизации для указанного пользователя.
 	 */
-	public static function exec(int $user_id, int|false $expires_at = false, string|false $join_link_uniq = false):string {
+	public static function exec(int $user_id, string|false $join_link_uniq = false):array {
 
 		// генерируем токен и ключ
-		$authentication_key = generateUUID();
-		$expires_at         = $expires_at ?: time() + static::_TOKEN_TTL;
+		/** @var Struct_Solution_AuthenticationKeyCache|false $authentication_key_obj */
+		$authentication_key_obj = ShardingGateway::cache()->get(static::makeKey($user_id));
+
+		if ($authentication_key_obj !== false && $authentication_key_obj->expires_at > time()) {
+
+			$expires_at = $authentication_key_obj->expires_at;
+			$token      = Domain_Solution_Entity_AuthenticationToken::generate($user_id, $expires_at, $authentication_key_obj->authentication_key, $join_link_uniq);
+			return [$token, $expires_at];
+		}
+
+		$authentication_key     = generateUUID();
+		$expires_at             = time() + self::_TOKEN_TTL;
+		$authentication_key_obj = new Struct_Solution_AuthenticationKeyCache(
+			$authentication_key,
+			$expires_at
+		);
+
+		ShardingGateway::cache()->set(static::makeKey($user_id), $authentication_key_obj, self::_TOKEN_TTL);
 
 		$token = Domain_Solution_Entity_AuthenticationToken::generate($user_id, $expires_at, $authentication_key, $join_link_uniq);
 
-		if ($expires_at > time()) {
-
-			// TODO: Memcache — решение для MVP, нужно что-то более основательное
-			ShardingGateway::cache()->set(static::makeKey($user_id), $authentication_key, max(0, $expires_at - time()));
-		}
-
-		return $token;
+		return [$token, $expires_at];
 	}
 
 	/**

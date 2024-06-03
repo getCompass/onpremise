@@ -257,7 +257,10 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 			throw new EndpointAccessDeniedException("need authenticate first");
 		}
 
-		$token = Domain_Solution_Scenario_OnPremiseWeb::generateAuthenticationToken($this->user_id, $join_link_uniq);
-		return $this->ok(["authentication_token" => $token]);
+		[$token, $expires_at] = Domain_Solution_Scenario_OnPremiseWeb::generateAuthenticationToken($this->user_id, $join_link_uniq);
+		return $this->ok([
+			"authentication_token" => (string) $token,
+			"expires_at"           => (int) $expires_at,
+		]);
 	}
 }

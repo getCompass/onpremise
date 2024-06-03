@@ -107,8 +107,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		$is_need_to_create_user = !is_null($integration_response) && in_array(Domain_Integration_Entity_Notifier::ACTION_UPDATE_USER_PROFILE, array_column($integration_response->action_list, "action"))
 			? false : $is_need_to_create_user;
 
+		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
-			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
+			$token,
 			$is_need_to_create_user,
 			Type_User_Main::get($user_id),
 			!is_null($integration_response) ? $integration_response->action_list : [],

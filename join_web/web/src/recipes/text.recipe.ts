@@ -147,19 +147,25 @@ export const text = defineRecipe({
 			f8f8f8: {
 				color: "f8f8f8",
 			},
+			"248248248.05": {
+				color: "rgba(248, 248, 248, 0.5)"
+			},
+			ff6a64: {
+				color: "ff6a64",
+			},
 		},
 		font: {
 			regular: {
 				fontFamily: "lato_regular",
-				fontWeight: "400",
+				fontWeight: "normal",
 			},
 			bold: {
 				fontFamily: "lato_bold",
-				fontWeight: "700",
+				fontWeight: "normal",
 			},
 			bold900: {
 				fontFamily: "lato_black",
-				fontWeight: "900",
+				fontWeight: "normal",
 			},
 		},
 	},

@@ -51,12 +51,14 @@ class Onpremiseweb_Joinlink extends \BaseFrame\Controller\Api {
 		} catch (cs_UserAlreadyInCompany $e) {
 
 			return $this->error(static::ECODE_UJL_ALREADY_ACCEPTED, "already a space member", [
-				"company_id"         => $e->getCompanyId(),
-				"inviter_user_id"    => $e->getInviterUserId(),
-				"inviter_full_name"  => $e->getInviterFullName(),
-				"is_post_moderation" => $e->getFlagPostModeration(),
-				"role"               => ($e->getEntryOption() === 2 ? "guest" : "member"),
-				"was_member"         => $e->getFlagWasMember(),
+				"company_id"                    => $e->getCompanyId(),
+				"inviter_user_id"               => $e->getInviterUserId(),
+				"inviter_full_name"             => $e->getInviterFullName(),
+				"is_post_moderation"            => $e->getFlagPostModeration(),
+				"is_waiting_for_postmoderation" => $e->getFlagIsWaitingForPostModeration(),
+				"role"                          => ($e->getEntryOption() === 2 ? "guest" : "member"),
+				"was_member"                    => $e->getFlagWasMember(),
+				"join_link_uniq"                => $e->getJoinLinkUniq(),
 			]);
 		} catch (cs_ExitTaskInProgress) {
 			return $this->error(static::ECODE_USER_DISMISS_PROGRESS, "user has not finished exit the company yet");

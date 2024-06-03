@@ -1,7 +1,8 @@
-import { Box, HStack, styled, VStack } from "../../styled-system/jsx";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import {Box, HStack, styled, VStack} from "../../styled-system/jsx";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useAtomValue, useSetAtom} from "jotai";
 import {
+	authenticationTokenTimeLeft,
 	authInputState,
 	authState,
 	confirmPasswordState,
@@ -12,20 +13,21 @@ import {
 	prepareJoinLinkErrorState,
 	useToastConfig,
 } from "../api/_stores.ts";
-import { useLangString } from "../lib/getLangString.ts";
-import { Text } from "../components/text.tsx";
-import { Button } from "../components/button.tsx";
-import { useApiAuthGenerateToken } from "../api/auth.ts";
-import { copyToClipboard } from "../lib/copyToClipboard.ts";
-import { useApiJoinLinkAccept } from "../api/joinlink.ts";
+import {useLangString} from "../lib/getLangString.ts";
+import {Text} from "../components/text.tsx";
+import {Button} from "../components/button.tsx";
+import {useApiAuthGenerateToken} from "../api/auth.ts";
+import {copyToClipboard} from "../lib/copyToClipboard.ts";
+import {useApiJoinLinkAccept} from "../api/joinlink.ts";
 import LogoutButtonMobile from "../components/LogoutButtonMobile.tsx";
-import { useAtom } from "jotai/index";
-import Toast, { useShowToast } from "../lib/Toast.tsx";
+import {useAtom} from "jotai/index";
+import Toast, {useShowToast} from "../lib/Toast.tsx";
 import useDeviceDetect from "../lib/useDeviceDetect.ts";
-import { Menu, MenuContent, MenuItem, MenuItemGroup, MenuPositioner, MenuTrigger } from "../components/menu.tsx";
-import { Portal } from "@ark-ui/react";
+import {Menu, MenuContent, MenuItem, MenuItemGroup, MenuPositioner, MenuTrigger} from "../components/menu.tsx";
+import {Portal} from "@ark-ui/react";
 import Preloader20 from "../components/Preloader20.tsx";
-import { ALREADY_MEMBER_ERROR_CODE, PrepareJoinLinkErrorAlreadyMemberData } from "../api/_types.ts";
+import {ALREADY_MEMBER_ERROR_CODE, PrepareJoinLinkErrorAlreadyMemberData} from "../api/_types.ts";
+import {DynamicTimerAuthenticationToken} from "../components/DynamicTimerAuthenticationToken.tsx";
 
 const AppGalleryIcon = () => {
 	return (
@@ -172,7 +174,7 @@ type StepTwoContentProps = {
 	setStoreMenuOpen: (value: boolean) => void;
 };
 
-const StepTwoContent = ({ childBlockWidth, isStoreMenuOpen, setStoreMenuOpen }: StepTwoContentProps) => {
+const StepTwoContent = ({childBlockWidth, isStoreMenuOpen, setStoreMenuOpen}: StepTwoContentProps) => {
 	const langStringPageTokenStep2DescPt1Mobile = useLangString("page_token.step_2.desc_pt1_mobile");
 	const langStringPageTokenStep2DescPt2Mobile = useLangString("page_token.step_2.desc_pt2_mobile");
 	const langStringPageTokenStep2ButtonMobile = useLangString("page_token.step_2.button_mobile");
@@ -250,8 +252,8 @@ const StepTwoContent = ({ childBlockWidth, isStoreMenuOpen, setStoreMenuOpen }: 
 			</HStack>
 			<Menu
 				isOpen={isStoreMenuOpen}
-				onSelect={({ value }) => onSelectHandler(value)}
-				positioning={{ placement: "top", offset: { mainAxis: 10 } }}
+				onSelect={({value}) => onSelectHandler(value)}
+				positioning={{placement: "top", offset: {mainAxis: 10}}}
 			>
 				<VStack w="100%" gap="0px">
 					<MenuTrigger
@@ -283,7 +285,7 @@ const StepTwoContent = ({ childBlockWidth, isStoreMenuOpen, setStoreMenuOpen }: 
 							<MenuItemGroup id="stores">
 								<MenuItem id="app_store">
 									<HStack gap="12px">
-										<AppStoreIcon />
+										<AppStoreIcon/>
 										<Text fs="18" lh="27" color="333e49" opacity="80%" font="regular">
 											{langStringPageTokenMobileStoresAppstore}
 										</Text>
@@ -291,7 +293,7 @@ const StepTwoContent = ({ childBlockWidth, isStoreMenuOpen, setStoreMenuOpen }: 
 								</MenuItem>
 								<MenuItem id="google_play">
 									<HStack gap="12px">
-										<GooglePlayIcon />
+										<GooglePlayIcon/>
 										<Text fs="18" lh="27" color="333e49" opacity="80%" font="regular">
 											{langStringPageTokenMobileStoresGooglePlay}
 										</Text>
@@ -299,7 +301,7 @@ const StepTwoContent = ({ childBlockWidth, isStoreMenuOpen, setStoreMenuOpen }: 
 								</MenuItem>
 								<MenuItem id="app_gallery">
 									<HStack gap="12px">
-										<AppGalleryIcon />
+										<AppGalleryIcon/>
 										<Text fs="18" lh="27" color="333e49" opacity="80%" font="regular">
 											{langStringPageTokenMobileStoresAppGallery}
 										</Text>
@@ -320,8 +322,7 @@ type StepOneContentProps = {
 	setStoreMenuOpen: (value: boolean) => void;
 };
 
-const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenuOpen }: StepOneContentProps) => {
-	const langStringPageTokenLifeTimeMobile = useLangString("token_life_time_mobile");
+const StepOneContent = ({scrollableParentBlockRef, parentBlockRef, setStoreMenuOpen}: StepOneContentProps) => {
 	const langStringPageTokenStep1LoginDescPt1 = useLangString("page_token.step_1.login_desc_pt1");
 	const langStringPageTokenStep1LoginDescPt2Mobile = useLangString("page_token.step_1.login_desc_pt2_mobile");
 	const langStringPageTokenStep1LoginButton = useLangString("page_token.step_1.login_button");
@@ -330,14 +331,40 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 
 	const joinLink = useAtomValue(joinLinkState);
 	const prepareJoinLinkError = useAtomValue(prepareJoinLinkErrorState);
+	const timeLeft = useAtomValue(authenticationTokenTimeLeft);
+	const isAuthenticationTokenExpired = useMemo(() => timeLeft <= 0, [timeLeft]);
+
+	const apiAuthGenerateToken = useApiAuthGenerateToken();
+
+	useEffect(() => {
+
+		let join_link_uniq = joinLink === null ? undefined : joinLink.join_link_uniq;
+
+		if (
+			prepareJoinLinkError !== null &&
+			prepareJoinLinkError.error_code === ALREADY_MEMBER_ERROR_CODE &&
+			prepareJoinLinkError.data !== undefined
+		) {
+
+			const prepareJoinLinkErrorData
+				= prepareJoinLinkError.data as PrepareJoinLinkErrorAlreadyMemberData;
+
+			join_link_uniq = prepareJoinLinkErrorData.join_link_uniq
+		}
+		apiAuthGenerateToken.mutate({join_link_uniq: join_link_uniq})
+	}, []);
 
 	// приходится извращаться с этой кнопкой на мобилках, иначе не на всех мобилках работает ховер на этой кнопке
 	useEffect(() => {
+
 		if (copyButtonRef.current) {
 			copyButtonRef.current.addEventListener(
 				"touchstart",
 				function () {
-					this.style.backgroundColor = "#0066d6";
+
+					if (!this.disabled) {
+						this.style.backgroundColor = "#0066d6";
+					}
 				},
 				false
 			);
@@ -345,14 +372,16 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 			copyButtonRef.current.addEventListener(
 				"touchend",
 				function () {
-					this.style.backgroundColor = "#007aff";
+
+					if (!this.disabled) {
+						this.style.backgroundColor = "#007aff";
+					}
 				},
 				false
 			);
 		}
 	}, [copyButtonRef]);
 
-	const apiAuthGenerateToken = useApiAuthGenerateToken(joinLink === null ? undefined : joinLink.join_link_uniq);
 
 	return (
 		<VStack gap="16px">
@@ -381,36 +410,42 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 			</HStack>
 			{apiAuthGenerateToken.isLoading || !apiAuthGenerateToken.data ? (
 				<VStack w="100%" bgColor="000000.01" rounded="8px" px="12px" py="12px" gap="4px" ref={parentBlockRef}>
-					<Box w="100%" h="19px" bgColor="434455" rounded="3px" />
-					<Box w="100%" h="19px" bgColor="434455" rounded="3px" />
-					<Box w="100%" h="19px" bgColor="434455" rounded="3px" />
+					<Box w="100%" h="19px" bgColor="434455" rounded="3px"/>
+					<Box w="100%" h="19px" bgColor="434455" rounded="3px"/>
+					<Box w="100%" h="19px" bgColor="434455" rounded="3px"/>
 				</VStack>
 			) : (
-				<Box ref={parentBlockRef} w="100%" bgColor="000000.01" rounded="8px" px="8px" py="12px">
-					<Text
-						overflow="breakWord"
-						color="f8f8f8"
-						opacity="50%"
-						fs="16"
-						lh="22"
-						font="regular"
-						onClick={() => {
-							if (parentBlockRef.current) {
-								copyToClipboard(
-									apiAuthGenerateToken.data.authentication_token,
-									scrollableParentBlockRef.current,
-									parentBlockRef.current
-								);
-							}
-						}}
-					>
-						{apiAuthGenerateToken.data.authentication_token.substring(0, 80)}
-					</Text>
-				</Box>
+				<VStack w="100%" rounded="8px" gap="0px" alignItems="start">
+					<Box ref={parentBlockRef} w="100%" bgColor="000000.01" rounded="8px" px="8px" py="12px">
+						<Text
+							overflow="breakWord"
+							color="f8f8f8"
+							opacity={!isAuthenticationTokenExpired ? "50%" : "10%"}
+							fs="16"
+							lh="22"
+							font="regular"
+							onClick={() => {
+								if (parentBlockRef.current && !isAuthenticationTokenExpired) {
+									copyToClipboard(
+										apiAuthGenerateToken.data.authentication_token,
+										scrollableParentBlockRef.current,
+										parentBlockRef.current
+									);
+								}
+							}}
+						>
+							{apiAuthGenerateToken.data.authentication_token.substring(0, 80)}
+						</Text>
+					</Box>
+					<DynamicTimerAuthenticationToken
+						key="mobile_dynamic_timer"
+						apiAuthGenerateToken={apiAuthGenerateToken}/>
+				</VStack>
 			)}
 			<Button
 				ref={copyButtonRef}
 				size="full"
+				disabled={isAuthenticationTokenExpired}
 				onClick={(event) => {
 					if (joinLink !== null) {
 						event.stopPropagation();
@@ -452,14 +487,11 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 				}}
 			>
 				{apiAuthGenerateToken.isLoading || !apiAuthGenerateToken.data ? (
-					<Preloader20 />
+					<Preloader20/>
 				) : (
 					langStringPageTokenStep1LoginButton
 				)}
 			</Button>
-			<Text style="lato_14_20_400" color="f8f8f8" opacity="50%">
-				{langStringPageTokenLifeTimeMobile}
-			</Text>
 		</VStack>
 	);
 };
@@ -468,7 +500,7 @@ type PageInviteMobileProps = {
 	headerContent: JSX.Element;
 };
 
-const PageInviteMobile = ({ headerContent }: PageInviteMobileProps) => {
+const PageInviteMobile = ({headerContent}: PageInviteMobileProps) => {
 	const langStringCreateNewPasswordDialogSuccessTooltipMessage = useLangString(
 		"create_new_password_dialog.success_tooltip_message"
 	);
@@ -496,7 +528,7 @@ const PageInviteMobile = ({ headerContent }: PageInviteMobileProps) => {
 			return;
 		}
 
-		apiJoinLinkAccept.mutateAsync({ join_link_uniq: joinLink.join_link_uniq });
+		apiJoinLinkAccept.mutateAsync({join_link_uniq: joinLink.join_link_uniq});
 	}, []);
 
 	// очищаем из local storage
@@ -525,7 +557,7 @@ const PageInviteMobile = ({ headerContent }: PageInviteMobileProps) => {
 
 	useEffect(() => {
 		if (parentBlockRef.current) {
-			const { offsetWidth } = parentBlockRef.current;
+			const {offsetWidth} = parentBlockRef.current;
 			setChildBlockWidth(offsetWidth);
 		}
 	}, [parentBlockRef.current]);
@@ -553,7 +585,7 @@ const PageInviteMobile = ({ headerContent }: PageInviteMobileProps) => {
 
 	return (
 		<>
-			<Toast toastConfig={pageToastConfig} />
+			<Toast toastConfig={pageToastConfig}/>
 			<VStack
 				ref={scrollableParentBlockRef}
 				gap="32px"
@@ -566,19 +598,19 @@ const PageInviteMobile = ({ headerContent }: PageInviteMobileProps) => {
 				onClick={() => setStoreMenuOpen(false)}
 			>
 				<VStack gap="0px" width="100%" alignItems="end" px="16px">
-					<LogoutButtonMobile />
+					<LogoutButtonMobile/>
 					{headerContent}
 				</VStack>
 				<Box w="100%" px="24px">
 					<VStack w="100%" gap="16px">
-						<Box w="100%" bgColor="434455" p="16px" rounded="12px">
+						<Box w="100%" bgColor="434455" px="16px" pb="16px" pt="15px" rounded="12px">
 							<StepOneContent
 								scrollableParentBlockRef={scrollableParentBlockRef}
 								parentBlockRef={parentBlockRef}
 								setStoreMenuOpen={setStoreMenuOpen}
 							/>
 						</Box>
-						<Box w="100%" bgColor="434455" p="16px" rounded="12px">
+						<Box w="100%" bgColor="434455" px="16px" pb="16px" pt="15px" rounded="12px">
 							<StepTwoContent
 								childBlockWidth={childBlockWidth}
 								isStoreMenuOpen={isStoreMenuOpen}

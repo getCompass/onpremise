@@ -1,7 +1,9 @@
 import {useGetResponse} from "./_index.ts";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useNavigatePage} from "../components/hooks.ts";
 import useIsJoinLink from "../lib/useIsJoinLink.ts";
+import {useSetAtom} from "jotai";
+import {authenticationTokenState} from "./_stores.ts";
 
 export function useApiAuthLogout() {
 
@@ -33,21 +35,25 @@ export function useApiAuthLogout() {
 	});
 }
 
+export type ApiAuthGenerateTokenAcceptArgs = {
+	join_link_uniq: undefined|string;
+};
+
 export type ApiAuthGenerateToken = {
 	authentication_token: string,
+	expires_at: number
 }
 
-export function useApiAuthGenerateToken(join_link_uniq?: string) {
+export function useApiAuthGenerateToken() {
 
 	const getResponse = useGetResponse("pivot");
+	const setAuthenticationToken = useSetAtom(authenticationTokenState);
 
-	return useQuery({
+	return useMutation({
 
 		retry: false,
-		refetchOnWindowFocus: false,
 		networkMode: "always",
-		queryKey: ["auth/generateToken"],
-		queryFn: async () => {
+		mutationFn: async ({ join_link_uniq }: ApiAuthGenerateTokenAcceptArgs) => {
 
 			const body = new URLSearchParams();
 
@@ -55,7 +61,10 @@ export function useApiAuthGenerateToken(join_link_uniq?: string) {
 				body.append("join_link_uniq", join_link_uniq);
 			}
 
-			return await getResponse<ApiAuthGenerateToken>("auth/generateToken", body);
+			const response = await getResponse<ApiAuthGenerateToken>("auth/generateToken", body);
+			setAuthenticationToken(response.authentication_token)
+
+			return response;
 		},
 	});
 }

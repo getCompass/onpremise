@@ -20,7 +20,7 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 	];
 
 	/**
-	 * Начинаем смену номера телефона
+	 * Начинаем смену номера телефон
 	 *
 	 * @throws cs_IncorrectSaltVersion
 	 * @throws \cs_UnpackHasFailed

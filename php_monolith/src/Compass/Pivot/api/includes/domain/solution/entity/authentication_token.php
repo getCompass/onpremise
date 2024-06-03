@@ -21,9 +21,9 @@ class Domain_Solution_Entity_AuthenticationToken {
 		$sign    = static::_singPayload($payload, Gateway_Lic_OnPremise::getSignKey());
 
 		return \BaseFrame\String\Base58::encode(toJson([
+			"sign"    => $sign,
 			"version" => static::_PAYLOAD_VERSION,
 			"payload" => $payload,
-			"sign"    => $sign,
 		]));
 	}
 

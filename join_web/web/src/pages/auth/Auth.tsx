@@ -231,7 +231,7 @@ function Auth() {
 					ref={forgotPasswordButtonRef}
 					position="absolute"
 					size="px0py0"
-					color="f8f8f8"
+					color="f8f8f8_30"
 					textSize="lato_13_18_400"
 					onClick={() => onForgotPasswordButtonClick()}
 					style={{

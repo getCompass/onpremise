@@ -26,6 +26,8 @@ export const isPasswordChangedState = atom(false);
 
 export const captchaPublicKeyState = atom("");
 
+export const authenticationTokenState = atom("");
+
 export const availableAuthMethodListState = atom<string[]>([]);
 export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({ auth_sso_start_button_text: "" });
 export const userInfoDataState = atomWithImmer<ApiUserInfoData|null>(null);
@@ -36,6 +38,7 @@ export const firstAuthState = atom(false);
 export const loadingState = atom(true);
 
 export const langState = atom<Lang>("ru");
+export const authenticationTokenTimeLeft = atom(0);
 
 export const toastConfigState = atomWithImmer<{
 	[dialogId: string]: {

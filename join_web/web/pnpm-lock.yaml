@@ -95,8 +95,8 @@ devDependencies:
     specifier: ^10.1.0
     version: 10.1.0(postcss@8.4.31)
   postcss-transform-shortcut:
-    specifier: github:jonathantneal/postcss-transform-shortcut
-    version: git@github.com+jonathantneal/postcss-transform-shortcut/e9ff559258d133cea625355e6aec876b4320c391
+    specifier: csstools/postcss-transform-shortcut
+    version: github.com/csstools/postcss-transform-shortcut/e9ff559258d133cea625355e6aec876b4320c391
   react-circular-progressbar:
     specifier: ^2.1.0
     version: 2.1.0(react@18.2.0)
@@ -6961,8 +6961,8 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
 
-  git@github.com+jonathantneal/postcss-transform-shortcut/e9ff559258d133cea625355e6aec876b4320c391:
-    resolution: {commit: e9ff559258d133cea625355e6aec876b4320c391, repo: git@github.com:jonathantneal/postcss-transform-shortcut.git, type: git}
+  github.com/csstools/postcss-transform-shortcut/e9ff559258d133cea625355e6aec876b4320c391:
+    resolution: {tarball: https://codeload.github.com/csstools/postcss-transform-shortcut/tar.gz/e9ff559258d133cea625355e6aec876b4320c391}
     name: postcss-transform-shortcut
     version: 2.0.1
     engines: {node: '>=6.9.1'}

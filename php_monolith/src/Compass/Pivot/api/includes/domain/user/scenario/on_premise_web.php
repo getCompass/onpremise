@@ -267,9 +267,9 @@ class Domain_User_Scenario_OnPremiseWeb {
 		$story->handleSuccess($user_id);
 		Domain_User_Entity_Antispam_Auth::successAuth($story->getAuthPhoneHandler()->getPhoneNumber());
 		self::_onSuccessAuth($story, $user_id);
-
+		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
-			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
+			$token,
 			Type_User_Main::isEmptyProfile($user_id),
 			!is_null($integration_response) ? $integration_response->action_list : [],
 		];

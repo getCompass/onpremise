@@ -146,7 +146,21 @@ export const button = defineRecipe({
 					},
 				},
 			},
-			"f8f8f8": {
+			"f8f8f8_80": {
+				color: "f8f8f8",
+				opacity: "80%",
+				_active: {
+					opacity: "30%",
+				},
+				_enabled: {
+					["@media (hover: hover) and (pointer: fine)"]: {
+						"&:hover": {
+							opacity: "50%",
+						}
+					},
+				},
+			},
+			"f8f8f8_30": {
 				color: "f8f8f8",
 				opacity: "30%",
 				_active: {
@@ -219,6 +233,7 @@ export const button = defineRecipe({
 			full_desktop: {w: "100%", px: "16px", py: "6px", minHeight: "35px"},
 			fullPy12: {w: "100%", px: "16px", py: "12px"},
 			px21py6: {px: "21px", py: "6px"},
+			px20py6: {px: "20px", py: "6px"},
 			px0py8: {px: "0px", py: "8px"},
 			px8py8: {px: "8px", py: "8px"},
 		},

@@ -197,9 +197,9 @@ class Domain_User_Scenario_OnPremiseWeb_Security_Mail {
 			"has_password" => 1,
 		]);
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
-
+		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
-			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
+			$token,
 			Type_User_Main::isEmptyProfile($user_id),
 		];
 	}

@@ -114,8 +114,10 @@ export type PrepareJoinLinkErrorAlreadyMemberData = {
 	inviter_user_id: number;
 	inviter_full_name: string;
 	is_postmoderation: number;
+	is_waiting_for_postmoderation: number;
 	role: number;
 	was_member_before: number;
+	join_link_uniq: string;
 };
 
 export type APIJoinLinkInfo = {

@@ -184,8 +184,8 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	const TRY_AUTHENTICATION_TOKEN = [
 		"key"    => "TRY_AUTHENTICATION_TOKEN",
-		"limit"  => 30,
-		"expire" => 15 * 60,
+		"limit"  => 500,
+		"expire" => HOUR1,
 	];
 
 	const AUTH_MAIL_ENTERING_PASSWORD = [

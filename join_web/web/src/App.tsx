@@ -95,7 +95,7 @@ const Page = () => {
 
 				if (prepareJoinLinkError.error_code === ALREADY_MEMBER_ERROR_CODE) {
 
-					if ((prepareJoinLinkError.data as PrepareJoinLinkErrorAlreadyMemberData).is_postmoderation == 1) {
+					if ((prepareJoinLinkError.data as PrepareJoinLinkErrorAlreadyMemberData).is_waiting_for_postmoderation == 1) {
 						return <PageInviteWaitingForPostModeration/>;
 					}
 

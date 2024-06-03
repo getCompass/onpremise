@@ -26,3 +26,6 @@
 
 /doc/db/*.mwb.bak
 /codeception/tests/_output/
+/web/src/private/custom.ts
+/web/dist/
+/web/dist/*

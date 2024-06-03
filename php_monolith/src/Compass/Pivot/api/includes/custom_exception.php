@@ -477,18 +477,22 @@ class cs_UserAlreadyInCompany extends \cs_ExceptionWithIndex {
 	protected int    $_inviter_user_id;
 	protected string $_inviter_full_name;
 	protected int    $_is_post_moderation;
+	protected int    $_is_waiting_for_post_moderation;
 	protected int    $_entry_option;
 	protected int    $_was_member;
+	protected string $_join_link_uniq;
 
-	public function __construct(int $user_id = 0, int $company_id = 0, int $inviter_user_id = 0, string $inviter_full_name = "", int $is_post_moderation = 0, int $entry_option = 0, int $was_member = 0, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $user_id = 0, int $company_id = 0, int $inviter_user_id = 0, string $inviter_full_name = "", int $is_post_moderation = 0, int $entry_option = 0, int $was_member = 0, string $join_link_uniq = "", int $is_waiting_for_post_moderation = 0, string $message = "", int $code = 0, \Throwable $previous = null) {
 
-		$this->_user_id            = $user_id;
-		$this->_company_id         = $company_id;
-		$this->_inviter_user_id    = $inviter_user_id;
-		$this->_inviter_full_name  = $inviter_full_name;
-		$this->_is_post_moderation = $is_post_moderation;
-		$this->_entry_option       = $entry_option;
-		$this->_was_member         = $was_member;
+		$this->_user_id                        = $user_id;
+		$this->_company_id                     = $company_id;
+		$this->_inviter_user_id                = $inviter_user_id;
+		$this->_inviter_full_name              = $inviter_full_name;
+		$this->_is_post_moderation             = $is_post_moderation;
+		$this->_is_waiting_for_post_moderation = $is_waiting_for_post_moderation;
+		$this->_entry_option                   = $entry_option;
+		$this->_was_member                     = $was_member;
+		$this->_join_link_uniq                 = $join_link_uniq;
 		parent::__construct(0, $message, $code, $previous);
 	}
 
@@ -569,6 +573,14 @@ class cs_UserAlreadyInCompany extends \cs_ExceptionWithIndex {
 	}
 
 	/**
+	 * получаем флаг, находится ли сейчас участник на постмодерации
+	 */
+	public function getFlagIsWaitingForPostModeration():int {
+
+		return $this->_is_waiting_for_post_moderation;
+	}
+
+	/**
 	 * получаем entry_option
 	 */
 	public function getEntryOption():int {
@@ -582,6 +594,14 @@ class cs_UserAlreadyInCompany extends \cs_ExceptionWithIndex {
 	public function getFlagWasMember():int {
 
 		return $this->_was_member;
+	}
+
+	/**
+	 * получаем код инвайта, по которому было принято приглашение
+	 */
+	public function getJoinLinkUniq():string {
+
+		return $this->_join_link_uniq;
 	}
 }
 

@@ -1,4 +1,3 @@
-"use client"
 import {createContext, forwardRef, useContext, type ComponentType} from "react"
 
 type AnyProps = Record<string, unknown>

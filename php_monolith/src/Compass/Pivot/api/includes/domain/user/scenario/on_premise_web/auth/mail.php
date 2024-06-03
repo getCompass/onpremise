@@ -221,8 +221,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		$story->handleSuccess($user_id);
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
 
+		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
-			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
+			$token,
 			Type_User_Main::isEmptyProfile($user_id),
 			!is_null($integration_response) ? $integration_response->action_list : [],
 		];
@@ -470,9 +471,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 			"has_code" => 1,
 		]);
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
-
+		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
-			Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq),
+			$token,
 			Type_User_Main::isEmptyProfile($user_id),
 			!is_null($integration_response) ? $integration_response->action_list : [],
 		];

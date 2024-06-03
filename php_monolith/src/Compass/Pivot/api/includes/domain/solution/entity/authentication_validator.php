@@ -28,9 +28,11 @@ class Domain_Solution_Entity_AuthenticationValidator {
 		}
 
 		$token_cache_key = Domain_Solution_Action_GenerateAuthenticationToken::makeKey($authentication_token_data->user_id);
-		$last_active_key = ShardingGateway::cache()->get($token_cache_key);
 
-		if ($last_active_key !== $authentication_token_data->authentication_key) {
+		/** @var Struct_Solution_AuthenticationKeyCache|false $last_active_key_obj */
+		$last_active_key_obj = ShardingGateway::cache()->get($token_cache_key);
+
+		if ($last_active_key_obj === false || $last_active_key_obj->authentication_key !== $authentication_token_data->authentication_key) {
 			throw new Domain_Solution_Exception_BadAuthenticationToken("bad token data");
 		}
 

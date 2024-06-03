@@ -121,7 +121,8 @@ class Domain_Link_Entity_Link {
 				[$inviter_user_info, $entry_option, $is_postmoderation, $is_exit_status_in_progress, $was_member] = $answer;
 
 				throw new cs_UserAlreadyInCompany(
-					$user_id, $invite_link_rel_row->company_id, $inviter_user_info->user_id, $inviter_user_info->full_name, $is_postmoderation, $entry_option, $was_member
+					$user_id, $invite_link_rel_row->company_id, $inviter_user_info->user_id, $inviter_user_info->full_name, $is_postmoderation,
+					$entry_option, $was_member, $invite_link_rel_row->join_link_uniq
 				);
 			}
 
@@ -141,11 +142,9 @@ class Domain_Link_Entity_Link {
 			$answer = Domain_Company_Entity_JoinLink_Main::getJoinLinkInfo($company, $user_id, $invite_link_rel_row->join_link_uniq);
 			[$inviter_user_info, $entry_option, $is_postmoderation, $is_exit_status_in_progress, $was_member] = $answer;
 
-			// если на пивоте есть информация, что пользователь ожидает одобрения вступления
-			$is_postmoderation |= $is_waiting_for_postmoderation;
-
 			throw new cs_UserAlreadyInCompany(
-				$user_id, $invite_link_rel_row->company_id, $inviter_user_info->user_id, $inviter_user_info->full_name, $is_postmoderation, $entry_option, $was_member
+				$user_id, $invite_link_rel_row->company_id, $inviter_user_info->user_id, $inviter_user_info->full_name, $is_postmoderation, $entry_option,
+				$was_member, $invite_link_rel_row->join_link_uniq, $is_waiting_for_postmoderation
 			);
 		}
 

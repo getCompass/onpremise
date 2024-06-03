@@ -1,5 +1,7 @@
 import {APIResponse} from "./_types";
 import {FetchError, ofetch} from "ofetch";
+// @ts-ignore
+import {getPublicPathApi} from "../private/custom.ts";
 
 export class ApiError extends Error {
 	error_code: number;
@@ -9,11 +11,13 @@ export class ApiError extends Error {
 	inviter_user_id: number;
 	inviter_full_name: string;
 	is_postmoderation: number;
+	is_waiting_for_postmoderation: number;
 	role: number;
 	was_member_before: number;
 	expires_at: number;
+	join_link_uniq: string;
 
-	constructor(message: string, error_code: number, next_attempt: number, available_attempts: number, company_id: number, inviter_user_id: number, inviter_full_name: string, is_postmoderation: number, role: number, was_member_before: number, expires_at: number) {
+	constructor(message: string, error_code: number, next_attempt: number, available_attempts: number, company_id: number, inviter_user_id: number, inviter_full_name: string, is_postmoderation: number, is_waiting_for_postmoderation: number, role: number, was_member_before: number, expires_at: number, join_link_uniq: string) {
 
 		super(message);
 		this.name = "ApiError";
@@ -24,9 +28,11 @@ export class ApiError extends Error {
 		this.inviter_user_id = inviter_user_id;
 		this.inviter_full_name = inviter_full_name;
 		this.is_postmoderation = is_postmoderation;
+		this.is_waiting_for_postmoderation = is_waiting_for_postmoderation;
 		this.role = role;
 		this.was_member_before = was_member_before;
 		this.expires_at = expires_at;
+		this.join_link_uniq = join_link_uniq;
 	}
 }
 
@@ -62,7 +68,7 @@ export function useGetResponse(module: GET_RESPONSE_MODULE) {
 
 		try {
 
-			const result = await ofetch<APIResponse<T>>(`/${module}/api/onpremiseweb/${method}/`, {
+			const result = await ofetch<APIResponse<T>>(getPublicPathApi() + `/${module}/api/onpremiseweb/${method}/`, {
 				method: "POST",
 				body,
 				headers: {
@@ -79,7 +85,9 @@ export function useGetResponse(module: GET_RESPONSE_MODULE) {
 					// @ts-ignore
 					result.response.inviter_user_id ?? 0, result.response.inviter_full_name ?? "", result.response.is_post_moderation ?? 0,
 					// @ts-ignore
-					result.response.role ?? 0, result.response.was_member ?? 0, result.response.expires_at ?? 0
+					result.response.is_waiting_for_postmoderation ?? 0, result.response.role ?? 0, result.response.was_member ?? 0,
+					// @ts-ignore
+					result.response.expires_at ?? 0, result.response.join_link_uniq ?? "",
 				)
 			}
 

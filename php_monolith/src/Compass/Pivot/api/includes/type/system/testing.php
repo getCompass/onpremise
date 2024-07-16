@@ -13,6 +13,9 @@ use BaseFrame\Server\ServerProvider;
  *
  * @method static isForceExitTaskNotExist
  * @method static isIgnoreMailAuthScenarioException
+ * @method static isIgnoreMailScenarioException
+ * @method static isMailScenarioException
+ * @method static isIgnoreMailResendException
  */
 class Type_System_Testing {
 
@@ -59,4 +62,38 @@ class Type_System_Testing {
 		$value = (int) $value;
 		return $value == 1;
 	}
+
+	/**
+	 * нужно ли кинуть ошибку проверки на full/short при сценарии через почту
+	 */
+	protected static function _isMailScenarioException():bool {
+
+		$value = getHeader("HTTP_MAIL_SCENARIO_EXCEPTION");
+
+		$value = (int) $value;
+		return $value == 1;
+	}
+
+	/**
+	 * нужно ли игнорировать проверки на full/short при сценарии через почту
+	 */
+	protected static function _isIgnoreMailScenarioException():bool {
+
+		$value = getHeader("HTTP_IGNORE_MAIL_SCENARIO_EXCEPTION");
+
+		$value = (int) $value;
+		return $value == 1;
+	}
+
+	/**
+	 * нужно ли игнорировать проверку переотправки
+	 */
+	protected static function _isIgnoreMailResendException():bool {
+
+		$value = getHeader("HTTP_IGNORE_MAIL_RESEND_EXCEPTION");
+
+		$value = (int) $value;
+		return $value == 1;
+	}
+
 }

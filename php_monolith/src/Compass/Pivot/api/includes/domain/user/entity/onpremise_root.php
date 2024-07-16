@@ -11,6 +11,8 @@ class Domain_User_Entity_OnpremiseRoot {
 
 	public const ONPREMISE_ROOT_USER_ID_KEY = "ONPREMISE_ROOT_USER_ID";
 
+	public const ONPREMISE_ROOT_USER_SSO_LOGIN_KEY = "ONPREMISE_ROOT_USER_SSO_LOGIN_KEY";
+
 	/**
 	 * Получить user_id рут-пользователя.
 	 *
@@ -47,5 +49,48 @@ class Domain_User_Entity_OnpremiseRoot {
 		if ($user_id === self::getUserId()) {
 			throw new Domain_User_Exception_IsOnpremiseRoot("this is root user on premise environment");
 		}
+	}
+
+	/**
+	 * Установить в конфиг sso логин рут-пользователя.
+	 * В данном поле может быть почта/номер телефона/(при необходимости могут быть добавлены другие другие типы логинов аутентификации от SSO в дальнейшем)
+	 *
+	 * @throws ReturnFatalException
+	 */
+	public static function setSsoLogin(string $sso_login):void {
+
+		if ($sso_login == "") {
+			throw new ReturnFatalException("sso login name is empty");
+		}
+
+		$value = ["value" => $sso_login];
+		Type_System_Config::init()->set(self::ONPREMISE_ROOT_USER_SSO_LOGIN_KEY, $value);
+	}
+
+	/**
+	 * Получить из конфига SSO логин рут-пользователя.
+	 */
+	public static function getSsoLoginName():string|bool {
+
+		$conf = Type_System_Config::init()->getConf(self::ONPREMISE_ROOT_USER_SSO_LOGIN_KEY);
+
+		return $conf["value"] ?? false;
+	}
+
+	/**
+	 * Проверить по списку что среди sso логинов есть от рут-пользователя.
+	 * В данном списке может быть почта/номер телефона (при необходимости другие логины аутентификации от SSO в дальнейшем)
+	 *
+	 */
+	public static function hasSsoLoginNameByList(array $sso_login_list):bool {
+
+		foreach ($sso_login_list as $sso_login) {
+
+			if (self::getSsoLoginName() === $sso_login) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

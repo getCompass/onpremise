@@ -2,9 +2,10 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Request\EmptyAuthorizationException;
 use BaseFrame\Exception\Request\EndpointAccessDeniedException;
+use BaseFrame\Exception\Request\InvalidAuthorizationException;
 use BaseFrame\Router\Request;
-use BaseFrame\Exception\Domain\ReturnFatalException;
 
 /**
  * Авторизация для веб-сайта on-premise решений.
@@ -30,7 +31,7 @@ class Middleware_OnPremiseWebAuthorization implements \BaseFrame\Router\Middlewa
 				if (Type_User_Main::isDisabledProfile($user_info->extra)) {
 
 					Type_Session_Main::doLogoutSession($user_id);
-					throw new \cs_SessionNotFound("session not found case profile deleted");
+					throw new InvalidAuthorizationException("session not found case profile deleted");
 				}
 
 				// проверяем, что к методу можно получить доступ с пустым профилем
@@ -42,7 +43,7 @@ class Middleware_OnPremiseWebAuthorization implements \BaseFrame\Router\Middlewa
 				}
 			}
 
-		} catch (\cs_SessionNotFound|cs_CookieIsEmpty|ReturnFatalException) {
+		} catch (EmptyAuthorizationException|InvalidAuthorizationException) {
 
 			$user_id = 0;
 

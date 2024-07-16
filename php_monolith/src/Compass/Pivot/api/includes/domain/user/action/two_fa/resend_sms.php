@@ -12,16 +12,16 @@ class Domain_User_Action_TwoFa_ResendSms {
 	/**
 	 * действие переотправки смс
 	 *
-	 * @param Domain_User_Entity_TwoFa_Story $story
+	 * @param Domain_User_Entity_Confirmation_TwoFa_Story $story
 	 *
-	 * @return Domain_User_Entity_TwoFa_Story
+	 * @return Domain_User_Entity_Confirmation_TwoFa_Story
 	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_TwoFaTypeIsInvalid
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 * @throws \BaseFrame\Exception\Domain\LocaleTextNotFound
 	 */
-	public static function do(Domain_User_Entity_TwoFa_Story $story):Domain_User_Entity_TwoFa_Story {
+	public static function do(Domain_User_Entity_Confirmation_TwoFa_Story $story):Domain_User_Entity_Confirmation_TwoFa_Story {
 
 		try {
 
@@ -32,7 +32,7 @@ class Domain_User_Action_TwoFa_ResendSms {
 		}
 
 		// получим ключ с которой будем брать текст по типу токена
-		$key = Domain_User_Entity_TwoFa_TwoFa::getGroupNameByActionType($story->getTwoFaInfo()->action_type);
+		$key = Domain_User_Entity_Confirmation_Main::getGroupNameByActionType($story->getTwoFaInfo()->action_type);
 
 		// формируем текст сообщения
 		$sms_text = \BaseFrame\System\Locale::getText(getConfig("LOCALE_TEXT"), "sms_confirm", $key, \BaseFrame\System\Locale::getLocale(), [
@@ -42,7 +42,7 @@ class Domain_User_Action_TwoFa_ResendSms {
 		// отправляем задачу в sms сервис
 		$sms_id       = self::_resendSms($story, $sms_text);
 		$time         = time();
-		$next_attempt = $time + Domain_User_Entity_TwoFa_Story::NEXT_ATTEMPT_AFTER;
+		$next_attempt = $time + Domain_User_Entity_Confirmation_TwoFa_Story::NEXT_ATTEMPT_AFTER;
 
 		$phone_info = $story->getPhoneInfo();
 		Gateway_Db_PivotAuth_TwoFaPhoneList::set($phone_info->two_fa_map, [
@@ -56,7 +56,7 @@ class Domain_User_Action_TwoFa_ResendSms {
 		$phone_info->next_resend_at = $next_attempt;
 		$phone_info->resend_count++;
 
-		return new Domain_User_Entity_TwoFa_Story($story->getTwoFaInfo(), $phone_info);
+		return new Domain_User_Entity_Confirmation_TwoFa_Story($story->getTwoFaInfo(), $phone_info);
 	}
 
 	/**
@@ -65,7 +65,7 @@ class Domain_User_Action_TwoFa_ResendSms {
 	 * @return string
 	 * @throws \queryException
 	 */
-	protected static function _resendSms(Domain_User_Entity_TwoFa_Story $story, string $sms_text):string {
+	protected static function _resendSms(Domain_User_Entity_Confirmation_TwoFa_Story $story, string $sms_text):string {
 
 		// получаем информацию о номере, куда ранее отправили смс
 		$phone_info = $story->getPhoneInfo();

@@ -38,6 +38,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 		"auth",
 		"space_tariff",
 		"user_onboarding",
+		"security_mail",
+		"security_phone",
 	];
 
 	// поддерживаемые методы которые доступны без авторизации (при создании новой группы заносятся вручную)
@@ -57,6 +59,27 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	// методы, которые запрещены на on-premise
 	public const NOT_ALLOWED_METHODS_FOR_ON_PREMISE = [
 		"auth.sendAttributionOfRegistration",
+	];
+
+	// методы, которые запрещены в saas
+	public const NOT_ALLOWED_METHODS_FOR_SAAS = [
+		"security.mail.changePassword",
+		"security.mail.tryResetPassword",
+		"security.mail.confirmResetPassword",
+		"security.mail.finishResetPassword",
+		"security.mail.add",
+		"security.mail.setPasswordOnShortAdd",
+		"security.mail.setPasswordOnFullAdd",
+		"security.mail.confirmCodeOnFullAdd",
+		"security.mail.resendCode",
+		"security.mail.change",
+		"security.mail.setOnShortChange",
+		"security.mail.confirmOldByCodeOnFullChange",
+		"security.mail.setOnFullChange",
+		"security.mail.confirmNewByCodeOnFullChange",
+		"security.mail.confirmMailPasswordStory",
+		"security.phone.add",
+		"security.phone.confirmAddition",
 	];
 
 	/**
@@ -125,6 +148,10 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 			$extra["not_allowed_method_list"] = array_merge($extra["not_allowed_method_list"], self::NOT_ALLOWED_METHODS_FOR_ON_PREMISE);
 		}
 
+		if (ServerProvider::isSaas()) {
+			$extra["not_allowed_method_list"] = array_merge($extra["not_allowed_method_list"], self::NOT_ALLOWED_METHODS_FOR_SAAS);
+		}
+
 		try {
 
 			$authorization_class = Middleware_PivotAuthorization::class;
@@ -140,6 +167,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 				\BaseFrame\Router\Middleware\ObserveExceptions::class,
 				\BaseFrame\Router\Middleware\ValidateRequest::class,
 				\BaseFrame\Router\Middleware\SetExceptionHandler::class,
+				Middleware_AuthCookieToHeader::class,
 				$authorization_class,
 				\BaseFrame\Router\Middleware\ModifyHandler::class,
 				\BaseFrame\Router\Middleware\InitializeController::class,
@@ -148,6 +176,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 				Middleware_AddCustomAction::class,
 				\BaseFrame\Router\Middleware\Run::class,
 				\BaseFrame\Router\Middleware\ValidateResponse::class,
+				\BaseFrame\Router\Middleware\AttachAuthData::class,
 				\BaseFrame\Router\Middleware\ApplicationUserTimeSpent::class,
 			]);
 

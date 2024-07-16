@@ -230,6 +230,13 @@ class Type_Thread_Message_Handler_Default {
 				$new_message = Type_Thread_Message_Main::getLastVersionHandler()
 					::makeThreadQuoteItemParentCall($message["sender_user_id"], $message["data"]["call_map"]);
 				break;
+			case CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE:
+
+				$new_message = Type_Thread_Message_Main::getLastVersionHandler()
+					::makeThreadQuoteItemParentMediaConference(
+						$message["sender_user_id"], $message["data"]["conference_id"],
+						$message["data"]["conference_accept_status"], $message["data"]["conference_link"]);
+				break;
 
 			default:
 				throw new ParseFatalException("get unknown type of parent message");
@@ -397,6 +404,17 @@ class Type_Thread_Message_Handler_Default {
 		return $message;
 	}
 
+	// создать сообщение типа "родитель-конференция для цитаты в треде"
+	public static function makeThreadQuoteItemParentMediaConference(int $sender_user_id, string $conference_id, string $conference_accept_status, string $conference_link):array {
+
+		$message                          = self::_getDefaultStructure(THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE, $sender_user_id);
+		$message["data"]["conference_id"] = $conference_id;
+		$message["data"]["conference_accept_status"]        = $conference_accept_status;
+		$message["data"]["conference_link"]          = $conference_link;
+
+		return $message;
+	}
+
 	# endregion
 	##########################################################
 
@@ -524,6 +542,45 @@ class Type_Thread_Message_Handler_Default {
 		}
 
 		return $message["data"]["call_map"];
+	}
+
+	// получает conference_id конференции, прикрепленного к сообщению
+	public static function getConferenceId(array $message):string {
+
+		self::_checkVersion($message);
+
+		// если сообщение не типа звонок
+		if ($message["type"] != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			throw new ParseFatalException("Trying to get call_map of message, which is not TYPE_MEDIA_CONFERENCE");
+		}
+
+		return $message["data"]["conference_id"];
+	}
+
+	// получает статус конференции, прикрепленного к сообщению
+	public static function getConferenceAcceptStatus(array $message):string {
+
+		self::_checkVersion($message);
+
+		// если сообщение не типа звонок
+		if ($message["type"] != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			throw new ParseFatalException("Trying to get call_map of message, which is not TYPE_MEDIA_CONFERENCE");
+		}
+
+		return $message["data"]["conference_accept_status"];
+	}
+
+	// получает ссылку на конференцию, прикрепленного к сообщению
+	public static function getConferenceLink(array $message):string {
+
+		self::_checkVersion($message);
+
+		// если сообщение не типа звонок
+		if ($message["type"] != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			throw new ParseFatalException("Trying to get call_map of message, which is not TYPE_MEDIA_CONFERENCE");
+		}
+
+		return $message["data"]["conference_link"];
 	}
 
 	// получаем список упомянутых из сообщения

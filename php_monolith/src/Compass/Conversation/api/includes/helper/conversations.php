@@ -602,6 +602,7 @@ class Helper_Conversations {
 		if (($user_id == $sender_user_id && $message_type != CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST)
 			|| $message_type == CONVERSATION_MESSAGE_TYPE_SYSTEM
 			|| $message_type == CONVERSATION_MESSAGE_TYPE_CALL
+			|| $message_type == CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE
 			|| $conversation_type == CONVERSATION_TYPE_PUBLIC_DEFAULT) {
 			$is_need_push = 0;
 		}
@@ -1823,9 +1824,9 @@ class Helper_Conversations {
 	}
 
 	// хелпер для удаления нескольких сообщения
-	public static function deleteMessageList(int $user_id, string $conversation_map, int $conversation_type,
+	public static function deleteMessageList(int   $user_id, string $conversation_map, int $conversation_type,
 							     array $message_map_list, array $meta_row,
-							     bool $is_force_delete = false):array {
+							     bool  $is_force_delete = false):array {
 
 		$dynamic_row = Domain_Conversation_Entity_Dynamic::get($conversation_map);
 		self::_throwIfConversationIsLocked($dynamic_row);
@@ -1890,7 +1891,7 @@ class Helper_Conversations {
 	 * @long
 	 */
 	protected static function _doDeleteMessageList(string $conversation_map, int $conversation_type, array $message_map_list_grouped_by_block_id,
-								     int $user_id, array $meta_row, int $user_role, bool $is_force_delete = false):array {
+								     int    $user_id, array $meta_row, int $user_role, bool $is_force_delete = false):array {
 
 		// проходимся по всем сообщениям сгруппированным по block_id и формируем массивы
 		$block_row_grouped_by_block_id       = [];
@@ -1941,7 +1942,7 @@ class Helper_Conversations {
 	}
 
 	// удаляем сообщения диалога в зависимости от его типа
-	protected static function _doDeleteMessageListDependedByConversationType(int $user_id, string $conversation_map, int $conversation_type, int $block_id,
+	protected static function _doDeleteMessageListDependedByConversationType(int   $user_id, string $conversation_map, int $conversation_type, int $block_id,
 													 array $message_map_list, int $user_role, bool $is_force_delete = false):array {
 
 		// если это диалог публичный

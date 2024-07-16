@@ -3,9 +3,10 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\RowNotFoundException;
 
 /**
- * класс-интерфейс для таблицы pivot_mail.mail_uniq_list_{0-f}
+ * Класс-интерфейс для таблицы pivot_mail.mail_uniq_list_{0-f}
  */
 class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 
@@ -46,7 +47,7 @@ class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 	/**
 	 * Метод для обновления записи по PK
 	 *
-	 * @throws \parseException
+	 * @throws ParseFatalException
 	 */
 	public static function set(string $mail_hash, array $set):int {
 
@@ -105,7 +106,9 @@ class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 
 	/**
 	 * Метод для чтения записи по PK
-	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
+	 *
+	 * @throws RowNotFoundException
+	 * @throws ParseFatalException
 	 */
 	public static function getOne(string $mail_hash):Struct_Db_PivotMail_MailUniq {
 
@@ -114,7 +117,7 @@ class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 		$row   = ShardingGateway::database(self::_getDbKey())->getOne($query, self::_getTableKey($mail_hash), $mail_hash, 1);
 
 		if (!isset($row["mail_hash"])) {
-			throw new \BaseFrame\Exception\Gateway\RowNotFoundException("mail_uniq not found");
+			throw new RowNotFoundException("mail_uniq not found");
 		}
 
 		return Struct_Db_PivotMail_MailUniq::rowToStruct($row);
@@ -122,7 +125,9 @@ class Gateway_Db_PivotMail_MailUniqList extends Gateway_Db_PivotMail_Main {
 
 	/**
 	 * Метод для чтения записи по PK с блокировкой
-	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
+	 *
+	 * @throws RowNotFoundException
+	 * @throws ParseFatalException
 	 */
 	public static function getForUpdate(string $mail_hash):Struct_Db_PivotMail_MailUniq {
 

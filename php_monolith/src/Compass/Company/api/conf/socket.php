@@ -104,6 +104,9 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"premium.onInvoicePayed",
 			"premium.onInvoiceCanceled",
 			"space.member.updatePermissions",
+			"space.member.isMediaConferenceCreatingAllowed",
+			"space.member.checkIsAllowedForCall",
+			"space.member.incConferenceMembershipRating",
 			"system.getCompanyAnalytic",
 			"space.tariff.publishAnnouncement",
 			"space.tariff.disableAnnouncements",
@@ -116,6 +119,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"space.search.tryReindex",
 		],
 	],
+
 	"premise"       => [
 		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_SSL,
 		"auth_key"      => PIVOT_TO_COMPANY_PUBLIC_KEY,
@@ -199,6 +203,8 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 		"auth_key"      => SOCKET_KEY_SPEAKER,
 		"allow_methods" => [
 			"company.main.exists",
+			"conversations.checkIsAllowedForCall",
+			"conversations.addCallMessage",
 		],
 	],
 	"userbot"       => [

@@ -314,6 +314,11 @@ class Type_Thread_Message_Handler_Default {
 					$message["sender_user_id"], $message["data"]["text"], $message["client_message_id"],
 					$message["created_at"], $mention_user_id_list, $platform
 				);
+
+				if (self::isAttachedLinkList($message)) {
+					$new_message = Type_Thread_Message_Main::getHandler($new_message)::addLinkList($new_message, $message["link_list"]);
+				}
+
 				break;
 
 			case CONVERSATION_MESSAGE_TYPE_FILE:
@@ -2858,6 +2863,10 @@ class Type_Thread_Message_Handler_Default {
 			// формируем стандартную структуру сообщения для версии V2
 			$message = self::makeStructureForConversationMessage($v);
 			$count++;
+
+			if (self::isAttachedLinkList($v)) {
+				$message = Type_Thread_Message_Main::getHandler($message)::addLinkList($message, $v["link_list"]);
+			}
 
 			// считаем также все сообщения в репостах
 			if ($message["type"] == THREAD_MESSAGE_TYPE_CONVERSATION_REPOST) {

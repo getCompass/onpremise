@@ -7,16 +7,18 @@ require_once __DIR__ . "/../start.php";
 \Compass\Pivot\Type_Session_Main::startSession();
 
 $url_list = [
-	"pivot"              => PUBLIC_ENTRYPOINT_PIVOT . "/",
-	"announcement"       => PUBLIC_ENTRYPOINT_ANNOUNCEMENT . "/",
-	"billing"            => PUBLIC_ENTRYPOINT_BILLING . "/",
-	"partner"            => PUBLIC_ENTRYPOINT_PARTNER . "/",
-	"captcha"            => PUBLIC_ENTRYPOINT_CAPTCHA . "/",
-	"captcha_enterprise" => PUBLIC_ENTRYPOINT_CAPTCHA_ENTERPRISE . "/",
-	"join"               => PUBLIC_ENTRYPOINT_JOIN . "/",
-	"invite"             => PUBLIC_ENTRYPOINT_INVITE . "/",
-	"premise"            => PUBLIC_ENTRYPOINT_PREMISE . "/",
-	"solution"		   => "",
+	"pivot"                      => PUBLIC_ENTRYPOINT_PIVOT . "/",
+	"announcement"               => PUBLIC_ENTRYPOINT_ANNOUNCEMENT . "/",
+	"billing"                    => PUBLIC_ENTRYPOINT_BILLING . "/",
+	"partner"                    => PUBLIC_ENTRYPOINT_PARTNER . "/",
+	"captcha"                    => PUBLIC_ENTRYPOINT_CAPTCHA . "/",
+	"captcha_enterprise"         => PUBLIC_ENTRYPOINT_CAPTCHA_ENTERPRISE . "/",
+	"join"                       => PUBLIC_ENTRYPOINT_JOIN . "/",
+	"invite"                     => PUBLIC_ENTRYPOINT_INVITE . "/",
+	"premise"                    => PUBLIC_ENTRYPOINT_PREMISE . "/",
+	"solution"                   => "",
+	"video_conference"           => PUBLIC_ENTRYPOINT_VIDEO_CONFERENCE . "/",
+	"video_conference_node_list" => VIDEO_CONFERENCE_NODE_LIST,
 ];
 
 foreach ($url_list as &$url) {

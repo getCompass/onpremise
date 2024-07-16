@@ -16,7 +16,7 @@ class Domain_User_Action_TwoFa_Confirm {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function do(Domain_User_Entity_TwoFa_Story $two_fa_story):void {
+	public static function do(Domain_User_Entity_Confirmation_TwoFa_Story $two_fa_story):void {
 
 		$shard_id   = Type_Pack_TwoFa::getShardIdByTime($two_fa_story->getPhoneInfo()->created_at);
 		$two_fa_map = $two_fa_story->getPhoneInfo()->two_fa_map;

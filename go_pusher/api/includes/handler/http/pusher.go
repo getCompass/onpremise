@@ -2,6 +2,7 @@ package handlerHttp
 
 import (
 	"encoding/json"
+	jitsiVoipPushQueue "go_pusher/api/includes/type/push/jitsivoippush/queue"
 	"go_pusher/api/includes/type/push/textpush/queue"
 	"go_pusher/api/includes/type/push/voippush/queue"
 )
@@ -14,8 +15,9 @@ type pusherHandler struct{}
 
 // поддерживаемые методы
 var pusherMethods = methodMap{
-	"sendPush":     pusherHandler{}.sendPush,
-	"sendVoipPush": pusherHandler{}.SendVoipPush,
+	"sendPush":          pusherHandler{}.sendPush,
+	"sendVoipPush":      pusherHandler{}.SendVoipPush,
+	"sendJitsiVoipPush": pusherHandler{}.SendJitsiVoipPush,
 }
 
 // -------------------------------------------------------
@@ -50,6 +52,20 @@ func (pusherHandler) SendVoipPush(requestBytes []byte, userId int64, companyId i
 	}
 
 	voipPushQueue.AddTask(request)
+
+	return Ok()
+}
+
+// отправляем пользователю voip-пуш для jitsi из pivot
+func (pusherHandler) SendJitsiVoipPush(requestBytes []byte, userId int64, companyId int) []byte {
+
+	request := jitsiVoipPushQueue.VoIPJitsiStruct{}
+	err := json.Unmarshal(requestBytes, &request)
+	if err != nil {
+		return Error(105, "bad json in request")
+	}
+
+	jitsiVoipPushQueue.AddTask(request)
 
 	return Ok()
 }

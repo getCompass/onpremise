@@ -30,7 +30,7 @@ class Domain_User_Action_TwoFa_Validate {
 		try {
 
 			$two_fa_map = Type_Pack_Main::replaceKeyWithMap("two_fa_key", $two_fa_key);
-			$story      = Domain_User_Entity_TwoFa_Story::getByMap($two_fa_map);
+			$story      = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 
 			$story->assertCorrectUser($user_id)
 				->assertCorrectCompanyId($company_id)

@@ -1,0 +1,204 @@
+/* Functions BEGIN */
+
+@import 'functions';
+
+/* Functions END */
+
+/* Variables BEGIN */
+
+@import 'variables';
+
+/* Variables END */
+
+/* Mixins BEGIN */
+
+@import "mixins";
+
+/* Mixins END */
+
+/* Animations END */
+
+/* Flags BEGIN */
+$flagsImagePath: "../images/";
+@import "../node_modules/bc-css-flags/dist/css/bc-css-flags.scss";
+/* Flags END */
+
+/* Modules BEGIN */
+@import 'reset';
+@import 'base';
+@import 'utils';
+@import 'overlay/overlay';
+@import 'inlay';
+@import 'reload_overlay/reload_overlay';
+@import 'mini_toolbox';
+@import 'modals/desktop-picker/desktop-picker';
+@import 'modals/dialog';
+@import 'modals/invite/info';
+@import 'modals/screen-share/share-audio';
+@import 'modals/screen-share/share-screen-warning';
+@import 'modals/whiteboard';
+@import 'videolayout_default';
+@import 'subject';
+@import 'popup_menu';
+@import 'recording';
+@import 'login_menu';
+@import 'chat';
+@import 'ringing/ringing';
+@import 'welcome_page';
+@import 'welcome_page_content';
+@import 'welcome_page_settings_toolbar';
+@import 'toolbars';
+@import 'redirect_page';
+@import 'components/input-slider';
+@import '404';
+@import 'policy';
+@import 'popover';
+@import 'filmstrip/horizontal_filmstrip';
+@import 'filmstrip/small_video';
+@import 'filmstrip/tile_view';
+@import 'filmstrip/tile_view_overrides';
+@import 'filmstrip/vertical_filmstrip';
+@import 'filmstrip/vertical_filmstrip_overrides';
+@import 'unsupported-browser/main';
+@import 'deep-linking/main';
+@import 'transcription-subtitles';
+@import '_meetings_list.scss';
+@import 'navigate_section_list';
+@import 'third-party-branding/google';
+@import 'third-party-branding/microsoft';
+@import 'promotional-footer';
+@import 'chrome-extension-banner';
+@import 'settings-button';
+@import 'meter';
+@import 'premeeting/main';
+@import 'modals/invite/invite_more';
+@import 'modals/security/security';
+@import 'responsive';
+@import 'participants-pane';
+@import 'reactions-menu';
+@import 'plan-limit';
+@import 'user-media-permissions-overlay';
+@import 'background-mobile';
+
+/* Modules END */
+
+@font-face {
+    font-family: "Lato Regular";
+    src: url('../fonts/lato/Lato-Regular.woff2') format('woff2'),
+    url('../fonts/lato/Lato-Regular.woff') format('woff'),
+    url('../fonts/lato/Lato-Regular.ttf') format('truetype');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Lato Medium";
+    src: url('../fonts/lato/Lato-Medium.woff2') format('woff2'),
+    url('../fonts/lato/Lato-Medium.woff') format('woff'),
+    url('../fonts/lato/Lato-Medium.ttf') format('truetype');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Lato SemiBold";
+    src: url('../fonts/lato/Lato-Semibold.woff2') format('woff2'),
+    url('../fonts/lato/Lato-Semibold.woff') format('woff'),
+    url('../fonts/lato/Lato-Semibold.ttf') format('truetype');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Lato Bold";
+    src: url('../fonts/lato/Lato-Bold.woff2') format('woff2'),
+    url('../fonts/lato/Lato-Bold.woff') format('woff'),
+    url('../fonts/lato/Lato-Bold.ttf') format('truetype');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Lato Black";
+    src: url('../fonts/lato/Lato-Black.woff2') format('woff2'),
+    url('../fonts/lato/Lato-Black.woff') format('woff'),
+    url('../fonts/lato/Lato-Black.ttf') format('truetype');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Inter Regular";
+    src: url('../fonts/inter/Inter-Regular.woff2') format('woff2');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Inter Medium";
+    src: url('../fonts/inter/Inter-Medium.woff2') format('woff2');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Inter SemiBold";
+    src: url('../fonts/inter/Inter-SemiBold.woff2') format('woff2');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Inter Bold";
+    src: url('../fonts/inter/Inter-Bold.woff2') format('woff2');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Inter Black";
+    src: url('../fonts/inter/Inter-Black.woff2') format('woff2');
+    font-style: normal;
+    text-rendering: optimizeLegibility;
+    font-display: swap;
+}
+
+.close-icon-button {
+    & svg {
+        fill: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    &:hover {
+        & svg {
+            fill: rgba(255, 255, 255, 1) !important;
+        }
+    }
+}
+
+.invisible-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.invisible-scrollbar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome, Safari, newer versions of Edge */
+}
+
+// Wrap new scrollbar properties in @supports rule for browsers without `::-webkit-scrollbar-*` support
+// This way chrome won't override `::-webkit-scrollbar-*` selectors
+@supports not (-webkit-touch-callout: none) {
+    * {
+        scrollbar-width: none;
+        -ms-overflow-style: none; // IE and Edge
+    }
+}

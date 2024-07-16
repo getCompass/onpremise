@@ -90,6 +90,17 @@ class Domain_User_Entity_Auth_Config {
 	}
 
 	/**
+	 * включена ли опция альтернативной аутентификации при SSO
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 */
+	public static function isAuthorizationAlternativeEnabled():bool {
+
+		return self::_getConfig(self::_KEY_AUTH_SSO)["authorization_alternative_enabled"];
+	}
+
+	/**
 	 * получаем контент конфига
 	 *
 	 * @return array

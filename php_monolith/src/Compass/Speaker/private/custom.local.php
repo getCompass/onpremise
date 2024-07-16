@@ -26,13 +26,13 @@ define(__NAMESPACE__ . "\JANUS_USER_TOKEN_SECRET"			, "${JANUS_USER_TOKEN_SECRET
 // -------------------------------------------------------
 
 // флаг, включен ли сбор аналитики по соединениям
-define(__NAMESPACE__ . "\ANALYTICS_IS_ENABLED"			, "${ANALYTICS_IS_ENABLED}");
+define(__NAMESPACE__ . "\ANALYTICS_IS_ENABLED"			, ${ANALYTICS_IS_ENABLED});
 
 // флаг, включена ли сортировка событий janus по приоритетности
-define(__NAMESPACE__ . "\SORT_EVENTS_BY_IMPORTANCE_IS_ENABLED"	, "${SORT_EVENTS_BY_IMPORTANCE_IS_ENABLED}");
+define(__NAMESPACE__ . "\SORT_EVENTS_BY_IMPORTANCE_IS_ENABLED"	, ${SORT_EVENTS_BY_IMPORTANCE_IS_ENABLED});
 
 // флаг, включен ли сбор трасировки сети до участников звонка
-define(__NAMESPACE__ . "\IS_USER_NETWORK_TRACEROUTE_ENABLED"	, "${IS_USER_NETWORK_TRACEROUTE_ENABLED}");
+define(__NAMESPACE__ . "\IS_USER_NETWORK_TRACEROUTE_ENABLED"	, ${IS_USER_NETWORK_TRACEROUTE_ENABLED});
 
 // глобально отключенные группы событий для логирования
 define(__NAMESPACE__ . "\GLOBAL_DISABLED_ANALYTICS_EVENT_GROUP_LIST", ${GLOBAL_DISABLED_ANALYTICS_EVENT_GROUP_LIST});

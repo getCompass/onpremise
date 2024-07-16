@@ -32,10 +32,13 @@ func (h *httpHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	signature := v.Get("signature")
 
 	// проверяем подпись
-	err = socketAuthKey.VerifyCompanySignature(jsonParams, signature, companyId)
-	if err != nil {
-		log.Errorf("VerifyCompanySignature error: %v", err)
-		return
+	if len(signature) > 0 || companyId > 0 {
+
+		err = socketAuthKey.VerifyCompanySignature(jsonParams, signature, companyId)
+		if err != nil {
+			log.Errorf("VerifyCompanySignature error: %v", err)
+			return
+		}
 	}
 
 	response := handlerHttp.DoStart(method, jsonParams, userId, companyId)

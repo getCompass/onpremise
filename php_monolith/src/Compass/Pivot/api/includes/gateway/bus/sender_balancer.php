@@ -396,6 +396,58 @@ class Gateway_Bus_SenderBalancer {
 		], [$user_id]);
 	}
 
+	/**
+	 * Добавили почту
+	 *
+	 * @throws ParseFatalException
+	 * @throws \parseException
+	 */
+	public static function mailAdded(int $user_id, string $mail):void {
+
+		self::_sendEvent([
+			Gateway_Bus_SenderBalancer_Event_MailAdded_V1::makeEvent($mail),
+		], [$user_id]);
+	}
+
+	/**
+	 * Добавили номер телефона
+	 *
+	 * @throws ParseFatalException
+	 * @throws \parseException
+	 */
+	public static function phoneAdded(int $user_id, string $phone_number):void {
+
+		self::_sendEvent([
+			Gateway_Bus_SenderBalancer_Event_PhoneAdded_V1::makeEvent($phone_number),
+		], [$user_id]);
+	}
+
+	/**
+	 * Поменяли почту
+	 *
+	 * @throws ParseFatalException
+	 * @throws \parseException
+	 */
+	public static function mailChanged(int $user_id, string $mail):void {
+
+		self::_sendEvent([
+			Gateway_Bus_SenderBalancer_Event_MailChanged_V1::makeEvent($mail),
+		], [$user_id]);
+	}
+
+	/**
+	 * Поменяли номер телефона
+	 *
+	 * @throws ParseFatalException
+	 * @throws \parseException
+	 */
+	public static function phoneChanged(int $user_id, string $phone_number):void {
+
+		self::_sendEvent([
+			Gateway_Bus_SenderBalancer_Event_PhoneChanged_V1::makeEvent($phone_number),
+		], [$user_id]);
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------

@@ -98,8 +98,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 		$phone_number = (new \BaseFrame\System\PhoneNumber($phone_number))->number();
 
 		// получаем user_id по номеру
-		[$existing_user_id, $has_sso_account] = Domain_User_Action_Auth_PhoneNumber::resolveUser($phone_number);
-		self::_redirectAuthToSsoIfNeeded($existing_user_id, $has_sso_account);
+		$existing_user_id = Domain_User_Action_Auth_PhoneNumber::resolveUser($phone_number);
 
 		// если не нашли пользователя, то нужно обязательно проверить актуальность ссылки-приглашения
 		if ($existing_user_id === 0) {
@@ -107,6 +106,9 @@ class Domain_User_Scenario_OnPremiseWeb {
 			// если пользователь не зарегистрирован и если ссылка не передана, то сразу завершаем процесс
 			$join_link === false && throw new Domain_User_Exception_AuthStory_RegistrationWithoutInvite();
 		}
+
+		// проверяем что пользователь не зарегистрирован через SSO
+		Domain_User_Entity_Phone::assertUserWasNotRegisteredBySso($existing_user_id);
 
 		// валидируем переданную ссылку
 		// тут есть тонкий момент — если мы будем делать так, то, зная номер, можно понять,
@@ -141,7 +143,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 			$auth_story = Domain_User_Entity_AuthStory::getFromSessionCache($phone_number)
 				->assertNotExpired()
 				->assertAuthParameter($phone_number);
-		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual|cs_CookieIsEmpty) {
+		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual) {
 
 			if ($existing_user_id === 0) {
 
@@ -171,31 +173,6 @@ class Domain_User_Scenario_OnPremiseWeb {
 			$auth_story->getAuthInfo(),
 			$validation_result ?? false,
 		];
-	}
-
-	/**
-	 * перенаправляем на способ аутентификации через SSO
-	 *
-	 * @throws Domain_User_Exception_AuthStory_RedirectToSso
-	 */
-	protected static function _redirectAuthToSsoIfNeeded(int $existing_user_id, bool $has_sso_account):void {
-
-		// если не нашли пользователя, то ничего не делаем
-		if ($existing_user_id < 1) {
-			return;
-		}
-
-		// если к этому пользователю не привязан SSO аккаунт, то ничего не делаем
-		if (!$has_sso_account) {
-			return;
-		}
-
-		// если отключена аутентификация через SSO, то ничего не делаем
-		if (!Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)) {
-			return;
-		}
-
-		throw new Domain_User_Exception_AuthStory_RedirectToSso();
 	}
 
 	/**

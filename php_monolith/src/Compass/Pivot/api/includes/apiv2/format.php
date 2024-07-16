@@ -4,6 +4,7 @@ namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
 use JetBrains\PhpStorm\ArrayShape;
+use Symfony\Component\Yaml\Exception\ParseException;
 
 /**
  * Класс для форматирования сущностей под формат API
@@ -14,6 +15,31 @@ use JetBrains\PhpStorm\ArrayShape;
  *
  */
 class Apiv2_Format {
+
+	// массив для преобразования внутреннего типа stage во внешний для клиента
+	protected const _STAGE_PHONE_SCHEMA = [
+		Domain_User_Entity_Security_AddPhone_Story::STAGE_FIRST  => "entering_code",
+		Domain_User_Entity_Security_AddPhone_Story::STAGE_SECOND => "finished",
+	];
+
+	// массив для преобразования внутреннего типа stage во внешний для клиента
+	protected const _RESET_PASSWORD_MAIL_SCHEMA = [
+		Domain_User_Entity_PasswordMail_Story::STAGE_START    => "entering_code",
+		Domain_User_Entity_PasswordMail_Story::STAGE_FINISHED => "finished",
+	];
+
+	// массив для преобразования внутреннего типа stage во внешний для клиента
+	protected const _CHANGE_MAIL_SCHEMA = [
+		Domain_User_Entity_ChangeMail_Story::STAGE_FIRST    => "entering_first_code",
+		Domain_User_Entity_ChangeMail_Story::STAGE_SECOND   => "entering_second_code",
+		Domain_User_Entity_ChangeMail_Story::STAGE_FINISHED => "finished",
+	];
+
+	// массив для преобразования внутреннего типа scenario во внешний для клиента
+	protected const _SCENARIO_MAIL_SCHEMA = [
+		Domain_User_Scenario_Api_Security_Mail::SCENARIO_FULL_CHANGE  => "full_change_mail",
+		Domain_User_Scenario_Api_Security_Mail::SCENARIO_SHORT_CHANGE => "short_change_mail",
+	];
 
 	/**
 	 * Получить ответ со статусом компании
@@ -102,6 +128,156 @@ class Apiv2_Format {
 			"current"             => $member_count,
 			"extend_policy"       => $extend_policy,
 			"allowed_action_list" => $allowed_action_list,
+		];
+	}
+
+	/**
+	 * Форматируем ответ для добавления номера телефона
+	 */
+	public static function addPhone(
+		Domain_User_Entity_Security_AddPhone_Story    $story,
+		Domain_User_Entity_Security_AddPhone_SmsStory $sms_story
+	):array {
+
+		return [
+			"add_phone_story_info" => (object) [
+				"add_phone_story_map" => (string) $story->getStoryMap(),
+				"data"                => (object) [
+					"next_resend"             => (int) $sms_story->getNextResend(),
+					"code_available_attempts" => (int) $sms_story->getAvailableAttempts(),
+					"expire_at"               => (int) $story->getExpiresAt(),
+					"stage"                   => (string) self::_STAGE_PHONE_SCHEMA[$sms_story->getSmsStoryData()->stage],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Форматируем ответ для пересылки смс
+	 */
+	public static function resendSms(
+		Domain_User_Entity_Security_AddPhone_Story|Domain_User_Entity_ChangePhone_Story       $story,
+		Domain_User_Entity_Security_AddPhone_SmsStory|Domain_User_Entity_ChangePhone_SmsStory $sms_story,
+		string                                                                                $phone_story_type
+	):array {
+
+		$phone_story_key = match ($phone_story_type) {
+			Domain_User_Entity_Security_AddPhone_Story::ACTION_TYPE => Type_Pack_AddPhoneStory::doEncrypt($story->getStoryMap()),
+			Domain_User_Entity_ChangePhone_Story::ACTION_TYPE       => Type_Pack_ChangePhoneStory::doEncrypt($story->getStoryMap()),
+			default                                                 => "",
+		};
+
+		return [
+			"phone_story_info" => (object) [
+				"phone_story_key"  => (string) $phone_story_key,
+				"phone_story_type" => (string) $phone_story_type,
+				"data"             => (object) [
+					"next_resend"             => (int) $sms_story->getNextResend(),
+					"code_available_attempts" => (int) $sms_story->getAvailableAttempts(),
+					"expire_at"               => (int) $story->getExpiresAt(),
+					"stage"                   => (string) self::_STAGE_PHONE_SCHEMA[$sms_story->getSmsStoryData()->stage],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Форматируем ответ для добавления номера телефона
+	 */
+	public static function mailResetPassword(
+		Domain_User_Entity_PasswordMail_Story     $story,
+		Domain_User_Entity_PasswordMail_CodeStory $code_story
+	):array {
+
+		return [
+			"password_mail_story_info" => (object) [
+				"password_mail_story_map" => (string) $story->getStoryMap(),
+				"type"                    => $story->getStoryData()->type,
+				"data"                    => (object) [
+					"next_resend"             => (int) $code_story->getNextResend(),
+					"code_available_attempts" => (int) $code_story->getAvailableAttempts(),
+					"expire_at"               => (int) $story->getExpiresAt(),
+					"stage"                   => (string) self::_RESET_PASSWORD_MAIL_SCHEMA[$story->getStage()],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Форматируем ответ для смены почты
+	 */
+	public static function changeMail(
+		Domain_User_Entity_ChangeMail_Story     $story,
+		Domain_User_Entity_ChangeMail_CodeStory $code_story,
+		string                                  $scenario):array {
+
+		return [
+			"change_mail_story_info" => (object) [
+				"change_mail_story_map" => (string) $story->getStoryMap(),
+				"scenario"              => (string) self::_SCENARIO_MAIL_SCHEMA[$scenario],
+				"data"                  => (object) [
+					"next_resend"             => (int) $code_story->getNextResend(),
+					"code_available_attempts" => (int) $code_story->getAvailableAttempts(),
+					"expire_at"               => (int) $story->getExpiresAt(),
+					"stage"                   => (string) Domain_User_Entity_Auth_Config::isMailAuthorization2FAEnabled()
+						? self::_CHANGE_MAIL_SCHEMA[$story->getStage()] : self::_CHANGE_MAIL_SCHEMA[Domain_User_Entity_ChangeMail_Story::STAGE_FINISHED],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Форматируем ответ для переотправки проверочного кода на почту
+	 */
+	public static function resendCode(
+		Domain_User_Entity_Security_AddMail_Story|Domain_User_Entity_PasswordMail_Story|Domain_User_Entity_ChangeMail_Story             $story,
+		Domain_User_Entity_Security_AddMail_CodeStory|Domain_User_Entity_PasswordMail_CodeStory|Domain_User_Entity_ChangeMail_CodeStory $story_code,
+		string                                                                                                                          $mail_story_type,
+		string                                                                                                                          $stage
+	):array {
+
+		$mail_story_key = match ($mail_story_type) {
+			Domain_User_Entity_Security_AddMail_Story::ACTION_TYPE            => Type_Pack_AddMailStory::doEncrypt($story->getStoryMap()),
+			Domain_User_Entity_PasswordMail_Story::ACTION_TYPE_RESET_PASSWORD => Type_Pack_PasswordMailStory::doEncrypt($story->getStoryMap()),
+			Domain_User_Entity_ChangeMail_Story::ACTION_TYPE                  => Type_Pack_ChangeMailStory::doEncrypt($story->getStoryMap()),
+			default                                                           => throw new ParseFatalException("unknown type from format resend code"),
+		};
+
+		return [
+			"mail_story_info" => (object) [
+				"mail_story_key"  => (string) $mail_story_key,
+				"mail_story_type" => (string) $mail_story_type,
+				"data"            => (object) [
+					"next_resend"             => (int) $story_code->getNextResend(),
+					"code_available_attempts" => (int) $story_code->getAvailableAttempts(),
+					"expire_at"               => (int) $story->getExpiresAt(),
+					"stage"                   => (string) $stage,
+				],
+			],
+		];
+	}
+
+	/**
+	 * Форматируем ответ для добавления почты пользователю
+	 */
+	public static function addMail(
+		Domain_User_Entity_Security_AddMail_Story     $story,
+		Domain_User_Entity_Security_AddMail_CodeStory $code_story,
+		string                                        $scenario,
+		string                                        $stage
+	):array {
+
+		return [
+			"add_mail_story_info" => (object) [
+				"add_mail_story_map" => (string) $story->getStoryMap(),
+				"scenario"           => (string) $scenario,
+				"data"               => (object) [
+					"next_resend"             => (int) Domain_User_Entity_Auth_Config::isMailAuthorization2FAEnabled() ? $code_story->getNextResend() : 0,
+					"code_available_attempts" => (int) Domain_User_Entity_Auth_Config::isMailAuthorization2FAEnabled() ? $code_story->getAvailableAttempts() : 0,
+					"expire_at"               => (int) $story->getExpiresAt(),
+					"stage"                   => (string) $stage,
+				],
+			],
 		];
 	}
 }

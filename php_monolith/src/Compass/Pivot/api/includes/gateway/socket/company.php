@@ -4,7 +4,11 @@ namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\GatewayException;
+use BaseFrame\Exception\Request\CompanyNotServedException;
+use BaseFrame\Exception\Request\ParamException;
 use cs_SocketRequestIsFailed;
+use JetBrains\PhpStorm\ArrayShape;
 use parseException;
 use returnException;
 
@@ -2139,6 +2143,60 @@ class Gateway_Socket_Company {
 			}
 
 			throw new ParseFatalException("passed unknown error_code");
+		}
+	}
+
+	/**
+	 * Проверяет возможность создавать медиа-конференции указанным пользователем.
+	 *
+	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException|cs_CompanyIsHibernate
+	 * @throws cs_SocketRequestIsFailed
+	 */
+	#[ArrayShape([0 => 'bool', 1 => "int"])]
+	public static function isMediaConferenceCreatingAllowed(Struct_Db_PivotCompany_Company $space, int $user_id):array {
+
+		$params = ["user_id" => $user_id];
+
+		[$status, $response] = self::_call(
+			"space.member.isMediaConferenceCreatingAllowed",
+			$params, $user_id, $space->company_id,
+			$space->domino_id,
+			Domain_Company_Entity_Company::getPrivateKey($space->extra)
+		);
+
+		// если статус окей и есть разрешение, то просто говорим, что все окей
+		if ($status === "ok" && $response["is_allowed"] === 1) {
+			return [true, 0];
+		}
+
+		// если статус окей, разрешения нет и есть код ошибки,
+		// то сообщаем, что создавать конференцию нельзя и передает причину
+		if ($status === "ok" && $response["is_allowed"] === 0 && isset($response["reason"])) {
+			return [false, $response["reason"]];
+		}
+
+		// что-то сильно пошло не по плану, метод всегда должен возвращать ок
+		throw new ReturnFatalException("unexpected response");
+	}
+
+	/**
+	 * Инкрементим статистику участия пользователя в конференции
+	 */
+	public static function incConferenceMembershipRating(Struct_Db_PivotCompany_Company $space, int $user_id):void {
+
+		$params = ["user_id" => $user_id];
+
+		[$status, $response] = self::_call(
+			"space.member.incConferenceMembershipRating",
+			$params,
+			$user_id,
+			$space->company_id,
+			$space->domino_id,
+			Domain_Company_Entity_Company::getPrivateKey($space->extra)
+		);
+
+		if ($status !== "ok") {
+			throw new ReturnFatalException("unexpected response");
 		}
 	}
 

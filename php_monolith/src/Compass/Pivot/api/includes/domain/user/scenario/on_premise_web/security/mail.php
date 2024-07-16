@@ -46,7 +46,7 @@ class Domain_User_Scenario_OnPremiseWeb_Security_Mail {
 		$mail = (new \BaseFrame\System\Mail($mail))->mail();
 
 		// получаем user_id по почте
-		[$existing_user_id, $has_sso_account] = Domain_User_Action_Auth_Mail::resolveUser($mail);
+		$existing_user_id = Domain_User_Action_Auth_Mail::resolveUser($mail);
 
 		// если не нашли пользователя, то нужно обязательно проверить актуальность ссылки-приглашения
 		if ($existing_user_id === 0) {
@@ -65,7 +65,7 @@ class Domain_User_Scenario_OnPremiseWeb_Security_Mail {
 				->assertNotExpired()
 				->assertAuthParameter($mail)
 				->assertType([Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_RESET_PASSWORD_BY_MAIL]);
-		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual|cs_CookieIsEmpty|Domain_User_Exception_AuthStory_TypeMismatch) {
+		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual|Domain_User_Exception_AuthStory_TypeMismatch) {
 
 			Domain_User_Entity_Antispam_Auth::checkIpAddressBlocksBeforeStartAuth($grecaptcha_response, true);
 			$auth_story = Domain_User_Action_Auth_Mail::beginResetPassword($existing_user_id, $mail);

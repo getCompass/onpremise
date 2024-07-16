@@ -19,7 +19,7 @@ class Domain_User_Action_TwoFa_GenerateToken {
 
 		$two_fa_uniq = generateUUID();
 		$time        = time();
-		$expire_at   = $time + Domain_User_Entity_TwoFa_TwoFa::EXPIRE_AT;
+		$expire_at   = $time + Domain_User_Entity_Confirmation_TwoFa_TwoFa::EXPIRE_AT;
 
 		$shard_id   = Type_Pack_TwoFa::getShardIdByTime($time);
 		$table_id   = Type_Pack_TwoFa::getTableIdByTime($time);

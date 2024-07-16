@@ -51,4 +51,20 @@ class Domain_Sso_Entity_AccountUserRel {
 			throw new Domain_Sso_Exception_UserRelationship_AlreadyExists();
 		}
 	}
+
+	/**
+	 * получаем связь по user_id
+	 *
+	 * @return Struct_Db_SsoData_SsoAccountUserRel
+	 * @throws Domain_Sso_Exception_UserRelationship_NotFound
+	 * @throws ParseFatalException
+	 */
+	public static function getByUserID(int $user_id):Struct_Db_SsoData_SsoAccountUserRel {
+
+		try {
+			return Gateway_Db_SsoData_SsoAccountUserRel::getOneByUserID($user_id);
+		} catch (RowNotFoundException) {
+			throw new Domain_Sso_Exception_UserRelationship_NotFound();
+		}
+	}
 }

@@ -56,6 +56,7 @@ class Domain_Company_Entity_Config {
 		Permission::IS_ADD_SINGLE_ENABLED                 => [0, 1],
 		Permission::IS_ADD_GROUP_ENABLED                  => [0, 1],
 		Permission::IS_CALL_ENABLED                       => [0, 1],
+		Permission::IS_MEDIA_CONFERENCE_ENABLED           => [0, 1],
 		self::ROOT_USER_ID                                => "integer",
 	];
 
@@ -82,6 +83,7 @@ class Domain_Company_Entity_Config {
 		Permission::IS_ADD_SINGLE_ENABLED                 => 1,
 		Permission::IS_ADD_GROUP_ENABLED                  => 1,
 		Permission::IS_CALL_ENABLED                       => 1,
+		Permission::IS_MEDIA_CONFERENCE_ENABLED           => 1,
 		self::ROOT_USER_ID                                => 0,
 	];
 
@@ -104,6 +106,7 @@ class Domain_Company_Entity_Config {
 		Permission::IS_ADD_SINGLE_ENABLED          => 1,
 		Permission::IS_ADD_GROUP_ENABLED           => 1,
 		Permission::IS_CALL_ENABLED                => 1,
+		Permission::IS_MEDIA_CONFERENCE_ENABLED    => 1,
 	];
 
 	// переменные относящиеся к ограничениям пользователя
@@ -118,6 +121,7 @@ class Domain_Company_Entity_Config {
 		Permission::IS_ADD_SINGLE_ENABLED,
 		Permission::IS_ADD_GROUP_ENABLED,
 		Permission::IS_CALL_ENABLED,
+		Permission::IS_MEDIA_CONFERENCE_ENABLED,
 	];
 
 	/**

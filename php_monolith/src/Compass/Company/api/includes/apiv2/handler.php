@@ -90,7 +90,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 			"action"                        => Type_Api_Action::class,
 		];
 
-		$authorization_class = \CompassApp\Controller\Middleware\Session\Authorization::class;
+		$authorization_class = Middleware_WithAuthorization::class;
 
 		// если запускаем из консоли то без авторизации
 		if ($user_id > 0 && isCLi()) {
@@ -104,6 +104,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 			\CompassApp\Controller\Middleware\CheckCompany::class,
 			Middleware_InitializeConf::class,
 			\BaseFrame\Router\Middleware\ValidateRequest::class,
+			Middleware_AuthCookieToHeader::class,
 			$authorization_class,
 			\BaseFrame\Router\Middleware\ModifyHandler::class,
 			\BaseFrame\Router\Middleware\InitializeController::class,
@@ -113,6 +114,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 			\CompassApp\Controller\Middleware\AddActivityToken::class,
 			\BaseFrame\Router\Middleware\Run::class,
 			\BaseFrame\Router\Middleware\ValidateResponse::class,
+			\BaseFrame\Router\Middleware\AttachAuthData::class,
+			\BaseFrame\Router\Middleware\UpdateHeader::class,
 			\CompassApp\Controller\Middleware\Secure::class,
 			\BaseFrame\Router\Middleware\ApplicationUserTimeSpent::class,
 		]);

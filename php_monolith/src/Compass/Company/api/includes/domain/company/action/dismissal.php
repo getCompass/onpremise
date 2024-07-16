@@ -80,7 +80,7 @@ class Domain_Company_Action_Dismissal {
 
 				$text = "Увольнение пользователя под угрозой провала, пожалуйста проверьте лог файл \"on-user-left-company\" чтобы узнать подробности";
 				Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_KEY, $text);
-			} catch (\Exception) {
+			} catch (\Exception|\Error) {
 				// если вдруг сервис для отправки недоступен - не разваливаем увольнение
 			}
 		}
@@ -122,7 +122,13 @@ class Domain_Company_Action_Dismissal {
 		} catch (\Exception $e) {
 
 			$text = "Произошла ошибка при увольнении пользователя = {$user_id}. Error: " . $e->getMessage();
-			Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_KEY, $text);
+			try {
+
+				Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_KEY, $text);
+			} catch (\Exception|\Error) {
+				// если вдруг сервис для отправки недоступен - не разваливаем увольнение
+				Type_System_Admin::log("on-user-left-company", $text);
+			}
 		}
 	}
 

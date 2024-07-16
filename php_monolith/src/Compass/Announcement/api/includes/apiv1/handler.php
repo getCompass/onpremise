@@ -69,15 +69,18 @@ class Apiv1_Handler extends Api implements \RouteHandler  {
 
 		try {
 
+			// мигрируем куку в action
+			self::_migrateAuthToToken();
+
 			### !!! Инициализируем пользователя!       ###
 			### Здесь будет запрос на проверку сессии! ###
-			$token = Type_Session_Main::getTokenFromCookie();
+			$token = Type_Session_Main::getAuthToken();
 
 			Type_Auth_Main::initUserFromToken($token, getDeviceId());
 			$user = Type_Auth_Main::getUser();
 
 			if ($user->getUserId() === 0 && $token !== "") {
-				Type_Session_Main::removeTokenFromCookie();
+				Type_Session_Main::dropAuthToken();
 			}
 
 			// делаем запрос и получаем ответ
@@ -92,6 +95,9 @@ class Apiv1_Handler extends Api implements \RouteHandler  {
 
 			throw new \paramException("wrong key format");
 		}
+
+		// добавляем заголовок авторизации
+		$output = self::_attachAuthData($output);
 
 		// выбрасываем ошибку, если что-то некорректное пришло в ответе (например забыли вернуть return $this->ok)
 		self::_throwIfStatusIsNotSet($output);
@@ -174,6 +180,49 @@ class Apiv1_Handler extends Api implements \RouteHandler  {
 		if (!in_array($controller, self::ALLOWED_NOT_AUTHORIZED) && $user->getUserId() < 1) {
 			throw new \userAccessException("User not authorized for this actions.");
 		}
+	}
+
+	/**
+	 * Переводит авторизацию из куки в action.
+	 */
+	protected static function _migrateAuthToToken():void {
+
+		[$has_header, $token] = Type_Session_Main::tryGetSessionMapFromAuthorizationHeader();
+
+		// замену будем проводить только, если у нас есть заголовок и он не пустой
+		if ($has_header === false || $token !== "") {
+			return;
+		}
+
+		// получаем ключ из cookie
+		$token = Type_Session_Main::tryGetSessionMapFromCookie();
+
+		// если куки нет, то дальше не пробуем
+		if ($token === false || $token === "") {
+			return;
+		}
+
+		Type_Session_Main::setHeaderAction($token);
+	}
+
+	/**
+	 * Добавляет к ответу заголовок с авторизацией.
+	 */
+	protected static function _attachAuthData(array $response):array {
+
+		$auth_data = \BaseFrame\Http\Authorization\Data::inst();
+
+		// если данные авторизации не менялись, то ничего не делаем
+		if (!$auth_data->hasChanges()) {
+			return $response;
+		}
+
+		$response["actions"][] = [
+			"type" => "authorization",
+			"data" => $auth_data->get()
+		];
+
+		return $response;
 	}
 
 	// выбрасываем ошибку, если вернулось что-то некорректное

@@ -15,4 +15,5 @@ if (!isset($_POST["company_id"])) {
 	throw new socketAccessException("Not found company id in request");
 }
 
+// начинаем работу
 showAjax(Application\Entrypoint\Socket::processRequest("Company", $_POST["method"], "company", $_POST, false));

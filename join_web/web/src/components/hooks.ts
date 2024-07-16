@@ -32,7 +32,8 @@ export function useNavigateDialog() {
 export type Page =
 	| "welcome"
 	| "auth"
-	| "token";
+	| "token"
+	| "install";
 
 const activePageState = atom<Page>("welcome");
 

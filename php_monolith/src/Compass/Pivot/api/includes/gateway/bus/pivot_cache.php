@@ -14,7 +14,10 @@ class Gateway_Bus_PivotCache {
 	// Session
 	// -------------------------------------------------------
 
-	// получить информацию по сессии
+	/**
+	 * Получить информацию по сессии
+	 * @throws \cs_SessionNotFound
+	 */
 	public static function getInfo(string $session_uniq, string $shard_id, int $table_id):array {
 
 		// если нашли сессию в GLOBALS - возвращаем

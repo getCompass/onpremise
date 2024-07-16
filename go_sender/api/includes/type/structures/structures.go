@@ -75,6 +75,32 @@ type SendVoIPRequestStruct struct {
 	SentDeviceList   []string                                 `json:"sent_device_list,omitempty"`
 }
 
+type SendJitsiVoIPRequestStruct struct {
+	UserId         int64       `json:"user_id"`
+	PushData       interface{} `json:"push_data"`
+	Uuid           string      `json:"uuid"`
+	TimeToLive     int64       `json:"time_to_live,omitempty"`
+	SentDeviceList []string    `json:"sent_device_list,omitempty"`
+}
+
+type SendJitsiConferenceCreatedEventRequestStruct struct {
+	UserId           int64                        `json:"user_id"`
+	Event            string                       `json:"event"`
+	EventVersionList []SendEventVersionItemStruct `json:"event_version_list"`
+	PushData         push.PushDataStruct          `json:"push_data,omitempty"`
+	WSUsers          interface{}                  `json:"ws_users,omitempty"`
+	Uuid             string                       `json:"uuid"`
+	TimeToLive       int64                        `json:"time_to_live"`
+	RoutineKey       string                       `json:"routine_key"`
+}
+
+type SendJitsiVoipPushRequestStruct struct {
+	UserId     int64               `json:"user_id"`
+	PushData   push.PushDataStruct `json:"push_data,omitempty"`
+	Uuid       string              `json:"uuid"`
+	RoutineKey string              `json:"routine_key"`
+}
+
 // -------------------------------------------------------
 // Rabbit
 // -------------------------------------------------------

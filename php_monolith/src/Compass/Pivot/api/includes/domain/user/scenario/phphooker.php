@@ -94,6 +94,51 @@ class Domain_User_Scenario_Phphooker {
 	}
 
 	/**
+	 * задача срабатывает при достижении expires_at phone_add_story – попытки сменить номер телефона
+	 */
+	public static function onPhoneAddStoryExpire(int $user_id, string $auth_map):void {
+
+		// получаем запись с действием
+		$phone_add_story = Domain_User_Entity_Security_AddPhone_Story::getByMap($user_id, $auth_map);
+
+		// если попытка увенчалась успехом, то завершаем задачу – ничего делать не нужно
+		if ($phone_add_story->getStoryData()->status == Domain_User_Entity_Security_AddPhone_Story::STATUS_SUCCESS) {
+			return;
+		}
+
+		// получаем номер телефона & sms_id, на котором остановилось flow
+		$last_sms_story = self::_getLastSmsAddPhoneStory($phone_add_story->getStoryMap());
+
+		// получаем сотового оператора по номеру телефона, на который отправляли смс
+		try {
+			$phone_number_operator = \PhoneCarrierLookup\Main::getCarrierName($last_sms_story->phone_number);
+		} catch (CarrierNotFound|\PhoneCarrierLookup\Exception\UnsupportedPhoneNumber) {
+
+			// если не удалось получить, то оставляем пустым
+			$phone_number_operator = "";
+		}
+
+		// отправляем в аналитику, что попытка не увенчалась успехом
+		Type_Sms_Analytics_Story::onExpired($user_id, Type_Sms_Analytics_Story::STORY_TYPE_PHONE_ADD, $auth_map,
+			$phone_add_story->getExpiresAt(), $last_sms_story->sms_id, $last_sms_story->phone_number, $phone_number_operator);
+	}
+
+	/**
+	 * получаем последнюю запись из phone_add_via_sms_story
+	 */
+	protected static function _getLastSmsAddPhoneStory(string $phone_add_story_map):Struct_Db_PivotPhone_PhoneAddViaSmsStory {
+
+		$list = Gateway_Db_PivotPhone_PhoneAddViaSmsStory::getByStory($phone_add_story_map);
+
+		usort($list, function(Struct_Db_PivotPhone_PhoneAddViaSmsStory $a, Struct_Db_PivotPhone_PhoneAddViaSmsStory $b) {
+
+			return $a->stage <=> $b->stage;
+		});
+
+		return $list[count($list) - 1];
+	}
+
+	/**
 	 * задача срабатывает при достижении expires_at two_fa_story – двух-факторного подтверждения действия
 	 */
 	public static function onTwoFaStoryExpire(string $two_fa_map):void {
@@ -119,7 +164,7 @@ class Domain_User_Scenario_Phphooker {
 			return;
 		}
 
-		$two_fa_story = new Domain_User_Entity_TwoFa_Story($two_fa, $two_fa_phone);
+		$two_fa_story = new Domain_User_Entity_Confirmation_TwoFa_Story($two_fa, $two_fa_phone);
 
 		// если попытка увенчалась успехом, то завершаем задачу – ничего делать не нужно
 		if ($two_fa_story->getTwoFaInfo()->is_success == 1) {

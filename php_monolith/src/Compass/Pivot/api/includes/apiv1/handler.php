@@ -153,6 +153,7 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 				\BaseFrame\Router\Middleware\ObserveExceptions::class,
 				\BaseFrame\Router\Middleware\ValidateRequest::class,
 				\BaseFrame\Router\Middleware\SetExceptionHandler::class,
+				Middleware_AuthCookieToHeader::class,
 				$authorization_class,
 				\BaseFrame\Router\Middleware\ModifyHandler::class,
 				\BaseFrame\Router\Middleware\InitializeController::class,
@@ -162,6 +163,7 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 				Middleware_AddCustomAction::class,
 				\BaseFrame\Router\Middleware\Run::class,
 				\BaseFrame\Router\Middleware\ValidateResponse::class,
+				\BaseFrame\Router\Middleware\AttachAuthData::class,
 				\BaseFrame\Router\Middleware\ApplicationUserTimeSpent::class,
 			]);
 

@@ -14,6 +14,7 @@ class Socket_Sso extends \BaseFrame\Controller\Socket {
 	public const ALLOW_METHODS = [
 		"validateAuthToken",
 		"createUserRelationship",
+		"hasUserRelationship",
 	];
 
 	/**
@@ -70,5 +71,23 @@ class Socket_Sso extends \BaseFrame\Controller\Socket {
 		}
 
 		return $this->ok();
+	}
+
+	/**
+	 * проверяем, что связь «SSO аккаунт» – «Пользователь Compass» существует
+	 *
+	 * @return array
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 */
+	public function hasUserRelationship():array {
+
+		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
+
+		$has_user_relationship = Domain_Sso_Scenario_Socket_Auth::hasUserRelationship($user_id);
+
+		return $this->ok([
+			"has_user_relationship" => (int) intval($has_user_relationship),
+		]);
 	}
 }

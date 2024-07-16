@@ -21,19 +21,20 @@ class Apiv1_Format {
 
 	// преобразование числового типа сообщения треда в текстовый
 	protected const _THREAD_MESSAGE_TYPE_SCHEMA = [
-		THREAD_MESSAGE_TYPE_TEXT                    => "text",
-		THREAD_MESSAGE_TYPE_CONVERSATION_TEXT       => "text",
-		THREAD_MESSAGE_TYPE_FILE                    => "file",
-		THREAD_MESSAGE_TYPE_CONVERSATION_FILE       => "file",
-		THREAD_MESSAGE_TYPE_QUOTE                   => "quote",
-		THREAD_MESSAGE_TYPE_MASS_QUOTE              => "mass_quote",
-		THREAD_MESSAGE_TYPE_CONVERSATION_MASS_QUOTE => "mass_quote",
-		THREAD_MESSAGE_TYPE_DELETED                 => "deleted",
-		THREAD_MESSAGE_TYPE_SYSTEM                  => "system",
-		THREAD_MESSAGE_TYPE_CONVERSATION_REPOST     => "repost",
-		THREAD_MESSAGE_TYPE_CONVERSATION_CALL       => "call",
-		THREAD_MESSAGE_TYPE_REPOST                  => "repost",
-		THREAD_MESSAGE_TYPE_SYSTEM_BOT_REMIND       => "system_bot_remind",
+		THREAD_MESSAGE_TYPE_TEXT                          => "text",
+		THREAD_MESSAGE_TYPE_CONVERSATION_TEXT             => "text",
+		THREAD_MESSAGE_TYPE_FILE                          => "file",
+		THREAD_MESSAGE_TYPE_CONVERSATION_FILE             => "file",
+		THREAD_MESSAGE_TYPE_QUOTE                         => "quote",
+		THREAD_MESSAGE_TYPE_MASS_QUOTE                    => "mass_quote",
+		THREAD_MESSAGE_TYPE_CONVERSATION_MASS_QUOTE       => "mass_quote",
+		THREAD_MESSAGE_TYPE_DELETED                       => "deleted",
+		THREAD_MESSAGE_TYPE_SYSTEM                        => "system",
+		THREAD_MESSAGE_TYPE_CONVERSATION_REPOST           => "repost",
+		THREAD_MESSAGE_TYPE_CONVERSATION_CALL             => "call",
+		THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE => "media_conference",
+		THREAD_MESSAGE_TYPE_REPOST                        => "repost",
+		THREAD_MESSAGE_TYPE_SYSTEM_BOT_REMIND             => "system_bot_remind",
 	];
 
 	// преобразование числового родительского типа треда в текстовый
@@ -404,6 +405,16 @@ class Apiv1_Format {
 					$data["call_report_id"] = (int) $prepared_message["data"]["call_report_id"];
 					$data["call_duration"]  = (int) $prepared_message["data"]["call_duration"];
 				}
+				break;
+
+			case "media_conference":
+
+				$data = [
+					"conference_id" => (string) $prepared_message["data"]["conference_id"],
+					"conference_accept_status"        => (string) $prepared_message["data"]["conference_accept_status"],
+					"conference_link"          => (string) $prepared_message["data"]["conference_link"],
+				];
+
 				break;
 
 			case "system":

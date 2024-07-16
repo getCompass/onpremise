@@ -44,6 +44,14 @@ class Type_Pack_Main {
 			case "change_phone_story":
 				return Type_Pack_ChangePhoneStory::doDecrypt($key_value);
 
+			case "password_mail_story_key":
+				return Type_Pack_PasswordMailStory::doDecrypt($key_value);
+
+			case "change_mail_story_key":
+				return Type_Pack_ChangeMailStory::doDecrypt($key_value);
+			case "confirm_mail_password_story_key":
+				return Type_Pack_MailPasswordConfirmStory::doDecrypt($key_value);
+
 			default:
 				throw new cs_UnknownKeyType();
 		}
@@ -90,6 +98,11 @@ class Type_Pack_Main {
 		$array = self::_replaceFileMap($array);
 		$array = self::_replaceTwoFaMap($array);
 		$array = self::_replaceChangePhoneStoryMap($array);
+		$array = self::_replaceAddPhoneStoryMap($array);
+		$array = self::_replacePasswordMailStoryMap($array);
+		$array = self::_replaceAddMailStoryMap($array);
+		$array = self::_replaceChangeMailStoryMap($array);
+		$array = self::_replaceConfirmMailPasswordStoryMap($array);
 
 		return $array;
 	}
@@ -169,6 +182,77 @@ class Type_Pack_Main {
 
 			$array["change_phone_story_key"] = Type_Pack_ChangePhoneStory::doEncrypt($array["change_phone_story_map"]);
 			unset($array["change_phone_story_map"]);
+		}
+
+		return $array;
+	}
+
+	/**
+	 * Заменяем add_phone_story_map на add_phone_story_key
+	 */
+	protected static function _replaceAddPhoneStoryMap(array $array):array {
+
+		// если пришел map - заменяем
+		if (isset($array["add_phone_story_map"])) {
+
+			$array["add_phone_story_key"] = Type_Pack_AddPhoneStory::doEncrypt($array["add_phone_story_map"]);
+			unset($array["add_phone_story_map"]);
+		}
+
+		return $array;
+	}
+
+	/**
+	 * Заменяем password_mail_story_map на password_mail_story_key
+	 */
+	protected static function _replacePasswordMailStoryMap(array $array):array {
+
+		if (isset($array["password_mail_story_map"])) {
+
+			$array["password_mail_story_key"] = Type_Pack_PasswordMailStory::doEncrypt($array["password_mail_story_map"]);
+			unset($array["password_mail_story_map"]);
+		}
+
+		return $array;
+	}
+
+	/**
+	 * Заменяем confirm_mail_password_story_map на confirm_mail_password_story_key
+	 */
+	protected static function _replaceConfirmMailPasswordStoryMap(array $array):array {
+
+		if (isset($array["confirm_mail_password_story_map"])) {
+
+			$array["confirm_mail_password_story_key"] = Type_Pack_MailPasswordConfirmStory::doEncrypt($array["confirm_mail_password_story_map"]);
+			unset($array["confirm_mail_password_story_map"]);
+		}
+
+		return $array;
+	}
+	/**
+	 * Заменяем add_mail_story_map на add_mail_story_key
+	 */
+	protected static function _replaceAddMailStoryMap(array $array):array {
+
+		// если пришел map - заменяем
+		if (isset($array["add_mail_story_map"])) {
+
+			$array["add_mail_story_key"] = Type_Pack_AddMailStory::doEncrypt($array["add_mail_story_map"]);
+			unset($array["add_mail_story_map"]);
+		}
+
+		return $array;
+	}
+
+	/**
+	 * Заменяем change_mail_story_map на change_mail_story_key
+	 */
+	protected static function _replaceChangeMailStoryMap(array $array):array {
+
+		if (isset($array["change_mail_story_map"])) {
+
+			$array["change_mail_story_key"] = Type_Pack_ChangeMailStory::doEncrypt($array["change_mail_story_map"]);
+			unset($array["change_mail_story_map"]);
 		}
 
 		return $array;

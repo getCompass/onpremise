@@ -25,6 +25,7 @@ class Type_Task_Handler {
 	/** @var string[] классы, в которых объявлены подписчики */
 	protected array $_listener_class_list = [
 		Domain_Pivot_Scenario_Event::class,
+		Domain_Jitsi_Scenario_Event::class
 	];
 
 	/** @var \ReflectionMethod[][] список слушателей событий string */

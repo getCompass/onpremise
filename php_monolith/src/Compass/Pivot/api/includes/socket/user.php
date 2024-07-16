@@ -22,6 +22,8 @@ class Socket_User extends \BaseFrame\Controller\Socket {
 		"getUserAvatarFileLinkList",
 		"isAllowBatchPay",
 		"getScreenTimeStat",
+		"getUsersIntersectSpaces",
+		"incConferenceMembershipRating",
 	];
 
 	/**
@@ -155,5 +157,37 @@ class Socket_User extends \BaseFrame\Controller\Socket {
 		return $this->ok([
 			"stat_list" => (array) $stat_list,
 		]);
+	}
+
+	/**
+	 * Получаем список компаний в которых состоят как user_id_1, так и user_id_2
+	 *
+	 * @return array
+	 */
+	public function getUsersIntersectSpaces():array {
+
+		$user_id_1 = $this->post(\Formatter::TYPE_INT, "user_id_1");
+		$user_id_2 = $this->post(\Formatter::TYPE_INT, "user_id_2");
+
+		$intersect_space_id_list = Domain_User_Scenario_Socket::getUsersIntersectSpaces($user_id_1, $user_id_2);
+
+		return $this->ok([
+			"intersect_space_id_list" => (array) $intersect_space_id_list,
+		]);
+	}
+
+	/**
+	 * Инкрементим статистику участия пользователя в конференции
+	 *
+	 * @return array
+	 */
+	public function incConferenceMembershipRating():array {
+
+		$user_id  = $this->post(\Formatter::TYPE_INT, "user_id");
+		$space_id = $this->post(\Formatter::TYPE_INT, "space_id");
+
+		Domain_User_Scenario_Socket::incConferenceMembershipRating($user_id, $space_id);
+
+		return $this->ok();
 	}
 }

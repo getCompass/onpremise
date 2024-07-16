@@ -1,3 +1,0 @@
-<?php
-
-namespace Compass\Janus;

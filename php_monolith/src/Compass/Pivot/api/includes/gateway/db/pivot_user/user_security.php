@@ -67,8 +67,12 @@ class Gateway_Db_PivotUser_UserSecurity extends Gateway_Db_PivotUser_Main {
 	}
 
 	/**
-	 * метод для получения записи пользователя
+	 * Метод для получения записи пользователя
 	 *
+	 * @param int $user_id
+	 *
+	 * @return Struct_Db_PivotUser_UserSecurity
+	 * @throws ParseFatalException
 	 * @throws \cs_RowIsEmpty
 	 */
 	public static function getOne(int $user_id):Struct_Db_PivotUser_UserSecurity {

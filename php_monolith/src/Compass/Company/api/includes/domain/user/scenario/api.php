@@ -224,7 +224,7 @@ class Domain_User_Scenario_Api {
 
 				Domain_User_Action_Notifications_DeleteDevice::do($user_id, getDeviceId());
 			}
-		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty) {
+		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty | \cs_SessionNotFound) {
 			// просто ничего не делаем
 		}
 
@@ -261,7 +261,7 @@ class Domain_User_Scenario_Api {
 
 			Domain_User_Entity_Validator::assertLoggedIn($user_id);
 			$cloud_session_uniq = Type_Session_Main::doLogoutSession($user_id);
-		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty) {
+		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty | \cs_SessionNotFound) {
 			// просто ничего не делаем
 		}
 

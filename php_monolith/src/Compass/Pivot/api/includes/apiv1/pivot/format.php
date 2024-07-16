@@ -150,11 +150,11 @@ class Apiv1_Pivot_Format {
 	/**
 	 * Форматируем данные об отправленной смс для 2fa
 	 *
-	 * @param Domain_User_Entity_TwoFa_Story $two_fa_story
+	 * @param Domain_User_Entity_Confirmation_TwoFa_Story $two_fa_story
 	 *
 	 * @return array
 	 */
-	public static function twoFaStoryInfo(Domain_User_Entity_TwoFa_Story $two_fa_story):array {
+	public static function twoFaStoryInfo(Domain_User_Entity_Confirmation_TwoFa_Story $two_fa_story):array {
 
 		return [
 			"next_attempt"       => (int) $two_fa_story->getNextAttempt(),

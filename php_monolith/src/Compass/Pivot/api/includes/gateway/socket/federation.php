@@ -2,6 +2,7 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 
 /**
@@ -40,6 +41,32 @@ class Gateway_Socket_Federation extends Gateway_Socket_Default {
 		}
 
 		return [$response["compass_user_id"], Struct_User_Auth_Sso_AccountData::arrayToStruct($response["sso_account_data"])];
+	}
+
+	/**
+	 * имеется ли связь пользователя с sso аккаунтом
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 */
+	public static function hasUserRelationship(int $user_id):bool {
+
+		$ar_post = [
+			"user_id"        => $user_id,
+		];
+		[$status, $response] = self::_doCallSocket("sso.hasUserRelationship", $ar_post);
+
+		if ($status === "error") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw new ParseFatalException("unexpected behaviour");
+		}
+
+		return boolval($response["has_user_relationship"]);
 	}
 
 	/**

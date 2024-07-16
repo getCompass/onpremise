@@ -246,6 +246,87 @@ const LANG_CONFIG: LangConfig = {
 		one_minute: " минуту",
 		two_minutes: " минуты",
 		five_minutes: " минут",
+		install_page: {
+			desktop: {
+				logo: {
+					title: "COMPASS",
+					onpremise_title: "On-premise",
+				},
+				page: {
+					title: "Скачайте приложение Compass On-premise",
+					desc: "Актуальные версии приложения для любого устройства.",
+					download_mac: {
+						desc: "Скачать для MacOS",
+						platform_intel: "Intel",
+						platform_apple: "Apple Silicon",
+					},
+					download_win: {
+						desc: "Скачать для Windows",
+						platform_exe: ".exe",
+					},
+					download_linux: {
+						desc: "Скачать для Linux",
+						platform_deb: ".deb",
+						platform_tar: ".tar",
+					},
+					download_ios: {
+						desc: "Установить на iPhone",
+						platform_app_store: "App Store",
+					},
+					download_android: {
+						desc: "Установить на Android",
+						platform_google_play: "Google Play",
+					},
+					download_huawei: {
+						desc: "Установить на Huawei",
+						platform_app_gallery: "AppGallery",
+					},
+					builds: {
+						macos_download: "Скачать для MacOS",
+						intel_version: "Intel",
+						m1m2_version: "M1/M2",
+						linux_download: "Скачать для Linux",
+						deb_version: ".deb",
+						tar_version: ".tar",
+					},
+					support_block: {
+						title: "Возникли проблемы с установкой?",
+						desc: "Напишите нам в WhatsApp, Telegram или на почту.\nПоможем с установкой и настройкой.",
+						whatsapp: "WhatsApp",
+						telegram: "Telegram",
+						mail: "support@getcompass.ru",
+					},
+				},
+			},
+			mobile: {
+				logo: {
+					title: "COMPASS",
+					onpremise_title: "On-premise",
+				},
+				page: {
+					title: "Установите приложение Compass On-premise",
+					desc: "Актуальные версии приложения для любого устройства.",
+					download_ios: "Перейти в App Store",
+					download_android: "Перейти в Google Play",
+					download_huawei: "Перейти в AppGallery",
+					desktop_footer: "Есть версии для ",
+					download_macos: "MacOS",
+					download_comma: ", ",
+					download_windows: "Windows",
+					download_and: " и ",
+					download_linux: "Linux",
+					download_dot: ".",
+					on_success_copy: "Ссылка на скачивание Compass для компьютера скопирована",
+					support_block: {
+						title: "Возникли проблемы с установкой?",
+						desc: "Напишите нам в WhatsApp, Telegram или на почту. Поможем с установкой и настройкой.",
+						whatsapp: "WhatsApp",
+						telegram: "Telegram",
+						mail: "support@getcompass.ru",
+					},
+				},
+			},
+		},
 	},
 	en: {},
 	de: {},

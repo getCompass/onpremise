@@ -188,7 +188,7 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::TRY_COMPANY_DELETE);
 
 		try {
-			Domain_Company_Scenario_Api::delete($this->user_id, $company_id, $two_fa_key);
+			Domain_Company_Scenario_Api::delete($this->user_id, $this->session_uniq, $company_id, $two_fa_key);
 		} catch (\cs_CompanyUserIsNotOwner) {
 			return $this->error(655, "user is not company owner");
 		} catch (cs_UserNotInCompany) {
@@ -232,7 +232,7 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 		}
 
 		try {
-			Domain_Company_Scenario_Api::delete($this->user_id, $company_id, $two_fa_key);
+			Domain_Company_Scenario_Api::delete($this->user_id, $this->session_uniq, $company_id, $two_fa_key);
 		} catch (\cs_CompanyUserIsNotOwner) {
 			return $this->error(655, "user is not company owner");
 		} catch (cs_UserNotInCompany) {

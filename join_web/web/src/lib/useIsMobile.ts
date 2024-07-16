@@ -1,11 +1,14 @@
-import {useEffect, useState} from "react";
+import { useEffect, useMemo, useState } from "react";
+
+export const useIsLowWidthMobile = (): boolean => {
+	const isMobile = useIsMobile();
+	return useMemo(() => isMobile && window.innerWidth <= 360, [isMobile, window.innerWidth]);
+};
 
 const useIsMobile = (): boolean => {
-
 	const [isMobile, setIsMobile] = useState<boolean>(checkMobile());
 
 	function checkMobile(): boolean {
-
 		// проверка по ширине экрана
 		const widthCheck = window.innerWidth <= 768;
 
@@ -18,7 +21,6 @@ const useIsMobile = (): boolean => {
 
 	// на случай изменения разрешения (например повернули телефон боком или уменьшили размер браузера)
 	useEffect(() => {
-
 		const handleResize = () => {
 			setIsMobile(checkMobile());
 		};

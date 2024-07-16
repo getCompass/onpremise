@@ -50,22 +50,27 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		/** @var Struct_User_Auth_Sso_AccountData $sso_account_data */
 		[$sso_account_user_id_rel, $sso_account_data] = Gateway_Socket_Federation::validateSsoAuthToken($sso_auth_token, $signature);
 
-		// определяем под каким user_id залогиним пользователя
-		[$auth_user_id, $mail_phone_uniq_has_sso_account] = Domain_User_Action_Auth_Sso::resolveUser($sso_account_user_id_rel, $sso_account_data);
+		// нужно ли привязать к root пользователю sso аккаунт, если он оказался ещё не привязан
+		$is_need_bind_root_user = false;
+		if ($sso_account_user_id_rel == 0 && Domain_User_Entity_OnpremiseRoot::hasSsoLoginNameByList([$sso_account_data->mail, $sso_account_data->phone_number])) {
+
+			$sso_account_user_id_rel = Domain_User_Entity_OnpremiseRoot::getUserId();
+			$is_need_bind_root_user  = true;
+		}
 
 		// инкрементим блокировку
-		$auth_user_id > 0 && Type_Antispam_User::throwIfBlocked($auth_user_id, Type_Antispam_User::AUTH_SSO);
+		$sso_account_user_id_rel > 0 && Type_Antispam_User::throwIfBlocked($sso_account_user_id_rel, Type_Antispam_User::AUTH_SSO);
 
 		// валидируем ссылку-приглашение, если она передана
 		try {
-			$validation_result = Domain_Link_Action_OnPremiseWeb::validateJoinLinkIfNeeded($join_link, $auth_user_id);
+			$validation_result = Domain_Link_Action_OnPremiseWeb::validateJoinLinkIfNeeded($join_link, $sso_account_user_id_rel);
 		} catch (cs_UserAlreadyInCompany) {
 			$validation_result = null;
 		}
 		$join_link_uniq = is_null($validation_result) ? false : $validation_result->invite_link_rel->join_link_uniq;
 
 		// создаем попытку аутентификации через SSO
-		$story = Domain_User_Action_Auth_Sso::begin($sso_auth_token, $auth_user_id);
+		$story = Domain_User_Action_Auth_Sso::begin($sso_auth_token, $sso_account_user_id_rel);
 
 		// в зависимости от кейса регистрируем и/или авторизуем пользователя
 		$is_need_to_create_user = $story->isNeedToCreateUser();
@@ -75,24 +80,8 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 			? static::_confirmNotRegisteredUserAuthentication($sso_account_data, $join_link_uniq)
 			: static::_confirmRegisteredUserAuthentication($story, $join_link_uniq);
 
-		// если это было не создание аккаунта, то проверяем не сменилась ли почта
-		// и актуализируем, если сменилась
-		if (!$is_need_to_create_user) {
-
-			$was_actualize = self::_actualizeMailIfNeeded($user_id, $sso_account_data);
-
-			// если удалось актуализировать почту, то помечаем что в mail_uniq или phone_uniq
-			// требуется актуализировать флаг has_sso_account
-			$mail_phone_uniq_has_sso_account = !$was_actualize;
-		}
-
-		// если почта/номер телефона не помечаны как привязанные к sso аккаунту, то привяжем
-		if (!$mail_phone_uniq_has_sso_account) {
-			Domain_User_Action_Auth_Sso::updateHasSsoAccountFlag($user_id, $sso_account_data);
-		}
-
 		// если был создан пользователь
-		if ($auth_user_id === 0 && $user_id > 0) {
+		if (($sso_account_user_id_rel === 0 && $user_id > 0) || $is_need_bind_root_user) {
 			Gateway_Socket_Federation::createUserRelationship($sso_auth_token, $user_id);
 		}
 
@@ -171,59 +160,20 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		Domain_Link_Entity_Link::validateBeforeRegistration($join_link_rel_row);
 
 		// подготавливаем данные, полученные об аккаунте из SSO
-		$phone_number = Domain_User_Action_Auth_Sso::preparePhoneNumber($sso_account_data->phone_number);
-		$mail         = Domain_User_Action_Auth_Sso::prepareMail($sso_account_data->mail);
-		$full_name    = trim($sso_account_data->first_name . " " . $sso_account_data->last_name);
+		$full_name = trim($sso_account_data->first_name . " " . $sso_account_data->last_name);
 
 		// регистрируем и отмечаем в истории событие
-		$user                 = Domain_User_Action_Create_Human::do($phone_number, $mail, "", getUa(), getIp(), $full_name, "", [], 0, 0);
+		$user                 = Domain_User_Action_Create_Human::do("", "", "", getUa(), getIp(), $full_name, "", [], 0, 0);
 		$integration_response = Domain_Integration_Entity_Notifier::onUserRegistered(new Struct_Integration_Notifier_Request_OnUserRegistered(
 			user_id: $user->user_id,
 			auth_method: Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_AUTH_BY_SSO,
-			registered_by_phone_number: $phone_number,
-			registered_by_mail: $mail,
+			registered_by_phone_number: "",
+			registered_by_mail: "",
 			join_link_uniq: $join_link_rel_row->join_link_uniq,
 		));
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
 		return [$user->user_id, $integration_response];
-	}
-
-	/**
-	 * актуализируем
-	 *
-	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
-	 * @throws \parseException
-	 * @throws \returnException
-	 */
-	protected static function _actualizeMailIfNeeded(int $user_id, Struct_User_Auth_Sso_AccountData $account_data):bool {
-
-		// если из sso не вернулась почта, то ничего не делаем
-		if ($account_data->mail == "") {
-			return false;
-		}
-
-		// получаем текущую почту пользователя
-		$user_mail = Domain_User_Entity_Mail::getByUserId($user_id);
-
-		// сравниваем текущую почту с почтой из SSO
-		// если совпадает, то ничего не делаем
-		$sso_mail = Domain_User_Action_Auth_Sso::prepareMail($account_data->mail);
-		if ($sso_mail == $user_mail) {
-			return false;
-		}
-
-		// иначе пытаемся сменить
-		try {
-			Domain_User_Entity_Mail::change($user_id, $user_mail, $sso_mail);
-		} catch (Domain_User_Exception_Mail_BelongAnotherUser) {
-
-			// не удалось сменить – такая почта принадлежит другому пользователю
-			// ничего не делаем в таком случае
-			return false;
-		}
-
-		return true;
 	}
 
 }

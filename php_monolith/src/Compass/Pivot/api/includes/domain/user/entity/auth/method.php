@@ -66,4 +66,12 @@ class Domain_User_Entity_Auth_Method {
 			throw new Domain_User_Exception_AuthMethodDisabled("auth method not enabled");
 		}
 	}
+
+	/**
+	 * Проверяем, что способ включен данный метод аутентификации
+	 */
+	public static function isSingleAuthMethodEnabled(string $method):bool {
+
+		return in_array($method, self::getAvailableMethodList()) && count(self::getAvailableMethodList()) == 1;
+	}
 }

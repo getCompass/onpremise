@@ -2,6 +2,10 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\InvalidPhoneNumber;
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+
 /**
  * Класс для работы со сменой номера телефона
  */
@@ -18,6 +22,7 @@ class Domain_User_Entity_ChangePhone_Story {
 	public const STAGE_SECOND = 2; // второй этап - новый номер
 
 	public const EXPIRE_AFTER = 60 * 20; // через сколько истекает
+	public const ACTION_TYPE  = "change"; // тип действия
 
 	/**
 	 * Domain_User_Entity_ChangePhone_Story constructor.
@@ -295,19 +300,23 @@ class Domain_User_Entity_ChangePhone_Story {
 	/**
 	 * Выполнить подтверждение для текущего этапа смены номера
 	 *
-	 * @return array
 	 * @throws Domain_User_Exception_PhoneNumberBinding
-	 * @throws \cs_RowIsEmpty
+	 * @throws InvalidPhoneNumber
+	 * @throws ParseFatalException
+	 * @throws BusFatalException
+	 * @throws \busException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws cs_UserPhoneSecurityNotFound
 	 */
-	public function doConfirmActionForCurrentStage(Domain_User_Entity_ChangePhone_SmsStory $sms_story):array {
+	public function doConfirmActionForCurrentStage(int $user_id, Domain_User_Entity_ChangePhone_SmsStory $sms_story):array {
 
 		if ($this->getStage() === self::STAGE_FIRST) {
 			return Domain_User_Action_ChangePhone_ConfirmFirstStage::do($sms_story, $this);
 		}
 
-		return Domain_User_Action_ChangePhone_ConfirmSecondStage::do($sms_story, $this);
+		return Domain_User_Action_ChangePhone_ConfirmSecondStage::do($user_id, $sms_story, $this);
 	}
 
 	/**

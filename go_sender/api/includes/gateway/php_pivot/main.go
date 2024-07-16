@@ -67,3 +67,28 @@ func SendVoipPush(userNotificationStruct user_notification.UserNotificationStruc
 		log.Errorf("Не смогли выполнить запрос %v", err)
 	}
 }
+
+// SendJitsiVoipPush отправляем voip пуш для Jitsi
+func SendJitsiVoipPush(userId int64, pushData interface{}, uuid string, timeToLive int64, sentDeviceList []string) {
+
+	// создаем объект для отправки VoIP уведомления пользователю
+	sendVoIPPushObj := structures.SendJitsiVoIPRequestStruct{
+		UserId:         userId,
+		Uuid:           uuid,
+		PushData:       pushData,
+		TimeToLive:     timeToLive,
+		SentDeviceList: sentDeviceList,
+	}
+
+	jsonParams, err := json.Marshal(sendVoIPPushObj)
+	if err != nil {
+
+		log.Error("Не смогли сформировать JSON для запроса на отправку пуша")
+		return
+	}
+
+	response, err := socket.DoCall("go_pusher", "pusher.SendJitsiVoipPush", "", string(jsonParams), 0, 0)
+	if err != nil || response.Status != "ok" {
+		log.Errorf("Не смогли выполнить запрос %v", err)
+	}
+}

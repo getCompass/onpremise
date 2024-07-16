@@ -1,0 +1,7 @@
+/gdump/backup
+.idea
+.DS_Store
+
+/web/src/private/custom.ts
+/web/dist/
+/web/dist/*

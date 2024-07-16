@@ -21,6 +21,18 @@ export const text = defineRecipe({
 				fontFamily: "lato_regular",
 				fontWeight: "normal",
 			},
+			lato_14_17_400: {
+				fontSize: "14px",
+				lineHeight: "17px",
+				fontFamily: "lato_regular",
+				fontWeight: "normal",
+			},
+			lato_14_17_700: {
+				fontSize: "14px",
+				lineHeight: "17px",
+				fontFamily: "lato_bold",
+				fontWeight: "normal",
+			},
 			lato_14_20_400: {
 				fontSize: "14px",
 				lineHeight: "20px",
@@ -30,6 +42,12 @@ export const text = defineRecipe({
 			lato_14_20_700: {
 				fontSize: "14px",
 				lineHeight: "20px",
+				fontFamily: "lato_bold",
+				fontWeight: "normal",
+			},
+			lato_15_21_700: {
+				fontSize: "15px",
+				lineHeight: "21px",
 				fontFamily: "lato_bold",
 				fontWeight: "normal",
 			},
@@ -61,6 +79,102 @@ export const text = defineRecipe({
 				fontSize: "18px",
 				lineHeight: "24px",
 				fontFamily: "lato_black",
+				fontWeight: "normal",
+			},
+			inter_14_17_400: {
+				fontSize: "14px",
+				lineHeight: "17px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_14_17_500: {
+				fontSize: "14px",
+				lineHeight: "17px",
+				fontFamily: "inter_medium",
+				fontWeight: "normal",
+			},
+			inter_14_20_400: {
+				fontSize: "14px",
+				lineHeight: "20px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_14_21_600: {
+				fontSize: "14px",
+				lineHeight: "20px",
+				fontFamily: "inter_semibold",
+				fontWeight: "normal",
+			},
+			inter_15_21_400: {
+				fontSize: "15px",
+				lineHeight: "21px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_16_19_400: {
+				fontSize: "16px",
+				lineHeight: "19px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_16_19_500: {
+				fontSize: "16px",
+				lineHeight: "19px",
+				fontFamily: "inter_medium",
+				fontWeight: "normal",
+			},
+			inter_16_22_400: {
+				fontSize: "16px",
+				lineHeight: "22px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_18_22_400: {
+				fontSize: "18px",
+				lineHeight: "22px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_18_25_400: {
+				fontSize: "18px",
+				lineHeight: "25px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_18_27_400: {
+				fontSize: "18px",
+				lineHeight: "27px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_18_27_600: {
+				fontSize: "18px",
+				lineHeight: "27px",
+				fontFamily: "inter_semibold",
+				fontWeight: "normal",
+			},
+			inter_20_24_500: {
+				fontSize: "20px",
+				lineHeight: "24px",
+				fontFamily: "inter_medium",
+				fontWeight: "normal",
+			},
+			inter_20_28_400: {
+				fontSize: "20px",
+				lineHeight: "28px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_30_36_700: {
+				fontSize: "30px",
+				lineHeight: "36px",
+				fontFamily: "inter_bold",
+				fontWeight: "normal",
+			},
+			inter_40_48_700: {
+				fontSize: "40px",
+				lineHeight: "48px",
+				fontFamily: "inter_bold",
 				fontWeight: "normal",
 			},
 		},
@@ -135,6 +249,9 @@ export const text = defineRecipe({
 			"007aff": {
 				color: "007aff",
 			},
+			"009fe6": {
+				color: "009fe6",
+			},
 			"333e49": {
 				color: "333e49",
 			},
@@ -146,6 +263,9 @@ export const text = defineRecipe({
 			},
 			f8f8f8: {
 				color: "f8f8f8",
+			},
+			"248248248.03": {
+				color: "248248248.03",
 			},
 			"248248248.05": {
 				color: "rgba(248, 248, 248, 0.5)"

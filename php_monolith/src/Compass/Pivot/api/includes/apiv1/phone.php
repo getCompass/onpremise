@@ -2,6 +2,7 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Restrictions\Exception\ActionRestrictedException;
@@ -22,11 +23,12 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 	/**
 	 * Начинаем смену номера телефон
 	 *
-	 * @throws cs_IncorrectSaltVersion
+	 * @return array
+	 * @throws ParseFatalException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 * @throws \queryException
-	 * @throws ParamException
+	 * @throws cs_IncorrectSaltVersion
 	 */
 	public function tryChangePhoneStep1():array {
 
@@ -42,10 +44,16 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 			return $this->error(1306, "change phone sms error count exceeded", [
 				"next_attempt" => $e->getNextAttempt(),
 			]);
+		} catch (Domain_User_Exception_AuthMethodDisabled) {
+			return $this->error(1120001, "auth by phone disabled");
 		} catch (cs_UserPhoneSecurityNotFound) {
-			throw new ParamException("not found phone for user");
+			return $this->error(1120002, "phone number not found");
+		} catch (cs_PhoneChangeSmsResendCountExceeded) {
+			return $this->error(1120003, "change phone sms resend count exceeded");
 		} catch (ActionRestrictedException) {
 			return $this->error(855, "action is restricted");
+		} catch (Domain_User_Exception_Security_UserWasRegisteredBySso) {
+			return $this->error(Apiv2_Security_Phone::ECODE_USER_WAS_REGISTERED_BY_SSO, "user was registered by sso, action is not allowed");
 		}
 
 		return $this->ok(Apiv1_Format::changePhoneProcessStage1($story, $sms_story));
@@ -76,7 +84,7 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 		}
 
 		try {
-			Domain_User_Scenario_Api::confirmSmsForChangePhone($this->user_id, $change_phone_story_map, $sms_code);
+			$phone = Domain_User_Scenario_Api::confirmSmsForChangePhone($this->user_id, $change_phone_story_map, $sms_code);
 		} catch (Domain_User_Exception_UserNotAuthorized) {
 			throw new ParamException("not found code");
 		} catch (cs_PhoneChangeIsExpired|cs_PhoneChangeIsSuccess|cs_PhoneChangeSmsNotFound|cs_PhoneChangeStoryWrongMap) {
@@ -98,9 +106,13 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 			]);
 		} catch (cs_UserPhoneSecurityNotFound) {
 			throw new ParamException("not found phone for user");
+		} catch (Domain_User_Exception_AuthMethodDisabled) {
+			return $this->error(1120001, "auth by phone disabled");
 		}
 
-		return $this->ok();
+		return $this->ok([
+			"phone_mask" => (string) Domain_User_Entity_Phone::getPhoneNumberMask($phone),
+		]);
 	}
 
 	/**
@@ -150,6 +162,8 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 			return $this->error(1306, "change phone sms error count exceeded", [
 				"next_attempt" => $e->getNextAttempt(),
 			]);
+		} catch (Domain_User_Exception_AuthMethodDisabled) {
+			return $this->error(1120001, "auth by phone disabled");
 		}
 
 		return $this->ok(Apiv1_Format::changePhoneProcessStage2($sms_story));
@@ -203,6 +217,8 @@ class Apiv1_Phone extends \BaseFrame\Controller\Api {
 			return $this->error(1306, "change phone sms error count exceeded", [
 				"next_attempt" => $e->getNextAttempt(),
 			]);
+		} catch (Domain_User_Exception_AuthMethodDisabled) {
+			return $this->error(1120001, "auth by phone disabled");
 		}
 
 		return $this->ok(Apiv1_Format::changePhoneResendSms($sms_story));

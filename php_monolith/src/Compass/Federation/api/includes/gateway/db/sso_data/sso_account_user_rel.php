@@ -73,4 +73,24 @@ class Gateway_Db_SsoData_SsoAccountUserRel extends Gateway_Db_SsoData_Main {
 		$query = "UPDATE `?p` SET ?u WHERE `sub_hash` = ?s LIMIT ?i";
 		return ShardingGateway::database(self::_DB_KEY)->update($query, self::_TABLE_NAME, $set, $sub_hash, 1);
 	}
+
+	/**
+	 * получаем запись из базы по user_id (UNIQUE KEY)
+	 *
+	 * @return Struct_Db_SsoData_SsoAccountUserRel
+	 * @throws RowNotFoundException
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 */
+	public static function getOneByUserID(int $user_id):Struct_Db_SsoData_SsoAccountUserRel {
+
+		// EXPLAIN user_id_UNIQUE
+		$query = "SELECT * FROM `?p` WHERE `user_id` = ?i LIMIT ?i";
+		$row   = ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_NAME, $user_id, 1);
+
+		if (!isset($row["sub_hash"])) {
+			throw new RowNotFoundException("row not found");
+		}
+
+		return Struct_Db_SsoData_SsoAccountUserRel::rowToStruct($row);
+	}
 }

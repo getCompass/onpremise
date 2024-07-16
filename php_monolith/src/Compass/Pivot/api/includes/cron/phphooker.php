@@ -158,8 +158,9 @@ class Cron_Phphooker extends \Cron_Default {
 				Type_Phphooker_Main::TASK_TYPE_SMS_RESEND_NOTICE               => $this->_onSmsResent($params),
 				Type_Phphooker_Main::TASK_TYPE_INCORRECT_INVITE_LINK           => $this->_onTryValidateIncorrectLink($params),
 				Type_Phphooker_Main::TASK_TYPE_ON_AUTH_STORY_EXPIRE            => $this->_onAuthStoryExpire($params["auth_map"]),
-				Type_Phphooker_Main::TASK_TYPE_ON_TWO_FA_STORY_EXPIRE          => $this->_onTwoFaStoryExpire($params["two_fa_map"]),
+				Type_Phphooker_Main::TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE          => $this->_onTwoFaStoryExpire($params["two_fa_map"]),
 				Type_Phphooker_Main::TASK_TYPE_ON_PHONE_CHANGE_STORY_EXPIRE    => $this->_onPhoneChangeStoryExpire($params["user_id"], $params["phone_change_map"]),
+				Type_Phphooker_Main::TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE       => $this->_onPhoneAddStoryExpire($params["user_id"], $params["phone_add_map"]),
 				Type_Phphooker_Main::TASK_TYPE_SEND_ACCOUNT_STATUS_LOG         => $this->_onSendAccountStatusLog($params["user_id"], $params["action"]),
 				Type_Phphooker_Main::TASK_TYPE_SEND_SPACE_STATUS_LOG           => $this->_onSendSpaceStatusLog($params["company_id"], $params["action"]),
 				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_ON_USER_REGISTERED  => $this->_sendBitrixOnUserRegistered($task_id, $params["user_id"], $params["force_stage_id"]),
@@ -441,6 +442,15 @@ class Cron_Phphooker extends \Cron_Default {
 	protected function _onPhoneChangeStoryExpire(int $user_id, string $phone_change_story):bool {
 
 		Domain_User_Scenario_Phphooker::onPhoneChangeStoryExpire($user_id, $phone_change_story);
+		return true;
+	}
+
+	/**
+	 * Срабатывает сразу после истекания попытки добавления номера телефона
+	 */
+	protected function _onPhoneAddStoryExpire(int $user_id, string $phone_add_story):bool {
+
+		Domain_User_Scenario_Phphooker::onPhoneAddStoryExpire($user_id, $phone_add_story);
 		return true;
 	}
 

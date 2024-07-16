@@ -206,6 +206,32 @@ func GetOnlineUserList(nodeId int64, uuid string, limit int) []UserOnlineDevices
 	return output
 }
 
+// отправить событие и voip-пуш при создании конференции Jitsi
+func SendJitsiConferenceCreatedEvent(userId int64, userConnectionList []structures.UserConnectionStruct, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string) {
+
+	// получаем id всех нод go_sender
+	senderNodeIdList := getAllSenderNodeList(userConnectionList)
+
+	// отправляем запросы на каждую ноду
+	for _, item := range senderNodeIdList {
+
+		doCallJitsiConferenceCreated(item, userId, event, eventVersionList, pushData, wsUsers, uuid, timeToLive, routineKey)
+	}
+}
+
+// отправить voip-пуш Jitsi
+func SendJitsiVoIPPush(userId int64, userConnectionList []structures.UserConnectionStruct, pushData interface{}, uuid string, routineKey string) {
+
+	// получаем id всех нод go_sender
+	senderNodeIdList := getAllSenderNodeList(userConnectionList)
+
+	// отправляем запросы на каждую ноду
+	for _, item := range senderNodeIdList {
+
+		doCallSendJitsiVoIPPush(item, userId, pushData, uuid, routineKey)
+	}
+}
+
 // структура ответа со списком соедиениний пользователя
 type doCallGetOnlineConnectionsByUserIdResponseStruct struct {
 	Status   string `json:"status"`
@@ -370,6 +396,7 @@ type publishRequestStruct struct {
 }
 
 // метод для отправки события на ноду go_sender
+// @long
 func doCallPublish(nodeId int64, userList []int64, event string, eventVersionList interface{}, wsUsers interface{}, uuid string, routineKey string) []int64 {
 
 	var userEventList []structures.UserStruct
@@ -402,4 +429,70 @@ func doCallPublish(nodeId int64, userList []int64, event string, eventVersionLis
 	}
 
 	return response.Response.SentUserList
+}
+
+// структура запроса на отправку события создания конференции Jitsi
+type JitsiConferenceCreatedRequestStruct struct {
+	Method           string      `json:"method"`
+	UserId           int64       `json:"user_id"`
+	Event            string      `json:"event"`
+	EventVersionList interface{} `json:"event_version_list"`
+	PushData         interface{} `json:"push_data,omitempty"`
+	WSUsers          interface{} `json:"ws_users,omitempty"`
+	Uuid             string      `json:"uuid"`
+	TimeToLive       int64       `json:"time_to_live"`
+	RoutineKey       string      `json:"routine_key"`
+}
+
+// структура запроса на отправку voip-пуша Jitsi
+type SendJitsiVoIPPushRequestStruct struct {
+	Method     string      `json:"method"`
+	UserId     int64       `json:"user_id"`
+	PushData   interface{} `json:"push_data,omitempty"`
+	Uuid       string      `json:"uuid"`
+	RoutineKey string      `json:"routine_key"`
+}
+
+// метод для отправки события создания конференции Jitsi на ноду go_sender
+// @long
+func doCallJitsiConferenceCreated(nodeId int64, userId int64, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string) {
+
+	request := JitsiConferenceCreatedRequestStruct{
+		Method:           "sender.sendJitsiConferenceCreatedEvent",
+		UserId:           userId,
+		Event:            event,
+		EventVersionList: eventVersionList,
+		PushData:         pushData,
+		WSUsers:          wsUsers,
+		Uuid:             uuid,
+		TimeToLive:       timeToLive,
+		RoutineKey:       routineKey,
+	}
+
+	log.Errorf("отправили запрос в go_sender %v. pushData %v", request, pushData)
+
+	err := doCallSender(nodeId, request, struct{}{})
+	if err != nil {
+		log.Errorf("ошибка при отправке ивента создания конференции Jitsi в go_sender. Error: %v", err)
+	}
+}
+
+// метод для отправки события создания конференции Jitsi на ноду go_sender
+// @long
+func doCallSendJitsiVoIPPush(nodeId int64, userId int64, pushData interface{}, uuid string, routineKey string) {
+
+	request := SendJitsiVoIPPushRequestStruct{
+		Method:     "sender.sendJitsiVoipPush",
+		UserId:     userId,
+		PushData:   pushData,
+		Uuid:       uuid,
+		RoutineKey: routineKey,
+	}
+
+	log.Errorf("отправили запрос в go_sender %v. pushData %v", request, pushData)
+
+	err := doCallSender(nodeId, request, struct{}{})
+	if err != nil {
+		log.Errorf("ошибка при отправке ивента для voip-пуша Jitsi в go_sender. Error: %v", err)
+	}
 }

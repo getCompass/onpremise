@@ -21,11 +21,11 @@ class Domain_User_Scenario_Socket {
 	 */
 	public static function doGenerateTwoFaToken(int $user_id, int $company_id, int $action_type):Struct_Db_PivotAuth_TwoFa {
 
-		Domain_User_Entity_TwoFa_TwoFa::assertTypeIsValid($action_type);
+		Domain_User_Entity_Confirmation_Main::assertTypeIsValid($action_type);
 
 		try {
 			// пробуем достать предыдущий запрос
-			$two_fa_story = Domain_User_Entity_TwoFa_TwoFa::getLastByUserAndType($user_id, $action_type, $company_id);
+			$two_fa_story = Domain_User_Entity_Confirmation_TwoFa_TwoFa::getLastByUserAndType($user_id, $action_type, $company_id);
 			$two_fa_story->assertNotExpired()
 				->assertNotFinished()
 				->assertNotActive();
@@ -33,7 +33,7 @@ class Domain_User_Scenario_Socket {
 
 			self::_checkAntispamIfNeed($user_id, $action_type);
 			$two_fa_data  = Domain_User_Action_TwoFa_GenerateToken::do($user_id, $action_type, $company_id);
-			$two_fa_story = new Domain_User_Entity_TwoFa_TwoFa($two_fa_data);
+			$two_fa_story = new Domain_User_Entity_Confirmation_TwoFa_TwoFa($two_fa_data);
 
 			// добавляем в phphooker задачу, чтобы в случае протухания попытки – скинуть лог в аналитику
 			Type_Phphooker_Main::onTwoFaStoryExpire($two_fa_data->two_fa_map, $two_fa_data->expires_at);
@@ -55,8 +55,8 @@ class Domain_User_Scenario_Socket {
 
 		switch ($action_type) {
 
-			case Domain_User_Entity_TwoFa_TwoFa::TWO_FA_SELF_DISMISSAL_TYPE:
-				Type_Antispam_User::throwIfBlocked($user_id, Type_Antispam_User::TWO_FA_SELF_DISMISSAL_TYPE);
+			case Domain_User_Entity_Confirmation_Main::CONFIRMATION_SELF_DISMISSAL_TYPE:
+				Type_Antispam_User::throwIfBlocked($user_id, Type_Antispam_User::CONFIRMATION_SELF_DISMISSAL_TYPE);
 				break;
 
 			default:
@@ -92,7 +92,7 @@ class Domain_User_Scenario_Socket {
 		try {
 
 			$two_fa_map = Type_Pack_Main::replaceKeyWithMap("two_fa_key", $two_fa_key);
-			$story      = Domain_User_Entity_TwoFa_Story::getByMap($two_fa_map);
+			$story      = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 
 			$story->assertCorrectUser($user_id)
 				->assertCorrectCompanyId($company_id)
@@ -121,7 +121,7 @@ class Domain_User_Scenario_Socket {
 
 		try {
 
-			$story = Domain_User_Entity_TwoFa_Story::getByMap($two_fa_map);
+			$story = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 			$story->assertCorrectUser($user_id);
 
 			Domain_User_Action_TwoFa_InvalidateToken::do($story);
@@ -515,5 +515,40 @@ class Domain_User_Scenario_Socket {
 		krsort($output);
 
 		return $output;
+	}
+
+	/**
+	 * Получаем список компаний в которых состоят как user_id_1, так и user_id_2
+	 *
+	 * @return array
+	 */
+	public static function getUsersIntersectSpaces(int $user_id_1, int $user_id_2):array {
+
+		$user_1_company_id_list = array_column(Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id_1), "company_id");
+		$user_2_company_id_list = array_column(Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id_2), "company_id");
+
+		return array_values(array_intersect($user_1_company_id_list, $user_2_company_id_list));
+	}
+
+	/**
+	 * Инкрементим статистику участия пользователя в конференции
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 */
+	public static function incConferenceMembershipRating(int $user_id, int $space_id):void {
+
+		// если пользователь не участник пространства
+		if (!Domain_Company_Entity_User_Member::isMember($user_id, $space_id)) {
+			return;
+		}
+
+		// получаем информаицю о пространстве
+		try {
+			$space = Domain_Company_Entity_Company::get($space_id);
+		} catch (cs_CompanyNotExist|cs_CompanyIncorrectCompanyId) {
+			return;
+		}
+
+		Gateway_Socket_Company::incConferenceMembershipRating($space, $user_id);
 	}
 }

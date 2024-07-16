@@ -72,20 +72,23 @@ const CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_FILE  = 12; // репостн
 const CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_QUOTE = 13; // репостнутое из треда сообщение-цитата
 const CONVERSATION_MESSAGE_TYPE_RESPECT                  = 14; // новое сообщение типа респект
 
+// тип сообщения - медиа конференция
+const CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE = 18;
 // типы сообщений в тредах
-const THREAD_MESSAGE_TYPE_TEXT                    = 1;
-const THREAD_MESSAGE_TYPE_FILE                    = 2;
-const THREAD_MESSAGE_TYPE_QUOTE                   = 3;
-const THREAD_MESSAGE_TYPE_MASS_QUOTE              = 31;
-const THREAD_MESSAGE_TYPE_DELETED                 = 4;
-const THREAD_MESSAGE_TYPE_SYSTEM                  = 5;
-const THREAD_MESSAGE_TYPE_REPOST                  = 6;
-const THREAD_MESSAGE_TYPE_CONVERSATION_TEXT       = 20;
-const THREAD_MESSAGE_TYPE_CONVERSATION_FILE       = 21;
-const THREAD_MESSAGE_TYPE_CONVERSATION_MASS_QUOTE = 22;
-const THREAD_MESSAGE_TYPE_CONVERSATION_REPOST     = 23;
-const THREAD_MESSAGE_TYPE_CONVERSATION_CALL       = 29;
-const THREAD_MESSAGE_TYPE_SYSTEM_BOT_REMIND       = 35; // сообщение-Напоминание
+const THREAD_MESSAGE_TYPE_TEXT                          = 1;
+const THREAD_MESSAGE_TYPE_FILE                          = 2;
+const THREAD_MESSAGE_TYPE_QUOTE                         = 3;
+const THREAD_MESSAGE_TYPE_MASS_QUOTE                    = 31;
+const THREAD_MESSAGE_TYPE_DELETED                       = 4;
+const THREAD_MESSAGE_TYPE_SYSTEM                        = 5;
+const THREAD_MESSAGE_TYPE_REPOST                        = 6;
+const THREAD_MESSAGE_TYPE_CONVERSATION_TEXT             = 20;
+const THREAD_MESSAGE_TYPE_CONVERSATION_FILE             = 21;
+const THREAD_MESSAGE_TYPE_CONVERSATION_MASS_QUOTE       = 22;
+const THREAD_MESSAGE_TYPE_CONVERSATION_REPOST           = 23;
+const THREAD_MESSAGE_TYPE_CONVERSATION_CALL             = 29;
+const THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE = 30;
+const THREAD_MESSAGE_TYPE_SYSTEM_BOT_REMIND             = 35; // сообщение-Напоминание
 
 // поделиться контактом
 const CONVERSATION_MESSAGE_TYPE_SHARED_MEMBER = 40;

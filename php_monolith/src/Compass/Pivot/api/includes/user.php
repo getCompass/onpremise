@@ -2,7 +2,8 @@
 
 namespace Compass\Pivot;
 
-use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Request\EmptyAuthorizationException;
+use BaseFrame\Exception\Request\InvalidAuthorizationException;
 
 /**
  * основной класс для работы с пользователем
@@ -52,7 +53,7 @@ class User {
 
 			$user_id      = Type_Session_Main::getUserIdBySession();
 			$session_uniq = Type_Session_Main::getSessionUniqBySession();
-		} catch (\cs_SessionNotFound|cs_CookieIsEmpty|ReturnFatalException) {
+		} catch (EmptyAuthorizationException|InvalidAuthorizationException) {
 
 			// если не нашли сессию в базах то она скорее всего не активна больше
 			// если куки пусты или сессия не валидна просим получить сессию

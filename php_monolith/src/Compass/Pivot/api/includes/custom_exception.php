@@ -87,13 +87,6 @@ class cs_UserNotFound extends \Exception {
 }
 
 /**
- * если куки пусты
- */
-class cs_CookieIsEmpty extends \Exception {
-
-}
-
-/**
  * выпадает если произошло дублирование при insert записи
  */
 class cs_RowDuplication extends \Exception {
@@ -684,7 +677,6 @@ class cs_SmsFailedRequestToProvider extends \Exception {
 
 	public function __construct(Struct_Gateway_Sms_Provider_Response $response, string $message = "", int $code = 0, \Exception $previous = null) {
 
-		debug($response);
 		$this->_response = $response;
 		parent::__construct($message, $code, $previous);
 	}
@@ -716,7 +708,7 @@ class cs_InvalidHashStruct extends \Exception {
 /**
  * неверная версия соли
  */
-class cs_IncorrectSaltVersion extends \Exception {
+class cs_IncorrectSaltVersion extends ParseFatalException {
 
 }
 
@@ -889,8 +881,8 @@ class cs_InvitesCountLimit extends \Exception {
 	 *
 	 * @link https://php.net/manual/en/exception.construct.php
 	 *
-	 * @param string         $message  [optional] The Exception message to throw.
-	 * @param int            $code     [optional] The Exception code.
+	 * @param string          $message  [optional] The Exception message to throw.
+	 * @param int             $code     [optional] The Exception code.
 	 * @param \Throwable|null $previous [optional] The previous \Throwable used for the exception chaining.
 	 */
 	public function __construct(int $limit, string $message = "", int $code = 0, \Throwable|null $previous = null) {
@@ -1321,4 +1313,22 @@ class cs_OneOfUsersHaveActiveCall extends \Exception {
 
 		return $this->_user_list_with_busy_line;
 	}
+}
+
+/**
+ * другой тип сервера
+ */
+class cs_ServerAnotherType extends \Exception {
+
+}
+
+##########################################################
+# region custom mail exceptions
+##########################################################
+
+/**
+ * почта уже существует
+ */
+class cs_MailAlreadyExist extends \Exception {
+
 }

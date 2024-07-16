@@ -204,9 +204,62 @@ func DeleteAllNodeConnectionsFromBalancer(nodeId int64) {
 	balancer.ClearNode(nodeId)
 }
 
+// создана конференция Jitsi
+func JitsiConferenceCreated(userId int64, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string) {
+
+	go func() {
+
+		addAndWaitRoutineKey(routineKey)
+		defer doneRoutineKey(routineKey)
+
+		// получаем все соединения пользователя
+		userConnectionList, _ := balancer.SenderCache.GetUserConnectionListByUserId(userId)
+
+		// отправляем ws-событие & voip-пуш при создании конференации Jitsi
+		tcp.SendJitsiConferenceCreatedEvent(userId, userConnectionList, event, eventVersionList, pushData, wsUsers, uuid, timeToLive, routineKey)
+	}()
+}
+
+// отправляем voip-пуш Jitsi
+func SendJitsiVoIPPush(userId int64, pushData interface{}, uuid string, routineKey string) {
+
+	go func() {
+
+		addAndWaitRoutineKey(routineKey)
+		defer doneRoutineKey(routineKey)
+
+		// получаем все соединения пользователя
+		userConnectionList, _ := balancer.SenderCache.GetUserConnectionListByUserId(userId)
+
+		// отправляем voip-пуш Jitsi
+		tcp.SendJitsiVoIPPush(userId, userConnectionList, pushData, uuid, routineKey)
+	}()
+}
+
 // -------------------------------------------------------
 // PROTECTED
 // -------------------------------------------------------
+
+// ждем рутину
+func addAndWaitRoutineKey(routineKey string) {
+
+	if routineKey == "" {
+		return
+	}
+
+	// инициируем wait group
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	// если такой wg есть он отдаст то он отдаст нам существующий
+	wgTemp, exist := routineKeyStore.LoadOrStore(routineKey, &wg)
+	if exist {
+
+		// ждем пока существующий wg выполнится и пробуем запускаем функцию снова
+		wgTemp.(*sync.WaitGroup).Wait()
+		addAndWaitRoutineKey(routineKey)
+	}
+}
 
 // ждем рутину
 func waitRoutineKey(routineKey string) {

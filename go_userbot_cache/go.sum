@@ -37,6 +37,7 @@ github.com/getCompassUtils/pivot_protobuf_schemes v1.0.57 h1:bgAvHxqKuNZlbtkguan
 github.com/getCompassUtils/pivot_protobuf_schemes v1.0.57/go.mod h1:cMd06MD6D5ze5OS938g9h454MUMqkPmF4ki3T7uGktg=
 github.com/getCompassUtils/pivot_protobuf_schemes v1.0.58 h1:lQYJanZGzj/1mF1AvyO8Ww+jHSlDBFiH8pifwZ/vhMs=
 github.com/getCompassUtils/pivot_protobuf_schemes v1.0.58/go.mod h1:cMd06MD6D5ze5OS938g9h454MUMqkPmF4ki3T7uGktg=
+github.com/getCompassUtils/pivot_protobuf_schemes v1.1.1/go.mod h1:UvQcFoz/HTWkf/51Cput3T4lTjtO/X2g/e4qqAwzBjA=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-sql-driver/mysql v1.5.0 h1:ozyZYNQW3x3HtqT1jira07DN2PArx2v7/mN66gGcHOs=
 github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=

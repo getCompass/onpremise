@@ -25,6 +25,12 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => 5 * 60, // пять минут
 	];
 
+	const WRONG_MAIL_PASSWORD_TOKEN = [
+		"key"    => "WRONG_MAIL_PASSWORD_TOKEN",
+		"limit"  => 7,
+		"expire" => 20 * 60, // 20 минут
+	];
+
 	const PROFILE_DELETE = [
 		"key"    => "PROFILE_DELETE",
 		"limit"  => 5,
@@ -77,8 +83,8 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => HOUR2,
 	];
 
-	const TWO_FA_SELF_DISMISSAL_TYPE = [
-		"key"    => "TWO_FA_FOR_TYPE",
+	const CONFIRMATION_SELF_DISMISSAL_TYPE = [
+		"key"    => "CONFIRMATION_FOR_TYPE",
 		"limit"  => 5,
 		"expire" => 50 * 60, // 50 минут
 	];
@@ -198,6 +204,80 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"key"    => "AUTH_SSO",
 		"limit"  => 7,
 		"expire" => 15 * 60,
+	];
+
+	# endregion
+	##########################################################
+
+	##########################################################
+	# region security/mail
+	##########################################################
+
+	const MAIL_CHANGE_PASSWORD = [
+		"key"    => "MAIL_CHANGE_PASSWORD",
+		"limit"  => 7,
+		"expire" => 20 * 60, // 20 минут
+	];
+
+	const MAIL_TRY_RESET_PASSWORD = [
+		"key"    => "MAIL_TRY_RESET_PASSWORD",
+		"limit"  => 7,
+		"expire" => 20 * 60, // 20 минут
+	];
+
+	const MAIL_FINISH_RESET_PASSWORD = [
+		"key"    => "MAIL_FINISH_RESET_PASSWORD",
+		"limit"  => 7,
+		"expire" => 20 * 60, // 20 минут
+	];
+
+	const MAIL_ADD = [
+		"key"    => "MAIL_ADD",
+		"limit"  => 3,
+		"expire" => DAY1,
+	];
+
+	const MAIL_ADD_ON_SET_PASSWORD = [
+		"key"    => "MAIL_ADD_ON_SET_PASSWORD",
+		"limit"  => 7,
+		"expire" => 20 * 60, // 20 минут
+	];
+
+	const MAIL_ADD_ON_CONFIRM_CODE = [
+		"key"    => "MAIL_ADD_ON_CONFIRM_CODE",
+		"limit"  => 7,
+		"expire" => 20 * 60, // 20 минут
+	];
+
+	const MAIL_CHANGE = [
+		"key"    => "MAIL_CHANGE",
+		"limit"  => 3,
+		"expire" => DAY1, // 1 день
+	];
+
+	const MAIL_CHANGE_CONFIRM = [
+		"key"    => "MAIL_CHANGE_CONFIRM",
+		"limit"  => 3,
+		"expire" => DAY1, // 1 день
+	];
+
+	# endregion
+	##########################################################
+
+	##########################################################
+	# region security/phone
+	##########################################################
+
+	const PHONE_ADD = [
+		"key"    => "PHONE_ADD",
+		"limit"  => 3,
+		"expire" => DAY1,
+	];
+
+	const PHONE_CONFIRM_ADDITION = [
+		"key"    => "PHONE_CONFIRM_ADDITION",
+		"limit"  => 7,
+		"expire" => 20 * 60,
 	];
 
 	# endregion

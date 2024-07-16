@@ -72,4 +72,22 @@ class Domain_Sso_Scenario_Socket_Auth {
 		// создаем связь sso-аккаунта и compass пользователя
 		Domain_Sso_Entity_AccountUserRel::create(Domain_Sso_Entity_Oidc_Token::getSub($sso_account_oidc_token->data->id_token), $user_id);
 	}
+
+	/**
+	 * проверяем, что связь «SSO аккаунт» – «Пользователь Compass» существует
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 */
+	public static function hasUserRelationship(int $user_id):bool {
+
+		try {
+
+			Domain_Sso_Entity_AccountUserRel::getByUserID($user_id);
+			return true;
+		} catch (Domain_Sso_Exception_UserRelationship_NotFound) {
+		}
+
+		return false;
+	}
 }

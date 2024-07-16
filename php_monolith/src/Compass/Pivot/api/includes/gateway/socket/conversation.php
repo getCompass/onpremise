@@ -4,6 +4,7 @@ namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Request\CompanyNotServedException;
 
 /**
  * задача класса общаться между php_pivot -> php_world(conversation)
@@ -112,6 +113,94 @@ class Gateway_Socket_Conversation {
 			throw new ParseFatalException("passed unknown error_code");
 		}
 	}
+
+	/**
+	 * Отправить сообщение о звонке
+	 *
+	 * @param Struct_Db_PivotCompany_Company $space
+	 * @param int                            $user_id
+	 * @param string                         $conversation_map
+	 * @param string                         $conference_id
+	 * @param string                         $status
+	 * @param string                         $link
+	 *
+	 * @return void
+	 * @throws CompanyNotServedException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \cs_SocketRequestIsFailed
+	 * @throws cs_CompanyIsHibernate
+	 */
+	public static function addMediaConferenceMessage(Struct_Db_PivotCompany_Company $space, int $user_id, string $conversation_map, string $conference_id, string $status, string $link):void {
+
+		// формируем параметры для запроса
+		$params = [
+			"conversation_map" => $conversation_map,
+			"conference_id"    => $conference_id,
+			"status"           => $status,
+			"link"             => $link,
+		];
+
+		[$status, $response] = self::_call(
+			"conversations.addMediaConferenceMessage",
+			$params,
+			$user_id,
+			$space->company_id,
+			$space->domino_id,
+			Domain_Company_Entity_Company::getPrivateKey($space->extra));
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw new ParseFatalException("passed unknown error_code");
+		}
+	}
+
+	/**
+	 * Проверяет возможность звонить
+	 *
+	 * @param Struct_Db_PivotCompany_Company $space
+	 * @param int                            $user_id
+	 * @param int                            $opponent_user_id
+	 *
+	 * @return string
+	 * @throws CompanyNotServedException
+	 * @throws Gateway_Socket_Exception_Conversation_ActionIsNotAllowed
+	 * @throws Gateway_Socket_Exception_Conversation_InitiatorIsGuest
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \cs_SocketRequestIsFailed
+	 * @throws cs_CompanyIsHibernate
+	 */
+	public static function checkIsAllowedForCall(Struct_Db_PivotCompany_Company $space, int $user_id, int $opponent_user_id):string {
+
+		$params = ["user_id" => $user_id, "opponent_user_id" => $opponent_user_id, "method_version" => 2];
+
+		[$status, $response] = self::_call(
+			"conversations.checkIsAllowedForCall",
+			$params, $user_id, $space->company_id,
+			$space->domino_id,
+			Domain_Company_Entity_Company::getPrivateKey($space->extra)
+		);
+
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw match ($response["error_code"]) {
+				10021, 10022 => new Gateway_Socket_Exception_Conversation_ActionIsNotAllowed("action is not allowed"),
+				10024, 10025, 10027 => new Gateway_Socket_Exception_Conversation_InitiatorIsGuest("initiator is guest"),
+				default => throw new ReturnFatalException("unknown error code"),
+			};
+		}
+
+		return $response["conversation_map"];
+	}
+
 
 	// -------------------------------------------------------
 	// PROTECTED

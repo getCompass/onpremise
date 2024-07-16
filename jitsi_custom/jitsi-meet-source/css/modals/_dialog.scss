@@ -1,0 +1,194 @@
+.modal-dialog-form {
+    margin-top: 5px !important;
+
+    .input-control {
+        background: #fafbfc;
+        border: 1px solid #f4f5f7;
+        color: inherit;
+    }
+
+    &-error {
+        margin-bottom: 8px;
+    }
+}
+
+/**
+ * Styling shared video dialog errors.
+ */
+.shared-video-dialog-error {
+    color: #E04757;
+    margin-top: 2px;
+    display: block;
+}
+
+.dialog-bottom-margin {
+    margin-bottom: 5px;
+}
+
+/**
+ * Styling kick dialog.
+ */
+.kick-user-dialog-container {
+    padding: 0;
+}
+
+.kick-user-header-dialog {
+    padding: 20px 20px 0px 20px;
+
+    & #dialog-title {
+        color: rgba(255, 255, 255, 0.75);
+        font-family: 'Lato Black';
+        font-weight: normal;
+        font-size: 18px;
+        line-height: 24px;
+        letter-spacing: -0.2px;
+
+        &.is-mobile {
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'Lato Bold';
+            font-size: 20px;
+            line-height: 28px;
+            letter-spacing: -0.3px;
+        }
+    };
+
+    &.is-mobile {
+        padding: 8px 16px 0 16px;
+    }
+}
+
+.kick-user-content-dialog {
+    padding: 8px 20px;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: 'Lato Regular';
+    font-weight: normal;
+    font-size: 15px;
+    line-height: 20px;
+
+    &.is-mobile {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 16px;
+        line-height: 22px;
+        padding: 8px 16px;
+    }
+}
+
+.kick-user-footer-dialog {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+
+    & #modal-dialog-ok-button {
+        background-color: rgba(255, 69, 61, 1);
+
+        &:hover {
+            background-color: rgba(255, 39, 31, 1);
+        }
+
+        &:active {
+            background-color: rgba(255, 39, 31, 1);
+        }
+    }
+}
+
+/**
+ * Styling mute everyone video dialog.
+ */
+.mute-everyone-video-dialog-container {
+    padding: 0;
+}
+
+.mute-everyone-video-header-dialog {
+    padding: 20px 20px 0px 20px;
+
+    &.is-mobile {
+        padding: 16px 16px 2px 16px !important;
+    };
+
+    & #dialog-title {
+        color: rgba(255, 255, 255, 0.75);
+        font-family: 'Lato Black';
+        font-weight: normal;
+        font-size: 18px;
+        line-height: 24px;
+        letter-spacing: -0.2px;
+
+        &.is-mobile {
+            font-family: 'Lato Bold';
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+            line-height: 28px;
+            letter-spacing: -0.3px;
+        };
+    }
+}
+
+.mute-everyone-video-content-dialog {
+    padding: 0;
+
+    & .mute-dialog {
+        color: rgba(255, 255, 255, 0.75);
+        font-family: 'Lato Regular';
+        font-weight: normal;
+        font-size: 15px;
+        line-height: 20px;
+
+        & .mute-dialog-text {
+            padding: 8px 20px;
+
+            &.is-mobile {
+                padding: 6px 16px 8px 16px;
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 16px;
+                line-height: 22px;
+            };
+        }
+
+        & .control-row {
+            padding: 16px 16px 8px 16px;
+            margin-top: 0;
+
+            &.is-mobile {
+                padding: 8px 16px;
+            };
+
+            & .control-row-container {
+                width: 100%;
+                padding: 12px 16px 9px 16px;
+                border-radius: 12px;
+                background-color: rgba(255, 255, 255, 0.03);
+                display: flex;
+                align-items: start;
+                justify-content: space-between;
+
+                &.is-mobile {
+                    padding: 10px 16px 11px 16px;
+                    background-color: rgba(33, 33, 33, 1);
+                    align-items: center;
+                };
+
+                &> label {
+                    color: rgba(255, 255, 255, 0.75);
+                    font-family: 'Lato Regular';
+                    font-weight: normal;
+                    font-size: 14px;
+                    line-height: 20px;
+                    letter-spacing: -0.15px;
+
+                    &.is-mobile {
+                        color: rgba(255, 255, 255, 0.7);
+                        font-size: 18px;
+                        line-height: 26px;
+                        letter-spacing: -0.25px;
+                    };
+                }
+            }
+        }
+    }
+}
+
+.mute-everyone-video-footer-dialog {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+}

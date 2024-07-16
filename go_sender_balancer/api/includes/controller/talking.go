@@ -27,6 +27,8 @@ var talkingMethods = methodMap{
 	"addConnectionToBalancer":              talkingController{}.AddConnectionToBalancer,
 	"deleteConnectionFromBalancer":         talkingController{}.DeleteConnectionFromBalancer,
 	"deleteAllNodeConnectionsFromBalancer": talkingController{}.DeleteAllNodeConnectionsFromBalancer,
+	"jitsiConferenceCreated":               talkingController{}.JitsiConferenceCreated,
+	"sendJitsiVoIPPush":                    talkingController{}.SendJitsiVoIPPush,
 }
 
 // -------------------------------------------------------
@@ -217,6 +219,34 @@ func (talkingController) DeleteAllNodeConnectionsFromBalancer(requestBytes []byt
 	}
 
 	talking.DeleteAllNodeConnectionsFromBalancer(request.NodeId)
+
+	return Ok()
+}
+
+// метод для отправки событий и voip-пуша при создании конференции jitsi
+func (talkingController) JitsiConferenceCreated(requestBytes []byte) ResponseStruct {
+
+	request := structures.JitsiConferenceCreatedRequestStruct{}
+	err := json.Unmarshal(requestBytes, &request)
+	if err != nil {
+		return Error(105, "bad json in request")
+	}
+
+	talking.JitsiConferenceCreated(request.UserId, request.Event, request.EventVersionList, request.PushData, request.WSUsers, request.Uuid, request.TimeToLive, request.RoutineKey)
+
+	return Ok()
+}
+
+// метод для отправки voip-пуша jitsi
+func (talkingController) SendJitsiVoIPPush(requestBytes []byte) ResponseStruct {
+
+	request := structures.SendJitsiVoIPPushRequestStruct{}
+	err := json.Unmarshal(requestBytes, &request)
+	if err != nil {
+		return Error(105, "bad json in request")
+	}
+
+	talking.SendJitsiVoIPPush(request.UserId, request.PushData, request.Uuid, request.RoutineKey)
 
 	return Ok()
 }

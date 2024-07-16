@@ -68,6 +68,18 @@ class Type_Api_Action extends \BaseFrame\Controller\Action {
 		$this->_ar_need = [];
 	}
 
+	/**
+	 * Установить данные авторизации.
+	 */
+	public function authentication(string $action, string $key = "", string $value = ""):void {
+
+		$this->_ar_need["authentication"] = match ($action) {
+			"set"   => ["action" => $action, "data" => ["unique" => $key, "value" => $value]],
+			"drop"  => ["action" => $action, "data" => ["unique" => $key]],
+			default => throw new \BaseFrame\Exception\Domain\ParseFatalException("passed incorrect action")
+		};
+	}
+
 	// -------------------------------------------------------
 	// ACTIONS
 	// -------------------------------------------------------
@@ -109,6 +121,10 @@ class Type_Api_Action extends \BaseFrame\Controller\Action {
 
 			$onboarding_list            = Type_User_Main::getOnboardingList($user_info->extra);
 			$first_activated_onboarding = Domain_User_Entity_Onboarding::getFirstActivatedOnboarding($onboarding_list);
+			$user_security              = Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
+
+			$has_phone_number = Domain_User_Entity_Phone::hasPhoneNumber($user_security);
+			$has_mail         = Domain_User_Entity_Mail::hasMail($user_security);
 
 			$output["logged_in"]              = (int) 1;
 			$output["active_onboarding_list"] =
@@ -118,6 +134,10 @@ class Type_Api_Action extends \BaseFrame\Controller\Action {
 			$output["is_can_create_company"] = (int) $is_can_create_company;
 			$output["user_id"]               = (int) $user_id;
 			$output["user"]                  = (object) Apiv1_Pivot_Format::user(Struct_User_Info::createStruct($user_info));
+			$output["has_phone"]             = (int) $has_phone_number ? 1 : 0;
+			$output["phone_mask"]            = (string) $has_phone_number ? Domain_User_Entity_Phone::getPhoneNumberMask($user_security->phone_number) : "";
+			$output["has_mail"]              = (int) $has_mail ? 1 : 0;
+			$output["mail_mask"]             = (string) $has_mail ? Domain_User_Entity_Mail::getMailMask($user_security->mail) : "";
 		}
 
 		return $output;

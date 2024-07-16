@@ -14,6 +14,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 		"allow_methods" => [
 			"sso.validateAuthToken",
 			"sso.createUserRelationship",
+			"sso.hasUserRelationship",
 		],
 	],
 ];

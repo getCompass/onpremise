@@ -17,6 +17,7 @@ class Domain_User_Entity_AuthStory {
 	public const AUTH_STORY_TYPE_LOGIN_BY_MAIL            = 4; // тип авторизации через почту
 	public const AUTH_STORY_TYPE_RESET_PASSWORD_BY_MAIL   = 5; // тип для сброса пароля через почту из под неавторизованного пользователя
 	public const AUTH_STORY_TYPE_AUTH_BY_SSO              = 6; // тип аутентификации через SSO
+	public const AUTH_STORY_TYPE_CHANGE_MAIL              = 7; // тип для сброса пароля через почту из под неавторизованного пользователя
 
 	/** возможные статусы аутентификации для истории: */
 	public const HISTORY_AUTH_STATUS_SUCCESS = 1; // успешная аутентификация

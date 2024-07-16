@@ -1,0 +1,252 @@
+@layer reset, base, tokens, recipes, utilities;
+
+@font-face {
+	font-family: "Lato Regular";
+	src: url('fonts/lato/Lato-Regular.woff2') format('woff2'),
+	url('fonts/lato/Lato-Regular.woff') format('woff'),
+	url('fonts/lato/Lato-Regular.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Lato Medium";
+	src: url('fonts/lato/Lato-Medium.woff2') format('woff2'),
+	url('fonts/lato/Lato-Medium.woff') format('woff'),
+	url('fonts/lato/Lato-Medium.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Lato SemiBold";
+	src: url('fonts/lato/Lato-Semibold.woff2') format('woff2'),
+	url('fonts/lato/Lato-Semibold.woff') format('woff'),
+	url('fonts/lato/Lato-Semibold.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Lato Bold";
+	src: url('fonts/lato/Lato-Bold.woff2') format('woff2'),
+	url('fonts/lato/Lato-Bold.woff') format('woff'),
+	url('fonts/lato/Lato-Bold.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Lato Black";
+	src: url('fonts/lato/Lato-Black.woff2') format('woff2'),
+	url('fonts/lato/Lato-Black.woff') format('woff'),
+	url('fonts/lato/Lato-Black.ttf') format('truetype');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+
+@font-face {
+	font-family: "Inter Regular";
+	src: url('fonts/inter/Inter-Regular.woff2') format('woff2');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Inter Medium";
+	src: url('fonts/inter/Inter-Medium.woff2') format('woff2');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Inter SemiBold";
+	src: url('fonts/inter/Inter-SemiBold.woff2') format('woff2');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Inter Bold";
+	src: url('fonts/inter/Inter-Bold.woff2') format('woff2');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Inter Black";
+	src: url('fonts/inter/Inter-Black.woff2') format('woff2');
+	font-style: normal;
+	text-rendering: optimizeLegibility;
+	font-display: swap;
+}
+
+:root {
+	--font-lato-regular: 'Lato Regular', sans-serif;
+	--font-lato-medium: 'Lato Medium', sans-serif;
+	--font-lato-semibold: 'Lato SemiBold', sans-serif;
+	--font-lato-bold: 'Lato Bold', sans-serif;
+	--font-lato-black: 'Lato Black', sans-serif;
+	--font-inter-regular: 'Inter Regular', sans-serif;
+	--font-inter-medium: 'Inter Medium', sans-serif;
+	--font-inter-semibold: 'Inter SemiBold', sans-serif;
+	--font-inter-bold: 'Inter Bold', sans-serif;
+	--font-inter-black: 'Inter Black', sans-serif;
+}
+
+/* для Webkit браузеров типа Chrome, Safari и новых версий Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+input:disabled {
+	opacity: 1;
+}
+
+/* для Firefox */
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+
+input[type="search"] {
+	-webkit-appearance: none;
+	outline-offset: 0;
+}
+
+/* Скрываем в сафари предложение добавить людей из контактов */
+/*noinspection CssInvalidPseudoSelector*/
+input::-webkit-contacts-auto-fill-button {
+	visibility: hidden;
+	display: none !important;
+	pointer-events: none;
+	position: absolute;
+	right: 0;
+}
+
+.page-layout-mobile {
+	min-height: 100vh;
+	min-height: 100dvh;
+	@media screen and (max-width: 600px) {
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(145, 155, 234, 0.3) 22.6%, rgba(145, 155, 234, 0.3) 52.6%, rgba(145, 155, 234, 0.3) 52.6%, rgba(145, 155, 234, 0.3) 52.6%);
+		background-attachment: fixed;
+	}
+}
+
+.invisible-scrollbar {
+	overflow: scroll;
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.invisible-scrollbar::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+	display: none; /* Chrome, Safari, newer versions of Edge */
+}
+
+/* Wrap new scrollbar properties in @supports rule for browsers without `::-webkit-scrollbar-*` support */
+/* This way chrome won't override `::-webkit-scrollbar-*` selectors */
+@supports not selector(::-webkit-scrollbar) {
+	* {
+		scrollbar-width: none;
+		-ms-overflow-style: none; /* IE and Edge */
+	}
+}
+
+.toast-container {
+	overflow: hidden;
+	transition: opacity 0.5s ease-out;
+	opacity: 1;
+	position: absolute;
+	z-index: 0;
+	pointer-events: none;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	padding: 16px 28px;
+	padding-bottom: 0px;
+	text-align: center;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	background-color: #ffffff;
+}
+
+.toast-container.popup {
+	z-index: 9999;
+	border-radius: 12px 12px;
+}
+
+.toast {
+	position: relative;
+	width: 100%;
+	font-family: "Inter Regular";
+	font-weight: 500;
+	font-size: 15px;
+	line-height: 30px;
+	padding: 4px 8px;
+	text-align: center;
+	color: #ffffff;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	border-radius: 8px;
+}
+
+.toast-container.small {
+	padding: 16px 12px;
+	padding-bottom: 0px;
+}
+
+.toast-container.mobile {
+	padding: 0px;
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
+	border-radius: 0px;
+}
+
+.toast.small {
+	padding: 8px 12px;
+	line-height: 24px;
+}
+
+.toast.mobile {
+	font-family: "Inter Regular";
+	font-weight: normal;
+	font-size: 15px;
+	padding: 12px 24px;
+	line-height: 21px;
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
+	border-radius: 0px;
+}
+
+.toast.success {
+	background-color: rgba(5, 196, 107, 1);
+}
+
+.toast.info {
+	background-color: rgba(103, 115, 128, 1);
+}
+
+.toast.warning {
+	background-color: rgba(255, 138, 0, 1);
+}
+
+.pin-input-container {
+	display: flex;
+	align-items: center;
+}
+.pin-input-container:disabled {
+	opacity: 30%;
+}

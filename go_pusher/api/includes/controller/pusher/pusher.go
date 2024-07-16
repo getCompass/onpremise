@@ -237,6 +237,83 @@ func SendVoipPush(ctx context.Context, UserNotification usernotification.UserNot
 	}()
 }
 
+// отправляем voip на firebase & apns
+// этот метод используется только для PIVOT в отличие от метода выше
+// @long - большая структура
+func SendJitsiVoipPush(ctx context.Context, userList []int64, uuid string, pushData push.PushDataStruct, sentDeviceList []string) {
+
+	go func() {
+
+		// получаем настройки уведомлений для пользователей
+		userNotificationMap := usernotification.GetUserNotificationList(ctx, userList)
+
+		var analyticList = make(map[int64]analyticspush.PushStruct)
+
+		// собираем информацию о пуше для каждого пользователя
+		for key, userNotification := range userNotificationMap {
+
+			uuidPush := functions.GenerateUuid()
+
+			// создадим и запишем обьект аналитики
+			analyticItem := analyticspush.PushStruct{
+				Uuid:         uuidPush,
+				UserId:       userNotification.UserId,
+				EventTime:    time.Now().Unix(),
+				EventType:    0,
+				DeviceId:     "",
+				TokenHash:    "",
+				PushId:       "",
+				PushResponse: 0,
+			}
+
+			analyticItem.OnTalkingStartWorking()
+			analyticspush.Add(analyticItem, uuidPush)
+
+			analyticspush.UpdateAnalyticPush(analyticItem, analyticspush.PushStatusPivotTalkingWorking)
+
+			if !isNeedSendPivotPush(userNotification, analyticItem) {
+				delete(userNotificationMap, key)
+			}
+
+			// группируем объекты аналитики по пользователям
+			analyticList[userNotification.UserId] = analyticItem
+		}
+
+		// получаем девайсы пользователей, которым отправляем analyticspush уведомление
+		deviceList := device.GetUserDeviceList(ctx, userNotificationMap, analyticList, false)
+
+		tokenPushMap := makeTokenPushMap(deviceList, uuid, analyticList, sentDeviceList)
+
+		providerInfoList := make([]push.ProviderInfo, 0)
+		for tokenType, tokenPushList := range tokenPushMap {
+
+			switch tokenType {
+
+			case device.TokenTypeFirebaseLegacy, device.TokenTypeFirebaseV1:
+				providerInfoList = append(providerInfoList, makeFirebaseProviderInfo(tokenType, tokenPushList))
+			case device.TokenTypeVoipApns:
+
+				// если получили флаг, что voip пуш не требуется
+				if pushData.VoipPush.IsNeedSendApns == 0 {
+					continue
+				}
+
+				providerInfoList = append(providerInfoList, makeApnsProviderInfo(device.TokenTypeVoipApns, tokenPushList))
+			case device.TokenTypeHuawei:
+				providerInfoList = append(providerInfoList, makeHuaweiProviderInfo(tokenPushList))
+			}
+		}
+
+		// получаем инфу о пользователе, начавшем звонок
+		pushData.VoipPush.UserInfo = getUserInfoForVoip(pushData.VoipPush.UserId)
+
+		// отправляем пуш всем пользователям
+		log.Errorf("отправляем пуш providerInfoList %v, pushData %v", providerInfoList, pushData)
+		requestSender(TaskPushType, providerInfoList, pushData)
+		log.Errorf("отправили пуш")
+	}()
+}
+
 // отправляем тестовый пуш для устройства
 func SendTestPush(tokenItem device.TokenItem, pushType string) {
 
@@ -288,6 +365,7 @@ func getUserInfoForVoip(userId int64) voippush.UserInfo {
 }
 
 // обновляет badge
+// @long
 func UpdateBadge(deviceStruct device.DeviceStruct, badgeCount int64, conversationKeyList []string, threadKeyList []string) {
 
 	badgePush := badge.PushStruct{

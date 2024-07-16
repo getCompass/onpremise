@@ -16,6 +16,8 @@ import (
 	"sync"
 )
 
+type companyDataProvider func() *company_data.DbConn
+
 type CompanyEnvList struct {
 	mutex   sync.Mutex
 	EnvList map[int64]*Isolation
@@ -35,7 +37,7 @@ func MakeCompanyEnvList() *CompanyEnvList {
 
 // инициализирует новую среду для компании
 // если сервис больше не может вмещать в себя компании, возвращает ошибку
-func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64, companyConfig *conf.CompanyConfigStruct, capacityLimit int, globalIsolation *GlobalIsolation.GlobalIsolation, companyDataConn *company_data.DbConn, pusherConn *pusher.Conn) (*Isolation, context.Context) {
+func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64, companyConfig *conf.CompanyConfigStruct, capacityLimit int, globalIsolation *GlobalIsolation.GlobalIsolation, companyDataConnProvider companyDataProvider, pusherConn *pusher.Conn) (*Isolation, context.Context) {
 
 	companyEnv.mutex.Lock()
 	isolation, exists := companyEnv.EnvList[companyId]
@@ -58,6 +60,7 @@ func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64,
 		return nil, nil
 	}
 
+	companyDataConn := companyDataConnProvider()
 	companyContext, cancel := context.WithCancel(ctx)
 
 	// генерируем новый контекст исполнения для сервиса

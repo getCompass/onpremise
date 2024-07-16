@@ -1,0 +1,282 @@
+@use 'sass:math';
+
+.context-menu-item-group {
+
+    .toolbar-button-with-badge {
+
+        &.is-mobile {
+            width: 100%;
+        }
+    }
+}
+
+.reactions-menu {
+    width: 281px;
+    background: rgba(33, 33, 33, 1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);;
+    border-radius: 5px;
+    padding: 16px;
+
+    &.is-mobile {
+        background: rgba(28, 28, 28, 1);
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 23px 16px 8px 16px;
+    }
+
+    .toolbox-icon {
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    }
+
+    &.with-gif {
+        width: 328px;
+
+        .reactions-row .toolbox-button:last-of-type {
+            top: 3px;
+
+            & .toolbox-icon.toggled {
+                background-color: #000000;
+            }
+        }
+    }
+
+    &.overflow {
+        width: 100%;
+
+        .toolbox-icon {
+            width: 48px;
+            height: 48px;
+
+            &.emoji-reactions-menu {
+                &.is-mobile {
+                    width: 24px;
+                    height: 24px;
+                }
+            }
+
+            &.emoji-raise-hand-button {
+                &.is-mobile {
+                    height: 44px;
+                }
+            }
+
+            span.emoji {
+                width: 48px;
+                height: 48px;
+
+                &.emoji-reactions-menu {
+                    &.is-mobile {
+                        width: 22px;
+                        height: 22px;
+                        font-size: 24px;
+                        line-height: 30px;
+                    }
+                }
+
+                &.emoji-raise-hand-button {
+                    &.is-mobile {
+                        width: 22px;
+                        height: 22px;
+                        font-size: 14px;
+                        line-height: 21px;
+                    }
+                }
+            }
+        }
+
+        .reactions-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+
+            &.is-mobile {
+                padding: 0 4px;
+                justify-content: space-between;
+            }
+
+            .toolbox-button {
+                margin-right: 0;
+            }
+
+            .toolbox-button:last-of-type {
+                top: 0;
+            }
+        }
+    }
+
+    .toolbox-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+
+        span.emoji {
+            width: 36px;
+            height: 36px;
+            font-size: 24px;
+            line-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: font-size ease .1s;
+
+            @for $i from 1 through 12 {
+                &.increase-#{$i} {
+                    font-size: calc(20px + #{$i}px);
+                }
+            }
+        }
+    }
+
+    .reactions-row {
+        .toolbox-button {
+            margin-right: 13px;
+            touch-action: manipulation;
+            position: relative;
+        }
+
+        .toolbox-button:last-of-type {
+            margin-right: 0;
+        }
+    }
+
+    .raise-hand-row {
+        margin-top: 20px;
+
+        .toolbox-button {
+            width: 100%;
+        }
+
+        .toolbox-icon {
+            width: 100%;
+            flex-direction: row;
+            align-items: center;
+
+            span.text {
+                font-style: normal;
+                font-weight: 600;
+                font-size: 14px;
+                line-height: 24px;
+                margin-left: 8px;
+
+                &.is-mobile {
+                    line-height: 21px;
+                    margin-left: 4px;
+                    color: rgba(180, 180, 180, 1);
+                }
+            }
+        }
+    }
+}
+
+.reactions-animations-overflow-container {
+    position: absolute;
+    width: 20%;
+    bottom: 0;
+    left: 40%;
+    height: 0;
+}
+
+.reactions-menu-popup-container {
+    display: inline-block;
+    position: relative;
+}
+
+.reactions-animations-container {
+    left: 50%;
+    bottom: 0px;
+    display: inline-block;
+    position: absolute;
+}
+
+$reactionCount: 20;
+
+@function random($min, $max) {
+    @return math.random() * ($max - $min) + $min;
+}
+
+.reaction-emoji {
+    position: absolute;
+    font-size: 24px;
+    line-height: 32px;
+    width: 32px;
+    height: 32px;
+    top: 0;
+    left: 20px;
+    opacity: 0;
+    z-index: 1;
+
+    &.reaction-0 {
+        animation: flowToRight 5s forwards ease-in-out;
+    }
+
+    @for $i from 1 through $reactionCount {
+        &.reaction-#{$i} {
+            animation: animation-#{$i} 5s forwards ease-in-out;
+            top: #{random(-40, 10)}px;
+            left: #{random(0, 30)}px;
+        }
+    }
+}
+
+@keyframes flowToRight {
+    0% {
+        transform: translate(0px, 0px) scale(0.6);
+        opacity: 1;
+    }
+
+    70% {
+        transform: translate(40px, -70dvh) scale(1.5);
+        opacity: 1;
+    }
+
+    75% {
+        transform: translate(40px, -70dvh) scale(1.5);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(140px, -50dvh) scale(1);
+        opacity: 0;
+    }
+}
+
+@mixin animation-list {
+    @for $i from 1 through $reactionCount {
+        $topX: random(-100, 100);
+        $topY: random(65, 75);
+        $bottomX: random(150, 200);
+        $bottomY: random(40, 50);
+
+        @if $topX < 0 {
+            $bottomX: -$bottomX;
+        }
+
+        @keyframes animation-#{$i} {
+            0% {
+                transform: translate(0, 0) scale(0.6);
+                opacity: 1;
+            }
+
+            70% {
+                transform: translate(#{$topX}px, -#{$topY}dvh) scale(1.5);
+                opacity: 1;
+            }
+
+            75% {
+                transform: translate(#{$topX}px, -#{$topY}dvh) scale(1.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(#{$bottomX}px, -#{$bottomY}dvh) scale(1);
+                opacity: 0;
+            }
+        }
+    }
+}
+
+@include animation-list;

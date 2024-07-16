@@ -3,11 +3,17 @@
 namespace Compass\Company;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\CompanyIsHibernatedException;
+use BaseFrame\Exception\Request\CompanyNotServedException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
+use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\System\Locale;
 use CompassApp\Domain\Member\Entity\Member;
 use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Exception\AccountDeleted;
+use CompassApp\Domain\Member\Exception\ActionNotAllowed;
 use CompassApp\Domain\Member\Exception\IsLeft;
 use CompassApp\Domain\Member\Exception\UserIsGuest;
 
@@ -232,5 +238,95 @@ class Domain_Member_Scenario_Socket {
 
 		// отправляем ws событие о том, что у пользователя изменена роль
 		Gateway_Bus_Sender::userRoleChanged($member->user_id, $role_legacy);
+	}
+
+	/**
+	 * Проверяет возможность создавать jitsu-конференции.
+	 *
+	 * @throws BusFatalException|ParseFatalException|ControllerMethodNotFoundException|\queryException
+	 * @throws UserIsGuest
+	 * @throws ActionNotAllowed
+	 */
+	public static function isMediaConferenceCreatingAllowed(int $user_id):bool {
+
+		try {
+
+			// если участник удалил аккаунт или покинул пространство
+			$member = Gateway_Bus_CompanyCache::getMember($user_id);
+			\CompassApp\Domain\Member\Entity\Extra::assertIsNotDeleted($member->extra);
+			Member::assertIsNotLeftRole($member->role);
+			Member::assertUserNotGuest($member->role);
+		} catch (\cs_RowIsEmpty|IsLeft|AccountDeleted) {
+			return false;
+		}
+
+		if (!Type_User_Main::isHuman($member->npc_type)) {
+			return false;
+		}
+
+		try {
+
+			// проверяем роль пользователя
+			Member::assertUserAdministrator($member->role);
+			return true;
+		} catch (\CompassApp\Domain\Member\Exception\IsNotAdministrator) {
+
+			$member_permission = Domain_Company_Entity_Config::getValue(Permission::IS_MEDIA_CONFERENCE_ENABLED);
+			if ($member_permission["value"] === 0) {
+				throw new ActionNotAllowed("action not allowed");
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Проверяет возможность создавать jitsi сингл звонка
+	 *
+	 * @param int $user_id
+	 * @param int $opponent_user_id
+	 *
+	 * @return bool
+	 * @throws BusFatalException
+	 * @throws CompanyIsHibernatedException
+	 * @throws CompanyNotServedException
+	 * @throws Gateway_Socket_Exception_Conversation_GuestInitiator
+	 * @throws Gateway_Socket_Exception_Conversation_NotAllowed
+	 * @throws ReturnFatalException
+	 * @throws \cs_SocketRequestIsFailed
+	 */
+	public static function checkIsAllowedForCall(int $user_id, int $opponent_user_id):array {
+
+		$conversation_map = "";
+		try {
+
+			// если участник удалил аккаунт или покинул пространство
+			$member = Gateway_Bus_CompanyCache::getMember($user_id);
+			\CompassApp\Domain\Member\Entity\Extra::assertIsNotDeleted($member->extra);
+			Member::assertIsNotLeftRole($member->role);
+		} catch (\cs_RowIsEmpty|IsLeft|AccountDeleted) {
+			return [false, $conversation_map];
+		}
+
+		if (!Type_User_Main::isHuman($member->npc_type)) {
+			return [false, $conversation_map];
+		}
+		Domain_Member_Entity_Permission::checkSpace($user_id, 2, Permission::IS_CALL_ENABLED);
+
+		$conversation_map = Gateway_Socket_Conversation::checkIsAllowedForCall($user_id, $opponent_user_id, 2);
+
+		return [true, $conversation_map];
+	}
+
+	/**
+	 * Инкрементим статистику участия пользователя в конференции
+	 *
+	 * @throws BusFatalException
+	 * @throws \busException
+	 * @throws \parseException
+	 */
+	public static function incConferenceMembershipRating(int $user_id):void {
+
+		Gateway_Bus_Company_Rating::inc(Domain_Rating_Entity_Rating::CALL, $user_id);
 	}
 }

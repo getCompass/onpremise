@@ -33,5 +33,9 @@
 	"integration_socket_url": "${ENTRYPOINT_INTEGRATION}",
 	"integration_socket_module": {
 		"php_integration": "/api/socket/integration/"
+	},
+	"jitsi_socket_url": "${ENTRYPOINT_PIVOT}",
+	"jitsi_socket_module": {
+		"php_jitsi": "/api/socket/jitsi/"
 	}
 }

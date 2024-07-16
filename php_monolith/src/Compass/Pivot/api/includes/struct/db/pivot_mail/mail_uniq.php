@@ -13,6 +13,7 @@ class Struct_Db_PivotMail_MailUniq {
 	public function __construct(
 		public string $mail_hash,
 		public int    $user_id,
+		/** @deprecated */
 		public bool   $has_sso_account,
 		public int    $created_at,
 		public int    $updated_at,

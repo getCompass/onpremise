@@ -29,7 +29,19 @@ class Domain_User_Entity_Password {
 	public static function throwIfIncorrect(string $password):void {
 
 		if (!static::isCorrect($password)) {
-			throw new Domain_User_Exception_Password_Incorrect("incorrect password");
+			throw new Domain_User_Exception_Password_Incorrect("incorrect password new");
+		}
+	}
+
+	/**
+	 * выбрасываем исключение, если некорректный переданный новый пароль
+	 *
+	 * @throws Domain_User_Exception_Password_IncorrectNew
+	 */
+	public static function throwIfIncorrectNew(string $password):void {
+
+		if (!static::isCorrect($password)) {
+			throw new Domain_User_Exception_Password_IncorrectNew("incorrect password new");
 		}
 	}
 

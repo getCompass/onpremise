@@ -453,6 +453,13 @@ class Type_Phphooker_Worker {
 			return $set;
 		}
 
+		// для сообщений с конференцией ничего не делаем
+		if (Type_Conversation_Message_Main::getHandler($message)::getType($message) == CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE
+			&& in_array(Type_Conversation_Message_Main::getHandler($message)::getConferenceAcceptStatus($message), ["accepted"])) {
+
+			return $set;
+		}
+
 		// если пользователь не является отправителем и это не чат найма(там получать инкремент должны все)
 		if ($user_id != Type_Conversation_Message_Main::getHandler($message)::getSenderUserId($message)
 			|| Type_Conversation_Message_Main::getHandler($message)::getType($message) == CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST) {
@@ -1019,7 +1026,7 @@ class Type_Phphooker_Worker {
 		}
 
 		// проверяем не пустой ли last_message
-		if(!isset($left_menu_row["last_message"]["message_map"])){
+		if (!isset($left_menu_row["last_message"]["message_map"])) {
 
 			Gateway_Db_CompanyConversation_Main::rollback();
 			return true;
@@ -1134,7 +1141,7 @@ class Type_Phphooker_Worker {
 		}
 
 		// проверяем не пустой ли last_message
-		if(!isset($left_menu_row["last_message"]["message_map"])){
+		if (!isset($left_menu_row["last_message"]["message_map"])) {
 
 			Gateway_Db_CompanyConversation_Main::rollback();
 			return true;

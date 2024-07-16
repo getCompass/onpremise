@@ -9,9 +9,9 @@ use JetBrains\PhpStorm\ArrayShape;
  */
 class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_ServiceTask_Main {
 
-	protected const _PUBLISH_ANNOUNCEMENT_TIME = 3;      // через какое то время опубликовать анонс
-	protected const _HIBERNATION_IMMUNITY_TILL = 60 * 5; // сколько компания не засыпаем
-	protected const _AWAKE_TIMEOUT             = 10;     // время сколько ждем пробуждения компании
+	protected const _PUBLISH_ANNOUNCEMENT_TIME = 3;		// через какое то время опубликовать анонс
+	protected const _HIBERNATION_IMMUNITY_TILL = DAY1;	// сколько компания не засыпает
+	protected const _AWAKE_TIMEOUT             = 10;      // время сколько ждем пробуждения компании
 
 	/**
 	 * Разбудить компанию

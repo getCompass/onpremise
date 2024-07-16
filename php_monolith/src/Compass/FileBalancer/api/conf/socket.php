@@ -116,6 +116,13 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"files.getFileList",
 		],
 	],
+	"jitsi"     => [
+		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
+		"auth_key"      => SOCKET_KEY_JITSI,
+		"allow_methods" => [
+			"files.getFileList",
+		],
+	],
 ];
 
 return $CONFIG;

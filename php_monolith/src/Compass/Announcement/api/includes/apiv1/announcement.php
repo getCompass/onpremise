@@ -87,7 +87,7 @@ class Apiv1_Announcement extends Apiv1_Controller {
 		}
 
 		// записываем токен в куки пользователя, чтобы клиенты не передавали его в следующих запросах
-		Type_Session_Main::setTokenToCookie($jwt_token);
+		Type_Session_Main::setAuthToken($jwt_token);
 
 		return $this->ok([
 			"token" => (string) $token,

@@ -81,6 +81,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"search.tryReindex",
 			"groups.createRespectConversation",
 			"groups.addMembersToRespectConversation",
+			"conversations.checkIsAllowedForCall",
 		],
 	],
 	"thread"        => [
@@ -173,6 +174,8 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"intercom.getUserSupportConversationKey",
 			"groups.createRespectConversation",
 			"groups.addMembersToRespectConversation",
+			"conversations.addMediaConferenceMessage",
+			"conversations.checkIsAllowedForCall",
 		],
 	],
 ];

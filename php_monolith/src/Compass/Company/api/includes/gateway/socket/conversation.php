@@ -2,6 +2,8 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Exception\Request\CompanyIsHibernatedException;
+use BaseFrame\Exception\Request\CompanyNotServedException;
 use Compass\Pivot\cs_CompanyIsHibernate;
 use Compass\Pivot\Gateway_Socket_Exception_CompanyIsNotServed;
 use JetBrains\PhpStorm\ArrayShape;
@@ -1186,6 +1188,48 @@ class Gateway_Socket_Conversation extends Gateway_Socket_Default {
 
 			throw new ParseFatalException("passed unknown error_code");
 		}
+	}
+
+	/**
+	 * Метод для проверки можем ли звонить пользователю
+	 *
+	 * @param int $user_id
+	 * @param int $opponent_user_id
+	 * @param int $method_version
+	 *
+	 * @return string
+	 * @throws CompanyIsHibernatedException
+	 * @throws CompanyNotServedException
+	 * @throws Gateway_Socket_Exception_Conversation_GuestInitiator
+	 * @throws Gateway_Socket_Exception_Conversation_NotAllowed
+	 * @throws ReturnFatalException
+	 * @throws \cs_SocketRequestIsFailed
+	 */
+	public static function checkIsAllowedForCall(int $user_id, int $opponent_user_id, int $method_version):string {
+
+		$request = [
+			"user_id"          => $user_id,
+			"opponent_user_id" => $opponent_user_id,
+			"method_version"   => $method_version,
+		];
+
+		[$status, $response] = self::doCall("conversations.checkIsAllowedForCall", $request, $user_id);
+
+		if ($status !== "ok") {
+
+			// сокет-запрос вернул код ошибки?
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException(__CLASS__ . ": request return call not \"ok\"");
+			}
+
+			throw match ($response["error_code"]) {
+				10022 => new Gateway_Socket_Exception_Conversation_NotAllowed("conversation not allowed"),
+				10024, 10027, 10025 => new Gateway_Socket_Exception_Conversation_GuestInitiator("guest is initiator"),
+				default => throw new ReturnFatalException("unexpected error code")
+			};
+		}
+
+		return $response["conversation_map"];
 	}
 
 	// -------------------------------------------------------

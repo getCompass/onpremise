@@ -10,6 +10,7 @@ use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Server\ServerProvider;
+use CompassApp\Domain\Member\Entity\Permission;
 
 /**
  * контроллер для сокет методов класса conversations
@@ -25,6 +26,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 	// поддерживаемые методы. регистр не имеет значение */
 	public const ALLOW_METHODS = [
 		"addCallMessage",
+		"addMediaConferenceMessage",
 		"getMessageData",
 		"getMessageDataForSendRemind",
 		"getMessage",
@@ -139,7 +141,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		// проверяем, можем ли писать этому пользователю
 		try {
 			Helper_Conversations::checkIsAllowed($conversation_map, $meta_row, $this->user_id);
-		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted) {
+		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted) {
 			return $this->error(10021, "You can't write to this conversation because your opponent is blocked in our system");
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation $e) {
 			return $this->error($e->getSocketErrorCode(), "action not allowed");
@@ -147,6 +149,55 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 		// формируем сообщение
 		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeCall($this->user_id, $call_map, $platform);
+
+		try {
+
+			Helper_Conversations::addMessage(
+				$conversation_map,
+				$message, $meta_row["users"],
+				$meta_row["type"],
+				$meta_row["conversation_name"],
+				$meta_row["extra"]
+			);
+		} catch (cs_ConversationIsLocked) {
+			return $this->error(10018, "Conversation is locked");
+		}
+
+		return $this->ok();
+	}
+
+	/**
+	 * добавляем в диалог сообщение-конференцию
+	 *
+	 * @return array
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws \returnException
+	 */
+	public function addMediaConferenceMessage():array {
+
+		$conversation_map = $this->post(\Formatter::TYPE_STRING, "conversation_map");
+		$conference_id    = $this->post(\Formatter::TYPE_STRING, "conference_id");
+		$status           = $this->post(\Formatter::TYPE_STRING, "status");
+		$link             = $this->post(\Formatter::TYPE_STRING, "link");
+		$platform         = $this->post(\Formatter::TYPE_STRING, "platform", Type_Conversation_Message_Handler_Default::WITHOUT_PLATFORM);
+
+		// получаем мету диалога
+		$meta_row = Type_Conversation_Meta::get($conversation_map);
+
+		// проверяем, можем ли писать этому пользователю
+		try {
+			Helper_Conversations::checkIsAllowed($conversation_map, $meta_row, $this->user_id);
+		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted) {
+			return $this->error(10021, "You can't write to this conversation because your opponent is blocked in our system");
+		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation $e) {
+			return $this->error($e->getSocketErrorCode(), "action not allowed");
+		}
+
+		// формируем сообщение
+		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeMediaConference($this->user_id, $conference_id, $status, $link, $platform);
 
 		try {
 
@@ -325,7 +376,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		// проверяем, что имеем право взаимодействовать с диалогом
 		try {
 			Helper_Conversations::checkIsAllowed($conversation_map, $meta_row, $this->user_id);
-		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted $e) {
+		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
 			return $this->_returnErrorCodeWithAllowStatusByCustomException($e);
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation $e) {
 			return $this->error($e->getSocketErrorCode(), "action not allowed");
@@ -369,7 +420,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 			try {
 				Helper_Conversations::checkIsAllowed($v["conversation_map"], $v, $this->user_id);
-			} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted | Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
+			} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted|Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 
 				// добавляем map диалога в список недоступных для пользователя
 				$not_access_conversation_map_list[] = $v["conversation_map"];
@@ -487,7 +538,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 			try {
 				Helper_Conversations::checkIsAllowed($conversation_map, $meta_row, $this->user_id);
-			} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted $e) {
+			} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
 				return $this->_returnErrorCodeWithAllowStatusByCustomException($e);
 			} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation $e) {
 				return $this->error($e->getSocketErrorCode(), "action not allowed");
@@ -701,7 +752,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 			$this->_throwIfConversationTypeIsNotValidForAction($meta_row["type"], Type_Conversation_Action::ADD_REPOST_FROM_CONVERSATION);
 			Helper_Conversations::checkIsAllowed($conversation_map, $meta_row, $this->user_id);
-		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted) {
+		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted) {
 			return $this->_doReturnAllowStatusInError($meta_row);
 		} catch (cs_ConversationTypeIsNotValidForAction) {
 			return $this->error(10013, "You can not perform this action with this conversation");
@@ -867,7 +918,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 			$this->_throwIfConversationTypeIsNotValidForAction($meta_row["type"], Type_Conversation_Action::ADD_REPOST_FROM_CONVERSATION);
 			Helper_Conversations::checkIsAllowed($conversation_map, $meta_row, $this->user_id);
-		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted) {
+		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted) {
 			return $this->_doReturnAllowStatusInErrorLegacy($meta_row);
 		} catch (cs_ConversationTypeIsNotValidForAction) {
 			return $this->error(10013, "You can not perform this action with this conversation");
@@ -1107,7 +1158,13 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 		$opponent_user_id = $this->post("?i", "opponent_user_id");
 		$user_id          = $this->post("?i", "user_id");
-		$method_version   = $this->post("?i", "method_version");
+		$method_version   = $this->post("?i", "method_version", 2);
+
+		try {
+			Domain_Member_Entity_Permission::check($this->user_id, Permission::IS_CALL_ENABLED);
+		} catch (Domain_Member_Exception_ActionNotAllowed) {
+			return $this->error(10022, "Action not allowed");
+		}
 
 		// достаем запись из cluster_user_conversation_uniq
 		$single_conversation_map = Type_Conversation_Single::getMapByUsers($user_id, $opponent_user_id);
@@ -1135,7 +1192,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 			Domain_Member_Entity_Permission::checkSingle($user_id, $method_version, $single_conversation_map);
 			Helper_Conversations::checkIsAllowed($single_conversation_map, $meta_row, $user_id);
-		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted) {
+		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted) {
 			return $this->error(10021, "You can't write to this conversation because your opponent is blocked in our system");
 		} catch (Domain_Member_Exception_ActionNotAllowed) {
 			return $this->error(10022, "Action not allowed");
@@ -1729,7 +1786,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		// получаем map группы Достижения
 		try {
 			$conversation_map = Type_Company_Default::getCompanyGroupConversationMap(Type_Company_Default::ACHIEVEMENT);
-		} catch (\Exception | \Error $e) {
+		} catch (\Exception|\Error $e) {
 
 			Type_System_Admin::log("achievement_group_found_fail", $e->getMessage());
 
@@ -2598,11 +2655,11 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 			$remind_id = Domain_Conversation_Scenario_Socket::createRemindOnMessage($this->user_id, $message_map, $remind_at, $comment);
 		} catch (cs_Message_IsDeleted) {
 			return $this->error(2418003, "Message is deleted");
-		} catch (Domain_Conversation_Exception_Message_NotAllowForRemind | Domain_Conversation_Exception_Message_NotAllowForUser) {
+		} catch (Domain_Conversation_Exception_Message_NotAllowForRemind|Domain_Conversation_Exception_Message_NotAllowForUser) {
 			return $this->error(2418004, "You are not allowed to do this action");
 		} catch (cs_Message_IsTooLong) {
 			return $this->error(2418005, "Comment text is too long");
-		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted $e) {
+		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
 			return $this->_returnErrorCodeWithAllowStatusByCustomException($e);
 		} catch (cs_UserIsNotMember) {
 			return $this->error(2418001, "User is not member of conversation");
@@ -2636,7 +2693,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 		try {
 			Domain_Conversation_Scenario_Socket::sendRemindMessage($message_map, $comment);
-		} catch (cs_Message_IsDeleted | Domain_Remind_Exception_AlreadyRemoved) {
+		} catch (cs_Message_IsDeleted|Domain_Remind_Exception_AlreadyRemoved) {
 			// обработчик события не смог отправить сообщение - ничего не делаем в случае ошибки
 		} catch (cs_Message_IsTooLong) {
 

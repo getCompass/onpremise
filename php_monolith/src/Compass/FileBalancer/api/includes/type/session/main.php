@@ -7,42 +7,20 @@ namespace Compass\FileBalancer;
  */
 class Type_Session_Main {
 
-	protected const _COMPANY_COOKIE_KEY = COMPANY_ID . "_company_session_key"; // ключ, передаваемый в cookie пользователя
-	protected const _PIVOT_COOKIE_KEY   = "pivot_session_key"; // ключ, передаваемый в cookie пользователя
+	protected const _PIVOT_COOKIE_KEY    = "pivot_session_key";                                    // ключ, передаваемый в cookie пользователя
+	protected const _HEADER_AUTH_TYPE    = \BaseFrame\Http\Header\Authorization::AUTH_TYPE_BEARER; // тип токена для запроса
 
 	protected const _SESSION_STATUS_GUEST = 1;
 
 	/**
 	 * проверяем что сессия существует и валидна
-	 *
-	 * @throws busException
-	 * @throws cs_SessionNotFound
-	 */
-	public static function getSessionForCompany():array {
-
-		// проверяем, что у пользователя установлена кука
-		$cloud_session_uniq = self::_getCloudSessionUniqFromCookie();
-		if ($cloud_session_uniq === false) {
-			return [0, false];
-		}
-
-		// отдаем сессию пользователя
-		$user_id = Gateway_Bus_CompanyCache::getSessionInfo($cloud_session_uniq);
-		return [$user_id, $cloud_session_uniq];
-	}
-
-	/**
-	 * проверяем что сессия существует и валидна
-	 *
-	 * @throws busException
+	 * @throws \cs_SessionNotFound
 	 * @throws cs_CookieIsEmpty
-	 * @throws cs_SessionNotFound
-	 * @throws returnException
 	 */
 	public static function getSessionForPivot():array {
 
 		// проверяем, что у пользователя установлена кука
-		$pivot_session_map = self::_getSessionMapFromCookie();
+		$pivot_session_map = self::_getSessionMap();
 		if ($pivot_session_map === false) {
 			throw new cs_CookieIsEmpty();
 		}
@@ -68,52 +46,77 @@ class Type_Session_Main {
 	// ------------------------------------------------------------
 
 	/**
-	 * получаем session map из куки
-	 *
-	 * @return false|string
-	 * @mixed
+	 * Пытается получить session_map из данных запроса.
 	 */
-	protected static function _getCloudSessionUniqFromCookie():bool|string {
+	protected static function _getSessionMap():string|false {
 
-		// проверяем что сессии нет в куках
-		if (!isset($_COOKIE[self::_COMPANY_COOKIE_KEY])) {
+		// получаем наличие заголовка и ключ из заголовка
+		// далее возможно процесс установки заголовка значением из кук
+		[$has_header, $pivot_session_key] = static::_tryGetSessionMapFromAuthorizationHeader();
+
+		// если в заголовке нет, то пытается достать из кук
+		if ($has_header === false || $pivot_session_key === "") {
+			$pivot_session_key = static::_tryGetSessionMapFromCookie();
+		}
+
+		// в куках тоже ничего не нашли
+		if ($pivot_session_key === false) {
 			return false;
 		}
 
+		// проверяем, что session_key валиден
 		try {
-			return Type_Pack_CompanySession::getSessionUniq(Type_Pack_CompanySession::doDecrypt(urldecode($_COOKIE[self::_COMPANY_COOKIE_KEY])));
-		} catch (cs_DecryptHasFailed) {
-			throw new cs_SessionNotFound();
+			$pivot_session_map = Type_Pack_PivotSession::doDecrypt($pivot_session_key);
+		} catch (\cs_DecryptHasFailed) {
+			return false;
 		}
+
+		return $pivot_session_map;
 	}
 
-	// ------------------------------------------------------------
-	// PROTECTED
-	// ------------------------------------------------------------
+	/**
+	 * Пытается получить токен из заголовка авторизации.
+	 */
+	protected static function _tryGetSessionMapFromAuthorizationHeader():array {
+
+		// получаем заголовок авторизации
+		$auth_header = \BaseFrame\Http\Header\Authorization::parse();
+
+		// заголовка авторизации в запросе нет
+		if ($auth_header === false) {
+			return [false, ""];
+		}
+
+		// заголовок есть, но он пустой, т.е. клиент поддерживает
+		// авторизацию через заголовок, но еще не получал токен
+		if ($auth_header->isNone()) {
+			return [true, ""];
+		}
+
+		// заголовок есть, но он имеет некорректный формат
+		if (!$auth_header->isCorrect()) {
+			return [false, ""];
+		}
+
+		// заголовок есть, он корректный, но предназначен не для этого
+		// модуля/сервиса, считаем, что заголовка нет в таком случае
+		if ($auth_header->getType() !== static::_HEADER_AUTH_TYPE) {
+			return [false, ""];
+		}
+
+		return [true, base64_decode($auth_header->getToken())];
+	}
 
 	/**
-	 * получаем session map из куки
-	 *
-	 * @return false|string
-	 *
-	 * @throws returnException
-	 * @mixed
+	 * Пытается получить токен из cookie.
 	 */
-	protected static function _getSessionMapFromCookie() {
+	protected static function _tryGetSessionMapFromCookie():string|false {
 
 		// проверяем что сессии нет в куках
 		if (!isset($_COOKIE[self::_PIVOT_COOKIE_KEY])) {
 			return false;
 		}
 
-		$pivot_session_key = urldecode($_COOKIE[self::_PIVOT_COOKIE_KEY]);
-
-		// проверяем, что session_key валиден
-		try {
-			$pivot_session_map = Type_Pack_PivotSession::doDecrypt($pivot_session_key);
-		} catch (cs_DecryptHasFailed $_) {
-			throw new returnException();
-		}
-		return $pivot_session_map;
+		return urldecode($_COOKIE[self::_PIVOT_COOKIE_KEY]);
 	}
 }

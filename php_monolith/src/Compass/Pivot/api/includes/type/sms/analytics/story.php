@@ -13,6 +13,7 @@ class Type_Sms_Analytics_Story {
 	public const STORY_TYPE_AUTH          = 1; // логин/регистрация
 	public const STORY_TYPE_PHONE_CHANGE  = 2; // смена номера телефона
 	public const STORY_TYPE_TWO_FA        = 3; // 2fa подтверждение действия (удаление аккаунта, удаление компании, самоувольнение ...)
+	public const STORY_TYPE_PHONE_ADD     = 4; // добавление номера телефона
 	public const STORY_TYPE_OTHER_PRODUCT = 8; // флоу, начатый в другом продукте
 
 	/**

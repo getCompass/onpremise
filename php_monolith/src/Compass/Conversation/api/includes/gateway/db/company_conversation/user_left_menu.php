@@ -461,7 +461,7 @@ class Gateway_Db_CompanyConversation_UserLeftMenu extends Gateway_Db_CompanyConv
 			$where_clause .= " AND `is_favorite` = ?i";
 			$args[]       = match ($filter_favorite) {
 				-1 => 0,
-				1  => 1,
+				1 => 1,
 			};
 		}
 
@@ -820,7 +820,7 @@ class Gateway_Db_CompanyConversation_UserLeftMenu extends Gateway_Db_CompanyConv
 	// -------------------------------------------------------
 
 	// текущая версия
-	protected const _CURRENT_LAST_MESSAGE_VERSION = 1;
+	protected const _CURRENT_LAST_MESSAGE_VERSION = 2;
 
 	// схема last_message
 	protected const _LAST_MESSAGE_SCHEMA_LIST = [
@@ -841,31 +841,53 @@ class Gateway_Db_CompanyConversation_UserLeftMenu extends Gateway_Db_CompanyConv
 			"receiver_id"                => 0,
 			"additional_type"            => "",
 		],
+		2 => [
+			"message_map"                => "",
+			"sender_user_id"             => 0,
+			"conversation_message_index" => 0,
+			"created_at"                 => 0,
+			"type"                       => 0,
+			"text"                       => "",
+			"file_map"                   => "",
+			"call_map"                   => "",
+			"invite_map"                 => "",
+			"is_hidden"                  => false,
+			"file_name"                  => "",
+			"message_count"              => 0,
+			"receiver_id"                => 0,
+			"additional_type"            => "",
+			"data"                       => [
+				"conference_id"            => "",
+				"conference_accept_status" => "",
+			],
+		],
 	];
 
 	// создать новую структуру для last_message
 	public static function initLastMessage(string $message_map, int $sender_user_id, int $conversation_message_index,
 							   int    $message_created_at, int $message_type, string $message_text,
 							   string $file_map = "", string $call_map = "", string $invite_map = "", string $file_name = "", int $message_count = 0,
-							   int    $receiver_id = 0, string $additional_type = ""):array {
+							   int    $receiver_id = 0, string $additional_type = "", string $conference_id = "", string $conference_accept_status = ""):array {
 
 		// получаем текущую схему last_message
 		$last_message_schema = self::_LAST_MESSAGE_SCHEMA_LIST[self::_CURRENT_LAST_MESSAGE_VERSION];
 
 		// устанавливаем параметры
-		$last_message_schema["message_map"]                = $message_map;
-		$last_message_schema["sender_user_id"]             = $sender_user_id;
-		$last_message_schema["conversation_message_index"] = $conversation_message_index;
-		$last_message_schema["created_at"]                 = $message_created_at;
-		$last_message_schema["type"]                       = $message_type;
-		$last_message_schema["text"]                       = $message_text;
-		$last_message_schema["file_map"]                   = $file_map;
-		$last_message_schema["call_map"]                   = $call_map;
-		$last_message_schema["invite_map"]                 = $invite_map;
-		$last_message_schema["file_name"]                  = $file_name;
-		$last_message_schema["message_count"]              = $message_count;
-		$last_message_schema["receiver_id"]                = $receiver_id;
-		$last_message_schema["additional_type"]            = $additional_type;
+		$last_message_schema["message_map"]                      = $message_map;
+		$last_message_schema["sender_user_id"]                   = $sender_user_id;
+		$last_message_schema["conversation_message_index"]       = $conversation_message_index;
+		$last_message_schema["created_at"]                       = $message_created_at;
+		$last_message_schema["type"]                             = $message_type;
+		$last_message_schema["text"]                             = $message_text;
+		$last_message_schema["file_map"]                         = $file_map;
+		$last_message_schema["call_map"]                         = $call_map;
+		$last_message_schema["invite_map"]                       = $invite_map;
+		$last_message_schema["file_name"]                        = $file_name;
+		$last_message_schema["message_count"]                    = $message_count;
+		$last_message_schema["receiver_id"]                      = $receiver_id;
+		$last_message_schema["additional_type"]                  = $additional_type;
+		$last_message_schema["data"]["conference_id"]            = $conference_id;
+		$last_message_schema["data"]["conference_accept_status"] = $conference_accept_status;
 
 		// устанавливаем текущую версию
 		$last_message_schema["version"] = self::_CURRENT_LAST_MESSAGE_VERSION;
@@ -959,6 +981,22 @@ class Gateway_Db_CompanyConversation_UserLeftMenu extends Gateway_Db_CompanyConv
 		$last_message = self::_getLastMessageSchema($last_message);
 
 		return $last_message["call_map"];
+	}
+
+	// получить conference_id
+	public static function getLastMessageConferenceId(array $last_message):string {
+
+		$last_message = self::_getLastMessageSchema($last_message);
+
+		return $last_message["data"]["conference_id"];
+	}
+
+	// получить conference_status
+	public static function getLastMessageConferenceStatus(array $last_message):string {
+
+		$last_message = self::_getLastMessageSchema($last_message);
+
+		return $last_message["data"]["conference_accept_status"];
 	}
 
 	// получить invite_map

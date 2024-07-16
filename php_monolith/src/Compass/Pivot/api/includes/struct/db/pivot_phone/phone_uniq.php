@@ -9,13 +9,14 @@ class Struct_Db_PivotPhone_PhoneUniq {
 
 	public string $phone_number_hash;
 	public int    $user_id;
-	public bool   $has_sso_account;
-	public int    $binding_count;
-	public int    $last_binding_at;
-	public int    $last_unbinding_at;
-	public int    $created_at;
-	public int    $updated_at;
-	public array  $previous_user_list;
+	/** @deprecated */
+	public bool  $has_sso_account;
+	public int   $binding_count;
+	public int   $last_binding_at;
+	public int   $last_unbinding_at;
+	public int   $created_at;
+	public int   $updated_at;
+	public array $previous_user_list;
 
 	/**
 	 * Struct_Db_PivotPhone_PhoneUniq constructor.

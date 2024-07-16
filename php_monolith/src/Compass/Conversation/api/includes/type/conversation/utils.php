@@ -295,13 +295,13 @@ class Type_Conversation_Utils {
 
 		return match ($allow_status) {
 
-			ALLOW_STATUS_GREEN_LIGHT      => self::ALLOW_STATUS_OK,
-			ALLOW_STATUS_NEED_CHECK       => self::_doAllowStatusCheck($opponent_user_info),
-			ALLOW_STATUS_MEMBER_DISABLED  => self::ALLOW_STATUS_MEMBER_IS_DISABLED,
-			ALLOW_STATUS_MEMBER_DELETED   => self::ALLOW_STATUS_MEMBER_IS_DELETED,
+			ALLOW_STATUS_GREEN_LIGHT => self::ALLOW_STATUS_OK,
+			ALLOW_STATUS_NEED_CHECK => self::_doAllowStatusCheck($opponent_user_info),
+			ALLOW_STATUS_MEMBER_DISABLED => self::ALLOW_STATUS_MEMBER_IS_DISABLED,
+			ALLOW_STATUS_MEMBER_DELETED => self::ALLOW_STATUS_MEMBER_IS_DELETED,
 			ALLOW_STATUS_USERBOT_DISABLED => self::ALLOW_STATUS_USERBOT_IS_DISABLED,
-			ALLOW_STATUS_USERBOT_DELETED  => self::ALLOW_STATUS_USERBOT_IS_DELETED,
-			default                       => throw new ParseFatalException("Undefined allow_status=$allow_status in " . toJson($extra)),
+			ALLOW_STATUS_USERBOT_DELETED => self::ALLOW_STATUS_USERBOT_IS_DELETED,
+			default => throw new ParseFatalException("Undefined allow_status=$allow_status in " . toJson($extra)),
 		};
 	}
 
@@ -474,18 +474,24 @@ class Type_Conversation_Utils {
 			$message_map = Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageMap($left_menu_row["last_message"]);
 
 			$output["last_message"] = [
-				"message_map"     => $message_map,
-				"file_map"        => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageFileMap($left_menu_row["last_message"]),
-				"file_name"       => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageFileName($left_menu_row["last_message"]),
-				"call_map"        => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageCallMap($left_menu_row["last_message"]),
-				"invite_map"      => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageInviteMap($left_menu_row["last_message"]),
-				"sender_id"       => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageSenderUserId($left_menu_row["last_message"]),
-				"type"            => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageType($left_menu_row["last_message"]),
-				"text"            => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageText($left_menu_row["last_message"]),
-				"message_count"   => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageMessageCountIfRepostOrQuote($left_menu_row["last_message"]),
-				"receiver_id"     => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageAdditionalReceiverId($left_menu_row["last_message"]),
-				"additional_type" => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageAdditionalType($left_menu_row["last_message"]),
-				"message_index"   => \CompassApp\Pack\Message\Conversation::getBlockMessageIndex($message_map),
+				"message_map"              => $message_map,
+				"file_map"                 => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageFileMap($left_menu_row["last_message"]),
+				"file_name"                => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageFileName($left_menu_row["last_message"]),
+				"call_map"                 => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageCallMap($left_menu_row["last_message"]),
+				"invite_map"               => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageInviteMap($left_menu_row["last_message"]),
+				"sender_id"                => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageSenderUserId($left_menu_row["last_message"]),
+				"type"                     => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageType($left_menu_row["last_message"]),
+				"text"                     => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageText($left_menu_row["last_message"]),
+				"message_count"            => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageMessageCountIfRepostOrQuote($left_menu_row["last_message"]),
+				"receiver_id"              => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageAdditionalReceiverId($left_menu_row["last_message"]),
+				"additional_type"          => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageAdditionalType($left_menu_row["last_message"]),
+				"conference_id"            => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageConferenceId($left_menu_row["last_message"]),
+				"conference_accept_status" => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageConferenceStatus($left_menu_row["last_message"]),
+				"message_index"            => \CompassApp\Pack\Message\Conversation::getBlockMessageIndex($message_map),
+				"data"                     => [
+					"conference_id"            => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageConferenceId($left_menu_row["last_message"]),
+					"conference_accept_status" => Gateway_Db_CompanyConversation_UserLeftMenu::getLastMessageConferenceStatus($left_menu_row["last_message"]),
+				],
 			];
 		}
 

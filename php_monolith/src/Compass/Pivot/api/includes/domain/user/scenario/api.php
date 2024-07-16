@@ -3,6 +3,9 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Restrictions\Exception\ActionRestrictedException;
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Request\BlockException;
+use BaseFrame\Exception\Request\EndpointAccessDeniedException;
 use BaseFrame\Server\ServerProvider;
 use JetBrains\PhpStorm\ArrayShape;
 use BaseFrame\Exception\Domain\ReturnFatalException;
@@ -509,17 +512,17 @@ class Domain_User_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public static function trySendTwoFaSms(int $user_id, string $two_fa_map, string|false $grecaptcha_response):Domain_User_Entity_TwoFa_Story {
+	public static function trySendTwoFaSms(int $user_id, string $two_fa_map, string|false $grecaptcha_response):Domain_User_Entity_Confirmation_TwoFa_Story {
 
 		try {
 
-			$story = Domain_User_Entity_TwoFa_Story::getByMap($two_fa_map);
+			$story = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 			$story->assertNotExpired()
 				->assertNotFinished()
 				->assertCorrectUser($user_id);
 		} catch (cs_WrongTwoFaKey) {
 
-			$two_fa_story = Domain_User_Entity_TwoFa_TwoFa::getByMap($two_fa_map);
+			$two_fa_story = Domain_User_Entity_Confirmation_TwoFa_TwoFa::getByMap($two_fa_map);
 			$two_fa_story->assertNotExpired()
 				->assertNotFinished()
 				->assertCorrectUser($user_id);
@@ -529,7 +532,7 @@ class Domain_User_Scenario_Api {
 
 			$two_fa_phone_data = Domain_User_Action_TwoFa_SendSms::do($user_id, $two_fa_data);
 
-			$story = new Domain_User_Entity_TwoFa_Story($two_fa_data, $two_fa_phone_data);
+			$story = new Domain_User_Entity_Confirmation_TwoFa_Story($two_fa_data, $two_fa_phone_data);
 		}
 
 		return $story;
@@ -552,7 +555,7 @@ class Domain_User_Scenario_Api {
 	 */
 	public static function tryConfirmTwoFaSms(int $user_id, string $two_fa_map, string $sms_code):void {
 
-		$story = Domain_User_Entity_TwoFa_Story::getByMap($two_fa_map);
+		$story = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 
 		try {
 
@@ -599,9 +602,9 @@ class Domain_User_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public static function tryResendTwoFaSms(int $user_id, string $two_fa_map, string|false $grecaptcha_response):Domain_User_Entity_TwoFa_Story {
+	public static function tryResendTwoFaSms(int $user_id, string $two_fa_map, string|false $grecaptcha_response):Domain_User_Entity_Confirmation_TwoFa_Story {
 
-		$story = Domain_User_Entity_TwoFa_Story::getByMap($two_fa_map);
+		$story = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 
 		$story->assertNotExpired()
 			->assertNotFinished()
@@ -620,7 +623,7 @@ class Domain_User_Scenario_Api {
 		Type_Phphooker_Main::onSmsResent(
 			$user_id,
 			$phone_number_obj->obfuscate(),
-			Domain_User_Entity_TwoFa_Story::RESEND_COUNT_LIMIT - $story->getPhoneInfo()->resend_count,
+			Domain_User_Entity_Confirmation_TwoFa_Story::RESEND_COUNT_LIMIT - $story->getPhoneInfo()->resend_count,
 			"2fa",
 			\BaseFrame\Conf\Country::get($phone_number_obj->countryCode())->getLocalizedName(),
 			$story->getPhoneInfo()->sms_id
@@ -751,19 +754,35 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Начать смену номера телефона
 	 *
-	 * @throws \BaseFrame\Exception\Request\BlockException
-	 * @throws cs_IncorrectSaltVersion
-	 * @throws cs_PhoneChangeSmsErrorCountExceeded
+	 * @throws ActionRestrictedException
+	 * @throws BlockException
+	 * @throws Domain_User_Exception_AuthMethodDisabled
+	 * @throws ParseFatalException
 	 * @throws \cs_UnpackHasFailed
-	 * @throws cs_UserPhoneSecurityNotFound
 	 * @throws \parseException
 	 * @throws \queryException
+	 * @throws cs_IncorrectSaltVersion
+	 * @throws cs_PhoneChangeSmsErrorCountExceeded
+	 * @throws cs_PhoneChangeSmsResendCountExceeded
+	 * @throws cs_UserPhoneSecurityNotFound
+	 * @throws cs_blockException
+	 * @throws Domain_User_Exception_Security_UserWasRegisteredBySso
+	 * @long
 	 */
 	public static function changePhoneStep1(int $user_id, string $session_uniq):array {
 
 		if (!Type_Restrictions_Config::isPhoneChangeEnabled()) {
 			throw new ActionRestrictedException("action is restricted");
 		}
+
+		// проверяем что добавление номера телефона не отключено в конфиге
+		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER);
+
+		// проверяем что у пользователя есть номер телефона
+		Domain_User_Entity_Phone::getPhoneByUserId($user_id);
+
+		// проверяем что пользователь не зарегистрирован через SSO
+		Domain_User_Entity_Phone::assertUserWasNotRegisteredBySso($user_id);
 
 		// проверяем кэш, если пусто, или успешно завершена, или запись устарела, создаем новую
 		try {
@@ -777,7 +796,9 @@ class Domain_User_Scenario_Api {
 			try {
 
 				// получаем запись об смс для этой смены номера и проверяем, актуальна ли
-				$sms_story = $story->getActiveFirstSmsStoryEntity()->assertErrorCountNotExceeded();
+				$sms_story = $story->getActiveFirstSmsStoryEntity()
+					->assertErrorCountNotExceeded()
+					->assertResendCountNotExceeded();
 			} catch (cs_PhoneChangeSmsErrorCountExceeded $e) {
 
 				// это исключение выбрасывается в функции assertErrorCountNotExceeded() и нигде выше
@@ -826,9 +847,12 @@ class Domain_User_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws \returnException
-	 * @throws \userAccessException
+	 * @throws \userAccessException|Domain_User_Exception_AuthMethodDisabled
 	 */
-	public static function confirmSmsForChangePhone(int $user_id, string $change_phone_story_map, string $sms_code):void {
+	public static function confirmSmsForChangePhone(int $user_id, string $change_phone_story_map, string $sms_code):string {
+
+		// проверяем что добавление номера телефона не отключено в конфиге
+		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER);
 
 		$story = Domain_User_Entity_ChangePhone_Story::getByMap($user_id, $change_phone_story_map)
 			->assertUserAuthorized($user_id)
@@ -847,7 +871,7 @@ class Domain_User_Scenario_Api {
 			$current_tage = $story->getStage();
 
 			/** @var Domain_User_Entity_ChangePhone_Story $story */
-			[$story,] = $story->doConfirmActionForCurrentStage($sms_story);
+			[$story, $updated_sms_story] = $story->doConfirmActionForCurrentStage($user_id, $sms_story);
 
 			$story->storeInSessionCache();
 			if ($current_tage === Domain_User_Entity_ChangePhone_Story::STAGE_SECOND) {
@@ -872,8 +896,10 @@ class Domain_User_Scenario_Api {
 			if ($available_attempts === 0) {
 				throw new cs_PhoneChangeSmsErrorCountExceeded($story->getExpiresAt());
 			}
-			throw new cs_WrongCode($available_attempts);
+			throw new cs_WrongCode($available_attempts, $story->getExpiresAt());
 		}
+
+		return $updated_sms_story->getSmsStoryData()->phone_number;
 	}
 
 	/**
@@ -897,9 +923,12 @@ class Domain_User_Scenario_Api {
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 * @throws \queryException
-	 * @throws \userAccessException
+	 * @throws \userAccessException|Domain_User_Exception_AuthMethodDisabled
 	 */
 	public static function changePhoneStep2(int $user_id, string $change_phone_story_map, string $phone_number):array {
+
+		// проверяем что добавление номера телефона не отключено в конфиге
+		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER);
 
 		// проверяем новый номер телефона
 		$phone_number = (new \BaseFrame\System\PhoneNumber($phone_number))->number();
@@ -954,9 +983,12 @@ class Domain_User_Scenario_Api {
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 * @throws \queryException
-	 * @throws \userAccessException
+	 * @throws \userAccessException|Domain_User_Exception_AuthMethodDisabled
 	 */
 	public static function resendSmsForNumberChange(int $user_id, string $change_phone_story_map):array {
+
+		// проверяем что добавление номера телефона не отключено в конфиге
+		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER);
 
 		$story = Domain_User_Entity_ChangePhone_Story::getByMap($user_id, $change_phone_story_map)
 			->assertUserAuthorized($user_id)
@@ -1082,11 +1114,27 @@ class Domain_User_Scenario_Api {
 	/**
 	 * удаляем аккаунт пользователя
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws BlockException
+	 * @throws BusFatalException
+	 * @throws Domain_User_Exception_Confirmation_Mail_InvalidMailPasswordStoryKey
+	 * @throws Domain_User_Exception_Confirmation_Mail_InvalidUser
+	 * @throws Domain_User_Exception_Confirmation_Mail_IsExpired
+	 * @throws Domain_User_Exception_Confirmation_Mail_IsInvalidType
+	 * @throws Domain_User_Exception_Confirmation_Mail_IsNotConfirmed
+	 * @throws Domain_User_Exception_Confirmation_Mail_NotSuccess
+	 * @throws Domain_User_Exception_Mail_NotFound
+	 * @throws Domain_User_Exception_Mail_NotFoundOnSso
+	 * @throws EndpointAccessDeniedException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
 	 * @throws \busException
-	 * @throws cs_AnswerCommand
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \cs_RowIsEmpty
+	 * @throws \cs_UnpackHasFailed
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws \returnException
+	 * @throws cs_AnswerCommand
 	 * @throws cs_TwoFaInvalidCompany
 	 * @throws cs_TwoFaInvalidUser
 	 * @throws cs_TwoFaIsExpired
@@ -1094,27 +1142,49 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_TwoFaIsNotActive
 	 * @throws cs_TwoFaTypeIsInvalid
 	 * @throws cs_UnknownKeyType
-	 * @throws \cs_UnpackHasFailed
 	 * @throws cs_UserAlreadyBlocked
 	 * @throws cs_UserNotFound
 	 * @throws cs_UserPhoneSecurityNotFound
 	 * @throws cs_WrongTwoFaKey
 	 * @throws cs_blockException
-	 * @throws \parseException
-	 * @throws \queryException
-	 * @throws \returnException
-	 * @throws \userAccessException
-	 * @throws Domain_User_Exception_IsOnpremiseRoot
 	 */
-	public static function deleteProfile(int $user_id, string|false $two_fa_key):void {
+	public static function deleteProfile(int $user_id, string $session_uniq, string|false $two_fa_key, string|false $confirm_mail_password_story_key):void {
+
+		$user_security = Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
+
+		if (ServerProvider::isOnPremise()) {
+
+			// если, пользователь зарегистрирован через ссо и отключен метод авторизации через ссо
+			self::_checkIfUserWasRegisteredBySso($user_id, $user_security, $two_fa_key, $confirm_mail_password_story_key);
+
+			// если аутентификация была через SSO
+			if (!Domain_User_Entity_Mail::hasMail($user_security) && !Domain_User_Entity_Phone::hasPhoneNumber($user_security)) {
+				throw new Domain_User_Exception_Mail_NotFoundOnSso("sso user");
+			}
+
+			if (Domain_User_Entity_Auth_Method::isSingleAuthMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_SSO)) {
+				throw new Domain_User_Exception_Mail_NotFoundOnSso("sso user");
+			}
+
+			// если аутентификация через номер телефона, то проверяем что есть номер телефона
+			if (Domain_User_Entity_Auth_Method::isSingleAuthMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)) {
+				Domain_User_Entity_Phone::getPhoneByUserId($user_id);
+			}
+
+			// если аутентификация через почту, то проверяем что у пользователя установлена почта
+			if (Domain_User_Entity_Auth_Method::isSingleAuthMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL)) {
+				Domain_User_Entity_Mail::assertAlreadyExistMail($user_security);
+			}
+		}
 
 		// проверяем 2fa
-		Domain_User_Entity_TwoFa_TwoFa::handle($user_id, Domain_User_Entity_TwoFa_TwoFa::TWO_FA_DELETE_PROFILE, $two_fa_key);
+		Domain_User_Entity_Confirmation_Main::handle(
+			$user_security, $session_uniq, Domain_User_Entity_Confirmation_Main::CONFIRMATION_DELETE_PROFILE,
+			$two_fa_key, $confirm_mail_password_story_key);
 
 		// проверяем, может профиль уже заблочен и у пользователя не привязан номер телефона
-		$user_info    = Gateway_Bus_PivotCache::getUserInfo($user_id);
-		$phone_number = Domain_User_Entity_Phone::getPhoneByUserId($user_id);
-		if (Type_User_Main::isDisabledProfile($user_info->extra) && isEmptyString($phone_number)) {
+		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
+		if (Type_User_Main::isDisabledProfile($user_info->extra) && isEmptyString($user_security->phone_number)) {
 			throw new cs_UserAlreadyBlocked("user is already blocked");
 		}
 
@@ -1124,9 +1194,9 @@ class Domain_User_Scenario_Api {
 		}
 
 		// удаляем аккаунт пользователя
-		if ($two_fa_key !== false) {
+		if (($two_fa_key !== false) || ($confirm_mail_password_story_key !== false)) {
 
-			Domain_User_Action_DeleteProfile::do($user_id, $phone_number);
+			Domain_User_Action_DeleteProfile::do($user_id, $user_security);
 
 			// отправляем событие об удалении аккаунта
 			Gateway_Bus_SenderBalancer::profileDeleted($user_id, [$user_id]);
@@ -1141,6 +1211,43 @@ class Domain_User_Scenario_Api {
 		// отправляем событие об удалении профиля в premise-модуль
 		if (ServerProvider::isOnPremise()) {
 			Domain_Premise_Entity_Event_UserProfileDeleted::create($user_id);
+		}
+	}
+
+	/**
+	 * Выполняем проверки если пользователь был зарегистрирован через SSO а авторизацию через SSo отключили
+	 *
+	 * @throws Domain_User_Exception_Mail_NotFound
+	 * @throws Domain_User_Exception_Mail_NotFoundOnSso
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws cs_UserPhoneSecurityNotFound
+	 */
+	protected static function _checkIfUserWasRegisteredBySso(int $user_id, Struct_Db_PivotUser_UserSecurity $user_security, string|false $two_fa_key, string|false $confirm_mail_password_story_key):void {
+
+		// если, пользователь зарегистрирован через ссо, иначе - выходим
+		if (!Gateway_Socket_Federation::hasUserRelationship($user_id)) {
+			return;
+		}
+
+		// если отключены альтернативные методы авторизации
+		if (!Domain_User_Entity_Auth_Config::isAuthorizationAlternativeEnabled()) {
+			throw new Domain_User_Exception_Mail_NotFoundOnSso("sso user");
+		}
+
+		// если не привязана и почта и номер телефона
+		if (!Domain_User_Entity_Mail::hasMail($user_security) && !Domain_User_Entity_Phone::hasPhoneNumber($user_security)) {
+			throw new Domain_User_Exception_Mail_NotFound("mail not exist in user");
+		}
+
+		// если аутентификация через номер телефона, и удаляемся через телефон, то проверяем что есть номер телефона
+		if (($two_fa_key !== false) && Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)) {
+			Domain_User_Entity_Phone::getPhoneByUserId($user_id);
+		}
+
+		// если аутентификация через почту, и удаляемся через почту, то проверяем что у пользователя установлена почта
+		if (($confirm_mail_password_story_key !== false) && Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_MAIL)) {
+			Domain_User_Entity_Mail::assertAlreadyExistMail($user_security);
 		}
 	}
 

@@ -2,6 +2,10 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\InvalidPhoneNumber;
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+
 /**
  * Подтверждаем второй этап смены телефона и меняем номер
  */
@@ -10,13 +14,17 @@ class Domain_User_Action_ChangePhone_ConfirmSecondStage {
 	/**
 	 * Выполняем процесс подтверждения второго этапа
 	 *
-	 * @return array
 	 * @throws Domain_User_Exception_PhoneNumberBinding
-	 * @throws \cs_RowIsEmpty
+	 * @throws InvalidPhoneNumber
+	 * @throws ParseFatalException
+	 * @throws BusFatalException
+	 * @throws \busException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws cs_UserPhoneSecurityNotFound
 	 */
-	public static function do(Domain_User_Entity_ChangePhone_SmsStory $sms_story, Domain_User_Entity_ChangePhone_Story $story):array {
+	public static function do(int $user_id, Domain_User_Entity_ChangePhone_SmsStory $sms_story, Domain_User_Entity_ChangePhone_Story $story):array {
 
 		// подтверждаем смс, завершаем процесс смены номера
 		[$updated_story, $updated_sms_story] = self::_confirmSms($sms_story, $story);
@@ -26,6 +34,9 @@ class Domain_User_Action_ChangePhone_ConfirmSecondStage {
 
 		// отправляем задачу на обновление номера в intercom
 		Gateway_Socket_Intercom::userPhoneNumberChanged($updated_story->getStoryData()->user_id, $sms_story->getSmsStoryData()->phone_number);
+
+		// отправляем ивент пользователю о смене номера телефона
+		Gateway_Bus_SenderBalancer::phoneChanged($user_id, $updated_sms_story->getSmsStoryData()->phone_number);
 
 		return [$updated_story, $updated_sms_story];
 	}

@@ -5,6 +5,7 @@ namespace Compass\Pivot;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\CompanyNotServedException;
 use BaseFrame\Exception\Request\EndpointAccessDeniedException;
 
 /**
@@ -684,6 +685,29 @@ class Domain_Company_Scenario_Socket {
 
 		// увеличиваем кол-во участников
 		Domain_Company_Entity_Company::incMemberCount($company_id, Type_User_Main::NPC_TYPE_HUMAN);
+	}
+
+	/**
+	 * Проверяет что указанный пользователь может начать
+	 * видеоконференцию в указанном пространстве.
+	 *
+	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
+	 * @throws \cs_SocketRequestIsFailed
+	 * @throws cs_CompanyIsHibernate
+	 */
+	#[\JetBrains\PhpStorm\ArrayShape([0 => 'bool', 1 => "int"])]
+	public static function isMediaConferenceCreatingAllowed(int $user_id, int $company_id):array {
+
+		try {
+
+			$company_row = Domain_Company_Entity_Company::get($company_id);
+		} catch (cs_CompanyNotExist|cs_CompanyIncorrectCompanyId) {
+			return [false, -1];
+		}
+
+		// вернем ответ как есть, в текущей реализации нет смысле менять коды ошибок
+		// или как-то еще обрабатывать результат, пивот работает как прокси по сути
+		return Gateway_Socket_Company::isMediaConferenceCreatingAllowed($company_row, $user_id);
 	}
 
 	// -------------------------------------------------------

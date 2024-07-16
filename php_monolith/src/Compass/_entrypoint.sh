@@ -21,4 +21,5 @@ bash "${SCRIPT_PATH}/Userbot/entrypoint.sh" || die "userbot entrypoint error";
 bash "${SCRIPT_PATH}/Announcement/entrypoint.sh" || die "announcement entrypoint error";
 bash "${SCRIPT_PATH}/Federation/entrypoint.sh" || die "federation entrypoint error";
 bash "${SCRIPT_PATH}/Premise/entrypoint.sh" || die "premise entrypoint error";
+bash "${SCRIPT_PATH}/Jitsi/entrypoint.sh" || die "jitsi entrypoint error";
 bash "${SCRIPT_PATH}/Pivot/entrypoint.sh" || die "pivot entrypoint error";

@@ -11,22 +11,20 @@ class Domain_User_Action_Auth_PhoneNumber {
 	/**
 	 * Получаем пользователя по номеру
 	 *
-	 * @return array
+	 * @return int
 	 */
-	public static function resolveUser(string $phone_number):array {
+	public static function resolveUser(string $phone_number):int {
 
-		$user_id         = 0;
-		$has_sso_account = false;
+		$user_id = 0;
 
 		try {
 
-			$phone_uniq       = Domain_User_Entity_Phone::getUserPhone($phone_number);
-			$user_id         = $phone_uniq->user_id;
-			$has_sso_account = $phone_uniq->has_sso_account;
+			$phone_uniq = Domain_User_Entity_Phone::getUserPhone($phone_number);
+			$user_id    = $phone_uniq->user_id;
 		} catch (cs_PhoneNumberNotFound) {
 		}
 
-		return [$user_id, $has_sso_account];
+		return $user_id;
 	}
 
 	/**

@@ -1,0 +1,18 @@
+.jitsi-icon {
+    &-dominant-speaker {
+        background-color: rgba(4, 164, 90, 1);
+        border-radius: 4px;
+    }
+}
+
+.mobile-browser.shift-right {
+    .participants_pane {
+        z-index: -1;
+    }
+}
+
+.dotted-separate-line {
+    height: 1px;
+    width: 100%;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}

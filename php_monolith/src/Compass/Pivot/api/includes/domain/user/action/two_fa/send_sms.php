@@ -35,7 +35,7 @@ class Domain_User_Action_TwoFa_SendSms {
 		$sms_code = self::_getFixedSmsCodeForTestPhoneNumbers($sms_code, $phone_number);
 
 		// получим группу с которой будем брать текст по типу токена
-		$key           = Domain_User_Entity_TwoFa_TwoFa::getGroupNameByActionType($two_fa->action_type);
+		$key           = Domain_User_Entity_Confirmation_Main::getGroupNameByActionType($two_fa->action_type);
 		$locale_config = getConfig("LOCALE_TEXT");
 
 		// формируем текст сообщения
@@ -48,7 +48,7 @@ class Domain_User_Action_TwoFa_SendSms {
 
 		// добавляем запись в базу о two_fa попытке
 		$time         = time();
-		$next_attempt = $time + Domain_User_Entity_TwoFa_Story::NEXT_ATTEMPT_AFTER;
+		$next_attempt = $time + Domain_User_Entity_Confirmation_TwoFa_Story::NEXT_ATTEMPT_AFTER;
 		$two_fa_phone = self::_makeTwoFaPhoneStruct($two_fa, $time, $next_attempt, $sms_id, $sms_code, $phone_number);
 
 		// отправляем задачу в sms сервис
@@ -65,7 +65,7 @@ class Domain_User_Action_TwoFa_SendSms {
 		Gateway_Db_PivotAuth_TwoFaPhoneList::insert($two_fa_phone);
 
 		// кэшируем код
-		Domain_User_Entity_CachedConfirmCode::storeAuthCode($sms_code, Domain_User_Entity_TwoFa_TwoFa::EXPIRE_AT);
+		Domain_User_Entity_CachedConfirmCode::storeAuthCode($sms_code, Domain_User_Entity_Confirmation_TwoFa_TwoFa::EXPIRE_AT);
 
 		return $two_fa_phone;
 	}

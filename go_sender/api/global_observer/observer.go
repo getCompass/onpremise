@@ -90,10 +90,13 @@ func updateCompanyList(ctx context.Context, globalIsolation *GlobalIsolation.Glo
 // запускаем pivot env
 func startPivotEnv(ctx context.Context, globalIsolation *GlobalIsolation.GlobalIsolation, companyContextList *Isolation.CompanyEnvList, companyId int64, config *conf.CompanyConfigStruct) {
 
-	var companyDataConn *company_data.DbConn
+	var companyDataConnProvider = func() *company_data.DbConn {
+		return nil
+	}
+
 	pusherConn := pusher.MakePusherConn(globalIsolation.GetConfig().CurrentServer, globalIsolation.GetConfig().SocketKeyMe, companyId)
 	isolation, companyCtx := companyContextList.StartEnv(
-		ctx, companyId, config, globalIsolation.GetConfig().CapacityLimit, globalIsolation, companyDataConn, pusherConn,
+		ctx, companyId, config, globalIsolation.GetConfig().CapacityLimit, globalIsolation, companyDataConnProvider, pusherConn,
 	)
 
 	if isolation == nil {
@@ -116,17 +119,30 @@ func startDominoEnv(ctx context.Context, globalIsolation *GlobalIsolation.Global
 		}
 	}()
 
-	host := fmt.Sprintf("%s:%d", config.Mysql.Host, config.Mysql.Port)
-	companyDataConn, err := company_data.MakeConnection(ctx, host, config.Mysql.User, config.Mysql.Pass, globalIsolation.GetShardingConfig().Mysql.MaxConnections)
-	if err != nil {
+	// вот этого тут быть не должно, но из-за того, что как-то криво получается сокет ключ
+	// для пушера без этой конструкции сервис долго тупит и докер его перезагружает
+	if config.Status != Isolation.ActiveCompanyStatus && config.Status != Isolation.VacantCompanyStatus {
 
-		log.Debug(fmt.Sprintf("no connect to db %s", host))
+		log.Infof("Компания не активная останавливаем %d", companyId)
+		companyContextList.StopEnv(companyId)
+
 		return
+	}
+
+	var companyDataConnProvider = func() *company_data.DbConn {
+
+		host := fmt.Sprintf("%s:%d", config.Mysql.Host, config.Mysql.Port)
+		companyDataConn, err := company_data.MakeConnection(ctx, host, config.Mysql.User, config.Mysql.Pass, globalIsolation.GetShardingConfig().Mysql.MaxConnections)
+		if err != nil {
+			panic(fmt.Sprintf("no connect to db %s", host))
+		}
+
+		return companyDataConn
 	}
 
 	pusherConn := pusher.MakePusherConn(globalIsolation.GetConfig().CurrentServer, globalIsolation.GetConfig().SocketKeyMe, companyId)
 	isolation, companyCtx := companyContextList.StartEnv(
-		ctx, companyId, config, globalIsolation.GetConfig().CapacityLimit, globalIsolation, companyDataConn, pusherConn,
+		ctx, companyId, config, globalIsolation.GetConfig().CapacityLimit, globalIsolation, companyDataConnProvider, pusherConn,
 	)
 
 	if isolation == nil {
@@ -136,7 +152,7 @@ func startDominoEnv(ctx context.Context, globalIsolation *GlobalIsolation.Global
 	// запускаем observer по ней
 	observer.WorkCompanyObserver(companyCtx, isolation)
 
-	go shutdownEnv(ctx, isolation)
+	go shutdownEnv(companyCtx, isolation)
 	isSuccess = true
 
 	return isSuccess

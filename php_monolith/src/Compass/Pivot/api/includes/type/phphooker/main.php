@@ -24,16 +24,17 @@ class Type_Phphooker_Main {
 	public const TASK_TYPE_SMS_RESEND_NOTICE               = 31; // отреагировать на повторный запрос смс-сообщения
 	public const TASK_TYPE_INCORRECT_INVITE_LINK           = 43; // отреагировать на некорректную invite-ссылку
 	public const TASK_TYPE_ON_AUTH_STORY_EXPIRE            = 44; // при истечении срока жизни попытки логина/регистрации
-	public const TASK_TYPE_ON_TWO_FA_STORY_EXPIRE          = 45; // при истечении срока жизни попытки two_fa
+	public const TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE    = 45; // при истечении срока жизни попытки two_fa
 	public const TASK_TYPE_ON_PHONE_CHANGE_STORY_EXPIRE    = 46; // при истечении срока жизни попытки смены номера
 	public const TASK_TYPE_SEND_ACCOUNT_STATUS_LOG         = 47; // задача отправки лога по статусу пользователя до введения новой модели оплаты
 	public const TASK_TYPE_SEND_SPACE_STATUS_LOG           = 48; // задача отправки лога по статусу компании до введения новой модели оплаты
 	public const TASK_TYPE_SEND_BITRIX_ON_USER_REGISTERED  = 49; // задача отправки в Bitrix информации о новом зарегистрированном пользователе
 	public const TASK_TYPE_SEND_BITRIX_ON_USER_CHANGE_INFO = 50; // задача отправки в Bitrix актуальной информации о ранее зарегистрированном пользователе
 	public const TASK_TYPE_SEND_BITRIX_USER_CAMPAIGN_DATA  = 51; // задача получения и отправки в Bitrix данных по рекламной кампании, с которой пользователь пришел в приложение
-	public const TASK_TYPE_ACCEPT_FIRST_JOIN_LINK          = 52; // при принятии первой ссылки-пригалшения в команду
+	public const TASK_TYPE_ACCEPT_FIRST_JOIN_LINK          = 52; // при принятии первой ссылки-приглашения в команду
 	public const TASK_TYPE_ON_USER_LEFT_SPACE_EARLY        = 53; // пользователь покинул пространство слишком рано
 	public const TASK_TYPE_USER_ENTERING_FIRST_SPACE       = 54; // пользователь вступил в первую команду
+	public const TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE       = 55; // при истечении срока жизни попытки добавления номера телефона
 
 	# endregion
 	##########################################################
@@ -186,8 +187,32 @@ class Type_Phphooker_Main {
 			$need_work = time();
 		}
 
-		self::_addFromApi(self::TASK_TYPE_ON_TWO_FA_STORY_EXPIRE, $need_work, [
+		self::_addFromApi(self::TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE, $need_work, [
 			"two_fa_map" => $two_fa_map,
+		]);
+	}
+
+	/**
+	 * Попытка добавления номера телефона истекла
+	 */
+	public static function onPhoneAddStoryExpire(int $user_id, string $add_change_map, int $expires_at):void {
+
+		if (ServerProvider::isOnPremise()) {
+			return;
+		}
+
+		// берем с небольшим запасом, чтобы наверняка
+		// точность до секунды здесь не важна
+		$need_work = $expires_at + 5;
+
+		// но если это тестовый сервер, то не медлим с выполнением, иначе тестам хана :c
+		if (isTestServer()) {
+			$need_work = time();
+		}
+
+		self::_addFromApi(self::TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE, $need_work, [
+			"user_id"        => $user_id,
+			"add_change_map" => $add_change_map,
 		]);
 	}
 

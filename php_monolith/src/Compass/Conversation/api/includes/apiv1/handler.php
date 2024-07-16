@@ -115,6 +115,7 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 			\BaseFrame\Router\Middleware\CheckUserRoleMethodAccess::class,
 			\BaseFrame\Router\Middleware\CheckAllowedMethod::class,
 			\BaseFrame\Router\Middleware\Run::class,
+			\BaseFrame\Router\Middleware\UpdateHeader::class,
 			\BaseFrame\Router\Middleware\ValidateResponse::class,
 			\CompassApp\Controller\Middleware\Secure::class,
 			\BaseFrame\Router\Middleware\ApplicationUserTimeSpent::class,

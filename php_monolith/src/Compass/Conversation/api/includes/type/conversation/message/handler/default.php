@@ -33,7 +33,7 @@ class Type_Conversation_Message_Handler_Default {
 	protected const _ALLOW_TO_EDIT_TIME   = 60 * 10; // время, в течении которого можно редактировать сообщение
 	protected const _ALLOW_TO_DELETE_TIME = 60 * 10; // время, в течении которого можно удалять сообщение
 
-	protected const _ALLOW_TO_EDIT   = [
+	protected const _ALLOW_TO_EDIT                                    = [
 		CONVERSATION_MESSAGE_TYPE_TEXT,
 		CONVERSATION_MESSAGE_TYPE_QUOTE,
 		CONVERSATION_MESSAGE_TYPE_MASS_QUOTE,
@@ -41,7 +41,7 @@ class Type_Conversation_Message_Handler_Default {
 		CONVERSATION_MESSAGE_TYPE_THREAD_REPOST,
 		CONVERSATION_MESSAGE_TYPE_RESPECT,
 	];
-	protected const _ALLOW_TO_DELETE = [
+	protected const _ALLOW_TO_DELETE                                  = [
 		CONVERSATION_MESSAGE_TYPE_TEXT,
 		CONVERSATION_MESSAGE_TYPE_FILE,
 		CONVERSATION_MESSAGE_TYPE_QUOTE,
@@ -52,20 +52,21 @@ class Type_Conversation_Message_Handler_Default {
 		CONVERSATION_MESSAGE_TYPE_RESPECT,
 		CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND,
 	];
-	protected const _ALLOW_TO_QUOTE_LEGACY = [
+	protected const _ALLOW_TO_QUOTE_LEGACY                            = [
 		CONVERSATION_MESSAGE_TYPE_TEXT,
 		CONVERSATION_MESSAGE_TYPE_FILE,
 		CONVERSATION_MESSAGE_TYPE_QUOTE,
 		CONVERSATION_MESSAGE_TYPE_MASS_QUOTE,
 		CONVERSATION_MESSAGE_TYPE_CALL,
 	];
-	protected const _ALLOW_TO_QUOTE        = [
+	protected const _ALLOW_TO_QUOTE                                   = [
 		CONVERSATION_MESSAGE_TYPE_TEXT,
 		CONVERSATION_MESSAGE_TYPE_FILE,
 		CONVERSATION_MESSAGE_TYPE_QUOTE,
 		CONVERSATION_MESSAGE_TYPE_MASS_QUOTE,
 		CONVERSATION_MESSAGE_TYPE_REPOST,
 		CONVERSATION_MESSAGE_TYPE_CALL,
+		CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE,
 		CONVERSATION_MESSAGE_TYPE_THREAD_REPOST,
 		CONVERSATION_MESSAGE_TYPE_RESPECT,
 	];
@@ -82,6 +83,7 @@ class Type_Conversation_Message_Handler_Default {
 		CONVERSATION_MESSAGE_TYPE_QUOTE,
 		CONVERSATION_MESSAGE_TYPE_MASS_QUOTE,
 		CONVERSATION_MESSAGE_TYPE_CALL,
+		CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE,
 		CONVERSATION_MESSAGE_TYPE_RESPECT,
 	];
 	protected const _ALLOW_TO_REACTION                                = [
@@ -135,6 +137,7 @@ class Type_Conversation_Message_Handler_Default {
 		CONVERSATION_MESSAGE_TYPE_THREAD_REPOST,
 		CONVERSATION_MESSAGE_TYPE_DELETED,
 		CONVERSATION_MESSAGE_TYPE_CALL,
+		CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE,
 		CONVERSATION_MESSAGE_TYPE_RESPECT,
 		CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND,
 	];
@@ -160,6 +163,7 @@ class Type_Conversation_Message_Handler_Default {
 		THREAD_MESSAGE_TYPE_CONVERSATION_MASS_QUOTE,
 		THREAD_MESSAGE_TYPE_CONVERSATION_REPOST,
 		THREAD_MESSAGE_TYPE_CONVERSATION_CALL,
+		THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE,
 	];
 	protected const _ALLOW_TO_REMIND                                  = [
 		CONVERSATION_MESSAGE_TYPE_TEXT,
@@ -603,6 +607,19 @@ class Type_Conversation_Message_Handler_Default {
 
 		$message                     = self::_getDefaultStructure(CONVERSATION_MESSAGE_TYPE_CALL, $sender_user_id, "", $platform);
 		$message["data"]["call_map"] = $call_map;
+
+		return $message;
+	}
+
+	// создать сообщение типа "конференция"
+	public static function makeMediaConference(int $sender_user_id, string $conference_id, string $conference_accept_status
+		, string $conference_link, string $platform = self::WITHOUT_PLATFORM):array {
+
+		$message                          = self::_getDefaultStructure(
+			CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE, $sender_user_id, "", $platform);
+		$message["data"]["conference_id"] = $conference_id;
+		$message["data"]["conference_accept_status"] = $conference_accept_status;
+		$message["data"]["conference_link"]          = $conference_link;
 
 		return $message;
 	}
@@ -1837,11 +1854,11 @@ class Type_Conversation_Message_Handler_Default {
 		return match ($repost_message_type) {
 
 			CONVERSATION_MESSAGE_TYPE_REPOST
-				=> Type_Conversation_Message_Main::getHandler($repost_message)::getRepostedMessageListFromConversation($repost_message),
+			=> Type_Conversation_Message_Main::getHandler($repost_message)::getRepostedMessageListFromConversation($repost_message),
 			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST, THREAD_MESSAGE_TYPE_REPOST, THREAD_MESSAGE_TYPE_CONVERSATION_REPOST
-				=> Type_Conversation_Message_Main::getHandler($repost_message)::getRepostedMessageListFromThread($repost_message),
+			=> Type_Conversation_Message_Main::getHandler($repost_message)::getRepostedMessageListFromThread($repost_message),
 			default
-				=> throw new ParseFatalException("Trying get reposted message list not from repost: " . var_export($repost_message, true)),
+			=> throw new ParseFatalException("Trying get reposted message list not from repost: " . var_export($repost_message, true)),
 		};
 	}
 
@@ -2297,6 +2314,45 @@ class Type_Conversation_Message_Handler_Default {
 		return $message["data"]["call_map"];
 	}
 
+	// получает conference_id конференции, прикрепленного к сообщению
+	public static function getConferenceId(array $message):string {
+
+		self::_checkVersion($message);
+
+		// если сообщение не типа звонок
+		if ($message["type"] != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			throw new ParseFatalException("Trying to get call_map of message, which is not TYPE_MEDIA_CONFERENCE");
+		}
+
+		return $message["data"]["conference_id"];
+	}
+
+	// получает статус конференции, прикрепленного к сообщению
+	public static function getConferenceAcceptStatus(array $message):string {
+
+		self::_checkVersion($message);
+
+		// если сообщение не типа звонок
+		if ($message["type"] != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			throw new ParseFatalException("Trying to get call_map of message, which is not TYPE_MEDIA_CONFERENCE");
+		}
+
+		return $message["data"]["conference_accept_status"];
+	}
+
+	// получает ссылку на конференцию, прикрепленного к сообщению
+	public static function getConferenceLink(array $message):string {
+
+		self::_checkVersion($message);
+
+		// если сообщение не типа звонок
+		if ($message["type"] != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			throw new ParseFatalException("Trying to get call_map of message, which is not TYPE_MEDIA_CONFERENCE");
+		}
+
+		return $message["data"]["conference_link"];
+	}
+
 	// получает время последнего редактирования сообщения
 	public static function getLastMessageTextEditedAt(array $message):int {
 
@@ -2465,6 +2521,7 @@ class Type_Conversation_Message_Handler_Default {
 			case CONVERSATION_MESSAGE_TYPE_TEXT:
 			case CONVERSATION_MESSAGE_TYPE_FILE:
 			case CONVERSATION_MESSAGE_TYPE_CALL:
+			case CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE:
 			case CONVERSATION_MESSAGE_TYPE_RESPECT:
 
 				$chunk_message_list[$key][] = $data_message_list["parent_message"];
@@ -2955,6 +3012,14 @@ class Type_Conversation_Message_Handler_Default {
 
 					break;
 
+				case THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE:
+
+					// преобразуем сообщение из треда в сообщение диалога типа Call
+					$message = Type_Conversation_Message_Main::getHandler($thread_message)::_transferThreadMessageToConversationMessageTypeMediaConference(
+						$thread_message);
+
+					break;
+
 				default:
 					throw new ParseFatalException("Unknown message type");
 			}
@@ -3009,6 +3074,26 @@ class Type_Conversation_Message_Handler_Default {
 		if (isset($thread_message["extra"]["call_report_id"]) && isset ($thread_message["extra"]["call_duration"])) {
 			$message = $class_handler::attachRepostedCallInfo($message, $thread_message["extra"]["call_report_id"], $thread_message["extra"]["call_duration"]);
 		}
+
+		// меняем created_at на тот что был у сообщения треда
+		return self::changeCreatedAt($message, $thread_message_created_at);
+	}
+
+	// создаем из сообщения треда сообщение диалога типа media_conference
+	protected static function _transferThreadMessageToConversationMessageTypeMediaConference(array $thread_message):array {
+
+		// достаем данные из сообщения треда
+		$sender_user_id                   = Type_Thread_Message_Main::getHandler($thread_message)::getSenderUserId($thread_message);
+		$thread_message_conference_id     = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceId($thread_message);
+		$thread_message_conference_status = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceAcceptStatus($thread_message);
+		$thread_message_conference_link   = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceLink($thread_message);
+		$thread_message_created_at        = Type_Thread_Message_Main::getHandler($thread_message)::getCreatedAt($thread_message);
+		$platform                         = Type_Thread_Message_Main::getHandler($thread_message)::getPlatform($thread_message);
+
+		// формируем сообщение типа call для диалога
+		$class_handler = Type_Conversation_Message_Main::getLastVersionHandler();
+		$message       = $class_handler::makeMediaConference(
+			$sender_user_id, $thread_message_conference_id, $thread_message_conference_status, $thread_message_conference_link, $platform);
 
 		// меняем created_at на тот что был у сообщения треда
 		return self::changeCreatedAt($message, $thread_message_created_at);
@@ -3215,6 +3300,17 @@ class Type_Conversation_Message_Handler_Default {
 				}
 				break;
 
+			case THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE:
+
+				$conference_id = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceId($thread_message);
+				$status        = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceAcceptStatus($thread_message);
+				$link          = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceLink($thread_message);
+				$platform      = Type_Thread_Message_Main::getHandler($thread_message)::getPlatform($thread_message);
+
+				// преобразуем сообщение в звонок для диалога
+				$reposted_message = $last_handler_class::makeMediaConference($sender_user_id, $conference_id, $status, $link, $platform);
+
+				break;
 			default:
 
 				Gateway_Bus_Statholder::inc("conversations", "row323");
@@ -3256,6 +3352,8 @@ class Type_Conversation_Message_Handler_Default {
 				),
 				THREAD_MESSAGE_TYPE_CONVERSATION_CALL
 				=> self::_transferThreadMessageToConversationMessageTypeCall($v),
+				THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE
+				=> self::_transferThreadMessageToConversationMessageTypeMediaConference($v),
 				default
 				=> throw new ParseFatalException("Unknown message type"),
 			};
@@ -4442,6 +4540,7 @@ class Type_Conversation_Message_Handler_Default {
 			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_FILE => self::_prepareThreadRepostItemFile($output, $message),
 			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_QUOTE => self::_prepareThreadRepostItemQuote($output, $message),
 			CONVERSATION_MESSAGE_TYPE_CALL => self::_prepareCall($output, $message),
+			CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE => self::_prepareMediaConference($output, $message),
 			THREAD_MESSAGE_TYPE_CONVERSATION_CALL => self::_prepareThreadRepostCall($output, $message),
 			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_RATING => self::_prepareSystemBotRating($output, $message),
 			CONVERSATION_MESSAGE_TYPE_EMPLOYEE_METRIC_DELTA => self::_prepareEmployeeMetricDelta($output, $message),
@@ -4456,6 +4555,7 @@ class Type_Conversation_Message_Handler_Default {
 			CONVERSATION_MESSAGE_TYPE_DISMISSAL_REQUEST => self::_prepareDismissalRequest($output, $message),
 			CONVERSATION_MESSAGE_TYPE_INVITE_TO_COMPANY_INVITER_SINGLE => self::_prepareInviteToCompanyInviterSingle($output, $message),
 			CONVERSATION_MESSAGE_TYPE_SHARED_MEMBER => self::_prepareSharedMember($output, $message),
+			THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE => self::_prepareThreadRepostMediaConference($output, $message),
 			default => throw new ParseFatalException(
 				__CLASS__ . ": unsupported message type = $message_type"
 			),
@@ -4843,6 +4943,16 @@ class Type_Conversation_Message_Handler_Default {
 		return $output;
 	}
 
+	// готовим сообщение типа CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE
+	protected static function _prepareMediaConference(array $output, array $message):array {
+
+		$output["data"]["conference_id"] = $message["data"]["conference_id"];
+		$output["data"]["conference_accept_status"] = $message["data"]["conference_accept_status"];
+		$output["data"]["conference_link"]          = $message["data"]["conference_link"];
+
+		return $output;
+	}
+
 	// готовим сообщение типа THREAD_MESSAGE_TYPE_CONVERSATION_CALL
 	protected static function _prepareThreadRepostCall(array $output, array $message):array {
 
@@ -4857,6 +4967,19 @@ class Type_Conversation_Message_Handler_Default {
 
 		// заменяем тип сообщения THREAD_MESSAGE_TYPE_CONVERSATION_CALL -> CONVERSATION_MESSAGE_TYPE_CALL
 		$output["type"] = CONVERSATION_MESSAGE_TYPE_CALL;
+
+		return $output;
+	}
+
+	// готовим сообщение типа THREAD_MESSAGE_TYPE_CONVERSATION_CALL
+	protected static function _prepareThreadRepostMediaConference(array $output, array $message):array {
+
+		$output["data"]["conference_id"] = $message["data"]["conference_id"];
+		$output["data"]["conference_accept_status"] = $message["data"]["conference_accept_status"];
+		$output["data"]["conference_link"]          = $message["data"]["conference_link"];
+
+		// заменяем тип сообщения THREAD_MESSAGE_TYPE_CONVERSATION_CALL -> CONVERSATION_MESSAGE_TYPE_CALL
+		$output["type"] = CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE;
 
 		return $output;
 	}

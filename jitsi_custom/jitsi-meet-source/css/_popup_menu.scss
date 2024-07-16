@@ -1,0 +1,20 @@
+/**
+* Initialize
+**/
+
+.popupmenu__contents {
+    .popupmenu__volume-slider {
+            &::-webkit-slider-runnable-track {
+                background: linear-gradient(to right, rgba(0, 107, 224, 1) 0%, rgba(0, 107, 224, 1) var(--value, 0%), rgba(255, 255, 255, 0.1) var(--value, 0%), rgba(255, 255, 255, 0.1) 100%);
+                transition: background 0.15s ease-in-out;
+            }
+
+            &::-moz-range-track {
+                background-color: green;
+            }
+
+            &::-ms-fill-lower {
+                background-color: yellow;
+            }
+        }
+}

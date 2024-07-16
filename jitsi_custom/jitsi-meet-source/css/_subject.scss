@@ -1,0 +1,103 @@
+.subject {
+    color: #fff;
+    transition: opacity .6s ease-in-out;
+    z-index: $toolbarZ + 2;
+    margin-top: 16px;
+    opacity: 0;
+
+    @media (max-width: 500px) {
+        margin-top: 0;
+    }
+
+    &.visible {
+        opacity: 1;
+    }
+
+    &#autoHide.with-always-on {
+        overflow: hidden;
+        animation: hideSubject forwards .6s ease-out;
+
+        & > .subject-info-container {
+            justify-content: flex-start;
+        }
+
+        &.visible {
+            animation: showSubject forwards .6s ease-out;
+        }
+    }
+}
+
+.subject-info-container {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+
+    @media (max-width: 500px) {
+        align-items: start;
+        flex-wrap: wrap;
+    }
+}
+
+.details-container {
+    width: 100%;
+    display: flex;
+    justify-content: start;
+    position: absolute;
+    top: 0;
+    height: 48px;
+
+    &.is-mobile {
+        height: 54px;
+        background: rgba(28, 28, 28, 1);
+        z-index: 1;
+        justify-content: space-between;
+        transition: opacity .6s ease-in-out;
+        opacity: 0;
+
+        &.visible {
+            opacity: 1;
+        }
+    }
+}
+
+.header-buttons-mobile-container {
+    display: flex;
+    gap: 26px;
+    padding-right: 22px;
+    transition: opacity .6s ease-in-out;
+    opacity: 0;
+    justify-content: center;
+    align-items: center;
+
+    &.visible {
+        opacity: 1;
+    }
+}
+
+.conference-android-webview-pip-button {
+    margin-right: 16px;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes hideSubject {
+    0% {
+        max-width: 100%;
+    }
+
+    100% {
+        max-width: 0;
+    }
+}
+
+@keyframes showSubject {
+    0% {
+        max-width: 0%;
+    }
+
+    100% {
+        max-width: 100%;
+    }
+}

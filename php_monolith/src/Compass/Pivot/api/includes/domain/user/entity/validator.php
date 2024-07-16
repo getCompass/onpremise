@@ -235,4 +235,42 @@ class Domain_User_Entity_Validator {
 			throw new Domain_User_Exception_IncorrectUserId("incorrect user_id = 0");
 		}
 	}
+
+	/**
+	 * Проверяем что у пользователя не привязан номер телефона
+	 *
+	 * @throws Domain_User_Exception_Security_Phone_AlreadySet
+	 */
+	public static function assertUserHaveNotPhone(int $user_id):void {
+
+		try {
+
+			Domain_User_Entity_Phone::getPhoneByUserId($user_id);
+		} catch (cs_UserPhoneSecurityNotFound|cs_PhoneNumberNotFound) {
+
+			// номера нет
+			return;
+		}
+		throw new Domain_User_Exception_Security_Phone_AlreadySet("phone is already set");
+	}
+
+	/**
+	 * Проверяем что номер ни за кем не закреплен
+	 *
+	 * @throws Domain_User_Exception_Security_Phone_AlreadyTaken
+	 */
+	public static function assertPhoneIsNotTaken(string $phone_number):void {
+
+		// проверяем что номер пользователя ни за кем не закреплен
+		try {
+
+			Domain_User_Entity_Phone::getUserIdByPhone($phone_number);
+		} catch (cs_UserPhoneSecurityNotFound|cs_PhoneNumberNotFound) {
+
+			// не занят
+			return;
+		}
+
+		throw new Domain_User_Exception_Security_Phone_AlreadyTaken("phone is already taken");
+	}
 }

@@ -29,5 +29,8 @@ bash "/app/wait-services.sh" || die "service waiting failed"
 # приступаем к миграциям
 mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" < "${SCRIPT_PATH}/sql/init.sql"
 
+migrate -path "${SCRIPT_PATH}/sql/federation_system" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/federation_system?tls=false up
+migrate -path "${SCRIPT_PATH}/sql/federation_system" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/federation_system?tls=false version
+
 migrate -path "${SCRIPT_PATH}/sql/sso_data" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/sso_data?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/sso_data" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/sso_data?tls=false version

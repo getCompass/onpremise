@@ -74,6 +74,11 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 			static::_bindMail($parent_data->user->user_id, $data->mail, $data->mail_hash, $data->password_hash, $data->action_time);
 		}
 
+		// для пользователя через sso
+		if ($data->phone_number == "" && $data->mail == "") {
+			static::_createSecurity($parent_data->user->user_id, $data->action_time);
+		}
+
 		// добавляем запись в таблицу последних регистраций
 		static::_insertToLastRegistration($parent_data->user->user_id, $default_partner_id, $data->ip_address);
 
@@ -199,6 +204,22 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 
 			// создаем
 			Gateway_Db_PivotUser_UserSecurity::insert($user_id, "", $mail, $action_time, 0);
+		}
+	}
+
+	/**
+	 * создаем запись pivot_user_{10m}.user_security_{1} с пустыми phone_number и mail
+	 */
+	protected static function _createSecurity(int $user_id, int $action_time):void {
+
+		try {
+
+			// проверяем - возможно запись уже есть
+			Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
+		} catch (\cs_RowIsEmpty) {
+
+			// создаем
+			Gateway_Db_PivotUser_UserSecurity::insert($user_id, "", "", $action_time, 0);
 		}
 	}
 

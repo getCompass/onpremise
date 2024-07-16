@@ -153,3 +153,15 @@ func prepareUserNotificationStruct(userId int64, snoozedUntil int64, token strin
 		NeedForcePush: needForcePush,
 	}
 }
+
+// отправляем на локальный go_pusher задачу для отправки VoIP для Jitsi
+func (conn *Conn) SendJitsiVoIP(userId int64, pushData interface{}, uuid string, timeToLive int64, sentDeviceList []string) {
+
+	log.Errorf("отправляем voip Jitsi: %v, %v", conn.currentServer, pushData)
+	if conn.currentServer != "pivot" && conn.currentServer != "monolith" {
+		return
+	}
+
+	gatewayPhpPivot.SendJitsiVoipPush(userId, pushData, uuid, timeToLive, sentDeviceList)
+	log.Error("отправили voip Jitsi")
+}

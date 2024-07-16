@@ -15,7 +15,7 @@ class Domain_User_Entity_ChangePhone_SmsStory {
 
 	public const NEXT_RESEND_AFTER = 60 * 2; // время, через которое доступна переотправка
 
-	public const MAX_ERROR_COUNT  = 3; // максимальное кол-во ошибок
+	public const MAX_ERROR_COUNT  = 7; // максимальное кол-во ошибок
 	public const MAX_RESEND_COUNT = 3; // максимальное кол-во ошибок
 
 	/**

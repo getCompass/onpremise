@@ -1,0 +1,324 @@
+#chat-conversation-container {
+    // extract message input height
+    height: calc(100% - 52px);
+    overflow: hidden;
+    position: relative;
+
+    &.is-mobile {
+        height: calc(100% - 42.5px);
+    }
+}
+
+#chatHeaderShadow {
+    position: absolute;
+    z-index: 99999;
+    width: 100%;
+    height: 88px;
+}
+
+#chatHeaderShadowMobile {
+    position: absolute;
+    z-index: 99999;
+    width: 100%;
+    height: 88px;
+}
+
+#chatconversation {
+    box-sizing: border-box;
+    flex: 1;
+    font-size: 10pt;
+    height: 100%;
+    line-height: 20px;
+    overflow: auto;
+    padding: 0;
+    text-align: left;
+    word-wrap: break-word;
+
+    display: flex;
+    flex-direction: column;
+
+    & > :first-child {
+        margin-top: auto;
+    }
+
+    a {
+        display: block;
+    }
+
+    a:link {
+        color: rgb(184, 184, 184);
+    }
+
+    a:visited {
+        color: white;
+    }
+
+    a:hover {
+        color: rgb(213, 213, 213);
+    }
+
+    a:active {
+        color: black;
+    }
+}
+
+#chatconversationmobile {
+    box-sizing: border-box;
+    flex: 1;
+    font-size: 10pt;
+    height: 100%;
+    line-height: 20px;
+    overflow: auto;
+    padding: 0;
+    padding-top: 50px !important;
+    text-align: left;
+    word-wrap: break-word;
+
+    display: flex;
+    flex-direction: column;
+
+    & > :first-child {
+        margin-top: auto;
+    }
+
+    a {
+        display: block;
+    }
+
+    a:link {
+        color: rgb(184, 184, 184);
+    }
+
+    a:visited {
+        color: white;
+    }
+
+    a:hover {
+        color: rgb(213, 213, 213);
+    }
+
+    a:active {
+        color: black;
+    }
+}
+
+#messagesListEnd {
+    padding-top: 12px;
+}
+
+.chat-input-container {
+    padding: 0 12px 16px 16px;
+
+    &.is-mobile {
+        height: 42.5px;
+        padding: 0;
+    }
+}
+
+#chat-input {
+    display: flex;
+    align-items: flex-end;
+    position: relative;
+
+    &.is-mobile {
+        align-items: center;
+        border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+    }
+}
+
+.chat-input {
+    flex: 1;
+    margin-right: 12px;
+
+    &.is-mobile {
+        margin-right: 0;
+    }
+}
+
+.chat-input-icon {
+    &.is-mobile {
+        padding: 9px 14px;
+    }
+}
+
+.chat-input-text-area {
+    &.is-mobile {
+        border: none;
+        background: transparent;
+    }
+}
+
+#nickname {
+    text-align: center;
+    color: #9d9d9d;
+    font-size: 16px;
+    margin: auto 0;
+    padding: 0 16px;
+
+    label[for="nickinput"] {
+        > div > span {
+            color: #B8C7E0;
+        }
+    }
+
+    input {
+        height: 40px;
+    }
+
+    label {
+        line-height: 24px;
+    }
+}
+
+.mobile-browser {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    #nickname {
+        input {
+            height: 48px;
+        }
+    }
+
+    .chatmessage .usermessage {
+        font-size: 16px;
+    }
+}
+
+.chatmessage {
+    &.error {
+        border-radius: 0px;
+
+        .timestamp,
+        .display-name {
+            display: none;
+        }
+
+        .usermessage {
+            color: #ffffff;
+            padding: 0;
+        }
+    }
+
+    .messagecontent {
+        max-width: 100%;
+        overflow: hidden;
+    }
+}
+
+#smileys {
+    font-size: 20pt;
+    margin: auto;
+    cursor: pointer;
+}
+
+#smileys img {
+    width: 22px;
+    padding: 2px;
+}
+
+.smiley-input {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.smileys-panel {
+    bottom: 100%;
+    box-sizing: border-box;
+    background-color: rgba(0, 0, 0, .6) !important;
+    height: auto;
+    display: flex;
+    overflow: hidden;
+    position: absolute;
+    width: calc(#{$sidebarWidth} - 32px);
+    margin-bottom: 5px;
+    margin-left: -5px;
+
+    /**
+     * CSS transitions do not apply for auto dimensions. So to produce the css
+     * accordion effect for showing and hiding the smiley-panel, while allowing
+     * for variable panel, height, use a very large max-height and animate off
+     * of that.
+     */
+    transition: max-height 0.3s;
+
+    #smileysContainer {
+        background-color: $chatBackgroundColor;
+        border-top: 1px solid #A4B8D1;
+    }
+}
+
+#smileysContainer .smiley {
+    font-size: 20pt;
+}
+
+.smileyContainer {
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    text-align: center;
+}
+
+.smileyContainer:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.chat-message-group {
+    display: flex;
+    justify-content: center;
+
+    &.error {
+        .display-name {
+            display: none;
+        }
+    }
+}
+
+.chat-dialog {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-top: -5px; // Margin set by atlaskit.
+
+    &-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 16px;
+        width: calc(100% - 32px);
+        box-sizing: border-box;
+        color: #fff;
+        font-weight: normal;
+        font-size: 24px;
+        line-height: 32px;
+
+        .jitsi-icon {
+            cursor: pointer;
+        }
+    }
+
+    #chatconversation {
+        width: 100%;
+    }
+
+    #chatconversationmobile {
+        width: 100%;
+    }
+}
+
+
+/**
+ * Make header close button more easily tappable on mobile.
+ */
+.mobile-browser .chat-dialog-header .jitsi-icon {
+    display: grid;
+    place-items: center;
+    height: 48px;
+    width: 48px;
+    background: #36383C;
+    border-radius: 3px;
+}

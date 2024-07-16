@@ -25,6 +25,8 @@ class Type_Api_Command {
 
 			case "need_confirm_2fa":
 				return self::_formResponse("need_confirm_2fa", $extra);
+			case "need_confirm_mail_password":
+				return self::_formResponse("need_confirm_mail_password", $extra);
 
 			default:
 

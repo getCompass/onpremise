@@ -28,6 +28,8 @@ type SocketConfigStruct struct {
 	CrmSocketModule         map[string]string `json:"crm_socket_module"`
 	IntegrationSocketUrl    string            `json:"integration_socket_url"`
 	IntegrationSocketModule map[string]string `json:"integration_socket_module"`
+	JitsiSocketUrl          string            `json:"jitsi_socket_url"`
+	JitsiSocketModule       map[string]string `json:"jitsi_socket_module"`
 }
 
 // переменная содержащая конфигурацию
@@ -158,5 +160,10 @@ func GetModuleSocketUrl(module string) (string, error) {
 		return socketConfig.IntegrationSocketUrl + integrationModuleSocketPath, nil
 	}
 
+	// получаем ссылку для модуля из premise
+	jitsiModuleSocketPath, isJitsiModuleExist := socketConfig.JitsiSocketModule[module]
+	if isJitsiModuleExist {
+		return socketConfig.JitsiSocketUrl + jitsiModuleSocketPath, nil
+	}
 	return "", fmt.Errorf("unknown module %s", module)
 }

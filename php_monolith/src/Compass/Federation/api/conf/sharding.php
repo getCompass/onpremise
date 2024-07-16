@@ -48,6 +48,25 @@ $CONFIG["SHARDING_MYSQL"] = [
 			],
 		],
 	],
+
+	"federation_system" => [
+		"db"      => "federation_system",
+		"mysql"   => [
+			"host" => MYSQL_FEDERATION_SYSTEM_HOST,
+			"user" => MYSQL_FEDERATION_SYSTEM_USER,
+			"pass" => MYSQL_FEDERATION_SYSTEM_PASS,
+			"ssl"  => MYSQL_FEDERATION_SYSTEM_SSL,
+		],
+		"schemas" => [
+			"sharding_info" => [
+				"type" => \shardingConf::SHARDING_TYPE_NONE,
+				"data" => [],
+			],
+			"tables"        => [
+				"datastore"               => "sso_auth_token,signature,status,expires_at,completed_at,created_at,updated_at,link,ua_hash,ip_address",
+			],
+		],
+	],
 ];
 
 // -------------------------------------------------------

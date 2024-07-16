@@ -62,8 +62,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		$mail = (new \BaseFrame\System\Mail($mail))->mail();
 
 		// получаем user_id по почте
-		[$existing_user_id, $has_sso_account] = Domain_User_Action_Auth_Mail::resolveUser($mail);
-		self::_redirectAuthToSsoIfNeeded($existing_user_id, $has_sso_account);
+		$existing_user_id = Domain_User_Action_Auth_Mail::resolveUser($mail);
 
 		// если не нашли пользователя
 		if ($existing_user_id === 0) {
@@ -74,6 +73,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 			// если пользователь не зарегистрирован и если ссылка не передана, то сразу завершаем процесс
 			$join_link === false && throw new Domain_User_Exception_AuthStory_RegistrationWithoutInvite();
 		}
+
+		// проверяем что пользователь не зарегистрирован через SSO
+		Domain_User_Entity_Mail::assertUserWasNotRegisteredBySso($existing_user_id);
 
 		// валидируем ссылку-приглашение, если она передана
 		$validation_result = Domain_Link_Action_OnPremiseWeb::validateJoinLinkIfNeeded($join_link, $existing_user_id);
@@ -88,7 +90,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 				->assertNotExpired()
 				->assertAuthParameter($mail)
 				->assertType([Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_REGISTER_BY_MAIL, Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_LOGIN_BY_MAIL]);
-		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual|cs_CookieIsEmpty|Domain_User_Exception_AuthStory_TypeMismatch) {
+		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual|Domain_User_Exception_AuthStory_TypeMismatch) {
 
 			if ($existing_user_id === 0) {
 				$story = Domain_User_Action_Auth_Mail::beginRegistration($mail);
@@ -112,31 +114,6 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 			$validation_result ?? false,
 			self::resolveScenario($story->getType()),
 		];
-	}
-
-	/**
-	 * перенаправляем на способ аутентификации через SSO
-	 *
-	 * @throws Domain_User_Exception_AuthStory_RedirectToSso
-	 */
-	protected static function _redirectAuthToSsoIfNeeded(int $existing_user_id, bool $has_sso_account):void {
-
-		// если не нашли пользователя, то ничего не делаем
-		if ($existing_user_id < 1) {
-			return;
-		}
-
-		// если к этому пользователю не привязан SSO аккаунт, то ничего не делаем
-		if (!$has_sso_account) {
-			return;
-		}
-
-		// если отключена аутентификация через SSO, то ничего не делаем
-		if (!Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)) {
-			return;
-		}
-
-		throw new Domain_User_Exception_AuthStory_RedirectToSso();
 	}
 
 	/**

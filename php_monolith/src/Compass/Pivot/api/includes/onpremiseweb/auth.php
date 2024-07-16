@@ -72,7 +72,7 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 			]);
 		} catch (cs_UserAlreadyLoggedIn) {
 			return $this->error(static::ECODE_UAUTH_LOGGED, "user already logged in");
-		} catch (InvalidPhoneNumber) {
+		} catch (InvalidPhoneNumber|Domain_User_Exception_Security_UserWasRegisteredBySso) {
 
 			Type_Antispam_Ip::checkAndIncrementBlock(Type_Antispam_Ip::BEGIN_INCORRECT_PHONE_NUMBER);
 			return $this->error(static::ECODE_UAUTH_BAD_PHONE, "invalid phone_number [$phone_number]");
@@ -100,8 +100,6 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 			return $this->error(static::ECODE_UJL_ALREADY_ACCEPTED, "already company member");
 		} catch (cs_UserNotFound $e) {
 			throw new ReturnFatalException("unhandled error {$e->getMessage()}");
-		} catch (Domain_User_Exception_AuthStory_RedirectToSso) {
-			return $this->error(static::ECODE_UAUTH_REDIRECT_TO_SSO, "redirect to sso");
 		}
 
 		return $this->ok([

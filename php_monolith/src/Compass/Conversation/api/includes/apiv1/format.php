@@ -84,6 +84,7 @@ class Apiv1_Format {
 		CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_MESSAGES_MOVED_NOTIFICATION => "system_bot_messages_moved_notification",
 		CONVERSATION_MESSAGE_TYPE_SHARED_MEMBER                          => "shared_member",
 		CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND                      => "system_bot_remind",
+		CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE                       => "media_conference",
 	];
 
 	// преобразование числового типа сообщения в текстовый
@@ -655,6 +656,15 @@ class Apiv1_Format {
 
 				return $data;
 
+			case "media_conference":
+
+				$data = [
+					"conference_id"            => (string) $prepared_message["data"]["conference_id"],
+					"conference_accept_status" => (string) $prepared_message["data"]["conference_accept_status"],
+					"conference_link"          => (string) $prepared_message["data"]["conference_link"],
+				];
+
+				return $data;
 			case "file":
 			case "system_bot_file":
 
@@ -1096,14 +1106,14 @@ class Apiv1_Format {
 
 		// разбираем по типам сделал повторояющийся код отдельными функциями потому что так будет выглядеть лучше и читабельнее :pray:
 		return match ($type) {
-			PREVIEW_TYPE_SITE                                  => self::_makePreviewSiteData($data, $prepared_url_preview),
-			PREVIEW_TYPE_IMAGE                                 => self::_makePreviewImageData($data, $prepared_url_preview),
-			PREVIEW_TYPE_SIMPLE                                => [],
-			PREVIEW_TYPE_PROFILE                               => self::_makePreviewProfileData($data, $prepared_url_preview),
-			PREVIEW_TYPE_CONTENT                               => self::_makePreviewContentData($data, $prepared_url_preview),
+			PREVIEW_TYPE_SITE => self::_makePreviewSiteData($data, $prepared_url_preview),
+			PREVIEW_TYPE_IMAGE => self::_makePreviewImageData($data, $prepared_url_preview),
+			PREVIEW_TYPE_SIMPLE => [],
+			PREVIEW_TYPE_PROFILE => self::_makePreviewProfileData($data, $prepared_url_preview),
+			PREVIEW_TYPE_CONTENT => self::_makePreviewContentData($data, $prepared_url_preview),
 			PREVIEW_TYPE_RESOURCE, PREVIEW_TYPE_COMPASS_INVITE => self::_makePreviewResourceData($data, $prepared_url_preview),
-			PREVIEW_TYPE_VIDEO                                 => self::_makePreviewVideoData($data, $prepared_url_preview),
-			default                                            => throw new ParseFatalException("preview type {$type} is not available"),
+			PREVIEW_TYPE_VIDEO => self::_makePreviewVideoData($data, $prepared_url_preview),
+			default => throw new ParseFatalException("preview type {$type} is not available"),
 		};
 	}
 
@@ -1396,6 +1406,10 @@ class Apiv1_Format {
 		// если тип сообщения звонок -> добавляем call_map к сообщению
 		$output = self::_attachCallMapIfLastMessageIsCall($output, $last_message["type"], $last_message["call_map"]);
 
+		// если тип сообщения конференция - добавляем поля для конференции
+		$output = self::_attachConferenceIdIfLastMessageIsMediaConference($output, $last_message["type"], $last_message["data"]["conference_id"]);
+		$output = self::_attachAcceptStatusIfLastMessageIsMediaConference($output, $last_message["type"], $last_message["data"]["conference_accept_status"]);
+
 		// если тип сообщения приглашение -> добавляем invite_map к сообщению
 		$output = self::_attachInviteMapIfLastMessageIsInvite($output, $last_message["type"], $last_message["invite_map"]);
 
@@ -1449,6 +1463,28 @@ class Apiv1_Format {
 		}
 
 		$output["call_map"] = $call_map;
+		return $output;
+	}
+
+	// функция добавляет к last_message conference_id конференции
+	protected static function _attachConferenceIdIfLastMessageIsMediaConference(array $output, int $message_type, string $conference_id):array {
+
+		if ($message_type != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			return $output;
+		}
+
+		$output["data"]["conference_id"] = $conference_id;
+		return $output;
+	}
+
+	// функция добавляет к last_message status конференции
+	protected static function _attachAcceptStatusIfLastMessageIsMediaConference(array $output, int $message_type, string $conference_accept_status):array {
+
+		if ($message_type != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			return $output;
+		}
+
+		$output["data"]["conference_accept_status"] = $conference_accept_status;
 		return $output;
 	}
 

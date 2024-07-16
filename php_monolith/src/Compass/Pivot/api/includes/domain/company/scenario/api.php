@@ -384,15 +384,19 @@ class Domain_Company_Scenario_Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public static function delete(int $user_id, int $company_id, string|false $two_fa_key):void {
+	public static function delete(int $user_id, string $session_uniq, int $company_id, string|false $two_fa_key):void {
 
 		// ! частично дублирует socket-сценарий удаления компании
 
 		// проверяем, что company_id валиден
 		Domain_Company_Entity_Validator::assertCorrectCompanyId($company_id);
 
+		$user_security = Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
+
 		// проверяем 2fa
-		Domain_User_Entity_TwoFa_TwoFa::handle($user_id, Domain_User_Entity_TwoFa_TwoFa::TWO_FA_DELETE_COMPANY, $two_fa_key, $company_id);
+		Domain_User_Entity_Confirmation_Main::handle(
+			$user_security, $session_uniq, Domain_User_Entity_Confirmation_Main::CONFIRMATION_DELETE_COMPANY,
+			$two_fa_key, false,  $company_id);
 
 		// проверяем, что компания активна
 		$company = Domain_Company_Entity_Company::get($company_id);

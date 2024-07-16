@@ -2,6 +2,12 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Request\CaseException;
+use BaseFrame\Exception\Request\CompanyNotServedException;
+use BaseFrame\Exception\Request\ParamException;
+
 /**
  * контроллер для работы с участниками компании
  */
@@ -17,6 +23,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 		"deleteInvitesByLink",
 		"getListActiveMember",
 		"onUpgradeGuest",
+		"isMediaConferenceCreatingAllowed",
+		"checkIsAllowedForCall",
 	];
 
 	/**
@@ -146,5 +154,54 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 		Domain_Company_Scenario_Socket::onUpgradeGuest($this->company_id);
 
 		return $this->ok();
+	}
+
+	/**
+	 * Проверяет что указанный пользователь может начать видеоконференцию в указанном пространстве
+	 *
+	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
+	 * @throws \cs_SocketRequestIsFailed
+	 * @throws cs_CompanyIsHibernate
+	 */
+	public function isMediaConferenceCreatingAllowed():array {
+
+		$user_id    = $this->post(\Formatter::TYPE_INT, "user_id");
+		$company_id = $this->post(\Formatter::TYPE_INT, "company_id");
+
+		[$is_allowed, $error_code] = Domain_Company_Scenario_Socket::isMediaConferenceCreatingAllowed($user_id, $company_id);
+
+		return $this->ok(["is_allowed" => (int) $is_allowed, "error_code" => (int) $error_code]);
+	}
+
+	/**
+	 * Проверяет что указанный пользователь может начать видеоконференцию в указанном пространстве
+	 *
+	 * @return array
+	 * @throws CompanyNotServedException
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \cs_SocketRequestIsFailed
+	 * @throws cs_CompanyIsHibernate
+	 */
+	public function checkIsAllowedForCall():array {
+
+		$user_id          = $this->post(\Formatter::TYPE_INT, "user_id");
+		$opponent_user_id = $this->post(\Formatter::TYPE_INT, "opponent_user_id");
+		$space_id         = $this->post(\Formatter::TYPE_INT, "space_id");
+
+		try {
+			$conversation_map = Domain_Jitsi_Scenario_Socket::checkIsAllowedForCall($user_id, $opponent_user_id, $space_id);
+		} catch (Domain_Jitsi_Exception_GuestIsInitiator) {
+			return $this->error(2419011, "user is guest");
+		} catch (Domain_Jitsi_Exception_IsNotAllowed) {
+			return $this->error(2419010, "user is not allowed to create call");
+		} catch (Domain_Company_Exception_NotExist) {
+			throw new ParamException("invalid space");
+		}
+
+		return $this->ok([
+			"conversation_map" => (string) $conversation_map,
+		]);
 	}
 }

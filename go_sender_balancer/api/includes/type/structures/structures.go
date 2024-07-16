@@ -48,6 +48,26 @@ type BroadcastEventRequestStruct struct {
 	Uuid             string      `json:"uuid"`
 }
 
+// структура запроса при создании конференции Jitsi
+type JitsiConferenceCreatedRequestStruct struct {
+	UserId           int64       `json:"user_id"`
+	Event            string      `json:"event"`
+	EventVersionList interface{} `json:"event_version_list"`
+	PushData         interface{} `json:"push_data"`
+	WSUsers          interface{} `json:"ws_users,omitempty"`
+	Uuid             string      `json:"uuid"`
+	TimeToLive       int64       `json:"time_to_live"`
+	RoutineKey       string      `json:"routine_key"`
+}
+
+// структура запроса при создании конференции Jitsi
+type SendJitsiVoIPPushRequestStruct struct {
+	UserId     int64       `json:"user_id"`
+	PushData   interface{} `json:"push_data"`
+	Uuid       string      `json:"uuid"`
+	RoutineKey string      `json:"routine_key"`
+}
+
 // -------------------------------------------------------
 // Rabbit
 // -------------------------------------------------------

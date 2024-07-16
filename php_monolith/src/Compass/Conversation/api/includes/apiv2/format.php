@@ -89,6 +89,7 @@ class Apiv2_Format {
 		CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_MESSAGES_MOVED_NOTIFICATION => "system_bot_messages_moved_notification",
 		CONVERSATION_MESSAGE_TYPE_SHARED_MEMBER                          => "shared_member",
 		CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND                      => "system_bot_remind",
+		CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE                       => "media_conference",
 	];
 
 	// массив для преобразования типа дополнительного поля в текстовый для сообщения
@@ -304,6 +305,15 @@ class Apiv2_Format {
 
 				return $data;
 
+			case "media_conference":
+
+				$data = [
+					"conference_id" => (string) $prepared_message["data"]["conference_id"],
+					"conference_accept_status"        => (string) $prepared_message["data"]["conference_accept_status"],
+					"conference_link"          => (string) $prepared_message["data"]["conference_link"],
+				];
+
+				return $data;
 			case "file":
 			case "system_bot_file":
 
@@ -527,7 +537,7 @@ class Apiv2_Format {
 				"day_start_string" => (string) $item["data"]["day_start_string"],
 				"sender_type"      => (string) ($item["data"]["sender_type"] ?? Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_USER_SENDER),
 			],
-			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_RESPECT      => [
+			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_RESPECT => [
 				"receiver_user_id" => (int) $item["data"]["receiver_user_id"],
 				"receiver_name"    => (string) ($item["data"]["receiver_name"] ?? ""),
 				"respect_id"       => (int) $item["data"]["respect_id"],
@@ -539,11 +549,11 @@ class Apiv2_Format {
 				"exactingness_id"  => (int) ($item["data"]["exactingness_id"] ?? 0),
 				"sender_name"      => (string) ($item["data"]["sender_name"] ?? ""),
 			],
-			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_ACHIEVEMENT  => [
+			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_ACHIEVEMENT => [
 				"receiver_user_id" => (int) $item["data"]["receiver_user_id"],
 				"achievement_id"   => (int) $item["data"]["achievement_id"],
 			],
-			default                                                                 => [],
+			default => [],
 		};
 	}
 
@@ -1071,6 +1081,10 @@ class Apiv2_Format {
 		// если тип сообщение с additional-полями -> добавляем данные additional-полей
 		$output = self::_attachAdditionalDataIfLastMessageIsMessageWithAdditional($output, $last_message);
 
+		// если тип сообщения конференция - добавляем поля для конференции
+		$output = self::_attachConferenceIdIfLastMessageIsMediaConference($output, $last_message["type"], $last_message["data"]["conference_id"]);
+		$output = self::_attachAcceptStatusIfLastMessageIsMediaConference($output, $last_message["type"], $last_message["data"]["conference_accept_status"]);
+
 		return $output;
 	}
 
@@ -1147,6 +1161,28 @@ class Apiv2_Format {
 		}
 
 		$output["call_map"] = $call_map;
+		return $output;
+	}
+
+	// функция добавляет к last_message conference_id конференции
+	protected static function _attachConferenceIdIfLastMessageIsMediaConference(array $output, int $message_type, string $conference_id):array {
+
+		if ($message_type != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			return $output;
+		}
+
+		$output["data"]["conference_id"] = $conference_id;
+		return $output;
+	}
+
+	// функция добавляет к last_message status конференции
+	protected static function _attachAcceptStatusIfLastMessageIsMediaConference(array $output, int $message_type, string $conference_accept_status):array {
+
+		if ($message_type != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			return $output;
+		}
+
+		$output["data"]["conference_accept_status"] = $conference_accept_status;
 		return $output;
 	}
 
@@ -1361,8 +1397,8 @@ class Apiv2_Format {
 			$output[] = match ($search_location["type"]) {
 
 				Domain_Search_Entity_Conversation_Location::API_LOCATION_TYPE => static::searchLocationListConversation($search_location),
-				Domain_Search_Entity_Thread_Location::API_LOCATION_TYPE       => static::searchLocationListThread($search_location),
-				default                                                       => throw new ParseFatalException("got unknown location")
+				Domain_Search_Entity_Thread_Location::API_LOCATION_TYPE => static::searchLocationListThread($search_location),
+				default => throw new ParseFatalException("got unknown location")
 			};
 		}
 
@@ -1412,8 +1448,8 @@ class Apiv2_Format {
 			$output[] = match ($search_hit["type"]) {
 
 				Domain_Search_Entity_ConversationMessage_Hit::API_HIT_TYPE => static::searchHitListConversationMessage($search_hit),
-				Domain_Search_Entity_ThreadMessage_Hit::API_HIT_TYPE       => static::searchHitListThreadMessage($search_hit),
-				default                                                    => throw new ParseFatalException("got unknown hit")
+				Domain_Search_Entity_ThreadMessage_Hit::API_HIT_TYPE => static::searchHitListThreadMessage($search_hit),
+				default => throw new ParseFatalException("got unknown hit")
 			};
 		}
 
@@ -1471,7 +1507,7 @@ class Apiv2_Format {
 			],
 
 			// передан неизвестный родитель
-			default                                                => throw new ParseFatalException("got unknown hit")
+			default => throw new ParseFatalException("got unknown hit")
 		};
 	}
 

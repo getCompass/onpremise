@@ -19,20 +19,22 @@ type senderController struct{}
 
 // поддерживаемые методы
 var senderMethods = methodMap{
-	"setToken":                     senderController{}.SetToken,
-	"sendEvent":                    senderController{}.SendEvent,
-	"sendEventToAll":               senderController{}.SendEventToAll,
-	"getOnlineConnectionsByUserId": senderController{}.GetOnlineConnectionsByUserId,
-	"closeConnectionsByUserId":     senderController{}.CloseConnectionsByUserId,
-	"addUsersToThread":             senderController{}.AddUsersToThread,
-	"getOnlineUsers":               senderController{}.GetOnlineUsers,
-	"getOnlineUserList":            senderController{}.GetOnlineUserList,
-	"sendVoIP":                     senderController{}.SendVoIP,
-	"addTaskPushNotification":      senderController{}.AddTaskPushNotification,
-	"sendTypingEvent":              senderController{}.SendTypingEvent,
-	"sendThreadTypingEvent":        senderController{}.SendThreadTypingEvent,
-	"sendIncomingCall":             senderController{}.SendIncomingCall,
-	"clearUserNotificationCache":   senderController{}.ClearUserNotificationCache,
+	"setToken":                        senderController{}.SetToken,
+	"sendEvent":                       senderController{}.SendEvent,
+	"sendEventToAll":                  senderController{}.SendEventToAll,
+	"getOnlineConnectionsByUserId":    senderController{}.GetOnlineConnectionsByUserId,
+	"closeConnectionsByUserId":        senderController{}.CloseConnectionsByUserId,
+	"addUsersToThread":                senderController{}.AddUsersToThread,
+	"getOnlineUsers":                  senderController{}.GetOnlineUsers,
+	"getOnlineUserList":               senderController{}.GetOnlineUserList,
+	"sendVoIP":                        senderController{}.SendVoIP,
+	"addTaskPushNotification":         senderController{}.AddTaskPushNotification,
+	"sendTypingEvent":                 senderController{}.SendTypingEvent,
+	"sendThreadTypingEvent":           senderController{}.SendThreadTypingEvent,
+	"sendIncomingCall":                senderController{}.SendIncomingCall,
+	"sendJitsiConferenceCreatedEvent": senderController{}.SendJitsiConferenceCreatedEvent,
+	"sendJitsiVoipPush":               senderController{}.SendJitsiVoipPush,
+	"clearUserNotificationCache":      senderController{}.ClearUserNotificationCache,
 }
 
 // -------------------------------------------------------
@@ -397,6 +399,42 @@ func (senderController) ClearUserNotificationCache(data *request.Data) ResponseS
 	if err != nil {
 		return Error(int(status.Code(err)), status.Convert(err).Message())
 	}
+
+	return Ok()
+}
+
+// запрос для отправки ws-события и voip-пуша о создании конференции Jitsi
+func (senderController) SendJitsiConferenceCreatedEvent(data *request.Data) ResponseStruct {
+
+	senderRequest := structures.SendJitsiConferenceCreatedEventRequestStruct{}
+	err := json.Unmarshal(data.RequestData, &senderRequest)
+	if err != nil {
+		return Error(105, "bad json in request")
+	}
+
+	if len(senderRequest.Event) < 1 {
+		return Error(409, "bad event in request")
+	}
+
+	// конвертируем полученные версии события в более удобный формат
+	eventVersionList := sender.ConvertEventVersionList(senderRequest.EventVersionList)
+
+	talking.SendJitsiConferenceCreated(data.Isolation, senderRequest.UserId, senderRequest.Event, eventVersionList, senderRequest.PushData, senderRequest.WSUsers,
+		senderRequest.Uuid, senderRequest.TimeToLive, senderRequest.RoutineKey)
+
+	return Ok()
+}
+
+// запрос для отправки voip-пуша Jitsi
+func (senderController) SendJitsiVoipPush(data *request.Data) ResponseStruct {
+
+	senderRequest := structures.SendJitsiVoipPushRequestStruct{}
+	err := json.Unmarshal(data.RequestData, &senderRequest)
+	if err != nil {
+		return Error(105, "bad json in request")
+	}
+
+	talking.SendJitsiVoipPush(data.Isolation, senderRequest.UserId, senderRequest.PushData, senderRequest.Uuid, senderRequest.RoutineKey)
 
 	return Ok()
 }

@@ -16,6 +16,10 @@ class Domain_Call_Action_GetAndSaveCallsAnalytics {
 	 */
 	public static function do():bool {
 
+		if (!ANALYTICS_IS_ENABLED) {
+			return false;
+		}
+
 		// собираем записи с таблицы analytic_queue
 		$task_list = Gateway_Db_CompanyCall_AnalyticQueue::getTaskListWhichNeedWork();
 

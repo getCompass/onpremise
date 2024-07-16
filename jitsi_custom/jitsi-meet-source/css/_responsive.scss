@@ -1,0 +1,80 @@
+@media only screen and (max-width: $verySmallScreen) {
+    .welcome {
+        display: block;
+
+        #enter_room {
+            .welcome-page-button {
+                font-size: 16px;
+                left: 0;
+                text-align: center;
+                width: 100%;
+            }
+        }
+
+        .header {
+            background-color: #002637;
+
+            .insecure-room-name-warning {
+                width: 100%;
+            }
+
+            #enter_room {
+                width: 100%;
+
+                .join-meeting-container {
+                    padding: 0;
+                    flex-direction: column;
+                    background: transparent;
+                }
+
+                .enter-room-input-container {
+                    padding-right: 0;
+                    margin-bottom: 10px;
+                }
+            }
+        }
+
+        .header-text-title {
+            text-align: center;
+        }
+
+        .welcome-cards-container {
+            padding: 0;
+        }
+
+        &.without-content {
+            .header {
+            height: 100%;
+            }
+        }
+
+        #moderated-meetings {
+            display: none;
+        }
+
+        .welcome-footer-row-block {
+            display: block;
+        }
+    }
+}
+
+.desktop-browser {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    &.shift-right {
+
+        @media only screen and (max-width: $verySmallScreen + $sidebarWidth) {
+
+            #videoResolutionLabel {
+                display: none;
+            }
+            .vertical-filmstrip .filmstrip {
+                display: none;
+            }
+            .chrome-extension-banner {
+                display: none;
+            }
+        }
+    }
+}

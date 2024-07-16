@@ -16,22 +16,20 @@ class Domain_User_Action_Auth_Mail {
 	/**
 	 * Получаем пользователя по почте
 	 *
-	 * @return array
+	 * @return int
 	 */
-	public static function resolveUser(string $mail):array {
+	public static function resolveUser(string $mail):int {
 
-		$user_id         = 0;
-		$has_sso_account = false;
+		$user_id = 0;
 
 		try {
 
-			$mail_uniq       = Domain_User_Entity_Mail::get($mail);
-			$user_id         = $mail_uniq->user_id;
-			$has_sso_account = $mail_uniq->has_sso_account;
+			$mail_uniq = Domain_User_Entity_Mail::get($mail);
+			$user_id   = $mail_uniq->user_id;
 		} catch (Domain_User_Exception_Mail_NotFound) {
 		}
 
-		return [$user_id, $has_sso_account];
+		return $user_id;
 	}
 
 	/**
@@ -500,7 +498,7 @@ class Domain_User_Action_Auth_Mail {
 		// проверяем наличие домена в списке разрешенных
 		$domain = (new \BaseFrame\System\Mail($mail))->getDomain();
 		if (!in_array($domain, $allowed_domain_list)) {
-			throw new Domain_User_Exception_AuthStory_Mail_DomainNotAllowed();
+			throw new Domain_User_Exception_AuthStory_Mail_DomainNotAllowed($allowed_domain_list, "domain not allowed");
 		}
 	}
 

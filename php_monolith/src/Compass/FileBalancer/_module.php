@@ -26,7 +26,6 @@ define("FILEBALANCER_MODULE_API", FILEBALANCER_MODULE_ROOT . "api/");
 require_once FILEBALANCER_MODULE_ROOT . "private/custom.php";
 require_once FILEBALANCER_MODULE_ROOT . "private/main.php";
 
-require_once FILEBALANCER_MODULE_API . "includes/user.php";
 require_once FILEBALANCER_MODULE_API . "includes/custom_define.php";
 require_once FILEBALANCER_MODULE_API . "includes/custom_exception.php";
 

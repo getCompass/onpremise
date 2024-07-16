@@ -483,6 +483,9 @@ class Type_Conversation_LeftMenu {
 		$receiver_id     = self::_getLastMessageReceiverIdIfExistAdditional($message);
 		$additional_type = self::_getLastMessageAdditionalType($message);
 
+		$conference_id     = self::_getLastMessageConferenceId($message);
+		$conference_accept_status = self::_getLastMessageConferenceAcceptStatus($message);
+
 		return Gateway_Db_CompanyConversation_UserLeftMenu::initLastMessage(
 			$message_map,
 			Type_Conversation_Message_Main::getHandler($message)::getSenderUserId($message),
@@ -496,7 +499,9 @@ class Type_Conversation_LeftMenu {
 			$file_name,
 			$message_count,
 			$receiver_id,
-			$additional_type
+			$additional_type,
+			$conference_id,
+			$conference_accept_status
 		);
 	}
 
@@ -528,6 +533,28 @@ class Type_Conversation_LeftMenu {
 		}
 
 		return $call_map;
+	}
+
+	// получаем conference_id последнего сообщения
+	protected static function _getLastMessageConferenceId(array $message):string {
+
+		$conference_id = "";
+		if (Type_Conversation_Message_Main::getHandler($message)::getType($message) == CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			$conference_id = Type_Conversation_Message_Main::getHandler($message)::getConferenceId($message);
+		}
+
+		return $conference_id;
+	}
+
+	// получаем статус конференции последнего сообщения
+	protected static function _getLastMessageConferenceAcceptStatus(array $message):string {
+
+		$conference_accept_status = "";
+		if (Type_Conversation_Message_Main::getHandler($message)::getType($message) == CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			$conference_accept_status = Type_Conversation_Message_Main::getHandler($message)::getConferenceAcceptStatus($message);
+		}
+
+		return $conference_accept_status;
 	}
 
 	/**

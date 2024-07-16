@@ -78,10 +78,13 @@ class Domain_User_Entity_UserActionComment {
 	 *
 	 * @throws \queryException
 	 */
-	public static function addDeleteProfileAction(int $user_id, string $phone_number):void {
+	public static function addDeleteProfileAction(int $user_id, string $phone_number, string $mail):void {
 
 		$extra = self::initExtra();
-		self::setData($extra, ["phone_number" => $phone_number]);
+		self::setData($extra, [
+			"phone_number" => $phone_number,
+			"mail"         => $mail,
+		]);
 
 		self::addAction($user_id, self::DELETE_PROFILE, $extra);
 	}

@@ -2,6 +2,11 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\BlockException;
+use BaseFrame\Exception\Request\EndpointAccessDeniedException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 
@@ -86,39 +91,52 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 	/**
 	 * удаляем аккаунт пользователя
 	 *
+	 * @return array
+	 * @throws BlockException
+	 * @throws BusFatalException
+	 * @throws EndpointAccessDeniedException
 	 * @throws ParamException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Request\BlockException
-	 * @throws \busException
-	 * @throws cs_AnswerCommand
-	 * @throws \cs_DecryptHasFailed
-	 * @throws \cs_RowIsEmpty
-	 * @throws \cs_UnpackHasFailed
-	 * @throws cs_UserNotFound
-	 * @throws cs_blockException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws \returnException
-	 * @throws \userAccessException
+	 * @throws cs_AnswerCommand
+	 * @throws cs_blockException
 	 */
 	public function delete():array {
 
-		$two_fa_key = $this->post(\Formatter::TYPE_STRING, "two_fa_key", false);
+		$two_fa_key                      = $this->post(\Formatter::TYPE_STRING, "two_fa_key", false);
+		$confirm_mail_password_story_key = $this->post(\Formatter::TYPE_STRING, "confirm_mail_password_story_key", false);
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::PROFILE_DELETE);
 
 		try {
-			Domain_User_Scenario_Api::deleteProfile($this->user_id, $two_fa_key);
+			Domain_User_Scenario_Api::deleteProfile($this->user_id, $this->session_uniq, $two_fa_key, $confirm_mail_password_story_key);
 		} catch (cs_TwoFaIsInvalid|cs_WrongTwoFaKey|cs_UnknownKeyType|cs_TwoFaTypeIsInvalid|cs_TwoFaInvalidUser|cs_TwoFaInvalidCompany) {
 			return $this->error(2302, "2fa key is not valid");
 		} catch (cs_TwoFaIsNotActive|cs_TwoFaIsFinished|cs_TwoFaIsExpired) {
 			return $this->error(2303, "2fa key is not active");
+		} catch (Domain_User_Exception_Confirmation_Mail_IsExpired) {
+			return $this->error(1118002, "mail confirmation key is expired");
+		} catch (Domain_User_Exception_Confirmation_Mail_IsNotConfirmed|Domain_User_Exception_Confirmation_Mail_IsActive|
+		Domain_User_Exception_Confirmation_Mail_NotSuccess) {
+			return $this->error(1118001, "mail confirmation key is active");
+		} catch (Domain_User_Exception_Mail_NotFound) {
+			return $this->error(1118003, "mail not found");
+		} catch (cs_UserPhoneSecurityNotFound|cs_PhoneNumberNotFound) {
+			return $this->error(1118004, "phone not found");
+		}  catch (Domain_User_Exception_Mail_NotFoundOnSso) {
+			return $this->error(1118005, "mail not found");
 		} catch (cs_UserAlreadyBlocked) {
 			throw new ParamException("user is already blocked");
-		} catch (cs_UserPhoneSecurityNotFound) {
-			throw new ParamException("not found phone for user");
 		} catch (Domain_User_Exception_IsOnpremiseRoot) {
 			throw new ParamException("action not available for this user");
+		} catch (Domain_User_Exception_Confirmation_Mail_InvalidMailPasswordStoryKey|Domain_User_Exception_Confirmation_Mail_InvalidUser|
+		Domain_User_Exception_Confirmation_Mail_IsInvalidType|\cs_UnpackHasFailed|\cs_DecryptHasFailed|\cs_RowIsEmpty) {
+			throw new ParamException("mail confirmation key is invalid");
+		} catch (cs_UserNotFound) {
+			throw new ParamException("user not found");
 		}
 
 		return $this->ok();

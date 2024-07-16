@@ -7,31 +7,12 @@ use BaseFrame\Exception\Domain\ReturnFatalException;
 /**
  * Класс для работы с пользовательской сессией
  */
-class Type_Session_Main {
+class Type_Session_Main extends \CompassApp\Domain\Session\Main {
 
-	protected const _COMPANY_COOKIE_KEY = COMPANY_ID . "_company_session_key"; // ключ, передаваемый в cookie пользователя
+	protected const _TOKEN_HEADER_UNIQUE = "_company_authorization_token";
 
 	protected const _SESSION_STATUS_LOGGED_IN  = 2;
 	protected const _SESSION_STATUS_LOGGED_OUT = 3;
-
-	/**
-	 * проверяем что сессия существует и валидна
-	 *
-	 * @throws \busException
-	 * @throws \cs_SessionNotFound
-	 */
-	public static function getSession():array {
-
-		// проверяем, что у пользователя установлена кука
-		$cloud_session_uniq = self::_getCloudSessionUniqFromCookie();
-		if ($cloud_session_uniq === false) {
-			return [0, false, false, false];
-		}
-
-		// отдаем сессию пользователя
-		[$member] = Gateway_Bus_CompanyCache::getSessionInfo($cloud_session_uniq);
-		return [$member->user_id, $cloud_session_uniq, $member->role, $member->permissions];
-	}
 
 	/**
 	 * логиним сессию
@@ -47,7 +28,7 @@ class Type_Session_Main {
 		$session_key = Type_Pack_CompanySession::doEncrypt(Type_Pack_CompanySession::doPack($cloud_session_uniq));
 
 		// ставим куки
-		self::_setCookie($session_key);
+		self::_setRequestAuthData($session_key);
 
 		// формируем экстру сессии
 		$extra = Domain_User_Entity_ActiveSession_Extra::initExtra();
@@ -69,14 +50,12 @@ class Type_Session_Main {
 	}
 
 	/**
-	 * разлогиниваем сессию
-	 *
-	 * @throws \busException
-	 * @throws \returnException
+	 * Инвалидируем сессию
+	 * @throws \cs_SessionNotFound
 	 */
 	public static function doLogoutSession(int $user_id):string|false {
 
-		$cloud_session_uniq = self::_getCloudSessionUniqFromCookie();
+		$cloud_session_uniq = static::_getCloudSessionUniq();
 		if ($cloud_session_uniq === false) {
 			return false;
 		}
@@ -86,15 +65,16 @@ class Type_Session_Main {
 		} catch (\cs_RowIsEmpty) {
 
 			Gateway_Bus_CompanyCache::clearSessionCacheByUserId($user_id);
-			self::_clearCookie();
+			static::_clearRequestAuthData();
 			return false;
 		}
 
 		// удаляем сессию из таблицы активных
-		self::_deleteUserActiveSession($user_id, $cloud_session_uniq, $user_active_session_row);
+		static::_deleteUserActiveSession($user_id, $cloud_session_uniq, $user_active_session_row);
 
 		Gateway_Bus_CompanyCache::clearSessionCacheByUserId($user_id);
-		self::_clearCookie();
+		static::_clearRequestAuthData();
+
 		return $cloud_session_uniq;
 	}
 
@@ -130,48 +110,29 @@ class Type_Session_Main {
 	}
 
 	/**
-	 * получить произвольный массив по ключу для текущей session_id + user_id
-	 * возвращает false если запись в кэше не найдена
-	 *
-	 * @return array|false
-	 *
-	 * @throws \busException
-	 * @throws \cs_SessionNotFound
+	 * Устанавливает клиенту данные авторизации.
 	 */
-	public static function getCache(string $key):bool|array {
+	protected static function _setRequestAuthData(string $session_key):void {
 
-		$val = ShardingGateway::cache()->get(self::_getKey($key));
-
-		if ($val !== false) {
-			$val = fromJson($val);
-		}
-
-		return $val;
+		static::setHeaderAction($session_key);
+		static::_setCookie($session_key);
 	}
 
 	/**
-	 * записать произвольный массив по ключу для текущей session_id + user_id
+	 * Устанавливает данные, которые клиент клиент будет использовать для авторизации в дальнейшем.
 	 *
-	 * @throws \busException
-	 * @throws \cs_SessionNotFound
+	 * <b>!!! Функция имеет public уровень только для миграции куки -> заголовок, в остальных
+	 * случая публичное использование функции запрещено !!!<b>
 	 */
-	public static function setCache(string $key, array $data, int $expire = 300):void {
+	public static function setHeaderAction(string $session_key):void {
 
-		\Compass\Company\ShardingGateway::cache()->set(self::_getKey($key), toJson($data), $expire);
+		$auth_item = Type_Session_Main::makeAuthenticationItem($session_key);
+		\BaseFrame\Http\Authorization\Data::inst()->set($auth_item["unique"], $auth_item["token"]);
 	}
 
 	/**
-	 * очистить значение по ключу для текущей session_id + user_id
-	 *
-	 * @throws \busException
-	 * @throws \cs_SessionNotFound
+	 * Устанавливает cookie авторизации клиенту.
 	 */
-	public static function clearCache(string $key):void {
-
-		\Compass\Company\ShardingGateway::cache()->delete(self::_getKey($key));
-	}
-
-	// функция для установки пользовательской сессии
 	protected static function _setCookie(string $session_key):void {
 
 		// если работаем из консоли
@@ -187,7 +148,7 @@ class Type_Session_Main {
 
 		// устанавливаем session_key для пользователя
 		setcookie(
-			self::_COMPANY_COOKIE_KEY,
+			static::_makeCookieKey(),
 			urlencode($session_key),
 			time() + DAY1 * 360,
 			$company_path, $company_domain,
@@ -196,35 +157,34 @@ class Type_Session_Main {
 		);
 	}
 
-	// ------------------------------------------------------------
-	// PROTECTED
-	// ------------------------------------------------------------
-
 	/**
-	 * получаем session map из куки
-	 *
-	 * @return false|string
-	 * @mixed
-	 * @throws \cs_SessionNotFound
+	 * Сбрасывает данные авторизации запроса.
 	 */
-	protected static function _getCloudSessionUniqFromCookie():bool|string {
+	protected static function _clearRequestAuthData():void {
 
-		// проверяем что сессии нет в куках
-		if (!isset($_COOKIE[self::_COMPANY_COOKIE_KEY])) {
-			return false;
-		}
-
-		try {
-			return Type_Pack_CompanySession::getSessionUniq(Type_Pack_CompanySession::doDecrypt(urldecode($_COOKIE[self::_COMPANY_COOKIE_KEY])));
-		} catch (\cs_DecryptHasFailed) {
-			throw new \cs_SessionNotFound();
-		}
+		static::_clearHeader();
+		static::_clearCookie();
 	}
 
-	// функция для очистки куки
+	/**
+	 * Готовит данные для action сброса заголовка авторизации.
+	 */
+	protected static function _clearHeader():void {
+
+		// инвалидируем заголовок
+		\BaseFrame\Http\Header\Authorization::invalidate();
+
+		// устанавливаем данные для authorization action
+		\BaseFrame\Http\Authorization\Data::inst()->drop(static::_makeTokeUniq());
+	}
+
+	/**
+	 * Очищает cookie авторизации клиенту.
+	 */
 	protected static function _clearCookie():void {
 
-		unset($_COOKIE[self::_COMPANY_COOKIE_KEY]);
+		// сбрасываем куку авторизации
+		unset($_COOKIE[static::_makeCookieKey()]);
 
 		if (!isCLi()) {
 
@@ -234,19 +194,43 @@ class Type_Session_Main {
 			$company_path    = $company_url_arr["path"] ?? "/";
 			$company_domain  = $company_url_arr["host"];
 
-			setcookie(self::_COMPANY_COOKIE_KEY, "", -1, $company_path, $company_domain);
+			setcookie(static::_makeCookieKey(), "", -1, $company_path, $company_domain);
 		}
 	}
 
 	/**
-	 *
-	 * @throws \busException
-	 * @throws \cs_SessionNotFound
+	 * Пытается получить сессию из токена заголовка авторизации.
 	 */
-	protected static function _getKey(string $key):string {
+	public static function tryGetCloudSessionKeyFromAuthorizationHeader():array {
 
-		[$user_id, $cloud_session_uniq] = self::getSession();
+		return parent::_tryGetCloudSessionKeyFromAuthorizationHeader();
+	}
 
-		return $cloud_session_uniq . "_" . $user_id . "_" . $key;
+	/**
+	 * Пытается получить токен из cookie.
+	 */
+	public static function tryGetCloudSessionKeyFromCookie():string|false {
+
+		return parent::_tryGetCloudSessionKeyFromCookie();
+	}
+
+	/**
+	 * Формирует объект с данными авторизации клиента.
+	 */
+	#[\JetBrains\PhpStorm\ArrayShape(["unique" => "string", "token" => "string"])]
+	public static function makeAuthenticationItem(string $session_key):array {
+
+		return [
+			"unique" => static::_makeTokeUniq(),
+			"token"  => sprintf("%s %s", static::_HEADER_AUTH_TYPE, base64_encode($session_key))
+		];
+	}
+
+	/**
+	 * Генерирует уникальный идентификатор токена для клиента.
+	 */
+	protected static function _makeTokeUniq():string {
+
+		return \CompassApp\System\Company::getCompanyId() . static::_TOKEN_HEADER_UNIQUE;
 	}
 }

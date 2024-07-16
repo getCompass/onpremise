@@ -96,6 +96,7 @@ const CONVERSATION_MESSAGE_TYPE_SHARED_WIKI_PAGE = 15; // сообщение с�
 // типы сообщений для диалога найма и увольнения
 const CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST    = 16; // тип сообщения заявки на найм
 const CONVERSATION_MESSAGE_TYPE_DISMISSAL_REQUEST = 17; // тип сообщения заявки на увольнение
+const CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE    = 18; // тип сообщения - медиа конференция
 
 // типы сообщений в тредах
 const THREAD_MESSAGE_TYPE_TEXT                    = 1;
@@ -110,6 +111,7 @@ const THREAD_MESSAGE_TYPE_CONVERSATION_FILE       = 21;
 const THREAD_MESSAGE_TYPE_CONVERSATION_MASS_QUOTE = 22;
 const THREAD_MESSAGE_TYPE_CONVERSATION_REPOST     = 23;
 const THREAD_MESSAGE_TYPE_CONVERSATION_CALL       = 29;
+const THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE       = 30;
 const THREAD_MESSAGE_TYPE_SYSTEM_BOT_REMIND       = 35; // сообщение-Напоминание в треде
 
 // типы сообщений от системных ботов

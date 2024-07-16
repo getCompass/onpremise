@@ -21,7 +21,7 @@ class Domain_User_Action_TwoFa_SetAsInactive {
 
 		try {
 
-			$story = Domain_User_Entity_TwoFa_Story::getByMap($two_fa_map);
+			$story = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 			$story->assertCorrectUser($user_id);
 
 			Domain_User_Action_TwoFa_InvalidateToken::do($story);

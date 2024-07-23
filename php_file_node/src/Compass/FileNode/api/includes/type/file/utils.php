@@ -253,6 +253,29 @@ class Type_File_Utils {
 		return $path_part;
 	}
 
+	// генерирует part_path
+	public static function generatePathPartByMigration(string $save_file_path, string $file_extension):string {
+
+		$dir_depth = 5;
+		$path_part = $save_file_path . "/";
+
+		// генерируем рандомные папки по 3 символа
+		for ($i = 0; $i < $dir_depth; $i++) {
+			$path_part .= mb_substr(bin2hex(openssl_random_pseudo_bytes(3)), 0, 3) . "/";
+		}
+
+		// генерируем название для файла
+		$path_part .= bin2hex(openssl_random_pseudo_bytes(8));
+
+		// добавляем расширение, если оно есть
+		if (mb_strlen($file_extension) > 0) {
+
+			$path_part .= ".{$file_extension}";
+		}
+
+		return $path_part;
+	}
+
 	// генерирует tmp_file_path
 	public static function generateTmpPath(string $file_extension = ""):string {
 

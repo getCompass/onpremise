@@ -93,6 +93,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"conversations.getUsersByConversationList",
 			"conversations.addThreadToMessage",
 			"conversations.getMetaForCreateThread",
+			"conversations.getMetaForMigrationCreateThread",
 			"conversations.getMessage",
 			"conversations.getMessageList",
 			"conversations.addRepostFromThread",

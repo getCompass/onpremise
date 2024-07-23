@@ -112,7 +112,7 @@ class Helper_File {
 		// делаем первичную обработку в зависимости от типа файла
 		try {
 			$extra = Type_File_Process::doProcessOnUpload($part_path, $company_id, $company_url, $file_type, $user_id, $parent_file_key, $file_extension);
-		} catch (cs_FileProcessFailed | cs_VideoProcessFailed) {
+		} catch (cs_FileProcessFailed|cs_VideoProcessFailed) {
 
 			// если не смогли обработать и это превью то выбрасываем exception
 			if ($file_source == FILE_SOURCE_MESSAGE_PREVIEW_IMAGE) {
@@ -139,4 +139,50 @@ class Helper_File {
 		return $file_row;
 	}
 
+	// метод для сохранения файла на ноде
+	public static function uploadFileByMigration(int $user_id, int $company_id, string $company_url, int $file_source, string $original_file_name, string $tmp_file_path, int $need_work, string $parent_file_key = "", bool $is_cdn = false):array {
+
+		$mime_type      = Type_File_Utils::getMimeType($tmp_file_path);
+		$file_extension = Type_File_Utils::getExtension($original_file_name);
+		$size_kb        = Type_File_Utils::getFileSizeKb($tmp_file_path);
+		$file_hash      = Type_File_Utils::getFileHash($tmp_file_path);
+		$file_type      = Type_File_Main::getFileType($tmp_file_path, $mime_type, $size_kb, $file_source, $file_extension);
+		$file_source    = Type_File_Main::tryGetFileSource($file_type, $file_source);
+		$part_path      = Type_File_Main::moveFileToRandomDirByMigration($tmp_file_path, $file_extension, $company_id);
+		$file_path      = Type_File_Utils::getFilePathFromPartPath($part_path);
+
+		// если тип определилили не как картинку, а файл должен им быть - возвращаем ошибку
+		if ($file_type !== FILE_TYPE_IMAGE && $file_source === FILE_SOURCE_MESSAGE_PREVIEW_IMAGE) {
+			throw new cs_InvalidFileTypeForSource();
+		}
+
+		// делаем первичную обработку в зависимости от типа файла
+		try {
+			$extra = Type_File_Process::doProcessOnUpload($part_path, $company_id, $company_url, $file_type, $user_id, $parent_file_key, $file_extension);
+		} catch (cs_FileProcessFailed|cs_VideoProcessFailed) {
+
+			// если не смогли обработать и это превью то выбрасываем exception
+			if ($file_source == FILE_SOURCE_MESSAGE_PREVIEW_IMAGE) {
+				throw new cs_InvalidFileTypeForSource();
+			}
+
+			// иначе отдаем как дефолт и обрабтываем его так
+			$file_type = FILE_TYPE_DEFAULT;
+			$extra     = Type_File_Default_Process::doProcessOnUpload($part_path, $company_id, $company_url);
+		}
+
+		// получаем размер изображения после обработки
+		$size_kb = Type_File_Utils::getFileSizeKb($file_path);
+
+		// сохраняем файл на файловой ноде
+		$file_row = Type_File_Main::create(
+			$user_id, $file_type, $file_source, $size_kb, $mime_type, $original_file_name,
+			$file_extension, $extra, $part_path, $file_hash, $is_cdn
+		);
+
+		// оправляем на пост обработку
+		Type_File_Process::sendToPostUpload($file_row, $part_path, $need_work);
+
+		return $file_row;
+	}
 }

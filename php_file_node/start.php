@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 // -------------------------------------------
 // КОНСТАНТЫ И КОНФИГИ
@@ -23,10 +23,10 @@ $cron_extra_path = defined("IS_CRON") && IS_CRON === true ? "cron/" : "";
 const CONFIG_LOG_CRON_PATH      = PATH_ROOT . "/logs/cron/";
 const CONFIG_LOG_EXCEPTION_PATH = PATH_ROOT . "/logs/exception/";
 
-define("LOG_ERROR_PHP"			, PATH_ROOT . "/logs/{$cron_extra_path}__php_error.log");
-define("LOG_CRITICAL_PHP_EXCEPTION"	, PATH_ROOT . "/logs/{$cron_extra_path}__php_critical.log");
-define("LOG_ERROR_MYSQL"		, PATH_ROOT . "/logs/{$cron_extra_path}__mysql_error.log");
-define("LOG_ADMIN"			, PATH_ROOT . "/logs/{$cron_extra_path}__admin.log");
+define("LOG_ERROR_PHP", PATH_ROOT . "/logs/{$cron_extra_path}__php_error.log");
+define("LOG_CRITICAL_PHP_EXCEPTION", PATH_ROOT . "/logs/{$cron_extra_path}__php_critical.log");
+define("LOG_ERROR_MYSQL", PATH_ROOT . "/logs/{$cron_extra_path}__mysql_error.log");
+define("LOG_ADMIN", PATH_ROOT . "/logs/{$cron_extra_path}__admin.log");
 
 // подгружаем composer
 spl_autoload_register(function(string $class_name) {

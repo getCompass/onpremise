@@ -2,6 +2,8 @@
 
 namespace Compass\Thread;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
  * класс интерфейс для работы с таблицей message_block_reaction_list
  * в ней храним реакции для одного БЛОКА
@@ -79,6 +81,32 @@ class Gateway_Db_CompanyThread_MessageBlockReactionList extends Gateway_Db_Compa
 		}
 
 		return $output ?? [];
+	}
+
+	/**
+	 * Пишем в бд напрямую реакции
+	 *
+	 * @throws \queryException
+	 * @throws ParseFatalException
+	 */
+	public static function insert(array $insert):void {
+
+		$db_key    = self::_getDbKey();
+		$table_key = self::_getTableKey();
+
+		ShardingGateway::database($db_key)->insert($table_key, $insert);
+	}
+
+	/**
+	 * Пишем пачку записей в бд
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function insertList(array $insert_list):int {
+
+		$table_key = self::_getTableKey();
+
+		return ShardingGateway::database(self::_getDbKey())->insertArray($table_key, $insert_list);
 	}
 
 	// -------------------------------------------------------

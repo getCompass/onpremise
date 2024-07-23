@@ -35,6 +35,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		"getUsersByConversationList",
 		"getUsersIdListForShareWikiPage",
 		"getMetaForCreateThread",
+		"getMetaForMigrationCreateThread",
 		"addThreadToMessage",
 		"addRepostFromThread",
 		"addRepostFromThreadV2",
@@ -565,6 +566,41 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 	}
 
 	/**
+	 * метод проверяет может ли пользователь право создать тред к этому сообщению и если может то отдает meta диалога
+	 *
+	 * @return array
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws \cs_UnpackHasFailed
+	 * @throws \parseException
+	 * @throws cs_Message_IsNotExist
+	 */
+	public function getMetaForMigrationCreateThread():array {
+
+		$message_map      = $this->post(\Formatter::TYPE_STRING, "message_map");
+		$conversation_map = \CompassApp\Pack\Message\Conversation::getConversationMap($message_map);
+
+		// проверяем, что пользователь состоит в диалоге
+		try {
+			$meta_row = Type_Conversation_Meta::get($conversation_map);
+		} catch (ParamException) {
+			return $this->error(10023, "conversation not found");
+		}
+
+		$dynamic_row = Domain_Conversation_Entity_Dynamic::get($conversation_map);
+
+		$block_row = Domain_Conversation_Entity_Message_Block_Get::getBlockRow($conversation_map, $message_map, $dynamic_row);
+		$message   = Domain_Conversation_Entity_Message_Block_Message::get($message_map, $block_row);
+
+		// если сообщение уже удалено
+		if (Type_Conversation_Message_Main::getHandler($message)::isDeleted($message)) {
+			return $this->error(10028, "Message is deleted");
+		}
+
+		return $this->_getDataForGetMetaForCreateThread($message, $dynamic_row, $conversation_map, $message_map, $meta_row);
+	}
+
+	/**
 	 * функция для того что бы получить мету для треда
 	 *
 	 * @throws \parseException
@@ -583,16 +619,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 			//ничего не делаем
 		}
 
-		if (!Type_Conversation_Message_Main::getHandler($message)::isAllowToThread($message, $this->user_id)) {
-			return $this->error(10003, "Message is not allowed for thread");
-		}
-
-		// пользователь не может получить тред потому что диалог очищен после написания сообщения или сообщение скрыто
-		$clear_until        = Domain_Conversation_Entity_Dynamic::getClearUntil($dynamic_row["user_clear_info"], $dynamic_row["conversation_clear_info"], $this->user_id);
 		$message_created_at = Type_Conversation_Message_Main::getHandler($message)::getCreatedAt($message);
-		if ($message_created_at < $clear_until || Type_Conversation_Message_Main::getHandler($message)::isMessageHiddenForUser($message, $this->user_id)) {
-			return $this->error(10101, "User cant get this message");
-		}
 
 		$table_id = \CompassApp\Pack\Conversation::getTableId($conversation_map);
 		return $this->_makeGetMetaForCreateThreadOutput($meta_row, $message_created_at, $table_id, $dynamic_row, $message);

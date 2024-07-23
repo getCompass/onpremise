@@ -2,9 +2,11 @@
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"require": {
+		"service/php_base_frame": "v1.1.6",
+		"backend_compass_dev_2/company_protobuf_schemes": "v1.1.1",
+		"backend_compass_dev_2/company_utils": "v1.5.4",
 		"phpseclib/phpseclib": "3.0.16",
 		"nikic/php-parser": "v4.10.2",
-		"service/php_base_frame": "1.1.6",
 		"phpoffice/phpword": "0.18.3",
 		"phpoffice/phpspreadsheet": "1.22.0",
 		"smalot/pdfparser": "v2.5.0"
@@ -17,6 +19,14 @@
 		{
 			"type": "vcs",
 			"url": "https://github.com/getCompassUtils/php_base_frame"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/company_protobuf_schemes"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/company_utils"
 		},
 		{
 			"type": "vcs",

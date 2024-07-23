@@ -472,6 +472,34 @@ class Gateway_Socket_Conversation extends Gateway_Socket_Default {
 	}
 
 	/**
+	 * Получить мету для создания треда
+	 *
+	 * @param int    $user_id
+	 * @param string $message_map
+	 *
+	 * @throws Gateway_Socket_Exception_Conversation_MessageIsDeleted
+	 * @throws Gateway_Socket_Exception_Conversation_NotFound
+	 * @throws ReturnFatalException
+	 */
+	public static function getMetaForMigrationCreateThread(int $user_id, string $message_map):array {
+
+		[$status, $response] = self::doCall("conversations.getMetaForMigrationCreateThread", [
+			"message_map" => $message_map,
+		], $user_id);
+
+		if ($status === "error") {
+
+			throw match ($response["error_code"]) {
+				10028               => new Gateway_Socket_Exception_Conversation_MessageIsDeleted("message is deleted"),
+				10023               => new Gateway_Socket_Exception_Conversation_NotFound("conversation is not found"),
+				default             => new ReturnFatalException("unexpected error code")
+			};
+		}
+
+		return $response;
+	}
+
+	/**
 	 * Получить dynamic
 	 *
 	 * @param string $conversation_map

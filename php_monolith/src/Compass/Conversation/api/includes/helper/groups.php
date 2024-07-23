@@ -55,8 +55,8 @@ class Helper_Groups {
 	 * @throws ParseFatalException
 	 */
 	public static function doJoin(string $conversation_map, int $user_id, int|false $member_role = false, int|false $member_permissions = false,
-						int $inviter_user_id = 0, int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT, bool $is_favorite = false,
-						bool $is_mentioned = false, string $userbot_id = "", bool $is_need_silent = false):array {
+						int    $inviter_user_id = 0, int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT, bool $is_favorite = false,
+						bool   $is_mentioned = false, string $userbot_id = "", bool $is_need_silent = false):array {
 
 		// если пользователь администратор всех групп - добавляем в группу как администратора
 		if (Permission::isGroupAdministrator($member_role, $member_permissions)) {
@@ -68,7 +68,7 @@ class Helper_Groups {
 		$meta_row      = Type_Conversation_Utils::getMetaRowFromConversationData($conversation_data);
 		$left_menu_row = Type_Conversation_Utils::getLeftMenuRowFromConversationData($conversation_data);
 
-		self::setClearMessagesConversationForJoinGroup($user_id, $member_role, $conversation_map, $left_menu_row, $meta_row);
+		self::setClearMessagesConversationForJoinGroup($user_id, $member_role, $conversation_map, $left_menu_row, $meta_row, $is_need_silent);
 
 		$need_send_system = true;
 
@@ -92,7 +92,7 @@ class Helper_Groups {
 		}
 
 		// действия после вступления пользователя в групповой диалог
-		self::_onJoinUserToGroup($conversation_map, $user_id, $meta_row["users"], $inviter_user_id, $role);
+		self::_onJoinUserToGroup($conversation_map, $user_id, $meta_row["users"], $inviter_user_id, $role, $is_need_silent);
 
 		// ставим диалог на индексацию
 		Domain_Search_Entity_Conversation_Task_Reindex::queueForUser($conversation_map, [$user_id]);
@@ -102,12 +102,12 @@ class Helper_Groups {
 	}
 
 	// устанавливаем очистку диалога при вступлении в группу
-	public static function setClearMessagesConversationForJoinGroup(int $user_id, int $member_role, string $conversation_map, array $left_menu_row, array $meta_row):void {
+	public static function setClearMessagesConversationForJoinGroup(int $user_id, int $member_role, string $conversation_map, array $left_menu_row, array $meta_row, bool $is_need_silent = false):void {
 
 		// если для диалога убрана опция — "Показывать историю сообщений" — очищаем
 		if (!Type_Conversation_Meta_Extra::isShowHistoryForNewMembers($meta_row["extra"]) || Member::ROLE_GUEST === $member_role) {
 
-			Helper_Conversations::clearMessages($user_id, $conversation_map, $left_menu_row, false, time());
+			Helper_Conversations::clearMessages($user_id, $conversation_map, $left_menu_row, false, time(), $is_need_silent);
 			return;
 		}
 
@@ -139,23 +139,27 @@ class Helper_Groups {
 		// получаем время очистки диалога для всех и если оно есть - очищаем по нему
 		$clear_until = Type_Conversation_Meta_Extra::getConversationClearUntilForAll($meta_row["extra"]);
 		if ($clear_until > 0) {
-			Helper_Conversations::clearMessages($user_id, $conversation_map, $left_menu_row, false, $clear_until);
+			Helper_Conversations::clearMessages($user_id, $conversation_map, $left_menu_row, false, $clear_until, $is_need_silent);
 		}
 	}
 
 	// действия после вступления пользователя в группе
 	// @long
-	protected static function _onJoinUserToGroup(string $conversation_map, int $user_id,
-								   array $users, int $inviter_user_id, int $role):void {
+	protected static function _onJoinUserToGroup(string $conversation_map, int $user_id, array $users, int $inviter_user_id, int $role, bool $is_need_silent = false):void {
 
 		// обновляем количество пользователей в left_menu, очищаем meta кэш и отправляем событие пользователю, что добавлен диалог в левом меню
 		Type_Phphooker_Main::updateMembersCount($conversation_map, $users);
 		Type_Phphooker_Main::sendClearThreadMetaCache($conversation_map);
-		Gateway_Bus_Sender::conversationAdded($user_id, $conversation_map);
+
+		if (!$is_need_silent) {
+			Gateway_Bus_Sender::conversationAdded($user_id, $conversation_map);
+		}
 
 		$talking_user_list = Type_Conversation_Meta_Users::getTalkingUserList($users);
 
-		Gateway_Bus_Sender::conversationGroupUserJoined($talking_user_list, $conversation_map, $user_id, $role, $users);
+		if (!$is_need_silent) {
+			Gateway_Bus_Sender::conversationGroupUserJoined($talking_user_list, $conversation_map, $user_id, $role, $users);
+		}
 
 		// помечаем остальные инвайты inactive
 		Type_Phphooker_Main::setInactiveAllUserInviteToConversation(
@@ -169,15 +173,18 @@ class Helper_Groups {
 			return;
 		}
 
-		$invite_row = Type_Conversation_Invite::getByConversationMapAndUserId($inviter_user_id, $user_id, $conversation_map);
-		self::_throwIfInviteIsNotAccepted($invite_row);
+		if (!$is_need_silent) {
 
-		$talking_user_list   = [];
-		$talking_user_list[] = Gateway_Bus_Sender::makeTalkingUserItem($user_id, false);
-		$talking_user_list[] = Gateway_Bus_Sender::makeTalkingUserItem($invite_row["sender_user_id"], false);
-		Gateway_Bus_Sender::conversationInviteStatusChanged(
-			$talking_user_list, $invite_row["invite_map"], $user_id, Type_Invite_Handler::STATUS_ACCEPTED, $conversation_map
-		);
+			$invite_row = Type_Conversation_Invite::getByConversationMapAndUserId($inviter_user_id, $user_id, $conversation_map);
+			self::_throwIfInviteIsNotAccepted($invite_row);
+
+			$talking_user_list   = [];
+			$talking_user_list[] = Gateway_Bus_Sender::makeTalkingUserItem($user_id, false);
+			$talking_user_list[] = Gateway_Bus_Sender::makeTalkingUserItem($invite_row["sender_user_id"], false);
+			Gateway_Bus_Sender::conversationInviteStatusChanged(
+				$talking_user_list, $invite_row["invite_map"], $user_id, Type_Invite_Handler::STATUS_ACCEPTED, $conversation_map
+			);
+		}
 	}
 
 	// бросаем экзепшен если статус не accepted
@@ -610,13 +617,13 @@ class Helper_Groups {
 
 			$extra = match ($option) {
 
-				"is_show_history_for_new_members" => Type_Conversation_Meta_Extra::setFlagShowHistoryForNewMembers($extra, $new_value),
-				"is_can_commit_worked_hours" => Type_Conversation_Meta_Extra::setFlagCanCommitWorkedHours($extra, $new_value),
-				"need_system_message_on_dismissal" => Type_Conversation_Meta_Extra::setFlagNeedSystemMessageOnDismissal($extra, $new_value),
-				"is_need_show_system_message_on_invite_and_join" => Type_Conversation_Meta_Extra::setFlagNeedShowSystemMessageOnInviteAndJoin($extra, $new_value),
+				"is_show_history_for_new_members"                 => Type_Conversation_Meta_Extra::setFlagShowHistoryForNewMembers($extra, $new_value),
+				"is_can_commit_worked_hours"                      => Type_Conversation_Meta_Extra::setFlagCanCommitWorkedHours($extra, $new_value),
+				"need_system_message_on_dismissal"                => Type_Conversation_Meta_Extra::setFlagNeedSystemMessageOnDismissal($extra, $new_value),
+				"is_need_show_system_message_on_invite_and_join"  => Type_Conversation_Meta_Extra::setFlagNeedShowSystemMessageOnInviteAndJoin($extra, $new_value),
 				"is_need_show_system_message_on_leave_and_kicked" => Type_Conversation_Meta_Extra::setFlagNeedShowSystemMessageOnLeaveAndKicked($extra, $new_value),
-				"is_need_show_system_deleted_message" => Type_Conversation_Meta_Extra::setFlagNeedShowSystemDeletedMessage($extra, $new_value),
-				default => throw new ParseFatalException(__METHOD__ . ": unhandled option"),
+				"is_need_show_system_deleted_message"             => Type_Conversation_Meta_Extra::setFlagNeedShowSystemDeletedMessage($extra, $new_value),
+				default                                           => throw new ParseFatalException(__METHOD__ . ": unhandled option"),
 			};
 		}
 

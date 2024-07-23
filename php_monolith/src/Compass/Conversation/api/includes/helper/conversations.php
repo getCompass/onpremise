@@ -85,7 +85,7 @@ class Helper_Conversations {
 	}
 
 	// очищаем диалог для пользователя
-	public static function clearMessages(int $user_id, string $conversation_map, array $left_menu_row, bool $is_cleared_user, int $clear_until):void {
+	public static function clearMessages(int $user_id, string $conversation_map, array $left_menu_row, bool $is_cleared_user, int $clear_until, bool $is_need_silent = false):void {
 
 		// проверяем валидность действия
 		Type_Conversation_Action::assertAction((int) $left_menu_row["type"], Type_Conversation_Action::CLEAR_CONVERSATION);
@@ -107,7 +107,9 @@ class Helper_Conversations {
 		Gateway_Bus_Company_Timer::setTimeout(Gateway_Bus_Company_Timer::UPDATE_BADGE, $user_id, [], $extra);
 
 		// отправляем событие участнику
-		Gateway_Bus_Sender::conversationClearMessages([$user_id], $conversation_map, $dynamic->messages_updated_version);
+		if (!$is_need_silent) {
+			Gateway_Bus_Sender::conversationClearMessages([$user_id], $conversation_map, $dynamic->messages_updated_version);
+		}
 
 		// отправляем сообщение на очистку диалога для пользователя
 		Domain_Search_Entity_Conversation_Task_Clear::queue($conversation_map, [$user_id]);
@@ -248,6 +250,40 @@ class Helper_Conversations {
 	}
 
 	/**
+	 * Добавляет пул сообщений в базу
+	 *
+	 * @throws ReturnFatalException
+	 * @throws \parseException
+	 * @throws \returnException
+	 * @throws cs_ConversationIsLocked
+	 * @throws cs_Message_DuplicateClientMessageId
+	 */
+	public static function addMessageListByMigration(string $conversation_map, array $raw_message_list, array $users, bool $is_need_attach_preview = true, bool $is_need_index = false):array {
+
+		// удаляем дубликаты если они есть в одной пачке сообщений
+		$raw_message_list = self::_removeDuplicateIfExistsWithinRawMessageList($raw_message_list);
+
+		// добавляем сообщения в кэш
+		foreach ($raw_message_list as $v) {
+			self::_addDuplicateMessageCache($conversation_map, $v);
+		}
+
+		// получаем запись из dynamic и проверяем что диалог не закрыт на добавление сообщений
+		$dynamic_row = Domain_Conversation_Entity_Dynamic::get($conversation_map);
+		self::_throwIfConversationIsLocked($dynamic_row);
+
+		// добавляем сообщение в диалог
+		[$message_list, $dynamic_row] = Type_Conversation_Message_Block::addMessageList($conversation_map, $raw_message_list, $dynamic_row);
+
+		// выполняем обработку для каждого сообщения
+		self::_doActionsForEachMessage($message_list, $users, $is_need_attach_preview, $is_need_index);
+
+		Domain_Conversation_Entity_Dynamic::updateMessagesUpdatedAt($conversation_map);
+
+		return $message_list;
+	}
+
+	/**
 	 * удаляем дубликаты если они есть в одной пачке сообщений
 	 *
 	 */
@@ -277,7 +313,7 @@ class Helper_Conversations {
 
 	// ставим задачи на парсинг строки
 	// тут происходят несвязные вещи, но зато обходим список в один проход
-	protected static function _doActionsForEachMessage(array $message_list, array $users, bool $is_need_attach_preview):void {
+	protected static function _doActionsForEachMessage(array $message_list, array $users, bool $is_need_attach_preview, bool $is_need_index = true):void {
 
 		// определяем нужно ли парсить превью
 		$is_preview_parse = $is_need_attach_preview && count($message_list) === 1;
@@ -298,7 +334,7 @@ class Helper_Conversations {
 			self::_incStatAfterMessageAdd($sender_user_id, $v);
 		}
 
-		Domain_Search_Entity_ConversationMessage_Task_Index::queueList($message_list, array_keys($users), Locale::getLocale());
+		$is_need_index && Domain_Search_Entity_ConversationMessage_Task_Index::queueList($message_list, array_keys($users), Locale::getLocale());
 	}
 
 	// совершаем действия различного рода в зависимости от типа добавленного сообщения

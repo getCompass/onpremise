@@ -50,31 +50,35 @@ class Type_File_Process {
 	}
 
 	// отправляем на пост обработку если надо
-	public static function sendToPostUpload(array $file_row, string $part_path):void {
+	public static function sendToPostUpload(array $file_row, string $part_path, int $need_work = 0):void {
+
+		if ($need_work === 0) {
+			$need_work = time();
+		}
 
 		// если для файла необходимо выполнить post upload process
 		switch ($file_row["file_type"]) {
 
 			case FILE_TYPE_IMAGE:
 
-				self::_addImageToPostProcessQueue($file_row["file_key"], $file_row["file_type"], $part_path);
+				self::_addImageToPostProcessQueue($file_row["file_key"], $file_row["file_type"], $part_path, $need_work);
 				break;
 
 			case FILE_TYPE_VIDEO:
 
 				self::_addVideoToPostProcessQueue(
-					$file_row["file_key"], $file_row["file_type"], $part_path, $file_row["extra"]["video_version_list"], $file_row["extra"]["duration"]
+					$file_row["file_key"], $file_row["file_type"], $part_path, $file_row["extra"]["video_version_list"], $file_row["extra"]["duration"], $need_work
 				);
 				break;
 
 			case FILE_TYPE_AUDIO:
 
-				self::_addAudioToPostProcessQueue($file_row["file_key"], $file_row["file_type"], $part_path, $file_row["extra"]);
+				self::_addAudioToPostProcessQueue($file_row["file_key"], $file_row["file_type"], $part_path, $file_row["extra"], $need_work);
 				break;
 
 			case FILE_TYPE_DOCUMENT:
 
-				self::_addDocumentToPostProcessQueue($file_row["file_key"], $file_row["file_type"], $file_row["file_extension"], $part_path, $file_row["extra"]);
+				self::_addDocumentToPostProcessQueue($file_row["file_key"], $file_row["file_type"], $file_row["file_extension"], $part_path, $file_row["extra"], $need_work);
 				break;
 
 			default:
@@ -83,14 +87,14 @@ class Type_File_Process {
 	}
 
 	// добавляем в очередь на пост обработку изображение
-	protected static function _addImageToPostProcessQueue(string $file_key, int $file_type, string $part_path):void {
+	protected static function _addImageToPostProcessQueue(string $file_key, int $file_type, string $part_path, int $need_work):void {
 
 		// вставляем записи
 		$insert = [
 			"file_key"    => $file_key,
 			"file_type"   => $file_type,
 			"error_count" => 0,
-			"need_work"   => time(),
+			"need_work"   => $need_work,
 			"part_path"   => $part_path,
 			"extra"       => [],
 		];
@@ -100,7 +104,7 @@ class Type_File_Process {
 	}
 
 	// добавляем в очередь на пост обработку АУДИО
-	protected static function _addAudioToPostProcessQueue(string $file_key, int $file_type, string $part_path, array $extra):void {
+	protected static function _addAudioToPostProcessQueue(string $file_key, int $file_type, string $part_path, array $extra, int $need_work):void {
 
 		// если нет нужды конвертировать
 		if ($extra["status"] == Type_File_Main::STATUS_OK) {
@@ -113,7 +117,7 @@ class Type_File_Process {
 			"file_key"    => $file_key,
 			"file_type"   => $file_type,
 			"error_count" => 0,
-			"need_work"   => time(),
+			"need_work"   => $need_work,
 			"part_path"   => $part_path,
 			"extra"       => $extra,
 		];
@@ -123,7 +127,7 @@ class Type_File_Process {
 	}
 
 	// добавляем в очередь на пост обработку ВИДЕО
-	protected static function _addVideoToPostProcessQueue(string $file_key, int $file_type, string $part_path, array $video_version_list, int $duration):void {
+	protected static function _addVideoToPostProcessQueue(string $file_key, int $file_type, string $part_path, array $video_version_list, int $duration, int $need_work):void {
 
 		// если нет версий на которые надо нарезать
 		if (count($video_version_list) < 1) {
@@ -135,7 +139,7 @@ class Type_File_Process {
 		foreach ($video_version_list as $v) {
 
 			// засекаем время начала постобработки
-			$v["postupload_start_at"] = time();
+			$v["postupload_start_at"] = $need_work;
 			$v["duration"]            = $duration;
 
 			$insert[] = [
@@ -143,7 +147,7 @@ class Type_File_Process {
 				"file_key"    => $file_key,
 				"file_type"   => $file_type,
 				"error_count" => 0,
-				"need_work"   => time(),
+				"need_work"   => $need_work,
 				"part_path"   => $part_path,
 				"extra"       => $v,
 			];
@@ -156,7 +160,7 @@ class Type_File_Process {
 	/**
 	 * Добавляем текстовый документ на пост обработку
 	 */
-	protected static function _addDocumentToPostProcessQueue(string $file_key, int $file_type, string $file_extension, string $part_path, array $extra):void {
+	protected static function _addDocumentToPostProcessQueue(string $file_key, int $file_type, string $file_extension, string $part_path, array $extra, int $need_work):void {
 
 		// если нет нужды конвертировать
 		if (!Type_File_Document_Main::isIndexableDocument($file_extension)) {
@@ -169,7 +173,7 @@ class Type_File_Process {
 			"file_key"    => $file_key,
 			"file_type"   => $file_type,
 			"error_count" => 0,
-			"need_work"   => time(),
+			"need_work"   => $need_work,
 			"part_path"   => $part_path,
 			"extra"       => $extra,
 		];

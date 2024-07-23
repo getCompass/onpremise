@@ -37,8 +37,15 @@ include_once FILENODE_MODULE_ROOT . "_module/sharding.php";
 
 \BaseFrame\Conf\ConfHandler::init(
 	getConfig("SHARDING_GO"), getConfig("SHARDING_SPHINX"), getConfig("SHARDING_RABBIT"),
-	getConfig("SHARDING_MYSQL"), getConfig("SHARDING_MCACHE"),getConfig("GLOBAL_OFFICE_IP")
+	getConfig("SHARDING_MYSQL"), getConfig("SHARDING_MCACHE"), getConfig("GLOBAL_OFFICE_IP")
 );
+
+\BaseFrame\Crypt\CryptProvider::init([
+	\BaseFrame\Crypt\CryptProvider::DEFAULT => new \BaseFrame\Crypt\CryptData(ENCRYPT_KEY_DEFAULT, ENCRYPT_IV_DEFAULT),
+]);
+\BaseFrame\Crypt\PackCryptProvider::init([
+	\BaseFrame\Crypt\PackCryptProvider::FILE => new \BaseFrame\Crypt\PackCryptData(SALT_PACK_FILE, \BaseFrame\Crypt\CryptProvider::default()),
+]);
 
 // возвращаем обработчики
 return include_once FILENODE_MODULE_ROOT . "_module/route.php";

@@ -161,6 +161,50 @@ class Type_File_Main {
 		return $part_path;
 	}
 
+	// создаем папку под файл
+	public static function moveFileToRandomDirByMigration(string $src_file_path, string $file_extension, int $company_id):string {
+
+		$part_path = Type_File_Utils::generatePathPart($file_extension, $company_id);
+
+		// создаем папку с нужным названием
+		$file_path = Type_File_Utils::getFilePathFromPartPath($part_path);
+		Type_File_Utils::makeDir($file_path);
+
+		// делаем проверку, что такой файл уже существует
+		self::_throwIfFileExist($file_path);
+
+		// перемещает файл который был загружен не с помощью post
+		copy($src_file_path, $file_path);
+
+		// задаем права
+		chmod($file_path, 0644);
+
+		return $part_path;
+	}
+
+	// создаем папку под файл
+	public static function generatePathPart(string $save_file_path, string $src_file_path, string $file_extension):string {
+
+		$part_path = Type_File_Utils::generatePathPartByMigration($save_file_path, $file_extension);
+
+		// создаем папку с нужным названием
+		$file_path = Type_File_Utils::getFilePathFromPartPath($part_path);
+		Type_File_Utils::makeDir($file_path);
+
+		// делаем проверку, что такой файл уже существует
+		self::_throwIfFileExist($file_path);
+
+		// перемещает файл который был загружен не с помощью post
+		if (copy($src_file_path, $file_path)) {
+			unlink($src_file_path);
+		}
+
+		// задаем права
+		chmod($file_path, 0644);
+
+		return $part_path;
+	}
+
 	// проверяет что такой файл есть
 	protected static function _throwIfFileExist(string $file_path):void {
 

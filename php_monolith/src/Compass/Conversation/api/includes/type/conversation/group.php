@@ -3,6 +3,7 @@
 namespace Compass\Conversation;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
 
 /**
  * класс для работы с сущностью группового диалога. Создание, привязка/отвязка пользователей и ботов.
@@ -65,6 +66,42 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 	}
 
 	/**
+	 * Создаем чат через миграцию
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function addByMigration(int $creator_user_id, string $group_name, string $description, bool $is_need_add_creator = false):array {
+
+		// формируем users добавляя туда создателя
+		$users = [];
+
+		if ($is_need_add_creator) {
+			$users = Type_Conversation_Meta_Users::addMember($users, $creator_user_id, Type_Conversation_Meta_Users::ROLE_OWNER);
+		}
+
+		$group_name  = Type_Api_Filter::sanitizeGroupName($group_name);
+		$description = Type_Api_Filter::sanitizeGroupDescription($description);
+
+		// инициируем extra для диалога и устанавливаем подтип диалога
+		$extra = Type_Conversation_Meta_Extra::initExtra();
+		$extra = Type_Conversation_Meta_Extra::setDescription($extra, $description);
+
+		$meta_row = self::_createNewConversation(
+			CONVERSATION_TYPE_GROUP_DEFAULT, ALLOW_STATUS_GREEN_LIGHT, $creator_user_id, $users, $extra, $group_name,
+		);
+
+		if ($is_need_add_creator) {
+
+			self::_createUserCloudData(
+				$creator_user_id, $meta_row["conversation_map"], Type_Conversation_Meta_Users::ROLE_OWNER,
+				CONVERSATION_TYPE_GROUP_DEFAULT, 0, count($users), $group_name
+			);
+		}
+
+		return $meta_row;
+	}
+
+	/**
 	 * отправляем системное сообщение о создании группы
 	 */
 	protected static function _sendSystemMessageUserAddGroup(string $group_conversation_map, array $group_meta_row, int $user_id, string $group_name):void {
@@ -117,6 +154,47 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 			return [$conversation_data, false];
 		}
 		$conversation_data = self::_firstAttachUser($user_id, $conversation_map, $role, $meta_row, $is_favorite, $is_mentioned);
+		Gateway_Db_CompanyConversation_ConversationMetaLegacy::commitTransaction();
+
+		// пушим событие о добавлении пользователя в группу
+		Gateway_Event_Dispatcher::dispatch(Type_Event_UserConversation_UserJoinedConversation::create($user_id, $conversation_map, $role, time(), true));
+
+		return [$conversation_data, false];
+	}
+
+	/**
+	 * Добавляем пользователей в группу при миграции
+	 *
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 */
+	public static function addUserToGroupByMigration(string $conversation_map, int $user_id, int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT):array {
+
+		// открываем транзакцию на cluster_conversation и получаем запись на обновление, если пользователь уже состоит делаем rollback, иначе обновляем запись
+		Gateway_Db_CompanyConversation_ConversationMetaLegacy::beginTransaction();
+		$meta_row = Gateway_Db_CompanyConversation_ConversationMetaLegacy::getForUpdate($conversation_map);
+
+		if (Type_Conversation_Meta_Users::isMember($user_id, $meta_row["users"])) {
+
+			Gateway_Db_CompanyConversation_ConversationMetaLegacy::rollback();
+			$left_menu_row = Type_Conversation_LeftMenu::get($user_id, $conversation_map);
+			return [Type_Conversation_Utils::makeConversationData($meta_row, $left_menu_row), true];
+		}
+		$meta_row = self::_updateConversationAtUserJoin($conversation_map, $user_id, $role, $meta_row);
+
+		// если запись в левом меню уже существует - обновляем уже имеющиеся записи, иначе делаем записи в таблицах базы cloud_user_conversation
+		$left_menu_row = Type_Conversation_LeftMenu::get($user_id, $conversation_map);
+		if (isset($left_menu_row["user_id"])) {
+
+			$conversation_data = self::_repeatAttachUser($user_id, $conversation_map, $role, $meta_row, $left_menu_row, false);
+			Gateway_Db_CompanyConversation_ConversationMetaLegacy::commitTransaction();
+
+			// пушим событие о добавлении пользователя в группу
+			Gateway_Event_Dispatcher::dispatch(Type_Event_UserConversation_UserJoinedConversation::create($user_id, $conversation_map, $role, time(), true));
+
+			return [$conversation_data, false];
+		}
+		$conversation_data = self::_firstAttachUser($user_id, $conversation_map, $role, $meta_row, false, false);
 		Gateway_Db_CompanyConversation_ConversationMetaLegacy::commitTransaction();
 
 		// пушим событие о добавлении пользователя в группу

@@ -551,4 +551,38 @@ class Domain_User_Scenario_Socket {
 
 		Gateway_Socket_Company::incConferenceMembershipRating($space, $user_id);
 	}
+
+	/**
+	 * Блокируем пользователю возможность аутентифицироваться в приложении
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \cs_RowIsEmpty
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
+	public static function blockUserAuthentication(int $user_id):void {
+
+		// завершаем все активные сессии на пивоте и в командах
+		Type_Session_Main::clearAllUserPivotAndCompanySessions($user_id);
+
+		// запрещаем авторизовываться, помечая профиль заблокированным
+		Domain_User_Action_DisableProfile::do($user_id);
+
+		// очищаем девайсы и токены для пользователя
+		Type_User_Notifications::deleteDevicesForUser($user_id);
+	}
+
+	/**
+	 * Разблокируем пользователю возможность аутентифицироваться в приложении
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \cs_RowIsEmpty
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
+	public static function unblockUserAuthentication(int $user_id):void {
+
+		// запрещаем авторизовываться, помечая профиль заблокированным
+		Domain_User_Action_EnableProfile::do($user_id);
+	}
 }

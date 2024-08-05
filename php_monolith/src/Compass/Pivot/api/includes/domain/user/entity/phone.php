@@ -92,7 +92,7 @@ class Domain_User_Entity_Phone {
 	 */
 	public static function assertUserWasNotRegisteredBySso(int $user_id):void {
 
-		if (Gateway_Socket_Federation::hasUserRelationship($user_id) && !Domain_User_Entity_Auth_Config::isAuthorizationAlternativeEnabled()) {
+		if (Gateway_Socket_Federation::hasSsoUserRelationship($user_id) && !Domain_User_Entity_Auth_Config::isAuthorizationAlternativeEnabled()) {
 			throw new Domain_User_Exception_Security_UserWasRegisteredBySso();
 		}
 	}
@@ -109,5 +109,45 @@ class Domain_User_Entity_Phone {
 		}
 
 		throw new cs_UserPhoneSecurityNotFound("phone not exist in user");
+	}
+
+	/**
+	 * отвязываем номер телефона
+	 *
+	 * @throws ParseFatalException
+	 * @throws \cs_RowIsEmpty
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
+	public static function unbind(int $user_id):void {
+
+		// проверяем наличие номера телефона
+		$user_security = Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
+
+		// если номер не привязан, то ничего не делаем
+		if ($user_security->phone_number === "") {
+			return;
+		}
+
+		// хэш-сумма номера
+		$phone_number_hash = Type_Hash_PhoneNumber::makeHash($user_security->phone_number);
+
+		Gateway_Db_PivotPhone_Main::beginTransaction();
+
+		// открепляем почту
+		Gateway_Db_PivotPhone_PhoneUniqList::set($phone_number_hash, [
+			"user_id"           => 0,
+			"has_sso_account"   => 0,
+			"last_unbinding_at" => time(),
+			"updated_at"        => time(),
+		]);
+
+		// обновляем user_security
+		Gateway_Db_PivotUser_UserSecurity::set($user_id, [
+			"phone_number" => "",
+			"updated_at"   => time(),
+		]);
+
+		Gateway_Db_PivotPhone_Main::commitTransaction();
 	}
 }

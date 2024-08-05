@@ -74,4 +74,21 @@ class Domain_User_Entity_User {
 
 		return inHtml($user_info->full_name, TEST_USER_NAME_PREFIX);
 	}
+
+	/**
+	 * Выбрасываем исключение, если пользователь деактивирован
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws \BaseFrame\Exception\Request\EndpointAccessDeniedException
+	 * @throws cs_UserNotFound
+	 */
+	public static function throwIfUserDisabled(int $user_id):void {
+
+		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
+
+		if (Type_User_Main::isDisabledProfile($user_info->extra)) {
+			throw new Domain_User_Exception_UserIsDisabled();
+		}
+	}
 }

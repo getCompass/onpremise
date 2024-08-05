@@ -7,7 +7,7 @@ use BaseFrame\Exception\Request\ParamException;
 /**
  * Действие разблокирует пользователя в системе
  */
-class Domain_User_Action_EnableUserInSystem {
+class Domain_User_Action_EnableProfile {
 
 	/**
 	 * Разблокируем пользователя в системе.
@@ -17,7 +17,7 @@ class Domain_User_Action_EnableUserInSystem {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function run(int $user_id):void {
+	public static function do(int $user_id):void {
 
 		/** начало транзакции **/
 		Gateway_Db_PivotUser_UserList::beginTransaction($user_id);

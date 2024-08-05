@@ -22,6 +22,9 @@ class Domain_User_Scenario_OnPremiseWeb {
 		// доступные способы аутентификации
 		$available_auth_method_list = Domain_User_Entity_Auth_Config::getAvailableMethodList();
 
+		// протокол SSO
+		$sso_protocol = Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO) ? Domain_User_Entity_Auth_Config::getSsoProtocol() : "";
+
 		// собираем словарь
 		$dictionary = self::_prepareStartDictionary();
 
@@ -30,13 +33,13 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		// если пользователь не авторизован
 		if ($user_id === 0) {
-			return [false, null, false, $dictionary, $available_auth_method_list, $restrictions];
+			return [false, null, false, $dictionary, $available_auth_method_list, $sso_protocol, $restrictions];
 		}
 
 		// получаем информацию о пользователе
 		$user_info = Type_User_Main::get($user_id);
 
-		return [true, $user_info, Domain_User_Entity_User::isEmptyProfile($user_info), $dictionary, $available_auth_method_list, $restrictions];
+		return [true, $user_info, Domain_User_Entity_User::isEmptyProfile($user_info), $dictionary, $available_auth_method_list, $sso_protocol, $restrictions];
 	}
 
 	/**
@@ -99,6 +102,9 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		// получаем user_id по номеру
 		$existing_user_id = Domain_User_Action_Auth_PhoneNumber::resolveUser($phone_number);
+
+		// выбрасываем исключение, если пытаются начать авторизацию под заблокированным пользователем
+		$existing_user_id > 0 && Domain_User_Entity_User::throwIfUserDisabled($existing_user_id);
 
 		// если не нашли пользователя, то нужно обязательно проверить актуальность ссылки-приглашения
 		if ($existing_user_id === 0) {
@@ -244,7 +250,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 		$story->handleSuccess($user_id);
 		Domain_User_Entity_Antispam_Auth::successAuth($story->getAuthPhoneHandler()->getPhoneNumber());
 		self::_onSuccessAuth($story, $user_id);
-		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
+		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
 			$token,
 			Type_User_Main::isEmptyProfile($user_id),

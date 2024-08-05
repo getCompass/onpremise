@@ -9,7 +9,7 @@ import {
 	activeDialogIdState,
 	authInputState,
 	authState,
-	confirmPasswordState,
+	confirmPasswordState, isNeedShowCreateProfileDialogAfterLdapRegistrationState,
 	isNeedShowCreateProfileDialogAfterSsoRegistrationState,
 	nameInputState,
 	passwordInputState,
@@ -165,12 +165,16 @@ const CreateProfileDialogContentDesktop = () => {
 	const setIsNeedShowCreateProfileDialogAfterSsoRegistration = useSetAtom(
 		isNeedShowCreateProfileDialogAfterSsoRegistrationState
 	);
+	const setIsNeedShowCreateProfileDialogAfterLdapRegistration = useSetAtom(
+		isNeedShowCreateProfileDialogAfterLdapRegistrationState
+	);
 
 	const apiAuthLogout = useApiAuthLogout();
 	const onLogoutClickHandler = useCallback(async () => {
 		try {
 			await apiAuthLogout.mutateAsync();
 			setIsNeedShowCreateProfileDialogAfterSsoRegistration(false);
+			setIsNeedShowCreateProfileDialogAfterLdapRegistration(false);
 		} catch (error) {
 			if (error instanceof NetworkError) {
 				showToast(langStringErrorsNetworkError, "warning");
@@ -523,6 +527,9 @@ const CreateProfileDialogContentMobile = () => {
 	const setIsNeedShowCreateProfileDialogAfterSsoRegistration = useSetAtom(
 		isNeedShowCreateProfileDialogAfterSsoRegistrationState
 	);
+	const setIsNeedShowCreateProfileDialogAfterLdapRegistration = useSetAtom(
+		isNeedShowCreateProfileDialogAfterLdapRegistrationState
+	);
 
 	const cancelTextRef = useRef<HTMLDivElement>(null);
 	const [cancelTextWidth, setCancelTextWidth] = useState(0);
@@ -611,6 +618,7 @@ const CreateProfileDialogContentMobile = () => {
 		try {
 			await apiAuthLogout.mutateAsync();
 			setIsNeedShowCreateProfileDialogAfterSsoRegistration(false);
+			setIsNeedShowCreateProfileDialogAfterLdapRegistration(false);
 		} catch (error) {
 			if (error instanceof NetworkError) {
 				showToast(langStringErrorsNetworkError, "warning");

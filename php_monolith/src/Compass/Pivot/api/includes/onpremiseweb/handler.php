@@ -26,6 +26,7 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 		"auth",
 		"auth_mail",
 		"auth_sso",
+		"auth_ldap",
 		"security_mail",
 		"profile",
 		"global",
@@ -38,6 +39,7 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 		"auth",
 		"auth_mail",
 		"auth_sso",
+		"auth_ldap",
 		"security_mail",
 		"joinlink",
 	];
@@ -51,6 +53,7 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 		"auth.logout",
 		"auth.mail.begin",
 		"auth.sso.begin",
+		"auth.ldap.begin",
 		"joinlink.prepare",
 		"profile.set",
 		"auth.mail.confirmShortAuthPassword",

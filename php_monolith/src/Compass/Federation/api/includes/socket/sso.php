@@ -12,69 +12,12 @@ class Socket_Sso extends \BaseFrame\Controller\Socket {
 
 	// список доступных методов
 	public const ALLOW_METHODS = [
-		"validateAuthToken",
-		"createUserRelationship",
 		"hasUserRelationship",
+		"deleteUserRelationship",
 	];
 
 	/**
-	 * метод для валидации токена попытки аутентификации через SSO
-	 *
-	 * @return array
-	 * @throws ParseFatalException
-	 * @throws \BaseFrame\Exception\Request\ParamException
-	 */
-	public function validateAuthToken():array {
-
-		$sso_auth_token = $this->post(\Formatter::TYPE_STRING, "sso_auth_token");
-		$signature      = $this->post(\Formatter::TYPE_STRING, "signature");
-
-		try {
-
-			/** @var Struct_Sso_AccountData $sso_account_data */
-			[$compass_user_id, $sso_account_data] = Domain_Sso_Scenario_Socket_Auth::validateAuthToken($sso_auth_token, $signature);
-		} catch (Domain_Sso_Exception_Auth_Expired) {
-			return $this->error(1000, "sso auth expired");
-		} catch (Domain_Sso_Exception_Auth_SignatureMismatch) {
-			return $this->error(1001, "signature mismatch");
-		} catch (Domain_Sso_Exception_Auth_TokenNotFound) {
-			throw new ParseFatalException("unexpected behaviour");
-		} catch (Domain_Sso_Exception_Auth_UnexpectedStatus) {
-			return $this->error(1002, "auth have unexpected status");
-		}
-
-		return $this->ok([
-			"compass_user_id"  => (int) $compass_user_id,
-			"sso_account_data" => (array) $sso_account_data->format(),
-		]);
-	}
-
-	/**
-	 * создаем связь «SSO аккаунт» – «Пользователь Compass»
-	 *
-	 * @return array
-	 * @throws ParseFatalException
-	 * @throws ParamException
-	 * @throws \queryException
-	 */
-	public function createUserRelationship():array {
-
-		$sso_auth_token = $this->post(\Formatter::TYPE_STRING, "sso_auth_token");
-		$user_id        = $this->post(\Formatter::TYPE_INT, "user_id");
-
-		try {
-			Domain_Sso_Scenario_Socket_Auth::createUserRelationship($sso_auth_token, $user_id);
-		} catch (Domain_Sso_Exception_Auth_TokenNotFound) {
-			throw new ParseFatalException("unexpected behaviour");
-		} catch (Domain_Sso_Exception_UserRelationship_AlreadyExists) {
-			return $this->error(1003, "user relationship already exists");
-		}
-
-		return $this->ok();
-	}
-
-	/**
-	 * проверяем, что связь «SSO аккаунт» – «Пользователь Compass» существует
+	 * проверяем, что связь «SSO аккаунт (по любому из протоколов – oidc, ldap, ...)» – «Пользователь Compass» существует
 	 *
 	 * @return array
 	 * @throws ParamException
@@ -85,9 +28,27 @@ class Socket_Sso extends \BaseFrame\Controller\Socket {
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
 		$has_user_relationship = Domain_Sso_Scenario_Socket_Auth::hasUserRelationship($user_id);
+		$has_user_relationship = $has_user_relationship ?: Domain_Ldap_Scenario_Socket::hasUserRelationship($user_id);
 
 		return $this->ok([
 			"has_user_relationship" => (int) intval($has_user_relationship),
 		]);
+	}
+
+	/**
+	 * проверяем, что связь «SSO аккаунт (по любому из протоколов – oidc, ldap, ...)» – «Пользователь Compass» существует
+	 *
+	 * @return array
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 */
+	public function deleteUserRelationship():array {
+
+		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
+
+		Domain_Sso_Scenario_Socket_Auth::deleteUserRelationship($user_id);
+		Domain_Ldap_Scenario_Socket::deleteUserRelationship($user_id);
+
+		return $this->ok();
 	}
 }

@@ -64,6 +64,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		// получаем user_id по почте
 		$existing_user_id = Domain_User_Action_Auth_Mail::resolveUser($mail);
 
+		// выбрасываем исключение, если пытаются начать авторизацию под заблокированным пользователем
+		$existing_user_id > 0 && Domain_User_Entity_User::throwIfUserDisabled($existing_user_id);
+
 		// если не нашли пользователя
 		if ($existing_user_id === 0) {
 

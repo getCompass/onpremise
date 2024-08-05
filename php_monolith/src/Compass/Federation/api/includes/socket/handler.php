@@ -13,6 +13,9 @@ class Socket_Handler extends Api implements \RouteHandler {
 
 	public const ALLOW_CONTROLLERS = [
 		"sso",
+		"ldap",
+		"oidc",
+		"task",
 	];
 
 	/**

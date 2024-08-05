@@ -43,7 +43,7 @@ class Migration_Reform_Sso {
 				continue;
 			}
 
-			if (Gateway_Socket_Federation::hasUserRelationship($user->user_id)) {
+			if (Gateway_Socket_Federation::hasSsoOidcUserRelationship($user->user_id)) {
 				self::_doWork($user->user_id);
 			}
 		}

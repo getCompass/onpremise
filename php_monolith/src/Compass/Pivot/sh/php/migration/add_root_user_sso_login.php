@@ -33,26 +33,33 @@ class Migration_Add_Root_User_Sso_Login {
 		}
 
 		// проверяем привязан ли к root-пользователю аккаунт SSO
-		if (Gateway_Socket_Federation::hasUserRelationship(Domain_User_Entity_OnpremiseRoot::getUserId())) {
+		if (Gateway_Socket_Federation::hasSsoUserRelationship(Domain_User_Entity_OnpremiseRoot::getUserId())) {
 			throw new Domain_User_Exception_Security_UserWasRegisteredBySso();
 		}
 
 		// получаем параметры
 		$sso_login = Type_Script_InputParser::getArgumentValue("--sso_login");
 
-		try {
+		// получаем протокол SSO
+		$sso_protocol = Domain_User_Entity_Auth_Config::getSsoProtocol();
 
-			$is_need_check_sso_login_phone = false;
+		// валидируем параметр для SSO по протоколу OpenID Connect
+		if ($sso_protocol === Domain_User_Entity_Auth_Method::SSO_PROTOCOL_OIDC) {
 
-			// проверяем формат почты
-			$sso_login = (new \BaseFrame\System\Mail($sso_login))->mail();
-		} catch (InvalidMail) {
-			$is_need_check_sso_login_phone = true;
-		}
+			try {
 
-		// проверяем формат номера телефона, если необходимо
-		if ($is_need_check_sso_login_phone) {
-			$sso_login = (new \BaseFrame\System\PhoneNumber($sso_login))->number();
+				$is_need_check_sso_login_phone = false;
+
+				// проверяем формат почты
+				$sso_login = (new \BaseFrame\System\Mail($sso_login))->mail();
+			} catch (InvalidMail) {
+				$is_need_check_sso_login_phone = true;
+			}
+
+			// проверяем формат номера телефона, если необходимо
+			if ($is_need_check_sso_login_phone) {
+				$sso_login = (new \BaseFrame\System\PhoneNumber($sso_login))->number();
+			}
 		}
 
 		Domain_User_Entity_OnpremiseRoot::setSsoLogin($sso_login);

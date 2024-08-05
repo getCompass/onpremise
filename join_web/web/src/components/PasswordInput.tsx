@@ -110,6 +110,7 @@ type PasswordInputProps = {
 	setIsPasswordVisible: (value: boolean) => void;
 	onInputFocus?: () => void;
 	inputTabIndex?: number;
+	maxLength?: number;
 	mt?: PropertyValue<"mt">;
 	autoFocus?: boolean;
 };
@@ -131,6 +132,7 @@ function PasswordInputDesktop({
 	setIsPasswordVisible,
 	onInputFocus,
 	inputTabIndex,
+	maxLength,
 	mt,
 	autoFocus,
 }: PasswordInputProps) {
@@ -169,7 +171,7 @@ function PasswordInputDesktop({
 							placeholder={inputPlaceholder}
 							value={password}
 							type={isPasswordVisible ? "text" : "password"}
-							maxLength={40}
+							maxLength={maxLength ?? 40}
 							disabled={isDisabled}
 							tabIndex={inputTabIndex}
 							autoCapitalize="none"
@@ -261,6 +263,7 @@ function PasswordInputMobile({
 	setIsPasswordVisible,
 	onInputFocus,
 	inputTabIndex,
+	maxLength,
 	mt,
 	autoFocus,
 }: PasswordInputProps) {
@@ -299,7 +302,7 @@ function PasswordInputMobile({
 							placeholder={inputPlaceholder}
 							value={password}
 							type={isPasswordVisible ? "text" : "password"}
-							maxLength={40}
+							maxLength={maxLength ?? 40}
 							disabled={isDisabled}
 							tabIndex={inputTabIndex}
 							autoCapitalize="none"
@@ -392,6 +395,7 @@ export default function PasswordInput({
 	onInputFocus,
 	inputTabIndex,
 	mt,
+	maxLength,
 	autoFocus = false,
 }: PasswordInputProps) {
 	const isMobile = useIsMobile();
@@ -416,6 +420,7 @@ export default function PasswordInput({
 				onInputFocus={onInputFocus}
 				inputTabIndex={inputTabIndex}
 				mt={mt}
+				maxLength={maxLength}
 				autoFocus={autoFocus}
 			/>
 		);
@@ -440,6 +445,7 @@ export default function PasswordInput({
 			onInputFocus={onInputFocus}
 			inputTabIndex={inputTabIndex}
 			mt={mt}
+			maxLength={maxLength}
 			autoFocus={autoFocus}
 		/>
 	);

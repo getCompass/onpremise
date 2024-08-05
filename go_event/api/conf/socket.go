@@ -30,6 +30,8 @@ type SocketConfigStruct struct {
 	IntegrationSocketModule map[string]string `json:"integration_socket_module"`
 	JitsiSocketUrl          string            `json:"jitsi_socket_url"`
 	JitsiSocketModule       map[string]string `json:"jitsi_socket_module"`
+	FederationSocketUrl     string            `json:"federation_socket_url"`
+	FederationSocketModule  map[string]string `json:"federation_socket_module"`
 }
 
 // переменная содержащая конфигурацию
@@ -160,10 +162,17 @@ func GetModuleSocketUrl(module string) (string, error) {
 		return socketConfig.IntegrationSocketUrl + integrationModuleSocketPath, nil
 	}
 
-	// получаем ссылку для модуля из premise
+	// получаем ссылку для модуля из jitsi
 	jitsiModuleSocketPath, isJitsiModuleExist := socketConfig.JitsiSocketModule[module]
 	if isJitsiModuleExist {
 		return socketConfig.JitsiSocketUrl + jitsiModuleSocketPath, nil
 	}
+
+	// получаем ссылку для модуля federation
+	federationModuleSocketPath, isFederationModuleExist := socketConfig.FederationSocketModule[module]
+	if isFederationModuleExist {
+		return socketConfig.FederationSocketUrl + federationModuleSocketPath, nil
+	}
+
 	return "", fmt.Errorf("unknown module %s", module)
 }

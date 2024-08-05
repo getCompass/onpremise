@@ -20,16 +20,9 @@ var eventGeneratorStore = struct {
 	mx:            sync.Mutex{},
 }
 
-type GeneratorEventData struct {
-	Name             string                 `json:"name"`              // имя генератора
-	Period           int                    `json:"period"`            // с каким периодом он выбрасывает события
-	SubscriptionItem Event.SubscriptionItem `json:"subscription_item"` // предмет подписки
-	EventData        json.RawMessage        `json:"event_data"`        // какие данные генератор добавлять в событие
-}
-
 // MakeEventGenerator создает новый генератор событий
 // генераторы существуют глобально, поэтому в изоляции компаний не записываются
-func MakeEventGenerator(eventType string, period int, data json.RawMessage) {
+func MakeEventGenerator(eventType string, period int, data json.RawMessage, onlyForGlobal bool) {
 
 	eventGeneratorStore.mx.Lock()
 	defer eventGeneratorStore.mx.Unlock()
@@ -60,8 +53,16 @@ func MakeEventGenerator(eventType string, period int, data json.RawMessage) {
 		go isolationRoutine(isolation, generator)
 	}
 
-	// пробегаемся по всем изоляциям и запускаем в них рутины генераторов
-	CompanyConfig.IterateOverActive(eventGeneratorStore.generatorList[eventType])
+	if onlyForGlobal {
+
+		// запускаем рутину генератора в глобальной изоляции
+		eventGeneratorStore.generatorList[eventType](Isolation.Global())
+	} else {
+
+		// пробегаемся по всем изоляциям и запускаем в них рутины генераторов
+		CompanyConfig.IterateOverActive(eventGeneratorStore.generatorList[eventType])
+	}
+
 	_ = Generator.StartGenerator(generator)
 }
 

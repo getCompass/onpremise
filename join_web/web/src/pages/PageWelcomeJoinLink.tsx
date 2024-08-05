@@ -173,6 +173,7 @@ const PageWelcomeJoinLink = () => {
 		}
 
 		navigateToPage("token");
+		navigateToDialog("token_page");
 	}, [is_authorized, need_fill_profile]);
 
 	if (isMobile) {

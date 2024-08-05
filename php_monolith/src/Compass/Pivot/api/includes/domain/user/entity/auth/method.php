@@ -19,6 +19,10 @@ class Domain_User_Entity_Auth_Method {
 	/** аутентификация через SSO */
 	public const METHOD_SSO = "sso";
 
+	/** существующие протоколы аутентификации через SSO */
+	public const SSO_PROTOCOL_OIDC = "oidc";
+	public const SSO_PROTOCOL_LDAP = "ldap";
+
 	/** список существующих способов */
 	protected const _EXISTING_METHOD_LIST = [
 		self::METHOD_PHONE_NUMBER,
@@ -73,5 +77,18 @@ class Domain_User_Entity_Auth_Method {
 	public static function isSingleAuthMethodEnabled(string $method):bool {
 
 		return in_array($method, self::getAvailableMethodList()) && count(self::getAvailableMethodList()) == 1;
+	}
+
+	/**
+	 * проверяем, что в конфиге SSO установлен ожидаемый протокол
+	 *
+	 * @throws Domain_User_Exception_AuthStory_UnexpectedSsoProtocol
+	 * @throws ParseFatalException
+	 */
+	public static function assertSsoProtocol(string $expected_protocol):void {
+
+		if (Domain_User_Entity_Auth_Config::getSsoProtocol() !== $expected_protocol) {
+			throw new Domain_User_Exception_AuthStory_UnexpectedSsoProtocol();
+		}
 	}
 }

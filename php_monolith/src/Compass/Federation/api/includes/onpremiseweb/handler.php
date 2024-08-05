@@ -24,11 +24,13 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 	// поддерживаемые группы методов (при создании новой группы заносятся вручную)
 	public const ALLOW_CONTROLLERS = [
 		"sso_auth",
+		"ldap_auth",
 	];
 
 	// поддерживаемые группы методов, доступные без авторизации
 	public const ALLOWED_NOT_AUTHORIZED = [
 		"sso_auth",
+		"ldap_auth",
 	];
 
 	/**

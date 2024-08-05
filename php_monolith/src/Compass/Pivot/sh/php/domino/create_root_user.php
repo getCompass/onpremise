@@ -276,21 +276,25 @@ class Domino_CreateRootUser {
 
 			if (!isset($this->_sso_login)) {
 
-				try {
+				// если это аутентификация через SSO по протоколу OpenID Connect, то валидируем параметр
+				if (Domain_User_Entity_Auth_Config::getSsoProtocol() === Domain_User_Entity_Auth_Method::SSO_PROTOCOL_OIDC) {
 
-					$is_need_check_sso_login_phone = false;
+					try {
+
+						$is_need_check_sso_login_phone = false;
+
+						// проверяем номер телефона
+						if ($input_sso_login !== "") {
+							$input_sso_login = (new \BaseFrame\System\Mail($input_sso_login))->mail();
+						}
+					} catch (InvalidMail) {
+						$is_need_check_sso_login_phone = true;
+					}
 
 					// проверяем номер телефона
-					if ($input_sso_login !== "") {
-						$input_sso_login = (new \BaseFrame\System\Mail($input_sso_login))->mail();
+					if ($input_sso_login !== "" && $is_need_check_sso_login_phone) {
+						$input_sso_login = (new \BaseFrame\System\PhoneNumber($input_sso_login))->number();
 					}
-				} catch (InvalidMail) {
-					$is_need_check_sso_login_phone = true;
-				}
-
-				// проверяем номер телефона
-				if ($input_sso_login !== "" && $is_need_check_sso_login_phone) {
-					$input_sso_login = (new \BaseFrame\System\PhoneNumber($input_sso_login))->number();
 				}
 
 				$this->_sso_login = $input_sso_login;

@@ -2,7 +2,7 @@ import {useQuery} from "@tanstack/react-query";
 import {ofetch} from "ofetch";
 import {APIResponse, ApiGlobalStartDictionaryData, ApiUserInfoData} from "./_types.ts";
 import {useSetAtom} from "jotai";
-import {availableAuthMethodListState, captchaPublicKeyState, profileState, dictionaryDataState, userInfoDataState} from "./_stores.ts";
+import {availableAuthMethodListState, captchaPublicKeyState, profileState, ssoProtocolState, dictionaryDataState, userInfoDataState} from "./_stores.ts";
 // @ts-ignore
 import {getPublicPathApi} from "../private/custom.ts";
 
@@ -11,8 +11,9 @@ type ApiGlobalDoStart = {
 	need_fill_profile: number,
 	captcha_public_key: string,
 	available_auth_method_list: string[],
-	dictionary: ApiGlobalStartDictionaryData
-	user_info: ApiUserInfoData|null
+	sso_protocol: string,
+	dictionary: ApiGlobalStartDictionaryData,
+	user_info: ApiUserInfoData|null,
 }
 
 export function useApiGlobalDoStart() {
@@ -20,6 +21,7 @@ export function useApiGlobalDoStart() {
 	const setProfile = useSetAtom(profileState);
 	const setCaptchaPublicKey = useSetAtom(captchaPublicKeyState);
 	const setAvailableAuthMethodList = useSetAtom(availableAuthMethodListState);
+	const setSsoProtocol = useSetAtom(ssoProtocolState);
 	const setStartDictionaryDataState = useSetAtom(dictionaryDataState);
 	const setUserInfoDataState = useSetAtom(userInfoDataState);
 
@@ -38,6 +40,8 @@ export function useApiGlobalDoStart() {
 			});
 
 			setAvailableAuthMethodList(result.response.available_auth_method_list);
+
+			setSsoProtocol(result.response.sso_protocol);
 
 			setStartDictionaryDataState(result.response.dictionary)
 

@@ -206,6 +206,12 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => 15 * 60,
 	];
 
+	const AUTH_LDAP = [
+		"key"    => "AUTH_LDAP",
+		"limit"  => 7,
+		"expire" => 15 * 60,
+	];
+
 	# endregion
 	##########################################################
 

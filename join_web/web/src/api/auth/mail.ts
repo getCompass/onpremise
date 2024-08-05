@@ -95,12 +95,12 @@ export function useApiAuthMailConfirmShortAuthPassword() {
 			});
 		},
 		async onSuccess(response) {
+			setFirstAuth(true);
 			await queryClient.invalidateQueries({ queryKey: ["global/start"] });
 			if (isJoinLink) {
 				await queryClient.invalidateQueries({ queryKey: ["joinlink/prepare", window.location.href] });
 			}
 
-			setFirstAuth(true);
 			setAuth(null);
 			setAuthInput("");
 			setPasswordInput("");
@@ -109,6 +109,7 @@ export function useApiAuthMailConfirmShortAuthPassword() {
 				navigateToDialog("auth_create_profile");
 			} else {
 				navigateToPage("token");
+				navigateToDialog("token_page");
 			}
 		},
 	});
@@ -206,13 +207,13 @@ export function useApiAuthMailConfirmFullAuthCode() {
 		},
 		async onSuccess(response, variables) {
 			variables.setIsSuccess(true);
+			setFirstAuth(true);
 
 			await queryClient.invalidateQueries({ queryKey: ["global/start"] });
 			if (isJoinLink) {
 				await queryClient.invalidateQueries({ queryKey: ["joinlink/prepare", window.location.href] });
 			}
 
-			setFirstAuth(true);
 			setAuth(null);
 			setAuthInput("");
 			setPasswordInput("");
@@ -221,6 +222,7 @@ export function useApiAuthMailConfirmFullAuthCode() {
 				navigateToDialog("auth_create_profile");
 			} else {
 				navigateToPage("token");
+				navigateToDialog("token_page");
 			}
 		},
 	});

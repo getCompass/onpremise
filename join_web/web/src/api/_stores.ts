@@ -29,6 +29,7 @@ export const captchaPublicKeyState = atom("");
 export const authenticationTokenState = atom("");
 
 export const availableAuthMethodListState = atom<string[]>([]);
+export const ssoProtocolState = atom("");
 export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({ auth_sso_start_button_text: "" });
 export const userInfoDataState = atomWithImmer<ApiUserInfoData|null>(null);
 
@@ -59,6 +60,7 @@ export const passwordInputState = atom("");
 export const confirmPasswordState = atom("");
 export const needShowForgotPasswordButtonState = atom(true);
 export const isNeedShowCreateProfileDialogAfterSsoRegistrationState = atom(false);
+export const isNeedShowCreateProfileDialogAfterLdapRegistrationState = atom(false);
 
 export const confirmCodeState = atom<string[]>(Array(6).fill(""));
 

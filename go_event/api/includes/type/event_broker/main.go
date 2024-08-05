@@ -199,7 +199,7 @@ func onEventGeneratorAdded(_ *Isolation.Isolation, appEvent *Event.ApplicationEv
 	// обрабатываем подписку на событие генератора
 	_ = ProcessSubscriptionRequest(&eventData)
 
-	MakeEventGenerator(generatorData.SubscriptionItem.Event, generatorData.Period, generatorData.EventData)
+	MakeEventGenerator(generatorData.SubscriptionItem.Event, generatorData.Period, generatorData.EventData, generatorData.OnlyForGlobal)
 	return nil
 }
 

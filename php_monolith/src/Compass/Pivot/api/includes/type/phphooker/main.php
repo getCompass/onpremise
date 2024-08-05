@@ -35,6 +35,7 @@ class Type_Phphooker_Main {
 	public const TASK_TYPE_ON_USER_LEFT_SPACE_EARLY        = 53; // пользователь покинул пространство слишком рано
 	public const TASK_TYPE_USER_ENTERING_FIRST_SPACE       = 54; // пользователь вступил в первую команду
 	public const TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE       = 55; // при истечении срока жизни попытки добавления номера телефона
+	public const TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES    = 56; // исключаем пользователя из всех команд
 
 	# endregion
 	##########################################################
@@ -100,6 +101,16 @@ class Type_Phphooker_Main {
 
 		self::_addFromApi(self::TASK_TYPE_DELETE_PROFILE, 0, [
 			"deleted_user_id" => $deleted_user_id,
+		]);
+	}
+
+	/**
+	 * Действие по исключению пользователя из всех его команд
+	 */
+	public static function kickUserFromAllCompanies(int $user_id):void {
+
+		self::_addFromApi(self::TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES, 0, [
+			"user_id" => $user_id,
 		]);
 	}
 

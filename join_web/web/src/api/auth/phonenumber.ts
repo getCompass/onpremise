@@ -89,19 +89,20 @@ export function useApiAuthPhoneNumberConfirm() {
 		async onSuccess(response, variables) {
 
 			variables.setIsSuccess(true);
+			setFirstAuth(true);
 
 			await queryClient.invalidateQueries({queryKey: ["global/start"]});
 			if (isJoinLink) {
 				await queryClient.invalidateQueries({queryKey: ["joinlink/prepare", window.location.href]});
 			}
 
-			setFirstAuth(true);
 			setAuth(null);
 			setAuthInput("");
 			if (response.need_fill_profile === 1) {
 				navigateToDialog("auth_create_profile");
 			} else {
 				navigateToPage("token");
+				navigateToDialog("token_page");
 			}
 		},
 	});

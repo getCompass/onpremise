@@ -209,9 +209,9 @@ class Domain_User_Scenario_Api {
 	 */
 	public static function doLogout(int $user_id):void {
 
-		if (mb_strlen(getDeviceId()) < 1) {
-			throw new ParamException("passed empty device id");
-		}
+		// ID устройства пользователя
+		// может быть пустым, если это socket запрос по исключению пользователя из команды
+		$device_id = getDeviceId();
 
 		$cloud_session_uniq = false;
 		try {
@@ -219,10 +219,9 @@ class Domain_User_Scenario_Api {
 			Domain_User_Entity_Validator::assertLoggedIn($user_id);
 			$cloud_session_uniq = Type_Session_Main::doLogoutSession($user_id);
 
-			// удаляем устройство из списка тех, которые могут получать пуши, если это не электрон(им пуши не нужны)
-			if (Type_Api_Platform::getPlatform() != Type_Api_Platform::PLATFORM_ELECTRON) {
-
-				Domain_User_Action_Notifications_DeleteDevice::do($user_id, getDeviceId());
+			// если имеется device_id, то удаляем устройство из списка тех, которые могут получать пуши, если это не электрон(им пуши не нужны)
+			if ($device_id !== "" && Type_Api_Platform::getPlatform() != Type_Api_Platform::PLATFORM_ELECTRON) {
+				Domain_User_Action_Notifications_DeleteDevice::do($user_id, $device_id );
 			}
 		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty | \cs_SessionNotFound) {
 			// просто ничего не делаем
@@ -237,45 +236,16 @@ class Domain_User_Scenario_Api {
 
 		$routine_key = Gateway_Bus_Sender::getWaitRoutineKeyForUser($user_id);
 
-		// закрываем ws
-		Gateway_Bus_Sender::closeConnectionsByDeviceIdWithWait($user_id, getDeviceId(), $routine_key);
+		// в зависимости от наличия/отсутствия device_id делаем то или иное действие
+		if ($device_id !== "") {
 
-		// обновляем бадж с непрочитанными для пользователя
-		$extra = Gateway_Bus_Company_Timer::getExtraForUpdateBadge($user_id);
-		Gateway_Bus_Company_Timer::setTimeout(Gateway_Bus_Company_Timer::UPDATE_BADGE, $user_id, [], $extra);
-	}
+			// закрываем ws по device_id
+			Gateway_Bus_Sender::closeConnectionsByDeviceIdWithWait($user_id, $device_id, $routine_key);
+		} else {
 
-	/**
-	 * Разлогиниваем при удалении пользователя
-	 *
-	 * @throws BusFatalException
-	 * @throws ParseFatalException
-	 * @throws \busException
-	 * @throws \parseException
-	 * @throws \returnException
-	 */
-	public static function doLogoutDeletedUser(int $user_id):void {
-
-		$cloud_session_uniq = false;
-		try {
-
-			Domain_User_Entity_Validator::assertLoggedIn($user_id);
-			$cloud_session_uniq = Type_Session_Main::doLogoutSession($user_id);
-		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty | \cs_SessionNotFound) {
-			// просто ничего не делаем
+			// закрываем ws по user_id
+			Gateway_Bus_Sender::closeConnectionsByUserIdWithWait($user_id, $routine_key);
 		}
-
-		if ($cloud_session_uniq === false) {
-			return;
-		}
-
-		// отправляем ивент о том, что пользователь разлогинился из компании
-		Gateway_Event_Dispatcher::dispatch(Type_Event_UserCompany_UserLogoutCompany::create($user_id, $cloud_session_uniq), true);
-
-		$routine_key = Gateway_Bus_Sender::getWaitRoutineKeyForUser($user_id);
-
-		// закрываем ws
-		Gateway_Bus_Sender::closeConnectionsByUserIdWithWait($user_id, $routine_key);
 
 		// обновляем бадж с непрочитанными для пользователя
 		$extra = Gateway_Bus_Company_Timer::getExtraForUpdateBadge($user_id);
@@ -420,12 +390,8 @@ class Domain_User_Scenario_Api {
 			self::_dismissUser($user_id);
 		} else {
 
-			// разлогиниваем в зависимости от условия покидания компании
-			if ($is_delete_user) {
-				self::doLogoutDeletedUser($user_id);
-			} else {
-				self::doLogout($user_id);
-			}
+			// разлогиниваем
+			self::doLogout($user_id);
 
 			// удаляем компанию
 			Gateway_Socket_Pivot::deleteCompany($user_id);

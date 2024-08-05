@@ -13,7 +13,23 @@
 		"db": "system",
 		"table": "go_event_subscriber_list"
 	},
-	"subscription_list": [],
+	"subscription_list": [
+		{
+			"subscriber": "php_federation",
+			"subscription_list": [
+				{
+					"trigger_type": 5,
+					"event": "system.subscriptions_refreshing_requested",
+					"extra": {
+						"module": "php_federation",
+						"type": 4,
+						"group": "default",
+						"error_limit": 0
+					}
+				}
+			]
+		}
+	],
 	"event_discrete_courier_count": ${COURIER_COUNT},
 	"event_discrete_courier_delay": ${DELIVERY_DELAY},
 	"task_discrete_courier_count": ${COURIER_COUNT},

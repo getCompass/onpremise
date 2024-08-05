@@ -9,6 +9,7 @@ export type Dialog =
 	| "auth_create_new_password"
 	| "auth_phone_number_confirm_code"
 	| "auth_email_confirm_code"
+	| "auth_sso_ldap"
 	| "auth_create_profile"
 	| "token_page";
 

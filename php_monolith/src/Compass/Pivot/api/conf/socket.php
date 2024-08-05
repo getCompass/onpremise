@@ -302,6 +302,16 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"user.incConferenceMembershipRating",
 		],
 	],
+	"federation"            => [
+		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
+		"auth_key"      => SOCKET_KEY_FEDERATION,
+		"allow_methods" => [
+			"pivot.ldap.blockUserAuthentication",
+			"pivot.ldap.kickUserFromAllCompanies",
+			"pivot.ldap.unblockUserAuthentication",
+			"pivot.ldap.isLdapAuthAvailable",
+		],
+	],
 ];
 
 return $CONFIG;

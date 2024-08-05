@@ -30,6 +30,7 @@ import { ApiError, NetworkError, ServerError } from "../../api/_index.ts";
 import { useShowToast } from "../../lib/Toast.tsx";
 import { useAtom, useSetAtom } from "jotai/index";
 import { useApiSecurityMailTryResetPassword } from "../../api/security/mail.ts";
+import AuthLdapDialogContent from "./AuthLdapDialogContent.tsx";
 
 function Auth() {
 	const langStringErrorsNetworkError = useLangString("errors.network_error");
@@ -141,7 +142,6 @@ function Auth() {
 	}, [email, prepareJoinLinkError, apiSecurityMailTryResetPassword, window.location.href]);
 
 	const forgotPasswordButtonMt = useMemo<Property.MarginTop>(() => {
-
 		if (dialogRef.current === null || forgotPasswordButtonRef.current === null) {
 			return "371px";
 		}
@@ -167,6 +167,18 @@ function Auth() {
 		backButtonRef.current?.clientHeight,
 		isLoginCaptchaRendered,
 	]);
+
+	const onBackButtonClicked = useCallback(() => {
+		if (activeDialog === "auth_sso_ldap") {
+			navigateToDialog("auth_email_phone_number");
+			return;
+		}
+
+		if (auth !== null) {
+			apiAuthMailCancel.mutate({ auth_key: auth.auth_key });
+			return;
+		}
+	}, [auth, activeDialog]);
 
 	const content = useMemo(() => {
 		if (activeDialog === "auth_email_phone_number") {
@@ -199,6 +211,10 @@ function Auth() {
 
 		if (activeDialog === "auth_create_new_password") {
 			return <CreateNewPasswordDialogContent />;
+		}
+
+		if (activeDialog === "auth_sso_ldap") {
+			return <AuthLdapDialogContent />;
 		}
 
 		return <></>;
@@ -243,7 +259,8 @@ function Auth() {
 			)}
 			{(activeDialog === "auth_email_login" ||
 				activeDialog === "auth_email_register" ||
-				activeDialog === "auth_forgot_password") && (
+				activeDialog === "auth_forgot_password" ||
+				activeDialog === "auth_sso_ldap") && (
 				<Button
 					ref={backButtonRef}
 					position="absolute"
@@ -253,7 +270,7 @@ function Auth() {
 					letterSpacing="-0.15px"
 					textSize="lato_14_20_400"
 					rounded="30px"
-					onClick={() => (auth === null ? undefined : apiAuthMailCancel.mutate({ auth_key: auth.auth_key }))}
+					onClick={() => onBackButtonClicked()}
 					style={{
 						marginTop: backButtonMt,
 					}}

@@ -9,7 +9,7 @@ namespace Compass\Federation;
 class Domain_Sso_Entity_Logger {
 
 	/** название файла, куда логируем */
-	protected const _FILE_NAME = "sso";
+	protected const _FILE_NAME = "sso_oidc";
 
 	/**
 	 * логируем

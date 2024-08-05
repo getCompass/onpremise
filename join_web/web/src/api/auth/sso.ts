@@ -113,6 +113,7 @@ export function useApiPivotAuthSsoBegin() {
 		},
 
 		async onSuccess(response) {
+			setFirstAuth(true);
 			if (response.need_fill_profile === 1) {
 				setRegistrationState(true);
 				setIsNeedShowCreateProfileDialogAfterSsoRegistration(true);
@@ -123,7 +124,6 @@ export function useApiPivotAuthSsoBegin() {
 				await queryClient.invalidateQueries({ queryKey: ["joinlink/prepare", window.location.href] });
 			}
 
-			setFirstAuth(true);
 			setAuth(null);
 			setAuthSso(null);
 			setUserInfoDataState(response.user_info);
@@ -133,6 +133,7 @@ export function useApiPivotAuthSsoBegin() {
 				navigateToDialog("auth_create_profile");
 			} else {
 				navigateToPage("token");
+				navigateToDialog("token_page");
 			}
 		},
 	});

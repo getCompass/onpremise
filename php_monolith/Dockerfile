@@ -1,5 +1,5 @@
 FROM docker.getcompass.ru/service/packages:0.1.7-devonpremise AS packages
-FROM docker.getcompass.ru/service/php-8:8.1.25-6-devonpremise
+FROM docker.getcompass.ru/service/php-8:8.1.25-7
 ARG BRANCH
 
 RUN apk update && apk add --no-cache curl-dev

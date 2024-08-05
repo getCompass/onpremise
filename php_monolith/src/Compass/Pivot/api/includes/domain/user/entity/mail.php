@@ -286,6 +286,46 @@ class Domain_User_Entity_Mail {
 	}
 
 	/**
+	 * отвязываем почту у пользователя
+	 *
+	 * @throws ParseFatalException
+	 * @throws \cs_RowIsEmpty
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
+	public static function unbind(int $user_id):void {
+
+		// проверяем наличие почты
+		$user_security = Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
+
+		// если почта не привязана, то ничего не делаем
+		if ($user_security->mail === "") {
+			return;
+		}
+
+		// хэш-сумма почты
+		$mail_hash = Type_Hash_Mail::makeHash($user_security->mail);
+
+		Gateway_Db_PivotMail_Main::beginTransaction();
+
+		// открепляем почту
+		Gateway_Db_PivotMail_MailUniqList::set($mail_hash, [
+			"user_id"         => 0,
+			"has_sso_account" => 0,
+			"password_hash"   => "",
+			"updated_at"      => time(),
+		]);
+
+		// обновляем user_security
+		Gateway_Db_PivotUser_UserSecurity::set($user_id, [
+			"mail"       => "",
+			"updated_at" => time(),
+		]);
+
+		Gateway_Db_PivotMail_Main::commitTransaction();
+	}
+
+	/**
 	 * проверяем, что пользователь не был зарегистрирован через SSO
 	 *
 	 * @throws Domain_User_Exception_Security_UserWasRegisteredBySso
@@ -294,7 +334,7 @@ class Domain_User_Entity_Mail {
 	 */
 	public static function assertUserWasNotRegisteredBySso(int $user_id):void {
 
-		if (Gateway_Socket_Federation::hasUserRelationship($user_id) && !Domain_User_Entity_Auth_Config::isAuthorizationAlternativeEnabled()) {
+		if (Gateway_Socket_Federation::hasSsoUserRelationship($user_id) && !Domain_User_Entity_Auth_Config::isAuthorizationAlternativeEnabled()) {
 			throw new Domain_User_Exception_Security_UserWasRegisteredBySso();
 		}
 	}

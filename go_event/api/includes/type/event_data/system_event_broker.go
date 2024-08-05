@@ -20,10 +20,11 @@ var SystemEventBrokerEventList = struct {
 
 // SystemEventBrokerEventGeneratorAdded структура для события отправки рейтинга
 type SystemEventBrokerEventGeneratorAdded struct {
-	EventName        string                 `json:"name"`              // имя генератора
-	Period           int                    `json:"period"`            // с каким периодом он выбрасывает события
-	SubscriptionItem Event.SubscriptionItem `json:"subscription_item"` // предмет подписки
-	EventData        json.RawMessage        `json:"event_data"`        // какие данные генератор добавлять в событие
+	EventName        string                 `json:"name"`                      // имя генератора
+	Period           int                    `json:"period"`                    // с каким периодом он выбрасывает события
+	SubscriptionItem Event.SubscriptionItem `json:"subscription_item"`         // предмет подписки
+	EventData        json.RawMessage        `json:"event_data"`                // какие данные генератор добавлять в событие
+	OnlyForGlobal    bool                   `json:"only_for_global,omitempty"` // флаг, генератор только для Isolation.Global()
 }
 
 // SystemEventBrokerEventGeneratorRemoved структура для события отправки рейтинга

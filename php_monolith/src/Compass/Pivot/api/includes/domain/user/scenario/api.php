@@ -1208,9 +1208,13 @@ class Domain_User_Scenario_Api {
 			Type_User_ActionAnalytics::send($user_id, Type_User_ActionAnalytics::DELETE_ACCOUNT);
 		}
 
-		// отправляем событие об удалении профиля в premise-модуль
 		if (ServerProvider::isOnPremise()) {
+
+			// отправляем событие об удалении профиля в premise-модуль
 			Domain_Premise_Entity_Event_UserProfileDeleted::create($user_id);
+
+			// удаляем связь с SSO, если она имеется
+			Gateway_Socket_Federation::deleteSsoUserRelationship($user_id);
 		}
 	}
 
@@ -1226,7 +1230,7 @@ class Domain_User_Scenario_Api {
 	protected static function _checkIfUserWasRegisteredBySso(int $user_id, Struct_Db_PivotUser_UserSecurity $user_security, string|false $two_fa_key, string|false $confirm_mail_password_story_key):void {
 
 		// если, пользователь зарегистрирован через ссо, иначе - выходим
-		if (!Gateway_Socket_Federation::hasUserRelationship($user_id)) {
+		if (!Gateway_Socket_Federation::hasSsoUserRelationship($user_id)) {
 			return;
 		}
 

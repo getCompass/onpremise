@@ -18,6 +18,7 @@ import {
 	joinLinkState,
 	passwordInputState,
 	prepareJoinLinkErrorState,
+	ssoProtocolState,
 } from "../../api/_stores.ts";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import useIsMobile from "../../lib/useIsMobile.ts";
@@ -36,6 +37,7 @@ import {
 	INCORRECT_LINK_ERROR_CODE,
 	isValidEmail,
 	LIMIT_ERROR_CODE,
+	SSO_PROTOCOL_OIDC,
 } from "../../api/_types.ts";
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "../../components/tooltip.tsx";
 import { Portal } from "@ark-ui/react";
@@ -570,6 +572,7 @@ const EmailPhoneNumberDialogContent = () => {
 	const setIsPasswordChanged = useSetAtom(isPasswordChangedState);
 	const setConfirmPassword = useSetAtom(confirmPasswordState);
 	const setAuthSso = useSetAtom(authSsoState);
+	const ssoProtocol = useAtomValue(ssoProtocolState);
 	const [isEmailPhoneNumberAuthBtnPreloader, setEmailPhoneNumberAuthBtnPreloader] = useState(false);
 	const [isSsoAuthBtnPreloader, setIsSsoAuthBtnPreloader] = useState(false);
 
@@ -1048,6 +1051,17 @@ const EmailPhoneNumberDialogContent = () => {
 	);
 
 	const onSsoAuthBeginClickHandler = useCallback(
+		async (btn_loader_ref: Dispatch<SetStateAction<boolean>>) => {
+			if (ssoProtocol === SSO_PROTOCOL_OIDC) {
+				return startSsoOIDCAuth(btn_loader_ref);
+			}
+
+			return navigateToDialog("auth_sso_ldap");
+		},
+		[apiFederationSsoAuthBegin.isLoading, showToast]
+	);
+
+	const startSsoOIDCAuth = useCallback(
 		async (btn_loader_ref: Dispatch<SetStateAction<boolean>>) => {
 			/* защита от закликивания */
 			if (apiFederationSsoAuthBegin.isLoading || isSsoAuthBtnPreloader) {

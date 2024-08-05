@@ -129,12 +129,12 @@ export function useApiSecurityMailFinishResetPassword() {
 			});
 		},
 		async onSuccess(response) {
+			setFirstAuth(true);
 			await queryClient.invalidateQueries({ queryKey: ["global/start"] });
 			if (isJoinLink) {
 				await queryClient.invalidateQueries({ queryKey: ["joinlink/prepare", window.location.href] });
 			}
 
-			setFirstAuth(true);
 			setAuth(null);
 			setAuthInput("");
 			setPasswordInput("");
@@ -144,6 +144,7 @@ export function useApiSecurityMailFinishResetPassword() {
 				navigateToDialog("auth_create_profile");
 			} else {
 				navigateToPage("token");
+				navigateToDialog("token_page");
 			}
 		},
 	});

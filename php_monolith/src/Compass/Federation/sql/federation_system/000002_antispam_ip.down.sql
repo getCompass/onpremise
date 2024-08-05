@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS `federation_system`.`antispam_ip`;

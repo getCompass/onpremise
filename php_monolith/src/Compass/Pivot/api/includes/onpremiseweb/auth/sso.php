@@ -61,7 +61,7 @@ class Onpremiseweb_Auth_Sso extends \BaseFrame\Controller\Api {
 		} catch (cs_JoinLinkIsNotActive) {
 			return $this->error(static::ECODE_JL_INACTIVE, "inactive join link");
 		} catch (cs_JoinLinkIsUsed) {
-			return $this->error(static::ECODE_UJL_ACCEPTED_BEFORE, "already user by user");
+			return $this->error(static::ECODE_UJL_ACCEPTED_BEFORE, "already used by user");
 		} catch (cs_IncorrectJoinLink|cs_JoinLinkNotFound) {
 			return $this->error(static::ECODE_JL_BAD, "bad join link");
 		} catch (cs_UserNotFound $e) {

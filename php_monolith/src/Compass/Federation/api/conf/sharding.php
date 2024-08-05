@@ -49,6 +49,26 @@ $CONFIG["SHARDING_MYSQL"] = [
 		],
 	],
 
+	"ldap_data" => [
+		"db"      => "ldap_data",
+		"mysql"   => [
+			"host" => MYSQL_FEDERATION_LDAP_HOST,
+			"user" => MYSQL_FEDERATION_LDAP_USER,
+			"pass" => MYSQL_FEDERATION_LDAP_PASS,
+			"ssl"  => MYSQL_FEDERATION_LDAP_SSL,
+		],
+		"schemas" => [
+			"sharding_info" => [
+				"type" => \shardingConf::SHARDING_TYPE_NONE,
+				"data" => [],
+			],
+			"tables"        => [
+				"ldap_auth_list"        => "ldap_auth_token,status,created_at,updated_at,uid,username,dn,data",
+				"ldap_account_user_rel" => "uid,user_id,status,created_at,updated_at,username,dn",
+			],
+		],
+	],
+
 	"federation_system" => [
 		"db"      => "federation_system",
 		"mysql"   => [
@@ -63,7 +83,8 @@ $CONFIG["SHARDING_MYSQL"] = [
 				"data" => [],
 			],
 			"tables"        => [
-				"datastore"               => "sso_auth_token,signature,status,expires_at,completed_at,created_at,updated_at,link,ua_hash,ip_address",
+				"datastore"   => "sso_auth_token,signature,status,expires_at,completed_at,created_at,updated_at,link,ua_hash,ip_address",
+				"antispam_ip" => "ip_address,key,count,expires_at",
 			],
 		],
 	],

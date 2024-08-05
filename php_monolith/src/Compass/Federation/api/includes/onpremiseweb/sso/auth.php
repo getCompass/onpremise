@@ -5,7 +5,7 @@ namespace Compass\Federation;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
- * Методы инициализации для сайта on-premise.
+ * Методы аутентификации через SSO по протоколу OpenID Connect
  */
 class Onpremiseweb_Sso_Auth extends \BaseFrame\Controller\Api {
 

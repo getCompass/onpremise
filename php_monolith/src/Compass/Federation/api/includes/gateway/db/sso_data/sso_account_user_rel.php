@@ -93,4 +93,16 @@ class Gateway_Db_SsoData_SsoAccountUserRel extends Gateway_Db_SsoData_Main {
 
 		return Struct_Db_SsoData_SsoAccountUserRel::rowToStruct($row);
 	}
+
+	/**
+	 * удаляем запись в базе по PK
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 */
+	public static function delete(string $sub_hash):void {
+
+		// EXPLAIN PRIMARY KEY
+		$query = "UPDATE `?p` SET ?u WHERE `sub_hash` = ?s LIMIT ?i";
+		ShardingGateway::database(self::_DB_KEY)->delete($query, self::_TABLE_NAME, $sub_hash, 1);
+	}
 }

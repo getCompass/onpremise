@@ -20,3 +20,4 @@ function cleanup() { trap - SIGINT SIGTERM ERR EXIT; }
 php "${SCRIPT_PATH}/Conversation/sh/php/init_subscriptions.php" || die "conversation init_subscriptions.sh error";
 php "${SCRIPT_PATH}/Thread/sh/php/init_subscriptions.php" || die "thread init_subscriptions.sh error";
 php "${SCRIPT_PATH}/Company/sh/php/init_subscriptions.php" || die "company init_subscriptions.sh error";
+php "${SCRIPT_PATH}/Federation/sh/php/init_subscriptions.php" || die "federation init_subscriptions.sh error";

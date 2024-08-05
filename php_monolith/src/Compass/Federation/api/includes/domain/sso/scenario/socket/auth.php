@@ -90,4 +90,17 @@ class Domain_Sso_Scenario_Socket_Auth {
 
 		return false;
 	}
+
+	/**
+	 * удаляем связь «SSO аккаунт» – «Пользователь Compass», если она существует
+	 *
+	 * @param int $user_id
+	 *
+	 * @return void
+	 * @throws ParseFatalException
+	 */
+	public static function deleteUserRelationship(int $user_id):void {
+
+		Domain_Sso_Entity_AccountUserRel::delete($user_id);
+	}
 }

@@ -6,6 +6,7 @@ import {
 	authSsoState,
 	authState,
 	isLoadedState,
+	isNeedShowCreateProfileDialogAfterLdapRegistrationState,
 	isNeedShowCreateProfileDialogAfterSsoRegistrationState,
 	joinLinkState,
 	loadingState,
@@ -42,8 +43,8 @@ import {plural} from "../lib/plural.ts";
 export default function GlobalStartProvider({children}: PropsWithChildren) {
 	const apiGlobalDoStart = useApiGlobalDoStart();
 
-	const {navigateToPage} = useNavigatePage();
-	const {navigateToDialog} = useNavigateDialog();
+	const { navigateToPage } = useNavigatePage();
+	const { activeDialog, navigateToDialog } = useNavigateDialog();
 	const setLoading = useSetAtom(loadingState);
 	const setJoinLink = useSetAtom(joinLinkState);
 	const [isLoaded, setIsLoaded] = useAtom(isLoadedState);
@@ -53,6 +54,9 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 	const {is_authorized, need_fill_profile} = useAtomValue(profileState);
 	const isNeedShowCreateProfileDialogAfterSsoRegistration = useAtomValue(
 		isNeedShowCreateProfileDialogAfterSsoRegistrationState
+	);
+	const isNeedShowCreateProfileDialogAfterLdapRegistration = useAtomValue(
+		isNeedShowCreateProfileDialogAfterLdapRegistrationState
 	);
 	const authSso = useAtomValue(authSsoState);
 	const setAuthSso = useSetAtom(authSsoState);
@@ -75,6 +79,17 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 	const langStringOneMinute = useLangString("one_minute");
 	const langStringTwoMinutes = useLangString("two_minutes");
 	const langStringFiveMinutes = useLangString("five_minutes");
+	const [prevIsAuthorized, setPrevIsAuthorized] = useState<boolean | null>(null);
+
+	useEffect(() => {
+		// обновляем prevActivePage перед изменением activePage
+		const handlePageChange = () => {
+			setPrevIsAuthorized(is_authorized);
+		};
+
+		// вызываем handlePageChange при изменении activePage
+		handlePageChange();
+	}, [is_authorized]);
 
 	const authInputValue = useMemo(() => {
 		const [authValue, expiresAt] = authInput.split("__|__") || ["", 0];
@@ -308,11 +323,16 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 		}
 
 		if (is_authorized) {
-			if (need_fill_profile || isNeedShowCreateProfileDialogAfterSsoRegistration) {
+			if (
+				need_fill_profile ||
+				isNeedShowCreateProfileDialogAfterSsoRegistration ||
+				isNeedShowCreateProfileDialogAfterLdapRegistration
+			) {
 				navigateToPage("auth");
 				navigateToDialog("auth_create_profile");
 			} else {
 				navigateToPage("token");
+				navigateToDialog("token_page");
 			}
 		} else {
 			if (
@@ -382,10 +402,14 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 				}
 			} else {
 				if (authInputValue.length > 0) {
-					navigateToPage("auth");
-					navigateToDialog("auth_email_phone_number");
+					// чтобы не выкидывало при перезапросе start на ввод номера/почты
+					if (activeDialog !== "auth_sso_ldap") {
+						navigateToPage("auth");
+						navigateToDialog("auth_email_phone_number");
+					}
 				} else {
-					if (!isJoinLink) {
+					// чтобы не выкидывало при перезапросе start на ввод номера/почты
+					if (!isJoinLink && activeDialog !== "auth_sso_ldap") {
 						navigateToPage("auth");
 						navigateToDialog("auth_email_phone_number");
 					}
@@ -400,7 +424,21 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 		is_authorized,
 		isLoaded,
 		isNeedShowCreateProfileDialogAfterSsoRegistration,
+		isNeedShowCreateProfileDialogAfterLdapRegistration,
 	]);
+
+	// разлогиниваем если пришло с бека
+	useEffect(() => {
+		if (prevIsAuthorized !== null && prevIsAuthorized !== is_authorized && is_authorized === false) {
+			if (isJoinLink) {
+				navigateToPage("welcome");
+				navigateToDialog("auth_email_phone_number");
+			} else {
+				navigateToPage("auth");
+				navigateToDialog("auth_email_phone_number");
+			}
+		}
+	}, [prevIsAuthorized, is_authorized]);
 
 	return <>{children}</>;
 }

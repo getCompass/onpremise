@@ -43,12 +43,13 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		// проверяем, что нет текущей активной сессии
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
 
-		// проверяем, что способ аут-ции через SSO включен
+		// проверяем, что способ аут-ции через SSO по протоколу OIDC включен
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_SSO);
+		Domain_User_Entity_Auth_Method::assertSsoProtocol(Domain_User_Entity_Auth_Method::SSO_PROTOCOL_OIDC);
 
 		// валидируем токен
 		/** @var Struct_User_Auth_Sso_AccountData $sso_account_data */
-		[$sso_account_user_id_rel, $sso_account_data] = Gateway_Socket_Federation::validateSsoAuthToken($sso_auth_token, $signature);
+		[$sso_account_user_id_rel, $sso_account_data] = Gateway_Socket_Federation::validateSsoOidcAuthToken($sso_auth_token, $signature);
 
 		// нужно ли привязать к root пользователю sso аккаунт, если он оказался ещё не привязан
 		$is_need_bind_root_user = false;
@@ -82,7 +83,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 
 		// если был создан пользователь
 		if (($sso_account_user_id_rel === 0 && $user_id > 0) || $is_need_bind_root_user) {
-			Gateway_Socket_Federation::createUserRelationship($sso_auth_token, $user_id);
+			Gateway_Socket_Federation::createSsoOidcUserRelationship($sso_auth_token, $user_id);
 		}
 
 		// выдаем пользовательскую сессию
@@ -96,7 +97,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		$is_need_to_create_user = !is_null($integration_response) && in_array(Domain_Integration_Entity_Notifier::ACTION_UPDATE_USER_PROFILE, array_column($integration_response->action_list, "action"))
 			? false : $is_need_to_create_user;
 
-		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
+		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
 			$token,
 			$is_need_to_create_user,

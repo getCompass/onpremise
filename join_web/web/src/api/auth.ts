@@ -1,60 +1,54 @@
-import {useGetResponse} from "./_index.ts";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {useNavigatePage} from "../components/hooks.ts";
+import { useGetResponse } from "./_index.ts";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigateDialog, useNavigatePage } from "../components/hooks.ts";
 import useIsJoinLink from "../lib/useIsJoinLink.ts";
-import {useSetAtom} from "jotai";
-import {authenticationTokenState} from "./_stores.ts";
+import { useSetAtom } from "jotai";
+import { authenticationTokenState } from "./_stores.ts";
 
 export function useApiAuthLogout() {
-
 	const getResponse = useGetResponse("pivot");
 	const queryClient = useQueryClient();
 	const isJoinLink = useIsJoinLink();
-	const {navigateToPage} = useNavigatePage();
+	const { navigateToPage } = useNavigatePage();
+	const { navigateToDialog } = useNavigateDialog();
 
 	return useMutation({
-
 		retry: false,
 		networkMode: "always",
 		mutationFn: async () => {
-
 			const body = new URLSearchParams();
 			return getResponse<object>("auth/logout", body);
 		},
 		async onSuccess() {
-
-			await queryClient.invalidateQueries({queryKey: ["global/start"]});
+			await queryClient.invalidateQueries({ queryKey: ["global/start"] });
 
 			// только в случае если это join ссылка - перекидываем на welcome, иначе в GlobalStartProvider самообработается корректно
 			if (isJoinLink) {
-
-				await queryClient.invalidateQueries({queryKey: ["joinlink/prepare", window.location.href]});
+				await queryClient.invalidateQueries({ queryKey: ["joinlink/prepare", window.location.href] });
 				navigateToPage("welcome");
+				navigateToDialog("auth_email_phone_number");
 			}
-		}
+		},
 	});
 }
 
 export type ApiAuthGenerateTokenAcceptArgs = {
-	join_link_uniq: undefined|string;
+	join_link_uniq: undefined | string;
 };
 
 export type ApiAuthGenerateToken = {
-	authentication_token: string,
-	expires_at: number
-}
+	authentication_token: string;
+	expires_at: number;
+};
 
 export function useApiAuthGenerateToken() {
-
 	const getResponse = useGetResponse("pivot");
 	const setAuthenticationToken = useSetAtom(authenticationTokenState);
 
 	return useMutation({
-
 		retry: false,
 		networkMode: "always",
 		mutationFn: async ({ join_link_uniq }: ApiAuthGenerateTokenAcceptArgs) => {
-
 			const body = new URLSearchParams();
 
 			if (join_link_uniq !== undefined) {
@@ -62,7 +56,7 @@ export function useApiAuthGenerateToken() {
 			}
 
 			const response = await getResponse<ApiAuthGenerateToken>("auth/generateToken", body);
-			setAuthenticationToken(response.authentication_token)
+			setAuthenticationToken(response.authentication_token);
 
 			return response;
 		},

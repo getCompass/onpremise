@@ -18,6 +18,7 @@ class Domain_User_Entity_AuthStory {
 	public const AUTH_STORY_TYPE_RESET_PASSWORD_BY_MAIL   = 5; // тип для сброса пароля через почту из под неавторизованного пользователя
 	public const AUTH_STORY_TYPE_AUTH_BY_SSO              = 6; // тип аутентификации через SSO
 	public const AUTH_STORY_TYPE_CHANGE_MAIL              = 7; // тип для сброса пароля через почту из под неавторизованного пользователя
+	public const AUTH_STORY_TYPE_AUTH_BY_LDAP             = 8; // тип аутентификации через LDAP
 
 	/** возможные статусы аутентификации для истории: */
 	public const HISTORY_AUTH_STATUS_SUCCESS = 1; // успешная аутентификация
@@ -120,6 +121,21 @@ class Domain_User_Entity_AuthStory {
 	public function getAuthSsoHandler():Domain_User_Entity_AuthStory_MethodHandler_Sso|Domain_User_Entity_AuthStory_MethodHandler_Default {
 
 		if (false === ($this->_auth_method_entity instanceof Domain_User_Entity_AuthStory_MethodHandler_Sso)) {
+			throw new ParseFatalException("unexpected behaviour");
+		}
+
+		return $this->_auth_method_entity;
+	}
+
+	/**
+	 * получаем класс-хендлер аутентификации по LDAP
+	 *
+	 * @return Domain_User_Entity_AuthStory_MethodHandler_Ldap|Domain_User_Entity_AuthStory_MethodHandler_Default
+	 * @throws ParseFatalException
+	 */
+	public function getAuthLdapHandler():Domain_User_Entity_AuthStory_MethodHandler_Ldap|Domain_User_Entity_AuthStory_MethodHandler_Default {
+
+		if (false === ($this->_auth_method_entity instanceof Domain_User_Entity_AuthStory_MethodHandler_Ldap)) {
 			throw new ParseFatalException("unexpected behaviour");
 		}
 
@@ -337,6 +353,11 @@ class Domain_User_Entity_AuthStory {
 
 		// если это аутентификация через SSO
 		if ($this->_auth->type === self::AUTH_STORY_TYPE_AUTH_BY_SSO) {
+			return $this->_auth->user_id === 0;
+		}
+
+		// если это аутентификация через LDAP
+		if ($this->_auth->type === self::AUTH_STORY_TYPE_AUTH_BY_LDAP) {
 			return $this->_auth->user_id === 0;
 		}
 

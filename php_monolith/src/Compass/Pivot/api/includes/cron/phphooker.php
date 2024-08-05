@@ -158,7 +158,7 @@ class Cron_Phphooker extends \Cron_Default {
 				Type_Phphooker_Main::TASK_TYPE_SMS_RESEND_NOTICE               => $this->_onSmsResent($params),
 				Type_Phphooker_Main::TASK_TYPE_INCORRECT_INVITE_LINK           => $this->_onTryValidateIncorrectLink($params),
 				Type_Phphooker_Main::TASK_TYPE_ON_AUTH_STORY_EXPIRE            => $this->_onAuthStoryExpire($params["auth_map"]),
-				Type_Phphooker_Main::TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE          => $this->_onTwoFaStoryExpire($params["two_fa_map"]),
+				Type_Phphooker_Main::TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE    => $this->_onTwoFaStoryExpire($params["two_fa_map"]),
 				Type_Phphooker_Main::TASK_TYPE_ON_PHONE_CHANGE_STORY_EXPIRE    => $this->_onPhoneChangeStoryExpire($params["user_id"], $params["phone_change_map"]),
 				Type_Phphooker_Main::TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE       => $this->_onPhoneAddStoryExpire($params["user_id"], $params["phone_add_map"]),
 				Type_Phphooker_Main::TASK_TYPE_SEND_ACCOUNT_STATUS_LOG         => $this->_onSendAccountStatusLog($params["user_id"], $params["action"]),
@@ -169,6 +169,7 @@ class Cron_Phphooker extends \Cron_Default {
 				Type_Phphooker_Main::TASK_TYPE_ACCEPT_FIRST_JOIN_LINK          => true, // удалить через 1 релиз
 				Type_Phphooker_Main::TASK_TYPE_ON_USER_LEFT_SPACE_EARLY        => $this->_onUserLeftSpaceEarly($params["user_id"], $params["company_id"], $params["entry_id"]),
 				Type_Phphooker_Main::TASK_TYPE_USER_ENTERING_FIRST_SPACE       => $this->_onUserJoinFirstSpace($params["user_id"], $params["company_id"], $params["entry_id"]),
+				Type_Phphooker_Main::TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES    => $this->_kickUserFromAllCompanies($params["user_id"]),
 				default                                                        => throw new ParseFatalException("Unhandled task_type [{$task_type}] in " . __METHOD__),
 			};
 		} catch (\Exception $e) {
@@ -266,8 +267,6 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Произвести действия при удалении аккаунта пользователя
 	 *
-	 * @long Добавили обработку изменения аккаунта
-	 *
 	 * @param int $deleted_user_id
 	 *
 	 * @return bool
@@ -283,19 +282,38 @@ class Cron_Phphooker extends \Cron_Default {
 	 */
 	protected function _doActionsOnProfileDelete(int $deleted_user_id):bool {
 
-		$user_info = Gateway_Db_PivotUser_UserList::getOne($deleted_user_id);
-
-		// получаем компании пользователя из лобби
-		$all_lobby_company_list = Gateway_Db_PivotUser_CompanyLobbyList::getCompanyListWithMinOrder($deleted_user_id, 0, 100);
-
 		// очищаем девайсы и токены для пользователя
 		Type_User_Notifications::deleteDevicesForUser($deleted_user_id);
 
 		// исключаем пользователя из анонсов
 		Gateway_Announcement_Main::invalidateUser($deleted_user_id);
 
+		// исключаем пользователя из всех его команд
+		return $this->_kickUserFromAllCompanies($deleted_user_id);
+	}
+
+	/**
+	 * исключаем пользователя из всех его команд
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \cs_SocketRequestIsFailed
+	 * @throws \parseException
+	 * @throws \returnException
+	 * @throws cs_CompanyIncorrectCompanyId
+	 * @throws cs_CompanyNotExist
+	 * @throws cs_HiringRequestNotPostmoderation
+	 * @throws cs_RowIsEmpty
+	 * @long
+	 */
+	protected function _kickUserFromAllCompanies(int $user_id):bool {
+
+		// получаем информацию о пользователе
+		$user_info = Gateway_Db_PivotUser_UserList::getOne($user_id);
+
 		// выполняем действия по удалению в компаниях пользователя
-		$user_company_list = Gateway_Db_PivotUser_CompanyList::getCompanyList($deleted_user_id);
+		$user_company_list = Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id);
 		foreach ($user_company_list as $user_company) {
 
 			try {
@@ -308,11 +326,14 @@ class Cron_Phphooker extends \Cron_Default {
 				}
 
 				$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
-				Gateway_Socket_Company::deleteUser($deleted_user_id, $company->company_id, $company->domino_id, $private_key);
+				Gateway_Socket_Company::deleteUser($user_id, $company->company_id, $company->domino_id, $private_key);
 			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
 				// !!! если вдруг компания неактивна, то продолжаем дальнейшее выполнение на пивоте
 			}
 		}
+
+		// получаем компании пользователя из лобби
+		$all_lobby_company_list = Gateway_Db_PivotUser_CompanyLobbyList::getCompanyListWithMinOrder($user_id, 0, 100);
 
 		// для всех компаний лобби где осталась заявка на наём в статусе "Ожидания"
 		foreach ($all_lobby_company_list as $company_lobby) {
@@ -334,7 +355,7 @@ class Cron_Phphooker extends \Cron_Default {
 
 					$user_info = Struct_User_Info::createStruct($user_info);
 					Gateway_Socket_Company::revokeHiringRequest(
-						$deleted_user_id, $company_lobby->entry_id, $company->company_id, $company->domino_id, $private_key, $user_info);
+						$user_id, $company_lobby->entry_id, $company->company_id, $company->domino_id, $private_key, $user_info);
 				} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
 					// !!! если вдруг компания неактивна, то продолжаем дальнейшее выполнение на пивоте
 				}

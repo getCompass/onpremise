@@ -67,4 +67,22 @@ class Domain_Sso_Entity_AccountUserRel {
 			throw new Domain_Sso_Exception_UserRelationship_NotFound();
 		}
 	}
+
+	/**
+	 * удаляем связь
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function delete(int $user_id):void {
+
+		// если связи нет, то ничего не делаем
+		try {
+			$account_user_rel = Gateway_Db_SsoData_SsoAccountUserRel::getOneByUserID($user_id);
+		} catch (RowNotFoundException) {
+			return;
+		}
+
+		// удаляем связь
+		Gateway_Db_SsoData_SsoAccountUserRel::delete($account_user_rel->sub_hash);
+	}
 }

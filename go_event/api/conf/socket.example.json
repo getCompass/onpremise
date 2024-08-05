@@ -37,5 +37,9 @@
 	"jitsi_socket_url": "${ENTRYPOINT_PIVOT}",
 	"jitsi_socket_module": {
 		"php_jitsi": "/api/socket/jitsi/"
+	},
+	"federation_socket_url": "${ENTRYPOINT_FEDERATION}",
+	"federation_socket_module": {
+		"php_federation": "/api/socket/federation/"
 	}
 }

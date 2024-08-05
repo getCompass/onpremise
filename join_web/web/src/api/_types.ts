@@ -4,6 +4,9 @@ export const LANG_CODES: Lang[] = ["ru", "en", "de", "fr", "es", "it"];
 export const AUTH_MAIL_SCENARIO_SHORT = "short_confirm";
 export const AUTH_MAIL_SCENARIO_FULL = "full_confirm";
 
+export const SSO_PROTOCOL_OIDC = "oidc";
+export const SSO_PROTOCOL_LDAP = "ldap";
+
 export type AUTH_MAIL_SCENARIO_SHORT = "short_confirm";
 export type AUTH_MAIL_SCENARIO_FULL = "full_confirm";
 

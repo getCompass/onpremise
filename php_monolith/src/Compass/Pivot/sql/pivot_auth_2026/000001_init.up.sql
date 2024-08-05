@@ -1028,7 +1028,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_1` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_2` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1038,7 +1038,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_2` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_3` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1048,7 +1048,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_3` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_4` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1058,7 +1058,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_4` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_5` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1068,7 +1068,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_5` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_6` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1078,7 +1078,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_6` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_7` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1088,7 +1088,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_7` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_8` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1098,7 +1098,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_8` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_9` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1108,7 +1108,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_9` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_10` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1118,7 +1118,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_10` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_11` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1128,7 +1128,7 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_11` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';
 
 CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_12` (
 	`auth_map` VARCHAR(255) NOT NULL COMMENT 'map аутентификации',
@@ -1138,4 +1138,4 @@ CREATE TABLE IF NOT EXISTS `pivot_auth_2026`.`auth_sso_list_12` (
 	UNIQUE KEY (`sso_auth_token`))
 	ENGINE = InnoDB
 	DEFAULT CHARACTER SET = utf8
-	COMMENT 'Таблица с попытками аутентификации с помощью почты';
+	COMMENT 'Таблица с попытками аутентификации с помощью SSO';

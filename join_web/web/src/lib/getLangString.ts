@@ -47,6 +47,18 @@ const LANG_CONFIG: LangConfig = {
 			forgot_password_button: "Забыли пароль?",
 			auth_blocked: "Вы израсходовали все попытки ввода пароля. Пожалуйста, повторите через $MINUTES.",
 		},
+		ldap_login_dialog: {
+			title: "Compass",
+			desc: "Для авторизации введите username и пароль от вашей корпоративной учётной записи LDAP:",
+			username_input_placeholder: "Username",
+			password_input_placeholder: "Пароль или пароль+одноразовый код",
+			back_button: "← Назад",
+			login_button: "Продолжить",
+			unknown_error:
+				"Авторизация через LDAP временно недоступна. Обратитесь  к руководителю или системному администратору.",
+			incorrect_credentials_error: "Введён неверный username или пароль",
+			auth_blocked: "Достигнут лимит входа через LDAP. Попробуйте через $MINUTES.",
+		},
 		forgot_password_dialog: {
 			title: "Compass",
 			desc: "Пройдите проверку для перехода к сбросу пароля",
@@ -236,6 +248,10 @@ const LANG_CONFIG: LangConfig = {
 				"Авторизация через SSO недоступна. Обратитесь к руководителю или системному администратору.",
 			sso_registration_without_invite:
 				"Регистрация через SSO недоступна. Обратитесь к руководителю или системному администратору для получения ссылки-приглашения.",
+			auth_ldap_method_disabled:
+				"Авторизация через LDAP недоступна. Обратитесь к руководителю или системному администратору.",
+			ldap_registration_without_invite:
+				"Регистрация через LDAP недоступна. Обратитесь к руководителю или системному администратору для получения ссылки-приглашения.",
 		},
 		token_life_time_desktop: "Код действителен в течение ",
 		token_life_time_mobile: "Код действителен ",

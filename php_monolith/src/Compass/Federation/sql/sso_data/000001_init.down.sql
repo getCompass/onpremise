@@ -1,3 +1,3 @@
-DROP TABLE IF EXISTS `sso_data`.`auth_list`;
-DROP TABLE IF EXISTS `sso_data`.`auth_response_rel`;
-DROP TABLE IF EXISTS `sso_data`.`account_user_rel`;
+DROP TABLE IF EXISTS `sso_data`.`sso_auth_list`;
+DROP TABLE IF EXISTS `sso_data`.`sso_account_oidc_token_list`;
+DROP TABLE IF EXISTS `sso_data`.`sso_account_user_rel`;

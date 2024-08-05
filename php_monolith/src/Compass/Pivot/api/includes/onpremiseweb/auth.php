@@ -100,6 +100,10 @@ class Onpremiseweb_Auth extends \BaseFrame\Controller\Api {
 			return $this->error(static::ECODE_UJL_ALREADY_ACCEPTED, "already company member");
 		} catch (cs_UserNotFound $e) {
 			throw new ReturnFatalException("unhandled error {$e->getMessage()}");
+		} catch (Domain_User_Exception_UserIsDisabled) {
+
+			// это не ошибка, выкидываем именно такое исключение
+			return $this->error(static::ECODE_UAUTH_BAD_PHONE, "invalid phone_number [$phone_number]");
 		}
 
 		return $this->ok([

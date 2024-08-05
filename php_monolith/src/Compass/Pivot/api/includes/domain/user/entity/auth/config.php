@@ -79,6 +79,17 @@ class Domain_User_Entity_Auth_Config {
 	}
 
 	/**
+	 * получаем протокол, через который работает аутентификаци через SSO
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 */
+	public static function getSsoProtocol():string {
+
+		return self::_getConfig(self::_KEY_AUTH_SSO)["protocol"];
+	}
+
+	/**
 	 * получаем текст для кнопки начала аутентификации через SSO
 	 *
 	 * @return bool

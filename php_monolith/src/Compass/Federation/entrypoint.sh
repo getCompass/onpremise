@@ -34,3 +34,6 @@ migrate -path "${SCRIPT_PATH}/sql/federation_system" -database mysql://${MYSQL_U
 
 migrate -path "${SCRIPT_PATH}/sql/sso_data" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/sso_data?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/sso_data" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/sso_data?tls=false version
+
+migrate -path "${SCRIPT_PATH}/sql/ldap_data" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/ldap_data?tls=false up
+migrate -path "${SCRIPT_PATH}/sql/ldap_data" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/ldap_data?tls=false version

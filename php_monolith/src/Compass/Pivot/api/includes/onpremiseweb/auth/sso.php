@@ -21,6 +21,8 @@ class Onpremiseweb_Auth_Sso extends \BaseFrame\Controller\Api {
 	public const ECODE_UAUTH_LOGGED          = 1708100; // пользователь уже авторизован
 	public const ECODE_UAUTH_METHOD_DISABLED = 1708118; // способ аутентификации отключен
 
+	public const ECODE_UAUTH_SSO_INCORRECT_FULL_NAME = 1708120; // не удалось подтянуть корректные Имя Фамилия из SSO провайдера
+
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"begin",
@@ -46,7 +48,7 @@ class Onpremiseweb_Auth_Sso extends \BaseFrame\Controller\Api {
 		$join_link      = $this->post(\Formatter::TYPE_STRING, "join_link", false);
 
 		try {
-			[$authentication_token, $is_empty_profile, $user_info, $integration_action_list] = Domain_User_Scenario_OnPremiseWeb_Auth_Sso
+			[$authentication_token, $is_registration, $user_info, $integration_action_list] = Domain_User_Scenario_OnPremiseWeb_Auth_Sso
 				::begin($this->user_id, $sso_auth_token, $signature, $join_link);
 		} catch (cs_UserAlreadyLoggedIn) {
 			return $this->error(static::ECODE_UAUTH_LOGGED, "user already logged in");
@@ -71,11 +73,16 @@ class Onpremiseweb_Auth_Sso extends \BaseFrame\Controller\Api {
 			return $this->error(423, "limit exceeded", [
 				"expires_at" => $e->getExpire(),
 			]);
+		} catch (Domain_User_Exception_AuthStory_Sso_IncorrectFullName) {
+
+			return $this->error(static::ECODE_UAUTH_SSO_INCORRECT_FULL_NAME, "incorrect full name", [
+				"sso_protocol" => Domain_User_Entity_Auth_Config::getSsoProtocol(),
+			]);
 		}
 
 		return $this->ok([
 			"authentication_token"    => (string) $authentication_token,
-			"need_fill_profile"       => (int) $is_empty_profile,
+			"is_registration"         => (int) $is_registration,
 			"user_info"               => (object) Onpremiseweb_Format::userInfo($user_info),
 			"integration_action_list" => (array) $integration_action_list,
 		]);

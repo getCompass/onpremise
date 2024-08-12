@@ -51,6 +51,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		/** @var Struct_User_Auth_Sso_AccountData $sso_account_data */
 		[$sso_account_user_id_rel, $sso_account_data] = Gateway_Socket_Federation::validateSsoOidcAuthToken($sso_auth_token, $signature);
 
+		// проверяем, что полученные Имя Фамилия из SSO корректны
+		self::_throwIfIncorrectFullName(self::_prepareFullName($sso_account_data));
+
 		// нужно ли привязать к root пользователю sso аккаунт, если он оказался ещё не привязан
 		$is_need_bind_root_user = false;
 		if ($sso_account_user_id_rel == 0 && Domain_User_Entity_OnpremiseRoot::hasSsoLoginNameByList([$sso_account_data->mail, $sso_account_data->phone_number])) {
@@ -79,7 +82,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		/** @var Struct_Integration_Notifier_Response_OnUserRegistered|null $integration_response */
 		[$user_id, $integration_response] = $is_need_to_create_user
 			? static::_confirmNotRegisteredUserAuthentication($sso_account_data, $join_link_uniq)
-			: static::_confirmRegisteredUserAuthentication($story, $join_link_uniq);
+			: static::_confirmRegisteredUserAuthentication($story, $sso_account_data, $join_link_uniq);
 
 		// если был создан пользователь
 		if (($sso_account_user_id_rel === 0 && $user_id > 0) || $is_need_bind_root_user) {
@@ -93,10 +96,6 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		$story->handleSuccess($user_id);
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
 
-		// если при наличии интеграции – там произошло обновление профиля, то не просим в клиенте заполнять профиль
-		$is_need_to_create_user = !is_null($integration_response) && in_array(Domain_Integration_Entity_Notifier::ACTION_UPDATE_USER_PROFILE, array_column($integration_response->action_list, "action"))
-			? false : $is_need_to_create_user;
-
 		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
 			$token,
@@ -109,7 +108,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 	/**
 	 * Выполняет кусок логики подтверждения аутентификации для уже зарегистрированного пользователя.
 	 */
-	protected static function _confirmRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, string|false $join_link_uniq):array {
+	protected static function _confirmRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, Struct_User_Auth_Sso_AccountData $sso_account_data, string|false $join_link_uniq):array {
 
 		$user_id = $story->getUserId();
 
@@ -134,6 +133,13 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 
 		// добавляем в историю, что пользователь залогинился
 		Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getType(), $story->getAuthSsoHandler()->getAuthParameter(), getDeviceId(), getUa());
+
+		// если включен флаг актуализиции имя фамилия после авторизации через SSO
+		if (Domain_User_Entity_Auth_Config::isFullNameActualizationEnabled()) {
+
+			// актуализируем имя фамилия для пользователя
+			Domain_User_Action_UpdateProfile::do($user_id, self::_prepareFullName($sso_account_data), false);
+		}
 
 		return [$user_id, null];
 	}
@@ -175,6 +181,28 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
 		return [$user->user_id, $integration_response];
+	}
+
+	/**
+	 * Подготавливаем Имя Фамилия, полученные от SSO провайдера
+	 *
+	 * @return string
+	 */
+	protected static function _prepareFullName(Struct_User_Auth_Sso_AccountData $sso_account_data):string {
+
+		return trim($sso_account_data->first_name . " " . $sso_account_data->last_name);
+	}
+
+	/**
+	 * Выбрасываем исключение, если пришли некорректные Имя Фамилия из SSO провайдера
+	 *
+	 * @throws Domain_User_Exception_AuthStory_Sso_IncorrectFullName
+	 */
+	protected static function _throwIfIncorrectFullName(string $full_name):void {
+
+		if (mb_strlen($full_name) < 1) {
+			throw new Domain_User_Exception_AuthStory_Sso_IncorrectFullName();
+		}
 	}
 
 }

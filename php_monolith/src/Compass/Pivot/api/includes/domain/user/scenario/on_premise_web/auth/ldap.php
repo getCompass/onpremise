@@ -50,6 +50,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		/** @var Struct_User_Auth_Ldap_AccountData $ldap_account_data */
 		[$ldap_account_user_id_rel, $ldap_account_data] = Gateway_Socket_Federation::validateSsoLdapAuthToken($ldap_auth_token);
 
+		// проверяем, что полученные Имя Фамилия из LDAP корректны
+		self::_throwIfIncorrectFullName(self::_prepareFullName($ldap_account_data));
+
 		// нужно ли привязать к root пользователю ldap аккаунт, если он оказался ещё не привязан
 		$is_need_bind_root_user = false;
 		if ($ldap_account_user_id_rel == 0 && Domain_User_Entity_OnpremiseRoot::hasSsoLoginNameByList([$ldap_account_data->uid, $ldap_account_data->username])) {
@@ -78,7 +81,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		/** @var Struct_Integration_Notifier_Response_OnUserRegistered|null $integration_response */
 		[$user_id, $integration_response] = $is_need_to_create_user
 			? static::_confirmNotRegisteredUserAuthentication($ldap_account_data, $join_link_uniq)
-			: static::_confirmRegisteredUserAuthentication($story, $join_link_uniq);
+			: static::_confirmRegisteredUserAuthentication($story, $ldap_account_data, $join_link_uniq);
 
 		// если был создан пользователь
 		if (($ldap_account_user_id_rel === 0 && $user_id > 0) || $is_need_bind_root_user) {
@@ -92,10 +95,6 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		$story->handleSuccess($user_id);
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
 
-		// если при наличии интеграции – там произошло обновление профиля, то не просим в клиенте заполнять профиль
-		$is_need_to_create_user = !is_null($integration_response) && in_array(Domain_Integration_Entity_Notifier::ACTION_UPDATE_USER_PROFILE, array_column($integration_response->action_list, "action"))
-			? false : $is_need_to_create_user;
-
 		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
 		return [
 			$token,
@@ -108,7 +107,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	/**
 	 * Выполняет кусок логики подтверждения аутентификации для уже зарегистрированного пользователя.
 	 */
-	protected static function _confirmRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, string|false $join_link_uniq):array {
+	protected static function _confirmRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, Struct_User_Auth_Ldap_AccountData $ldap_account_data, string|false $join_link_uniq):array {
 
 		$user_id = $story->getUserId();
 
@@ -133,6 +132,13 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 
 		// добавляем в историю, что пользователь залогинился
 		Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getType(), $story->getAuthLdapHandler()->getAuthParameter(), getDeviceId(), getUa());
+
+		// если включен флаг актуализиции имя фамилия после авторизации через LDAP
+		if (Domain_User_Entity_Auth_Config::isFullNameActualizationEnabled()) {
+
+			// актуализируем имя фамилия для пользователя
+			Domain_User_Action_UpdateProfile::do($user_id, self::_prepareFullName($ldap_account_data), false);
+		}
 
 		return [$user_id, null];
 	}
@@ -160,7 +166,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		Domain_Link_Entity_Link::validateBeforeRegistration($join_link_rel_row);
 
 		// регистрируем и отмечаем в истории событие
-		$user                 = Domain_User_Action_Create_Human::do("", "", "", getUa(), getIp(), $ldap_account_data->display_name, "", [], 0, 0);
+		$user                 = Domain_User_Action_Create_Human::do("", "", "", getUa(), getIp(), self::_prepareFullName($ldap_account_data), "", [], 0, 0);
 		$integration_response = Domain_Integration_Entity_Notifier::onUserRegistered(new Struct_Integration_Notifier_Request_OnUserRegistered(
 			user_id: $user->user_id,
 			auth_method: Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_AUTH_BY_LDAP,
@@ -171,6 +177,28 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
 		return [$user->user_id, $integration_response];
+	}
+
+	/**
+	 * Подготавливаем Имя Фамилия, полученные от LDAP провайдера
+	 *
+	 * @return string
+	 */
+	protected static function _prepareFullName(Struct_User_Auth_Ldap_AccountData $ldap_account_data):string {
+
+		return trim($ldap_account_data->display_name);
+	}
+
+	/**
+	 * Выбрасываем исключение, если пришли некорректные Имя Фамилия из LDAP провайдера
+	 *
+	 * @throws Domain_User_Exception_AuthStory_Sso_IncorrectFullName
+	 */
+	protected static function _throwIfIncorrectFullName(string $full_name):void {
+
+		if (mb_strlen($full_name) < 1) {
+			throw new Domain_User_Exception_AuthStory_Sso_IncorrectFullName();
+		}
 	}
 
 }

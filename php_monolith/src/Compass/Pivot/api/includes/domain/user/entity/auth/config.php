@@ -111,6 +111,18 @@ class Domain_User_Entity_Auth_Config {
 		return self::_getConfig(self::_KEY_AUTH_SSO)["authorization_alternative_enabled"];
 	}
 
+
+	/**
+	 * включена ли актуализации Имя Фамилия при авторизации через SSO
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 */
+	public static function isFullNameActualizationEnabled():bool {
+
+		return self::_getConfig(self::_KEY_AUTH_SSO)["full_name_actualization_enabled"];
+	}
+
 	/**
 	 * получаем контент конфига
 	 *

@@ -32,6 +32,7 @@ import {
 	LIMIT_ERROR_CODE,
 	PrepareJoinLinkErrorAlreadyMemberData,
 	PrepareJoinLinkErrorLimitData,
+	SSO_PROTOCOL_OIDC,
 } from "../api/_types.ts";
 import dayjs from "dayjs";
 import {useAtom} from "jotai/index";
@@ -74,6 +75,7 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 	const langStringErrorsServerError = useLangString("errors.server_error");
 	const langStringErrorsSsoError = useLangString("errors.sso_error");
 	const langStringErrorsAuthSsoMethodDisabled = useLangString("errors.auth_method_disabled");
+	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
 	const langStringErrorsSsoLimitError = useLangString("errors.sso_limit_error");
 	const langStringErrorsSsoRegistrationWithoutInvite = useLangString("errors.sso_registration_without_invite");
 	const langStringOneMinute = useLangString("one_minute");
@@ -223,6 +225,13 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 							)}`
 						)
 					);
+					setToastStatus("warning");
+					return;
+				}
+
+				if (error.error_code === 1708120) {
+
+					setToastText(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"));
 					setToastStatus("warning");
 					return;
 				}

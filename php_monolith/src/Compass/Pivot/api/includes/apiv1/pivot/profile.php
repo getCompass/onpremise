@@ -61,6 +61,8 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 			throw new ParamException("user not found");
 		} catch (Domain_User_Exception_AvatarIsDeleted) {
 			throw new ParamException("avatar is deleted");
+		} catch (ActionRestrictedException) {
+			return $this->error(855, "action is restricted");
 		}
 
 		$this->action->profile();

@@ -16,8 +16,9 @@ export class ApiError extends Error {
 	was_member_before: number;
 	expires_at: number;
 	join_link_uniq: string;
+	sso_protocol: string;
 
-	constructor(message: string, error_code: number, next_attempt: number, available_attempts: number, company_id: number, inviter_user_id: number, inviter_full_name: string, is_postmoderation: number, is_waiting_for_postmoderation: number, role: number, was_member_before: number, expires_at: number, join_link_uniq: string) {
+	constructor(message: string, error_code: number, next_attempt: number, available_attempts: number, company_id: number, inviter_user_id: number, inviter_full_name: string, is_postmoderation: number, is_waiting_for_postmoderation: number, role: number, was_member_before: number, expires_at: number, join_link_uniq: string, sso_protocol: string) {
 
 		super(message);
 		this.name = "ApiError";
@@ -33,6 +34,7 @@ export class ApiError extends Error {
 		this.was_member_before = was_member_before;
 		this.expires_at = expires_at;
 		this.join_link_uniq = join_link_uniq;
+		this.sso_protocol = sso_protocol;
 	}
 }
 
@@ -88,6 +90,8 @@ export function useGetResponse(module: GET_RESPONSE_MODULE) {
 					result.response.is_waiting_for_postmoderation ?? 0, result.response.role ?? 0, result.response.was_member ?? 0,
 					// @ts-ignore
 					result.response.expires_at ?? 0, result.response.join_link_uniq ?? "",
+					// @ts-ignore
+					result.response.sso_protocol ?? "",
 				)
 			}
 

@@ -5,7 +5,6 @@ import {
 	authSsoState,
 	authState,
 	firstAuthState,
-	isNeedShowCreateProfileDialogAfterSsoRegistrationState,
 	isRegistrationState,
 	userInfoDataState,
 } from "../_stores.ts";
@@ -77,7 +76,7 @@ export type ApiPivotAuthSsoBeginArgs = {
 /* структура ответа api-метода pivot/api/onpremiseweb/auth/sso/begin */
 export type ApiPivotAuthSsoBegin = {
 	authentication_token: string;
-	need_fill_profile: 0 | 1;
+	is_registration: 0 | 1;
 	user_info: ApiUserInfoData;
 };
 
@@ -87,9 +86,6 @@ export function useApiPivotAuthSsoBegin() {
 	const setAuthSso = useSetAtom(authSsoState);
 	const setFirstAuth = useSetAtom(firstAuthState);
 	const setUserInfoDataState = useSetAtom(userInfoDataState);
-	const setIsNeedShowCreateProfileDialogAfterSsoRegistration = useSetAtom(
-		isNeedShowCreateProfileDialogAfterSsoRegistrationState
-	);
 	const setRegistrationState = useSetAtom(isRegistrationState);
 	const queryClient = useQueryClient();
 	const isJoinLink = useIsJoinLink();
@@ -114,9 +110,9 @@ export function useApiPivotAuthSsoBegin() {
 
 		async onSuccess(response) {
 			setFirstAuth(true);
-			if (response.need_fill_profile === 1) {
+
+			if (response.is_registration === 1) {
 				setRegistrationState(true);
-				setIsNeedShowCreateProfileDialogAfterSsoRegistration(true);
 			}
 
 			await queryClient.invalidateQueries({ queryKey: ["global/start"] });
@@ -128,13 +124,8 @@ export function useApiPivotAuthSsoBegin() {
 			setAuthSso(null);
 			setUserInfoDataState(response.user_info);
 
-			if (response.need_fill_profile === 1) {
-				navigateToPage("auth");
-				navigateToDialog("auth_create_profile");
-			} else {
-				navigateToPage("token");
-				navigateToDialog("token_page");
-			}
+			navigateToPage("token");
+			navigateToDialog("token_page");
 		},
 	});
 }

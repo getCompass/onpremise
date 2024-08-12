@@ -453,6 +453,13 @@ class Domain_User_Scenario_Api {
 			}
 		}
 
+		// если это on-premise пользователь пытается сменить имя, но включена аутентификация через SSO и пользователь зарегистрирован через SSO, то выбрасываем ошибку
+		// об ограничении на это действие
+		if (ServerProvider::isOnPremise() && $name !== false && Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
+			&& Gateway_Socket_Federation::hasSsoUserRelationship($user_id)) {
+			throw new ActionRestrictedException("action is restricted");
+		}
+
 		[$is_profile_was_empty, $user_info] = Domain_User_Action_UpdateProfile::do($user_id, $name, $avatar_file_map);
 
 		// отправляем задачу на обновление профиля в intercom

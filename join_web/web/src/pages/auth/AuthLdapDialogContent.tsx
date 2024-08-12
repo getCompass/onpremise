@@ -17,6 +17,7 @@ import {
 	INACTIVE_LINK_ERROR_CODE,
 	INCORRECT_LINK_ERROR_CODE,
 	LIMIT_ERROR_CODE,
+	SSO_PROTOCOL_OIDC,
 } from "../../api/_types.ts";
 import dayjs from "dayjs";
 import { plural } from "../../lib/plural.ts";
@@ -45,6 +46,7 @@ const AuthLdapDialogContentDesktop = () => {
 	const langStringLdapLoginDialogUnknownError = useLangString("ldap_login_dialog.unknown_error");
 	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
 	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
+	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
 
 	const apiFederationLdapAuthTryAuthenticate = useApiFederationLdapAuthTryAuthenticate();
 	const apiPivotAuthLdapBegin = useApiPivotAuthLdapBegin();
@@ -221,6 +223,12 @@ const AuthLdapDialogContentDesktop = () => {
 								setIsError(true);
 								return;
 							}
+							if (error.error_code === 1708120) {
+								showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
+								setIsLoading(false);
+								setIsError(true);
+								return;
+							}
 
 							if (
 								error.error_code === INCORRECT_LINK_ERROR_CODE ||
@@ -346,6 +354,7 @@ const AuthLdapDialogContentMobile = () => {
 	const langStringLdapLoginDialogAuthBlocked = useLangString("ldap_login_dialog.auth_blocked");
 	const langStringLdapLoginDialogUnknownError = useLangString("ldap_login_dialog.unknown_error");
 	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
+	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
 	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
 
 	const {navigateToDialog} = useNavigateDialog();
@@ -440,6 +449,12 @@ const AuthLdapDialogContentMobile = () => {
 				}
 				if (error.error_code === 1708118) {
 					showToast(langStringErrorsAuthLdapMethodDisabled, "warning");
+					setIsLoading(false);
+					setIsError(true);
+					return;
+				}
+				if (error.error_code === 1708120) {
+					showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
 					setIsLoading(false);
 					setIsError(true);
 					return;

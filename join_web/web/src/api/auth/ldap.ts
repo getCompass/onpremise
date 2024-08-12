@@ -4,7 +4,6 @@ import { ApiUserInfoData } from "../_types.ts";
 import {
 	authState,
 	firstAuthState,
-	isNeedShowCreateProfileDialogAfterLdapRegistrationState,
 	isRegistrationState,
 	userInfoDataState,
 } from "../_stores.ts";
@@ -45,7 +44,7 @@ export type ApiPivotAuthLdapBeginArgs = {
 
 export type ApiPivotAuthLdapBegin = {
 	authentication_token: string;
-	need_fill_profile: 0 | 1;
+	is_registration: 0 | 1;
 	user_info: ApiUserInfoData;
 };
 
@@ -54,9 +53,6 @@ export function useApiPivotAuthLdapBegin() {
 	const setAuth = useSetAtom(authState);
 	const setFirstAuth = useSetAtom(firstAuthState);
 	const setUserInfoDataState = useSetAtom(userInfoDataState);
-	const setIsNeedShowCreateProfileDialogAfterLdapRegistration = useSetAtom(
-		isNeedShowCreateProfileDialogAfterLdapRegistrationState
-	);
 	const setRegistrationState = useSetAtom(isRegistrationState);
 	const queryClient = useQueryClient();
 	const isJoinLink = useIsJoinLink();
@@ -80,9 +76,9 @@ export function useApiPivotAuthLdapBegin() {
 
 		async onSuccess(response) {
 			setFirstAuth(true);
-			if (response.need_fill_profile === 1) {
+
+			if (response.is_registration === 1) {
 				setRegistrationState(true);
-				setIsNeedShowCreateProfileDialogAfterLdapRegistration(true);
 			}
 
 			await queryClient.invalidateQueries({ queryKey: ["global/start"] });
@@ -93,13 +89,8 @@ export function useApiPivotAuthLdapBegin() {
 			setAuth(null);
 			setUserInfoDataState(response.user_info);
 
-			if (response.need_fill_profile === 1) {
-				navigateToPage("auth");
-				navigateToDialog("auth_create_profile");
-			} else {
-				navigateToPage("token");
-				navigateToDialog("token_page");
-			}
+			navigateToPage("token");
+			navigateToDialog("token_page");
 		},
 	});
 }

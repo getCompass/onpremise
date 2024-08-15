@@ -255,7 +255,7 @@ class AudioDevicesSelection extends AbstractDialogTab<IProps, IState> {
 
         return (
             <div className={classes.container}>
-                {(!iAmVisitor && !isMobile) && <div
+                {!iAmVisitor && <div
                     aria-live='polite'
                     className={classes.inputContainer}>
                     {this._renderSelector(audioInput)}

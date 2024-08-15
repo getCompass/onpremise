@@ -4,7 +4,7 @@ import { Button } from "../../components/button.tsx";
 import { Text } from "../../components/text.tsx";
 import { useLangString } from "../../lib/getLangString.ts";
 import useIsMobile from "../../lib/useIsMobile.ts";
-import {useCallback, useMemo, useRef, useState} from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { KeyIcon80 } from "../../components/KeyIcon80.tsx";
 import PasswordInput from "../../components/PasswordInput.tsx";
 import { useApiFederationLdapAuthTryAuthenticate, useApiPivotAuthLdapBegin } from "../../api/auth/ldap.ts";
@@ -16,13 +16,12 @@ import {
 	ALREADY_MEMBER_ERROR_CODE,
 	INACTIVE_LINK_ERROR_CODE,
 	INCORRECT_LINK_ERROR_CODE,
-	LIMIT_ERROR_CODE,
-	SSO_PROTOCOL_OIDC,
+	LIMIT_ERROR_CODE, SSO_PROTOCOL_OIDC,
 } from "../../api/_types.ts";
 import dayjs from "dayjs";
 import { plural } from "../../lib/plural.ts";
 import Preloader16 from "../../components/Preloader16.tsx";
-import {useNavigateDialog} from "../../components/hooks.ts";
+import { useNavigateDialog } from "../../components/hooks.ts";
 
 const AuthLdapDialogContentDesktop = () => {
 	const langStringErrorsNetworkError = useLangString("errors.network_error");
@@ -357,7 +356,7 @@ const AuthLdapDialogContentMobile = () => {
 	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
 	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
 
-	const {navigateToDialog} = useNavigateDialog();
+	const { navigateToDialog } = useNavigateDialog();
 
 	const apiFederationLdapAuthTryAuthenticate = useApiFederationLdapAuthTryAuthenticate();
 	const apiPivotAuthLdapBegin = useApiPivotAuthLdapBegin();

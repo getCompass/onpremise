@@ -236,7 +236,7 @@ class ConnectionIndicator extends AbstractConnectionIndicator<IProps, IState> {
         return (
             <Popover
                 className = { clsx(classes.container, visibilityClass) }
-                size = 'large'
+                size = 'auto'
                 content = { <ConnectionIndicatorContent
                     inheritedStats = { this.state.stats }
                     participantId = { participantId } /> }

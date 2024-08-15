@@ -349,6 +349,7 @@ class Domain_User_Scenario_Api {
 			$userbot_preferences,
 			$client_connection_token,
 			Type_Captcha_Main::init()->getPublicCaptchaKey(Type_Api_Platform::getPlatform(getUa())),
+			Type_Captcha_Main::getProviderPublicCaptchaData(Type_Api_Platform::getPlatform(getUa())),
 		];
 	}
 

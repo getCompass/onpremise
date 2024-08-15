@@ -2,9 +2,10 @@ import {useGetResponse} from "../_index.ts";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {APIAuthInfo, APIJoinLinkInfo} from "../_types.ts";
 import {useSetAtom} from "jotai";
-import {authInputState, authState, firstAuthState} from "../_stores.ts";
+import {authInputState, authState, captchaProviderState, firstAuthState} from "../_stores.ts";
 import {useNavigateDialog, useNavigatePage} from "../../components/hooks.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
+import {useAtomValue} from "jotai/index";
 
 export type ApiAuthPhoneNumberBeginArgs = {
 	phone_number: string;
@@ -20,6 +21,7 @@ export type ApiAuthPhoneNumberBegin = {
 export function useApiAuthPhoneNumberBegin() {
 
 	const getResponse = useGetResponse("pivot");
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 
@@ -40,7 +42,7 @@ export function useApiAuthPhoneNumberBegin() {
 			}
 
 			return getResponse<ApiAuthPhoneNumberBegin>("auth/begin", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 	});
@@ -116,6 +118,7 @@ type ApiAuthPhoneNumberRetryArgs = {
 export function useApiAuthPhoneNumberRetry() {
 
 	const getResponse = useGetResponse("pivot");
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 
@@ -132,7 +135,7 @@ export function useApiAuthPhoneNumberRetry() {
 			}
 
 			return getResponse<APIAuthInfo>("auth/retry", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 	});

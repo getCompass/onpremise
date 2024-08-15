@@ -30,6 +30,11 @@
             &.large {
                 width: 234px;
             }
+
+            &.auto {
+                min-width: 234px;
+                width: auto;
+            }
         }
     }
 }

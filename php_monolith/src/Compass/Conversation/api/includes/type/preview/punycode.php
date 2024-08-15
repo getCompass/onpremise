@@ -177,7 +177,7 @@ class Type_Preview_Punycode {
 						$code = $t + (($q - $t) % (self::_BASE - $t));
 						$output .= self::_ENCODE_TABLE[$code];
 
-						$q = ($q - $t) / (self::_BASE - $t);
+						$q = (int) (($q - $t) / (self::_BASE - $t));
 					}
 
 					$output .= self::_ENCODE_TABLE[$q];

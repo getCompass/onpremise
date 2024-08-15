@@ -9,7 +9,14 @@ use BaseFrame\Server\ServerProvider;
  */
 class Gateway_Socket_Intercom extends Gateway_Socket_Default {
 
-	// добавляем сообщение в очередь
+	public const SYSTEM_EDIT_MESSAGE          = "SYSTEM: ОТРЕДАКТИРОВАЛ СООБЩЕНИЕ";
+	public const SYSTEM_DELETE_MESSAGE        = "SYSTEM: УДАЛИЛ СООБЩЕНИЕ";
+	public const SYSTEM_CREATE_REMIND_MESSAGE = "SYSTEM: УСТАНОВИЛ НАПОМИНАНИЕ";
+	public const SYSTEM_SEND_REMIND_MESSAGE   = "SYSTEM: СРАБОТАЛО НАПОМИНАНИЕ";
+
+	/**
+	 * Добавляем сообщение в очередь
+	 */
 	public static function addMessageListToQueue(string $conversation_key, string $ip, string $user_agent, array $message_list):void {
 
 		if (ServerProvider::isOnPremise()) {

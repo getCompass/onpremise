@@ -21,7 +21,7 @@ class Struct_Api_Conference_CreatorData {
 			creator_user_id: $conference_creator->user_id,
 			full_name: $conference_creator->full_name,
 			avatar: new Struct_Api_Conference_CreatorData_Avatar(
-				Type_Pack_File::doEncrypt($conference_creator->avatar_file_map),
+				mb_strlen($conference_creator->avatar_file_map) > 0 ? Type_Pack_File::doEncrypt($conference_creator->avatar_file_map) : "",
 				Avatar::getColorOutput(Avatar::getColorByUserId($conference_creator->user_id))
 			)
 		);

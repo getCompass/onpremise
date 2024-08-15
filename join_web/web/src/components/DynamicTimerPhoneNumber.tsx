@@ -4,13 +4,15 @@ import { useNavigateDialog } from "./hooks.ts";
 import { useCallback, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { useSetAtom } from "jotai";
-import { authState } from "../api/_stores.ts";
+import { authState, captchaProviderState } from "../api/_stores.ts";
 import { ApiError, NetworkError, ServerError } from "../api/_index.ts";
 import { LIMIT_ERROR_CODE } from "../api/_types.ts";
 import { plural } from "../lib/plural.ts";
 import { Button } from "./button.tsx";
 import { Text } from "./text.tsx";
 import { useApiAuthPhoneNumberRetry } from "../api/auth/phonenumber.ts";
+import { doCaptchaReset } from "../lib/functions.ts";
+import { useAtomValue } from "jotai/index";
 
 type ShowGrecaptchaState = null | "need_render" | "rendered";
 
@@ -30,6 +32,7 @@ type DynamicTimerPhoneNumberProps = {
 	setShowCaptchaState: (value: ShowGrecaptchaState) => void;
 	grecaptchaResponse: string;
 	setGrecaptchaResponse: (value: string) => void;
+	captchaWidgetId: string;
 };
 
 export const DynamicTimerPhoneNumber = ({
@@ -48,6 +51,7 @@ export const DynamicTimerPhoneNumber = ({
 	setShowCaptchaState,
 	grecaptchaResponse,
 	setGrecaptchaResponse,
+	captchaWidgetId,
 }: DynamicTimerPhoneNumberProps) => {
 	const langStringConfirmCodePhoneNumberDialogResendButton = useLangString(
 		"confirm_code_phone_number_dialog.resend_button"
@@ -71,6 +75,8 @@ export const DynamicTimerPhoneNumber = ({
 
 	const minutes = Math.floor(timeLeft / 60);
 	const seconds = timeLeft % 60;
+
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	useEffect(() => {
 		setTimeLeft(endTimeUnix - dayjs().unix());
@@ -126,11 +132,7 @@ export const DynamicTimerPhoneNumber = ({
 				if (error.error_code === 1708201) {
 					showToast(langStringErrorsIncorrectCaptcha, "warning");
 					if (showCaptchaState === "rendered") {
-						// @ts-ignore
-						if (grecaptcha.enterprise.reset !== undefined) {
-							// @ts-ignore
-							grecaptcha.enterprise.reset();
-						}
+						doCaptchaReset(captchaProvider, captchaWidgetId);
 					}
 					return;
 				}

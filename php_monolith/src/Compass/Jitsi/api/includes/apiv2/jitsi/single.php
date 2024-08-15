@@ -16,6 +16,7 @@ class Apiv2_Jitsi_Single extends \BaseFrame\Controller\Api {
 	public const ALLOW_METHODS = [
 		"create",
 		"reject",
+		"accept"
 	];
 
 	// -------------------------------------------------------
@@ -80,19 +81,20 @@ class Apiv2_Jitsi_Single extends \BaseFrame\Controller\Api {
 	}
 
 	/**
+	 * отклонить звонок
+	 *
 	 * @return array
 	 * @throws BlockException
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws ParseFatalException
+	 * @throws \busException
 	 * @throws \cs_CurlError
 	 * @throws \parseException
 	 */
 	public function reject():array {
 
 		$conference_id = $this->post(\Formatter::TYPE_STRING, "conference_id");
-
-		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::JITSI_CREATE_CONFERENCE);
 
 		try {
 			Domain_Jitsi_Scenario_Api::rejectSingle($this->user_id, $conference_id);
@@ -106,6 +108,37 @@ class Apiv2_Jitsi_Single extends \BaseFrame\Controller\Api {
 			throw new ParseFatalException("unexpected behaviour");
 		} catch (Domain_Jitsi_Exception_Conference_IsFinished) {
 			throw new CaseException(1219005, "conference is finished");
+		}
+
+		return $this->ok();
+	}
+
+	/**
+	 * принять звонок
+	 *
+	 * @return array
+	 * @throws CaseException
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws \busException
+	 * @throws \parseException
+	 */
+	public function accept():array {
+
+		$conference_id = $this->post(\Formatter::TYPE_STRING, "conference_id");
+
+		try {
+			Domain_Jitsi_Scenario_Api::acceptSingle($this->user_id, $conference_id);
+		} catch (Domain_Jitsi_Exception_ConferenceLink_IncorrectLink|Domain_Jitsi_Exception_Conference_NotFound|Domain_Jitsi_Exception_Conference_WrongPassword|Domain_Jitsi_Exception_Node_NotFound) {
+			throw new CaseException(1219003, "conference not found");
+		} catch (Domain_Jitsi_Exception_ConferenceMember_NotFound|Domain_jitsi_Exception_ConferenceMember_UnexpectedStatus) {
+			throw new CaseException(1219008, "user is not member of conference");
+		} catch (Domain_Jitsi_Exception_Node_RequestFailed|Domain_Jitsi_Exception_Conference_UnexpectedStatus|Domain_Jitsi_Exception_ConferenceMember_IncorrectMemberId) {
+			throw new ParseFatalException("unexpected behaviour");
+		} catch (Domain_Jitsi_Exception_Conference_IsFinished) {
+			throw new CaseException(1219005, "conference is finished");
+		} catch (Domain_Jitsi_Exception_Conference_NotSingleOpponent) {
+			throw new CaseException(1219016, "single can be accepted only by opponent");
 		}
 
 		return $this->ok();

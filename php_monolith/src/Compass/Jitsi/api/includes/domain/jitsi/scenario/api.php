@@ -170,12 +170,8 @@ class Domain_Jitsi_Scenario_Api {
 	 */
 	public static function prepareConferenceJoiningData(int $user_id, int $space_id, Struct_Db_JitsiData_Conference $conference, bool $is_moderator = false):array {
 
-		// если в конференцию заходит создатель, то выдаем права модератора
-		$is_moderator = $is_moderator ?: $user_id === $conference->creator_user_id;
-
-		// если это single звонок и в него пытается зайти один из первоначальных участников
-		$is_moderator = $is_moderator ?: Domain_Jitsi_Entity_Conference::isSingle($conference)
-			&& Domain_Jitsi_Entity_Conference::isUserMemberOfSingle($conference, $user_id);
+		// определяем наличие прав модератора
+		$is_moderator = $is_moderator ?: Domain_Jitsi_Entity_ConferenceMember_Behavior_CompassUser::resolveModeratorFlag($user_id, $conference);
 
 		$member_context = Domain_Jitsi_Entity_ConferenceMember_JoiningAsserts::createMemberContextForCompassUser($user_id, getIp(), getUa(), $is_moderator, $space_id);
 		/** @noinspection PhpParamsInspection */
@@ -296,6 +292,9 @@ class Domain_Jitsi_Scenario_Api {
 			// получаем информацию о создателе конференции
 			$conference_creator      = Gateway_Bus_PivotCache::getUserInfo($conference->creator_user_id);
 			$conference_creator_data = Struct_Api_Conference_CreatorData::buildFromCache($conference_creator);
+
+			// определяем, нужно ли выдать права модератора участнику
+			$conference_member->is_moderator = $conference_member->is_moderator ?: Domain_Jitsi_Entity_ConferenceMember_Behavior_CompassUser::resolveModeratorFlag($user_id, $conference);
 
 			// иначе делаем по чуть упрощенному флоу, чтобы не обновлять статус участника в конференции:
 			// создаем jwt токен для авторизованного пользователя
@@ -596,6 +595,38 @@ class Domain_Jitsi_Scenario_Api {
 				$user_id,
 				$conference_user_id_list);
 		}
+	}
+
+	/**
+	 * Принять звонок
+	 *
+	 * @param int    $user_id
+	 * @param string $conference_id
+	 *
+	 * @return void
+	 * @throws Domain_Jitsi_Exception_ConferenceMember_NotFound
+	 * @throws Domain_Jitsi_Exception_Conference_IsFinished
+	 * @throws Domain_Jitsi_Exception_Conference_NotFound
+	 * @throws Domain_Jitsi_Exception_Conference_NotSingleOpponent
+	 * @throws Domain_Jitsi_Exception_Conference_UnexpectedStatus
+	 * @throws ParseFatalException
+	 * @throws \busException
+	 * @throws \parseException
+	 */
+	public static function acceptSingle(int $user_id, string $conference_id):void {
+
+		// проверяем, что пытаемся принять сингл звонок
+		$conference = Domain_Jitsi_Entity_Conference::get($conference_id);
+		Domain_Jitsi_Entity_Conference_Asserts::init($conference)->assertSingle()->assertNotFinished();
+
+		$conference_member = Domain_Jitsi_Entity_ConferenceMember::getForCompassUser(
+			$conference->conference_id, $user_id);
+
+		// принять сингл может только оппонент
+		if (Domain_Jitsi_Entity_Conference_Data::getOpponentUserId($conference->data) !== $user_id) {
+			throw new Domain_Jitsi_Exception_Conference_NotSingleOpponent("not single opponent");
+		}
+		Domain_Jitsi_Action_Conference_AcceptSingle::do($conference, $conference_member);
 	}
 
 	/**

@@ -831,6 +831,60 @@ class Helper_Conversations {
 		);
 	}
 
+	/**
+	 * Отправляем сообщение с текстом в интерком
+	 *
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
+	 * @throws \cs_UnpackHasFailed
+	 */
+	public static function addMessageToIntercomQueueByText(string $intercom_message_text, array $message, int $conversation_type):void {
+
+		// отправляем только из чата службы поддержки
+		if (!Type_Conversation_Meta::isGroupSupportConversationType($conversation_type)) {
+			return;
+		}
+
+		// если отправитель не человек - не отправляем, иначе вечный цикл, что оператор сам себе шлет сообщения
+		$sender_user_id = Type_Conversation_Message_Main::getHandler($message)::getSenderUserId($message);
+		if ($sender_user_id < 1) {
+			return;
+		}
+
+		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList([$sender_user_id], false);
+		if (!Type_User_Main::isHuman($user_info_list[$sender_user_id]->npc_type)) {
+			return;
+		}
+
+		$to_intercom_message_list               = [];
+		$message_map                            = Type_Conversation_Message_Main::getHandler($message)::getMessageMap($message);
+		$to_intercom_message_list[$message_map] = [
+			"text"           => $intercom_message_text,
+			"type"           => "text",
+			"sender_user_id" => Type_Conversation_Message_Main::getHandler($message)::getSenderUserId($message),
+			"message_key"    => Message::doEncrypt($message_map),
+		];
+
+		if (count($to_intercom_message_list) < 1) {
+			return;
+		}
+
+		// получаем conversation_key
+		$message_map      = Type_Conversation_Message_Main::getHandler($message)::getMessageMap($message);
+		$conversation_map = \CompassApp\Pack\Message\Conversation::getConversationMap($message_map);
+
+		$sender_id = Type_Conversation_Message_Main::getHandler($message)::getSenderUserId($message);
+		Type_User_ActionAnalytics::send($sender_id, Type_User_ActionAnalytics::WRITE_TO_SUPPORT);
+
+		// отправляем в очередь на отправку в intercom
+		Gateway_Socket_Intercom::addMessageListToQueue(
+			\CompassApp\Pack\Conversation::doEncrypt($conversation_map),
+			getIp(),
+			\BaseFrame\System\UserAgent::getUserAgent(),
+			array_values($to_intercom_message_list)
+		);
+	}
+
 	// отправляем WS событие онлайн и push уведомления офлайн пользователям через go_talking_handler микросервис
 	protected static function _notifyUserOnMessageAdded(array $message, array $talking_user_list, int $conversation_type, string $conversation_name, array $dynamic_row):void {
 
@@ -960,7 +1014,190 @@ class Helper_Conversations {
 			$repost_message_list[] = $repost_message;
 		}
 
+		// если находимся в чате поддержки
+		self::_ifRepostToSupportGroup($repost_message_list[0], $receiver_meta_row, $repost_message_list);
+
 		return $repost_message_list;
+	}
+
+	/**
+	 * Если совершаем действие в чат поддержки
+	 */
+	protected static function _ifRepostToSupportGroup(array $comment_message, array $receiver_meta_row, array $message_list):void {
+
+		// если не в чате поддержки, выходим
+		if (!Type_Conversation_Meta::isGroupSupportConversationType($receiver_meta_row["type"])) {
+			return;
+		}
+
+		$output_text = self::_getRepostIntercomText($comment_message, $message_list);
+
+		// отправляем сообщение в интерком
+		self::addMessageToIntercomQueueByText($output_text, $comment_message, $receiver_meta_row["type"]);
+	}
+
+	/**
+	 * Получаем текст для сообщения
+	 */
+	protected static function _getRepostIntercomText(array $comment_message, array $message_list):string {
+
+		$prepared_message_list = [];
+		foreach ($message_list as $message) {
+
+			array_push($prepared_message_list, ...static::_resolveNestedTexts($message));
+		}
+
+		$intercom_message_text = "";
+		foreach ($prepared_message_list as $message) {
+
+			$intercom_message_text .= self::_getRepostMessageIntercomText($message);
+		}
+		$intercom_message_text = substr($intercom_message_text, 0, -2);
+
+		$text = Type_Conversation_Message_Main::getHandler($comment_message)::getText($comment_message);
+		if ($text != "") {
+			$text .= "\n\n";
+		}
+		return "{$text}<b>--РЕПОСТ--</b>\n\n{$intercom_message_text}";
+	}
+
+	/**
+	 * Формируем нужный формат сообщения для отправки в интерком
+	 */
+	protected static function _getRepostMessageIntercomText(array $message):string {
+
+		$message_text      = $message["text"];
+		$member            = Gateway_Bus_CompanyCache::getMember($message["sender_user_id"]);
+		$full_name         = $member->full_name;
+		$message_sender_at = $message["created_at"];
+		$platform          = $message["platform"];
+
+		$date_text         = date("m.d.y", $message_sender_at);
+		$time_text         = date("H:i", $message_sender_at);
+		$time_text_message = "$time_text МСК {$date_text}";
+
+		if (isset($message["file_map"])) {
+			$file_map       = $message["file_map"];
+			$file_info_list = Gateway_Socket_FileBalancer::getFileList([$file_map]);
+			$file_url       = $file_info_list[0]["url"];
+
+			return "<b>{$full_name} ({$platform} | {$time_text_message})</b>\n$file_url\n_\n";
+		}
+
+		if ($message_text == "") {
+			return "";
+		}
+
+		return "<b>{$full_name} ({$platform} | {$time_text_message})</b>\n$message_text\n_\n";
+	}
+
+	/**
+	 * Если совершаем действие в чат поддержки
+	 */
+	protected static function _ifQuoteToSupportGroup(array $comment_message, array $receiver_meta_row, array $message_list):void {
+
+		// если не в чате поддержки, выходим
+		if (!Type_Conversation_Meta::isGroupSupportConversationType($receiver_meta_row["type"])) {
+			return;
+		}
+
+		$output_text = self::_getQuoteIntercomText($comment_message, $message_list);
+
+		// отправляем сообщение в интерком
+		self::addMessageToIntercomQueueByText($output_text, $comment_message, $receiver_meta_row["type"]);
+	}
+
+	/**
+	 * Получаем текст для сообщения
+	 */
+	protected static function _getQuoteIntercomText(array $comment_message, array $message_list):string {
+
+		$prepared_message_list = [];
+		foreach ($message_list as $message) {
+
+			array_push($prepared_message_list, ...static::_resolveNestedTexts($message));
+		}
+
+		$intercom_message_text = "";
+		foreach ($prepared_message_list as $message) {
+
+			$intercom_message_text .= self::_getQuoteMessageIntercomText($message);
+		}
+		$intercom_message_text = substr($intercom_message_text, 0, -2);
+
+		$text = Type_Conversation_Message_Main::getHandler($comment_message)::getText($comment_message);
+		if ($text != "") {
+			$text .= "\n\n";
+		}
+		return "{$text}<b>--ЦИТАТА--</b>\n{$intercom_message_text}";
+	}
+
+	/**
+	 * Формируем нужный формат сообщения для отправки в интерком
+	 */
+	protected static function _getQuoteMessageIntercomText(array $message):string {
+
+		$message_text = $message["text"];
+
+		if (isset($message["file_map"])) {
+
+			$file_map       = $message["file_map"];
+			$file_info_list = Gateway_Socket_FileBalancer::getFileList([$file_map]);
+			$file_url       = $file_info_list[0]["url"];
+
+			return "$file_url\n_\n";
+		}
+
+		if ($message_text == "") {
+			return "";
+		}
+
+		return "$message_text\n_\n";
+	}
+
+	/**
+	 * Возвращает массив с текстами вложенных сообщений.
+	 */
+	protected static function _resolveNestedTexts(array $message):array {
+
+		$output = [];
+
+		foreach (Type_Conversation_Message_Main::getHandler($message)::getRepostedOrQuotedMessageList($message) as $nested_message) {
+
+			$handler = Type_Conversation_Message_Main::getHandler($nested_message);
+
+			$message = [
+				"text"           => $handler::getText($nested_message),
+				"created_at"     => $handler::getCreatedAt($nested_message),
+				"sender_user_id" => $handler::getSenderUserId($nested_message),
+				"platform"       => ucfirst($handler::getPlatform($nested_message)),
+			];
+
+			if ($handler::getType($nested_message) == CONVERSATION_MESSAGE_TYPE_FILE) {
+				$message["file_map"] = $handler::getFileMap($nested_message);
+			}
+			$output[] = $message;
+
+			// репосты и цитаты разбираем рекурсивно
+			if (static::hasNestedMessages($nested_message)) {
+				array_push($output, ...static::_resolveNestedTexts($nested_message));
+			}
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Проверяет, содержит ли сообщение вложенные сообщения.
+	 */
+	public static function hasNestedMessages(array $message):bool {
+
+		$handler = Type_Conversation_Message_Main::getHandler($message);
+		return $handler::isRepost($message)
+			|| $handler::isQuote($message)
+			|| $handler::isQuoteFromThread($message)
+			|| $handler::isSystemBotRemind($message)
+			|| $handler::isSystemBotRemindFromThread($message);
 	}
 
 	// получить список подготовленных для репоста сообщений
@@ -1000,78 +1237,6 @@ class Helper_Conversations {
 		return self::_prepareRepostOrQuoteMessageList($prepare_chunk_data_message_list);
 	}
 
-	// репост сообщений в диалог
-	public static function addRepost(int $user_id, string $client_message_id, string $text, array $message_map_list, string $conversation_map, array $receiver_meta_row, bool $is_add_repost_quote, array $mention_user_id_list, string $platform):array {
-
-		// если старая версия
-		if (!$is_add_repost_quote) {
-
-			return self::addRepostOldVersion(
-				$user_id,
-				$client_message_id,
-				$text,
-				$message_map_list,
-				$conversation_map,
-				$receiver_meta_row,
-				$mention_user_id_list,
-				$platform);
-		}
-
-		$donor_conversation_map = self::_tryGetConversationMap($message_map_list);
-		$block_list             = self::_getBlockListRow($message_map_list, $donor_conversation_map);
-
-		// подготавливаем выбранные сообщения к репосту
-		$reposted_message_list = self::_getPreparedRepostedMessageList($message_map_list, $block_list, $user_id);
-
-		// если список сообщений для репоста оказался пуст, то выдаем exception cs_MessageList_IsEmpty
-		self::_throwIfEmptyMessageList($reposted_message_list);
-
-		// апгрейдим список сообщений для репоста (например для звонков получаем их номер; продолжительность)
-		$reposted_message_list = self::_upgradeCallMessageList($user_id, $reposted_message_list);
-
-		// сортируем сообщения по message_index
-		$reposted_message_list = self::_doSortMessageListByMessageIndex($reposted_message_list);
-
-		// подготавливаем сообщения типа репост
-		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeRepost($user_id, $text, $client_message_id, $reposted_message_list, $platform);
-		$message = Type_Conversation_Message_Main::getHandler($message)::addMentionUserIdList($message, $mention_user_id_list);
-
-		// выполняем репост
-		return self::_doRepost($message, $user_id, $receiver_meta_row, $conversation_map, $donor_conversation_map);
-	}
-
-	// получить список подготовленных для репоста сообщений
-	protected static function _getPreparedRepostedMessageList(array $message_map_list, array $block_list, int $user_id):array {
-
-		$prepared_reposted_message_list = [];
-		$message_count                  = 0;
-		foreach ($message_map_list as $v) {
-
-			try {
-				$reposted_message = self::_getRepostedMessage($block_list, $v, $user_id);
-			} catch (cs_Message_IsDeleted) {
-				continue;
-			}
-
-			// подготавливаем сообщение к репосту
-			$reposted_message = Type_Message_Utils::prepareMessageForRepostQuoteRemind($reposted_message);
-
-			// добавляем сообщение в список того, что будем репостить
-			$prepared_reposted_message_list = self::_addToMessageListByIndex($prepared_reposted_message_list, $reposted_message);
-
-			// инкрементим количество выбранных для репоста сообщений
-			$message_count++;
-
-			// для репоста/цитаты подсчитываем также сообщения в репостнутых/процитированных
-			$message_count = self::_incMessageListCountIfRepostOrQuote($message_count, $reposted_message);
-
-			// если достигли лимита сообщений для репоста - выдаём exception cs_Message_Limit
-			self::_throwIfExceededSelectedMessageLimit($message_count);
-		}
-
-		return $prepared_reposted_message_list;
-	}
-
 	// выбрасываем исключение, если сообщение нельзя репостнуть
 	protected static function _throwIfNotAllowToRepost(array $reposted_message, int $user_id):void {
 
@@ -1082,18 +1247,6 @@ class Helper_Conversations {
 		if (!Type_Conversation_Message_Main::getHandler($reposted_message)::isAllowToRepost($reposted_message, $user_id)) {
 			throw new ParamException("you have not permissions to repost this message");
 		}
-	}
-
-	// выполняем репост сообщений
-	protected static function _doRepost(array $message, int $user_id, array $receiver_meta_row, string $conversation_map, string $donor_conversation_map):array {
-
-		// добавляем репост в диалог
-		$repost_message = self::_addMessage($message, $conversation_map, $receiver_meta_row);
-
-		// выполняем все необходимые действия после репоста
-		self::doAfterRepost($user_id, [$repost_message], $donor_conversation_map, $receiver_meta_row, "row178");
-
-		return [$repost_message];
 	}
 
 	// заносим информацию о репосте в таблицу с историей репостов
@@ -1372,6 +1525,7 @@ class Helper_Conversations {
 
 		/** @var Struct_Db_CompanyConversation_ConversationDynamic $dynamic */
 		[
+			$old_message,
 			$edited_message,
 			$diff_mentioned_user_id_list,
 			$dynamic,
@@ -1398,6 +1552,12 @@ class Helper_Conversations {
 			$mention_user_id_list,
 			$diff_mentioned_user_id_list,
 			$dynamic->messages_updated_version);
+
+		// форматируем текст для интеркома
+		$intercom_message_text = self::_prepareEditMessageToIntercom($old_message, $edited_message);
+
+		// отправляем сообщение в очередь
+		self::addMessageToIntercomQueueByText($intercom_message_text, $edited_message, $meta_row["type"]);
 
 		// обрабатываем ссылки в тексте, если они есть
 		Type_Preview_Producer::addTaskIfLinkExistInMessage(
@@ -1525,6 +1685,18 @@ class Helper_Conversations {
 		return Type_Conversation_Message_Main::getHandler($message)::prepareForFormatLegacy(
 			$message, 0, $thread_rel, $reaction_user_list, $reaction_last_edited_at
 		);
+	}
+
+	/**
+	 * Формируем нужный формат сообщения для отправки в интерком
+	 */
+	protected static function _prepareEditMessageToIntercom(array $old_message, array $edited_message):string {
+
+		$old_message_text    = Type_Conversation_Message_Main::getHandler($old_message)::getText($old_message);
+		$edited_message_text = Type_Conversation_Message_Main::getHandler($edited_message)::getText($edited_message);
+
+		$system_info = Gateway_Socket_Intercom::SYSTEM_EDIT_MESSAGE;
+		return "{$system_info}\n\n<b>Было</b>\n{$old_message_text}\n\n<b>Стало</b>\n{$edited_message_text}";
 	}
 
 	// подготавливаем объект сообщения под форматирование
@@ -1887,12 +2059,61 @@ class Helper_Conversations {
 		// формируем список сообщений для возврата
 		$message_list = [];
 		foreach ($message_list_grouped_by_message_map as $v) {
+
 			$message_list[] = $v;
+			self::_sendDeletedMessageToIntercom($v, $meta_row);
 		}
 
 		// удаляем сообщение для всех пользователей
 		Domain_Search_Entity_ConversationMessage_Task_Delete::queueList(array_column($message_list, "message_map"));
 		return $message_list;
+	}
+
+	/**
+	 * Отправляем в интерком оповещение об удалении сообщения
+	 */
+	protected static function _sendDeletedMessageToIntercom(array $message, array $meta_row):void {
+
+		// если не в чате поддержки, выходим
+		if (!Type_Conversation_Meta::isGroupSupportConversationType($meta_row["type"])) {
+			return;
+		}
+
+		$message_type = Type_Conversation_Message_Main::getHandler($message)::getOriginalType($message);
+
+		// не костыль а изящное решение, нужно чтобы работать с сообщением по общему флоу
+		$message["type"] = $message_type;
+
+		$intercom_text = match ($message_type) {
+			CONVERSATION_MESSAGE_TYPE_TEXT   => self::_getIntercomText($message),
+			CONVERSATION_MESSAGE_TYPE_FILE   => self::_getIntercomFileText($message),
+			CONVERSATION_MESSAGE_TYPE_MASS_QUOTE,
+			CONVERSATION_MESSAGE_TYPE_QUOTE  => self::_getQuoteIntercomText($message, [$message]),
+			CONVERSATION_MESSAGE_TYPE_REPOST => self::_getRepostIntercomText($message, [$message]),
+			default                          => ""
+		};
+
+		$system_text = Gateway_Socket_Intercom::SYSTEM_DELETE_MESSAGE;
+		$output_text = "{$system_text}\n\n{$intercom_text}";
+
+		// отправляем сообщение в интерком о том что удалили сообщение
+		self::addMessageToIntercomQueueByText($output_text, $message, $meta_row["type"]);
+	}
+
+	/**
+	 * Получаем текст для сообщения
+	 */
+	protected static function _getIntercomText(array $message):string {
+
+		return Type_Conversation_Message_Main::getHandler($message)::getText($message);
+	}
+
+	/**
+	 * Получаем текст для сообщения файла
+	 */
+	protected static function _getIntercomFileText(array $message):string {
+
+		return Type_Conversation_Message_Main::getHandler($message)::getFileName($message);
 	}
 
 	// группируем сообщения по блоку
@@ -2321,6 +2542,9 @@ class Helper_Conversations {
 			// репостим сообщения
 			$quoted_message_list[] = self::_addMessage($prepared_message, $conversation_map, $receiver_meta_row);
 		}
+
+		// если находимся в чате поддержки
+		self::_ifQuoteToSupportGroup($quoted_message_list[0], $receiver_meta_row, $quoted_message_list);
 
 		return $quoted_message_list;
 	}

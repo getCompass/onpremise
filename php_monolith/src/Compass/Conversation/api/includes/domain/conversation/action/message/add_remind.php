@@ -2,6 +2,10 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+
 /**
  * Действие для добавления Напоминаний
  */
@@ -10,11 +14,11 @@ class Domain_Conversation_Action_Message_AddRemind {
 	/**
 	 * выполняем
 	 *
-	 * @return Struct_Db_CompanyData_Remind
 	 * @throws Domain_Conversation_Exception_Message_NotAllowForUser
 	 * @throws Domain_Remind_Exception_AlreadyExist
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws BusFatalException
 	 * @throws \busException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \cs_UnpackHasFailed
@@ -30,7 +34,7 @@ class Domain_Conversation_Action_Message_AddRemind {
 		 * @var Struct_Db_CompanyData_Remind                      $remind
 		 * @var Struct_Db_CompanyConversation_ConversationDynamic $dynamic
 		 */
-		[$remind, $dynamic] = self::_addRemind($user_id, $remind_type, $remind_at, $comment, $message_map, $conversation_map, $dynamic_row);
+		[$message, $remind, $dynamic] = self::_addRemind($user_id, $remind_type, $remind_at, $comment, $message_map, $conversation_map, $dynamic_row);
 
 		// если к сообщению прикреплён тред, то удаляем родительское сообщение из кэша
 		try {
@@ -56,16 +60,22 @@ class Domain_Conversation_Action_Message_AddRemind {
 		// инкрементим количество действий
 		Domain_User_Action_IncActionCount::incConversationRemindCreated($user_id, $conversation_map);
 
+		// получаем текст для сообщения в интерком
+		$intercom_message_text = self::_prepareCreateRemindMessageToIntercom($message, $comment, $remind_at);
+
+		// отправляем сообщение в интерком о том что создали напоминание
+		Helper_Conversations::addMessageToIntercomQueueByText($intercom_message_text, $message, $meta_row["type"]);
+
 		return $remind;
 	}
 
 	/**
-	 * добавляем Напоминание
+	 * Добавляем Напоминание
 	 *
 	 * @throws Domain_Conversation_Exception_Message_NotAllowForUser
 	 * @throws Domain_Remind_Exception_AlreadyExist
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
@@ -137,6 +147,21 @@ class Domain_Conversation_Action_Message_AddRemind {
 
 		Gateway_Db_CompanyConversation_MessageBlock::commitTransaction();
 
-		return [$remind, $dynamic];
+		return [$message, $remind, $dynamic];
+	}
+
+	/**
+	 * Формируем нужный формат сообщения для отправки в интерком
+	 */
+	protected static function _prepareCreateRemindMessageToIntercom(array $message, string $comment, int $time):string {
+
+		$message_text = Type_Conversation_Message_Main::getHandler($message)::getText($message);
+		$system_info  = Gateway_Socket_Intercom::SYSTEM_CREATE_REMIND_MESSAGE;
+
+		$date_text         = date("m.d.y", $time);
+		$time_text         = date("H:i", $time);
+		$time_text_message = "{$date_text} в $time_text МСК";
+
+		return "{$system_info}\n\n<b>Сообщение</b>\n{$message_text}\n\n<b>Комментарий к напоминанию</b>\n{$comment}\n\n<b>Сработает</b>\n{$time_text_message}";
 	}
 }

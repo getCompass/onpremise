@@ -11,7 +11,8 @@ class Gateway_Bus_Event {
 
 	/**
 	 * Создает задачу.
-	 * @throws \busException
+	 *
+	 * @throws BusFatalException
 	 */
 	public static function pushTask(string $type, array $data = [], string $module = "", string $group = "default", int $need_work = 0):void {
 

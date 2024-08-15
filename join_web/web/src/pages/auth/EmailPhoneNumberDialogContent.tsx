@@ -9,6 +9,7 @@ import {
 	authInputState,
 	authSsoState,
 	authState,
+	captchaProviderState,
 	captchaPublicKeyState,
 	confirmCodeState,
 	confirmPasswordState,
@@ -45,6 +46,7 @@ import useAvailableAuthMethodList from "../../lib/useAvailableAuthMethodList.ts"
 import { useApiAuthPhoneNumberBegin } from "../../api/auth/phonenumber.ts";
 import { useApiAuthMailBegin } from "../../api/auth/mail.ts";
 import { useApiFederationSsoAuthBegin } from "../../api/auth/sso.ts";
+import { doCaptchaRender, doCaptchaReset } from "../../lib/functions.ts";
 
 type EmailPhoneNumberDialogContentProps = {
 	onAuthBeginClickHandler: (value: string) => void;
@@ -60,6 +62,8 @@ type EmailPhoneNumberDialogContentProps = {
 	setShowCaptchaState: (value: ShowGrecaptchaState) => void;
 	setGrecaptchaResponse: (value: string) => void;
 	setIsSsoAuthBtnPreloader: Dispatch<SetStateAction<boolean>>;
+	widgetId: string;
+	setWidgetId: (value: string) => void;
 };
 
 const EmailPhoneNumberDialogContentDesktop = ({
@@ -76,6 +80,8 @@ const EmailPhoneNumberDialogContentDesktop = ({
 	setShowCaptchaState,
 	setGrecaptchaResponse,
 	setIsSsoAuthBtnPreloader,
+	widgetId,
+	setWidgetId,
 }: EmailPhoneNumberDialogContentProps) => {
 	const langStringEmailPhoneNumberDialogTitle = useLangString("email_phone_number_dialog.title");
 	const langStringEmailPhoneNumberDialogDescEmailPhoneNumber = useLangString(
@@ -106,6 +112,7 @@ const EmailPhoneNumberDialogContentDesktop = ({
 	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
 	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	useEffect(() => {
 		if (isToolTipVisible) {
@@ -117,25 +124,14 @@ const EmailPhoneNumberDialogContentDesktop = ({
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
-					// @ts-ignore
-					grecaptcha.enterprise.render(node, {
-						sitekey: captchaPublicKey,
-						action: "check_captcha",
-						callback: function (grecaptchaResponse: string) {
-							setGrecaptchaResponse(grecaptchaResponse);
-						},
-					});
+					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
 				} catch (error) {}
 
 				setShowCaptchaState("rendered");
 			}
 
 			if (node !== null && showCaptchaState === "rendered") {
-				// @ts-ignore
-				if (grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
-				}
+				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
 		[showCaptchaState, captchaPublicKey]
@@ -316,6 +312,8 @@ const EmailPhoneNumberDialogContentMobile = ({
 	setShowCaptchaState,
 	setGrecaptchaResponse,
 	setIsSsoAuthBtnPreloader,
+	widgetId,
+	setWidgetId,
 }: EmailPhoneNumberDialogContentProps) => {
 	const langStringEmailPhoneNumberDialogTitle = useLangString("email_phone_number_dialog.title");
 	const langStringEmailPhoneNumberDialogDescEmailPhoneNumber = useLangString(
@@ -348,6 +346,7 @@ const EmailPhoneNumberDialogContentMobile = ({
 	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
 	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	useEffect(() => {
 		if (isToolTipVisible) {
@@ -359,25 +358,14 @@ const EmailPhoneNumberDialogContentMobile = ({
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
-					// @ts-ignore
-					grecaptcha.enterprise.render(node, {
-						sitekey: captchaPublicKey,
-						action: "check_captcha",
-						callback: function (grecaptchaResponse: string) {
-							setGrecaptchaResponse(grecaptchaResponse);
-						},
-					});
+					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
 				} catch (error) {}
 
 				setShowCaptchaState("rendered");
 			}
 
 			if (node !== null && showCaptchaState === "rendered") {
-				// @ts-ignore
-				if (grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
-				}
+				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
 		[showCaptchaState, captchaPublicKey]
@@ -575,6 +563,8 @@ const EmailPhoneNumberDialogContent = () => {
 	const ssoProtocol = useAtomValue(ssoProtocolState);
 	const [isEmailPhoneNumberAuthBtnPreloader, setEmailPhoneNumberAuthBtnPreloader] = useState(false);
 	const [isSsoAuthBtnPreloader, setIsSsoAuthBtnPreloader] = useState(false);
+	const [widgetId, setWidgetId] = useState("");
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	// сбрасываем
 	useEffect(() => {
@@ -687,10 +677,8 @@ const EmailPhoneNumberDialogContent = () => {
 				}
 			} catch (error) {
 				setGrecaptchaResponse(""); // сбрасываем
-				// @ts-ignore
-				if (showCaptchaState === "rendered" && grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
+				if (showCaptchaState === "rendered") {
+					doCaptchaReset(captchaProvider, widgetId);
 				}
 
 				if (error instanceof NetworkError) {
@@ -755,10 +743,8 @@ const EmailPhoneNumberDialogContent = () => {
 							}
 						} catch (error) {
 							setGrecaptchaResponse(""); // сбрасываем
-							// @ts-ignore
-							if (showCaptchaState === "rendered" && grecaptcha.enterprise.reset !== undefined) {
-								// @ts-ignore
-								grecaptcha.enterprise.reset();
+							if (showCaptchaState === "rendered") {
+								doCaptchaReset(captchaProvider, widgetId);
 							}
 
 							if (error instanceof NetworkError) {
@@ -791,11 +777,7 @@ const EmailPhoneNumberDialogContent = () => {
 								if (error.error_code === 1708201) {
 									showToast(langStringErrorsIncorrectCaptcha, "warning");
 									if (showCaptchaState === "rendered") {
-										// @ts-ignore
-										if (grecaptcha.enterprise.reset !== undefined) {
-											// @ts-ignore
-											grecaptcha.enterprise.reset();
-										}
+										doCaptchaReset(captchaProvider, widgetId);
 									}
 									return;
 								}
@@ -925,11 +907,7 @@ const EmailPhoneNumberDialogContent = () => {
 					if (error.error_code === 1708201) {
 						showToast(langStringErrorsIncorrectCaptcha, "warning");
 						if (showCaptchaState === "rendered") {
-							// @ts-ignore
-							if (grecaptcha.enterprise.reset !== undefined) {
-								// @ts-ignore
-								grecaptcha.enterprise.reset();
-							}
+							doCaptchaReset(captchaProvider, widgetId);
 						}
 						return;
 					}
@@ -1121,6 +1099,8 @@ const EmailPhoneNumberDialogContent = () => {
 				setShowCaptchaState={setShowCaptchaState}
 				setGrecaptchaResponse={setGrecaptchaResponse}
 				setIsSsoAuthBtnPreloader={setIsSsoAuthBtnPreloader}
+				widgetId={widgetId}
+				setWidgetId={setWidgetId}
 			/>
 		);
 	}
@@ -1142,6 +1122,8 @@ const EmailPhoneNumberDialogContent = () => {
 			setShowCaptchaState={setShowCaptchaState}
 			setGrecaptchaResponse={setGrecaptchaResponse}
 			setIsSsoAuthBtnPreloader={setIsSsoAuthBtnPreloader}
+			widgetId={widgetId}
+			setWidgetId={setWidgetId}
 		/>
 	);
 };

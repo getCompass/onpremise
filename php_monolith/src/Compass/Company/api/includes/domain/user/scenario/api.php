@@ -119,12 +119,11 @@ class Domain_User_Scenario_Api {
 
 		$device_id = getDeviceId();
 		$platform  = Type_Api_Platform::getPlatform();
-		$token     = COMPANY_ID . ":" . generateUUID();
 
 		try {
 
 			Domain_User_Entity_Validator::assertLoggedIn($user_id);
-			$ws_connection_info = Gateway_Bus_Sender::setToken($user_id, $token, $device_id, $platform);
+			$ws_connection_info = Gateway_Bus_Sender::setToken($user_id, $device_id, $platform);
 		} catch (cs_TalkingBadResponse) {
 			throw new ParamException("Failed to connect");
 		}

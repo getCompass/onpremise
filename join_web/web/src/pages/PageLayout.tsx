@@ -53,7 +53,7 @@ const PageLayoutDesktop = ({ isLoading, children }: PageLayoutProps) => {
 					height: bgHeight === null ? "100%" : bgHeight,
 				}}
 			>
-				<Box className={"animated-bg-desktop"} />
+				<Box className={"static-bg-desktop"} />
 			</Box>
 			{isLoading ? <LoadingLogoDesktop /> : <>{children}</>}
 		</Center>
@@ -79,7 +79,7 @@ const PageLayoutMobile = ({ isLoading, children }: PageLayoutProps) => {
 						overflow="hidden"
 						position="absolute"
 					>
-						<Box className={"animated-bg-mobile"} />
+						<Box className={"static-bg-mobile"} />
 					</Box>
 					<>{children}</>
 				</VStack>
@@ -113,7 +113,7 @@ const PageLayoutMobile = ({ isLoading, children }: PageLayoutProps) => {
 				overflow="hidden"
 				position="absolute"
 			>
-				<Box className={"animated-bg-mobile"} />
+				<Box className={"static-bg-mobile"} />
 			</Box>
 			{isLoading ? <LoadingLogoMobile /> : <>{children}</>}
 		</Center>

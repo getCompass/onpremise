@@ -3,6 +3,7 @@ import {
 	activeDialogIdState,
 	authInputState,
 	authState,
+	captchaProviderState,
 	captchaPublicKeyState,
 	confirmCodeState,
 	isLoginCaptchaRenderedState,
@@ -40,6 +41,7 @@ import {
 import Preloader16 from "../../components/Preloader16.tsx";
 import { useAtom } from "jotai/index";
 import { useApiSecurityMailTryResetPassword } from "../../api/security/mail.ts";
+import { doCaptchaReady, doCaptchaRender, doCaptchaReset } from "../../lib/functions.ts";
 
 type EmailLoginDialogContentProps = {
 	showCaptchaState: ShowGrecaptchaState;
@@ -93,10 +95,11 @@ const EmailLoginDialogContentDesktop = ({
 
 	const activeDialogId = useAtomValue(activeDialogIdState);
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
+	const captchaProvider = useAtomValue(captchaProviderState);
 	const setNeedShowForgotPasswordButton = useSetAtom(needShowForgotPasswordButtonState);
-	const setIsLoginCaptchaRendered = useSetAtom(isLoginCaptchaRenderedState);
 	const auth = useAtomValue(authState);
 	const [password, setPassword] = useAtom(passwordInputState);
+	const setIsLoginCaptchaRendered = useSetAtom(isLoginCaptchaRenderedState);
 	const { navigateToDialog } = useNavigateDialog();
 	const showToast = useShowToast(activeDialogId);
 	const apiAuthMailConfirmShortAuthPassword = useApiAuthMailConfirmShortAuthPassword();
@@ -109,6 +112,7 @@ const EmailLoginDialogContentDesktop = ({
 	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
 	const [isError, setIsError] = useState(false);
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+	const [widgetId, setWidgetId] = useState("");
 
 	useEffect(() => {
 		setNeedShowForgotPasswordButton(!isAuthBlocked);
@@ -118,31 +122,16 @@ const EmailLoginDialogContentDesktop = ({
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
-					// @ts-ignore
-					grecaptcha.enterprise.render(node, {
-						sitekey: captchaPublicKey,
-						action: "check_captcha",
-						callback: function (grecaptchaResponse: string) {
-							setGrecaptchaResponse(grecaptchaResponse);
-						},
-					});
+					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
 				} catch (error) {}
 
 				setShowCaptchaState("rendered");
-				// @ts-ignore
-				grecaptcha.enterprise.ready(function () {
-					setTimeout(() => {
-						setIsLoginCaptchaRendered(true);
-					}, 500);
-				});
+
+				doCaptchaReady(captchaProvider, setIsLoginCaptchaRendered);
 			}
 
 			if (node !== null && showCaptchaState === "rendered") {
-				// @ts-ignore
-				if (grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
-				}
+				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
 		[showCaptchaState, captchaPublicKey]
@@ -176,8 +165,7 @@ const EmailLoginDialogContentDesktop = ({
 				setGrecaptchaResponse(""); // сбрасываем
 				// @ts-ignore
 				if (showCaptchaState === "rendered" && grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
+					doCaptchaReset(captchaProvider, widgetId);
 				}
 
 				if (error instanceof NetworkError) {
@@ -227,11 +215,7 @@ const EmailLoginDialogContentDesktop = ({
 					if (error.error_code === 1708201) {
 						showToast(langStringErrorsIncorrectCaptcha, "warning");
 						if (showCaptchaState === "rendered") {
-							// @ts-ignore
-							if (grecaptcha.enterprise.reset !== undefined) {
-								// @ts-ignore
-								grecaptcha.enterprise.reset();
-							}
+							doCaptchaReset(captchaProvider, widgetId);
 						}
 						return;
 					}
@@ -259,8 +243,7 @@ const EmailLoginDialogContentDesktop = ({
 				setGrecaptchaResponse(""); // сбрасываем
 				// @ts-ignore
 				if (showCaptchaState === "rendered" && grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
+					doCaptchaReset(captchaProvider, widgetId);
 				}
 
 				if (error instanceof NetworkError) {
@@ -310,11 +293,7 @@ const EmailLoginDialogContentDesktop = ({
 					if (error.error_code === 1708201) {
 						showToast(langStringErrorsIncorrectCaptcha, "warning");
 						if (showCaptchaState === "rendered") {
-							// @ts-ignore
-							if (grecaptcha.enterprise.reset !== undefined) {
-								// @ts-ignore
-								grecaptcha.enterprise.reset();
-							}
+							doCaptchaReset(captchaProvider, widgetId);
 						}
 						return;
 					}
@@ -486,7 +465,6 @@ const EmailLoginDialogContentMobile = ({
 	const authInput = useAtomValue(authInputState);
 	const activeDialogId = useAtomValue(activeDialogIdState);
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
-	const setIsLoginCaptchaRendered = useSetAtom(isLoginCaptchaRenderedState);
 	const [auth, setAuth] = useAtom(authState);
 	const setJoinLink = useSetAtom(joinLinkState);
 	const [password, setPassword] = useAtom(passwordInputState);
@@ -512,6 +490,9 @@ const EmailLoginDialogContentMobile = ({
 	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
 	const [isError, setIsError] = useState(false);
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+	const [widgetId, setWidgetId] = useState("");
+	const captchaProvider = useAtomValue(captchaProviderState);
+	const setIsLoginCaptchaRendered = useSetAtom(isLoginCaptchaRenderedState);
 
 	const screenWidth = useMemo(() => document.body.clientWidth, [document.body.clientWidth]);
 
@@ -519,31 +500,16 @@ const EmailLoginDialogContentMobile = ({
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
-					// @ts-ignore
-					grecaptcha.enterprise.render(node, {
-						sitekey: captchaPublicKey,
-						action: "check_captcha",
-						callback: function (grecaptchaResponse: string) {
-							setGrecaptchaResponse(grecaptchaResponse);
-						},
-					});
+					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
 				} catch (error) {}
 
 				setShowCaptchaState("rendered");
-				// @ts-ignore
-				grecaptcha.enterprise.ready(function () {
-					setTimeout(() => {
-						setIsLoginCaptchaRendered(true);
-					}, 500);
-				});
+
+				doCaptchaReady(captchaProvider, setIsLoginCaptchaRendered);
 			}
 
 			if (node !== null && showCaptchaState === "rendered") {
-				// @ts-ignore
-				if (grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
-				}
+				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
 		[showCaptchaState, captchaPublicKey]
@@ -577,8 +543,7 @@ const EmailLoginDialogContentMobile = ({
 				setGrecaptchaResponse(""); // сбрасываем
 				// @ts-ignore
 				if (showCaptchaState === "rendered" && grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
+					doCaptchaReset(captchaProvider, widgetId);
 				}
 
 				if (error instanceof NetworkError) {
@@ -628,11 +593,7 @@ const EmailLoginDialogContentMobile = ({
 					if (error.error_code === 1708201) {
 						showToast(langStringErrorsIncorrectCaptcha, "warning");
 						if (showCaptchaState === "rendered") {
-							// @ts-ignore
-							if (grecaptcha.enterprise.reset !== undefined) {
-								// @ts-ignore
-								grecaptcha.enterprise.reset();
-							}
+							doCaptchaReset(captchaProvider, widgetId);
 						}
 						return;
 					}
@@ -660,8 +621,7 @@ const EmailLoginDialogContentMobile = ({
 				setGrecaptchaResponse(""); // сбрасываем
 				// @ts-ignore
 				if (showCaptchaState === "rendered" && grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
+					doCaptchaReset(captchaProvider, widgetId);
 				}
 
 				if (error instanceof NetworkError) {
@@ -711,11 +671,7 @@ const EmailLoginDialogContentMobile = ({
 					if (error.error_code === 1708201) {
 						showToast(langStringErrorsIncorrectCaptcha, "warning");
 						if (showCaptchaState === "rendered") {
-							// @ts-ignore
-							if (grecaptcha.enterprise.reset !== undefined) {
-								// @ts-ignore
-								grecaptcha.enterprise.reset();
-							}
+							doCaptchaReset(captchaProvider, widgetId);
 						}
 						return;
 					}

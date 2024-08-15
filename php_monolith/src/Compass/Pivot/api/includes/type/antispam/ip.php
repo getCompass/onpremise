@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Request\BlockException;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * класс для блокировки пользователя по IP адресу
@@ -93,6 +94,11 @@ class Type_Antispam_Ip {
 
 		if (Type_Antispam_User::needCheckIsBlocked()) {
 			return 0;
+		}
+
+		// для онпремайза сервера учитываем настройку с лимитом кол-ва попыток аутентификации
+		if (ServerProvider::isOnPremise()) {
+			$block_key["limit"] = Domain_User_Entity_Auth_Config::getCaptchaRequireAfter();
 		}
 
 		try {

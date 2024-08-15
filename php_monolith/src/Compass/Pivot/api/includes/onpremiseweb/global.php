@@ -23,9 +23,11 @@ class Onpremiseweb_Global extends \BaseFrame\Controller\Api {
 			"is_authorized"              => (int) $is_authorized,
 			"need_fill_profile"          => (int) $need_fill_profile,
 			"captcha_public_key"         => (string) Type_Captcha_Main::init()->getPublicCaptchaKey(Type_Api_Platform::PLATFORM_OTHER),
+			"captcha_public_data"        => (object) Type_Captcha_Main::getProviderPublicCaptchaData(Type_Api_Platform::PLATFORM_OTHER),
 			"available_auth_method_list" => (array) $available_auth_method_list,
 			"sso_protocol"               => (string) $sso_protocol,
 			"dictionary"                 => $dictionary,
+			"server_version"             => (string) ONPREMISE_VERSION,
 			"user_info"                  => $is_authorized ? Onpremiseweb_Format::userInfo($user_info) : null,
 			"restrictions"               => (array) $restrictions,
 		]);

@@ -378,6 +378,10 @@ class Type_Preview_Parser_Helper {
 
 		// удаляем все тэги
 		$text = preg_replace("/(<(\/?[^>]+)>)/u", "", $text);
+		if (is_null($text) || mb_strlen($text) < 1) {
+			return "";
+		}
+
 		$text = trim($text);
 		if (mb_strlen($text) > $max_length) {
 

@@ -63,7 +63,7 @@ interface IProps {
      */
     headingLabel?: string;
 
-    size?: 'large';
+    size?: 'auto' | 'large';
 
     /**
      * An id attribute to apply to the root of the {@code Popover}

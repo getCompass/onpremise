@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Compass\Conversation;
 
@@ -48,7 +48,7 @@ class Domain_Search_Repository_ProxyCache_File {
 			return [];
 		}
 
-		return Gateway_Socket_FileBalancer::getFileWithContentList($filtered);
+		return static::_getFileList(static::_groupFileMapListByTable($filtered));
 	}
 
 	/**
@@ -79,6 +79,45 @@ class Domain_Search_Repository_ProxyCache_File {
 			}
 
 			$output[$file_map] = $cached[$file_map];
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Группируем массив файлов по таблицам.
+	 */
+	protected static function _groupFileMapListByTable(array $file_map_list):array {
+
+		$grouped_file_list = [];
+
+		foreach ($file_map_list as $file_map) {
+
+			$shard_id = \CompassApp\Pack\File::getShardId($file_map);
+			$table_id = \CompassApp\Pack\File::getTableId($file_map);
+
+			$full_table_name = "{$shard_id}.{$table_id}";
+			$meta_id         = \CompassApp\Pack\File::getMetaId($file_map);
+
+			$grouped_file_list[$full_table_name][$file_map] = $meta_id;
+		}
+
+		return $grouped_file_list;
+	}
+
+	/**
+	 * Получаем записи из базы.
+	 */
+	protected static function _getFileList(array $grouped_file_list):array {
+
+		$output = [];
+
+		foreach ($grouped_file_list as $k => $v) {
+
+			[$shard_id, $table_id] = explode(".", $k);
+			$file_list = Gateway_Db_CompanyData_File::getAll($shard_id, (int) $table_id, $v);
+
+			array_push($output, ...$file_list);
 		}
 
 		return $output;

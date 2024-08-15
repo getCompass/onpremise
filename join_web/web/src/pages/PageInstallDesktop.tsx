@@ -22,6 +22,17 @@ import dayjs from "dayjs";
 import { MenuItem, MenuItemGroup } from "../components/menu.tsx";
 import LandingBackground from "../components/desktop/LandingBackground.tsx";
 import OnpremiseInstallDownloadMenuDesktop from "../components/desktop/OnpremiseInstallDownloadMenuDesktop.tsx";
+import {
+	DESKTOP_PLATFORM_LINUX_DEB,
+	DESKTOP_PLATFORM_LINUX_TAR,
+	DESKTOP_PLATFORM_MAC_OS_ARM,
+	DESKTOP_PLATFORM_MAC_OS_INTEL,
+	DESKTOP_PLATFORM_WINDOWS,
+	MOBILE_PLATFORM_ANDROID,
+	MOBILE_PLATFORM_HUAWEI,
+	MOBILE_PLATFORM_IOS,
+} from "../api/_types.ts";
+import useDownloadLink from "../lib/useDownloadLink.ts";
 
 const Footer = () => {
 	const currentYear = useMemo(() => dayjs.unix(dayjs().unix()).format("YYYY"), []);
@@ -107,7 +118,7 @@ const MenuItemMacOsIntel = () => {
 	const langStringPageBuildsIntelVersion = useLangString("install_page.desktop.page.builds.intel_version");
 
 	return (
-		<MenuItem id="macos_intel">
+		<MenuItem id={DESKTOP_PLATFORM_MAC_OS_INTEL}>
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<MacOsIcon />
@@ -128,7 +139,7 @@ const MenuItemMacOsM1M2 = () => {
 	const langStringPageBuildsM1M2Version = useLangString("install_page.desktop.page.builds.m1m2_version");
 
 	return (
-		<MenuItem id="macos_m1m2">
+		<MenuItem id={DESKTOP_PLATFORM_MAC_OS_ARM}>
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<MacOsIcon />
@@ -149,7 +160,7 @@ const MenuItemLinuxDeb = () => {
 	const langStringPageBuildsDebVersion = useLangString("install_page.desktop.page.builds.deb_version");
 
 	return (
-		<MenuItem id="linux_deb">
+		<MenuItem id={DESKTOP_PLATFORM_LINUX_DEB}>
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<LinuxDebIcon />
@@ -170,7 +181,7 @@ const MenuItemLinuxTar = () => {
 	const langStringPageBuildsTarVersion = useLangString("install_page.desktop.page.builds.tar_version");
 
 	return (
-		<MenuItem id="linux_tar">
+		<MenuItem id={DESKTOP_PLATFORM_LINUX_TAR}>
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<LinuxTarIcon />
@@ -323,35 +334,10 @@ export default function PageInstallDesktop() {
 	const langStringPageSupportBlockWhatsapp = useLangString("install_page.desktop.page.support_block.whatsapp");
 	const langStringPageSupportBlockTelegram = useLangString("install_page.desktop.page.support_block.telegram");
 	const langStringPageSupportBlockMail = useLangString("install_page.desktop.page.support_block.mail");
+	const { getDownloadLink } = useDownloadLink();
 
-	const onSelectMac = useCallback((value: string) => {
-		switch (value) {
-			case "macos_intel":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac.dmg";
-				break;
-
-			case "macos_m1m2":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac-arm64.dmg";
-				break;
-
-			default:
-				break;
-		}
-	}, []);
-
-	const onSelectLinux = useCallback((value: string) => {
-		switch (value) {
-			case "linux_deb":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.deb";
-				break;
-
-			case "linux_tar":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.tar";
-				break;
-
-			default:
-				break;
-		}
+	const onSelectPlatform = useCallback((value: string) => {
+		window.location.href = getDownloadLink(value);
 	}, []);
 
 	return (
@@ -392,34 +378,34 @@ export default function PageInstallDesktop() {
 							desc={langStringPageDownloadMacDesc}
 							platform={langStringPageDownloadMacPlatformIntel}
 							secondPlatform={langStringPageDownloadMacPlatformApple}
-							downloadLink="https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac.dmg"
+							downloadLink={getDownloadLink(DESKTOP_PLATFORM_MAC_OS_INTEL)}
 							menuItems={
 								<MenuItemGroup id="macos_builds">
 									<MenuItemMacOsIntel />
 									<MenuItemMacOsM1M2 />
 								</MenuItemGroup>
 							}
-							onSelectHandler={onSelectMac}
+							onSelectHandler={onSelectPlatform}
 						/>
 						<DownloadButton
 							icon={IconDownloadButtonWin}
 							desc={langStringPageDownloadWinDesc}
 							platform={langStringPageDownloadWinPlatformExe}
-							downloadLink="https://update-onpremise.getcompass.ru/apps/compass-on-premise-win.exe"
+							downloadLink={getDownloadLink(DESKTOP_PLATFORM_WINDOWS)}
 						/>
 						<DownloadButton
 							icon={IconDownloadButtonLinux}
 							desc={langStringPageDownloadLinuxDesc}
 							platform={langStringPageDownloadLinuxPlatformDeb}
 							secondPlatform={langStringPageDownloadLinuxPlatformTar}
-							downloadLink="https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.deb"
+							downloadLink={getDownloadLink(DESKTOP_PLATFORM_LINUX_DEB)}
 							menuItems={
 								<MenuItemGroup id="linux_builds">
 									<MenuItemLinuxDeb />
 									<MenuItemLinuxTar />
 								</MenuItemGroup>
 							}
-							onSelectHandler={onSelectLinux}
+							onSelectHandler={onSelectPlatform}
 						/>
 					</HStack>
 					<HStack w="100%" justify="center" mt="16px" gap="16px" userSelect="none" maxWidth="1008px">
@@ -427,19 +413,19 @@ export default function PageInstallDesktop() {
 							icon={IconDownloadButtonAppStore}
 							desc={langStringPageDownloadIosDesc}
 							platform={langStringPageDownloadIosPlatformAppStore}
-							downloadLink="https://apps.apple.com/ru/app/compass-on-premise/id6469516890"
+							downloadLink={getDownloadLink(MOBILE_PLATFORM_IOS)}
 						/>
 						<DownloadButton
 							icon={IconDownloadButtonGooglePlay}
 							desc={langStringPageDownloadAndroidDesc}
 							platform={langStringPageDownloadAndroidPlatformGooglePlay}
-							downloadLink="https://play.google.com/store/apps/details?id=com.getcompass.android.enterprise"
+							downloadLink={getDownloadLink(MOBILE_PLATFORM_ANDROID)}
 						/>
 						<DownloadButton
 							icon={IconDownloadButtonAppGallery}
 							desc={langStringPageDownloadHuaweiDesc}
 							platform={langStringPageDownloadHuaweiPlatformAppGallery}
-							downloadLink="https://appgallery.huawei.com/app/C109414583"
+							downloadLink={getDownloadLink(MOBILE_PLATFORM_HUAWEI)}
 						/>
 					</HStack>
 					<VStack

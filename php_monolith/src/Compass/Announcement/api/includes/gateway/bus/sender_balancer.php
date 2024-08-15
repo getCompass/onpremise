@@ -12,6 +12,8 @@ class Gateway_Bus_SenderBalancer {
 	/** @var int время за которое нужно успеть авторизоваться по полученному токену */
 	protected const _TOKEN_EXPIRE_TIME = 1 * 60;
 
+	protected const _WS_CHANNEL = "announcement"; // канал всок для анонсов
+
 	/**
 	 * Опубликован новый анонс.
 	 * Рассылается для указанного списка пользователей.
@@ -81,7 +83,7 @@ class Gateway_Bus_SenderBalancer {
 	 */
 	protected static function _generateToken():string {
 
-		return sha1(uniqid() . time());
+		return self::_WS_CHANNEL . ":" . sha1(uniqid() . time());
 	}
 
 	// -------------------------------------------------------
@@ -176,6 +178,7 @@ class Gateway_Bus_SenderBalancer {
 			"event_version_list" => (array) $event_version_list,
 			"uuid"               => (string) generateUUID(),
 			"ws_users"           => (array) $ws_users,
+			"channel"            => (string) self::_WS_CHANNEL,
 		];
 
 		// отправляем задачу в rabbitMq
@@ -227,6 +230,7 @@ class Gateway_Bus_SenderBalancer {
 			"event_version_list" => (array) $event_version_list,
 			"uuid"               => (string) generateUUID(),
 			"ws_users"           => (array) $ws_users,
+			"channel"            => (string) self::_WS_CHANNEL,
 		];
 
 		// отправляем задачу в rabbitMq

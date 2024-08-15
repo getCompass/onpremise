@@ -22,11 +22,11 @@ class Gateway_Bus_SenderBalancer {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function conferenceCreated(int $user_id, Struct_Api_Conference_Data $conference_data,
+	public static function conferenceCreated(int                               $user_id, Struct_Api_Conference_Data $conference_data,
 							     Struct_Api_Conference_JoiningData $conference_joining_data,
-							     Struct_Api_Conference_MemberData $conference_member_data,
+							     Struct_Api_Conference_MemberData  $conference_member_data,
 							     Struct_Api_Conference_CreatorData $conference_creator_data,
-							     array $push_data, array $ws_users = []):void {
+							     array                             $push_data, array $ws_users = []):void {
 
 		$event_version_item = Gateway_Bus_SenderBalancer_Event_ConferenceCreated_V1::makeEvent(
 			$conference_data, $conference_joining_data, $conference_member_data, $conference_creator_data
@@ -103,10 +103,10 @@ class Gateway_Bus_SenderBalancer {
 	 * @throws ParseFatalException
 	 * @throws \parseException
 	 */
-	public static function activeConferenceUpdated(array $user_id_list, string $action, Struct_Api_Conference_Data $conference_data,
-								     ?Struct_Api_Conference_MemberData $conference_member_data,
+	public static function activeConferenceUpdated(array                              $user_id_list, string $action, Struct_Api_Conference_Data $conference_data,
+								     ?Struct_Api_Conference_MemberData  $conference_member_data,
 								     ?Struct_Api_Conference_JoiningData $conference_joining_data,
-								     ?int $conference_active_at):void {
+								     ?int                               $conference_active_at):void {
 
 		self::_sendEvent([
 			Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V1::makeEvent(

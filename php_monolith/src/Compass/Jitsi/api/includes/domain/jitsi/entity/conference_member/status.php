@@ -14,6 +14,7 @@ enum Domain_Jitsi_Entity_ConferenceMember_Status: int {
 	case LEFT = 10; // покинул конференцию
 	case REJECTED = 11; // звонок отклонили
 	case IGNORED = 12; // звонок проигнорировали
+	case ACCEPTED = 13; // звонок принят
 
 	public const ACCEPT_STATUS_DIALING  = "dialing";
 	public const ACCEPT_STATUS_REJECTED = "rejected";

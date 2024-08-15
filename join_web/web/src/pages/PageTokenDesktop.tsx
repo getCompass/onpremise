@@ -1,10 +1,10 @@
-import {Box, Center, HStack, styled, VStack} from "../../styled-system/jsx";
+import { Box, Center, HStack, styled, VStack } from "../../styled-system/jsx";
 import IconLogo from "../components/IconLogo.tsx";
-import {Text} from "../components/text.tsx";
-import {Button} from "../components/button.tsx";
-import {useLangString} from "../lib/getLangString.ts";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Portal} from "@ark-ui/react";
+import { Text } from "../components/text.tsx";
+import { Button } from "../components/button.tsx";
+import { useLangString } from "../lib/getLangString.ts";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Portal } from "@ark-ui/react";
 import {
 	Menu,
 	MenuArrow,
@@ -15,7 +15,7 @@ import {
 	MenuPositioner,
 	MenuTrigger,
 } from "../components/menu.tsx";
-import {useAtomValue, useSetAtom} from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
 	authenticationTokenTimeLeft,
 	authInputState,
@@ -29,9 +29,9 @@ import {
 	prepareJoinLinkErrorState,
 	useToastConfig,
 } from "../api/_stores.ts";
-import {css} from "../../styled-system/css";
-import {useApiAuthGenerateToken, useApiAuthLogout} from "../api/auth.ts";
-import {NetworkError, ServerError} from "../api/_index.ts";
+import { css } from "../../styled-system/css";
+import { useApiAuthGenerateToken, useApiAuthLogout } from "../api/auth.ts";
+import { NetworkError, ServerError } from "../api/_index.ts";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -41,13 +41,20 @@ import {
 	DialogTrigger,
 	generateDialogId,
 } from "../components/dialog.tsx";
-import {copyToClipboard} from "../lib/copyToClipboard.ts";
-import {useApiJoinLinkAccept} from "../api/joinlink.ts";
+import { copyToClipboard } from "../lib/copyToClipboard.ts";
+import { useApiJoinLinkAccept } from "../api/joinlink.ts";
 import useIsJoinLink from "../lib/useIsJoinLink.ts";
-import Toast, {useShowToast} from "../lib/Toast.tsx";
+import Toast, { useShowToast } from "../lib/Toast.tsx";
 import Preloader16 from "../components/Preloader16.tsx";
-import {useAtom} from "jotai/index";
-import {DynamicTimerAuthenticationToken} from "../components/DynamicTimerAuthenticationToken.tsx";
+import { useAtom } from "jotai/index";
+import { DynamicTimerAuthenticationToken } from "../components/DynamicTimerAuthenticationToken.tsx";
+import useDownloadLink from "../lib/useDownloadLink.ts";
+import {
+	DESKTOP_PLATFORM_LINUX_DEB, DESKTOP_PLATFORM_LINUX_TAR,
+	DESKTOP_PLATFORM_MAC_OS_ARM,
+	DESKTOP_PLATFORM_MAC_OS_INTEL,
+	DESKTOP_PLATFORM_WINDOWS
+} from "../api/_types.ts";
 
 export const MacOsIcon = () => {
 	return (
@@ -134,32 +141,10 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 	const langStringPageTokenDesktopBuildsTarVersion = useLangString("page_token.desktop_builds.tar_version");
 
 	const [isStoreMenuOpen, setStoreMenuOpen] = useState(false);
+	const { getDownloadLink } = useDownloadLink();
 
 	const onSelectHandler = useCallback((value: string) => {
-		switch (value) {
-			case "macos_intel":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac.dmg";
-				break;
-
-			case "macos_m1m2":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac-arm64.dmg";
-				break;
-
-			case "windows":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-win.exe";
-				break;
-
-			case "linux_deb":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.deb";
-				break;
-
-			case "linux_tar":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.tar";
-				break;
-
-			default:
-				break;
-		}
+		window.location.href = getDownloadLink(value);
 	}, []);
 
 	return (
@@ -227,7 +212,7 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 								/>
 							</MenuArrow>
 							<MenuItemGroup id="macos_builds">
-								<MenuItem id="macos_intel">
+								<MenuItem id={DESKTOP_PLATFORM_MAC_OS_INTEL}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
 											<MacOsIcon/>
@@ -249,7 +234,7 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 										</Text>
 									</HStack>
 								</MenuItem>
-								<MenuItem id="macos_m1m2">
+								<MenuItem id={DESKTOP_PLATFORM_MAC_OS_ARM}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
 											<MacOsIcon/>
@@ -276,7 +261,7 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 								<Box bgColor="f5f5f5" h="1px" w="100%"/>
 							</Box>
 							<MenuItemGroup id="other_builds">
-								<MenuItem id="windows">
+								<MenuItem id={DESKTOP_PLATFORM_WINDOWS}>
 									<HStack gap="8px">
 										<WindowsIcon/>
 										<Text fs="15" lh="22" color="333e49" font="regular">
@@ -284,7 +269,7 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 										</Text>
 									</HStack>
 								</MenuItem>
-								<MenuItem id="linux_deb">
+								<MenuItem id={DESKTOP_PLATFORM_LINUX_DEB}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
 											<LinuxDebIcon/>
@@ -306,7 +291,7 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 										</Text>
 									</HStack>
 								</MenuItem>
-								<MenuItem id="linux_tar">
+								<MenuItem id={DESKTOP_PLATFORM_LINUX_TAR}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
 											<LinuxTarIcon/>

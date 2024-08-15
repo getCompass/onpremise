@@ -6,7 +6,8 @@ import {
 	PrepareJoinLinkErrorInfo,
 	AuthSsoInfo,
 	ApiGlobalStartDictionaryData,
-	ApiUserInfoData
+	ApiUserInfoData,
+	ClientVersionItem,
 } from "./_types.ts";
 import { atomWithStorage } from "jotai/utils";
 import { atomWithImmer } from "jotai-immer";
@@ -25,13 +26,22 @@ export const isLoginCaptchaRenderedState = atom(false);
 export const isPasswordChangedState = atom(false);
 
 export const captchaPublicKeyState = atom("");
+export const captchaProviderState = atom("");
 
 export const authenticationTokenState = atom("");
 
 export const availableAuthMethodListState = atom<string[]>([]);
 export const ssoProtocolState = atom("");
+export const serverVersionState = atom("");
+export const electronVersionState = atom<ClientVersionItem>({
+	max_version: "",
+	max_version_code: 0,
+	min_version: "",
+	min_version_code: 0,
+});
 export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({ auth_sso_start_button_text: "" });
-export const userInfoDataState = atomWithImmer<ApiUserInfoData|null>(null);
+
+export const userInfoDataState = atomWithImmer<ApiUserInfoData | null>(null);
 
 export const isRegistrationState = atom(false);
 export const firstAuthState = atom(false);
@@ -84,5 +94,5 @@ export const nameInputState = atomWithStorage<string>(
 
 export const authSsoState = atomWithStorage<AuthSsoInfo | null>(
 	"auth_sso_state",
-	JSON.parse(localStorage.getItem("auth_sso_state") ?? 'null')
-)
+	JSON.parse(localStorage.getItem("auth_sso_state") ?? "null")
+);

@@ -87,9 +87,9 @@ export function useGetResponse(module: GET_RESPONSE_MODULE) {
 					// @ts-ignore
 					result.response.inviter_user_id ?? 0, result.response.inviter_full_name ?? "", result.response.is_post_moderation ?? 0,
 					// @ts-ignore
-					result.response.is_waiting_for_postmoderation ?? 0, result.response.role ?? 0, result.response.was_member ?? 0,
+					result.response.role ?? 0, result.response.was_member ?? 0, result.response.expires_at ?? 0,
 					// @ts-ignore
-					result.response.expires_at ?? 0, result.response.join_link_uniq ?? "",
+					result.response.join_link_uniq ?? "", result.response.is_waiting_for_postmoderation ?? 0,
 					// @ts-ignore
 					result.response.sso_protocol ?? "",
 				)

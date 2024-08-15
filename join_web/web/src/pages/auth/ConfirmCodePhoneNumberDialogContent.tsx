@@ -13,6 +13,7 @@ import {
 	activeDialogIdState,
 	authState,
 	captchaPublicKeyState,
+	captchaProviderState,
 	confirmCodeState,
 	joinLinkState,
 	prepareJoinLinkErrorState,
@@ -36,6 +37,7 @@ import {
 } from "../../api/_types.ts";
 import { useApiAuthPhoneNumberConfirm } from "../../api/auth/phonenumber.ts";
 import { DynamicTimerPhoneNumber } from "../../components/DynamicTimerPhoneNumber.tsx";
+import { doCaptchaRender, doCaptchaReset } from "../../lib/functions.ts";
 
 type RefreshButtonProps = {
 	setIsServerError: (value: boolean) => void;
@@ -157,7 +159,9 @@ const ConfirmCodePhoneNumberDialogContentDesktop = ({
 	const [isServerError, setIsServerError] = useState(false);
 	const [nextAttempt, setNextAttempt] = useState(0);
 	const [nextResend, setNextResend] = useState(0);
+	const [widgetId, setWidgetId] = useState("");
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	useEffect(() => {
 		if (refs.current[0]) {
@@ -375,32 +379,27 @@ const ConfirmCodePhoneNumberDialogContentDesktop = ({
 		}
 	}, [isCompleted, joinLink, auth]);
 
+	useEffect(() => {
+		if (grecaptchaResponse === "" && showCaptchaState === "rendered") {
+			doCaptchaReset(captchaProvider, widgetId);
+		}
+	}, [grecaptchaResponse]);
+
 	const captchaContainerRef = useCallback(
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
-					// @ts-ignore
-					grecaptcha.enterprise.render(node, {
-						sitekey: captchaPublicKey,
-						action: "check_captcha",
-						callback: function (grecaptchaResponse: string) {
-							setGrecaptchaResponse(grecaptchaResponse);
-						},
-					});
+					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
 				} catch (error) {}
 
 				setShowCaptchaState("rendered");
 			}
 
 			if (node !== null && showCaptchaState === "rendered") {
-				// @ts-ignore
-				if (grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
-				}
+				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
-		[showCaptchaState, captchaPublicKey]
+		[showCaptchaState, captchaPublicKey, captchaProvider]
 	);
 
 	if (auth === null) {
@@ -482,6 +481,7 @@ const ConfirmCodePhoneNumberDialogContentDesktop = ({
 							setShowCaptchaState={setShowCaptchaState}
 							grecaptchaResponse={grecaptchaResponse}
 							setGrecaptchaResponse={setGrecaptchaResponse}
+							captchaWidgetId={widgetId}
 						/>
 					)}
 				</HStack>
@@ -710,7 +710,9 @@ const ConfirmCodePhoneNumberDialogContentMobile = ({
 	const [nextResend, setNextResend] = useState(0);
 	const [isNetworkError, setIsNetworkError] = useState(false);
 	const [isServerError, setIsServerError] = useState(false);
+	const [widgetId, setWidgetId] = useState("");
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	useEffect(() => {
 		if (
@@ -849,29 +851,24 @@ const ConfirmCodePhoneNumberDialogContentMobile = ({
 		}
 	}, [isCompleted, joinLink, auth]);
 
+	useEffect(() => {
+		if (grecaptchaResponse === "" && showCaptchaState === "rendered") {
+			doCaptchaReset(captchaProvider, widgetId);
+		}
+	}, [grecaptchaResponse]);
+
 	const captchaContainerRef = useCallback(
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
-					// @ts-ignore
-					grecaptcha.enterprise.render(node, {
-						sitekey: captchaPublicKey,
-						action: "check_captcha",
-						callback: function (grecaptchaResponse: string) {
-							setGrecaptchaResponse(grecaptchaResponse);
-						},
-					});
+					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
 				} catch (error) {}
 
 				setShowCaptchaState("rendered");
 			}
 
 			if (node !== null && showCaptchaState === "rendered") {
-				// @ts-ignore
-				if (grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
-				}
+				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
 		[showCaptchaState, captchaPublicKey]
@@ -1007,6 +1004,7 @@ const ConfirmCodePhoneNumberDialogContentMobile = ({
 							setShowCaptchaState={setShowCaptchaState}
 							grecaptchaResponse={grecaptchaResponse}
 							setGrecaptchaResponse={setGrecaptchaResponse}
+							captchaWidgetId={widgetId}
 						/>
 					)}
 				</HStack>

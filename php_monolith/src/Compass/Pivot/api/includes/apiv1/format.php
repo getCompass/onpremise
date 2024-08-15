@@ -80,7 +80,8 @@ class Apiv1_Format {
 	 * форматирует ответ для метода doStart
 	 */
 	public static function doStart(array $app_config, string $lang, int $server_time, int $time_zone, string $ws_token, string $ws_url, string $billing_url,
-						 array $notification_preferences, array $call_preferences, array $userbot_preferences, string $client_connection_token, string $captcha_public_key):array {
+						 array $notification_preferences, array $call_preferences, array $userbot_preferences, string $client_connection_token,
+						 string $captcha_public_key, array $captcha_public_data):array {
 
 		return [
 			"server_time"              => (int) $server_time,
@@ -96,6 +97,7 @@ class Apiv1_Format {
 			"partner_url"              => (string) PARTNER_URL,
 			"client_connection_token"  => (string) $client_connection_token,
 			"captcha_public_key"       => (string) $captcha_public_key,
+			"captcha_public_data"      => (object) $captcha_public_data,
 		];
 	}
 

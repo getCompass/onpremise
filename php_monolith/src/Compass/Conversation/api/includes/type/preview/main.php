@@ -47,7 +47,6 @@ class Type_Preview_Main {
 		")"  => ")",
 		":"  => ":",
 		","  => ",",
-		"_"  => "_",
 		"~"  => "~",
 		"\"" => "\"",
 		"+"  => "+",
@@ -68,6 +67,7 @@ class Type_Preview_Main {
 	// список символов на которые могут заканчиваться ссылки - в единичном экземпляре
 	protected const _ALLOWED_END_LINK_CHAR_LIST = [
 		"*" => "*",
+		"_" => "_",
 	];
 
 	// спецсимволы для конструкций вида \"спецсимвол\"|\"строка\"|\"строка\"]
@@ -133,7 +133,7 @@ class Type_Preview_Main {
 	// прикрепляет к сообщению список ссылок и map превью
 	// @long
 	public static function attachToMessage(int   $user_id, string $message_map, array $link_list, array $users, string $preview_map = null, int $preview_type = null,
-										   array $preview_image = []):Struct_Db_CompanyConversation_ConversationDynamic {
+							   array $preview_image = []):Struct_Db_CompanyConversation_ConversationDynamic {
 
 		$conversation_map = \CompassApp\Pack\Message\Conversation::getConversationMap($message_map);
 
@@ -474,7 +474,7 @@ class Type_Preview_Main {
 		}
 
 		// получаем все шортнеймы эмодзи
-		$emojis       = array_merge(
+		$emojis = array_merge(
 			array_values(\BaseFrame\Conf\Emoji::EMOJI_FLAG_LIST),
 			array_values(\BaseFrame\Conf\Emoji::EMOJI_LIST),
 			array_keys(\BaseFrame\Conf\Emoji::EMOJI_ALIAS_SHORT_NAME_LIST),
@@ -655,7 +655,7 @@ class Type_Preview_Main {
 	 * например, ++yandex.ru++ === yandex.ru.
 	 *
 	 * @param string $text текст, содержащий ссылку
-	 * @param string $url ссылка без форматирования
+	 * @param string $url  ссылка без форматирования
 	 *
 	 */
 	public static function checkIsTextAreUrl(string $text, string $url):bool {
@@ -724,7 +724,7 @@ class Type_Preview_Main {
 	 * проверяет, что форматирование слева и справа соответствует друг другу.
 	 * например, "_*+" === "+*_" или "*+" === "*+".
 	 *
-	 * @param string $text текст с форматированием или без
+	 * @param string $text    текст с форматированием или без
 	 * @param string $sub_str подстрока без форматирования
 	 *
 	 */

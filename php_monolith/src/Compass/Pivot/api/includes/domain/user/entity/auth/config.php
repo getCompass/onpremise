@@ -42,6 +42,17 @@ class Domain_User_Entity_Auth_Config {
 	}
 
 	/**
+	 * включена ли настройка проверки капчи
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 */
+	public static function isCaptchaEnabled():bool {
+
+		return (bool) self::_getConfig(self::_KEY_AUTH_MAIN)["captcha_enabled"] ?? true;
+	}
+
+	/**
 	 * получаем список доступных доменов почтовых адресов, для которых разрешена аутентификация в приложении
 	 *
 	 * @return array

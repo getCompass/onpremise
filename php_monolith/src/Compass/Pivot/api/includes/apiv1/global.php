@@ -54,6 +54,7 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 				$userbot_preferences,
 				$client_connection_token,
 				$captcha_public_key,
+				$captcha_public_data,
 			]
 				= Domain_User_Scenario_Api::doStart($this->user_id, $app_version);
 		} catch (cs_PlatformNotFound) {
@@ -84,6 +85,7 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 			$userbot_preferences,
 			$client_connection_token,
 			$captcha_public_key,
+			$captcha_public_data,
 		));
 	}
 

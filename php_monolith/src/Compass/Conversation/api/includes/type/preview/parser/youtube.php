@@ -8,16 +8,66 @@ use BaseFrame\Server\ServerProvider;
 /**
  * класс для парсинга ссылок на youtube.com
  */
-class Type_Preview_Parser_Youtube extends Type_Preview_Parser_Helper {
+class Type_Preview_Parser_Youtube extends Type_Preview_Parser_Helper implements Type_Preview_Parser_Interface {
 
-	public const DOMAIN = "youtube.com";
+	public const DOMAIN             = "youtube.com";
+	public const ALTERNATIVE_DOMAIN = "youtu.be";
+
+	protected const _FAVICON_URL = "https://youtube.com/favicon.ico";
 
 	protected const _CONTENT_TYPE_PROFILE = "yt-fb-app:channel";
 	protected const _VIDEO_TYPE           = "video.other";
 	protected const _SITE_NAME            = "YouTube";
 
+	protected const _VIDEO_REGEX = "/(?:youtu\.be\/|youtube\.com(?:\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=|shorts\/)|youtu\.be\/|embed\/|v\/|m\/|watch\?(?:[^=]+=[^&]+&)*?v=))([^\"&?\/\s]{11})/";
+
+	/**
+	 * функция для определения – уместна ли переданная ссылка для парсинга конкретным парсером
+	 *
+	 * @return bool
+	 */
+	public static function isRelevantUrl(string $url):bool {
+
+		return inHtml($url, self::DOMAIN) || inHtml($url, self::ALTERNATIVE_DOMAIN) || ServerProvider::isTest() && inHtml($url, self::_SITE_NAME);
+	}
+
+	/**
+	 * функция для подготовки ссылки перед непосредственным парсингом (перед curl запросом)
+	 *
+	 * @return string
+	 */
+	public static function prepareUrl(string $url):string {
+
+		// если это видео
+		if (self::isVideoUrl($url)) {
+			return self::_upgradeUrlForOembedRequest($url);
+		}
+
+		return $url;
+	}
+
+	/**
+	 * является ли ссылка – ссылкой на видео
+	 *
+	 * @return bool
+	 */
+	public static function isVideoUrl(string $url):bool {
+
+		return preg_match(self::_VIDEO_REGEX, $url) > 0;
+	}
+
+	/**
+	 * апгрейдим ссылку для oembed запроса для получения информации о видео-ролике
+	 *
+	 * @return string
+	 */
+	protected static function _upgradeUrlForOembedRequest(string $url):string {
+
+		return sprintf("https://youtube.com/oembed?url=%s", $url);
+	}
+
 	// создаем превью
-	public static function makeData(string $user_id, string $url, string $short_url, string $html):array {
+	public static function makeDataFromHtml(string $user_id, string $url, string $short_url, string $html):array {
 
 		$type      = self::_getType($html);
 		$video_url = self::_getVideoUrl($html, $short_url);
@@ -42,6 +92,76 @@ class Type_Preview_Parser_Youtube extends Type_Preview_Parser_Helper {
 		return Type_Preview_Parser_Default::makeDataForSiteByHtml($type, $user_id, $url, $short_url, self::_SITE_NAME, $html);
 	}
 
+	/**
+	 * функция для создания превью из mime type application/json
+	 *
+	 * @return array
+	 */
+	public static function makeDataFromJson(string $user_id, string $url, string $short_url, array $content):array {
+
+		// если это видео
+		if (self::_isVideo(self::_VIDEO_TYPE, $url)) {
+			return self::_makeVideoDataFromJson($user_id, $url, $content);
+		}
+
+		throw new cs_UrlParseFailed("unsupported content", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
+	}
+
+	/**
+	 * функция для создания превью на ссылку с видео из mime type application/json
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 * @throws \paramException
+	 * @throws \parseException
+	 * @throws \returnException
+	 * @throws cs_UrlParseFailed
+	 * @long
+	 */
+	protected static function _makeVideoDataFromJson(string $user_id, string $url, array $content):array {
+
+		// проверяем наличие обязательных полей
+		if (!isset($content["title"], $content["thumbnail_url"])) {
+			throw new cs_UrlParseFailed("unexpected json content", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
+		}
+
+		// достанем ссылку на видео
+		$parsed_url       = parse_url($url);
+		$query_param_list = [];
+		parse_str($parsed_url["query"], $query_param_list);
+		if (!isset($query_param_list["url"])) {
+			throw new cs_UrlParseFailed("original video url not found", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
+		}
+		$original_video = $query_param_list["url"];
+
+		// качаем favicon
+		$favicon_file_map = self::_tryDownloadFile($user_id, self::_FAVICON_URL);
+
+		// качаем превью видео
+		$image_file_map = self::_tryDownloadFile($user_id, $content["thumbnail_url"]);
+
+		// создаем превью
+		$data = Type_Preview_Formatter::prepareDataForStorageByType(
+			PREVIEW_TYPE_VIDEO,
+			$original_video,
+			self::DOMAIN,
+			self::_SITE_NAME,
+			$content["title"],
+			$favicon_file_map,
+			$image_file_map,
+			""
+		);
+
+		// добавляем поле subtype & extra
+		$data["subtype"] = Type_Preview_Formatter::PREVIEW_TYPE_VIDEO_YOUTUBE;
+		$data["extra"]   = [
+			"video_embed_url"  => $original_video,
+			"youtube_video_id" => self::_getVideoId($original_video),
+		];
+
+		return $data;
+	}
+
 	// проверяем, что ссылка типа profile
 	protected static function _isProfile(string $type):bool {
 
@@ -57,9 +177,7 @@ class Type_Preview_Parser_Youtube extends Type_Preview_Parser_Helper {
 	// проверяем, что ссылка на видео
 	protected static function _isVideo(string $type, string $video_url):bool {
 
-		preg_match("/embed\/(.*)/i", $video_url, $matches);
-
-		return $type == self::_VIDEO_TYPE && count($matches) > 0;
+		return $type == self::_VIDEO_TYPE && self::isVideoUrl($video_url);
 	}
 
 	// создаем видео превью
@@ -81,16 +199,10 @@ class Type_Preview_Parser_Youtube extends Type_Preview_Parser_Helper {
 	// получаем youtube_video_id
 	protected static function _getVideoId(string $video_url):string {
 
-		preg_match("/embed\/(.*)/i", $video_url, $matches);
+		preg_match(self::_VIDEO_REGEX, $video_url, $matches);
 
 		if (count($matches) < 1) {
 			throw new ParseFatalException(__METHOD__ . ": passed incorrect video_url");
-		}
-
-		// если есть таймкод, отдаем без него
-		$youtube_video_id = mb_stristr($matches[1], "?", true);
-		if (mb_strlen($youtube_video_id) > 0) {
-			return $youtube_video_id;
 		}
 
 		return $matches[1];

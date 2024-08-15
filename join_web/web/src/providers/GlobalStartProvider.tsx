@@ -1,5 +1,5 @@
-import {PropsWithChildren, useEffect, useMemo, useState} from "react";
-import {useAtomValue, useSetAtom} from "jotai";
+import { PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
 	activeDialogIdState,
 	authInputState,
@@ -12,12 +12,13 @@ import {
 	loadingState,
 	prepareJoinLinkErrorState,
 	profileState,
+	serverVersionState,
 } from "../api/_stores.ts";
-import {useApiGlobalDoStart} from "../api/global.ts";
-import {useNavigateDialog, useNavigatePage} from "../components/hooks.ts";
+import { useApiGlobalDoStart } from "../api/global.ts";
+import { useNavigateDialog, useNavigatePage } from "../components/hooks.ts";
 import useIsJoinLink from "../lib/useIsJoinLink.ts";
-import {useApiJoinLinkPrepare} from "../api/joinlink.ts";
-import {ApiError, NetworkError, ServerError} from "../api/_index.ts";
+import { useApiJoinLinkPrepare } from "../api/joinlink.ts";
+import { ApiError, NetworkError, ServerError } from "../api/_index.ts";
 import {
 	ALREADY_MEMBER_ERROR_CODE,
 	APIAuthInfoDataTypeRegisterLoginByPhoneNumber,
@@ -35,14 +36,17 @@ import {
 	SSO_PROTOCOL_OIDC,
 } from "../api/_types.ts";
 import dayjs from "dayjs";
-import {useAtom} from "jotai/index";
-import {useApiFederationSsoAuthGetStatus, useApiPivotAuthSsoBegin} from "../api/auth/sso.ts";
-import {useShowToast} from "../lib/Toast.tsx";
-import {useLangString} from "../lib/getLangString.ts";
-import {plural} from "../lib/plural.ts";
+import { useAtom } from "jotai/index";
+import { useApiFederationSsoAuthGetStatus, useApiPivotAuthSsoBegin } from "../api/auth/sso.ts";
+import { useShowToast } from "../lib/Toast.tsx";
+import { useLangString } from "../lib/getLangString.ts";
+import { plural } from "../lib/plural.ts";
+import useElectronVersions from "../api/clients_versions.ts";
 
-export default function GlobalStartProvider({children}: PropsWithChildren) {
+export default function GlobalStartProvider({ children }: PropsWithChildren) {
+	const serverVersion = useAtomValue(serverVersionState);
 	const apiGlobalDoStart = useApiGlobalDoStart();
+	const electronVersions = useElectronVersions(serverVersion);
 
 	const { navigateToPage } = useNavigatePage();
 	const { activeDialog, navigateToDialog } = useNavigateDialog();
@@ -52,7 +56,7 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 	const authInput = useAtomValue(authInputState);
 	const auth = useAtomValue(authState);
 	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
-	const {is_authorized, need_fill_profile} = useAtomValue(profileState);
+	const { is_authorized, need_fill_profile } = useAtomValue(profileState);
 	const isNeedShowCreateProfileDialogAfterSsoRegistration = useAtomValue(
 		isNeedShowCreateProfileDialogAfterSsoRegistrationState
 	);
@@ -247,6 +251,8 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 		const isLoading =
 			apiGlobalDoStart.isFetching ||
 			!apiGlobalDoStart.data ||
+			electronVersions.isFetching ||
+			!electronVersions.data ||
 			is_authorized === null ||
 			(isJoinLink && apiJoinLinkPrepare.isLoading) ||
 			(authSso !== undefined &&
@@ -264,6 +270,8 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 	}, [
 		apiGlobalDoStart.isLoading,
 		apiGlobalDoStart.data,
+		electronVersions.isLoading,
+		electronVersions.data,
 		apiJoinLinkPrepare.isLoading,
 		is_authorized,
 		authSso,
@@ -295,7 +303,6 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 			}
 
 			if (apiJoinLinkPrepare.isError && apiJoinLinkPrepare.error instanceof ApiError) {
-
 				switch (apiJoinLinkPrepare.error.error_code) {
 					case ALREADY_MEMBER_ERROR_CODE:
 						setPrepareJoinLinkError({
@@ -308,7 +315,7 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 								is_waiting_for_postmoderation: apiJoinLinkPrepare.error.is_waiting_for_postmoderation,
 								role: apiJoinLinkPrepare.error.role,
 								was_member_before: apiJoinLinkPrepare.error.was_member_before,
-								join_link_uniq: apiJoinLinkPrepare.error.join_link_uniq
+								join_link_uniq: apiJoinLinkPrepare.error.join_link_uniq,
 							} as PrepareJoinLinkErrorAlreadyMemberData,
 						});
 						break;
@@ -323,7 +330,7 @@ export default function GlobalStartProvider({children}: PropsWithChildren) {
 						break;
 
 					default:
-						setPrepareJoinLinkError({error_code: apiJoinLinkPrepare.error.error_code});
+						setPrepareJoinLinkError({ error_code: apiJoinLinkPrepare.error.error_code });
 						break;
 				}
 			} else {

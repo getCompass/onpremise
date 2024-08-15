@@ -45,6 +45,17 @@ class Domain_Ldap_Entity_Config {
 	}
 
 	/**
+	 * получаем user_search_page_size из конфига LDAP
+	 *
+	 * @return int
+	 */
+	public static function getUserSearchPageSize():int {
+
+		$config = getConfig(self::_KEY);
+		return $config["user_search_page_size"];
+	}
+
+	/**
 	 * получаем user_unique_attribute из конфига LDAP
 	 *
 	 * @return string

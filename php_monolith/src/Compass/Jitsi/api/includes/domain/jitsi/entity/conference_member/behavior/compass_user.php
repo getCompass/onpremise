@@ -150,4 +150,25 @@ class Domain_Jitsi_Entity_ConferenceMember_Behavior_CompassUser implements Domai
 			null,
 		);
 	}
+
+	/**
+	 * определяем значение флаг is_moderator для участника конференции
+	 *
+	 * @return bool
+	 */
+	public static function resolveModeratorFlag(int $user_id, Struct_Db_JitsiData_Conference $conference):bool {
+
+		// если пользователь – создатель конференции
+		if ($user_id === $conference->creator_user_id) {
+			return true;
+		}
+
+		// если это single звонок и в него пытается зайти один из первоначальных участников
+		if (Domain_Jitsi_Entity_Conference::isSingle($conference)
+			&& Domain_Jitsi_Entity_Conference::isUserMemberOfSingle($conference, $user_id)) {
+			return true;
+		}
+
+		return false;
+	}
 }

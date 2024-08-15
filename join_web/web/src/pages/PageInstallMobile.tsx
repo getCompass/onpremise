@@ -19,6 +19,17 @@ import { useCallback } from "react";
 import { useIsLowWidthMobile } from "../lib/useIsMobile.ts";
 import LandingBackground from "../components/mobile/LandingBackground.tsx";
 import OnpremiseInstallDownloadMenuMobile from "../components/mobile/OnpremiseInstallDownloadMenuMobile.tsx";
+import {
+	DESKTOP_PLATFORM_LINUX_DEB,
+	DESKTOP_PLATFORM_LINUX_TAR,
+	DESKTOP_PLATFORM_MAC_OS_ARM,
+	DESKTOP_PLATFORM_MAC_OS_INTEL,
+	DESKTOP_PLATFORM_WINDOWS,
+	MOBILE_PLATFORM_ANDROID,
+	MOBILE_PLATFORM_HUAWEI,
+	MOBILE_PLATFORM_IOS,
+} from "../api/_types.ts";
+import useDownloadLink from "../lib/useDownloadLink.ts";
 
 const MacOsIcon = () => {
 	return (
@@ -80,7 +91,7 @@ const MenuItemMacOsIntel = () => {
 	const langStringPageBuildsIntelVersion = useLangString("install_page.desktop.page.builds.intel_version");
 
 	return (
-		<MenuItem id="macos_intel">
+		<MenuItem id={DESKTOP_PLATFORM_MAC_OS_INTEL}>
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<MacOsIcon />
@@ -101,7 +112,7 @@ const MenuItemMacOsM1M2 = () => {
 	const langStringPageBuildsM1M2Version = useLangString("install_page.desktop.page.builds.m1m2_version");
 
 	return (
-		<MenuItem id="macos_m1m2">
+		<MenuItem id={DESKTOP_PLATFORM_MAC_OS_ARM}>
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<MacOsIcon />
@@ -122,7 +133,7 @@ const MenuItemLinuxDeb = () => {
 	const langStringPageBuildsDebVersion = useLangString("install_page.desktop.page.builds.deb_version");
 
 	return (
-		<MenuItem id="linux_deb">
+		<MenuItem id={DESKTOP_PLATFORM_LINUX_DEB}>
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<LinuxDebIcon />
@@ -143,7 +154,7 @@ const MenuItemLinuxTar = () => {
 	const langStringPageBuildsTarVersion = useLangString("install_page.desktop.page.builds.tar_version");
 
 	return (
-		<MenuItem id="linux_tar">
+		<MenuItem id={DESKTOP_PLATFORM_LINUX_TAR}>
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<LinuxTarIcon />
@@ -244,47 +255,10 @@ export default function PageInstallMobile() {
 	const langStringPageSupportBlockTelegram = useLangString("install_page.mobile.page.support_block.telegram");
 	const langStringPageSupportBlockMail = useLangString("install_page.mobile.page.support_block.mail");
 	const isLowWidthMobile = useIsLowWidthMobile();
+	const { getDownloadLink } = useDownloadLink();
 
-	const onSelectMac = useCallback((value: string) => {
-		switch (value) {
-			case "macos_intel":
-				copyToClipboardInstall(
-					"https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac.dmg",
-					langStringPageOnSuccessCopy
-				);
-				break;
-
-			case "macos_m1m2":
-				copyToClipboardInstall(
-					"https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac-arm64.dmg",
-					langStringPageOnSuccessCopy
-				);
-				break;
-
-			default:
-				break;
-		}
-	}, []);
-
-	const onSelectLinux = useCallback((value: string) => {
-		switch (value) {
-			case "linux_deb":
-				copyToClipboardInstall(
-					"https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.deb",
-					langStringPageOnSuccessCopy
-				);
-				break;
-
-			case "linux_tar":
-				copyToClipboardInstall(
-					"https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.tar",
-					langStringPageOnSuccessCopy
-				);
-				break;
-
-			default:
-				break;
-		}
+	const onSelectPlatform = useCallback((value: string) => {
+		copyToClipboardInstall(getDownloadLink(value), langStringPageOnSuccessCopy);
 	}, []);
 
 	return (
@@ -325,17 +299,17 @@ export default function PageInstallMobile() {
 						<DownloadButton
 							icon={DownloadButtonAppStore}
 							desc={langStringPageDownloadIos}
-							link="https://apps.apple.com/ru/app/compass-on-premise/id6469516890"
+							link={getDownloadLink(MOBILE_PLATFORM_IOS)}
 						/>
 						<DownloadButton
 							icon={DownloadButtonGooglePlay}
 							desc={langStringPageDownloadAndroid}
-							link="https://play.google.com/store/apps/details?id=com.getcompass.android.enterprise"
+							link={getDownloadLink(MOBILE_PLATFORM_ANDROID)}
 						/>
 						<DownloadButton
 							icon={DownloadButtonAppGallery}
 							desc={langStringPageDownloadHuawei}
-							link="https://appgallery.huawei.com/app/C109414583"
+							link={getDownloadLink(MOBILE_PLATFORM_HUAWEI)}
 						/>
 					</VStack>
 					<Text color="677380" style="inter_14_20_400" textAlign="center">
@@ -343,7 +317,7 @@ export default function PageInstallMobile() {
 						<DownloadButton
 							icon=""
 							desc={langStringPageDownloadMacos}
-							link="https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac.dmg"
+							link={getDownloadLink(DESKTOP_PLATFORM_MAC_OS_INTEL)}
 							triggerEl={
 								<styled.span>
 									<styled.span
@@ -367,7 +341,7 @@ export default function PageInstallMobile() {
 									<MenuItemMacOsM1M2 />
 								</MenuItemGroup>
 							}
-							onSelectHandler={onSelectMac}
+							onSelectHandler={onSelectPlatform}
 						/>
 						<styled.span
 							textDecoration="underline"
@@ -380,7 +354,7 @@ export default function PageInstallMobile() {
 							cursor="pointer"
 							onClick={() =>
 								copyToClipboardInstall(
-									"https://update-onpremise.getcompass.ru/apps/compass-on-premise-win.exe",
+									getDownloadLink(DESKTOP_PLATFORM_WINDOWS),
 									langStringPageOnSuccessCopy
 								)
 							}
@@ -391,7 +365,7 @@ export default function PageInstallMobile() {
 						<DownloadButton
 							icon=""
 							desc={langStringPageDownloadLinux}
-							link="https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.deb"
+							link={getDownloadLink(DESKTOP_PLATFORM_LINUX_DEB)}
 							triggerEl={
 								<styled.span>
 									<styled.span
@@ -415,7 +389,7 @@ export default function PageInstallMobile() {
 									<MenuItemLinuxTar />
 								</MenuItemGroup>
 							}
-							onSelectHandler={onSelectLinux}
+							onSelectHandler={onSelectPlatform}
 						/>
 					</Text>
 					<VStack w="100%" mt="64px" mb="32px" bgColor="255255255.04" gap="0px" rounded="16px" p="32px 24px">

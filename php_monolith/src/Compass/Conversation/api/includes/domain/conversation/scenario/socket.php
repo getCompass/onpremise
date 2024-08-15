@@ -557,6 +557,12 @@ class Domain_Conversation_Scenario_Socket {
 		// отправляем ws-событие о том, что Напоминание исчезло
 		$talking_user_list = Type_Conversation_Meta_Users::getTalkingUserList($meta_row["users"]);
 		Gateway_Bus_Sender::remindDeleted($remind_id, $message_map, $conversation_map, $dynamic->messages_updated_version, $talking_user_list);
+
+		// форматируем текст для интеркома
+		$intercom_message_text = self::_prepareSendRemindMessageToIntercom($message, $comment);
+
+		// отправляем сообщение в интерком о том что создали напоминание
+		Helper_Conversations::addMessageToIntercomQueueByText($intercom_message_text, $message, $meta_row["type"]);
 	}
 
 	/**
@@ -579,6 +585,17 @@ class Domain_Conversation_Scenario_Socket {
 		$original_message = Type_Conversation_Message_Main::getHandler($original_message)::removeRemindData($original_message);
 
 		return [$original_message, $remind_id];
+	}
+
+	/**
+	 * Формируем нужный формат сообщения для отправки в интерком
+	 */
+	protected static function _prepareSendRemindMessageToIntercom(array $message, string $comment):string {
+
+		$message_text = Type_Conversation_Message_Main::getHandler($message)::getText($message);
+		$system_info  = Gateway_Socket_Intercom::SYSTEM_SEND_REMIND_MESSAGE;
+
+		return "{$system_info}\n\n<b>Сообщение</b>\n{$message_text}\n\n<b>Комментарий к напоминанию</b>\n{$comment}";
 	}
 
 	/**

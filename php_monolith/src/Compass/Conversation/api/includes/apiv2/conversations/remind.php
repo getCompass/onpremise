@@ -67,8 +67,6 @@ class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
 			throw new CaseException(2218007, "Message is not exist");
 		} catch (Domain_Remind_Exception_RemindAtBeforeCurrentTime) {
 			throw new CaseException(2218008, "Time before current");
-		} catch (cs_ActionIsNotAllowedInSupportConversation) {
-			throw new ParamException("Trying to add remind in support conversation");
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		}

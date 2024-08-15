@@ -40,9 +40,18 @@ class Domain_Ldap_Entity_Client_Mock implements Domain_Ldap_Entity_Client_Interf
 		self::_setMock(self::_MOCK_KEY_SEARCH_ENTRIES, $result);
 	}
 
-	public function searchEntries(string $base, string $filter, array $attribute_list = []):array {
+	public function searchEntries(string $base, string $filter, int $page_size, array $attribute_list = []):array {
 
-		return self::_getMock(self::_MOCK_KEY_SEARCH_ENTRIES, []);
+		$entry_list = self::_getMock(self::_MOCK_KEY_SEARCH_ENTRIES, []);
+
+		$count = 0;
+		if (isset($entry_list["count"])) {
+
+			$count = $entry_list["count"];
+			unset($entry_list["count"]);
+		}
+
+		return [$count, $entry_list];
 	}
 
 	/**

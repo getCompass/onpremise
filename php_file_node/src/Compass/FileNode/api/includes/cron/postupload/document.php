@@ -22,8 +22,8 @@ class Cron_Postupload_Document extends \Cron_Default {
 	protected int $memory_limit = 50;
 
 	// максимальный размер содержимого документа
-	// !!! - 1mil установлено, так как падает 500, если увеличить лимит (балансер не может обработать такой огромный кусок)
-	protected const _MAX_CONTENT_LENGTH = 1000000;
+	// 100к символов, чтобы и балансер не загибался, и индекс тоже норм себя чувствовал
+	protected const _MAX_CONTENT_LENGTH = 100_000;
 
 	/**
 	 * producer

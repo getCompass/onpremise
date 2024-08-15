@@ -4,8 +4,10 @@ namespace Compass\Thread;
 
 use BaseFrame\Server\ServerProvider;
 
-// класс для парсинга ссылок на facebook
-class Type_Preview_Parser_Facebook extends Type_Preview_Parser_Default {
+/**
+ * класс для парсинга ссылок на facebook (соцсеть, признанная в России экстремистской)
+ */
+class Type_Preview_Parser_Facebook extends Type_Preview_Parser_Default implements Type_Preview_Parser_Interface {
 
 	public const DOMAIN = "facebook.com";
 
@@ -17,8 +19,38 @@ class Type_Preview_Parser_Facebook extends Type_Preview_Parser_Default {
 		],
 	];
 
+	/**
+	 * функция для определения – уместна ли переданная ссылка для парсинга конкретным парсером
+	 *
+	 * @return bool
+	 */
+	public static function isRelevantUrl(string $url):bool {
+
+		return inHtml($url, Type_Preview_Parser_Facebook::DOMAIN) || ServerProvider::isTest() && inHtml($url, mb_strtolower(self::_SITE_NAME));
+	}
+
+	/**
+	 * функция для подготовки ссылки перед непосредственным парсингом (перед curl запросом)
+	 *
+	 * @return string
+	 */
+	public static function prepareUrl(string $url):string {
+
+		return $url;
+	}
+
+	/**
+	 * функция для создания превью из mime type application/json
+	 *
+	 * @return array
+	 */
+	public static function makeDataFromJson(string $user_id, string $url, string $short_url, array $content):array {
+
+		throw new cs_UrlParseFailed("unsupported mime type", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
+	}
+
 	// создаем превью
-	public static function makeData(string $user_id, string $url, string $short_url, string $html):array {
+	public static function makeDataFromHtml(string $user_id, string $url, string $short_url, string $html):array {
 
 		$type = self::_getType($html);
 

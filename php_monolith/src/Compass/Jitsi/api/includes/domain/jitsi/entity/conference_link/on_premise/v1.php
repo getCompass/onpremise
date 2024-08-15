@@ -38,7 +38,7 @@ class Domain_Jitsi_Entity_ConferenceLink_OnPremise_V1 implements Domain_Jitsi_En
 		}
 
 		// формируем conference_id
-		$conference_id = Domain_Jitsi_Entity_Conference_Id::getConferenceId($creator_user_id, $match_list[1], $password);
+		$conference_id = Domain_Jitsi_Entity_Conference_Id::getConferenceId(intval($creator_user_id), $match_list[1], $password);
 
 		return new Struct_Jitsi_Conference_ParsedLink(
 			link: $link,

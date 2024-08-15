@@ -5,6 +5,7 @@ import {
 	activeDialogIdState,
 	authInputState,
 	authState,
+	captchaProviderState,
 	captchaPublicKeyState,
 	joinLinkState,
 	passwordInputState,
@@ -22,6 +23,7 @@ import { useAtom, useSetAtom } from "jotai/index";
 import { useShowToast } from "../../lib/Toast.tsx";
 import { Button } from "../../components/button.tsx";
 import { useApiAuthMailCancel } from "../../api/auth/mail.ts";
+import { doCaptchaRender, doCaptchaReset } from "../../lib/functions.ts";
 
 type ForgotPasswordDialogContentProps = {
 	showCaptchaState: ShowGrecaptchaState;
@@ -40,6 +42,7 @@ const ForgotPasswordDialogContentDesktop = ({
 	const langStringForgotPasswordDialogDesc = useLangString("forgot_password_dialog.desc");
 
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
+	const captchaProvider = useAtomValue(captchaProviderState);
 	const setPasswordInput = useSetAtom(passwordInputState);
 	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
 	const authInput = useAtomValue(authInputState);
@@ -47,6 +50,7 @@ const ForgotPasswordDialogContentDesktop = ({
 	const setJoinLink = useSetAtom(joinLinkState);
 	const activeDialogId = useAtomValue(activeDialogIdState);
 	const showToast = useShowToast(activeDialogId);
+	const [widgetId, setWidgetId] = useState("");
 
 	const email = useMemo(() => {
 		const [authValue, _] = authInput.split("__|__") || ["", 0];
@@ -57,125 +61,108 @@ const ForgotPasswordDialogContentDesktop = ({
 	const apiSecurityMailTryResetPassword = useApiSecurityMailTryResetPassword();
 	const { navigateToDialog } = useNavigateDialog();
 
+	const captchaRenderCallback = useCallback(async (grecaptchaResponse: string) => {
+		try {
+			const response = await apiSecurityMailTryResetPassword.mutateAsync({
+				mail: email,
+				grecaptcha_response: grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
+				join_link:
+					prepareJoinLinkError === null || prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
+						? window.location.href
+						: undefined,
+			});
+
+			setAuth(response.auth_info);
+			setJoinLink(response.join_link_info);
+			navigateToDialog("auth_email_confirm_code");
+		} catch (error) {
+			if (error instanceof NetworkError) {
+				showToast(langStringErrorsNetworkError, "warning");
+				return;
+			}
+
+			if (error instanceof ServerError) {
+				showToast(langStringErrorsServerError, "warning");
+				return;
+			}
+
+			if (error instanceof ApiError) {
+				if (error.error_code === INCORRECT_LINK_ERROR_CODE || error.error_code === INACTIVE_LINK_ERROR_CODE) {
+					setPrepareJoinLinkError({ error_code: error.error_code });
+					return;
+				}
+
+				// если сказали что уже участник этой компании - то логиним без передачи joinLink
+				if (error.error_code === ALREADY_MEMBER_ERROR_CODE) {
+					try {
+						const response = await apiSecurityMailTryResetPassword.mutateAsync({
+							mail: email,
+							grecaptcha_response: grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
+						});
+
+						setAuth(response.auth_info);
+						setJoinLink(response.join_link_info);
+						navigateToDialog("auth_email_confirm_code");
+					} catch (error) {
+						if (error instanceof NetworkError) {
+							showToast(langStringErrorsNetworkError, "warning");
+							return;
+						}
+
+						if (error instanceof ServerError) {
+							showToast(langStringErrorsServerError, "warning");
+							return;
+						}
+
+						if (error instanceof ApiError) {
+							if (
+								error.error_code === INCORRECT_LINK_ERROR_CODE ||
+								error.error_code === INACTIVE_LINK_ERROR_CODE
+							) {
+								setPrepareJoinLinkError({ error_code: error.error_code });
+								return;
+							}
+
+							if (error.error_code === 1708201) {
+								showToast(langStringErrorsIncorrectCaptcha, "warning");
+								// @ts-ignore
+								if (grecaptcha.enterprise.reset !== undefined) {
+									// @ts-ignore
+									grecaptcha.enterprise.reset();
+								}
+								return;
+							}
+						}
+					}
+				}
+
+				if (error.error_code === 1708201) {
+					showToast(langStringErrorsIncorrectCaptcha, "warning");
+					doCaptchaReset(captchaProvider, widgetId);
+					return;
+				}
+			}
+		}
+	}, []);
+
 	const captchaContainerRef = useCallback(
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
-					// @ts-ignore
-					grecaptcha.enterprise.render(node, {
-						sitekey: captchaPublicKey,
-						action: "check_captcha",
-						callback: async function (grecaptchaResponse: string) {
-							try {
-								const response = await apiSecurityMailTryResetPassword.mutateAsync({
-									mail: email,
-									grecaptcha_response: grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
-									join_link:
-										prepareJoinLinkError === null ||
-										prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
-											? window.location.href
-											: undefined,
-								});
-
-								setAuth(response.auth_info);
-								setJoinLink(response.join_link_info);
-								navigateToDialog("auth_email_confirm_code");
-							} catch (error) {
-								if (error instanceof NetworkError) {
-									showToast(langStringErrorsNetworkError, "warning");
-									return;
-								}
-
-								if (error instanceof ServerError) {
-									showToast(langStringErrorsServerError, "warning");
-									return;
-								}
-
-								if (error instanceof ApiError) {
-									if (
-										error.error_code === INCORRECT_LINK_ERROR_CODE ||
-										error.error_code === INACTIVE_LINK_ERROR_CODE
-									) {
-										setPrepareJoinLinkError({ error_code: error.error_code });
-										return;
-									}
-
-									// если сказали что уже участник этой компании - то логиним без передачи joinLink
-									if (error.error_code === ALREADY_MEMBER_ERROR_CODE) {
-										try {
-											const response = await apiSecurityMailTryResetPassword.mutateAsync({
-												mail: email,
-												grecaptcha_response:
-													grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
-											});
-
-											setAuth(response.auth_info);
-											setJoinLink(response.join_link_info);
-											navigateToDialog("auth_email_confirm_code");
-										} catch (error) {
-											if (error instanceof NetworkError) {
-												showToast(langStringErrorsNetworkError, "warning");
-												return;
-											}
-
-											if (error instanceof ServerError) {
-												showToast(langStringErrorsServerError, "warning");
-												return;
-											}
-
-											if (error instanceof ApiError) {
-												if (
-													error.error_code === INCORRECT_LINK_ERROR_CODE ||
-													error.error_code === INACTIVE_LINK_ERROR_CODE
-												) {
-													setPrepareJoinLinkError({ error_code: error.error_code });
-													return;
-												}
-
-												if (error.error_code === 1708201) {
-													showToast(langStringErrorsIncorrectCaptcha, "warning");
-													// @ts-ignore
-													if (grecaptcha.enterprise.reset !== undefined) {
-														// @ts-ignore
-														grecaptcha.enterprise.reset();
-													}
-													return;
-												}
-											}
-										}
-									}
-
-									if (error.error_code === 1708201) {
-										showToast(langStringErrorsIncorrectCaptcha, "warning");
-										// @ts-ignore
-										if (grecaptcha.enterprise.reset !== undefined) {
-											// @ts-ignore
-											grecaptcha.enterprise.reset();
-										}
-										return;
-									}
-								}
-							}
-						},
-					});
+					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, captchaRenderCallback));
 				} catch (error) {}
 
 				setShowCaptchaState("rendered");
 			}
 
 			if (node !== null && showCaptchaState === "rendered") {
-				// @ts-ignore
-				if (grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
-				}
+				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
 		[showCaptchaState, captchaPublicKey]
 	);
 
 	if (email.length < 1) {
-
 		setPasswordInput("");
 		navigateToDialog("auth_email_login");
 		return <></>;
@@ -219,6 +206,7 @@ const ForgotPasswordDialogContentMobile = ({
 
 	const auth = useAtomValue(authState);
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
+	const captchaProvider = useAtomValue(captchaProviderState);
 	const setPasswordInput = useSetAtom(passwordInputState);
 	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
 	const authInput = useAtomValue(authInputState);
@@ -226,6 +214,7 @@ const ForgotPasswordDialogContentMobile = ({
 	const setJoinLink = useSetAtom(joinLinkState);
 	const activeDialogId = useAtomValue(activeDialogIdState);
 	const showToast = useShowToast(activeDialogId);
+	const [widgetId, setWidgetId] = useState("");
 
 	const email = useMemo(() => {
 		const [authValue, _] = authInput.split("__|__") || ["", 0];
@@ -237,125 +226,108 @@ const ForgotPasswordDialogContentMobile = ({
 	const apiAuthMailCancel = useApiAuthMailCancel();
 	const { navigateToDialog } = useNavigateDialog();
 
+	const captchaRenderCallback = useCallback(async (grecaptchaResponse: string) => {
+		try {
+			const response = await apiSecurityMailTryResetPassword.mutateAsync({
+				mail: email,
+				grecaptcha_response: grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
+				join_link:
+					prepareJoinLinkError === null || prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
+						? window.location.href
+						: undefined,
+			});
+
+			setAuth(response.auth_info);
+			setJoinLink(response.join_link_info);
+			navigateToDialog("auth_email_confirm_code");
+		} catch (error) {
+			if (error instanceof NetworkError) {
+				showToast(langStringErrorsNetworkError, "warning");
+				return;
+			}
+
+			if (error instanceof ServerError) {
+				showToast(langStringErrorsServerError, "warning");
+				return;
+			}
+
+			if (error instanceof ApiError) {
+				if (error.error_code === INCORRECT_LINK_ERROR_CODE || error.error_code === INACTIVE_LINK_ERROR_CODE) {
+					setPrepareJoinLinkError({ error_code: error.error_code });
+					return;
+				}
+
+				// если сказали что уже участник этой компании - то логиним без передачи joinLink
+				if (error.error_code === ALREADY_MEMBER_ERROR_CODE) {
+					try {
+						const response = await apiSecurityMailTryResetPassword.mutateAsync({
+							mail: email,
+							grecaptcha_response: grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
+						});
+
+						setAuth(response.auth_info);
+						setJoinLink(response.join_link_info);
+						navigateToDialog("auth_email_confirm_code");
+					} catch (error) {
+						if (error instanceof NetworkError) {
+							showToast(langStringErrorsNetworkError, "warning");
+							return;
+						}
+
+						if (error instanceof ServerError) {
+							showToast(langStringErrorsServerError, "warning");
+							return;
+						}
+
+						if (error instanceof ApiError) {
+							if (
+								error.error_code === INCORRECT_LINK_ERROR_CODE ||
+								error.error_code === INACTIVE_LINK_ERROR_CODE
+							) {
+								setPrepareJoinLinkError({ error_code: error.error_code });
+								return;
+							}
+
+							if (error.error_code === 1708201) {
+								showToast(langStringErrorsIncorrectCaptcha, "warning");
+								// @ts-ignore
+								if (grecaptcha.enterprise.reset !== undefined) {
+									// @ts-ignore
+									grecaptcha.enterprise.reset();
+								}
+								return;
+							}
+						}
+					}
+				}
+
+				if (error.error_code === 1708201) {
+					showToast(langStringErrorsIncorrectCaptcha, "warning");
+					doCaptchaReset(captchaProvider, widgetId);
+					return;
+				}
+			}
+		}
+	}, []);
+
 	const captchaContainerRef = useCallback(
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
-					// @ts-ignore
-					grecaptcha.enterprise.render(node, {
-						sitekey: captchaPublicKey,
-						action: "check_captcha",
-						callback: async function (grecaptchaResponse: string) {
-							try {
-								const response = await apiSecurityMailTryResetPassword.mutateAsync({
-									mail: email,
-									grecaptcha_response: grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
-									join_link:
-										prepareJoinLinkError === null ||
-										prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
-											? window.location.href
-											: undefined,
-								});
-
-								setAuth(response.auth_info);
-								setJoinLink(response.join_link_info);
-								navigateToDialog("auth_email_confirm_code");
-							} catch (error) {
-								if (error instanceof NetworkError) {
-									showToast(langStringErrorsNetworkError, "warning");
-									return;
-								}
-
-								if (error instanceof ServerError) {
-									showToast(langStringErrorsServerError, "warning");
-									return;
-								}
-
-								if (error instanceof ApiError) {
-									if (
-										error.error_code === INCORRECT_LINK_ERROR_CODE ||
-										error.error_code === INACTIVE_LINK_ERROR_CODE
-									) {
-										setPrepareJoinLinkError({ error_code: error.error_code });
-										return;
-									}
-
-									// если сказали что уже участник этой компании - то логиним без передачи joinLink
-									if (error.error_code === ALREADY_MEMBER_ERROR_CODE) {
-										try {
-											const response = await apiSecurityMailTryResetPassword.mutateAsync({
-												mail: email,
-												grecaptcha_response:
-													grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
-											});
-
-											setAuth(response.auth_info);
-											setJoinLink(response.join_link_info);
-											navigateToDialog("auth_email_confirm_code");
-										} catch (error) {
-											if (error instanceof NetworkError) {
-												showToast(langStringErrorsNetworkError, "warning");
-												return;
-											}
-
-											if (error instanceof ServerError) {
-												showToast(langStringErrorsServerError, "warning");
-												return;
-											}
-
-											if (error instanceof ApiError) {
-												if (
-													error.error_code === INCORRECT_LINK_ERROR_CODE ||
-													error.error_code === INACTIVE_LINK_ERROR_CODE
-												) {
-													setPrepareJoinLinkError({ error_code: error.error_code });
-													return;
-												}
-
-												if (error.error_code === 1708201) {
-													showToast(langStringErrorsIncorrectCaptcha, "warning");
-													// @ts-ignore
-													if (grecaptcha.enterprise.reset !== undefined) {
-														// @ts-ignore
-														grecaptcha.enterprise.reset();
-													}
-													return;
-												}
-											}
-										}
-									}
-
-									if (error.error_code === 1708201) {
-										showToast(langStringErrorsIncorrectCaptcha, "warning");
-										// @ts-ignore
-										if (grecaptcha.enterprise.reset !== undefined) {
-											// @ts-ignore
-											grecaptcha.enterprise.reset();
-										}
-										return;
-									}
-								}
-							}
-						},
-					});
+					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, captchaRenderCallback));
 				} catch (error) {}
 
 				setShowCaptchaState("rendered");
 			}
 
 			if (node !== null && showCaptchaState === "rendered") {
-				// @ts-ignore
-				if (grecaptcha.enterprise.reset !== undefined) {
-					// @ts-ignore
-					grecaptcha.enterprise.reset();
-				}
+				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
 		[showCaptchaState, captchaPublicKey]
 	);
 
 	if (email.length < 1) {
-
 		setPasswordInput("");
 		navigateToDialog("auth_email_login");
 		return <></>;

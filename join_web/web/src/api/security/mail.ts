@@ -3,10 +3,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { APIAuthInfo, APIJoinLinkInfo } from "../_types.ts";
 import { useNavigateDialog, useNavigatePage } from "../../components/hooks.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
-import { useSetAtom } from "jotai/index";
+import {useAtomValue, useSetAtom} from "jotai/index";
 import {
 	authInputState,
-	authState,
+	authState, captchaProviderState,
 	confirmPasswordState,
 	firstAuthState,
 	isPasswordChangedState,
@@ -26,6 +26,7 @@ export type ApiSecurityMailTryResetPassword = {
 
 export function useApiSecurityMailTryResetPassword() {
 	const getResponse = useGetResponse("pivot");
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 		retry: false,
@@ -44,7 +45,7 @@ export function useApiSecurityMailTryResetPassword() {
 			}
 
 			return getResponse<ApiSecurityMailTryResetPassword>("security/mail/tryResetPassword", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 	});
@@ -62,6 +63,7 @@ export type ApiSecurityMailConfirmResetPassword = {};
 export function useApiSecurityMailConfirmResetPassword() {
 	const getResponse = useGetResponse("pivot");
 	const { navigateToDialog } = useNavigateDialog();
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 		retry: false,
@@ -77,7 +79,7 @@ export function useApiSecurityMailConfirmResetPassword() {
 			}
 
 			return getResponse<ApiSecurityMailConfirmResetPassword>("security/mail/confirmResetPassword", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 		async onSuccess(_, variables) {
@@ -110,6 +112,7 @@ export function useApiSecurityMailFinishResetPassword() {
 	const queryClient = useQueryClient();
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 		retry: false,
@@ -125,7 +128,7 @@ export function useApiSecurityMailFinishResetPassword() {
 			}
 
 			return getResponse<ApiSecurityMailFinishResetPassword>("security/mail/finishResetPassword", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 		async onSuccess(response) {
@@ -160,6 +163,7 @@ export type ApiSecurityMailResendResetPasswordCode = {
 
 export function useApiSecurityMailResendResetPasswordCode() {
 	const getResponse = useGetResponse("pivot");
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 		retry: false,
@@ -170,7 +174,7 @@ export function useApiSecurityMailResendResetPasswordCode() {
 			});
 
 			return getResponse<ApiSecurityMailResendResetPasswordCode>("security/mail/resendResetPasswordCode", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 	});

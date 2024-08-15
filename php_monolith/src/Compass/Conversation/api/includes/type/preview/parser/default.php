@@ -2,11 +2,24 @@
 
 namespace Compass\Conversation;
 
-// класс для парсинга любых ссылок
-class Type_Preview_Parser_Default extends Type_Preview_Parser_Helper {
+/**
+ * класс для парсинга любых ссылок (используется по умолчанию)
+ * @package Compass\Conversation
+ */
+class Type_Preview_Parser_Default extends Type_Preview_Parser_Helper implements Type_Preview_Parser_Interface {
+
+	/**
+	 * функция для подготовки ссылки перед непосредственным парсингом (перед curl запросом)
+	 *
+	 * @return string
+	 */
+	public static function prepareUrl(string $url):string {
+
+		return $url;
+	}
 
 	// создаем превью
-	public static function makeData(string $user_id, string $url, string $short_url, string $html):array {
+	public static function makeDataFromHtml(string $user_id, string $url, string $short_url, string $html):array {
 
 		$type         = self::_getType($html);
 		$preview_type = self::_convertContentType($type);
@@ -30,6 +43,16 @@ class Type_Preview_Parser_Default extends Type_Preview_Parser_Helper {
 			$image_file_map,
 			$description
 		);
+	}
+
+	/**
+	 * функция для создания превью из mime type application/json
+	 *
+	 * @return array
+	 */
+	public static function makeDataFromJson(string $user_id, string $url, string $short_url, array $content):array {
+
+		throw new cs_UrlParseFailed("unsupported mime type", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
 	}
 
 	// создаем превью для конкретнго сайта
@@ -77,5 +100,15 @@ class Type_Preview_Parser_Default extends Type_Preview_Parser_Helper {
 			$image_file_map,
 			$description
 		);
+	}
+
+	/**
+	 * функция для определения – уместна ли переданная ссылка для парсинга конкретным парсером
+	 *
+	 * @return bool
+	 */
+	public static function isRelevantUrl(string $url):bool {
+
+		return true;
 	}
 }

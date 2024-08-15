@@ -141,37 +141,49 @@ class Type_Captcha_EnterpriseGoogle extends Type_Captcha_Main {
 				if (inHtml($user_agent, "huawei")) {
 
 					if (inHtml($user_agent, "compass") || ServerProvider::isOnPremise()) {
-						return $captcha_provider_config["compass"]["client_keys"]["huawei_key"] ?? "";
+						$client_key = $captcha_provider_config["compass"]["client_keys"]["huawei_key"] ?? "";
 					} else {
-						return $captcha_provider_config["comteam"]["client_keys"]["huawei_key"] ?? "";
+						$client_key = $captcha_provider_config["comteam"]["client_keys"]["huawei_key"] ?? "";
 					}
 				} else {
 
 					if (inHtml($user_agent, "compass") || ServerProvider::isOnPremise()) {
-						return $captcha_provider_config["compass"]["client_keys"]["android_key"] ?? "";
+						$client_key = $captcha_provider_config["compass"]["client_keys"]["android_key"] ?? "";
 					} else {
-						return $captcha_provider_config["comteam"]["client_keys"]["android_key"] ?? "";
+						$client_key = $captcha_provider_config["comteam"]["client_keys"]["android_key"] ?? "";
 					}
 				}
+				break;
 
 			case Type_Api_Platform::PLATFORM_IOS:
 
 				if (inHtml($user_agent, "compass") || ServerProvider::isOnPremise()) {
-					return $captcha_provider_config["compass"]["client_keys"]["ios_key"] ?? "";
+					$client_key = $captcha_provider_config["compass"]["client_keys"]["ios_key"] ?? "";
 				} else {
-					return $captcha_provider_config["comteam"]["client_keys"]["ios_key"] ?? "";
+					$client_key = $captcha_provider_config["comteam"]["client_keys"]["ios_key"] ?? "";
 				}
+				break;
 
 			case Type_Api_Platform::PLATFORM_ELECTRON:
 
 				if (inHtml($user_agent, "compass") || ServerProvider::isOnPremise()) {
-					return $captcha_provider_config["compass"]["client_keys"]["electron_key"] ?? "";
+					$client_key = $captcha_provider_config["compass"]["client_keys"]["electron_key"] ?? "";
 				} else {
-					return $captcha_provider_config["comteam"]["client_keys"]["electron_key"] ?? "";
+					$client_key = $captcha_provider_config["comteam"]["client_keys"]["electron_key"] ?? "";
 				}
+				break;
 
 			default:
-				return $captcha_provider_config["compass"]["client_keys"]["default"] ?? "";
+				$client_key = $captcha_provider_config["compass"]["client_keys"]["default"] ?? "";
+				break;
 		}
+
+		// если сервер онпрема и полученный ключ пустой, то пробуем достать дефолт клиентский ключ
+		// (кейс, когда пользователь на своём onpremise-сервере заполнил в конфиге только дефолт клиентский ключ)
+		if (ServerProvider::isOnPremise() && mb_strlen($client_key) < 1) {
+			$client_key = $captcha_provider_config["compass"]["client_keys"]["default"] ?? "";
+		}
+
+		return $client_key;
 	}
 }

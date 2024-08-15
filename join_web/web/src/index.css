@@ -168,28 +168,18 @@ input[type="search"] {
 	display: none; /* Chrome, Safari, newer versions of Edge */
 }
 
-.animated-bg-desktop {
+.static-bg-desktop {
 	height: 100%;
 	position: absolute;
-	left: -50%;
-	width: 8700px;
+	width: 100%;
 	background: url("../src/img/background.svg") repeat center;
-	animation: moveBackground 25s linear infinite;
 }
 
-.animated-bg-mobile {
+.static-bg-mobile {
 	height: 100vh;
 	position: absolute;
-	left: -50%;
-	width: 8700px;
+	width: 100vw;
 	background: url("../src/img/background.svg") repeat center;
-	animation: moveBackground 45s linear infinite;
-}
-
-@keyframes moveBackground {
-	to {
-		transform: translateX(-2175px);
-	}
 }
 
 .toast-container {

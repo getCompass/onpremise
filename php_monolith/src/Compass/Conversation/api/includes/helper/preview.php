@@ -85,6 +85,10 @@ class Helper_Preview {
 	 */
 	public static function createPreview(string $prepared_url, int $user_id, string $lang, bool $need_full_preview = false):array {
 
+		// подготовим url к парсингу, в зависимости от сайта
+		$prepared_url = self::prepareUrlBySite($prepared_url);
+
+		// получаем map идентификатор для превью
 		$preview_map = self::_getPreviewMapFromUrl($prepared_url, $lang, $need_full_preview);
 
 		// получаем url_preview из базы
@@ -142,8 +146,8 @@ class Helper_Preview {
 			// добавляем хедер с языком, на котором хотим спарсить страницу
 			$curl->setAcceptLanguage($lang);
 
-			// получаем html страницы
-			$html = self::_doCurlRequest($curl, $prepared_url);
+			// получаем контент страницы
+			$content = self::_doCurlRequest($curl, $prepared_url);
 		} catch (\cs_CurlError $e) {
 			throw new cs_UrlParseFailed($e->getMessage(), Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
 		}
@@ -158,7 +162,7 @@ class Helper_Preview {
 		// возвращаем якорь в ссылку, если пропал и получаем информацию о превью
 		$final_url = self::_doAnchorFix($domain, $prepared_url, $final_url);
 
-		return self::_makeFullPreviewData($curl, $html, $domain_after_redirects, $user_id, $final_url);
+		return self::_makeFullPreviewData($curl, $content, $domain_after_redirects, $user_id, $final_url);
 	}
 
 	/**
@@ -237,11 +241,11 @@ class Helper_Preview {
 		self::_checkRequestHttpCode($curl);
 
 		// если есть редиректы - получаем html по ссылке после редиректов
-		return self::_getHtmlAfterRedirects($curl, $html);
+		return self::_getContentAfterRedirects($curl, $html);
 	}
 
 	// получаем html по ссылке после редиректов
-	protected static function _getHtmlAfterRedirects(\Curl $curl, string $html):string {
+	protected static function _getContentAfterRedirects(\Curl $curl, string $content):string {
 
 		for ($i = 0; $i <= self::_REDIRECT_MAX_COUNT; $i++) {
 
@@ -249,7 +253,7 @@ class Helper_Preview {
 				throw new cs_UrlParseFailed("Gained max redirects", Type_Logs_Cron_Parser::LOG_STATUS_MAX_REDIRECT_GAINED);
 			}
 
-			$redirect_url = self::_getRedirectUrlIfHttp200($curl, $html);
+			$redirect_url = self::_getRedirectUrlIfHttp200($curl, $content);
 			if ($redirect_url === false) {
 				break;
 			}
@@ -263,9 +267,9 @@ class Helper_Preview {
 				throw new cs_UrlNotAllowToParse($redirect_url);
 			}
 
-			$html = $curl->get($redirect_url);
+			$content = $curl->get($redirect_url);
 		}
-		return $html;
+		return $content;
 	}
 
 	// получаем ссылку после редиректов, если вернулся 200 http код
@@ -390,13 +394,17 @@ class Helper_Preview {
 	}
 
 	// получаем информацию по url preview
-	protected static function _makeFullPreviewData(\Curl $curl, string $html, string $domain, int $user_id, string $prepared_url):array {
+	protected static function _makeFullPreviewData(\Curl $curl, string $content, string $domain, int $user_id, string $prepared_url):array {
 
 		$mime_type       = self::_getMimeType($curl);
 		$is_need_favicon = self::_getIsNeedFaviconForDomain($domain);
 
 		if ($mime_type === "text/html") {
-			return self::_makePreviewDataMimeTypeIsHtml($curl, $html, $domain, $user_id, $prepared_url);
+			return self::_makePreviewDataMimeTypeIsHtml($curl, $content, $domain, $user_id, $prepared_url);
+		}
+
+		if ($mime_type === "application/json") {
+			return self::_makePreviewDataMimeTypeJson($content, $domain, $user_id, $prepared_url);
 		}
 
 		if (in_array($mime_type, self::_IMAGE_MIME_TYPE_LIST)) {
@@ -509,7 +517,7 @@ class Helper_Preview {
 		return $mime_type;
 	}
 
-	// формируем превью сайта
+	// формируем превью сайта text/html
 	protected static function _makePreviewDataMimeTypeIsHtml(\Curl $curl, string $html, string $domain, int $user_id, string $prepared_url):array {
 
 		// пробуем поменять кодировку на UTF-8
@@ -522,40 +530,44 @@ class Helper_Preview {
 		}
 
 		// парсим html и собираем preview data в зависимости от ресурса
-		return self::makeData($user_id, $prepared_url, $short_url, $html);
+		return self::makeDataFromHtml($user_id, $prepared_url, $short_url, $html);
+	}
+
+	// формируем превью сайта application/json
+	protected static function _makePreviewDataMimeTypeJson(string $content, string $domain, int $user_id, string $prepared_url):array {
+
+		// пытаемся распаковать содержимое
+		$content = fromJson($content);
+
+		// если это пустой массив, то ничего не делаем
+		if ($content === []) {
+			throw new cs_UrlParseFailed("Empty or wrong application/json data", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
+		}
+
+		// преобразовываем домен обратно в utf-8
+		$short_url = Type_Preview_Punycode::decode($domain);
+		if ($short_url === false) {
+			throw new cs_UrlParseFailed("Decode domain from punycode failed", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
+		}
+
+		// парсим html и собираем preview data в зависимости от ресурса
+		return self::makeDataFromJson($user_id, $prepared_url, $short_url, $content);
 	}
 
 	// парсим html и собираем preview data в зависимости от ресурса
-	public static function makeData(string $user_id, string $url, string $short_url, string $html):array {
+	public static function makeDataFromHtml(string $user_id, string $url, string $short_url, string $html):array {
 
-		// вычисляем ресурс по доменному имени
-		if (inHtml($short_url, Type_Preview_Parser_Instagram::DOMAIN) || ServerProvider::isTest() && inHtml($url, "instagram")) {
-			return Type_Preview_Parser_Instagram::makeData($user_id, $url, $short_url, $html);
-		}
-		if (inHtml($short_url, Type_Preview_Parser_Youtube::DOMAIN) || ServerProvider::isTest() && inHtml($url, "youtube")) {
-			return Type_Preview_Parser_Youtube::makeData($user_id, $url, $short_url, $html);
-		}
-		if (inHtml($short_url, Type_Preview_Parser_Facebook::DOMAIN) || ServerProvider::isTest() && inHtml($url, "facebook")) {
-			return Type_Preview_Parser_Facebook::makeData($user_id, $url, $short_url, $html);
-		}
-		if (inHtml($short_url, Type_Preview_Parser_Mail::DOMAIN) || ServerProvider::isTest() && inHtml($url, "mail")) {
-			return Type_Preview_Parser_Mail::makeData($user_id, $url, $short_url, $html);
-		}
-		if (inHtml($short_url, Type_Preview_Parser_Habrahabr::DOMAIN) || ServerProvider::isTest() && inHtml($url, "habrahabr")) {
-			return Type_Preview_Parser_Habrahabr::makeData($user_id, $url, $short_url, $html);
-		}
-		if (inHtml($short_url, Type_Preview_Parser_Ok::DOMAIN) || ServerProvider::isTest() && inHtml($url, "ok")) {
-			return Type_Preview_Parser_Ok::makeData($user_id, $url, $short_url, $html);
-		}
-		// добавляем слэш в конце, чтобы после домена верхнего уровня не было ничего
-		if (str_contains($url, Type_Preview_Parser_Compass::DOMAIN)
-			|| preg_match("/getcompass.(ru|com)(\/|$)/iu", $url)
-			|| preg_match(sprintf("/%s(\/|$)/iu", str_replace("/", "\/", PUBLIC_ADDRESS_GLOBAL)), $url)) {
-			return Type_Preview_Parser_Compass::makeData($user_id, $url, $short_url, $html);
-		}
+		// определяем класс парсера
+		$parser = Type_Preview_Parser::resolveClass($url);
+		return $parser::makeDataFromHtml($user_id, $url, $short_url, $html);
+	}
 
-		// собираем по дефолту
-		return Type_Preview_Parser_Default::makeData($user_id, $url, $short_url, $html);
+	// парсим json и собираем preview data в зависимости от ресурса
+	public static function makeDataFromJson(string $user_id, string $url, string $short_url, array $content):array {
+
+		// определяем класс парсера
+		$parser = Type_Preview_Parser::resolveClass($url);
+		return $parser::makeDataFromJson($user_id, $url, $short_url, $content);
 	}
 
 	// пробуем поменять кодировку html на utf-8
@@ -752,6 +764,17 @@ class Helper_Preview {
 		}
 
 		throw new cs_UrlParseFailed("Failed to get real url", Type_Logs_Cron_Parser::LOG_STATUS_SERVER_RESPONSE_ERROR);
+	}
+
+	/**
+	 * Функция подготавливает ссылку к парсингу в зависимости от сайта
+	 *
+	 * @return string
+	 */
+	public static function prepareUrlBySite(string $url):string {
+
+		$parser = Type_Preview_Parser::resolveClass($url);
+		return $parser::prepareUrl($url);
 	}
 
 	// -------------------------------------------------------

@@ -46,7 +46,7 @@ class Domain_Ldap_Scenario_Api {
 		}
 
 		// получаем информацию об учетной записе
-		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), Domain_Ldap_Entity_Utils::formatUserFilter(Domain_Ldap_Entity_Config::getUserUniqueAttribute(), $username));
+		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), Domain_Ldap_Entity_Utils::formatUserFilter(Domain_Ldap_Entity_Config::getUserUniqueAttribute(), $username), 1);
 
 		// закрываем соединение
 		$client->unbind();

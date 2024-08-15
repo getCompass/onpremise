@@ -4,6 +4,40 @@ export const LANG_CODES: Lang[] = ["ru", "en", "de", "fr", "es", "it"];
 export const AUTH_MAIL_SCENARIO_SHORT = "short_confirm";
 export const AUTH_MAIL_SCENARIO_FULL = "full_confirm";
 
+export const CAPTCHA_PROVIDER_ENTERPRISE_GOOGLE = "enterprise_google";
+export const CAPTCHA_PROVIDER_YANDEX = "yandex_cloud";
+export const CAPTCHA_PROVIDER_DEFAULT = CAPTCHA_PROVIDER_ENTERPRISE_GOOGLE;
+
+export const APP_LINK_DESKTOP_MAC_OS_INTEL = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac.dmg";
+export const APP_LINK_DESKTOP_MAC_OS_INTEL_BY_VERSION =
+	"https://update-onpremise.getcompass.ru/$VERSION/mac/Compass%20On-premise-$VERSION.dmg";
+export const APP_LINK_DESKTOP_MAC_OS_ARM =
+	"https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac-arm64.dmg";
+export const APP_LINK_DESKTOP_MAC_OS_ARM_BY_VERSION =
+	"https://update-onpremise.getcompass.ru/$VERSION/mac/Compass%20On-premise-arm64-$VERSION.dmg";
+export const APP_LINK_DESKTOP_WINDOWS = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-win.exe";
+export const APP_LINK_DESKTOP_WINDOWS_BY_VERSION =
+	"https://update-onpremise.getcompass.ru/$VERSION/win/Compass%20On-premise%20Setup%20$VERSION.exe";
+export const APP_LINK_DESKTOP_LINUX_DEB = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.deb";
+export const APP_LINK_DESKTOP_LINUX_DEB_BY_VERSION =
+	"https://update-onpremise.getcompass.ru/linux/CompassOnPremise_$VERSION_amd64.deb";
+export const APP_LINK_DESKTOP_LINUX_TAR = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.tar";
+export const APP_LINK_DESKTOP_LINUX_TAR_BY_VERSION =
+	"https://update-onpremise.getcompass.ru/linux/CompassOnPremise_$VERSION_amd64.tar";
+export const APP_LINK_MOBILE_APP_STORE = "https://apps.apple.com/app/id6469516890";
+export const APP_LINK_MOBILE_GOOGLE_PLAY =
+	"https://play.google.com/store/apps/details?id=com.getcompass.android.enterprise";
+export const APP_LINK_MOBILE_APP_GALLERY = "https://appgallery.huawei.com/app/C109414583";
+
+export const DESKTOP_PLATFORM_MAC_OS_INTEL = "mac_os_intel";
+export const DESKTOP_PLATFORM_MAC_OS_ARM = "mac_os_arm";
+export const DESKTOP_PLATFORM_WINDOWS = "windows";
+export const DESKTOP_PLATFORM_LINUX_DEB = "linux_deb";
+export const DESKTOP_PLATFORM_LINUX_TAR = "linux_tar";
+export const MOBILE_PLATFORM_IOS = "ios";
+export const MOBILE_PLATFORM_ANDROID = "android";
+export const MOBILE_PLATFORM_HUAWEI = "huawei";
+
 export const SSO_PROTOCOL_OIDC = "oidc";
 export const SSO_PROTOCOL_LDAP = "ldap";
 
@@ -33,14 +67,14 @@ export function getLangFullName(langCode: Lang): string {
 
 // словарь с текстами, возвращаемый в api-методе /global/start/
 export type ApiGlobalStartDictionaryData = {
-	auth_sso_start_button_text: string,
-}
+	auth_sso_start_button_text: string;
+};
 
 // информация о пользователе, возвращаемая в различных api-методах
 export type ApiUserInfoData = {
-	user_id: number,
-	full_name: string,
-}
+	user_id: number;
+	full_name: string;
+};
 
 export const isValidEmail = (email: string): boolean => {
 	// регулярное выражение для проверки электронной почты
@@ -137,17 +171,24 @@ export type APIJoinLinkInfo = {
 	is_exit_status_in_progress: number;
 };
 
+export type AuthSsoInfo = {
+	state: "none" | "in_progress";
+	data: {
+		link: string;
+		sso_auth_token: string;
+		signature: string;
+	};
+};
+
+export type ClientVersionItem = {
+	max_version: string;
+	max_version_code: number;
+	min_version: string;
+	min_version_code: number;
+};
+
 export type APIResponse<T> = {
 	server_time: number;
 	response: T;
 	status: "ok" | "error";
 };
-
-export type AuthSsoInfo = {
-	state: "none" | "in_progress",
-	data: {
-		link: string,
-		sso_auth_token: string,
-		signature: string,
-	}
-}

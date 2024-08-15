@@ -1,6 +1,6 @@
-import {Box, HStack, VStack, Center, styled} from "../../styled-system/jsx";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useAtomValue, useSetAtom} from "jotai";
+import { Box, Center, HStack, styled, VStack } from "../../styled-system/jsx";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
 	authenticationTokenTimeLeft,
 	authInputState,
@@ -13,9 +13,9 @@ import {
 	prepareJoinLinkErrorState,
 	useToastConfig,
 } from "../api/_stores.ts";
-import {Text} from "../components/text.tsx";
-import {Button} from "../components/button.tsx";
-import {useLangString} from "../lib/getLangString.ts";
+import { Text } from "../components/text.tsx";
+import { Button } from "../components/button.tsx";
+import { useLangString } from "../lib/getLangString.ts";
 import {
 	Menu,
 	MenuArrow,
@@ -26,11 +26,11 @@ import {
 	MenuPositioner,
 	MenuTrigger,
 } from "../components/menu.tsx";
-import {Portal} from "@ark-ui/react";
-import {css} from "../../styled-system/css";
-import {useApiAuthGenerateToken, useApiAuthLogout} from "../api/auth.ts";
-import {LinuxDebIcon, LinuxTarIcon, MacOsIcon, WindowsIcon} from "./PageTokenDesktop.tsx";
-import {copyToClipboard} from "../lib/copyToClipboard.ts";
+import { Portal } from "@ark-ui/react";
+import { css } from "../../styled-system/css";
+import { useApiAuthGenerateToken, useApiAuthLogout } from "../api/auth.ts";
+import { LinuxDebIcon, LinuxTarIcon, MacOsIcon, WindowsIcon } from "./PageTokenDesktop.tsx";
+import { copyToClipboard } from "../lib/copyToClipboard.ts";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -40,19 +40,28 @@ import {
 	DialogTrigger,
 	generateDialogId,
 } from "../components/dialog.tsx";
-import {NetworkError, ServerError} from "../api/_index.ts";
-import {useApiJoinLinkAccept} from "../api/joinlink.ts";
-import {ALREADY_MEMBER_ERROR_CODE, PrepareJoinLinkErrorAlreadyMemberData} from "../api/_types.ts";
-import Toast, {useShowToast} from "../lib/Toast.tsx";
+import { NetworkError, ServerError } from "../api/_index.ts";
+import { useApiJoinLinkAccept } from "../api/joinlink.ts";
+import {
+	ALREADY_MEMBER_ERROR_CODE,
+	DESKTOP_PLATFORM_LINUX_DEB,
+	DESKTOP_PLATFORM_LINUX_TAR,
+	DESKTOP_PLATFORM_MAC_OS_ARM,
+	DESKTOP_PLATFORM_MAC_OS_INTEL,
+	DESKTOP_PLATFORM_WINDOWS,
+	PrepareJoinLinkErrorAlreadyMemberData,
+} from "../api/_types.ts";
+import Toast, { useShowToast } from "../lib/Toast.tsx";
 import Preloader16 from "../components/Preloader16.tsx";
-import {useAtom} from "jotai/index";
-import {DynamicTimerAuthenticationToken} from "../components/DynamicTimerAuthenticationToken.tsx";
+import { useAtom } from "jotai/index";
+import { DynamicTimerAuthenticationToken } from "../components/DynamicTimerAuthenticationToken.tsx";
+import useDownloadLink from "../lib/useDownloadLink.ts";
 
 type StepTwoContentProps = {
 	childButtonWidth: number;
 };
 
-const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
+const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 	const langStringPageInviteInstallAppDesktopTitlePt1 = useLangString("page_invite.install_app_desktop.title_pt1");
 	const langStringPageInviteInstallAppDesktopTitlePt2 = useLangString("page_invite.install_app_desktop.title_pt2");
 	const langStringPageInviteInstallAppDesktopButton = useLangString("page_invite.install_app_desktop.button");
@@ -65,32 +74,10 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 	const langStringPageTokenDesktopBuildsTarVersion = useLangString("page_token.desktop_builds.tar_version");
 
 	const [isStoreMenuOpen, setStoreMenuOpen] = useState(false);
+	const { getDownloadLink } = useDownloadLink();
 
 	const onSelectHandler = useCallback((value: string) => {
-		switch (value) {
-			case "macos_intel":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac.dmg";
-				break;
-
-			case "macos_m1m2":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac-arm64.dmg";
-				break;
-
-			case "windows":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-win.exe";
-				break;
-
-			case "linux_deb":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.deb";
-				break;
-
-			case "linux_tar":
-				window.location.href = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.tar";
-				break;
-
-			default:
-				break;
-		}
+		window.location.href = getDownloadLink(value);
 	}, []);
 
 	return (
@@ -115,18 +102,18 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 					<styled.span fontFamily="lato_bold" fontWeight="normal">
 						{langStringPageInviteInstallAppDesktopTitlePt1}
 					</styled.span>
-					<br/>
+					<br />
 					{langStringPageInviteInstallAppDesktopTitlePt2}
 				</Text>
 			</HStack>
 			<Menu
 				isOpen={isStoreMenuOpen}
-				onSelect={({value}) => onSelectHandler(value)}
+				onSelect={({ value }) => onSelectHandler(value)}
 				onClose={() => setStoreMenuOpen(false)}
 				onFocusOutside={() => setStoreMenuOpen(false)}
 				onInteractOutside={() => setStoreMenuOpen(false)}
 				onPointerDownOutside={() => setStoreMenuOpen(false)}
-				positioning={{placement: "bottom", offset: {mainAxis: 7}}}
+				positioning={{ placement: "bottom", offset: { mainAxis: 7 } }}
 				type="medium_desktop"
 			>
 				<VStack gap="0px">
@@ -158,10 +145,10 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 								/>
 							</MenuArrow>
 							<MenuItemGroup id="macos_builds">
-								<MenuItem id="macos_intel">
+								<MenuItem id={DESKTOP_PLATFORM_MAC_OS_INTEL}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
-											<MacOsIcon/>
+											<MacOsIcon />
 											<Text fs="15" lh="22" color="333e49" font="regular">
 												{langStringPageTokenDesktopBuildsMacosDownload}
 											</Text>
@@ -180,10 +167,10 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 										</Text>
 									</HStack>
 								</MenuItem>
-								<MenuItem id="macos_m1m2">
+								<MenuItem id={DESKTOP_PLATFORM_MAC_OS_ARM}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
-											<MacOsIcon/>
+											<MacOsIcon />
 											<Text fs="15" lh="22" color="333e49" font="regular">
 												{langStringPageTokenDesktopBuildsMacosDownload}
 											</Text>
@@ -204,21 +191,21 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 								</MenuItem>
 							</MenuItemGroup>
 							<Box w="100%" px="24px" py="7px">
-								<Box bgColor="f5f5f5" h="1px" w="100%"/>
+								<Box bgColor="f5f5f5" h="1px" w="100%" />
 							</Box>
 							<MenuItemGroup id="other_builds">
-								<MenuItem id="windows">
+								<MenuItem id={DESKTOP_PLATFORM_WINDOWS}>
 									<HStack gap="8px">
-										<WindowsIcon/>
+										<WindowsIcon />
 										<Text fs="15" lh="22" color="333e49" font="regular">
 											{langStringPageTokenDesktopBuildsWindowsDownload}
 										</Text>
 									</HStack>
 								</MenuItem>
-								<MenuItem id="linux_deb">
+								<MenuItem id={DESKTOP_PLATFORM_LINUX_DEB}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
-											<LinuxDebIcon/>
+											<LinuxDebIcon />
 											<Text fs="15" lh="22" color="333e49" font="regular">
 												{langStringPageTokenDesktopBuildsLinuxDownload}
 											</Text>
@@ -237,10 +224,10 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 										</Text>
 									</HStack>
 								</MenuItem>
-								<MenuItem id="linux_tar">
+								<MenuItem id={DESKTOP_PLATFORM_LINUX_TAR}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
-											<LinuxTarIcon/>
+											<LinuxTarIcon />
 											<Text fs="15" lh="22" color="333e49" font="regular">
 												{langStringPageTokenDesktopBuildsLinuxDownload}
 											</Text>
@@ -275,10 +262,10 @@ type StepOneContentProps = {
 };
 
 const StepOneContent = ({
-							scrollableParentBlockRef,
-							parentButtonRef,
-							joinLinkAcceptIsLoading,
-						}: StepOneContentProps) => {
+	scrollableParentBlockRef,
+	parentButtonRef,
+	joinLinkAcceptIsLoading,
+}: StepOneContentProps) => {
 	const langStringPageInviteOpenCompassDesktopTitlePt1 = useLangString("page_invite.open_compass_desktop.title_pt1");
 	const langStringPageInviteOpenCompassDesktopTitlePt2 = useLangString("page_invite.open_compass_desktop.title_pt2");
 	const langStringPageInviteOpenCompassDesktopButton = useLangString("page_invite.open_compass_desktop.button");
@@ -321,7 +308,6 @@ const StepOneContent = ({
 	const apiAuthGenerateToken = useApiAuthGenerateToken();
 
 	useEffect(() => {
-
 		let join_link_uniq = joinLink === null ? undefined : joinLink.join_link_uniq;
 
 		if (
@@ -329,13 +315,11 @@ const StepOneContent = ({
 			prepareJoinLinkError.error_code === ALREADY_MEMBER_ERROR_CODE &&
 			prepareJoinLinkError.data !== undefined
 		) {
+			const prepareJoinLinkErrorData = prepareJoinLinkError.data as PrepareJoinLinkErrorAlreadyMemberData;
 
-			const prepareJoinLinkErrorData
-				= prepareJoinLinkError.data as PrepareJoinLinkErrorAlreadyMemberData;
-
-			join_link_uniq = prepareJoinLinkErrorData.join_link_uniq
+			join_link_uniq = prepareJoinLinkErrorData.join_link_uniq;
 		}
-		apiAuthGenerateToken.mutate({join_link_uniq: join_link_uniq})
+		apiAuthGenerateToken.mutate({ join_link_uniq: join_link_uniq });
 	}, []);
 
 	return (
@@ -361,20 +345,33 @@ const StepOneContent = ({
 						<styled.span fontFamily="lato_bold" fontWeight="normal">
 							{langStringPageInviteOpenCompassDesktopTitlePt1}
 						</styled.span>
-						<br/>
+						<br />
 						{langStringPageInviteOpenCompassDesktopTitlePt2}
 					</Text>
 				</HStack>
-				<Button size="px16py6" disabled={isAuthenticationTokenExpired}
-						textSize="xl_desktop" ref={parentButtonRef} onClick={() => onClickHandler()}>
+				<Button
+					size="px16py6"
+					disabled={isAuthenticationTokenExpired}
+					textSize="xl_desktop"
+					ref={parentButtonRef}
+					onClick={() => onClickHandler()}
+				>
 					{langStringPageInviteOpenCompassDesktopButton}
 				</Button>
 			</HStack>
 			{apiAuthGenerateToken.isLoading || !apiAuthGenerateToken.data || joinLinkAcceptIsLoading ? (
-				<VStack w="100%" bgColor="000000.01" rounded="8px" px="12px" py="8px" gap="4px" alignItems="start"
-						mt="16px">
-					<Box w="504px" h="16px" bgColor="434455" rounded="3px"/>
-					<Box w="48%" h="16px" bgColor="434455" rounded="3px"/>
+				<VStack
+					w="100%"
+					bgColor="000000.01"
+					rounded="8px"
+					px="12px"
+					py="8px"
+					gap="4px"
+					alignItems="start"
+					mt="16px"
+				>
+					<Box w="504px" h="16px" bgColor="434455" rounded="3px" />
+					<Box w="48%" h="16px" bgColor="434455" rounded="3px" />
 				</VStack>
 			) : (
 				<VStack w="100%" rounded="8px" gap="0px" alignItems="start">
@@ -388,10 +385,11 @@ const StepOneContent = ({
 						cursor={!isAuthenticationTokenExpired ? "pointer" : "inherit"}
 						mt="16px"
 						onClick={() => {
-							if (!isAuthenticationTokenExpired
-								&& tokenBoxRef.current
-								&& scrollableParentBlockRef.current) {
-
+							if (
+								!isAuthenticationTokenExpired &&
+								tokenBoxRef.current &&
+								scrollableParentBlockRef.current
+							) {
 								copyToClipboard(
 									apiAuthGenerateToken.data.authentication_token,
 									scrollableParentBlockRef.current,
@@ -406,16 +404,17 @@ const StepOneContent = ({
 							opacity={!isAuthenticationTokenExpired ? "50%" : "10%"}
 							fs="13"
 							lh="20"
-							font="regular">
+							font="regular"
+						>
 							{apiAuthGenerateToken.data.authentication_token.substring(0, 120)}
 						</Text>
 					</Box>
 					<DynamicTimerAuthenticationToken
 						key="desktop_dynamic_timer"
-						apiAuthGenerateToken={apiAuthGenerateToken}/>
+						apiAuthGenerateToken={apiAuthGenerateToken}
+					/>
 				</VStack>
 			)}
-
 		</VStack>
 	);
 };
@@ -424,7 +423,7 @@ type PageInviteDesktopProps = {
 	headerContent: JSX.Element;
 };
 
-const PageInviteDesktop = ({headerContent}: PageInviteDesktopProps) => {
+const PageInviteDesktop = ({ headerContent }: PageInviteDesktopProps) => {
 	const langStringLogoutDialogTitle = useLangString("logout_dialog.title");
 	const langStringLogoutDialogDesc = useLangString("logout_dialog.desc");
 	const langStringLogoutDialogCancelButton = useLangString("logout_dialog.cancel_button");
@@ -467,7 +466,7 @@ const PageInviteDesktop = ({headerContent}: PageInviteDesktopProps) => {
 			return;
 		}
 
-		apiJoinLinkAccept.mutateAsync({join_link_uniq: joinLink.join_link_uniq});
+		apiJoinLinkAccept.mutateAsync({ join_link_uniq: joinLink.join_link_uniq });
 	}, []);
 
 	// очищаем из local storage
@@ -490,7 +489,7 @@ const PageInviteDesktop = ({headerContent}: PageInviteDesktopProps) => {
 
 	useEffect(() => {
 		if (parentButtonRef.current) {
-			const {offsetWidth} = parentButtonRef.current;
+			const { offsetWidth } = parentButtonRef.current;
 			setChildButtonWidth(offsetWidth);
 		}
 	}, [parentButtonRef.current]);
@@ -563,10 +562,10 @@ const PageInviteDesktop = ({headerContent}: PageInviteDesktopProps) => {
 						</Box>
 					</DialogTrigger>
 					<Portal>
-						<DialogBackdrop/>
+						<DialogBackdrop />
 						<DialogContainer>
 							<DialogContent overflow="hidden" lazyMount unmountOnExit>
-								<Toast toastConfig={toastConfig}/>
+								<Toast toastConfig={toastConfig} />
 								<VStack mt="16px" gap="24px">
 									<VStack gap="16px" px="4px">
 										<Box w="80px" h="80px">
@@ -611,7 +610,7 @@ const PageInviteDesktop = ({headerContent}: PageInviteDesktopProps) => {
 										>
 											{apiAuthLogout.isLoading ? (
 												<Box py="3.5px">
-													<Preloader16/>
+													<Preloader16 />
 												</Box>
 											) : (
 												<HStack gap="4px">
@@ -644,7 +643,7 @@ const PageInviteDesktop = ({headerContent}: PageInviteDesktopProps) => {
 					</Portal>
 				</Dialog>
 			</HStack>
-			<Toast toastConfig={pageToastConfig}/>
+			<Toast toastConfig={pageToastConfig} />
 			<Center gap="8px" maxWidth="560px" h="100vh" className="invisible-scrollbar">
 				<VStack w="100%" gap="24px" userSelect="none">
 					{headerContent}
@@ -657,7 +656,7 @@ const PageInviteDesktop = ({headerContent}: PageInviteDesktopProps) => {
 							/>
 						</Box>
 						<Box w="100%" p="16px" gap="16px" bgColor="434455" rounded="8px">
-							<StepTwoContent childButtonWidth={childButtonWidth}/>
+							<StepTwoContent childButtonWidth={childButtonWidth} />
 						</Box>
 					</VStack>
 				</VStack>

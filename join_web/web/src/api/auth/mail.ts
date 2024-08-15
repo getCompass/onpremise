@@ -1,8 +1,15 @@
 import { useGetResponse } from "../_index.ts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { APIAuthInfo, APIJoinLinkInfo, AUTH_MAIL_SCENARIO_FULL, AUTH_MAIL_SCENARIO_SHORT } from "../_types.ts";
-import { useSetAtom } from "jotai/index";
-import { authInputState, authState, confirmPasswordState, firstAuthState, passwordInputState } from "../_stores.ts";
+import {useAtomValue, useSetAtom} from "jotai/index";
+import {
+	authInputState,
+	authState,
+	captchaProviderState,
+	confirmPasswordState,
+	firstAuthState,
+	passwordInputState
+} from "../_stores.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
 import { useNavigateDialog, useNavigatePage } from "../../components/hooks.ts";
 
@@ -20,6 +27,7 @@ export type ApiAuthMailBegin = {
 
 export function useApiAuthMailBegin() {
 	const getResponse = useGetResponse("pivot");
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 		retry: false,
@@ -38,7 +46,7 @@ export function useApiAuthMailBegin() {
 			}
 
 			return getResponse<ApiAuthMailBegin>("auth/mail/begin", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 	});
@@ -67,6 +75,7 @@ export function useApiAuthMailConfirmShortAuthPassword() {
 	const queryClient = useQueryClient();
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 		retry: false,
@@ -91,7 +100,7 @@ export function useApiAuthMailConfirmShortAuthPassword() {
 			}
 
 			return getResponse<ApiAuthMailConfirmShortAuthPassword>("auth/mail/confirmShortAuthPassword", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 		async onSuccess(response) {
@@ -129,6 +138,7 @@ export function useApiAuthMailConfirmFullAuthPassword() {
 	const getResponse = useGetResponse("pivot");
 	const setAuth = useSetAtom(authState);
 	const { navigateToDialog } = useNavigateDialog();
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 		retry: false,
@@ -144,7 +154,7 @@ export function useApiAuthMailConfirmFullAuthPassword() {
 			}
 
 			return getResponse<ApiAuthMailConfirmFullAuthPassword>("auth/mail/confirmFullAuthPassword", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 		async onSuccess(response) {
@@ -178,6 +188,7 @@ export function useApiAuthMailConfirmFullAuthCode() {
 	const queryClient = useQueryClient();
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
+	const captchaProvider = useAtomValue(captchaProviderState);
 
 	return useMutation({
 		retry: false,
@@ -202,7 +213,7 @@ export function useApiAuthMailConfirmFullAuthCode() {
 			}
 
 			return getResponse<ApiAuthMailConfirmFullAuthCode>("auth/mail/confirmFullAuthCode", body, {
-				"x-compass-captcha-method": "enterprise_google",
+				"x-compass-captcha-method": captchaProvider,
 			});
 		},
 		async onSuccess(response, variables) {

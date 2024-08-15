@@ -4,6 +4,8 @@ namespace Compass\Conversation;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
@@ -14,7 +16,7 @@ class Domain_Remind_Scenario_Api {
 	/**
 	 * создаём Напоминание
 	 *
-	 * @return array
+	 * @throws Domain_Conversation_Exception_Guest_AttemptInitialConversation
 	 * @throws Domain_Conversation_Exception_Message_NotAllowForUser
 	 * @throws Domain_Conversation_Exception_User_IsAccountDeleted
 	 * @throws Domain_Remind_Exception_AlreadyExist
@@ -22,14 +24,13 @@ class Domain_Remind_Scenario_Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
-	 * @throws \apiAccessException
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
 	 * @throws \busException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \cs_UnpackHasFailed
-	 * @throws \paramException
 	 * @throws \parseException
 	 * @throws \returnException
-	 * @throws cs_ActionIsNotAllowedInSupportConversation
 	 * @throws cs_Conversation_MemberIsDisabled
 	 * @throws cs_Conversation_UserbotIsDeleted
 	 * @throws cs_Conversation_UserbotIsDisabled
@@ -63,11 +64,6 @@ class Domain_Remind_Scenario_Api {
 		// если наш пользователь не является участником диалога, то ругаемся
 		if (!Type_Conversation_Meta_Users::isMember($user_id, $meta_row["users"])) {
 			throw new cs_UserIsNotMember("not member of conversation");
-		}
-
-		// если это "Служба поддержки", то добавить напоминание нельзя
-		if (Type_Conversation_Meta::isGroupSupportConversationType((int) $meta_row["type"])) {
-			throw new cs_ActionIsNotAllowedInSupportConversation();
 		}
 
 		// проверяем, что разрешено действие для данного типа диалога

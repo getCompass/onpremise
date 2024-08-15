@@ -50,8 +50,8 @@ class Domain_Ldap_Scenario_Event {
 		// список атрибутов, которые интересуют нас в контексте функции
 		$attribute_list = [Domain_Ldap_Entity_Config::getUserUniqueAttribute(), "pwdAccountLockedTime", "accountStatus", "nsAccountLock", "userAccountControl"];
 
-		// получаем список всех учетных записей в LDAP
-		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), "(objectClass=person)", $attribute_list);
+		// получаем список всех учетных записей в LDAP, с пагинацией
+		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), "(objectClass=person)", Domain_Ldap_Entity_Config::getUserSearchPageSize(), $attribute_list);
 		$entry_list = array_map(static fn(array $entry) => Domain_Ldap_Entity_Utils::prepareEntry($entry), $entry_list);
 
 		// закрываем соединение

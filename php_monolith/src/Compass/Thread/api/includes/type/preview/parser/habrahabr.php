@@ -3,14 +3,46 @@
 namespace Compass\Thread;
 
 // класс для парсинга ссылок на habrahabr.ru
-class Type_Preview_Parser_Habrahabr extends Type_Preview_Parser_Helper {
+use BaseFrame\Server\ServerProvider;
+
+class Type_Preview_Parser_Habrahabr extends Type_Preview_Parser_Helper implements Type_Preview_Parser_Interface {
 
 	public const DOMAIN = "habr.com";
 
 	protected const _SITE_NAME = "Habrahabr";
 
+	/**
+	 * функция для определения – уместна ли переданная ссылка для парсинга конкретным парсером
+	 *
+	 * @return bool
+	 */
+	public static function isRelevantUrl(string $url):bool {
+
+		return inHtml($url, Type_Preview_Parser_Habrahabr::DOMAIN) || ServerProvider::isTest() && inHtml($url, mb_strtolower(self::_SITE_NAME));
+	}
+
+	/**
+	 * функция для подготовки ссылки перед непосредственным парсингом (перед curl запросом)
+	 *
+	 * @return string
+	 */
+	public static function prepareUrl(string $url):string {
+
+		return $url;
+	}
+
+	/**
+	 * функция для создания превью из mime type application/json
+	 *
+	 * @return array
+	 */
+	public static function makeDataFromJson(string $user_id, string $url, string $short_url, array $content):array {
+
+		throw new cs_UrlParseFailed("unsupported mime type", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
+	}
+
 	// создаем превью
-	public static function makeData(string $user_id, string $url, string $short_url, string $html):array {
+	public static function makeDataFromHtml(string $user_id, string $url, string $short_url, string $html):array {
 
 		$type = self::_getType($html);
 

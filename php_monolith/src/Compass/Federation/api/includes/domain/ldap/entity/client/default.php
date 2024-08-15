@@ -51,22 +51,46 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		ldap_unbind($this->ldap_connection);
 	}
 
-	public function searchEntries(string $base, string $filter, array $attribute_list = []):array {
+	public function searchEntries(string $base, string $filter, int $page_size, array $attribute_list = []):array {
 
-		$search_result = ldap_search($this->ldap_connection, $base, $filter, $attribute_list);
-		if (!$search_result) {
-			return [];
-		}
+		// кука, с которой совершается запрос в LDAP провайдер
+		$cookie = "";
 
-		$entry_list = ldap_get_entries($this->ldap_connection, $search_result);
+		// сюда сложим все результаты и количество сущностей
+		$output_result = [];
+		$count         = 0;
 
-		$count = 0;
-		if (isset($entry_list["count"])) {
+		// переменные, куда в случае ошибки установится ее код и сообщение
+		$error_code    = 0;
+		$error_message = "";
 
-			$count = $entry_list["count"];
-			unset($entry_list["count"]);
-		}
+		do {
 
-		return [$count, $entry_list];
+			// результаты поиска за одну итерацию
+			$search_result = ldap_search($this->ldap_connection, $base, $filter, $attribute_list, 0, 0, 0, LDAP_DEREF_NEVER,
+				[["oid" => LDAP_CONTROL_PAGEDRESULTS, "value" => ["size" => $page_size, "cookie" => $cookie]]]);
+
+			// парсим результаты
+			ldap_parse_result($this->ldap_connection, $search_result, error_code: $error_code, error_message: $error_message, controls: $response_controls);
+
+			// если есть ошибка
+			if ($error_code !== 0) {
+				throw new Domain_Ldap_Exception_ProtocolError($error_code, $error_message);
+			}
+
+			// достем сущности и сохраняем
+			$entry_list = ldap_get_entries($this->ldap_connection, $search_result);
+			if (isset($entry_list["count"])) {
+				$count += $entry_list["count"];
+				unset($entry_list["count"]);
+			}
+			$output_result = array_merge($output_result, $entry_list);
+
+			// проверяем наличие cookie
+			/** @noinspection PhpIllegalStringOffsetInspection */
+			$cookie = $response_controls[LDAP_CONTROL_PAGEDRESULTS]["value"]["cookie"] ?? "";
+		} while ($cookie !== "");
+
+		return [$count, $output_result];
 	}
 }

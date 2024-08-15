@@ -103,6 +103,27 @@ class Domain_Jitsi_Entity_ConferenceMember {
 		return $status;
 	}
 
+    /**
+     * обновляем запись при принятии звонка участником
+     *
+     * @throws ParseFatalException
+     */
+    public static function updateOnAccept(Domain_Jitsi_Entity_ConferenceMember_Type $member_type, string $member_id, string $conference_id, ?array $data = null):Domain_Jitsi_Entity_ConferenceMember_Status {
+
+        // формируем массив для обновления
+        $status = Domain_Jitsi_Entity_ConferenceMember_Status::ACCEPTED;
+        $set    = [
+            "status"     => Domain_Jitsi_Entity_ConferenceMember_Status::ACCEPTED->value,
+            "updated_at" => time(),
+        ];
+        if (!is_null($data)) {
+            $set["data"] = $data;
+        }
+        Gateway_Db_JitsiData_ConferenceMemberList::set($conference_id, $member_type->value, $member_id, $set);
+
+        return $status;
+    }
+
 	/**
 	 * обновляем запись при покидании конференции участником
 	 *
@@ -144,7 +165,6 @@ class Domain_Jitsi_Entity_ConferenceMember {
 	public static function getConferenceMemberList(string $conference_id):array {
 
 		return Gateway_Db_JitsiData_ConferenceMemberList::getList($conference_id);
-
 	}
 
 	/**

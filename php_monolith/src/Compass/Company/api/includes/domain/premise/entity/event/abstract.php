@@ -2,6 +2,8 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * Абстрактный класс описывающий любое событие, которое будет отправлено в premise-модуль
  */
@@ -23,6 +25,10 @@ class Domain_Premise_Entity_Event_Abstract {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 */
 	protected static function _sendToPremise(array $event_data):void {
+
+		if (!ServerProvider::isOnPremise()) {
+			return;
+		}
 
 		Gateway_Bus_Event::pushTask(static::_EVENT_TYPE, $event_data, self::_MODULE_NAME);
 	}

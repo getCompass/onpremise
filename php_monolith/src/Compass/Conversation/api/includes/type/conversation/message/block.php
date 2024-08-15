@@ -331,7 +331,7 @@ class Type_Conversation_Message_Block {
 
 		Gateway_Db_CompanyConversation_MessageBlock::commitTransaction();
 
-		return [$edited_message, $diff_mentioned_user_id_list, $dynamic];
+		return [$message, $edited_message, $diff_mentioned_user_id_list, $dynamic];
 	}
 
 	// проверяем, что пользователь может редактировать сообщение

@@ -114,6 +114,8 @@ const EmailLoginDialogContentDesktop = ({
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 	const [widgetId, setWidgetId] = useState("");
 
+	useEffect(() => setIsLoginCaptchaRendered(false), []);
+
 	useEffect(() => {
 		setNeedShowForgotPasswordButton(!isAuthBlocked);
 	}, [isAuthBlocked]);
@@ -495,6 +497,8 @@ const EmailLoginDialogContentMobile = ({
 	const setIsLoginCaptchaRendered = useSetAtom(isLoginCaptchaRenderedState);
 
 	const screenWidth = useMemo(() => document.body.clientWidth, [document.body.clientWidth]);
+
+	useEffect(() => setIsLoginCaptchaRendered(false), []);
 
 	const captchaContainerRef = useCallback(
 		(node: HTMLDivElement | null) => {

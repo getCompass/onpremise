@@ -147,7 +147,13 @@ function Auth() {
 		}
 
 		return `${dialogRef.current.clientHeight + forgotPasswordButtonRef.current.clientHeight + 32}px`;
-	}, [dialogRef.current?.clientHeight, forgotPasswordButtonRef.current?.clientHeight, isLoginCaptchaRendered]);
+	}, [
+		dialogRef.current?.clientHeight,
+		forgotPasswordButtonRef.current?.clientHeight,
+		isLoginCaptchaRendered,
+		needShowForgotPasswordButton,
+		activeDialog,
+	]);
 
 	const backButtonMt = useMemo<Property.MarginTop>(() => {
 		if (dialogRef.current === null || forgotPasswordButtonRef.current === null || backButtonRef.current === null) {

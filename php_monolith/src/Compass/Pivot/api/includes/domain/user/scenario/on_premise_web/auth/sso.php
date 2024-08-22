@@ -186,8 +186,8 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		$integration_response = Domain_Integration_Entity_Notifier::onUserRegistered(new Struct_Integration_Notifier_Request_OnUserRegistered(
 			user_id: $user->user_id,
 			auth_method: Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_AUTH_BY_SSO,
-			registered_by_phone_number: "",
-			registered_by_mail: "",
+			registered_by_phone_number: $sso_account_data->phone_number,
+			registered_by_mail: $sso_account_data->mail,
 			join_link_uniq: $final_join_link_uniq,
 		));
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);

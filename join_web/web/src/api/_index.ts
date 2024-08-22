@@ -1,7 +1,7 @@
-import {APIResponse} from "./_types";
-import {FetchError, ofetch} from "ofetch";
+import { APIResponse } from "./_types";
+import { FetchError, ofetch } from "ofetch";
 // @ts-ignore
-import {getPublicPathApi} from "../private/custom.ts";
+import { getPublicPathApi } from "../private/custom.ts";
 
 export class ApiError extends Error {
 	error_code: number;
@@ -18,8 +18,22 @@ export class ApiError extends Error {
 	join_link_uniq: string;
 	sso_protocol: string;
 
-	constructor(message: string, error_code: number, next_attempt: number, available_attempts: number, company_id: number, inviter_user_id: number, inviter_full_name: string, is_postmoderation: number, is_waiting_for_postmoderation: number, role: number, was_member_before: number, expires_at: number, join_link_uniq: string, sso_protocol: string) {
-
+	constructor(
+		message: string,
+		error_code: number,
+		next_attempt: number,
+		available_attempts: number,
+		company_id: number,
+		inviter_user_id: number,
+		inviter_full_name: string,
+		is_postmoderation: number,
+		is_waiting_for_postmoderation: number,
+		role: number,
+		was_member_before: number,
+		expires_at: number,
+		join_link_uniq: string,
+		sso_protocol: string
+	) {
 		super(message);
 		this.name = "ApiError";
 		this.error_code = error_code;
@@ -40,7 +54,6 @@ export class ApiError extends Error {
 
 export class NetworkError extends Error {
 	constructor(message: string) {
-
 		super(message);
 		this.name = "NetworkError";
 	}
@@ -48,7 +61,6 @@ export class NetworkError extends Error {
 
 export class ServerError extends Error {
 	constructor(message: string) {
-
 		super(message);
 		this.name = "ServerError";
 	}
@@ -56,7 +68,6 @@ export class ServerError extends Error {
 
 export class LimitError extends Error {
 	constructor(message: string) {
-
 		super(message);
 		this.name = "LimitError";
 	}
@@ -65,11 +76,8 @@ export class LimitError extends Error {
 export type GET_RESPONSE_MODULE = "pivot" | "federation";
 
 export function useGetResponse(module: GET_RESPONSE_MODULE) {
-
 	return async <T>(method: string, body: URLSearchParams, headerList: Record<string, string> = {}) => {
-
 		try {
-
 			const result = await ofetch<APIResponse<T>>(getPublicPathApi() + `/${module}/api/onpremiseweb/${method}/`, {
 				method: "POST",
 				body,
@@ -79,27 +87,41 @@ export function useGetResponse(module: GET_RESPONSE_MODULE) {
 			});
 
 			if (result.status !== "ok") {
-
 				// @ts-ignore
-				throw new ApiError("status not ok", result.response.error_code ?? 0, result.response.next_attempt ?? 0,
+				throw new ApiError(
+					"status not ok",
 					// @ts-ignore
-					result.response.available_attempts ?? 0, result.response.company_id ?? 0,
+					result.response.error_code ?? 0,
 					// @ts-ignore
-					result.response.inviter_user_id ?? 0, result.response.inviter_full_name ?? "", result.response.is_post_moderation ?? 0,
+					result.response.next_attempt ?? 0,
 					// @ts-ignore
-					result.response.role ?? 0, result.response.was_member ?? 0, result.response.expires_at ?? 0,
+					result.response.available_attempts ?? 0,
 					// @ts-ignore
-					result.response.join_link_uniq ?? "", result.response.is_waiting_for_postmoderation ?? 0,
+					result.response.company_id ?? 0,
 					// @ts-ignore
-					result.response.sso_protocol ?? "",
-				)
+					result.response.inviter_user_id ?? 0,
+					// @ts-ignore
+					result.response.inviter_full_name ?? "",
+					// @ts-ignore
+					result.response.is_post_moderation ?? 0,
+					// @ts-ignore
+					result.response.is_waiting_for_postmoderation ?? 0,
+					// @ts-ignore
+					result.response.role ?? 0,
+					// @ts-ignore
+					result.response.was_member ?? 0,
+					// @ts-ignore
+					result.response.expires_at ?? 0,
+					// @ts-ignore
+					result.response.join_link_uniq ?? "",
+					// @ts-ignore
+					result.response.sso_protocol ?? ""
+				);
 			}
 
 			return result.response;
 		} catch (error) {
-
 			if (error instanceof FetchError) {
-
 				if (error.statusCode === 500) {
 					throw new ServerError("Server 500");
 				}

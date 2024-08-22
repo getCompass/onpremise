@@ -135,6 +135,17 @@ class Domain_User_Entity_Auth_Config {
 	}
 
 	/**
+	 * автоматическое вступление пользователей после регистрации через SSO/LDAP в первую команду на сервере
+	 *
+	 * @return Domain_User_Entity_Auth_Config_AutoJoinEnum
+	 * @throws ParseFatalException
+	 */
+	public static function getAutoJoinToTeam():Domain_User_Entity_Auth_Config_AutoJoinEnum {
+
+		return Domain_User_Entity_Auth_Config_AutoJoinEnum::from(self::_getConfig(self::_KEY_AUTH_SSO)["auto_join_to_team"]);
+	}
+
+	/**
 	 * получаем контент конфига
 	 *
 	 * @return array

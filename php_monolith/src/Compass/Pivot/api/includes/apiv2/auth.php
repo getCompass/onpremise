@@ -117,9 +117,11 @@ class Apiv2_Auth extends \BaseFrame\Controller\Api {
 		} catch (cs_UserAlreadyBlocked|Domain_Solution_Exception_BadAuthenticationToken $e) {
 
 			Type_Antispam_Ip::checkAndIncrementBlock(Type_Antispam_User::TRY_AUTHENTICATION_TOKEN);
-			throw new ParamException($e->getMessage());}
-		catch (cs_UserAlreadyLoggedIn) {
+			throw new ParamException($e->getMessage());
+		} catch (cs_UserAlreadyLoggedIn) {
 			return $this->error(1215002, "already logged");
+		} catch (Domain_App_Exception_Restrictions_PlatformProhibited) {
+			return $this->error(1215003, "platform is prohibited");
 		}
 
 		$this->action->profile($user_id);

@@ -48,7 +48,7 @@ class Onpremiseweb_Auth_Ldap extends \BaseFrame\Controller\Api {
 
 		try {
 			[$authentication_token, $is_registration, $user_info, $integration_action_list] = Domain_User_Scenario_OnPremiseWeb_Auth_Ldap
-				::begin($this->user_id, $ldap_auth_token, $join_link);
+				::begin($this->user_id, $ldap_auth_token, $join_link, $this->session_uniq);
 		} catch (cs_UserAlreadyLoggedIn) {
 			return $this->error(static::ECODE_UAUTH_LOGGED, "user already logged in");
 		} catch (Domain_User_Exception_AuthMethodDisabled) {

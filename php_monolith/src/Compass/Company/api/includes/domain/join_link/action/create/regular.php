@@ -24,7 +24,7 @@ class Domain_JoinLink_Action_Create_Regular extends Domain_JoinLink_Action_Creat
 	 * @throws \returnException
 	 * @throws cs_ExceededCountActiveInvite
 	 */
-	public static function do(int $creator_user_id, int|false $lives_day_count, int|false $lives_hour_count, int|false $can_use_count, int|bool $entry_option):Struct_Db_CompanyData_JoinLink {
+	public static function do(int $creator_user_id, int|false $lives_day_count, int|false $lives_hour_count, int|false $can_use_count, int|bool $entry_option, bool $ignore_limit = false):Struct_Db_CompanyData_JoinLink {
 
 		$live_time = self::_getLiveTime($lives_day_count, $lives_hour_count);
 
@@ -40,11 +40,15 @@ class Domain_JoinLink_Action_Create_Regular extends Domain_JoinLink_Action_Creat
 			}
 		}
 
-		$count = Gateway_Db_CompanyData_JoinLinkList::getCountByTypeAndStatus(
-			[Domain_JoinLink_Entity_Main::TYPE_REGULAR, Domain_JoinLink_Entity_Main::TYPE_SINGLE],
-			Domain_JoinLink_Entity_Main::STATUS_ACTIVE, time());
-		if ($count >= Domain_JoinLink_Entity_Main::getRegularMaxCount()) {
-			throw new cs_ExceededCountActiveInvite();
+		// если не требуется игнорировать лимит кол-ва ссылок, то проверяем достижения лимита
+		if (!$ignore_limit) {
+
+			$count = Gateway_Db_CompanyData_JoinLinkList::getCountByTypeAndStatus(
+				[Domain_JoinLink_Entity_Main::TYPE_REGULAR, Domain_JoinLink_Entity_Main::TYPE_SINGLE],
+				Domain_JoinLink_Entity_Main::STATUS_ACTIVE, time());
+			if ($count >= Domain_JoinLink_Entity_Main::getRegularMaxCount()) {
+				throw new cs_ExceededCountActiveInvite();
+			}
 		}
 
 		return self::_do($creator_user_id, self::_JOIN_LINK_TYPE, $live_time, $can_use_count, $entry_option);

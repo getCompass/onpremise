@@ -49,7 +49,7 @@ class Onpremiseweb_Auth_Sso extends \BaseFrame\Controller\Api {
 
 		try {
 			[$authentication_token, $is_registration, $user_info, $integration_action_list] = Domain_User_Scenario_OnPremiseWeb_Auth_Sso
-				::begin($this->user_id, $sso_auth_token, $signature, $join_link);
+				::begin($this->user_id, $sso_auth_token, $signature, $join_link, $this->session_uniq);
 		} catch (cs_UserAlreadyLoggedIn) {
 			return $this->error(static::ECODE_UAUTH_LOGGED, "user already logged in");
 		} catch (Domain_User_Exception_AuthMethodDisabled) {

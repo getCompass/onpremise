@@ -146,6 +146,13 @@ const AuthLdapDialogContentDesktop = () => {
 					return;
 				}
 
+				if (error.error_code === 1708120) {
+					showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
+					setIsLoading(false);
+					setIsError(true);
+					return;
+				}
+
 				if (error.error_code === INCORRECT_LINK_ERROR_CODE || error.error_code === INACTIVE_LINK_ERROR_CODE) {
 					setPrepareJoinLinkError({ error_code: error.error_code });
 					setIsLoading(false);
@@ -537,6 +544,13 @@ const AuthLdapDialogContentMobile = () => {
 							}
 							if (error.error_code === 1000) {
 								showToast(langStringErrorsLdapRegistrationWithoutInvite, "warning");
+								setIsLoading(false);
+								setIsError(true);
+								return;
+							}
+
+							if (error.error_code === 1708120) {
+								showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
 								setIsLoading(false);
 								setIsError(true);
 								return;

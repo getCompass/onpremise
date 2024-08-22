@@ -25,6 +25,7 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		if (!$this->ldap_connection) {
 			throw new ParseFatalException(sprintf("could not connect to ldap server [%s]", ldap_error($this->ldap_connection)));
 		}
+		ldap_set_option($this->ldap_connection, LDAP_OPT_REFERRALS, false);
 		ldap_set_option($this->ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
 	}
 

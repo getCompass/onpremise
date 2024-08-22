@@ -29,11 +29,8 @@ class Domain_Ldap_Scenario_Api {
 		$antispam_block_key = Type_Antispam_Ip::overrideBlockKeyLimit(Type_Antispam_Ip::LDAP_FAILED_TRY_AUTHENTICATE, Domain_Ldap_Entity_Config::getLimitOfIncorrectAuthAttempts());
 		Type_Antispam_Ip::check($antispam_block_key);
 
-		// валидируем username:password
-		$client = Domain_Ldap_Entity_Client::resolve(Domain_Ldap_Entity_Config::getServerHost(), Domain_Ldap_Entity_Config::getServerPort());
-
 		try {
-			$client->bind(Domain_Ldap_Entity_Utils::makeUserDn(Domain_Ldap_Entity_Config::getUserSearchBase(), Domain_Ldap_Entity_Config::getUserUniqueAttribute(), $username), $password);
+			$entry = Domain_Ldap_Action_Authenticate::try($username, $password);
 		} catch (Domain_Ldap_Exception_ProtocolError $e) {
 
 			Type_Antispam_Ip::checkAndIncrementBlock($antispam_block_key);
@@ -45,22 +42,12 @@ class Domain_Ldap_Scenario_Api {
 			throw $e;
 		}
 
-		// получаем информацию об учетной записе
-		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), Domain_Ldap_Entity_Utils::formatUserFilter(Domain_Ldap_Entity_Config::getUserUniqueAttribute(), $username), 1);
-
-		// закрываем соединение
-		$client->unbind();
-
-		// проверяем наличие результатов
-		if ($count === 0) {
-			throw new ParseFatalException("unexpected behaviour, account not found");
-		}
-		$entry = Domain_Ldap_Entity_Utils::prepareEntry($entry_list[0]);
-		[$user_unique_attribute_value, $dn] = Domain_Ldap_Entity_Utils::parseEntryAttributes($entry, Domain_Ldap_Entity_Config::getUserUniqueAttribute());
+		$prepared_entry = Domain_Ldap_Entity_Utils::prepareEntry($entry);
+		[$user_unique_attribute_value, $dn] = Domain_Ldap_Entity_Utils::parseEntryAttributes($prepared_entry, Domain_Ldap_Entity_Config::getUserUniqueAttribute());
 
 		// сохраняем попытку аутентификации
 		$auth_token_data = Domain_Ldap_Entity_AuthToken_Data::initData();
-		$auth_token_data = Domain_Ldap_Entity_AuthToken_Data::setEntry($auth_token_data, $entry_list[0]);
+		$auth_token_data = Domain_Ldap_Entity_AuthToken_Data::setEntry($auth_token_data, $entry);
 		$auth_token      = Domain_Ldap_Entity_AuthToken::save($user_unique_attribute_value, $username, $dn, Domain_Ldap_Entity_AuthToken::STATUS_LDAP_AUTH_COMPLETE, $auth_token_data);
 
 		return $auth_token->ldap_auth_token;

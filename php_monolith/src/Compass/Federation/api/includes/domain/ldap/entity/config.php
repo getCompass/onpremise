@@ -78,25 +78,25 @@ class Domain_Ldap_Entity_Config {
 	}
 
 	/**
-	 * получаем monitoring_user_dn из конфига LDAP
+	 * получаем user_search_account_dn из конфига LDAP
 	 *
 	 * @return string
 	 */
-	public static function getAccountDisablingMonitoringUserDn():string {
+	public static function getUserSearchAccountDn():string {
 
 		$config = getConfig(self::_KEY);
-		return $config["account_disabling_monitoring_dn"];
+		return $config["user_search_account_dn"];
 	}
 
 	/**
-	 * получаем monitoring_user_password из конфига LDAP
+	 * получаем user_search_account_password из конфига LDAP
 	 *
 	 * @return string
 	 */
-	public static function getAccountDisablingMonitoringUserPassword():string {
+	public static function getUserSearchAccountPassword():string {
 
 		$config = getConfig(self::_KEY);
-		return $config["account_disabling_monitoring_password"];
+		return $config["user_search_account_password"];
 	}
 
 	/**

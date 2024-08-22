@@ -832,6 +832,49 @@ class Gateway_Socket_Company {
 	}
 
 	/**
+	 * получаем информацию о ссылке-приглашении для автоматического вступления в команду
+	 *
+	 * @return array
+	 * @throws CompanyNotServedException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws cs_CompanyIsHibernate
+	 * @throws cs_JoinLinkIsNotActive
+	 * @throws cs_SocketRequestIsFailed
+	 */
+	public static function getJoinLinkInfoForAutoJoin(int $user_id, int $root_user_id, Domain_User_Entity_Auth_Config_AutoJoinEnum $auto_join_team, int $company_id, string $domino_id, string $private_key):array {
+
+		$params = [
+			"user_id"         => $user_id,
+			"creator_user_id" => $root_user_id,
+			"type"            => $auto_join_team->value,
+		];
+
+		// отправим запрос на удаление из списка
+		[$status, $response] = self::_call("hiring.invitelink.getForAutoJoin", $params, $user_id, $company_id, $domino_id, $private_key);
+
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			} elseif ($response["error_code"] == 404) {
+				throw new cs_JoinLinkIsNotActive();
+			}
+
+			throw new ParseFatalException("passed unknown error_code: " . $response["error_code"]);
+		}
+		return [
+			$response["join_link_uniq"],
+			$response["entry_option"],
+			$response["is_postmoderation"],
+			$response["inviter_user_id"],
+			$response["is_exit_status_in_progress"],
+			$response["was_member"] ?? false,
+			$response["candidate_role"],
+		];
+	}
+
+	/**
 	 * Возвращаем информацию о ссылке приглашении для участника компании
 	 *
 	 * @param int    $user_id

@@ -38,7 +38,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 	 * @throws cs_UserNotFound
 	 * @long
 	 */
-	public static function begin(int $user_id, string $sso_auth_token, string $signature, string|bool $join_link):array {
+	public static function begin(int $user_id, string $sso_auth_token, string $signature, string|bool $join_link, string $pivot_session_uniq):array {
 
 		// проверяем, что нет текущей активной сессии
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
@@ -97,6 +97,12 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
 
 		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
+
+		// если это регистрация без ссылки, то добавляем пользователя в первую команду
+		if ($is_need_to_create_user && $join_link === false) {
+			Domain_User_Action_AutoJoin::do($user_id, $pivot_session_uniq);
+		}
+
 		return [
 			$token,
 			$is_need_to_create_user,
@@ -149,22 +155,28 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 	 */
 	protected static function _confirmNotRegisteredUserAuthentication(Struct_User_Auth_Sso_AccountData $sso_account_data, string|false $join_link_uniq):array {
 
-		// без ссылки не создаем нового пользователя
-		if ($join_link_uniq === false) {
+		// если нет автовступления и не передали ссылку, то возвращаем ошибку
+		if (Domain_User_Entity_Auth_Config::getAutoJoinToTeam() === Domain_User_Entity_Auth_Config_AutoJoinEnum::DISABLED && $join_link_uniq === false) {
 			throw new CaseException(1000, "registration is not allowed without invite");
 		}
 
-		try {
+		// если имеется ссылка-приглашение
+		$final_join_link_uniq = "";
+		if ($join_link_uniq !== false) {
 
-			// получаем приглашение, оно должно существовать,
-			// поскольку данные были получены и сверены из кэша
-			$join_link_rel_row = Gateway_Db_PivotData_CompanyJoinLinkRel::get($join_link_uniq);
-		} catch (\cs_RowIsEmpty) {
-			throw new ReturnFatalException("invite not found");
+			try {
+
+				// получаем приглашение, оно должно существовать,
+				// поскольку данные были получены и сверены из кэша
+				$join_link_rel_row    = Gateway_Db_PivotData_CompanyJoinLinkRel::get($join_link_uniq);
+				$final_join_link_uniq = $join_link_rel_row->join_link_uniq;
+			} catch (\cs_RowIsEmpty) {
+				throw new ReturnFatalException("invite not found");
+			}
+
+			// проверим, что наше приглашение подходит для создание пользвоателя
+			Domain_Link_Entity_Link::validateBeforeRegistration($join_link_rel_row);
 		}
-
-		// проверим, что наше приглашение подходит для создание пользвоателя
-		Domain_Link_Entity_Link::validateBeforeRegistration($join_link_rel_row);
 
 		// подготавливаем данные, полученные об аккаунте из SSO
 		$full_name = trim($sso_account_data->first_name . " " . $sso_account_data->last_name);
@@ -176,7 +188,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 			auth_method: Domain_User_Entity_AuthStory::AUTH_STORY_TYPE_AUTH_BY_SSO,
 			registered_by_phone_number: "",
 			registered_by_mail: "",
-			join_link_uniq: $join_link_rel_row->join_link_uniq,
+			join_link_uniq: $final_join_link_uniq,
 		));
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 

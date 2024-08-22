@@ -155,6 +155,45 @@ class Domain_Link_Entity_Link {
 	}
 
 	/**
+	 * получаем завалидированную информацию о ссылке-приглашении для автоматического вступления
+	 *
+	 * @return Struct_Link_ValidationResult
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
+	 * @throws \BaseFrame\Exception\Request\EndpointAccessDeniedException
+	 * @throws \cs_RowIsEmpty
+	 * @throws \cs_SocketRequestIsFailed
+	 * @throws cs_CompanyIsHibernate
+	 * @throws cs_JoinLinkIsNotActive
+	 * @throws cs_JoinLinkIsUsed
+	 * @throws cs_UserNotFound
+	 */
+	public static function getForAutoJoin(Struct_Db_PivotCompany_Company $company, int $user_id, int $root_user_id, Domain_User_Entity_Auth_Config_AutoJoinEnum $auto_join_type):Struct_Link_ValidationResult {
+
+		// получаем информацию о ссылке-приглашения для автоматического вступления
+		$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
+		[$join_link_uniq, $entry_option, $is_postmoderation, $inviter_user_id, $is_exit_status_in_progress, $was_member, $role] = Gateway_Socket_Company::getJoinLinkInfoForAutoJoin(
+			$user_id, $root_user_id, $auto_join_type, $company->company_id, $company->domino_id, $private_key
+		);
+
+		// получаем запись с информацией о ссылке
+		$join_link_rel = Gateway_Db_PivotData_CompanyJoinLinkRel::get($join_link_uniq);
+
+		// проверяем принимал ли пользователь ранее инвайт
+		$user_join_link_rel = static::assertWasAcceptedByUser($join_link_rel, $user_id);
+
+		// получаем информацию о создателе приглашения
+		$inviter_user_info = Gateway_Bus_PivotCache::getUserInfo($inviter_user_id);
+
+		return new Struct_Link_ValidationResult(
+			$join_link_rel, $user_join_link_rel, $company, $inviter_user_info, $entry_option,
+			$is_postmoderation, false, $is_exit_status_in_progress, $was_member
+		);
+	}
+
+	/**
 	 * Проверяет, использовал ли пользователь это приглашение ранее.
 	 * @throws cs_JoinLinkIsUsed
 	 */

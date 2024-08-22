@@ -2,6 +2,7 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
 use CompassApp\Domain\Member\Entity\Permission;
 
 /**
@@ -254,5 +255,47 @@ class Domain_JoinLink_Scenario_Socket {
 		$is_postmoderation = Domain_JoinLink_Entity_Main::isPostModerationEnabled($join_link->entry_option);
 
 		return [$join_link->entry_option, $is_postmoderation, $join_link->creator_user_id, $is_exit_status_in_progress, true, $user_info->role];
+	}
+
+	/**
+	 * получаем (если надо, то создаем) ссылку-приглашения для автоматического вступления
+	 *
+	 * @param int    $user_id
+	 * @param int    $creator_user_id
+	 * @param string $auto_join_type
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws \returnException
+	 * @throws cs_ExceededCountActiveInvite
+	 * @throws cs_JoinLinkNotExist
+	 */
+	public static function getForAutoJoin(int $user_id, int $creator_user_id, string $auto_join_type):array {
+
+		// конвертируем строку с типом во внутреннее значение
+		$type = Domain_JoinLink_Entity_AutoJoin::convertStringifyType($auto_join_type);
+
+		try {
+
+			// пытаемся достать ссылку
+			$join_link = Domain_JoinLink_Entity_AutoJoin::get($type);
+
+			// если ссылку нельзя использовать, то бросаем исключение
+			Domain_JoinLink_Entity_Main::assertCanUse($join_link);
+		} catch (cs_InviteLinkNotExist|cs_InviteLinkIdExpired|cs_InviteLinkNotActive|cs_JoinLinkNotExist) {
+
+			// не смогли достать – создадим новую
+			$join_link = Domain_JoinLink_Entity_AutoJoin::create($creator_user_id, $type);
+		}
+
+		// получаем статус увольнения кандидата (уволился, вообще не увольнялся, на этапе увольнения)
+		$is_exit_status_in_progress = Domain_User_Entity_TaskExit::isExitStatusInProgress($user_id);
+
+		// требуется ли модерация заявки?
+		$is_postmoderation = Domain_JoinLink_Entity_Main::isPostModerationEnabled($join_link->entry_option);
+
+		return [$join_link->join_link_uniq, $join_link->entry_option, $is_postmoderation, $join_link->creator_user_id, $is_exit_status_in_progress, false, 0];
 	}
 }

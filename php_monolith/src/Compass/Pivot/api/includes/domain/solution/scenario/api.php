@@ -10,12 +10,17 @@ class Domain_Solution_Scenario_Api {
 	/**
 	 * Пытается авторизовать пользователя по указанному токену.
 	 *
-	 * @throws Domain_Solution_Exception_ExpiredAuthenticationToken
-	 * @throws Domain_Solution_Exception_BadAuthenticationToken
-	 * @throws cs_UserAlreadyLoggedIn
+	 * @param int    $user_id
+	 * @param string $authentication_token
+	 *
+	 * @return array
 	 * @throws cs_UserAlreadyBlocked
+	 * @throws cs_UserAlreadyLoggedIn
+	 * @throws cs_UserNotFound
 	 */
 	public static function tryAuthenticationToken(int $user_id, string $authentication_token):array {
+
+		self::_throwIfPlatformIsProhibited();
 
 		// валидируем токен
 		$authentication_token_data = Domain_Solution_Entity_AuthenticationValidator::validate($authentication_token);
@@ -33,7 +38,7 @@ class Domain_Solution_Scenario_Api {
 		}
 
 		$user_id = $authentication_token_data->user_id;
-		
+
 		// проверяем, что пользователь не удалил аккаунт
 		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
 		if (Type_User_Main::isDisabledProfile($user_info->extra)) {
@@ -58,6 +63,53 @@ class Domain_Solution_Scenario_Api {
 		}
 
 		return [$user_id, $join_link_info];
+	}
+
+	/**
+	 * Кидаем ошибку если с платформы запрещено работать
+	 *
+	 * @return void
+	 * @long
+	 */
+	protected static function _throwIfPlatformIsProhibited():void {
+
+		// получаем платформу
+		try {
+			$platform = Type_Api_Platform::getPlatform();
+		} catch (cs_PlatformNotFound) {
+			$platform = Type_Api_Platform::PLATFORM_OTHER;
+		}
+
+		switch ($platform) {
+
+			case Type_Api_Platform::PLATFORM_ELECTRON:
+			case Type_Api_Platform::PLATFORM_ELECTRON_OS_MACOS:
+			case Type_Api_Platform::PLATFORM_ELECTRON_OS_WINDOWS:
+			case Type_Api_Platform::PLATFORM_ELECTRON_OS_LINUX:
+
+				if (Type_Restrictions_Platform::isDesktopProhibited()) {
+					throw new Domain_App_Exception_Restrictions_PlatformProhibited("desktop platform is prohibited");
+				}
+				break;
+
+			case Type_Api_Platform::PLATFORM_IOS:
+			case Type_Api_Platform::PLATFORM_IPAD:
+
+				if (Type_Restrictions_Platform::isIosProhibited()) {
+					throw new Domain_App_Exception_Restrictions_PlatformProhibited("ios platform is prohibited");
+				}
+				break;
+
+			case Type_Api_Platform::PLATFORM_ANDROID:
+
+				if (Type_Restrictions_Platform::isAndroidProhibited()) {
+					throw new Domain_App_Exception_Restrictions_PlatformProhibited("android platform is prohibited");
+				}
+				break;
+
+			default:
+				break;
+		}
 	}
 
 	/**

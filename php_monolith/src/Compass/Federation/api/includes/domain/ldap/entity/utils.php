@@ -28,7 +28,7 @@ class Domain_Ldap_Entity_Utils {
 	 */
 	public static function formatUserFilter(string $user_unique_attribute, string $user_unique_attribute_value):string {
 
-		return sprintf("(%s=%s)", $user_unique_attribute, $user_unique_attribute_value);
+		return sprintf("(&(|(objectCategory=person)(objectClass=person))(%s=%s))", $user_unique_attribute, $user_unique_attribute_value);
 	}
 
 	/**

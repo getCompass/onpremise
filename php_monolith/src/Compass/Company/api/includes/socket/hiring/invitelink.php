@@ -19,6 +19,7 @@ class Socket_Hiring_InviteLink extends \BaseFrame\Controller\Socket {
 		"getInfo",
 		"getCreatorUserId",
 		"deleteAllByUser",
+		"getForAutoJoin",
 	];
 
 	/**
@@ -169,5 +170,44 @@ class Socket_Hiring_InviteLink extends \BaseFrame\Controller\Socket {
 		Domain_User_Action_UserInviteLinkActive_DeleteAllByUser::do($this->user_id);
 
 		return $this->ok();
+	}
+
+	/**
+	 * получаем ссылку для авто вступления
+	 *
+	 * @return array
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws \returnException
+	 * @throws cs_ExceededCountActiveInvite
+	 * @throws cs_JoinLinkNotExist
+	 */
+	public function getForAutoJoin():array {
+
+		$user_id         = $this->post(\Formatter::TYPE_INT, "user_id");
+		$creator_user_id = $this->post(\Formatter::TYPE_INT, "creator_user_id");
+		$type            = $this->post(\Formatter::TYPE_STRING, "type");
+
+		[
+			$join_link_uniq,
+			$entry_option,
+			$is_postmoderation,
+			$inviter_user_id,
+			$is_exit_status_in_progress,
+			$was_member,
+			$candidate_role,
+		] = Domain_JoinLink_Scenario_Socket::getForAutoJoin($user_id, $creator_user_id, $type);
+
+		return $this->ok([
+			"join_link_uniq"             => (string) $join_link_uniq,
+			"entry_option"               => (int) $entry_option,
+			"is_postmoderation"          => (int) $is_postmoderation,
+			"inviter_user_id"            => (int) $inviter_user_id,
+			"is_exit_status_in_progress" => (int) $is_exit_status_in_progress,
+			"was_member"                 => (int) $was_member,
+			"candidate_role"             => (int) $candidate_role,
+		]);
 	}
 }

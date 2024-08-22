@@ -74,6 +74,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"hiring.invitelink.getInfo",
 			"hiring.invitelink.getCreatorUserId",
 			"hiring.invitelink.deleteAllByUser",
+			"hiring.invitelink.getForAutoJoin",
 			"hiring.hiringrequest.revoke",
 			"company.task.doTask",
 			"company.main.doActionsOnCreateCompany",

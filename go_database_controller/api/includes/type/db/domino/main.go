@@ -1,6 +1,7 @@
 package domino
 
 import (
+	"context"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"go_database_controller/api/conf"
@@ -10,7 +11,7 @@ import (
 )
 
 // MigrateInit исполняем все миграции для приложения
-func MigrateInit(dir string) error {
+func MigrateInit(ctx context.Context, dir string) error {
 
 	mysqlConf := conf.GetShardingConfig().Mysql["domino_service"].Mysql
 	credentials := &sharding.DbCredentials{
@@ -35,7 +36,7 @@ func MigrateInit(dir string) error {
 			continue
 		}
 
-		err = execSql(credentials, "", sqlDir+file.Name())
+		err = execSql(ctx, credentials, "", sqlDir+file.Name())
 		if err != nil {
 			return err
 		}
@@ -45,12 +46,12 @@ func MigrateInit(dir string) error {
 }
 
 // выполняем sql запросы
-func execSql(credentials *sharding.DbCredentials, dbKey string, sqlFile string) (err error) {
+func execSql(ctx context.Context, credentials *sharding.DbCredentials, dbKey string, sqlFile string) (err error) {
 
 	sc, err := ioutil.ReadFile(sqlFile)
 	sqlContent := string(sc)
 
-	conn := sharding.MysqlWithCredentials(dbKey, credentials)
+	conn := sharding.MysqlWithCredentials(ctx, dbKey, credentials)
 	if conn == nil {
 		return fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
@@ -65,7 +66,7 @@ func execSql(credentials *sharding.DbCredentials, dbKey string, sqlFile string) 
 	// выполняем запросы
 	for _, query := range sqlQueries {
 
-		err = conn.Query(query)
+		err = conn.Query(ctx, query)
 		if err != nil {
 			return err
 		}

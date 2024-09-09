@@ -1,6 +1,7 @@
 package sharding
 
 import (
+	"context"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"github.com/getCompassUtils/go_base_frame/api/system/mysql"
@@ -15,13 +16,13 @@ type DbCredentials struct {
 }
 
 // получаем mysql подключение из хранилища
-func Mysql(dbKey string) *mysql.ConnectionPoolItem {
+func Mysql(ctx context.Context, dbKey string) *mysql.ConnectionPoolItem {
 
 	db := conf.GetShardingConfig().Mysql[dbKey].Db
 	mysqlConf := conf.GetShardingConfig().Mysql[dbKey].Mysql
-	mysqlConnectionPoolItem := mysql.GetMysqlConnection(db, mysqlConf.Host, mysqlConf.User, mysqlConf.Pass, mysqlConf.MaxConnections, mysqlConf.Ssl, false)
+	mysqlConnectionPoolItem, err := mysql.GetMysqlConnection(ctx, db, mysqlConf.Host, mysqlConf.User, mysqlConf.Pass, mysqlConf.MaxConnections, mysqlConf.Ssl)
 
-	err := mysqlConnectionPoolItem.Connection.Ping()
+	err = mysqlConnectionPoolItem.Ping()
 	if err != nil {
 
 		log.Infof("Ping error, err: %s", err)
@@ -32,17 +33,17 @@ func Mysql(dbKey string) *mysql.ConnectionPoolItem {
 }
 
 // получаем mysql подключение из хранилища
-func MysqlWithCredentials(dbKey string, credentials *DbCredentials) *mysql.ConnectionPoolItem {
+func MysqlWithCredentials(ctx context.Context, dbKey string, credentials *DbCredentials) *mysql.ConnectionPoolItem {
 
-	mysqlConnectionPoolItem := mysql.GetMysqlConnection(dbKey, credentials.Host+":"+functions.IntToString(int(credentials.Port)),
-		credentials.User, credentials.Pass, 10, false, false)
+	mysqlConnectionPoolItem, err := mysql.GetMysqlConnection(ctx, dbKey, credentials.Host+":"+functions.IntToString(int(credentials.Port)),
+		credentials.User, credentials.Pass, 10, false)
 
-	err := mysqlConnectionPoolItem.Connection.Ping()
+	err = mysqlConnectionPoolItem.Ping()
 	if err != nil {
 
 		// пытаемся переподключиться - вдруг изменилось подключение
-		mysqlConnectionPoolItem = mysql.GetMysqlConnection(dbKey, credentials.Host+":"+functions.IntToString(int(credentials.Port)),
-			credentials.User, credentials.Pass, 10, false, true)
+		mysqlConnectionPoolItem, err = mysql.GetMysqlConnection(ctx, dbKey, credentials.Host+":"+functions.IntToString(int(credentials.Port)),
+			credentials.User, credentials.Pass, 10, false)
 
 		// снова пингуем - должны были подключиться
 		err = mysqlConnectionPoolItem.Ping()

@@ -1,6 +1,7 @@
 package port_registry
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/crypt"
@@ -72,9 +73,9 @@ func (port *PortRegistryStruct) NeedDaemon() bool {
 }
 
 // GetAllCompanyPortList получаем все записи из базы
-func GetAllCompanyPortList() ([]*PortRegistryStruct, error) {
+func GetAllCompanyPortList(ctx context.Context) ([]*PortRegistryStruct, error) {
 
-	rows, err := domino_service.GetAllCompanyPortList()
+	rows, err := domino_service.GetAllCompanyPortList(ctx)
 
 	if err != nil {
 		return nil, err
@@ -88,14 +89,14 @@ func GetAllCompanyPortList() ([]*PortRegistryStruct, error) {
 }
 
 // BindServicePort получаем запись по порту
-func BindServicePort(companyId int64) (*PortRegistryStruct, error) {
+func BindServicePort(ctx context.Context, companyId int64) (*PortRegistryStruct, error) {
 
-	transaction, err := domino_service.BeginTransaction()
+	transaction, err := domino_service.BeginTransaction(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	row, err := transaction.GetServicePortForUpdate(PortVoid)
+	row, err := transaction.GetServicePortForUpdate(ctx, PortVoid)
 	if err != nil {
 
 		_ = transaction.RollbackTransaction()
@@ -110,7 +111,7 @@ func BindServicePort(companyId int64) (*PortRegistryStruct, error) {
 	}
 
 	lockedTill := functions.GetCurrentTimeStamp() + 60
-	if err = transaction.Update(portRegistry.Port, PortLocked, lockedTill, companyId); err != nil {
+	if err = transaction.Update(ctx, portRegistry.Port, PortLocked, lockedTill, companyId); err != nil {
 
 		_ = transaction.RollbackTransaction()
 		return nil, err
@@ -124,9 +125,9 @@ func BindServicePort(companyId int64) (*PortRegistryStruct, error) {
 }
 
 // GetByPort получаем запись по порту
-func GetByPort(port int32) (*PortRegistryStruct, error) {
+func GetByPort(ctx context.Context, port int32) (*PortRegistryStruct, error) {
 
-	row, err := domino_service.GetOne(port)
+	row, err := domino_service.GetOne(ctx, port)
 
 	if err != nil {
 		return nil, err
@@ -140,9 +141,9 @@ func GetByPort(port int32) (*PortRegistryStruct, error) {
 }
 
 // GetByCompany получаем запись по порту
-func GetByCompany(companyId int64) (*PortRegistryStruct, error) {
+func GetByCompany(ctx context.Context, companyId int64) (*PortRegistryStruct, error) {
 
-	row, err := domino_service.GetOneWithStatusByCompanyId(companyId, PortActive)
+	row, err := domino_service.GetOneWithStatusByCompanyId(ctx, companyId, PortActive)
 	if err != nil {
 
 		log.Errorf("%v", err)
@@ -223,9 +224,9 @@ func getExtra(row map[string]string) (ExtraField, error) {
 
 // SyncPort выполняет синхронизацию порта
 // данную функцию нельзя вызывать в локальных методах, только через апи с pivot-сервера
-func SyncPort(port, status, lockedTill int32, companyId int64) error {
+func SyncPort(ctx context.Context, port, status, lockedTill int32, companyId int64) error {
 
-	if _, err := domino_service.SetStatus(port, int(status), int64(lockedTill), companyId); err != nil {
+	if _, err := domino_service.SetStatus(ctx, port, int(status), int64(lockedTill), companyId); err != nil {
 		return err
 	}
 

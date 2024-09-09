@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"go_database_controller/api/includes/type/db/company"
@@ -9,7 +10,7 @@ import (
 )
 
 // проверить сделанные миграции
-func checkMigration(credentials *sharding.DbCredentials, version int, dbName string, migrationPath string, shardDbName string) error {
+func checkMigration(ctx context.Context, credentials *sharding.DbCredentials, version int, dbName string, migrationPath string, shardDbName string) error {
 
 	database, err := getDatabase(dbName)
 	if err != nil {
@@ -41,7 +42,7 @@ func checkMigration(credentials *sharding.DbCredentials, version int, dbName str
 	}
 	for _, shardDb := range shardDbList {
 
-		err := checkDatabase(credentials, databaseStruct, shardDb)
+		err := checkDatabase(ctx, credentials, databaseStruct, shardDb)
 		if err != nil {
 			return err
 		}
@@ -51,7 +52,7 @@ func checkMigration(credentials *sharding.DbCredentials, version int, dbName str
 }
 
 // проверить миграцию для отдельной базы данных с шардом
-func checkDatabase(credentials *sharding.DbCredentials, databaseStruct *databaseStruct, shardDbName string) error {
+func checkDatabase(ctx context.Context, credentials *sharding.DbCredentials, databaseStruct *databaseStruct, shardDbName string) error {
 
 	for _, table := range databaseStruct.TableList {
 
@@ -62,7 +63,7 @@ func checkDatabase(credentials *sharding.DbCredentials, databaseStruct *database
 
 		for _, shardTable := range shardTableNameList {
 
-			err := checkTable(credentials, shardTable, &table, shardDbName)
+			err := checkTable(ctx, credentials, shardTable, &table, shardDbName)
 			if err != nil {
 				return err
 			}
@@ -73,10 +74,10 @@ func checkDatabase(credentials *sharding.DbCredentials, databaseStruct *database
 }
 
 // проверить отдельную таблицу с шардом
-func checkTable(credentials *sharding.DbCredentials, shardTableName string, tableStruct *tableStruct, shardDbName string) (err error) {
+func checkTable(ctx context.Context, credentials *sharding.DbCredentials, shardTableName string, tableStruct *tableStruct, shardDbName string) (err error) {
 
 	// получаем запись таблицы в information_schema
-	tableSchema, err := company.GetTableInformationSchema(credentials, shardDbName, shardTableName)
+	tableSchema, err := company.GetTableInformationSchema(ctx, credentials, shardDbName, shardTableName)
 
 	// проверяем. что совпадает engine таблицы
 	if strings.ToLower(tableSchema["ENGINE"]) != strings.ToLower(tableStruct.Engine) {
@@ -89,7 +90,7 @@ func checkTable(credentials *sharding.DbCredentials, shardTableName string, tabl
 	}
 
 	// получаем поля таблицы
-	fieldSchema, err := company.GetFieldsFromTable(credentials, shardDbName, shardTableName)
+	fieldSchema, err := company.GetFieldsFromTable(ctx, credentials, shardDbName, shardTableName)
 
 	// проверяем, что совпадает количество полей в таблице
 	if len(tableStruct.FieldList) != len(fieldSchema) {
@@ -111,7 +112,7 @@ func checkTable(credentials *sharding.DbCredentials, shardTableName string, tabl
 		}
 	}
 
-	indexSchemaStructList, err := getTableIndexes(credentials, shardDbName, shardTableName)
+	indexSchemaStructList, err := getTableIndexes(ctx, credentials, shardDbName, shardTableName)
 
 	if len(indexSchemaStructList) != len(tableStruct.IndexList) {
 		return fmt.Errorf("count index not equals %s", shardTableName)
@@ -163,9 +164,9 @@ func checkIndexes(indexSchemaStructList map[string]*indexSchemaStruct, tableStru
 }
 
 // получить индексы таблицы
-func getTableIndexes(credentials *sharding.DbCredentials, shardDbName string, shardTableName string) (map[string]*indexSchemaStruct, error) {
+func getTableIndexes(ctx context.Context, credentials *sharding.DbCredentials, shardDbName string, shardTableName string) (map[string]*indexSchemaStruct, error) {
 
-	indexSchema, err := company.GetIndexesFromTable(credentials, shardDbName, shardTableName)
+	indexSchema, err := company.GetIndexesFromTable(ctx, credentials, shardDbName, shardTableName)
 
 	indexSchemaStructList := map[string]*indexSchemaStruct{}
 

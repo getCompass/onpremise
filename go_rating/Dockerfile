@@ -1,4 +1,4 @@
-FROM docker.getcompass.ru/service/go:init-devonpremise
+FROM docker.getcompass.ru/service/go:4.2.1
 
 RUN apk add mysql mysql-client
 

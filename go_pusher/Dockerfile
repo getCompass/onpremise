@@ -1,4 +1,4 @@
-FROM docker.getcompass.ru/service/go:init-devonpremise
+FROM docker.getcompass.ru/service/go:4.2.1
 
 COPY . /app
 RUN cd /app && sh install.sh && mkdir -p logs && go build -o pusher -mod vendor main.go

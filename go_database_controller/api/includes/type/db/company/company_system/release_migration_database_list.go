@@ -1,6 +1,7 @@
 package company_system
 
 import (
+	"context"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"go_database_controller/api/system/sharding"
@@ -8,16 +9,16 @@ import (
 
 const releaseTableKey = "migration_release_database_list"
 
-func GetReleaseMigrationDatabase(credentials *sharding.DbCredentials, dbName string) (*MigrationDatabaseStruct, error) {
+func GetReleaseMigrationDatabase(ctx context.Context, credentials *sharding.DbCredentials, dbName string) (*MigrationDatabaseStruct, error) {
 
 	// проверяем, что у нас имеется подключение к необходимой базе данных
-	conn := sharding.MysqlWithCredentials(dbKey, credentials)
+	conn := sharding.MysqlWithCredentials(ctx, dbKey, credentials)
 	if conn == nil {
 		return nil, fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
 
 	query := fmt.Sprintf("SELECT * FROM `%s` WHERE `full_database_name` = ? LIMIT ?", releaseTableKey)
-	row, err := conn.FetchQuery(query, dbName, 1)
+	row, err := conn.FetchQuery(ctx, query, dbName, 1)
 	if err != nil {
 		return nil, fmt.Errorf("неудачный запрос: %s в базу %s Error: %v", query, dbKey, err)
 	}
@@ -36,10 +37,10 @@ func GetReleaseMigrationDatabase(credentials *sharding.DbCredentials, dbName str
 		functions.StringToInt64(row["created_at"])), nil
 }
 
-func InsertReleaseMigrationDatabase(credentials *sharding.DbCredentials, shardDbName string, dbName string) (*MigrationDatabaseStruct, error) {
+func InsertReleaseMigrationDatabase(ctx context.Context, credentials *sharding.DbCredentials, shardDbName string, dbName string) (*MigrationDatabaseStruct, error) {
 
 	// проверяем, что у нас имеется подключение к необходимой базе данных
-	conn := sharding.MysqlWithCredentials(dbKey, credentials)
+	conn := sharding.MysqlWithCredentials(ctx, dbKey, credentials)
 	if conn == nil {
 		return nil, fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
@@ -72,7 +73,7 @@ func InsertReleaseMigrationDatabase(credentials *sharding.DbCredentials, shardDb
 	insert["last_migrated_file"] = migrationDatabaseStruct.LastMigratedFile
 	insert["created_at"] = migrationDatabaseStruct.CreatedAt
 
-	_, err := conn.Insert(releaseTableKey, insert, false)
+	_, err := conn.Insert(ctx, releaseTableKey, insert, false)
 	if err != nil {
 		return nil, err
 	}
@@ -80,10 +81,10 @@ func InsertReleaseMigrationDatabase(credentials *sharding.DbCredentials, shardDb
 	return migrationDatabaseStruct, err
 }
 
-func UpdateStartRelease(credentials *sharding.DbCredentials, dbName string, isCompleted int, expectedVersion int, lastMigratedType int, lastMigratedAt int64, lastMigratedFile string) error {
+func UpdateStartRelease(ctx context.Context, credentials *sharding.DbCredentials, dbName string, isCompleted int, expectedVersion int, lastMigratedType int, lastMigratedAt int64, lastMigratedFile string) error {
 
 	// проверяем, что у нас имеется подключение к необходимой базе данных
-	conn := sharding.MysqlWithCredentials(dbKey, credentials)
+	conn := sharding.MysqlWithCredentials(ctx, dbKey, credentials)
 	if conn == nil {
 		return fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
@@ -92,17 +93,17 @@ func UpdateStartRelease(credentials *sharding.DbCredentials, dbName string, isCo
 	query := fmt.Sprintf("UPDATE `%s` SET `is_completed` = ?, `expected_version` = ?, `last_migrated_type` = ?, `last_migrated_at` = ?, "+
 		"`last_migrated_file` = ?  WHERE `full_database_name` = ? LIMIT %d", releaseTableKey, 1)
 
-	_, err := conn.Update(query, isCompleted, expectedVersion, lastMigratedType, lastMigratedAt, lastMigratedFile, dbName)
+	_, err := conn.Update(ctx, query, isCompleted, expectedVersion, lastMigratedType, lastMigratedAt, lastMigratedFile, dbName)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func UpdateEndRelease(credentials *sharding.DbCredentials, dbName string, isCompleted int, previousVersion int, currentVersion int, highestVersion int) error {
+func UpdateEndRelease(ctx context.Context, credentials *sharding.DbCredentials, dbName string, isCompleted int, previousVersion int, currentVersion int, highestVersion int) error {
 
 	// проверяем, что у нас имеется подключение к необходимой базе данных
-	conn := sharding.MysqlWithCredentials(dbKey, credentials)
+	conn := sharding.MysqlWithCredentials(ctx, dbKey, credentials)
 	if conn == nil {
 		return fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
@@ -111,7 +112,7 @@ func UpdateEndRelease(credentials *sharding.DbCredentials, dbName string, isComp
 	query := fmt.Sprintf("UPDATE `%s` SET `is_completed` = ?, `previous_version` = ?, `current_version` = ?, `highest_version` = ? "+
 		"WHERE `full_database_name` = ? LIMIT %d", releaseTableKey, 1)
 
-	_, err := conn.Update(query, isCompleted, previousVersion, currentVersion, highestVersion, dbName)
+	_, err := conn.Update(ctx, query, isCompleted, previousVersion, currentVersion, highestVersion, dbName)
 	if err != nil {
 		return err
 	}

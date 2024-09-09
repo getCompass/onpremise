@@ -4,6 +4,7 @@ package relocation
 // в этом файле описаны функции, работающие с данными компании
 
 import (
+	"context"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
@@ -54,8 +55,10 @@ func copyData(routineChan chan *routine.Status, companyId int64, targetHost, dum
 
 	log.Infof("начинаю перенос данных компании %d на домино %s", companyId, targetHost)
 
+	ctx := context.Background()
+
 	// получаем порт, на котором развернута компания
-	maintenancePort, err := port_registry.GetByCompany(companyId)
+	maintenancePort, err := port_registry.GetByCompany(ctx, companyId)
 
 	if err != nil {
 
@@ -140,8 +143,10 @@ func BeginDataApplying(companyId int64) string {
 // применяет копированные данные
 func applyData(routineChan chan *routine.Status, companyId int64) {
 
+	ctx := context.Background()
+
 	// получаем порт, на котором развернута компания
-	maintenancePort, err := port_registry.GetByCompany(companyId)
+	maintenancePort, err := port_registry.GetByCompany(ctx, companyId)
 
 	if err != nil {
 

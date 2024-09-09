@@ -1,6 +1,7 @@
 package domino_service
 
 import (
+	"context"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"github.com/getCompassUtils/go_base_frame/api/system/mysql"
@@ -14,9 +15,9 @@ type TransactionStruct struct {
 }
 
 // BeginTransaction открываем транзакцию
-func BeginTransaction() (*TransactionStruct, error) {
+func BeginTransaction(ctx context.Context) (*TransactionStruct, error) {
 
-	conn := sharding.Mysql(GetDbName())
+	conn := sharding.Mysql(ctx, GetDbName())
 	if conn == nil {
 		return &TransactionStruct{}, fmt.Errorf("database error")
 	}

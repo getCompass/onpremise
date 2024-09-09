@@ -1,6 +1,7 @@
 package manticore
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
@@ -21,7 +22,7 @@ const indexNamePrefix = "main"
 
 // InitTable выполняем инициализацию таблицы поиска
 // @long
-func InitTable(spaceId int64) error {
+func InitTable(ctx context.Context, spaceId int64) error {
 
 	// получаем текст для инициализации таблицы поиска
 	sc, err := ioutil.ReadFile(flags.ExecutableDir + "/" + searchSchemaPath + "install.sql")
@@ -51,7 +52,7 @@ func InitTable(spaceId int64) error {
 		return err
 	}
 
-	registry, err := port_registry.GetByCompany(spaceId)
+	registry, err := port_registry.GetByCompany(ctx, spaceId)
 	if err != nil {
 
 		// если не нашли порт у пространства - возвращаем ошибку
@@ -77,7 +78,7 @@ func InitTable(spaceId int64) error {
 	logItem := &logger.Log{}
 
 	// накатываем актуальную миграцию для таблиц мантикоры
-	errMessage := migration.DoMigrateManticore(credentials, connection, spaceId, logItem)
+	errMessage := migration.DoMigrateManticore(ctx, credentials, connection, spaceId, logItem)
 	if errMessage != "" {
 		return fmt.Errorf("could not migrated database, error: %s", errMessage)
 	}

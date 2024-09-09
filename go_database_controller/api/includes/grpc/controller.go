@@ -42,26 +42,26 @@ func (s *Server) GetStatus(_ context.Context, in *pb.GetStatusRequestStruct) (*p
 
 // CreateVacantCompany создает свободную компанию
 // Deprecated: лучше в два шага делать — создание данных + привязка порта
-func (s *Server) CreateVacantCompany(_ context.Context, in *pb.CreateVacantCompanyRequestStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) CreateVacantCompany(ctx context.Context, in *pb.CreateVacantCompanyRequestStruct) (*pb.NullResponseStruct, error) {
 
-	err := keeper.CreateVacantCompany(in.GetPort(), in.GetCompanyId())
+	err := keeper.CreateVacantCompany(ctx, in.GetPort(), in.GetCompanyId())
 
 	return &pb.NullResponseStruct{}, err
 }
 
 // AddPort добавляет порты на домино
 // порты должны быть синхронизованы с pivot-сервером
-func (s *Server) AddPort(_ context.Context, in *pb.AddPortRequestStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) AddPort(ctx context.Context, in *pb.AddPortRequestStruct) (*pb.NullResponseStruct, error) {
 
-	err := keeper.AddPort(in.GetPort(), in.GetStatus(), in.GetType(), in.GetLockedTill(), in.GetCreatedAt(), in.GetUpdatedAt(), in.GetCompanyId(), in.GetExtra())
+	err := keeper.AddPort(ctx, in.GetPort(), in.GetStatus(), in.GetType(), in.GetLockedTill(), in.GetCreatedAt(), in.GetUpdatedAt(), in.GetCompanyId(), in.GetExtra())
 
 	return &pb.NullResponseStruct{}, err
 }
 
 // SetPortInvalid инвалидирует порт
-func (s *Server) SetPortInvalid(_ context.Context, in *pb.SetPortInvalidRequestStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) SetPortInvalid(ctx context.Context, in *pb.SetPortInvalidRequestStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, keeper.InvalidatePort(in.GetPort())
+	return &pb.NullResponseStruct{}, keeper.InvalidatePort(ctx, in.GetPort())
 }
 
 // BindPort выполняет привязку порта и компании на любой порт
@@ -89,9 +89,9 @@ func (s *Server) BindPort(ctx context.Context, in *pb.BindPortRequestStruct) (*p
 
 // BindOnServicePort выполняет привязку порта и компании на сервисный порт
 // Deprecated: привязку нужно делать только через BindPort
-func (s *Server) BindOnServicePort(_ context.Context, in *pb.BindOnServicePortRequestStruct) (*pb.BindOnServicePortResponseStruct, error) {
+func (s *Server) BindOnServicePort(ctx context.Context, in *pb.BindOnServicePortRequestStruct) (*pb.BindOnServicePortResponseStruct, error) {
 
-	port, user, pass, err := keeper.BindOnServicePort(in.GetCompanyId())
+	port, user, pass, err := keeper.BindOnServicePort(ctx, in.GetCompanyId())
 
 	return &pb.BindOnServicePortResponseStruct{
 		Port:      port,
@@ -101,9 +101,9 @@ func (s *Server) BindOnServicePort(_ context.Context, in *pb.BindOnServicePortRe
 }
 
 // GetCompanyPort возвращает порт и данные  для компании, который связан с указанной компанией
-func (s *Server) GetCompanyPort(_ context.Context, in *pb.GetCompanyPortRequestStruct) (*pb.GetCompanyPortResponseStruct, error) {
+func (s *Server) GetCompanyPort(ctx context.Context, in *pb.GetCompanyPortRequestStruct) (*pb.GetCompanyPortResponseStruct, error) {
 
-	port, user, pass, err := keeper.GetCompanyPort(in.GetCompanyId())
+	port, user, pass, err := keeper.GetCompanyPort(ctx, in.GetCompanyId())
 	if port == 0 && err == nil {
 		return nil, status.Errorf(404, "port not found")
 	}
@@ -116,9 +116,9 @@ func (s *Server) GetCompanyPort(_ context.Context, in *pb.GetCompanyPortRequestS
 }
 
 // UnbindPort отвязывает порт от любой компании, которая на нем развернута
-func (s *Server) UnbindPort(_ context.Context, in *pb.UnbindPortRequestStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) UnbindPort(ctx context.Context, in *pb.UnbindPortRequestStruct) (*pb.NullResponseStruct, error) {
 
-	err := keeper.UnbindPort(in.GetPort())
+	err := keeper.UnbindPort(ctx, in.GetPort())
 
 	return &pb.NullResponseStruct{}, err
 }
@@ -260,22 +260,22 @@ func (s *Server) GetRoutineStatus(ctx context.Context, in *pb.GetRoutineStatusRe
 }
 
 // SyncPortStatus выполняет синхронизацию порта между pivot-сервером и контроллером
-func (s *Server) SyncPortStatus(_ context.Context, in *pb.SyncPortStatusRequestStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) SyncPortStatus(ctx context.Context, in *pb.SyncPortStatusRequestStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, port_registry.SyncPort(in.GetPort(), in.GetStatus(), in.GetLockedTill(), in.GetCompanyId())
+	return &pb.NullResponseStruct{}, port_registry.SyncPort(ctx, in.GetPort(), in.GetStatus(), in.GetLockedTill(), in.GetCompanyId())
 }
 
 // ResetPort выполняет сброс порта
 // останавливает демон базы, если дернуть метод неправильно, то компания отвалится
-func (s *Server) ResetPort(_ context.Context, in *pb.ResetPortRequestStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) ResetPort(ctx context.Context, in *pb.ResetPortRequestStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, keeper.ResetPort(in.GetPort())
+	return &pb.NullResponseStruct{}, keeper.ResetPort(ctx, in.GetPort())
 }
 
 // InitSearch выполняем инициализацию таблиц поиска
-func (s *Server) InitSearch(_ context.Context, in *pb.InitSearchRequestStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) InitSearch(ctx context.Context, in *pb.InitSearchRequestStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, manticore.InitTable(in.GetSpaceId())
+	return &pb.NullResponseStruct{}, manticore.InitTable(ctx, in.GetSpaceId())
 }
 
 // DropSearchTable удаляем поисковый индекс пространства
@@ -285,7 +285,7 @@ func (s *Server) DropSearchTable(_ context.Context, in *pb.DropSearchTableReques
 }
 
 // UpdateDeployment обновить деплой
-func (s *Server) UpdateDeployment(_ context.Context, _ *pb.NullRequestStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) UpdateDeployment(ctx context.Context, _ *pb.NullResponseStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, keeper.UpdateDeployment()
+	return &pb.NullResponseStruct{}, keeper.UpdateDeployment(ctx)
 }

@@ -1,6 +1,7 @@
 package company
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
@@ -81,45 +82,45 @@ func CreateUserOnEmptyDb(port *port_registry.PortRegistryStruct) error {
 
 	return nil
 }
-func GetTableInformationSchema(credentials *sharding.DbCredentials, dbKey string, tableName string) (map[string]string, error) {
+func GetTableInformationSchema(ctx context.Context, credentials *sharding.DbCredentials, dbKey string, tableName string) (map[string]string, error) {
 
-	conn := sharding.MysqlWithCredentials("information_schema", credentials)
+	conn := sharding.MysqlWithCredentials(ctx, "information_schema", credentials)
 	if conn == nil {
 		return nil, fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
 
 	query := fmt.Sprintf("SELECT * FROM `%s` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ? LIMIT ?", "tables")
-	row, err := conn.FetchQuery(query, dbKey, tableName, 1)
+	row, err := conn.FetchQuery(ctx, query, dbKey, tableName, 1)
 	if err != nil {
 		return map[string]string{}, err
 	}
 	return row, nil
 }
 
-func GetFieldsFromTable(credentials *sharding.DbCredentials, dbKey string, tableName string) (map[int]map[string]string, error) {
+func GetFieldsFromTable(ctx context.Context, credentials *sharding.DbCredentials, dbKey string, tableName string) (map[int]map[string]string, error) {
 
-	conn := sharding.MysqlWithCredentials(dbKey, credentials)
+	conn := sharding.MysqlWithCredentials(ctx, dbKey, credentials)
 	if conn == nil {
 		return nil, fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
 
 	query := fmt.Sprintf("SHOW COLUMNS FROM `%s`;", tableName)
-	result, err := conn.GetAll(query)
+	result, err := conn.GetAll(ctx, query)
 	if err != nil {
 		return map[int]map[string]string{}, err
 	}
 	return result, nil
 }
 
-func GetIndexesFromTable(credentials *sharding.DbCredentials, dbKey string, tableName string) (map[int]map[string]string, error) {
+func GetIndexesFromTable(ctx context.Context, credentials *sharding.DbCredentials, dbKey string, tableName string) (map[int]map[string]string, error) {
 
-	conn := sharding.MysqlWithCredentials(dbKey, credentials)
+	conn := sharding.MysqlWithCredentials(ctx, dbKey, credentials)
 	if conn == nil {
 		return nil, fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
 
 	query := fmt.Sprintf("SHOW INDEX FROM `%s`;", tableName)
-	result, err := conn.GetAll(query)
+	result, err := conn.GetAll(ctx, query)
 	if err != nil {
 		return map[int]map[string]string{}, err
 	}
@@ -127,12 +128,12 @@ func GetIndexesFromTable(credentials *sharding.DbCredentials, dbKey string, tabl
 }
 
 // выполняем sql запросы
-func ExecSql(credentials *sharding.DbCredentials, dbKey string, sqlFile string) (err error) {
+func ExecSql(ctx context.Context, credentials *sharding.DbCredentials, dbKey string, sqlFile string) (err error) {
 
 	sc, err := ioutil.ReadFile(sqlFile)
 	sqlContent := string(sc)
 
-	conn := sharding.MysqlWithCredentials(dbKey, credentials)
+	conn := sharding.MysqlWithCredentials(ctx, dbKey, credentials)
 	if conn == nil {
 		return fmt.Errorf("пришел DbName: %s для которого не найдено подключение", dbKey)
 	}
@@ -147,7 +148,7 @@ func ExecSql(credentials *sharding.DbCredentials, dbKey string, sqlFile string) 
 	// выполняем запросы
 	for _, query := range sqlQueries {
 
-		err = conn.Query(query)
+		err = conn.Query(ctx, query)
 		if err != nil {
 			return err
 		}
@@ -157,15 +158,15 @@ func ExecSql(credentials *sharding.DbCredentials, dbKey string, sqlFile string) 
 }
 
 // инициализировать базу
-func CreateIfNotExistDatabase(credentials *sharding.DbCredentials, dbKey string) (bool, error) {
+func CreateIfNotExistDatabase(ctx context.Context, credentials *sharding.DbCredentials, dbKey string) (bool, error) {
 
 	// пустой ключ, так как мы просто хотим подключиться к хосту
-	conn := sharding.MysqlWithCredentials("", credentials)
+	conn := sharding.MysqlWithCredentials(ctx, "", credentials)
 	if conn == nil {
 		return false, fmt.Errorf("не удалось установить соединение с портом %d", credentials.Port)
 	}
 
-	dbList, err := conn.GetAll("SHOW DATABASES;")
+	dbList, err := conn.GetAll(ctx, "SHOW DATABASES;")
 
 	for _, db := range dbList {
 
@@ -174,7 +175,7 @@ func CreateIfNotExistDatabase(credentials *sharding.DbCredentials, dbKey string)
 		}
 	}
 
-	err = conn.Query(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s DEFAULT CHARACTER SET utf8;", dbKey))
+	err = conn.Query(ctx, fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s DEFAULT CHARACTER SET utf8;", dbKey))
 	if err != nil {
 		return false, err
 	}
@@ -183,15 +184,15 @@ func CreateIfNotExistDatabase(credentials *sharding.DbCredentials, dbKey string)
 }
 
 // инициализировать базу company_system
-func CreateDatabase(credentials *sharding.DbCredentials, dbKey string) error {
+func CreateDatabase(ctx context.Context, credentials *sharding.DbCredentials, dbKey string) error {
 
 	// пустой ключ, так как мы просто хотим подключиться к хосту
-	conn := sharding.MysqlWithCredentials("", credentials)
+	conn := sharding.MysqlWithCredentials(ctx, "", credentials)
 	if conn == nil {
 		return fmt.Errorf("не удалось установить соединение с портом %d", credentials.Port)
 	}
 
-	err := conn.Query(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s DEFAULT CHARACTER SET utf8;", dbKey))
+	err := conn.Query(ctx, fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s DEFAULT CHARACTER SET utf8;", dbKey))
 	if err != nil {
 		return err
 	}

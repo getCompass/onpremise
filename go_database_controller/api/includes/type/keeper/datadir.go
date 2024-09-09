@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/fileutils"
@@ -104,12 +105,12 @@ func chownUser(userName string, path string) error {
 // PrepareDataDir готовит директорию с пустой базой под компанию
 // если директория уже существует, то ничего не делает
 // возвращает флаг необходимости проинициализировать директорию
-func PrepareDataDir(companyId int64, nonExistingPolicy, duplicatePolicy int32) (bool, error) {
+func PrepareDataDir(ctx context.Context, companyId int64, nonExistingPolicy, duplicatePolicy int32) (bool, error) {
 
 	dirName := getDataDirPath(companyId)
 
 	// убеждаемся, что с директорией никто не работает
-	if port, _ := port_registry.GetByCompany(companyId); port != nil && isMysqlAlive(port.Port) {
+	if port, _ := port_registry.GetByCompany(ctx, companyId); port != nil && isMysqlAlive(port.Port) {
 		return false, fmt.Errorf("company datadir %s is used by another daemon on %d port", dirName, port.Port)
 	}
 

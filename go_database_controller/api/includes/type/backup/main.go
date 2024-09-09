@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"context"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"go_database_controller/api/conf"
@@ -39,8 +40,10 @@ func StartBackupDatabase(companyId int64) (string, string) {
 // бэкапим базу
 func backupDatabase(routineChan chan *routine.Status, companyId int64, backupFileName string) {
 
+	ctx := context.Background()
+
 	// получаем порт, на котором развернута компания
-	port, err := port_registry.GetByCompany(companyId)
+	port, err := port_registry.GetByCompany(ctx, companyId)
 
 	if err != nil {
 

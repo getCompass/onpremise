@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
@@ -14,13 +15,13 @@ import (
 )
 
 // Start стартуем mysql
-func Start(portValue int32) error {
+func Start(ctx context.Context, portValue int32) error {
 
 	log.Infof("пытаюсь поднять контейнер на порте %d...", portValue)
 
 	// читаем из базы, чтобы данные были актуальны,
 	// а то там все может посыпаться из-за ошибки
-	port, err := port_registry.GetByPort(portValue)
+	port, err := port_registry.GetByPort(ctx, portValue)
 	if err != nil {
 
 		log.Infof("контейнер на порте %d не запустился: %s", portValue, err.Error())
@@ -33,7 +34,7 @@ func Start(portValue int32) error {
 
 	time.Sleep(500 * time.Millisecond)
 
-	err = UpdateDeployment()
+	err = UpdateDeployment(ctx)
 
 	if err != nil {
 		return err
@@ -44,11 +45,11 @@ func Start(portValue int32) error {
 }
 
 // Stop останавливаем mysql
-func Stop(portValue int32) error {
+func Stop(ctx context.Context, portValue int32) error {
 
 	log.Infof("пытаюсь остановить контейнер на порте %d...", portValue)
 
-	err := UpdateDeployment()
+	err := UpdateDeployment(ctx)
 
 	if err != nil {
 		return err
@@ -66,10 +67,10 @@ func Stop(portValue int32) error {
 }
 
 // UpdateDeployment обновить стак деплоя
-func UpdateDeployment() error {
+func UpdateDeployment(ctx context.Context) error {
 
 	// получаем все порты, занятые компаниями, в мире
-	portList, err := port_registry.GetAllCompanyPortList()
+	portList, err := port_registry.GetAllCompanyPortList(ctx)
 	if err != nil {
 		return err
 	}

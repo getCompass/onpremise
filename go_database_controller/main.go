@@ -5,6 +5,7 @@ package main
 // -------------------------------------------------------
 
 import (
+	"context"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_database_controller/api/conf"
@@ -36,8 +37,10 @@ func start() {
 	numCPU := runtime.NumCPU()
 	runtime.GOMAXPROCS(numCPU)
 
+	ctx := context.Background()
+
 	// накатываем миграции
-	err := domino.MigrateInit(flags.ExecutableDir)
+	err := domino.MigrateInit(ctx, flags.ExecutableDir)
 
 	if err != nil {
 		panic(err)

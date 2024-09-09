@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
@@ -35,6 +36,8 @@ func StartMigrateLegacyClean(companyId int64) string {
 // поднимает версию миграций для переданных компаний
 func migrateLegacyClean(routineChan chan *routine.Status, companyId int64, logItem *logger.Log) {
 
+	ctx := context.Background()
+
 	databaseList, err := getDatabaseList()
 
 	if err != nil {
@@ -43,7 +46,7 @@ func migrateLegacyClean(routineChan chan *routine.Status, companyId int64, logIt
 		return
 	}
 
-	registry, err := port_registry.GetByCompany(companyId)
+	registry, err := port_registry.GetByCompany(ctx, companyId)
 
 	if err != nil {
 
@@ -62,7 +65,7 @@ func migrateLegacyClean(routineChan chan *routine.Status, companyId int64, logIt
 	}
 
 	// проверяем, что база company_system существует, и создаем, если нужно
-	isCreated, err := company.CreateIfNotExistDatabase(credentials, "company_system")
+	isCreated, err := company.CreateIfNotExistDatabase(ctx, credentials, "company_system")
 
 	if err != nil {
 
@@ -73,13 +76,13 @@ func migrateLegacyClean(routineChan chan *routine.Status, companyId int64, logIt
 	// если пришлось создать базу, то завершаем работу - как можно чистить ничего? Но перед этим накатываем init миграцию, раз пришли
 	if isCreated {
 
-		err = company.ExecSql(credentials, "company_system", flags.ExecutableDir+"/sql/release/company_system/1_init.up.sql")
+		err = company.ExecSql(ctx, credentials, "company_system", flags.ExecutableDir+"/sql/release/company_system/1_init.up.sql")
 		routineChan <- routine.MakeRoutineStatus(routine.StatusDone, "routine done, no database to clean")
 	}
 
 	for _, database := range databaseList.DatabaseList {
 
-		err := migrateDatabaseLegacyClean(&database, credentials, logItem)
+		err := migrateDatabaseLegacyClean(ctx, &database, credentials, logItem)
 		if err != nil {
 
 			routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("could not migrated database, error: %v", err))
@@ -92,7 +95,7 @@ func migrateLegacyClean(routineChan chan *routine.Status, companyId int64, logIt
 }
 
 // мигрируем отдельную базу данных
-func migrateDatabaseLegacyClean(database *databaseSchemaStruct, credentials *sharding.DbCredentials, logItem *logger.Log) error {
+func migrateDatabaseLegacyClean(ctx context.Context, database *databaseSchemaStruct, credentials *sharding.DbCredentials, logItem *logger.Log) error {
 
 	shardDatabaseList, err := getShardDatabaseNameList(database)
 	if err != nil {
@@ -112,7 +115,7 @@ func migrateDatabaseLegacyClean(database *databaseSchemaStruct, credentials *sha
 	// получаем состояние миграции для каждой базы и накатываем новые, если необходимо
 	for _, shardDatabaseName := range shardDatabaseList {
 
-		migrationDatabaseStruct, err := company_system.GetMigrationCleaningDatabase(credentials, shardDatabaseName)
+		migrationDatabaseStruct, err := company_system.GetMigrationCleaningDatabase(ctx, credentials, shardDatabaseName)
 		if err != nil {
 			return err
 		}
@@ -129,7 +132,7 @@ func migrateDatabaseLegacyClean(database *databaseSchemaStruct, credentials *sha
 		}
 		if migrationDatabaseStruct.CreatedAt == 0 {
 
-			migrationDatabaseStruct, err = company_system.InsertMigrationCleaningDatabase(credentials, shardDatabaseName, database.Name)
+			migrationDatabaseStruct, err = company_system.InsertMigrationCleaningDatabase(ctx, credentials, shardDatabaseName, database.Name)
 			if err != nil {
 				return err
 			}
@@ -137,7 +140,7 @@ func migrateDatabaseLegacyClean(database *databaseSchemaStruct, credentials *sha
 			logItem.AddLog(fmt.Sprintf("Добавили запись о применении миграции на удаление легаси %s", shardDatabaseName))
 		}
 
-		err = processDatabaseLegacyClean(credentials, migrationDatabaseStruct, path, logItem)
+		err = processDatabaseLegacyClean(ctx, credentials, migrationDatabaseStruct, path, logItem)
 		if err != nil {
 			return err
 		}
@@ -147,7 +150,7 @@ func migrateDatabaseLegacyClean(database *databaseSchemaStruct, credentials *sha
 }
 
 // запустить непосредественно процесс миграции на отдельной базе данных
-func processDatabaseLegacyClean(credentials *sharding.DbCredentials, migrationDatabase *company_system.MigrationDatabaseStruct, migrationPath string, logItem *logger.Log) error {
+func processDatabaseLegacyClean(ctx context.Context, credentials *sharding.DbCredentials, migrationDatabase *company_system.MigrationDatabaseStruct, migrationPath string, logItem *logger.Log) error {
 
 	migrationSqlPath := "start"
 	expectedVersion := 0
@@ -163,7 +166,7 @@ func processDatabaseLegacyClean(credentials *sharding.DbCredentials, migrationDa
 
 		if !isExist {
 
-			err := checkMigration(credentials, migrationDatabase.CurrentVersion, migrationDatabase.DatabaseName, migrationPath, migrationDatabase.FullDatabaseName)
+			err := checkMigration(ctx, credentials, migrationDatabase.CurrentVersion, migrationDatabase.DatabaseName, migrationPath, migrationDatabase.FullDatabaseName)
 			if err != nil {
 				return err
 			}
@@ -172,7 +175,7 @@ func processDatabaseLegacyClean(credentials *sharding.DbCredentials, migrationDa
 
 		migrationSqlPath = sqlPath
 
-		releaseRow, err := company_system.GetReleaseMigrationDatabase(credentials, migrationDatabase.FullDatabaseName)
+		releaseRow, err := company_system.GetReleaseMigrationDatabase(ctx, credentials, migrationDatabase.FullDatabaseName)
 		if err != nil {
 			return err
 		}
@@ -200,6 +203,7 @@ func processDatabaseLegacyClean(credentials *sharding.DbCredentials, migrationDa
 			return nil
 		}
 		err = company_system.UpdateStartCleaning(
+			ctx,
 			credentials,
 			migrationDatabase.FullDatabaseName,
 			0,
@@ -211,12 +215,12 @@ func processDatabaseLegacyClean(credentials *sharding.DbCredentials, migrationDa
 			return err
 		}
 
-		err = company.ExecSql(credentials, migrationDatabase.FullDatabaseName, migrationSqlPath)
+		err = company.ExecSql(ctx, credentials, migrationDatabase.FullDatabaseName, migrationSqlPath)
 		if err != nil {
 			return err
 		}
 
-		err = checkMigration(credentials, expectedVersion, migrationDatabase.DatabaseName, migrationPath, migrationDatabase.FullDatabaseName)
+		err = checkMigration(ctx, credentials, expectedVersion, migrationDatabase.DatabaseName, migrationPath, migrationDatabase.FullDatabaseName)
 		if err != nil {
 			return err
 		}
@@ -229,6 +233,7 @@ func processDatabaseLegacyClean(credentials *sharding.DbCredentials, migrationDa
 		migrationDatabase.CurrentVersion = expectedVersion
 
 		err = company_system.UpdateEndCleaning(
+			ctx,
 			credentials,
 			migrationDatabase.FullDatabaseName,
 			1,

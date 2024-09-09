@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -42,7 +43,9 @@ func StartMigrateUp(companyId int64) string {
 // @long
 func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.Log) {
 
-	registry, err := port_registry.GetByCompany(spaceId)
+	ctx := context.Background()
+
+	registry, err := port_registry.GetByCompany(ctx, spaceId)
 	if err != nil {
 
 		// если не нашли порт у пространства - возвращаем ошибку
@@ -68,7 +71,7 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 	}
 
 	// выполняем миграцию для баз данных
-	errMessage := doMigrateDb(credentials, logItem)
+	errMessage := doMigrateDb(ctx, credentials, logItem)
 	if errMessage != "" {
 
 		routineChan <- routine.MakeRoutineStatus(routine.StatusError, errMessage)
@@ -93,7 +96,7 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 	}()
 
 	// выполняем миграцию для таблиц мантикторы
-	errMessage = DoMigrateManticore(credentials, connection, spaceId, logItem)
+	errMessage = DoMigrateManticore(ctx, credentials, connection, spaceId, logItem)
 	if errMessage != "" {
 
 		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("could not migrated database, error: %s", errMessage))
@@ -106,7 +109,7 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 
 // выполнить миграцию для баз данных
 // @long
-func doMigrateDb(credentials *sharding.DbCredentials, logItem *logger.Log) string {
+func doMigrateDb(ctx context.Context, credentials *sharding.DbCredentials, logItem *logger.Log) string {
 
 	// получаем список баз данных для миграции
 	databaseList, err := getDatabaseList()
@@ -120,7 +123,7 @@ func doMigrateDb(credentials *sharding.DbCredentials, logItem *logger.Log) strin
 	}
 
 	// проверяем, что база company_system существует. Если нет - создаем
-	isCreated, err := company.CreateIfNotExistDatabase(credentials, "company_system")
+	isCreated, err := company.CreateIfNotExistDatabase(ctx, credentials, "company_system")
 
 	if err != nil {
 
@@ -133,7 +136,7 @@ func doMigrateDb(credentials *sharding.DbCredentials, logItem *logger.Log) strin
 	}
 
 	// исполняем изначальную миграцию - чтобы появились необходимые таблицы для работы миграций
-	err = company.ExecSql(credentials, "company_system", flags.ExecutableDir+"/sql/release/company_system/1_init.up.sql")
+	err = company.ExecSql(ctx, credentials, "company_system", flags.ExecutableDir+"/sql/release/company_system/1_init.up.sql")
 
 	if err != nil {
 
@@ -146,7 +149,7 @@ func doMigrateDb(credentials *sharding.DbCredentials, logItem *logger.Log) strin
 		b, _ := json.Marshal(database)
 		fmt.Println(string(b))
 
-		err = migrateDatabaseUp(&database, credentials, logItem)
+		err = migrateDatabaseUp(ctx, &database, credentials, logItem)
 		if err != nil {
 
 			return fmt.Sprintf("could not migrated database, error: %v", err)
@@ -160,7 +163,7 @@ func doMigrateDb(credentials *sharding.DbCredentials, logItem *logger.Log) strin
 
 // мигрируем отдельную базу данных
 // @long
-func migrateDatabaseUp(database *databaseSchemaStruct, credentials *sharding.DbCredentials, logItem *logger.Log) error {
+func migrateDatabaseUp(ctx context.Context, database *databaseSchemaStruct, credentials *sharding.DbCredentials, logItem *logger.Log) error {
 
 	// для базы получаем все названия с шардингом
 	shardDatabaseList, err := getShardDatabaseNameList(database)
@@ -182,7 +185,7 @@ func migrateDatabaseUp(database *databaseSchemaStruct, credentials *sharding.DbC
 	// для каждой базы проверяем версию миграций
 	for _, shardDatabaseName := range shardDatabaseList {
 
-		migrationDatabaseStruct, err := company_system.GetReleaseMigrationDatabase(credentials, shardDatabaseName)
+		migrationDatabaseStruct, err := company_system.GetReleaseMigrationDatabase(ctx, credentials, shardDatabaseName)
 		if err != nil {
 			return err
 		}
@@ -197,12 +200,12 @@ func migrateDatabaseUp(database *databaseSchemaStruct, credentials *sharding.DbC
 
 		// если накатываемой базы нет - создаем
 		if migrationDatabaseStruct.CreatedAt == 0 {
-			err := company.CreateDatabase(credentials, shardDatabaseName)
+			err := company.CreateDatabase(ctx, credentials, shardDatabaseName)
 			if err != nil {
 				return err
 			}
 
-			migrationDatabaseStruct, err = company_system.InsertReleaseMigrationDatabase(credentials, shardDatabaseName, database.Name)
+			migrationDatabaseStruct, err = company_system.InsertReleaseMigrationDatabase(ctx, credentials, shardDatabaseName, database.Name)
 			if err != nil {
 				return err
 			}
@@ -211,7 +214,7 @@ func migrateDatabaseUp(database *databaseSchemaStruct, credentials *sharding.DbC
 		}
 
 		// исполняем sql файлы миграции на базу
-		err = processDatabaseUp(credentials, migrationDatabaseStruct, path, logItem)
+		err = processDatabaseUp(ctx, credentials, migrationDatabaseStruct, path, logItem)
 		if err != nil {
 			return err
 		}
@@ -224,7 +227,7 @@ func migrateDatabaseUp(database *databaseSchemaStruct, credentials *sharding.DbC
 
 // запустить непосредественно процесс миграции на отдельной базе данных
 // @long
-func processDatabaseUp(credentials *sharding.DbCredentials, migrationDatabase *company_system.MigrationDatabaseStruct, migrationPath string, logItem *logger.Log) error {
+func processDatabaseUp(ctx context.Context, credentials *sharding.DbCredentials, migrationDatabase *company_system.MigrationDatabaseStruct, migrationPath string, logItem *logger.Log) error {
 
 	migrationSqlPath := "start"
 	expectedVersion := 0
@@ -240,7 +243,7 @@ func processDatabaseUp(credentials *sharding.DbCredentials, migrationDatabase *c
 
 		if !isExist {
 
-			err := checkMigration(credentials, migrationDatabase.CurrentVersion, migrationDatabase.DatabaseName, migrationPath, migrationDatabase.FullDatabaseName)
+			err := checkMigration(ctx, credentials, migrationDatabase.CurrentVersion, migrationDatabase.DatabaseName, migrationPath, migrationDatabase.FullDatabaseName)
 			if err != nil {
 				return err
 			}
@@ -250,6 +253,7 @@ func processDatabaseUp(credentials *sharding.DbCredentials, migrationDatabase *c
 		migrationSqlPath = sqlPath
 
 		err = company_system.UpdateStartRelease(
+			ctx,
 			credentials,
 			migrationDatabase.FullDatabaseName,
 			0,
@@ -261,12 +265,12 @@ func processDatabaseUp(credentials *sharding.DbCredentials, migrationDatabase *c
 			return err
 		}
 
-		err = company.ExecSql(credentials, migrationDatabase.FullDatabaseName, migrationSqlPath)
+		err = company.ExecSql(ctx, credentials, migrationDatabase.FullDatabaseName, migrationSqlPath)
 		if err != nil {
 			return err
 		}
 
-		err = checkMigration(credentials, expectedVersion, migrationDatabase.DatabaseName, migrationPath, migrationDatabase.FullDatabaseName)
+		err = checkMigration(ctx, credentials, expectedVersion, migrationDatabase.DatabaseName, migrationPath, migrationDatabase.FullDatabaseName)
 		if err != nil {
 			return err
 		}
@@ -279,6 +283,7 @@ func processDatabaseUp(credentials *sharding.DbCredentials, migrationDatabase *c
 		migrationDatabase.CurrentVersion = expectedVersion
 
 		err = company_system.UpdateEndRelease(
+			ctx,
 			credentials,
 			migrationDatabase.FullDatabaseName,
 			1,
@@ -296,7 +301,7 @@ func processDatabaseUp(credentials *sharding.DbCredentials, migrationDatabase *c
 }
 
 // выполнить миграцию таблиц мантикоры
-func DoMigrateManticore(credentials *sharding.DbCredentials, connection *sql.DB, spaceId int64, logItem *logger.Log) string {
+func DoMigrateManticore(ctx context.Context, credentials *sharding.DbCredentials, connection *sql.DB, spaceId int64, logItem *logger.Log) string {
 
 	// получаем таблицы мантикоры
 	manticoreTableList, err := getManticoreTableList()
@@ -310,7 +315,7 @@ func DoMigrateManticore(credentials *sharding.DbCredentials, connection *sql.DB,
 	// поочередено накатываем миграции на базы компании
 	for _, manticoreTable := range manticoreTableList.ManticoreTableList {
 
-		err = migrateManticoreTableUp(&manticoreTable, credentials, connection, spaceId, logItem)
+		err = migrateManticoreTableUp(ctx, &manticoreTable, credentials, connection, spaceId, logItem)
 		if err != nil {
 
 			return fmt.Sprintf("could not migrated manticore table, error: %v", err)
@@ -324,7 +329,7 @@ func DoMigrateManticore(credentials *sharding.DbCredentials, connection *sql.DB,
 
 // мигрируем отдельную таблицу мантикоры
 // @long
-func migrateManticoreTableUp(manticoreTable *manticoreTableSchemaStruct, credentials *sharding.DbCredentials, connection *sql.DB, spaceId int64, logItem *logger.Log) error {
+func migrateManticoreTableUp(ctx context.Context, manticoreTable *manticoreTableSchemaStruct, credentials *sharding.DbCredentials, connection *sql.DB, spaceId int64, logItem *logger.Log) error {
 
 	// получаем путь, где находятся файлы для миграций
 	path, isExist, err := getManticoreMigrationPath(manticoreTable.Name, migrationTypeManticore)
@@ -338,7 +343,7 @@ func migrateManticoreTableUp(manticoreTable *manticoreTableSchemaStruct, credent
 	}
 
 	// проверяем версию миграций
-	migrationDatabaseStruct, err := company_system.GetReleaseMigrationDatabase(credentials, manticoreTable.Name)
+	migrationDatabaseStruct, err := company_system.GetReleaseMigrationDatabase(ctx, credentials, manticoreTable.Name)
 	if err != nil {
 		return err
 	}
@@ -354,7 +359,7 @@ func migrateManticoreTableUp(manticoreTable *manticoreTableSchemaStruct, credent
 	// если накатываемой таблицы нет - создаём
 	if migrationDatabaseStruct.CreatedAt == 0 {
 
-		migrationDatabaseStruct, err = company_system.InsertReleaseMigrationDatabase(credentials, manticoreTable.Name, manticoreTable.Name)
+		migrationDatabaseStruct, err = company_system.InsertReleaseMigrationDatabase(ctx, credentials, manticoreTable.Name, manticoreTable.Name)
 		if err != nil {
 			return err
 		}
@@ -363,7 +368,7 @@ func migrateManticoreTableUp(manticoreTable *manticoreTableSchemaStruct, credent
 	}
 
 	// исполняем sql файлы миграции на таблицу
-	err = processManticoreUp(credentials, connection, spaceId, migrationDatabaseStruct, path, logItem)
+	err = processManticoreUp(ctx, credentials, connection, spaceId, migrationDatabaseStruct, path, logItem)
 	if err != nil {
 		return err
 	}
@@ -373,7 +378,7 @@ func migrateManticoreTableUp(manticoreTable *manticoreTableSchemaStruct, credent
 
 // запустить непосредественно процесс миграции на отдельной таблице мантикоры
 // @long
-func processManticoreUp(credentials *sharding.DbCredentials, connection *sql.DB, spaceId int64, migrationDatabase *company_system.MigrationDatabaseStruct, migrationPath string, logItem *logger.Log) error {
+func processManticoreUp(ctx context.Context, credentials *sharding.DbCredentials, connection *sql.DB, spaceId int64, migrationDatabase *company_system.MigrationDatabaseStruct, migrationPath string, logItem *logger.Log) error {
 
 	migrationSqlPath := "start"
 	expectedVersion := 0
@@ -394,6 +399,7 @@ func processManticoreUp(credentials *sharding.DbCredentials, connection *sql.DB,
 		migrationSqlPath = sqlPath
 
 		err = company_system.UpdateStartRelease(
+			ctx,
 			credentials,
 			migrationDatabase.FullDatabaseName,
 			0,
@@ -435,6 +441,7 @@ func processManticoreUp(credentials *sharding.DbCredentials, connection *sql.DB,
 		migrationDatabase.CurrentVersion = expectedVersion
 
 		err = company_system.UpdateEndRelease(
+			ctx,
 			credentials,
 			migrationDatabase.FullDatabaseName,
 			1,

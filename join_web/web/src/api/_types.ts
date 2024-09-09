@@ -8,22 +8,22 @@ export const CAPTCHA_PROVIDER_ENTERPRISE_GOOGLE = "enterprise_google";
 export const CAPTCHA_PROVIDER_YANDEX = "yandex_cloud";
 export const CAPTCHA_PROVIDER_DEFAULT = CAPTCHA_PROVIDER_ENTERPRISE_GOOGLE;
 
-export const APP_LINK_DESKTOP_MAC_OS_INTEL = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac.dmg";
+export const APP_LINK_DESKTOP_MAC_OS_INTEL = "apps/compass-on-premise-mac.dmg";
 export const APP_LINK_DESKTOP_MAC_OS_INTEL_BY_VERSION =
-	"https://update-onpremise.getcompass.ru/$VERSION/mac/Compass%20On-premise-$VERSION.dmg";
+	"$VERSION/mac/Compass%20On-premise-$VERSION.dmg";
 export const APP_LINK_DESKTOP_MAC_OS_ARM =
-	"https://update-onpremise.getcompass.ru/apps/compass-on-premise-mac-arm64.dmg";
+	"apps/compass-on-premise-mac-arm64.dmg";
 export const APP_LINK_DESKTOP_MAC_OS_ARM_BY_VERSION =
-	"https://update-onpremise.getcompass.ru/$VERSION/mac/Compass%20On-premise-arm64-$VERSION.dmg";
-export const APP_LINK_DESKTOP_WINDOWS = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-win.exe";
+	"$VERSION/mac/Compass%20On-premise-$VERSION-arm64.dmg";
+export const APP_LINK_DESKTOP_WINDOWS = "apps/compass-on-premise-win.exe";
 export const APP_LINK_DESKTOP_WINDOWS_BY_VERSION =
-	"https://update-onpremise.getcompass.ru/$VERSION/win/Compass%20On-premise%20Setup%20$VERSION.exe";
-export const APP_LINK_DESKTOP_LINUX_DEB = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.deb";
+	"$VERSION/win/Compass%20On-premise%20Setup%20$VERSION.exe";
+export const APP_LINK_DESKTOP_LINUX_DEB = "apps/compass-on-premise-linux.deb";
 export const APP_LINK_DESKTOP_LINUX_DEB_BY_VERSION =
-	"https://update-onpremise.getcompass.ru/linux/CompassOnPremise_$VERSION_amd64.deb";
-export const APP_LINK_DESKTOP_LINUX_TAR = "https://update-onpremise.getcompass.ru/apps/compass-on-premise-linux.tar";
+	"linux/CompassOnPremise_$VERSION_amd64.deb";
+export const APP_LINK_DESKTOP_LINUX_TAR = "apps/compass-on-premise-linux.tar";
 export const APP_LINK_DESKTOP_LINUX_TAR_BY_VERSION =
-	"https://update-onpremise.getcompass.ru/linux/CompassOnPremise_$VERSION_amd64.tar";
+	"linux/compass-linux.tar";
 export const APP_LINK_MOBILE_APP_STORE = "https://apps.apple.com/app/id6469516890";
 export const APP_LINK_MOBILE_GOOGLE_PLAY =
 	"https://play.google.com/store/apps/details?id=com.getcompass.android.enterprise";

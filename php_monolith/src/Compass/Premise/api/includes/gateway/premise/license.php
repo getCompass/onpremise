@@ -198,6 +198,10 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 		// получаем url
 		$url = self::_getUrl();
 
+		if (mb_strlen($url) < 1) {
+			return ["", []];
+		}
+
 		// совершаем запрос
 		return self::_doCall($url, $method, $params);
 	}
@@ -209,8 +213,12 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 	 */
 	protected static function _getUrl():string {
 
-		$premise__url          = getConfig("PREMISE_URL");
+		$premise_url           = getConfig("PREMISE_URL");
 		$premise_module_config = getConfig("PREMISE_MODULE");
-		return sprintf("%s%s", $premise__url["license"], $premise_module_config["license"]["path"]);
+		if (mb_strlen($premise_url["license"]) < 1) {
+			return "";
+		}
+
+		return sprintf("%s%s", $premise_url["license"], $premise_module_config["license"]["path"]);
 	}
 }

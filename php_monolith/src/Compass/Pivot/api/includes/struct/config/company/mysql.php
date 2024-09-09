@@ -25,7 +25,7 @@ class Struct_Config_Company_Mysql {
 			$config["host"],
 			$config["port"],
 			$config["user"],
-			$config["pass"]
+			$config["pass"],
 		);
 	}
 }

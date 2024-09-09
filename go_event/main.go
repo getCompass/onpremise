@@ -8,6 +8,7 @@ import (
 	"context"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 	"go_event/api/conf"
 	AppTask "go_event/api/includes/type/async_task"
 	AsyncTrap "go_event/api/includes/type/async_trap"
@@ -58,6 +59,13 @@ func main() {
 
 // стартуем микросервис
 func start() {
+
+	config := conf.GetConfig()
+	err := server.Init(config.ServerTagList)
+
+	if err != nil {
+		panic(err)
+	}
 
 	// регистрируем модификации пакетов для изоляций
 	CompanyConfig.IsolationReg()

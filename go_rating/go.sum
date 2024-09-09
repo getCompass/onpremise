@@ -55,12 +55,16 @@ github.com/getCompassUtils/company_protobuf_schemes v1.0.36 h1:3lBpChqQodTBZdscd
 github.com/getCompassUtils/company_protobuf_schemes v1.0.36/go.mod h1:dhaKBkLB2HPDB9GyyACV1Aes+9GucRmkw6k/iUmxqao=
 github.com/getCompassUtils/company_protobuf_schemes v1.0.37-0.20230705160430-feeccaaac0c3 h1:DmWJQ4D28ucF6wxnonFj+kIKX7KgROldsD2YFBkCrw4=
 github.com/getCompassUtils/company_protobuf_schemes v1.0.37-0.20230705160430-feeccaaac0c3/go.mod h1:dhaKBkLB2HPDB9GyyACV1Aes+9GucRmkw6k/iUmxqao=
+github.com/getCompassUtils/company_protobuf_schemes v1.1.1 h1:IMS1A02ry1J/qkl6WJNXHjHE/ULw6qejGXAB2R21r6Q=
+github.com/getCompassUtils/company_protobuf_schemes v1.1.1/go.mod h1:3udxr/8nx5CLjCQyHt/jxaJGqtHc+d5tdjXysMTC3TE=
 github.com/getCompassUtils/go_base_frame v0.2.81 h1:ma/IV9NBh9Jo5dQbzmLk3ZqZortBa13VNJBYT6k0JS8=
 github.com/getCompassUtils/go_base_frame v0.2.81/go.mod h1:WxYmBUr4CLOyT429OLxQSZwZeetAxApKNhQC0caIWds=
 github.com/getCompassUtils/go_base_frame v0.2.823 h1:bnmsO9HqE7j1fIJKBmFz9P2sb2aR/SyJkJ8S55TCatM=
 github.com/getCompassUtils/go_base_frame v0.2.823/go.mod h1:WxYmBUr4CLOyT429OLxQSZwZeetAxApKNhQC0caIWds=
 github.com/getCompassUtils/go_base_frame v1.0.0 h1:oDnUO6xv8N1EAv5QLMWy2FtwQhug5PZsknOLrHS5z+o=
 github.com/getCompassUtils/go_base_frame v1.0.0/go.mod h1:vixRV/CrY+4fVul190Cg9FeOEmdhF23C3P7P6VYcLoU=
+github.com/getCompassUtils/go_base_frame v1.0.2 h1:vVajf0baqrmlX4akCXDBiF2V8KQ1hcgnFXhTvqyaeS0=
+github.com/getCompassUtils/go_base_frame v1.0.2/go.mod h1:vixRV/CrY+4fVul190Cg9FeOEmdhF23C3P7P6VYcLoU=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=

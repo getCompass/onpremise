@@ -308,8 +308,8 @@ class Apiv2_Format {
 			case "media_conference":
 
 				$data = [
-					"conference_id" => (string) $prepared_message["data"]["conference_id"],
-					"conference_accept_status"        => (string) $prepared_message["data"]["conference_accept_status"],
+					"conference_id"            => (string) $prepared_message["data"]["conference_id"],
+					"conference_accept_status" => (string) $prepared_message["data"]["conference_accept_status"],
 					"conference_link"          => (string) $prepared_message["data"]["conference_link"],
 				];
 
@@ -537,7 +537,7 @@ class Apiv2_Format {
 				"day_start_string" => (string) $item["data"]["day_start_string"],
 				"sender_type"      => (string) ($item["data"]["sender_type"] ?? Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_USER_SENDER),
 			],
-			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_RESPECT => [
+			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_RESPECT      => [
 				"receiver_user_id" => (int) $item["data"]["receiver_user_id"],
 				"receiver_name"    => (string) ($item["data"]["receiver_name"] ?? ""),
 				"respect_id"       => (int) $item["data"]["respect_id"],
@@ -549,11 +549,11 @@ class Apiv2_Format {
 				"exactingness_id"  => (int) ($item["data"]["exactingness_id"] ?? 0),
 				"sender_name"      => (string) ($item["data"]["sender_name"] ?? ""),
 			],
-			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_ACHIEVEMENT => [
+			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_ACHIEVEMENT  => [
 				"receiver_user_id" => (int) $item["data"]["receiver_user_id"],
 				"achievement_id"   => (int) $item["data"]["achievement_id"],
 			],
-			default => [],
+			default                                                                 => [],
 		};
 	}
 
@@ -1397,8 +1397,8 @@ class Apiv2_Format {
 			$output[] = match ($search_location["type"]) {
 
 				Domain_Search_Entity_Conversation_Location::API_LOCATION_TYPE => static::searchLocationListConversation($search_location),
-				Domain_Search_Entity_Thread_Location::API_LOCATION_TYPE => static::searchLocationListThread($search_location),
-				default => throw new ParseFatalException("got unknown location")
+				Domain_Search_Entity_Thread_Location::API_LOCATION_TYPE       => static::searchLocationListThread($search_location),
+				default                                                       => throw new ParseFatalException("got unknown location")
 			};
 		}
 
@@ -1448,8 +1448,8 @@ class Apiv2_Format {
 			$output[] = match ($search_hit["type"]) {
 
 				Domain_Search_Entity_ConversationMessage_Hit::API_HIT_TYPE => static::searchHitListConversationMessage($search_hit),
-				Domain_Search_Entity_ThreadMessage_Hit::API_HIT_TYPE => static::searchHitListThreadMessage($search_hit),
-				default => throw new ParseFatalException("got unknown hit")
+				Domain_Search_Entity_ThreadMessage_Hit::API_HIT_TYPE       => static::searchHitListThreadMessage($search_hit),
+				default                                                    => throw new ParseFatalException("got unknown hit")
 			};
 		}
 
@@ -1507,7 +1507,7 @@ class Apiv2_Format {
 			],
 
 			// передан неизвестный родитель
-			default => throw new ParseFatalException("got unknown hit")
+			default                                                => throw new ParseFatalException("got unknown hit")
 		};
 	}
 
@@ -1558,6 +1558,29 @@ class Apiv2_Format {
 			"conversation_map" => (string) $conversation_map,
 			"thread_meta_list" => (array) $thread_meta_list,
 			"thread_menu_list" => (array) $thread_menu_list,
+		];
+	}
+
+	/**
+	 * получаем форматированный итем для метода conversations/invites/addBatching
+	 */
+	public static function addBatchingInvites(array $list_ok, array $list_error):array {
+
+		return [
+			"list_ok"    => (array) $list_ok,
+			"list_error" => (array) $list_error,
+		];
+	}
+
+	/**
+	 * получаем форматированный итем для метода conversations/invites/addBatchingForGroups
+	 */
+	public static function addBatchingForGroupsInvites(int $is_sent, array $list_ok, array $list_error):array {
+
+		return [
+			"is_sent"    => (int) $is_sent,
+			"list_ok"    => (array) $list_ok,
+			"list_error" => (array) $list_error,
 		];
 	}
 }

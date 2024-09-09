@@ -14,9 +14,7 @@ class Gateway_Db_CompanyConversation_InviteGroupViaSingle extends Gateway_Db_Com
 	// -------------------------------------------------------
 
 	// метод для создание записи с ивайтом в таблице
-	public static function create(int $user_id, int $sender_user_id, array $group_meta_row, string $single_conversation_map, string $invite_map, int $created_at):array {
-
-		$status = Type_Invite_Handler::STATUS_ACTIVE;
+	public static function create(int $user_id, int $sender_user_id, int $status, array $group_meta_row, string $single_conversation_map, string $invite_map, int $created_at):array {
 
 		if (Type_Conversation_Meta_Users::isMember($user_id, $group_meta_row["users"])) {
 			$status = Type_Invite_Handler::STATUS_INACTIVE;

@@ -8,6 +8,7 @@ import (
 	"context"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 	"go_company_cache/api/conf"
 	"go_company_cache/api/global_observer"
 	GlobalIsolation "go_company_cache/api/includes/type/global_isolation"
@@ -28,6 +29,17 @@ func main() {
 	flags.Parse()
 
 	config, err := conf.GetConfig()
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = server.Init(config.ServerTagList)
+
+	if err != nil {
+		panic(err)
+	}
+
 	ctx := context.Background()
 
 	// врубаем ендпоинт для профайлера на тестовом

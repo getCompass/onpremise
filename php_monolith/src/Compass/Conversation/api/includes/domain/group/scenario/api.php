@@ -198,8 +198,6 @@ class Domain_Group_Scenario_Api {
 	 * Продублировать группу
 	 *
 	 * @param int    $user_id
-	 * @param int    $role
-	 * @param int    $permissions
 	 * @param string $conversation_map
 	 * @param string $name
 	 * @param string $avatar_file_map
@@ -217,7 +215,7 @@ class Domain_Group_Scenario_Api {
 	 * @throws ParseFatalException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public static function copy(int $user_id, int $role, int $permissions, string $conversation_map, string $name, string $avatar_file_map, string $description, array $excluded_user_id_list):array {
+	public static function copy(int $user_id, string $conversation_map, string $name, string $avatar_file_map, string $description, array $excluded_user_id_list):array {
 
 		// проверяем ограничение на создание группы
 		Domain_Member_Entity_Permission::check($user_id, Permission::IS_ADD_GROUP_ENABLED);
@@ -264,6 +262,80 @@ class Domain_Group_Scenario_Api {
 
 		return Type_Conversation_Utils::prepareConversationForFormat($meta_row, $left_menu_row);
 	}
+
+	/**
+	 * Продублировать группу c добавлением пользователей в неё
+	 *
+	 * @param int    $user_id
+	 * @param string $conversation_map
+	 * @param string $name
+	 * @param string $avatar_file_map
+	 * @param string $description
+	 * @param array  $excluded_user_id_list
+	 *
+	 * @return array
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
+	 * @throws Domain_Group_Exception_InvalidFileForAvatar
+	 * @throws Domain_Group_Exception_InvalidName
+	 * @throws Domain_Group_Exception_NameContainsEmoji
+	 * @throws Domain_Member_Exception_ActionNotAllowed
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws \cs_RowIsEmpty|cs_PlatformNotFound
+	 */
+	public static function copyWithUsers(int $user_id, string $conversation_map, string $name, string $avatar_file_map, string $description, array $excluded_user_id_list):array {
+
+		// проверяем ограничение на создание группы
+		Domain_Member_Entity_Permission::check($user_id, Permission::IS_ADD_GROUP_ENABLED);
+
+		// форматируем название группового диалога
+		[$name, $description] = self::_validateGroupFields($name, $avatar_file_map, $description);
+
+		// получаем мету диалога
+		$meta_row = Type_Conversation_Meta::get($conversation_map);
+
+		// выбрасываем ошибку, если пользователь не может изменить информацию о группе
+		if (!Type_Conversation_Meta_Users::isGroupAdmin($user_id, $meta_row["users"])) {
+			throw new Domain_Member_Exception_ActionNotAllowed("Action not allowed");
+		}
+
+		// получаем пользователей состоящих в диалоге (кроме себя)
+		$user_id_list = [];
+		foreach ($meta_row["users"] as $invited_user_id => $_) {
+
+			if ($user_id !== $invited_user_id && Type_Conversation_Meta_Users::isMember($invited_user_id, $meta_row["users"])) {
+				$user_id_list[] = $invited_user_id;
+			}
+		}
+
+		// удаляем исключенных пользователей
+		if (count($excluded_user_id_list) > 0) {
+			$user_id_list = array_diff($user_id_list, $excluded_user_id_list);
+		}
+
+		// фильтруем массив пользователей
+		$user_id_list = self::_filterInvitedUserList($user_id_list);
+
+		// создаем групповой диалог
+		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description);
+
+		// получаем запись из левого меню
+		$left_menu_row = Type_Conversation_LeftMenu::get($user_id, $meta_row["conversation_map"]);
+
+		if (count($user_id_list) > 0) {
+
+			// пушим событие на создание и отправку инвайта списку пользователей
+			$platform = Type_Api_Platform::getPlatform();
+			Gateway_Event_Dispatcher::dispatch(Type_Event_Invite_CreateAndSendAutoAcceptInvite::create($user_id, $user_id_list, $meta_row, $platform));
+		}
+
+		return Type_Conversation_Utils::prepareConversationForFormat($meta_row, $left_menu_row);
+	}
+
+	// -------------------------------------------------------
+	// PROTECTED
+	// -------------------------------------------------------
 
 	/**
 	 * Провалидировать поля группы

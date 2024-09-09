@@ -8,6 +8,7 @@ import (
 	"context"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 	"go_company/api/conf"
 	"go_company/api/global_observer"
 	GlobalIsolation "go_company/api/includes/type/global_isolation"
@@ -28,6 +29,17 @@ func main() {
 	flags.Parse()
 
 	config, err := conf.GetConfig()
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = server.Init(config.ServerTagList)
+
+	if err != nil {
+		panic(err)
+	}
+
 	ctx := context.Background()
 
 	// если не спраисил конфиг то падаем, делать нечего)

@@ -13,8 +13,7 @@ import (
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_rating/api/conf"
 	Isolation "go_rating/api/includes/type/isolation"
-	"io/fs"
-	"io/ioutil"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -30,12 +29,16 @@ var isolationList = map[int64]*Isolation.Isolation{}
 // @long
 func UpdateWorldConfig() {
 
-	if !checkTimeStamp() {
+	globalConfig := conf.GetConfig()
+
+	timestampFilename := ".timestamp.json"
+
+	if !checkFileTimeStamp(globalConfig, timestampFilename) {
 		return
 	}
 
 	startedAt := time.Now()
-	files, err := ioutil.ReadDir(conf.GetConfig().WorldConfigPath)
+	files, err := os.ReadDir(globalConfig.WorldConfigPath)
 
 	if err != nil {
 		panic(err)
@@ -57,7 +60,7 @@ func UpdateWorldConfig() {
 
 		// если файл с конфигом нормальный, но не обновился,
 		// то ничего не делаем с компанией
-		if !checkFileTimeStamp(file) {
+		if !checkFileTimeStamp(globalConfig, file.Name()) {
 
 			servedCompanyIdMap[companyId] = true
 			continue
@@ -87,7 +90,7 @@ func UpdateWorldConfig() {
 }
 
 // получает ид компании из имени файла
-func getCompanyIdByFileName(file fs.FileInfo) (int64, error) {
+func getCompanyIdByFileName(file os.DirEntry) (int64, error) {
 
 	splitString := strings.Split(file.Name(), "_")
 	if len(splitString) != 2 || splitString[1] != "company.json" {

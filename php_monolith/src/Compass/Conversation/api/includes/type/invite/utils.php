@@ -222,6 +222,11 @@ class Type_Invite_Utils {
 			return true;
 		}
 
+		// если статус auto_accepted и is_member = 1
+		if ($invite_row["status"] == Type_Invite_Handler::STATUS_AUTO_ACCEPTED && $is_member) {
+			return true;
+		}
+
 		return false;
 	}
 

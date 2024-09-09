@@ -1750,7 +1750,7 @@ class Type_Conversation_Message_Handler_Default {
 				};
 
 			case CONVERSATION_MESSAGE_TYPE_INVITE:
-				return "🤝 приглашение";
+				return "Добавление в группу";
 
 			case CONVERSATION_MESSAGE_TYPE_QUOTE:
 			case CONVERSATION_MESSAGE_TYPE_MASS_QUOTE:

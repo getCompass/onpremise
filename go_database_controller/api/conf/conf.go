@@ -34,6 +34,10 @@ type ConfigStruct struct {
 	BackupSshFileKeyFilePath           string `json:"backup_ssh_key_file_path"`                 // имя файла-ключа, который используется для общение между домино при снятии бекапов/дампов
 	DominoMysqlInnodbFlushMethod       string `json:"domino_mysql_innodb_flush_method"`         // параметр innodb_flush_method устанавливаемый в mysql_daemon.cnf.tpl каждого тира
 	DominoMysqlInnodbFlushLogAtTimeout int    `json:"domino_mysql_innodb_flush_log_at_timeout"` // параметр mysql_innodb_flush_log_at_timeout устанавливаемый в mysql_daemon.cnf.tpl каждого тира
+	MysqlHostCertificate               string `json:"mysql_host_certificate"`
+	MysqlHostPrivateKey                string `json:"mysql_host_private_key"`
+	DominoSecretKey                    string `json:"domino_secret_key"`
+	DominoNetwork                      string `json:"domino_network"`
 }
 
 // переменная содержащая конфигурацию

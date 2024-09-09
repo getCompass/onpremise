@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"time"
 )
 
 // ConfigStruct структура конфига
@@ -30,7 +31,12 @@ type ConfigStruct struct {
 
 	CapacityLimit   int    `json:"capacity_limit"`
 	WorldConfigPath string `json:"world_config_path"`
+
+	ServerTagList                       []string      `json:"server_tag_list"`
+	ForceCompanyConfigUpdateIntervalSec time.Duration `json:"force_company_config_update_interval_sec"`
 }
+
+var config *ConfigStruct = nil
 
 // -------------------------------------------------------
 // PUBLIC
@@ -39,11 +45,15 @@ type ConfigStruct struct {
 // GetConfig получаем конфигурацию custom
 func GetConfig() (*ConfigStruct, error) {
 
+	if config != nil {
+		return config, nil
+	}
+
 	tempPath := flags.ConfDir
 	if tempPath == "" {
 
 		_, b, _, _ := runtime.Caller(0)
-		tempPath = path.Join(path.Dir(b))
+		tempPath = path.Join(path.Dir(b)) // nosemgrep
 	}
 
 	// сохраняем конфигурацию
@@ -51,6 +61,8 @@ func GetConfig() (*ConfigStruct, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	config = decodedInfo
 
 	return decodedInfo, nil
 }

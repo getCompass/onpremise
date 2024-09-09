@@ -177,6 +177,9 @@ func (mainStore *MainStorage) Dec(userId int64, eventId int64, value int) {
 	// анлочим после выполнения функции
 	defer mainStore.mu.Unlock()
 
+	if _, isExist := mainStore.countGroupedByUserIdAndEventId[eventId]; !isExist {
+		return
+	}
 	mainStore.countGroupedByUserIdAndEventId[eventId].mu.Lock()
 
 	// декрементим значения

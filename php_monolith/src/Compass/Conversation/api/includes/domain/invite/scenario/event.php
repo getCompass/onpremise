@@ -60,4 +60,24 @@ class Domain_Invite_Scenario_Event {
 			}
 		}
 	}
+
+	/**
+	 * создаем и отправляем инвайт списку пользователей
+	 *
+	 * @throws \busException
+	 */
+	#[Type_Attribute_EventListener(Type_Event_Invite_CreateAndSendAutoAcceptInvite::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
+	public static function createAndSendAutoAcceptedInviteForUserIdList(Struct_Event_Invite_CreateAndSendAutoAcceptInvite $event_data):void {
+
+		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList($event_data->user_id_list);
+
+		foreach ($user_info_list as $user_info) {
+
+			try {
+				Domain_Invite_Action_SendAutoAccepted::run($event_data->sender_user_id, $user_info, $event_data->meta_row, $event_data->platform, false);
+			} catch (cs_InviteIsDuplicated) {
+				continue;
+			}
+		}
+	}
 }

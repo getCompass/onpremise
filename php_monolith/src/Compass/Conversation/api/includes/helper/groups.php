@@ -190,7 +190,7 @@ class Helper_Groups {
 	// бросаем экзепшен если статус не accepted
 	protected static function _throwIfInviteIsNotAccepted(array $invite_row):void {
 
-		if ($invite_row["status"] != Type_Invite_Handler::STATUS_ACCEPTED) {
+		if ($invite_row["status"] != Type_Invite_Handler::STATUS_ACCEPTED && $invite_row["status"] != Type_Invite_Handler::STATUS_AUTO_ACCEPTED) {
 			throw new ParseFatalException(__METHOD__ . " invite is not accepted");
 		}
 	}

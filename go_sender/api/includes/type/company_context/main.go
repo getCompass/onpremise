@@ -6,19 +6,22 @@ import (
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_sender/api/conf"
 	GlobalIsolation "go_sender/api/includes/type/global_isolation"
-	"io/ioutil"
+	"os"
 	"strings"
 )
 
 // UpdateWorldConfig получаем конфигурацию custom
 func UpdateWorldConfig(globalIsolation *GlobalIsolation.GlobalIsolation) (map[int64]*conf.CompanyConfigStruct, map[int64]struct{}, error) {
 
-	isNeedUpdate := checkTimeStamp(globalIsolation.GetConfig().WorldConfigPath)
-	if !isNeedUpdate {
+	globalConfig := globalIsolation.GetConfig()
+
+	timestampFilename := ".timestamp.json"
+
+	if !checkFileTimeStamp(globalConfig, timestampFilename) {
 		return nil, nil, nil
 	}
 
-	files, err := ioutil.ReadDir(globalIsolation.GetConfig().WorldConfigPath)
+	files, err := os.ReadDir(globalConfig.WorldConfigPath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -48,7 +51,7 @@ func UpdateWorldConfig(globalIsolation *GlobalIsolation.GlobalIsolation) (map[in
 
 		allCompanyList[companyId] = struct{}{}
 
-		isNeedUpdate := checkFileTimeStamp(file)
+		isNeedUpdate := checkFileTimeStamp(globalConfig, file.Name())
 		if !isNeedUpdate {
 			continue
 		}

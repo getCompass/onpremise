@@ -13,12 +13,15 @@ import (
 // UpdateWorldConfig получаем конфигурацию custom
 func UpdateWorldConfig(globalIsolation *GlobalIsolation.GlobalIsolation) (map[int64]*conf.CompanyConfigStruct, error) {
 
-	isNeedUpdate := checkTimeStamp(globalIsolation.GetConfig().WorldConfigPath)
-	if !isNeedUpdate {
+	globalConfig := globalIsolation.GetConfig()
+
+	timestampFilename := ".timestamp.json"
+
+	if !checkFileTimeStamp(globalConfig, timestampFilename) {
 		return nil, nil
 	}
 
-	files, err := os.ReadDir(globalIsolation.GetConfig().WorldConfigPath)
+	files, err := os.ReadDir(globalConfig.WorldConfigPath)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +29,7 @@ func UpdateWorldConfig(globalIsolation *GlobalIsolation.GlobalIsolation) (map[in
 	configList := make(map[int64]*conf.CompanyConfigStruct)
 	for _, file := range files {
 
-		isNeedUpdate := checkFileTimeStamp(globalIsolation.GetConfig().WorldConfigPath, file)
+		isNeedUpdate := checkFileTimeStamp(globalConfig, file.Name())
 		if !isNeedUpdate {
 			continue
 		}

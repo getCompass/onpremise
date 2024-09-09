@@ -1,64 +1,53 @@
 package companyContext
 
 import (
-	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
+	"go_company/api/conf"
 	"os"
 	"strings"
 	"time"
 )
 
 type worldConfigItem struct {
-	lastUpdatedConfig time.Time
+	configModifiedAt time.Time
+	configUpdatedAt  time.Time
 }
 
-var worldConfigModifiedTime time.Time
 var worldConfigStore = make(map[string]worldConfigItem)
 
-// проверяем изменился ли timestamp
-func checkTimeStamp(worldConfigPath string) bool {
-
-	filename := ".timestamp.json"
-
-	// получаем файл время изменения которого мне нужно
-	timestamp, err := os.Stat(fmt.Sprintf("%s/%s", worldConfigPath, filename))
-
-	if err != nil {
-
-		log.Errorf(err.Error())
-		return false
-	}
-
-	// получаем время изменения и сверяем
-	modifiedTime := timestamp.ModTime()
-	if worldConfigModifiedTime.Equal(modifiedTime) {
-		return false
-	}
-
-	worldConfigModifiedTime = modifiedTime
-	return true
-}
-
 // проверяем файл с конфигом компании
-func checkFileTimeStamp(filePath string, file os.DirEntry) bool {
+func checkFileTimeStamp(globalConfig *conf.ConfigStruct, fileName string) bool {
 
-	if !strings.Contains(file.Name(), ".json") {
+	if !strings.Contains(fileName, ".json") {
 		return false
 	}
 
 	// получаем актуальные данные для файла
-	fileInfo, err := os.Stat(filePath + "/" + file.Name())
+	fileInfo, err := os.Stat(globalConfig.WorldConfigPath + "/" + fileName)
 	if err != nil {
 		return false
 	}
 
-	config, ok := worldConfigStore[fileInfo.Name()]
-	if ok && config.lastUpdatedConfig.Equal(fileInfo.ModTime()) {
+	isNeedUpdate := false
+	worldConfig, ok := worldConfigStore[fileInfo.Name()]
+
+	if !ok || !worldConfig.configModifiedAt.Equal(fileInfo.ModTime()) {
+		isNeedUpdate = true
+	}
+
+	forceUpdateInterval := globalConfig.ForceCompanyConfigUpdateIntervalSec * time.Second
+
+	if ok && server.IsOnPremise() && worldConfig.configUpdatedAt.Before(time.Now().Add(-forceUpdateInterval)) {
+		isNeedUpdate = true
+	}
+
+	if !isNeedUpdate {
 		return false
 	}
 
 	worldConfigStore[fileInfo.Name()] = worldConfigItem{
-		lastUpdatedConfig: fileInfo.ModTime(),
+		configModifiedAt: fileInfo.ModTime(),
+		configUpdatedAt:  time.Now(),
 	}
 
 	return true

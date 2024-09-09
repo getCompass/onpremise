@@ -33,6 +33,8 @@ import {
 	MOBILE_PLATFORM_IOS,
 } from "../api/_types.ts";
 import useDownloadLink from "../lib/useDownloadLink.ts";
+import {useAtomValue} from "jotai/index";
+import {downloadAppUrlState} from "../api/_stores";
 
 const Footer = () => {
 	const currentYear = useMemo(() => dayjs.unix(dayjs().unix()).format("YYYY"), []);
@@ -335,10 +337,11 @@ export default function PageInstallDesktop() {
 	const langStringPageSupportBlockTelegram = useLangString("install_page.desktop.page.support_block.telegram");
 	const langStringPageSupportBlockMail = useLangString("install_page.desktop.page.support_block.mail");
 	const { getDownloadLink } = useDownloadLink();
+	const downloadAppUrl = useAtomValue(downloadAppUrlState);
 
 	const onSelectPlatform = useCallback((value: string) => {
 		window.location.href = getDownloadLink(value);
-	}, []);
+	}, [downloadAppUrl]);
 
 	return (
 		<>

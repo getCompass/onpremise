@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
-	"go_database_controller/api/conf"
 	"go_database_controller/api/includes/type/db/company"
 	"go_database_controller/api/includes/type/db/domino_service"
 	"go_database_controller/api/includes/type/logger"
@@ -269,7 +268,7 @@ func isPortAlive(port *port_registry.PortRegistryStruct, needInit bool) error {
 		password = "root"
 	}
 
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/", user, password, conf.GetConfig().MysqlCompanyHost, port.Port))
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/", user, password, company.GetCompanyHost(port.Port), port.Port))
 	defer db.Close()
 	if err != nil {
 		return err

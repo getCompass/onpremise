@@ -67,6 +67,17 @@ class Domain_Ldap_Entity_Config {
 	}
 
 	/**
+	 * получаем user_search_filter из конфига LDAP
+	 *
+	 * @return string
+	 */
+	public static function getUserSearchFilter():string {
+
+		$config = getConfig(self::_KEY);
+		return $config["user_search_filter"];
+	}
+
+	/**
 	 * включен ли мониторинг удаления / блокировки учетной записи LDAP для запуска автоматической блокировки связанного пользователя в Compass
 	 *
 	 * @return bool

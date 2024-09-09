@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"go_database_controller/api/conf"
+	"go_database_controller/api/includes/type/db/company"
 	"go_database_controller/api/includes/type/port_registry"
 	"go_database_controller/api/includes/type/templ"
 	"io/ioutil"
@@ -12,6 +13,7 @@ import (
 
 // данные для подстановки в блок демона в шаблоне
 type MysqlConfBlockStruct struct {
+	Host   string `json:"host"`
 	Port   int32  `json:"port"`
 	DbPath string `json:"db_path"`
 }
@@ -19,9 +21,11 @@ type MysqlConfBlockStruct struct {
 // данные для подстановки в шаблон
 type templateStruct struct {
 	RegistryServicePath string
+	DominoNetwork       string `json:"domino_network"`
 	ConfPath            string `json:"conf_path"`
 	MysqlConfBlockList  []*MysqlConfBlockStruct
 	DominoId            string `json:"domino_id"`
+	StackNamePrefix     string `json:"stack_name_prefix"`
 }
 
 // мьютексы для защиты от гонок; не защищают от косяков,
@@ -59,10 +63,12 @@ func GenerateComposeConfig(portList []*port_registry.PortRegistryStruct) error {
 	defer file.Close()
 
 	return templ.WriteToFile(file, t, &templateStruct{
+		DominoNetwork:       conf.GetConfig().DominoNetwork,
 		RegistryServicePath: conf.GetConfig().RegistryServicePath,
 		MysqlConfBlockList:  makePortBlockData(portList),
 		ConfPath:            confPath,
 		DominoId:            conf.GetConfig().DominoId,
+		StackNamePrefix:     conf.GetConfig().StackNamePrefix,
 	})
 }
 
@@ -82,6 +88,7 @@ func makePortBlockData(portList []*port_registry.PortRegistryStruct) []*MysqlCon
 
 		// составляем объект, из которого будем составлять конфиг
 		mysqlConfBlockList = append(mysqlConfBlockList, &MysqlConfBlockStruct{
+			Host:   company.GetCompanyHost(port.Port),
 			Port:   port.Port,
 			DbPath: getDataDirPath(port.CompanyId),
 		})

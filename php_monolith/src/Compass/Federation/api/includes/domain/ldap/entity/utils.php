@@ -22,13 +22,23 @@ class Domain_Ldap_Entity_Utils {
 	}
 
 	/**
-	 * форматируем user_search_filter, подставляя значение для поиска по фильтру
+	 * формируем user_search_filter на основе
 	 *
 	 * @return string
 	 */
-	public static function formatUserFilter(string $user_unique_attribute, string $user_unique_attribute_value):string {
+	public static function formatUserFilterByUniqueAttribute(string $user_unique_attribute, string $user_unique_attribute_value):string {
 
 		return sprintf("(&(|(objectCategory=person)(objectClass=person))(%s=%s))", $user_unique_attribute, $user_unique_attribute_value);
+	}
+
+	/**
+	 * формируем user_search_filter на основе
+	 *
+	 * @return string
+	 */
+	public static function formatUserFilter(string $filter, string $user_unique_attribute_value):string {
+
+		return format($filter, ["0" => $user_unique_attribute_value]);
 	}
 
 	/**

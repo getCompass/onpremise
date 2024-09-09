@@ -25,7 +25,7 @@ func CreateUserOnEmptyDb(port *port_registry.PortRegistryStruct) error {
 	}
 
 	// получаем параметры подключения к базе данных
-	connection, err := sql.Open("mysql", fmt.Sprintf("root:root@tcp(%s:%d)/", conf.GetConfig().MysqlCompanyHost, port.Port))
+	connection, err := sql.Open("mysql", fmt.Sprintf("root:root@tcp(%s:%d)/", GetCompanyHost(port.Port), port.Port))
 	if err != nil {
 		return err
 	}
@@ -197,4 +197,9 @@ func CreateDatabase(credentials *sharding.DbCredentials, dbKey string) error {
 	}
 
 	return nil
+}
+
+func GetCompanyHost(port int32) string {
+
+	return fmt.Sprintf("%s-%d", conf.GetConfig().DominoId, port)
 }

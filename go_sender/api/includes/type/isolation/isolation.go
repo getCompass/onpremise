@@ -202,7 +202,7 @@ func MakeIsolation(ctx context.Context, companyId int64, companyConfig *conf.Com
 		TokenStore:              token.MakeStore(),
 	}
 
-	if companyId == 0 {
+	if companyId < 1 {
 		isolation.UserConnectionStore = ws.MakeUserConnectionStore(globalIsolation.BalancerConn)
 	} else {
 		isolation.UserConnectionStore = ws.MakeUserConnectionStore(globalIsolation.EmptyBalancerConn)

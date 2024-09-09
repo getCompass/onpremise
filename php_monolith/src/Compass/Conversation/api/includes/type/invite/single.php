@@ -46,7 +46,9 @@ class Type_Invite_Single extends Type_Invite_Default {
 		$invite_map = \CompassApp\Pack\Invite::doPack($shard_id, $meta_id, SINGLE_INVITE_TO_GROUP);
 
 		// создаем запись во всех базах
-		$invite_row = Gateway_Db_CompanyConversation_InviteGroupViaSingle::create($user_id, $sender_user_id, $group_meta_row, $single_conversation_map, $invite_map, $created_at);
+		$invite_row = Gateway_Db_CompanyConversation_InviteGroupViaSingle::create(
+			$user_id, $sender_user_id, Type_Invite_Handler::STATUS_ACTIVE, $group_meta_row, $single_conversation_map, $invite_map, $created_at
+		);
 		Gateway_Db_CompanyConversation_ConversationInviteList::insert(
 			$user_id,
 			$sender_user_id,
@@ -74,7 +76,7 @@ class Type_Invite_Single extends Type_Invite_Default {
 
 			self::_doIncrementCountSenderActiveInviteIfNeed($invite_row["conversation_map"], $invite_row["sender_user_id"]);
 			self::_updateInvite($invite_row, $user_id, $meta_row, Type_Invite_Handler::STATUS_ACTIVE);
-		} catch (cs_InviteStatusIsNotExpected | \ErrorException | cs_InviteActiveSendLimitIsExceeded $e) {
+		} catch (cs_InviteStatusIsNotExpected|\ErrorException|cs_InviteActiveSendLimitIsExceeded $e) {
 
 			Gateway_Db_CompanyConversation_Main::rollback();
 			throw new $e();
@@ -99,7 +101,7 @@ class Type_Invite_Single extends Type_Invite_Default {
 
 			self::_doDecrementCountSenderActiveInviteIfNeed($invite_row["conversation_map"], $invite_row["sender_user_id"], $invite_row["status"]);
 			self::_updateInvite($invite_row, $user_id, $meta_row, $status_inactive, $inactive_reason, $is_remove_user);
-		} catch (cs_InviteStatusIsNotExpected | \ErrorException | cs_InviteActiveSendLimitIsExceeded $e) {
+		} catch (cs_InviteStatusIsNotExpected|\ErrorException|cs_InviteActiveSendLimitIsExceeded $e) {
 
 			Gateway_Db_CompanyConversation_Main::rollback();
 			throw new $e();
@@ -123,7 +125,38 @@ class Type_Invite_Single extends Type_Invite_Default {
 
 			self::_doDecrementCountSenderActiveInviteIfNeed($invite_row["group_conversation_map"], $invite_row["sender_user_id"], $invite_row["status"]);
 			self::_updateInvite($invite_row, $user_id, $meta_row, Type_Invite_Handler::STATUS_ACCEPTED);
-		} catch (cs_InviteStatusIsNotExpected | \ErrorException | cs_InviteActiveSendLimitIsExceeded $e) {
+		} catch (cs_InviteStatusIsNotExpected|\ErrorException|cs_InviteActiveSendLimitIsExceeded $e) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			throw new $e();
+		}
+
+		Gateway_Db_CompanyConversation_Main::commitTransaction();
+	}
+
+	/**
+	 * пометить приглашение авто-принятым
+	 *
+	 * @throws ReturnFatalException
+	 * @throws \ErrorException
+	 * @throws cs_InviteActiveSendLimitIsExceeded
+	 * @throws cs_InviteStatusIsNotExpected
+	 */
+	public static function setAutoAccepted(array $invite_row, int $user_id, array $meta_row):void {
+
+		// если статус инвайта и так accepted
+		if ($invite_row["status"] == Type_Invite_Handler::STATUS_AUTO_ACCEPTED) {
+			return;
+		}
+
+		Gateway_Db_CompanyConversation_Main::beginTransaction();
+
+		// декрементим счетчик активных инвайтов и апдейтим все записи инвайтов
+		try {
+
+			self::_doDecrementCountSenderActiveInviteIfNeed($invite_row["conversation_map"], $invite_row["sender_user_id"], $invite_row["status"]);
+			self::_updateInvite($invite_row, $user_id, $meta_row, Type_Invite_Handler::STATUS_AUTO_ACCEPTED);
+		} catch (cs_InviteStatusIsNotExpected|\ErrorException|cs_InviteActiveSendLimitIsExceeded $e) {
 
 			Gateway_Db_CompanyConversation_Main::rollback();
 			throw new $e();
@@ -147,7 +180,7 @@ class Type_Invite_Single extends Type_Invite_Default {
 
 			self::_doDecrementCountSenderActiveInviteIfNeed($conversation_map, $invite_row["sender_user_id"], $invite_row["status"]);
 			self::_updateInvite($invite_row, $user_id, $meta_row, Type_Invite_Handler::STATUS_DECLINED);
-		} catch (cs_InviteStatusIsNotExpected | \ErrorException | cs_InviteActiveSendLimitIsExceeded $e) {
+		} catch (cs_InviteStatusIsNotExpected|\ErrorException|cs_InviteActiveSendLimitIsExceeded $e) {
 
 			Gateway_Db_CompanyConversation_Main::rollback();
 			throw new $e();
@@ -171,7 +204,7 @@ class Type_Invite_Single extends Type_Invite_Default {
 
 			self::_doDecrementCountSenderActiveInviteIfNeed($invite_row["conversation_map"], $invite_row["sender_user_id"], $invite_row["status"]);
 			self::_updateInvite($invite_row, $user_id, $meta_row, Type_Invite_Handler::STATUS_REVOKED);
-		} catch (cs_InviteStatusIsNotExpected | \ErrorException | cs_InviteActiveSendLimitIsExceeded $e) {
+		} catch (cs_InviteStatusIsNotExpected|\ErrorException|cs_InviteActiveSendLimitIsExceeded $e) {
 
 			Gateway_Db_CompanyConversation_Main::rollback();
 			throw new $e();

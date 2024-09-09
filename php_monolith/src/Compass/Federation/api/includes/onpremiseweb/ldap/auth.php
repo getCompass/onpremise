@@ -31,6 +31,8 @@ class Onpremiseweb_Ldap_Auth extends \BaseFrame\Controller\Api {
 			return $this->error(1708001, "invalid username or password");
 		} catch (Domain_Ldap_Exception_ProtocolError_UnwillingToPerform) {
 			return $this->error(1708002, "LDAP provider unwilling to perform this action");
+		} catch (Domain_Ldap_Exception_ProtocolError_FilterError) {
+			return $this->error(1708003, "incorrect ldap.user_search_filter");
 		} catch (Domain_Ldap_Exception_ProtocolError) {
 			throw new ParseFatalException("unepxected error");
 		} catch (BlockException $e) {

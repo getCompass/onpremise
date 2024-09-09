@@ -5,6 +5,7 @@ import (
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_database_controller/api/conf"
+	"go_database_controller/api/includes/type/db/company"
 	"go_database_controller/api/includes/type/port_registry"
 	"go_database_controller/api/includes/type/sh"
 	"net"
@@ -32,6 +33,41 @@ func Start(portValue int32) error {
 
 	time.Sleep(500 * time.Millisecond)
 
+	err = UpdateDeployment()
+
+	if err != nil {
+		return err
+	}
+
+	log.Infof("контейнер на порте %d запущен!", portValue)
+	return nil
+}
+
+// Stop останавливаем mysql
+func Stop(portValue int32) error {
+
+	log.Infof("пытаюсь остановить контейнер на порте %d...", portValue)
+
+	err := UpdateDeployment()
+
+	if err != nil {
+		return err
+	}
+
+	log.Infof("команда остановки контейнера на порте %d успешно выполнена, ждем ответа...", portValue)
+	if !waitMysqlNotAlive(portValue, 5) {
+
+		log.Infof("прошло %d секунд, но порт %d все еще отвечает", portValue)
+		return fmt.Errorf("прошло %d секунд, но порт %d все еще отвечает", 5, portValue)
+	}
+
+	log.Infof("контейнер на порте %d остановлен!", portValue)
+	return nil
+}
+
+// UpdateDeployment обновить стак деплоя
+func UpdateDeployment() error {
+
 	// получаем все порты, занятые компаниями, в мире
 	portList, err := port_registry.GetAllCompanyPortList()
 	if err != nil {
@@ -53,58 +89,15 @@ func Start(portValue int32) error {
 		return err
 	}
 
-	if err = Update(); err != nil {
+	if err = update(); err != nil {
 		return err
 	}
 
-	log.Infof("контейнер на порте %d запущен!", portValue)
-	return nil
-}
-
-// Stop останавливаем mysql
-func Stop(portValue int32) error {
-
-	log.Infof("пытаюсь остановить контейнер на порте %d...", portValue)
-
-	// получаем все порты, занятые компаниями, в мире
-	portList, err := port_registry.GetAllCompanyPortList()
-	if err != nil {
-		return err
-	}
-
-	// если не осталось портов - удаляем стак
-	if len(portList) < 1 {
-
-		if err = Delete(); err != nil {
-			return err
-		}
-
-		log.Infof("Не осталось mysql контейнеров, удалили стак!")
-		return nil
-	}
-
-	// удаляем контейнер
-	if err := GenerateComposeConfig(portList); err != nil {
-		return err
-	}
-
-	if err := Update(); err != nil {
-		return err
-	}
-
-	log.Infof("команда остановки контейнера на порте %d успешно выполнена, ждем ответа...", portValue)
-	if !waitMysqlNotAlive(portValue, 5) {
-
-		log.Infof("прошло %d секунд, но порт %d все еще отвечает", portValue)
-		return fmt.Errorf("прошло %d секунд, но порт %d все еще отвечает", 5, portValue)
-	}
-
-	log.Infof("контейнер на порте %d остановлен!", portValue)
 	return nil
 }
 
 // Update обновляем стак
-func Update() error {
+func update() error {
 
 	cmdStr := "/usr/bin/docker stack deploy " +
 		"--with-registry-auth " +
@@ -192,7 +185,7 @@ func waitMysqlNotAlive(port int32, timeout int64) bool {
 // проверяем жив ли mysql
 func isMysqlAlive(port int32) bool {
 
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", conf.GetConfig().MysqlCompanyHost, port), 3*time.Second)
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", company.GetCompanyHost(port), port), 3*time.Second)
 	if err != nil {
 		return false
 	}

@@ -5,7 +5,7 @@ import {
 	authenticationTokenTimeLeft,
 	authInputState,
 	authState,
-	confirmPasswordState,
+	confirmPasswordState, downloadAppUrlState,
 	isPasswordChangedState,
 	joinLinkState,
 	nameInputState,
@@ -75,10 +75,11 @@ const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 
 	const [isStoreMenuOpen, setStoreMenuOpen] = useState(false);
 	const { getDownloadLink } = useDownloadLink();
+	const downloadAppUrl = useAtomValue(downloadAppUrlState);
 
 	const onSelectHandler = useCallback((value: string) => {
 		window.location.href = getDownloadLink(value);
-	}, []);
+	}, [downloadAppUrl]);
 
 	return (
 		<HStack w="100%" gap="16px" justify="space-between">

@@ -70,7 +70,12 @@ func resolveUrl(module string) string {
 
 	// получаем урл модуля в который уйдет событие
 	config := conf.GetSocketConfig()
-	moduleUrl := config.SocketUrl[module] + config.SocketModule[module]
+	socketUrl := config.SocketUrl[module]
+	if len(socketUrl) == 0 {
+		return ""
+	}
+
+	moduleUrl := socketUrl + config.SocketModule[module]
 
 	return moduleUrl
 }

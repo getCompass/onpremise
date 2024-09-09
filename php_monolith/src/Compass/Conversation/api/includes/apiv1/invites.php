@@ -6,6 +6,7 @@ use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\BlockException;
 use CompassApp\Domain\Member\Entity\Member;
+use CompassApp\Domain\Member\Struct\Main;
 
 /**
  * класс для API методов группы invites
@@ -564,8 +565,15 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 		return $sanitized_user_list;
 	}
 
-	// новый метод вывода список пользователей доступых для отправки инвайтов
-	// @long
+	/**
+	 * Метод вывода список пользователей доступых для отправки инвайтов
+	 *
+	 * @param Main[] $user_info_list_grouped_by_id
+	 * @param bool  $is_new_list
+	 *
+	 * @return array
+	 * @long
+	 */
 	protected function _makeAllowedUsersOutput(array $user_info_list_grouped_by_id, bool $is_new_list):array {
 
 		// формируем списки пользователей, с которыми заблокирован диалог по той или иной причине
@@ -588,6 +596,11 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 			if (\CompassApp\Domain\Member\Entity\Extra::getIsDeleted($v1->extra)) {
 
 				$account_deleted_list[] = (int) $v1->user_id;
+				continue;
+			}
+
+			// ботов не можем приглашать
+			if (!Type_User_Main::isHuman($v1->npc_type)) {
 				continue;
 			}
 

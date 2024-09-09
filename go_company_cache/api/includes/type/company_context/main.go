@@ -15,12 +15,16 @@ import (
 // @long
 func UpdateWorldConfig(globalIsolation *GlobalIsolation.GlobalIsolation) (map[int64]*conf.CompanyConfigStruct, map[int64]struct{}, error) {
 
-	isNeedUpdate := checkTimeStamp(globalIsolation.GetConfig().WorldConfigPath)
+	globalConfig := globalIsolation.GetConfig()
+
+	timestampFilename := ".timestamp.json"
+
+	isNeedUpdate := checkFileTimeStamp(globalConfig, timestampFilename)
 	if !isNeedUpdate {
 		return nil, nil, nil
 	}
 
-	files, err := os.ReadDir(globalIsolation.GetConfig().WorldConfigPath)
+	files, err := os.ReadDir(globalConfig.WorldConfigPath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -53,7 +57,7 @@ func UpdateWorldConfig(globalIsolation *GlobalIsolation.GlobalIsolation) (map[in
 
 		allCompanyList[companyId] = struct{}{}
 
-		isNeedUpdate := checkFileTimeStamp(globalIsolation.GetConfig().WorldConfigPath, file)
+		isNeedUpdate := checkFileTimeStamp(globalConfig, file.Name())
 		if !isNeedUpdate {
 			continue
 		}

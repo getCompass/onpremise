@@ -13,5 +13,7 @@
 	"capacity_limit": 10000,
 	"world_config_path": "/config",
 	"current_server": "${CURRENT_SERVER}",
-	"service_role_set": "${SERVICE_ROLE_SET}"
+	"service_role_set": "${SERVICE_ROLE_SET}",
+	"server_tag_list": ${SERVER_TAG_LIST},
+	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC}
 }

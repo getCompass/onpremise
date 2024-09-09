@@ -283,3 +283,9 @@ func (s *Server) DropSearchTable(_ context.Context, in *pb.DropSearchTableReques
 
 	return &pb.NullResponseStruct{}, manticore.DropTable(in.GetSpaceId())
 }
+
+// UpdateDeployment обновить деплой
+func (s *Server) UpdateDeployment(_ context.Context, _ *pb.NullRequestStruct) (*pb.NullResponseStruct, error) {
+
+	return &pb.NullResponseStruct{}, keeper.UpdateDeployment()
+}

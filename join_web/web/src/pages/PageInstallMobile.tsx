@@ -30,6 +30,8 @@ import {
 	MOBILE_PLATFORM_IOS,
 } from "../api/_types.ts";
 import useDownloadLink from "../lib/useDownloadLink.ts";
+import {useAtomValue} from "jotai/index";
+import {downloadAppUrlState} from "../api/_stores.ts";
 
 const MacOsIcon = () => {
 	return (
@@ -256,10 +258,11 @@ export default function PageInstallMobile() {
 	const langStringPageSupportBlockMail = useLangString("install_page.mobile.page.support_block.mail");
 	const isLowWidthMobile = useIsLowWidthMobile();
 	const { getDownloadLink } = useDownloadLink();
+	const downloadAppUrl = useAtomValue(downloadAppUrlState);
 
 	const onSelectPlatform = useCallback((value: string) => {
 		copyToClipboardInstall(getDownloadLink(value), langStringPageOnSuccessCopy);
-	}, []);
+	}, [downloadAppUrl]);
 
 	return (
 		<>

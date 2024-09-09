@@ -16,7 +16,12 @@ func SendPush(pushTask push.PushTaskStruct) error {
 		return err
 	}
 
+	requestUrl := resolveUrl("go_push_sender")
+	if len(requestUrl) == 0 {
+		return nil
+	}
+
 	// делаем запрос в php модуль
-	_, err = call(resolveUrl("go_push_sender"), method, data)
+	_, err = call(requestUrl, method, data)
 	return err
 }

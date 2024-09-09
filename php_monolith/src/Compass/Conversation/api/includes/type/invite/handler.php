@@ -13,18 +13,20 @@ class Type_Invite_Handler {
 	public const LIMIT_SEND_ACTIVE_INVITE = 100;
 
 	// статусы приглашения
-	public const STATUS_ACTIVE   = 0;
-	public const STATUS_ACCEPTED = 1;
-	public const STATUS_DECLINED = 2;
-	public const STATUS_REVOKED  = 3;
-	public const STATUS_INACTIVE = 4;
+	public const STATUS_ACTIVE        = 0;
+	public const STATUS_ACCEPTED      = 1;
+	public const STATUS_DECLINED      = 2;
+	public const STATUS_REVOKED       = 3;
+	public const STATUS_INACTIVE      = 4;
+	public const STATUS_AUTO_ACCEPTED = 5;
 
 	public const STATUS_TITLE = [
-		self::STATUS_ACTIVE   => "active",
-		self::STATUS_ACCEPTED => "accepted",
-		self::STATUS_DECLINED => "declined",
-		self::STATUS_REVOKED  => "revoked",
-		self::STATUS_INACTIVE => "inactive",
+		self::STATUS_ACTIVE        => "active",
+		self::STATUS_ACCEPTED      => "accepted",
+		self::STATUS_DECLINED      => "declined",
+		self::STATUS_REVOKED       => "revoked",
+		self::STATUS_INACTIVE      => "inactive",
+		self::STATUS_AUTO_ACCEPTED => "auto_accepted",
 	];
 
 	// статусы нахождения юзера в группе

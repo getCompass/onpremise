@@ -37,6 +37,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 		"conversations.previews",
 		"conversations.single",
 		"search",
+		"conversations.invites",
 	];
 
 	/**

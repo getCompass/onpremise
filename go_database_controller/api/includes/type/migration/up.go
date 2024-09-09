@@ -61,7 +61,7 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 	pass, err := registry.GetDecryptedMysqlPass()
 
 	credentials := &sharding.DbCredentials{
-		Host: conf.GetConfig().MysqlCompanyHost,
+		Host: company.GetCompanyHost(registry.Port),
 		User: user,
 		Pass: pass,
 		Port: registry.Port,

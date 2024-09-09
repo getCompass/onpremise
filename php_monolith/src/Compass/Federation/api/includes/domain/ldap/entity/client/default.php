@@ -13,11 +13,13 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 
 	protected Connection $ldap_connection;
 
+	public const ERROR_NUM_SUCCESS                   = 0;
 	public const ERROR_NUM_AUTH_METHOD_NOT_SUPPORTED = 7;
 	public const ERROR_NUM_STRONG_AUTH_REQUIRED      = 8;
 	public const ERROR_NUM_INVALID_DN_SYNTAX         = 34;
 	public const ERROR_NUM_INVALID_CREDENTIALS       = 49;
 	public const ERROR_NUM_UNWILLING_TO_PERFORM      = 53;
+	public const ERROR_NUM_FILTER_ERROR              = -7;
 
 	public function __construct(string $host, int $port) {
 
@@ -35,15 +37,12 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 			return ldap_bind($this->ldap_connection, $dn, $password);
 		} catch (\Exception|\Error $e) {
 
+			// выбрасываем исключение, если это ldap ошибка
 			$error_num = ldap_errno($this->ldap_connection);
-			return match ($error_num) {
-				self::ERROR_NUM_AUTH_METHOD_NOT_SUPPORTED => throw new Domain_Ldap_Exception_ProtocolError_AuthMethodNotSupported(),
-				self::ERROR_NUM_STRONG_AUTH_REQUIRED      => throw new Domain_Ldap_Exception_ProtocolError_StrongAuthRequired(),
-				self::ERROR_NUM_INVALID_DN_SYNTAX         => throw new Domain_Ldap_Exception_ProtocolError_InvalidDnSyntax(),
-				self::ERROR_NUM_INVALID_CREDENTIALS       => throw new Domain_Ldap_Exception_ProtocolError_InvalidCredentials(),
-				self::ERROR_NUM_UNWILLING_TO_PERFORM      => throw new Domain_Ldap_Exception_ProtocolError_UnwillingToPerform(),
-				default                                   => throw new Domain_Ldap_Exception_ProtocolError($error_num, $e->getMessage()),
-			};
+			$error_num !== self::ERROR_NUM_SUCCESS && $this->_throwOnErrorNumber($error_num, $e->getMessage());
+
+			// иначе выбрасываем ту ошибку, что возникла
+			throw $e;
 		}
 	}
 
@@ -52,6 +51,7 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		ldap_unbind($this->ldap_connection);
 	}
 
+	// @long
 	public function searchEntries(string $base, string $filter, int $page_size, array $attribute_list = []):array {
 
 		// кука, с которой совершается запрос в LDAP провайдер
@@ -67,16 +67,27 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 
 		do {
 
-			// результаты поиска за одну итерацию
-			$search_result = ldap_search($this->ldap_connection, $base, $filter, $attribute_list, 0, 0, 0, LDAP_DEREF_NEVER,
-				[["oid" => LDAP_CONTROL_PAGEDRESULTS, "value" => ["size" => $page_size, "cookie" => $cookie]]]);
+			try {
+
+				// результаты поиска за одну итерацию
+				$search_result = ldap_search($this->ldap_connection, $base, $filter, $attribute_list, 0, 0, 0, LDAP_DEREF_NEVER,
+					[["oid" => LDAP_CONTROL_PAGEDRESULTS, "value" => ["size" => $page_size, "cookie" => $cookie]]]);
+			} catch (\Throwable $e) {
+
+				// выбрасываем исключение, если это ldap ошибка
+				$error_num = ldap_errno($this->ldap_connection);
+				$error_num !== self::ERROR_NUM_SUCCESS && $this->_throwOnErrorNumber($error_num, $e->getMessage());
+
+				// иначе выбрасываем ту ошибку, что возникла
+				throw $e;
+			}
 
 			// парсим результаты
 			ldap_parse_result($this->ldap_connection, $search_result, error_code: $error_code, error_message: $error_message, controls: $response_controls);
 
-			// если есть ошибка
-			if ($error_code !== 0) {
-				throw new Domain_Ldap_Exception_ProtocolError($error_code, $error_message);
+			// если есть ошибка, то выбрасываем исключение
+			if ($error_code !== self::ERROR_NUM_SUCCESS) {
+				$this->_throwOnErrorNumber($error_code, $error_message);
 			}
 
 			// достем сущности и сохраняем
@@ -93,5 +104,19 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		} while ($cookie !== "");
 
 		return [$count, $output_result];
+	}
+
+	/** выбрасываем соответствующее кастомное исключение на LDAP ошибку */
+	protected function _throwOnErrorNumber(int $error_num, string $error_message):void {
+
+		match ($error_num) {
+			self::ERROR_NUM_AUTH_METHOD_NOT_SUPPORTED => throw new Domain_Ldap_Exception_ProtocolError_AuthMethodNotSupported(),
+			self::ERROR_NUM_STRONG_AUTH_REQUIRED      => throw new Domain_Ldap_Exception_ProtocolError_StrongAuthRequired(),
+			self::ERROR_NUM_INVALID_DN_SYNTAX         => throw new Domain_Ldap_Exception_ProtocolError_InvalidDnSyntax(),
+			self::ERROR_NUM_INVALID_CREDENTIALS       => throw new Domain_Ldap_Exception_ProtocolError_InvalidCredentials(),
+			self::ERROR_NUM_UNWILLING_TO_PERFORM      => throw new Domain_Ldap_Exception_ProtocolError_UnwillingToPerform(),
+			self::ERROR_NUM_FILTER_ERROR              => throw new Domain_Ldap_Exception_ProtocolError_FilterError(),
+			default                                   => throw new Domain_Ldap_Exception_ProtocolError($error_num, $error_message),
+		};
 	}
 }

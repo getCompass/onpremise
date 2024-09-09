@@ -30,6 +30,7 @@ export const captchaProviderState = atom("");
 
 export const authenticationTokenState = atom("");
 
+export const downloadAppUrlState = atom<string>("");
 export const availableAuthMethodListState = atom<string[]>([]);
 export const ssoProtocolState = atom("");
 export const serverVersionState = atom("");

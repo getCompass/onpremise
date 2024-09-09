@@ -43,6 +43,7 @@ const AuthLdapDialogContentDesktop = () => {
 	);
 	const langStringLdapLoginDialogAuthBlocked = useLangString("ldap_login_dialog.auth_blocked");
 	const langStringLdapLoginDialogUnknownError = useLangString("ldap_login_dialog.unknown_error");
+	const langStringLdapLoginDialogIncorrectConfigUserSearchFilter = useLangString("ldap_login_dialog.incorrect_config_user_search_filter");
 	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
 	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
 	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
@@ -112,6 +113,12 @@ const AuthLdapDialogContentDesktop = () => {
 				}
 				if (error.error_code === 1708002) {
 					showToast(langStringLdapLoginDialogUnknownError, "warning");
+					setIsLoading(false);
+					setIsError(true);
+					return;
+				}
+				if (error.error_code === 1708003) {
+					showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
 					setIsLoading(false);
 					setIsError(true);
 					return;
@@ -196,6 +203,12 @@ const AuthLdapDialogContentDesktop = () => {
 							}
 							if (error.error_code === 1708002) {
 								showToast(langStringLdapLoginDialogUnknownError, "warning");
+								setIsLoading(false);
+								setIsError(true);
+								return;
+							}
+							if (error.error_code === 1708003) {
+								showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
 								setIsLoading(false);
 								setIsError(true);
 								return;
@@ -359,6 +372,7 @@ const AuthLdapDialogContentMobile = () => {
 	);
 	const langStringLdapLoginDialogAuthBlocked = useLangString("ldap_login_dialog.auth_blocked");
 	const langStringLdapLoginDialogUnknownError = useLangString("ldap_login_dialog.unknown_error");
+	const langStringLdapLoginDialogIncorrectConfigUserSearchFilter = useLangString("ldap_login_dialog.incorrect_config_user_search_filter");
 	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
 	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
 	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
@@ -432,6 +446,12 @@ const AuthLdapDialogContentMobile = () => {
 				}
 				if (error.error_code === 1708002) {
 					showToast(langStringLdapLoginDialogUnknownError, "warning");
+					setIsLoading(false);
+					setIsError(true);
+					return;
+				}
+				if (error.error_code === 1708003) {
+					showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
 					setIsLoading(false);
 					setIsError(true);
 					return;
@@ -515,6 +535,12 @@ const AuthLdapDialogContentMobile = () => {
 							}
 							if (error.error_code === 1708002) {
 								showToast(langStringLdapLoginDialogUnknownError, "warning");
+								setIsLoading(false);
+								setIsError(true);
+								return;
+							}
+							if (error.error_code === 1708003) {
+								showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
 								setIsLoading(false);
 								setIsError(true);
 								return;

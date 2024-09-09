@@ -23,6 +23,15 @@ func WorkPivotObserver(ctx context.Context, globalIsolation *GlobalIsolation.Glo
 	startPivotEnv(ctx, globalIsolation, companyContextList, 0, config)
 }
 
+// WorkAnnouncementObserver Work метод для выполнения работы через время
+func WorkAnnouncementObserver(ctx context.Context, globalIsolation *GlobalIsolation.GlobalIsolation, companyContextList *Isolation.CompanyEnvList) {
+
+	config := &conf.CompanyConfigStruct{
+		Status: Isolation.ActiveCompanyStatus,
+	}
+	startPivotEnv(ctx, globalIsolation, companyContextList, -1, config)
+}
+
 // WorkDominoObserver Work метод для выполнения работы через время
 func WorkDominoObserver(ctx context.Context, globalIsolation *GlobalIsolation.GlobalIsolation, companyContextList *Isolation.CompanyEnvList) {
 
@@ -75,7 +84,7 @@ func updateCompanyList(ctx context.Context, globalIsolation *GlobalIsolation.Glo
 
 		// супер-решение для глобальной изоляции,
 		// которая зачем-то идентифицирует себя как изоляция компании
-		if companyId == 0 {
+		if companyId < 1 {
 			continue
 		}
 
@@ -94,7 +103,7 @@ func startPivotEnv(ctx context.Context, globalIsolation *GlobalIsolation.GlobalI
 		return nil
 	}
 
-	pusherConn := pusher.MakePusherConn(globalIsolation.GetConfig().CurrentServer, globalIsolation.GetConfig().SocketKeyMe, companyId)
+	pusherConn := pusher.MakePusherConn(globalIsolation.GetConfig().CurrentServer, globalIsolation.GetConfig().SocketKeyMe, 0)
 	isolation, companyCtx := companyContextList.StartEnv(
 		ctx, companyId, config, globalIsolation.GetConfig().CapacityLimit, globalIsolation, companyDataConnProvider, pusherConn,
 	)

@@ -58,6 +58,7 @@ const LANG_CONFIG: LangConfig = {
 				"Авторизация через LDAP временно недоступна. Обратитесь  к руководителю или системному администратору.",
 			incorrect_credentials_error: "Введён неверный username или пароль",
 			auth_blocked: "Достигнут лимит входа через LDAP. Попробуйте через $MINUTES.",
+			incorrect_config_user_search_filter: "Ошибка в синтаксисе фильтра для авторизации через LDAP. Обратитесь к руководителю или системному администратору.",
 		},
 		forgot_password_dialog: {
 			title: "Compass",

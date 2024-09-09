@@ -7,5 +7,7 @@
 	"rabbit_exchange": "${RABBIT_EXCHANGE}",
 	"socket_key_me": "${SOCKET_KEY_GO_RATING}",
 	"capacity_limit": 10000,
-	"world_config_path": "/config"
+	"world_config_path": "/config",
+	"server_tag_list": ${SERVER_TAG_LIST},
+	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC}
 }

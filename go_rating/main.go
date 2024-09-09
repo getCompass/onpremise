@@ -8,6 +8,7 @@ import (
 	"context"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 	"go_rating/api/conf"
 	CompanyConfig "go_rating/api/includes/type/company_config"
 	Database "go_rating/api/includes/type/database"
@@ -44,6 +45,13 @@ func main() {
 
 // стартуем микросервис
 func start() {
+
+	config := conf.GetConfig()
+	err := server.Init(config.ServerTagList)
+
+	if err != nil {
+		panic(err)
+	}
 
 	ctx := context.Background()
 	globalCtx, cancelFn := context.WithCancel(ctx)

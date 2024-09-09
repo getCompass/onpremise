@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * Action для генерации конфигов компании
  */
@@ -57,7 +59,9 @@ class Domain_Domino_Entity_Config {
 		$mysql_user = \BaseFrame\System\Crypt::decrypt(Domain_Domino_Entity_Port_Registry::getEncryptedMysqlUser($port->extra));
 		$mysql_pass = \BaseFrame\System\Crypt::decrypt(Domain_Domino_Entity_Port_Registry::getEncryptedMysqlPass($port->extra));
 
-		return new Struct_Config_Company_Mysql($domino->database_host, $port->port, $mysql_user, $mysql_pass);
+		$host = ServerProvider::isOnPremise() ? $domino->domino_id . "-" . $port->port : $domino->database_host;
+
+		return new Struct_Config_Company_Mysql($host, $port->port, $mysql_user, $mysql_pass);
 	}
 
 	/**

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"time"
 )
 
 // структура конфига
@@ -32,6 +33,9 @@ type ConfigStruct struct {
 	WorldConfigPath string `json:"world_config_path"`
 
 	ServiceRoleSet string `json:"service_role_set"`
+
+	ServerTagList                       []string      `json:"server_tag_list"`
+	ForceCompanyConfigUpdateIntervalSec time.Duration `json:"force_company_config_update_interval_sec"`
 }
 
 // переменная содержащая конфигурацию
@@ -48,7 +52,7 @@ func UpdateConfig() error {
 	if tempPath == "" {
 
 		_, b, _, _ := runtime.Caller(0)
-		tempPath = path.Join(path.Dir(b))
+		tempPath = path.Join(path.Dir(b)) // nosemgrep
 	}
 
 	// сохраняем конфигурацию

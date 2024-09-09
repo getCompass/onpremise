@@ -20,7 +20,7 @@ import {
 	authenticationTokenTimeLeft,
 	authInputState,
 	authState,
-	confirmPasswordState,
+	confirmPasswordState, downloadAppUrlState,
 	isPasswordChangedState,
 	isRegistrationState,
 	joinLinkState,
@@ -50,10 +50,11 @@ import { useAtom } from "jotai/index";
 import { DynamicTimerAuthenticationToken } from "../components/DynamicTimerAuthenticationToken.tsx";
 import useDownloadLink from "../lib/useDownloadLink.ts";
 import {
-	DESKTOP_PLATFORM_LINUX_DEB, DESKTOP_PLATFORM_LINUX_TAR,
+	DESKTOP_PLATFORM_LINUX_DEB,
+	DESKTOP_PLATFORM_LINUX_TAR,
 	DESKTOP_PLATFORM_MAC_OS_ARM,
 	DESKTOP_PLATFORM_MAC_OS_INTEL,
-	DESKTOP_PLATFORM_WINDOWS
+	DESKTOP_PLATFORM_WINDOWS,
 } from "../api/_types.ts";
 
 export const MacOsIcon = () => {
@@ -128,7 +129,7 @@ type StepTwoContentProps = {
 	childButtonWidth: number;
 };
 
-const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
+const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 	const langStringPageTokenStep2DescPt1Desktop = useLangString("page_token.step_2.desc_pt1_desktop");
 	const langStringPageTokenStep2DescPt2Desktop = useLangString("page_token.step_2.desc_pt2_desktop");
 	const langStringPageTokenStep2ButtonDesktop = useLangString("page_token.step_2.button_desktop");
@@ -142,10 +143,11 @@ const StepTwoContent = ({childButtonWidth}: StepTwoContentProps) => {
 
 	const [isStoreMenuOpen, setStoreMenuOpen] = useState(false);
 	const { getDownloadLink } = useDownloadLink();
+	const downloadAppUrl = useAtomValue(downloadAppUrlState);
 
 	const onSelectHandler = useCallback((value: string) => {
 		window.location.href = getDownloadLink(value);
-	}, []);
+	}, [downloadAppUrl]);
 
 	return (
 		<HStack w="100%" gap="16px" justify="space-between">

@@ -25,6 +25,7 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		"add",
 		"edit",
 		"copy",
+		"copyWithUsers",
 	];
 
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
@@ -32,6 +33,7 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		"add",
 		"edit",
 		"copy",
+		"copyWithUsers",
 	];
 
 	// список запрещенных методов по ролям
@@ -40,6 +42,7 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 			"addParticipant",
 			"add",
 			"copy",
+			"copyWithUsers",
 		],
 	];
 
@@ -255,7 +258,7 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		try {
 
 			$prepared_conversation = Domain_Group_Scenario_Api::copy(
-				$this->user_id, $this->role, $this->permissions, $conversation_map, $name, $avatar_file_map, $description, $excluded_user_id_list);
+				$this->user_id, $conversation_map, $name, $avatar_file_map, $description, $excluded_user_id_list);
 		} catch (Domain_Group_Exception_InvalidFileForAvatar) {
 			throw new ParamException("invalid file for avatar");
 		} catch (Domain_Group_Exception_InvalidName) {
@@ -264,6 +267,57 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 			throw new CaseException(2219001, "name contains emoji");
 		} catch (Domain_Member_Exception_ActionNotAllowed) {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		}
+
+		return $this->ok([
+			"conversation" => Apiv2_Format::conversation($prepared_conversation),
+		]);
+	}
+
+	/**
+	 * Продублировать группу с добавлением пользователей
+	 *
+	 * @return array
+	 * @throws BlockException
+	 * @throws BusFatalException
+	 * @throws CaseException
+	 * @throws ControllerMethodNotFoundException
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws \cs_RowIsEmpty
+	 * @long - конвертации ключей в мапы
+	 */
+	public function copyWithUsers():array {
+
+		$conversation_key      = $this->post(\Formatter::TYPE_STRING, "conversation_key");
+		$name                  = $this->post(\Formatter::TYPE_STRING, "name");
+		$avatar_file_key       = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", "");
+		$description           = $this->post(\Formatter::TYPE_STRING, "description", "");
+		$excluded_user_id_list = $this->post(\Formatter::TYPE_ARRAY, "excluded_user_id_list", []);
+
+		$avatar_file_map = "";
+		if ($avatar_file_key !== "") {
+			$avatar_file_map = \CompassApp\Pack\File::tryDecrypt($avatar_file_key);
+		}
+		$conversation_map = Conversation::tryDecrypt($conversation_key);
+
+		// инкрементим блокировку
+		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::GROUPS_ADD);
+
+		try {
+
+			$prepared_conversation = Domain_Group_Scenario_Api::copyWithUsers(
+				$this->user_id, $conversation_map, $name, $avatar_file_map, $description, $excluded_user_id_list);
+		} catch (Domain_Group_Exception_InvalidFileForAvatar) {
+			throw new ParamException("invalid file for avatar");
+		} catch (Domain_Group_Exception_InvalidName) {
+			throw new ParamException("invalid name for group");
+		} catch (Domain_Group_Exception_NameContainsEmoji) {
+			throw new CaseException(2219001, "name contains emoji");
+		} catch (Domain_Member_Exception_ActionNotAllowed) {
+			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (cs_PlatformNotFound) {
+			throw new ParamException("invalid platform");
 		}
 
 		return $this->ok([

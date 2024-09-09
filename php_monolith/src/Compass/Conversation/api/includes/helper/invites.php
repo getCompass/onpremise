@@ -541,10 +541,14 @@ class Helper_Invites {
 		}
 	}
 
-	// если инвайт уже отклонен
+	// если инвайт уже принят
 	protected static function _throwIfInviteIsAccepted(string $status):void {
 
 		if ($status == Type_Invite_Handler::STATUS_ACCEPTED) {
+			throw new cs_InviteIsAccepted();
+		}
+
+		if ($status == Type_Invite_Handler::STATUS_AUTO_ACCEPTED) {
 			throw new cs_InviteIsAccepted();
 		}
 	}

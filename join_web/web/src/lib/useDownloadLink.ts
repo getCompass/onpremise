@@ -22,10 +22,11 @@ import {
 	MOBILE_PLATFORM_IOS,
 } from "../api/_types.ts";
 import { useAtomValue } from "jotai";
-import { electronVersionState } from "../api/_stores.ts";
+import { downloadAppUrlState, electronVersionState } from "../api/_stores.ts";
 
 const useDownloadLink = () => {
 	const electronVersion = useAtomValue(electronVersionState);
+	const downloadAppUrl = useAtomValue(downloadAppUrlState);
 
 	// проверка на наличие метода аутентификации по номеру телефона
 	const getDownloadLink = (platform: string): string => {
@@ -34,34 +35,43 @@ const useDownloadLink = () => {
 		switch (platform) {
 			case DESKTOP_PLATFORM_MAC_OS_INTEL:
 				if (maxClientVersion.length > 0) {
-					return APP_LINK_DESKTOP_MAC_OS_INTEL_BY_VERSION.replace(/\$VERSION/g, maxClientVersion);
+					return (
+						downloadAppUrl +
+						APP_LINK_DESKTOP_MAC_OS_INTEL_BY_VERSION.replace(/\$VERSION/g, maxClientVersion)
+					);
 				}
 
-				return APP_LINK_DESKTOP_MAC_OS_INTEL;
+				return downloadAppUrl + APP_LINK_DESKTOP_MAC_OS_INTEL;
 			case DESKTOP_PLATFORM_MAC_OS_ARM:
 				if (maxClientVersion.length > 0) {
-					return APP_LINK_DESKTOP_MAC_OS_ARM_BY_VERSION.replace(/\$VERSION/g, maxClientVersion);
+					return (
+						downloadAppUrl + APP_LINK_DESKTOP_MAC_OS_ARM_BY_VERSION.replace(/\$VERSION/g, maxClientVersion)
+					);
 				}
 
-				return APP_LINK_DESKTOP_MAC_OS_ARM;
+				return downloadAppUrl + APP_LINK_DESKTOP_MAC_OS_ARM;
 			case DESKTOP_PLATFORM_WINDOWS:
 				if (maxClientVersion.length > 0) {
-					return APP_LINK_DESKTOP_WINDOWS_BY_VERSION.replace(/\$VERSION/g, maxClientVersion);
+					return downloadAppUrl + APP_LINK_DESKTOP_WINDOWS_BY_VERSION.replace(/\$VERSION/g, maxClientVersion);
 				}
 
-				return APP_LINK_DESKTOP_WINDOWS;
+				return downloadAppUrl + APP_LINK_DESKTOP_WINDOWS;
 			case DESKTOP_PLATFORM_LINUX_DEB:
 				if (maxClientVersion.length > 0) {
-					return APP_LINK_DESKTOP_LINUX_DEB_BY_VERSION.replace(/\$VERSION/g, maxClientVersion);
+					return (
+						downloadAppUrl + APP_LINK_DESKTOP_LINUX_DEB_BY_VERSION.replace(/\$VERSION/g, maxClientVersion)
+					);
 				}
 
-				return APP_LINK_DESKTOP_LINUX_DEB;
+				return downloadAppUrl + APP_LINK_DESKTOP_LINUX_DEB;
 			case DESKTOP_PLATFORM_LINUX_TAR:
 				if (maxClientVersion.length > 0) {
-					return APP_LINK_DESKTOP_LINUX_TAR_BY_VERSION.replace(/\$VERSION/g, maxClientVersion);
+					return (
+						downloadAppUrl + APP_LINK_DESKTOP_LINUX_TAR_BY_VERSION.replace(/\$VERSION/g, maxClientVersion)
+					);
 				}
 
-				return APP_LINK_DESKTOP_LINUX_TAR;
+				return downloadAppUrl + APP_LINK_DESKTOP_LINUX_TAR;
 			case MOBILE_PLATFORM_IOS:
 				return APP_LINK_MOBILE_APP_STORE;
 			case MOBILE_PLATFORM_ANDROID:

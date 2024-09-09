@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime"
-	"sync/atomic"
+	"time"
 )
 
 // структура конфига
@@ -24,10 +24,13 @@ type ConfigStruct struct {
 
 	CapacityLimit   int    `json:"capacity_limit"`
 	WorldConfigPath string `json:"world_config_path"`
+
+	ServerTagList                       []string      `json:"server_tag_list"`
+	ForceCompanyConfigUpdateIntervalSec time.Duration `json:"force_company_config_update_interval_sec"`
 }
 
 // переменная содержащая конфигурацию
-var configuration atomic.Value
+var configuration *ConfigStruct
 
 // -------------------------------------------------------
 // PUBLIC
@@ -40,7 +43,7 @@ func UpdateConfig() error {
 	if tempPath == "" {
 
 		_, b, _, _ := runtime.Caller(0)
-		tempPath = path.Join(path.Dir(b))
+		tempPath = path.Join(path.Dir(b)) // nosemgrep
 	}
 
 	// сохраняем конфигурацию
@@ -50,26 +53,27 @@ func UpdateConfig() error {
 	}
 
 	// записываем конфигурацию в хранилище
-	configuration.Store(decodedInfo)
+	configuration = decodedInfo
 
 	return nil
 }
 
 // получаем конфиг из файла
-func getConfigFromFile(path string) (ConfigStruct, error) {
+func getConfigFromFile(path string) (*ConfigStruct, error) {
 
 	// открываем файл с конфигурацией
 	file, err := os.Open(path)
 	if err != nil {
-		return ConfigStruct{}, fmt.Errorf("unable read file conf.json, error: %v", err)
+		return &ConfigStruct{}, fmt.Errorf("unable read file conf.json, error: %v", err)
 	}
 
 	// считываем информацию из файла в переменную
 	decoder := go_base_frame.Json.NewDecoder(file)
-	var decodedInfo ConfigStruct
+	decodedInfo := &ConfigStruct{}
+
 	err = decoder.Decode(&decodedInfo)
 	if err != nil {
-		return ConfigStruct{}, fmt.Errorf("unable decode file conf.json, error: %v", err)
+		return &ConfigStruct{}, fmt.Errorf("unable decode file conf.json, error: %v", err)
 	}
 
 	// закрываем файл
@@ -79,13 +83,10 @@ func getConfigFromFile(path string) (ConfigStruct, error) {
 }
 
 // получаем конфигурацию custom
-func GetConfig() ConfigStruct {
-
-	// получаем конфиг
-	config := configuration.Load()
+func GetConfig() *ConfigStruct {
 
 	// если конфига еще нет
-	if config == nil {
+	if configuration == nil {
 
 		// обновляем конфиг
 		err := UpdateConfig()
@@ -93,9 +94,7 @@ func GetConfig() ConfigStruct {
 			panic(err)
 		}
 
-		// подгружаем новый
-		config = configuration.Load()
 	}
 
-	return config.(ConfigStruct)
+	return configuration
 }

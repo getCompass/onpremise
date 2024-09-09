@@ -7,6 +7,7 @@ import (
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_database_controller/api/conf"
+	"go_database_controller/api/includes/type/db/company"
 	"go_database_controller/api/includes/type/logger"
 	"go_database_controller/api/includes/type/migration"
 	"go_database_controller/api/includes/type/port_registry"
@@ -67,7 +68,7 @@ func InitTable(spaceId int64) error {
 	pass, err := registry.GetDecryptedMysqlPass()
 
 	credentials := &sharding.DbCredentials{
-		Host: conf.GetConfig().MysqlCompanyHost,
+		Host: company.GetCompanyHost(registry.Port),
 		User: user,
 		Pass: pass,
 		Port: registry.Port,

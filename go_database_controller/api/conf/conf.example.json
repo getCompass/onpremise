@@ -23,5 +23,9 @@
 	"domino_user": "rider",
 	"backup_ssh_key_file_path": "/home/rider/.ssh/id_rsa_backup",
 	"domino_mysql_innodb_flush_method": "${DOMINO_MYSQL_INNODB_FLUSH_METHOD}",
-	"domino_mysql_innodb_flush_log_at_timeout":${DOMINO_MYSQL_INNODB_FLUSH_LOG_AT_TIMEOUT}
+	"domino_mysql_innodb_flush_log_at_timeout":${DOMINO_MYSQL_INNODB_FLUSH_LOG_AT_TIMEOUT},
+	"mysql_host_certificate": "${MYSQL_HOST_CERTIFICATE}",
+	"mysql_host_private_key": "${MYSQL_HOST_PRIVATE_KEY}",
+	"domino_secret_key": "${DOMINO_SECRET_KEY}",
+	"domino_network": "${DOMINO_NETWORK}"
 }

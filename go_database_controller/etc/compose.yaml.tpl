@@ -26,9 +26,12 @@ services:
     volumes:
       - {{$mysql_conf_block.DbPath}}:/var/lib/mysql
     networks:
-      - outside
+      domino-shared:
+        aliases:
+         - "{{$mysql_conf_block.Host}}"
+
 {{end}}
 networks:
-  outside:
+  domino-shared:
     external:
-      name: "host"
+      name: "{{.DominoNetwork}}"

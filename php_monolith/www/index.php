@@ -21,6 +21,7 @@ $url_list = [
 	"solution"                   => "",
 	"video_conference"           => PUBLIC_ENTRYPOINT_VIDEO_CONFERENCE . "/",
 	"video_conference_node_list" => VIDEO_CONFERENCE_NODE_LIST,
+	"electron_update"            => PUBLIC_ENTRYPOINT_ELECTRON_UPDATE . "/",
 ];
 
 foreach ($url_list as &$url) {
@@ -31,9 +32,10 @@ foreach ($url_list as &$url) {
 }
 
 $response = [
-	"start_url" => (string) PUBLIC_ENTRYPOINT_PIVOT . "/",
-	"version"   => ONPREMISE_VERSION,
-	"url_list"  => (object) $url_list,
+	"start_url"         => (string) PUBLIC_ENTRYPOINT_PIVOT . "/",
+	"connect_check_url" => (string) PUBLIC_CONNECT_CHECK_URL . "/",
+	"version"           => ONPREMISE_VERSION,
+	"url_list"          => (object) $url_list,
 ];
 
 
@@ -50,7 +52,7 @@ if ($auth_data->hasChanges()) {
 
 	$answer["actions"][] = [
 		"type" => "authorization",
-		"data" => $auth_data->get()
+		"data" => $auth_data->get(),
 	];
 }
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
-	"go_database_controller/api/conf"
 	"go_database_controller/api/includes/type/db/company"
 	"go_database_controller/api/includes/type/db/company/company_system"
 	"go_database_controller/api/includes/type/logger"
@@ -56,7 +55,7 @@ func migrateLegacyClean(routineChan chan *routine.Status, companyId int64, logIt
 	pass, err := registry.GetDecryptedMysqlPass()
 
 	credentials := &sharding.DbCredentials{
-		Host: conf.GetConfig().MysqlCompanyHost,
+		Host: company.GetCompanyHost(registry.Port),
 		User: user,
 		Pass: pass,
 		Port: registry.Port,

@@ -5,7 +5,7 @@ import {
 	authenticationTokenTimeLeft,
 	authInputState,
 	authState,
-	confirmPasswordState,
+	confirmPasswordState, downloadAppUrlState,
 	isPasswordChangedState,
 	joinLinkState,
 	nameInputState,
@@ -189,6 +189,7 @@ const StepTwoContent = ({ childBlockWidth, isStoreMenuOpen, setStoreMenuOpen }: 
 	const langStringPageTokenMobileStoresGooglePlay = useLangString("page_token.mobile_stores.google_play");
 	const langStringPageTokenMobileStoresAppGallery = useLangString("page_token.mobile_stores.app_gallery");
 	const { getDownloadLink } = useDownloadLink();
+	const downloadAppUrl = useAtomValue(downloadAppUrlState);
 
 	const onClickHandler = useCallback(() => {
 		setStoreMenuOpen(true);
@@ -214,7 +215,7 @@ const StepTwoContent = ({ childBlockWidth, isStoreMenuOpen, setStoreMenuOpen }: 
 	const onSelectHandler = useCallback((value: string) => {
 		window.location.href = getDownloadLink(value);
 		setTimeout(() => setStoreMenuOpen(false), 500);
-	}, []);
+	}, [downloadAppUrl]);
 
 	return (
 		<VStack gap="16px">

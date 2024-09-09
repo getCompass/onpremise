@@ -8,6 +8,7 @@ import (
 	"context"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 	"go_sender/api/conf"
 	GlobalIsolation "go_sender/api/includes/type/global_isolation"
 	Isolation "go_sender/api/includes/type/isolation"
@@ -31,7 +32,12 @@ func main() {
 	ctx := context.Background()
 	config, err := conf.GetConfig()
 
-	// если не спарсил конфиг то падаем, делать нечего)
+	if err != nil {
+		panic(err)
+	}
+
+	err = server.Init(config.ServerTagList)
+
 	if err != nil {
 		panic(err)
 	}

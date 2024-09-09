@@ -7,5 +7,7 @@
 	"rabbit_exchange": "${RABBIT_EXCHANGE}",
 	"capacity_limit": 10000,
 	"world_config_path": "/config",
-	"get_member_timeout_ms": ${GO_COMPANY_CACHE_GET_MEMBER_TIMEOUT_MS}
+	"server_tag_list": ${SERVER_TAG_LIST},
+	"get_member_timeout_ms": ${GO_COMPANY_CACHE_GET_MEMBER_TIMEOUT_MS},
+	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC}
 }

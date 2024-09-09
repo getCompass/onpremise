@@ -6,7 +6,7 @@ import {
 	availableAuthMethodListState,
 	captchaProviderState,
 	captchaPublicKeyState,
-	dictionaryDataState,
+	dictionaryDataState, downloadAppUrlState,
 	profileState,
 	serverVersionState,
 	ssoProtocolState,
@@ -26,6 +26,8 @@ type ApiGlobalDoStart = {
 	sso_protocol: string;
 	dictionary: ApiGlobalStartDictionaryData;
 	user_info: ApiUserInfoData | null;
+	connect_check_url: string;
+	download_app_url: string;
 };
 
 export function useApiGlobalDoStart() {
@@ -37,6 +39,7 @@ export function useApiGlobalDoStart() {
 	const setServerVersion = useSetAtom(serverVersionState);
 	const setStartDictionaryDataState = useSetAtom(dictionaryDataState);
 	const setUserInfoDataState = useSetAtom(userInfoDataState);
+	const setDownloadAppUrl = useSetAtom(downloadAppUrlState);
 
 	return useQuery({
 		retry: false,
@@ -59,6 +62,8 @@ export function useApiGlobalDoStart() {
 			setStartDictionaryDataState(result.response.dictionary);
 
 			setUserInfoDataState(result.response.user_info);
+
+			setDownloadAppUrl(result.response.download_app_url);
 
 			setProfile({
 				is_authorized: result.response.is_authorized === 1,

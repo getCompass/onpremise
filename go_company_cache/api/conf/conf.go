@@ -25,7 +25,12 @@ type ConfigStruct struct {
 	WorldConfigPath string `json:"world_config_path"`
 
 	GetMemberTimeoutMs time.Duration `json:"get_member_timeout_ms"`
+
+	ServerTagList                       []string      `json:"server_tag_list"`
+	ForceCompanyConfigUpdateIntervalSec time.Duration `json:"force_company_config_update_interval_sec"`
 }
+
+var config *ConfigStruct = nil
 
 // -------------------------------------------------------
 // PUBLIC
@@ -34,11 +39,15 @@ type ConfigStruct struct {
 // GetConfig получаем конфигурацию custom
 func GetConfig() (*ConfigStruct, error) {
 
+	if config != nil {
+		return config, nil
+	}
+
 	tempPath := flags.ConfDir
 	if tempPath == "" {
 
 		_, b, _, _ := runtime.Caller(0)
-		tempPath = path.Join(path.Dir(b))
+		tempPath = path.Join(path.Dir(b)) // nosemgrep
 	}
 
 	// сохраняем конфигурацию
@@ -46,6 +55,8 @@ func GetConfig() (*ConfigStruct, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	config = decodedInfo
 
 	return decodedInfo, nil
 }

@@ -3,6 +3,8 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Server\ServerProvider;
+use Random\RandomException;
 
 /**
  * Class Gateway_Bus_DatabaseController
@@ -182,7 +184,7 @@ class Gateway_Bus_DatabaseController {
 		}
 
 		// дожидаемся завершения рутины
-		static::_waitResponseRoutine($domino_registry_row, $response->getRoutineKey(), $response->getRoutine()->getStatus(), $response->getRoutine()->getMessage(), time() + 180);
+		static::_waitResponseRoutine($domino_registry_row, $response->getRoutineKey(), $response->getRoutine()->getStatus(), $response->getRoutine()->getMessage(), time() + 60);
 	}
 
 	/**
@@ -375,6 +377,29 @@ class Gateway_Bus_DatabaseController {
 		}
 	}
 
+	/**
+	 * обновляет деплой для баз данных пространств на домино
+	 *
+	 * @throws BusFatalException
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 */
+	public static function updateDeployment(Struct_Db_PivotCompanyService_DominoRegistry $domino):void {
+
+		//только для on-premise сервера
+		if (!ServerProvider::isOnPremise()) {
+			return;
+		}
+
+		$request = new \DatabaseControllerGrpc\NullRequestStruct([]);
+
+		/** @var \DatabaseControllerGrpc\NullResponseStruct $response */
+		[$_, $status] = self::_doCallGrpc($domino, "UpdateDeployment", $request);
+		if ($status->code !== \Grpc\STATUS_OK) {
+
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
+		}
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------
@@ -430,12 +455,44 @@ class Gateway_Bus_DatabaseController {
 	 */
 	protected static function _doCallGrpc(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, string $method_name, \Google\Protobuf\Internal\Message $request):array {
 
-		$conf       = [
-			"host" => $domino_registry_row->database_host,
-			"port" => Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerPort($domino_registry_row->extra),
+		$conf = [
+			"host"           => $domino_registry_row->database_host,
+			"port"           => Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerPort($domino_registry_row->extra),
+			"ca_certificate" => CA_CERTIFICATE,
+			"token"          => self::_generateSignature($domino_registry_row->domino_id),
 		];
 
-		$connection = \Bus::configured($conf, \DatabaseControllerGrpc\databaseControllerClient::class, "database_controller_" . $domino_registry_row->domino_id);
+		$connection = \Bus::configured(
+			$conf, \DatabaseControllerGrpc\databaseControllerClient::class, "database_controller_" . $domino_registry_row->domino_id);
 		return $connection->callGrpc($method_name, $request);
+	}
+
+	/**
+	 * Генерируем подпись запроса
+	 *
+	 * @param string $domino_id
+	 *
+	 * @return string
+	 * @throws RandomException
+	 */
+	protected static function _generateSignature(string $domino_id):string {
+
+		$secret_key = getConfig("DOMINO_ENTRYPOINT")[$domino_id]["domino_secret_key"];
+		$secret_key = base64_decode($secret_key);
+
+		$signature_arr = [
+			"requested_at" => time(),
+		];
+
+		$signature_json = toJson($signature_arr);
+
+		// варим рандомный iv и приклеиваем в начало строки
+		// рандомный iv нужен, чтобы избежать возможности выявить какие-либо последовательности в шифровании
+		// его можно передать вместе с зашифрованным текстом
+		// длина IV ровно 16 байтов!
+		$iv         = random_bytes(16);
+		$ciphertext = $iv . openssl_encrypt($signature_json, ENCRYPT_CIPHER_METHOD, $secret_key, OPENSSL_RAW_DATA, $iv);
+
+		return base64_encode($ciphertext);
 	}
 }

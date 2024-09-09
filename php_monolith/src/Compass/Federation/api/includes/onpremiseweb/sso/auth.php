@@ -23,7 +23,7 @@ class Onpremiseweb_Sso_Auth extends \BaseFrame\Controller\Api {
 
 		$redirect_url = $this->post(\Formatter::TYPE_STRING, "redirect_url", false);
 
-		$sso_auth = Domain_Sso_Scenario_OnPremiseWeb_Auth::begin($redirect_url);
+		$sso_auth = Domain_Oidc_Scenario_OnPremiseWeb_Auth::begin($redirect_url);
 
 		return $this->ok([
 			"link"           => (string) $sso_auth->link,
@@ -45,8 +45,8 @@ class Onpremiseweb_Sso_Auth extends \BaseFrame\Controller\Api {
 		$signature      = $this->post(\Formatter::TYPE_STRING, "signature");
 
 		try {
-			$status = Domain_Sso_Scenario_OnPremiseWeb_Auth::getStatus($sso_auth_token, $signature);
-		} catch (Domain_Sso_Exception_Auth_TokenNotFound|Domain_Sso_Exception_Auth_SignatureMismatch) {
+			$status = Domain_Oidc_Scenario_OnPremiseWeb_Auth::getStatus($sso_auth_token, $signature);
+		} catch (Domain_Oidc_Exception_Auth_TokenNotFound|Domain_Oidc_Exception_Auth_SignatureMismatch) {
 			throw new ParamException("incorrect data");
 		}
 

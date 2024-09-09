@@ -28,6 +28,8 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"nodes.replaceUserbotAvatar",
 			"nodes.replacePreviewForWelcomeVideo",
 			"nodes.uploadInvoice",
+			"nodes.uploadAvatarFile",
+			"nodes.uploadFileByUrl",
 		],
 	],
 	"file_node"     => [

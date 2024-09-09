@@ -9,10 +9,13 @@ namespace Compass\Pivot;
 class Struct_User_Auth_Sso_AccountData {
 
 	public function __construct(
-		public string $first_name,
-		public string $last_name,
-		public string $mail,
-		public string $phone_number,
+		public ?string $name,
+		public ?string $avatar,
+		public ?string $badge,
+		public ?string $role,
+		public ?string $bio,
+		public string  $mail,
+		public string  $phone_number,
 	) {
 	}
 
@@ -24,8 +27,11 @@ class Struct_User_Auth_Sso_AccountData {
 	public static function arrayToStruct(array $array):self {
 
 		return new self(
-			$array["first_name"],
-			$array["last_name"],
+			$array["name"],
+			$array["avatar"],
+			$array["badge"],
+			$array["role"],
+			$array["bio"],
 			$array["mail"],
 			$array["phone_number"],
 		);

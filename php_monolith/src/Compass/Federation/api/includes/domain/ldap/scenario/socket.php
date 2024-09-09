@@ -31,9 +31,7 @@ class Domain_Ldap_Scenario_Socket {
 
 		// собираем объект с данными о учетной записе
 		$entry             = Domain_Ldap_Entity_Utils::prepareEntry(Domain_Ldap_Entity_AuthToken_Data::getEntry($ldap_auth->data));
-		$display_name      = Domain_Ldap_Entity_Utils::getDisplayNameAttribute($entry);
-		$uid               = Domain_Ldap_Entity_Utils::getUniqueAttributeValue($entry, Domain_Ldap_Entity_Config::getUserUniqueAttribute());
-		$ldap_account_data = new Struct_Ldap_AccountData($display_name, $uid, $ldap_auth->username);
+		$ldap_account_data = Domain_Ldap_Entity_AccountData::parse($entry, $ldap_auth->username);
 
 		// получаем связь ldap учетной записи и compass пользователя
 		try {
@@ -54,7 +52,7 @@ class Domain_Ldap_Scenario_Socket {
 	 * создаем связь «LDAP аккаунт» – «Пользователь Compass»
 	 *
 	 * @throws Domain_Ldap_Exception_Auth_TokenNotFound
-	 * @throws Domain_Sso_Exception_UserRelationship_AlreadyExists
+	 * @throws Domain_Oidc_Exception_UserRelationship_AlreadyExists
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \queryException
 	 */

@@ -21,6 +21,7 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 		"replacePreviewForWelcomeVideo",
 		"uploadInvoice",
 		"uploadAvatarFile",
+		"uploadFileByUrl",
 	];
 
 	// функция сохраняет файл
@@ -158,6 +159,48 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 
 		// сохраняем файл
 		$file_row = Helper_File::uploadFile($this->user_id, 0, "", $file_source, $original_file_name, $uploaded_file_info["tmp_name"]);
+
+		return $this->ok([
+			"file_key" => (string) $file_row["file_key"],
+		]);
+	}
+
+	/**
+	 * Загрузить файл по file_url
+	 *
+	 * @return array
+	 * @throws ParamException
+	 * @throws \ParseException
+	 */
+	public function uploadFileByUrl():array {
+
+		$file_url    = $this->post(\Formatter::TYPE_STRING, "file_url");
+		$file_source = $this->post(\Formatter::TYPE_INT, "file_source");
+		$file_name   = $this->post(\Formatter::TYPE_STRING, "file_name");
+		$company_id  = $this->post(\Formatter::TYPE_INT, "company_id");
+		$company_url = $this->post(\Formatter::TYPE_STRING, "company_url");
+
+		if (mb_strlen($file_name) > 255) {
+			throw new \ParseException("File name `{$file_name}` overflow maximum length (255)");
+		}
+
+		// пробуем скачать файл
+		try {
+			$file_content = Helper_File::downloadFile($file_url, true);
+		} catch (cs_DownloadFailed) {
+			return $this->error(10020, "file download error");
+		}
+
+		// сохраняем содержимое скачиваемого файла во временный файл
+		$tmp_file_path = Type_File_Utils::generateTmpPath();
+		Type_File_Utils::saveContentToFile($tmp_file_path, $file_content);
+
+		// загружаем файл
+		try {
+			$file_row = Helper_File::uploadFile($this->user_id, $company_id, $company_url, $file_source, $file_name, $tmp_file_path);
+		} catch (cs_InvalidFileTypeForSource) {
+			return $this->error(10020, "file download error");
+		}
 
 		return $this->ok([
 			"file_key" => (string) $file_row["file_key"],

@@ -129,9 +129,9 @@ class Domain_User_Entity_Auth_Config {
 	 * @return bool
 	 * @throws ParseFatalException
 	 */
-	public static function isFullNameActualizationEnabled():bool {
+	public static function isProfileDataActualizationEnabled():bool {
 
-		return self::_getConfig(self::_KEY_AUTH_SSO)["full_name_actualization_enabled"];
+		return self::_getConfig(self::_KEY_AUTH_SSO)["profile_data_actualization_enabled"];
 	}
 
 	/**

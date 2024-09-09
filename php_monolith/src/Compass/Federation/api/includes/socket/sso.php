@@ -27,7 +27,7 @@ class Socket_Sso extends \BaseFrame\Controller\Socket {
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
-		$has_user_relationship = Domain_Sso_Scenario_Socket_Auth::hasUserRelationship($user_id);
+		$has_user_relationship = Domain_Oidc_Scenario_Socket_Auth::hasUserRelationship($user_id);
 		$has_user_relationship = $has_user_relationship ?: Domain_Ldap_Scenario_Socket::hasUserRelationship($user_id);
 
 		return $this->ok([
@@ -46,7 +46,7 @@ class Socket_Sso extends \BaseFrame\Controller\Socket {
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
-		Domain_Sso_Scenario_Socket_Auth::deleteUserRelationship($user_id);
+		Domain_Oidc_Scenario_Socket_Auth::deleteUserRelationship($user_id);
 		Domain_Ldap_Scenario_Socket::deleteUserRelationship($user_id);
 
 		return $this->ok();

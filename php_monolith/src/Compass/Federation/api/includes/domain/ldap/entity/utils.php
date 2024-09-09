@@ -55,13 +55,13 @@ class Domain_Ldap_Entity_Utils {
 	}
 
 	/**
-	 * получаем display name учетной записи
+	 * получаем знаение атрибута по его названию
 	 *
 	 * @return string
 	 */
-	public static function getDisplayNameAttribute(array $entry):string {
+	public static function getAttribute(array $entry, string $attribute_name):string {
 
-		return $entry["displayname"] ?? "";
+		return $entry[$attribute_name] ?? "";
 	}
 
 	/**

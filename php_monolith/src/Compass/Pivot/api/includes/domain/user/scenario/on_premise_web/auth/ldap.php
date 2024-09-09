@@ -140,10 +140,10 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getType(), $story->getAuthLdapHandler()->getAuthParameter(), getDeviceId(), getUa());
 
 		// если включен флаг актуализиции имя фамилия после авторизации через LDAP
-		if (Domain_User_Entity_Auth_Config::isFullNameActualizationEnabled()) {
+		if (Domain_User_Entity_Auth_Config::isProfileDataActualizationEnabled()) {
 
-			// актуализируем имя фамилия для пользователя
-			Domain_User_Action_UpdateProfile::do($user_id, self::_prepareFullName($ldap_account_data), false);
+			// актуализируем информацию
+			self::_actualizeProfileData($user_id, $ldap_account_data);
 		}
 
 		return [$user_id, null];
@@ -188,7 +188,49 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		));
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
+		// актуализируем информацию
+		self::_actualizeProfileData($user->user_id, $ldap_account_data);
+
 		return [$user->user_id, $integration_response];
+	}
+
+	/**
+	 * актуализируем данные о пользователе
+	 *
+	 * @throws ReturnFatalException
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws \busException
+	 * @throws \cs_CurlError
+	 * @throws \cs_RowIsEmpty
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws cs_FileIsNotImage
+	 */
+	protected static function _actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data):void {
+
+		// актуальный аватар пользователя
+		$avatar_file_key = false;
+
+		// если для пользователя передана аватарка из sso, то пытаемся загрузить ее
+		if (!is_null($sso_account_data->avatar)) {
+
+			try {
+				$avatar_file_key = Domain_User_Action_Sso_ActualizeProfileData::uploadSsoAvatar($sso_account_data->avatar);
+			} catch (\cs_CurlError) {
+				// TODO логирование
+			}
+		}
+
+		// записываем актуальную информацию о пользователе
+		Domain_User_Action_Sso_ActualizeProfileData::do(
+			$user_id,
+			is_null($sso_account_data->name) ? false : $sso_account_data->name,
+			$avatar_file_key,
+			is_null($sso_account_data->badge) ? false : $sso_account_data->badge,
+			is_null($sso_account_data->role) ? false : $sso_account_data->role,
+			is_null($sso_account_data->bio) ? false : $sso_account_data->bio,
+		);
 	}
 
 	/**
@@ -198,7 +240,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	 */
 	protected static function _prepareFullName(Struct_User_Auth_Ldap_AccountData $ldap_account_data):string {
 
-		return trim($ldap_account_data->display_name);
+		return trim($ldap_account_data->name);
 	}
 
 	/**

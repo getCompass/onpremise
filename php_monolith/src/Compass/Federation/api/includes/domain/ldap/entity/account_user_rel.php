@@ -37,7 +37,7 @@ class Domain_Ldap_Entity_AccountUserRel {
 	/**
 	 * создаем связь «LDAP аккаунт» – «Пользователь Compass»
 	 *
-	 * @throws Domain_Sso_Exception_UserRelationship_AlreadyExists
+	 * @throws Domain_Oidc_Exception_UserRelationship_AlreadyExists
 	 * @throws ParseFatalException
 	 * @throws \queryException
 	 */

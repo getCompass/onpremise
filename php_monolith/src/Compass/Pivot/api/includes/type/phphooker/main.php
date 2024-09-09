@@ -14,28 +14,29 @@ class Type_Phphooker_Main {
 	# region типы задач
 	##########################################################
 
-	public const TASK_TYPE_UPDATE_USER_COMPANY_INFO        = 3;  // обновление пользовательских данных во всех компаниях
-	public const TASK_TYPE_LOGOUT_USER                     = 4;  // разлогиниваем пользователя во всех компаниях
-	public const TASK_TYPE_KICK_USER_FROM_COMPANY          = 5;  // блокировка пользователя в системе, шаг второй
-	public const TASK_TYPE_DELETE_COMPANY                  = 13; // удаление компании
-	public const TASK_TYPE_DELETE_PROFILE                  = 14; // удаление аккаунта профиля
-	public const TASK_TYPE_COUNT_COMPANY                   = 15; // обновить число компаний
-	public const TASK_TYPE_UPDATE_PREMIUM_STATUS           = 21; // обновить премиум статусы в компаниях
-	public const TASK_TYPE_SMS_RESEND_NOTICE               = 31; // отреагировать на повторный запрос смс-сообщения
-	public const TASK_TYPE_INCORRECT_INVITE_LINK           = 43; // отреагировать на некорректную invite-ссылку
-	public const TASK_TYPE_ON_AUTH_STORY_EXPIRE            = 44; // при истечении срока жизни попытки логина/регистрации
-	public const TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE    = 45; // при истечении срока жизни попытки two_fa
-	public const TASK_TYPE_ON_PHONE_CHANGE_STORY_EXPIRE    = 46; // при истечении срока жизни попытки смены номера
-	public const TASK_TYPE_SEND_ACCOUNT_STATUS_LOG         = 47; // задача отправки лога по статусу пользователя до введения новой модели оплаты
-	public const TASK_TYPE_SEND_SPACE_STATUS_LOG           = 48; // задача отправки лога по статусу компании до введения новой модели оплаты
-	public const TASK_TYPE_SEND_BITRIX_ON_USER_REGISTERED  = 49; // задача отправки в Bitrix информации о новом зарегистрированном пользователе
-	public const TASK_TYPE_SEND_BITRIX_ON_USER_CHANGE_INFO = 50; // задача отправки в Bitrix актуальной информации о ранее зарегистрированном пользователе
-	public const TASK_TYPE_SEND_BITRIX_USER_CAMPAIGN_DATA  = 51; // задача получения и отправки в Bitrix данных по рекламной кампании, с которой пользователь пришел в приложение
-	public const TASK_TYPE_ACCEPT_FIRST_JOIN_LINK          = 52; // при принятии первой ссылки-приглашения в команду
-	public const TASK_TYPE_ON_USER_LEFT_SPACE_EARLY        = 53; // пользователь покинул пространство слишком рано
-	public const TASK_TYPE_USER_ENTERING_FIRST_SPACE       = 54; // пользователь вступил в первую команду
-	public const TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE       = 55; // при истечении срока жизни попытки добавления номера телефона
-	public const TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES    = 56; // исключаем пользователя из всех команд
+	public const TASK_TYPE_UPDATE_USER_COMPANY_INFO            = 3;  // обновление пользовательских данных во всех компаниях
+	public const TASK_TYPE_LOGOUT_USER                         = 4;  // разлогиниваем пользователя во всех компаниях
+	public const TASK_TYPE_KICK_USER_FROM_COMPANY              = 5;  // блокировка пользователя в системе, шаг второй
+	public const TASK_TYPE_DELETE_COMPANY                      = 13; // удаление компании
+	public const TASK_TYPE_DELETE_PROFILE                      = 14; // удаление аккаунта профиля
+	public const TASK_TYPE_COUNT_COMPANY                       = 15; // обновить число компаний
+	public const TASK_TYPE_UPDATE_PREMIUM_STATUS               = 21; // обновить премиум статусы в компаниях
+	public const TASK_TYPE_SMS_RESEND_NOTICE                   = 31; // отреагировать на повторный запрос смс-сообщения
+	public const TASK_TYPE_INCORRECT_INVITE_LINK               = 43; // отреагировать на некорректную invite-ссылку
+	public const TASK_TYPE_ON_AUTH_STORY_EXPIRE                = 44; // при истечении срока жизни попытки логина/регистрации
+	public const TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE        = 45; // при истечении срока жизни попытки two_fa
+	public const TASK_TYPE_ON_PHONE_CHANGE_STORY_EXPIRE        = 46; // при истечении срока жизни попытки смены номера
+	public const TASK_TYPE_SEND_ACCOUNT_STATUS_LOG             = 47; // задача отправки лога по статусу пользователя до введения новой модели оплаты
+	public const TASK_TYPE_SEND_SPACE_STATUS_LOG               = 48; // задача отправки лога по статусу компании до введения новой модели оплаты
+	public const TASK_TYPE_SEND_BITRIX_ON_USER_REGISTERED      = 49; // задача отправки в Bitrix информации о новом зарегистрированном пользователе
+	public const TASK_TYPE_SEND_BITRIX_ON_USER_CHANGE_INFO     = 50; // задача отправки в Bitrix актуальной информации о ранее зарегистрированном пользователе
+	public const TASK_TYPE_SEND_BITRIX_USER_CAMPAIGN_DATA      = 51; // задача получения и отправки в Bitrix данных по рекламной кампании, с которой пользователь пришел в приложение
+	public const TASK_TYPE_ACCEPT_FIRST_JOIN_LINK              = 52; // при принятии первой ссылки-приглашения в команду
+	public const TASK_TYPE_ON_USER_LEFT_SPACE_EARLY            = 53; // пользователь покинул пространство слишком рано
+	public const TASK_TYPE_USER_ENTERING_FIRST_SPACE           = 54; // пользователь вступил в первую команду
+	public const TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE           = 55; // при истечении срока жизни попытки добавления номера телефона
+	public const TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES        = 56; // исключаем пользователя из всех команд
+	public const TASK_TYPE_UPDATE_MEMBER_INFO_ON_ALL_COMPANIES = 57; // обновляем данные пользователя во всех его командах
 
 	# endregion
 	##########################################################
@@ -356,6 +357,19 @@ class Type_Phphooker_Main {
 			"user_id"    => $user_id,
 			"company_id" => $company_id,
 			"entry_id"   => $entry_id,
+		]);
+	}
+
+	/**
+	 * обновляем данные на каждой из компаний пользователя
+	 */
+	public static function updateMemberInfoOnAllCompanies(int $user_id, int $need_work, false|string $badge_content, false|string $status, false|string $description):void {
+
+		self::_addFromApi(self::TASK_TYPE_UPDATE_MEMBER_INFO_ON_ALL_COMPANIES, $need_work, [
+			"user_id"       => $user_id,
+			"badge_content" => $badge_content,
+			"status"        => $status,
+			"description"   => $description,
 		]);
 	}
 

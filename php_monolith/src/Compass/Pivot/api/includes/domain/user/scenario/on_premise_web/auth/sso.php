@@ -140,11 +140,11 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		// добавляем в историю, что пользователь залогинился
 		Domain_User_Entity_UserActionComment::addUserLoginAction($user_id, $story->getType(), $story->getAuthSsoHandler()->getAuthParameter(), getDeviceId(), getUa());
 
-		// если включен флаг актуализиции имя фамилия после авторизации через SSO
-		if (Domain_User_Entity_Auth_Config::isFullNameActualizationEnabled()) {
+		// если включен флаг актуализиции данных о пользователе после авторизации через SSO
+		if (Domain_User_Entity_Auth_Config::isProfileDataActualizationEnabled()) {
 
-			// актуализируем имя фамилия для пользователя
-			Domain_User_Action_UpdateProfile::do($user_id, self::_prepareFullName($sso_account_data), false);
+			// актуализируем информацию
+			self::_actualizeProfileData($user_id, $sso_account_data);
 		}
 
 		return [$user_id, null];
@@ -152,6 +152,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 
 	/**
 	 * Выполняет кусок логики для создания нового пользователя и подтверждения аутентификации.
+	 * @long
 	 */
 	protected static function _confirmNotRegisteredUserAuthentication(Struct_User_Auth_Sso_AccountData $sso_account_data, string|false $join_link_uniq):array {
 
@@ -179,7 +180,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		}
 
 		// подготавливаем данные, полученные об аккаунте из SSO
-		$full_name = trim($sso_account_data->first_name . " " . $sso_account_data->last_name);
+		$full_name = trim($sso_account_data->name);
 
 		// регистрируем и отмечаем в истории событие
 		$user                 = Domain_User_Action_Create_Human::do("", "", "", getUa(), getIp(), $full_name, "", [], 0, 0);
@@ -192,7 +193,49 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 		));
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
+		// актуализируем данные о пользователе
+		self::_actualizeProfileData($user->user_id, $sso_account_data);
+
 		return [$user->user_id, $integration_response];
+	}
+
+	/**
+	 * актуализируем данные о пользователе
+	 *
+	 * @throws ReturnFatalException
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws \busException
+	 * @throws \cs_CurlError
+	 * @throws \cs_RowIsEmpty
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws cs_FileIsNotImage
+	 */
+	protected static function _actualizeProfileData(int $user_id, Struct_User_Auth_Sso_AccountData $sso_account_data):void {
+
+		// актуальный аватар пользователя
+		$avatar_file_key = false;
+
+		// если для пользователя передана аватарка из sso, то пытаемся загрузить ее
+		if (!is_null($sso_account_data->avatar)) {
+
+			try {
+				$avatar_file_key = Domain_User_Action_Sso_ActualizeProfileData::uploadSsoAvatar($sso_account_data->avatar);
+			} catch (\cs_CurlError $e) {
+				// TODO логирование
+			}
+		}
+
+		// записываем актуальную информацию о пользователе
+		Domain_User_Action_Sso_ActualizeProfileData::do(
+			$user_id,
+			is_null($sso_account_data->name) ? false : $sso_account_data->name,
+			$avatar_file_key,
+			is_null($sso_account_data->badge) ? false : $sso_account_data->badge,
+			is_null($sso_account_data->role) ? false : $sso_account_data->role,
+			is_null($sso_account_data->bio) ? false : $sso_account_data->bio,
+		);
 	}
 
 	/**
@@ -202,7 +245,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 	 */
 	protected static function _prepareFullName(Struct_User_Auth_Sso_AccountData $sso_account_data):string {
 
-		return trim($sso_account_data->first_name . " " . $sso_account_data->last_name);
+		return trim($sso_account_data->name);
 	}
 
 	/**

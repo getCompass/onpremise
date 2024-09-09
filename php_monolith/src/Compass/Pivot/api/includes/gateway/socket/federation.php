@@ -72,7 +72,7 @@ class Gateway_Socket_Federation extends Gateway_Socket_Default {
 	/**
 	 * оповещаем модуль федерации, чтобы сообщить о создании пользователя для успешной аутентификации SSO по протоколу OIDC
 	 *
-	 * @throws Domain_User_Exception_AuthStory_Sso_UserRelationship_AlreadyExists
+	 * @throws Domain_User_Exception_AuthStory_Sso_UserRelationshipAlreadyExists
 	 * @throws ReturnFatalException
 	 */
 	public static function createSsoOidcUserRelationship(string $sso_auth_token, int $user_id):void {
@@ -90,7 +90,7 @@ class Gateway_Socket_Federation extends Gateway_Socket_Default {
 			}
 
 			match ($response["error_code"]) {
-				1003 => throw new Domain_User_Exception_AuthStory_Sso_UserRelationship_AlreadyExists(),
+				1003 => throw new Domain_User_Exception_AuthStory_Sso_UserRelationshipAlreadyExists(),
 			};
 		}
 	}

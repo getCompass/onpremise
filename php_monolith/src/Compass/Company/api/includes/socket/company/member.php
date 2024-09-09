@@ -286,9 +286,10 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 
 		return $this->ok([
 			"user" => (object) [
-				"description" => $user_info->short_description,
-				"badge"       => \CompassApp\Domain\Member\Entity\Extra::getBadgeContent($user_info->extra),
-				"role"        => $user_info->role,
+				"description"    => $user_info->short_description,
+				"badge"          => \CompassApp\Domain\Member\Entity\Extra::getBadgeContent($user_info->extra),
+				"badge_color_id" => \CompassApp\Domain\Member\Entity\Extra::getBadgeColor($user_info->extra),
+				"role"           => $user_info->role,
 			],
 		]);
 	}

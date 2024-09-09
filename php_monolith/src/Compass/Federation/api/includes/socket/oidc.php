@@ -31,15 +31,15 @@ class Socket_Oidc extends \BaseFrame\Controller\Socket {
 
 		try {
 
-			/** @var Struct_Sso_AccountData $sso_account_data */
-			[$compass_user_id, $sso_account_data] = Domain_Sso_Scenario_Socket_Auth::validateAuthToken($sso_auth_token, $signature);
-		} catch (Domain_Sso_Exception_Auth_Expired) {
+			/** @var Struct_Oidc_AccountData $sso_account_data */
+			[$compass_user_id, $sso_account_data] = Domain_Oidc_Scenario_Socket_Auth::validateAuthToken($sso_auth_token, $signature);
+		} catch (Domain_Oidc_Exception_Auth_Expired) {
 			return $this->error(1000, "sso auth expired");
-		} catch (Domain_Sso_Exception_Auth_SignatureMismatch) {
+		} catch (Domain_Oidc_Exception_Auth_SignatureMismatch) {
 			return $this->error(1001, "signature mismatch");
-		} catch (Domain_Sso_Exception_Auth_TokenNotFound) {
+		} catch (Domain_Oidc_Exception_Auth_TokenNotFound) {
 			throw new ParseFatalException("unexpected behaviour");
-		} catch (Domain_Sso_Exception_Auth_UnexpectedStatus) {
+		} catch (Domain_Oidc_Exception_Auth_UnexpectedStatus) {
 			return $this->error(1002, "auth have unexpected status");
 		}
 
@@ -63,10 +63,10 @@ class Socket_Oidc extends \BaseFrame\Controller\Socket {
 		$user_id        = $this->post(\Formatter::TYPE_INT, "user_id");
 
 		try {
-			Domain_Sso_Scenario_Socket_Auth::createUserRelationship($sso_auth_token, $user_id);
-		} catch (Domain_Sso_Exception_Auth_TokenNotFound) {
+			Domain_Oidc_Scenario_Socket_Auth::createUserRelationship($sso_auth_token, $user_id);
+		} catch (Domain_Oidc_Exception_Auth_TokenNotFound) {
 			throw new ParseFatalException("unexpected behaviour");
-		} catch (Domain_Sso_Exception_UserRelationship_AlreadyExists) {
+		} catch (Domain_Oidc_Exception_UserRelationship_AlreadyExists) {
 			return $this->error(1003, "user relationship already exists");
 		}
 
@@ -84,7 +84,7 @@ class Socket_Oidc extends \BaseFrame\Controller\Socket {
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
-		$has_user_relationship = Domain_Sso_Scenario_Socket_Auth::hasUserRelationship($user_id);
+		$has_user_relationship = Domain_Oidc_Scenario_Socket_Auth::hasUserRelationship($user_id);
 
 		return $this->ok([
 			"has_user_relationship" => (int) intval($has_user_relationship),

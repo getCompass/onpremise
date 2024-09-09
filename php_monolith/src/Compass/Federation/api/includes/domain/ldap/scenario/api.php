@@ -42,6 +42,8 @@ class Domain_Ldap_Scenario_Api {
 			throw $e;
 		}
 
+		// подготавливаем найденную учетную запись
+		$entry          = self::_prepareAvatarBlob($entry);
 		$prepared_entry = Domain_Ldap_Entity_Utils::prepareEntry($entry);
 		[$user_unique_attribute_value, $dn] = Domain_Ldap_Entity_Utils::parseEntryAttributes($prepared_entry, Domain_Ldap_Entity_Config::getUserUniqueAttribute());
 
@@ -51,5 +53,56 @@ class Domain_Ldap_Scenario_Api {
 		$auth_token      = Domain_Ldap_Entity_AuthToken::save($user_unique_attribute_value, $username, $dn, Domain_Ldap_Entity_AuthToken::STATUS_LDAP_AUTH_COMPLETE, $auth_token_data);
 
 		return $auth_token->ldap_auth_token;
+	}
+
+	/**
+	 * подготавливаем avatar blob, кодируя его в base64
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 */
+	protected static function _prepareAvatarBlob(array $entry):array {
+
+		// проверяем, мапится ли аватар в приложение
+		// если мапится, то ничего не делаем
+		$avatar_mapped_field = Domain_Sso_Entity_CompassMapping_Config::getMappedFieldContent(Domain_Sso_Entity_CompassMapping_Config::MAPPED_FIELD_AVATAR);
+		if (mb_strlen($avatar_mapped_field) == 0) {
+			return $entry;
+		}
+
+		// приводим к нижнему регистру
+		$avatar_mapped_field = trim(mb_strtolower($avatar_mapped_field), "{}");
+
+		// ищем параметр, где хранится аватар
+		foreach ($entry as $entry_field => $entry_field_values) {
+
+			// приводим к нижнему регистру
+			$entry_field = mb_strtolower($entry_field);
+
+			// если это не параметр с аватаром, то пропускаем
+			if ($entry_field !== $avatar_mapped_field) {
+				continue;
+			}
+
+			// нашли параметр, проверяем, что есть значение
+			// если значений нет, то пропускаем
+			if ($entry_field_values["count"] == 0) {
+				continue;
+			}
+
+			// иначе для каждого значения кодируем blob в base64, если он уже не в таком формате
+			for ($i = 0; $i < $entry_field_values["count"]; $i++) {
+
+				// если это уже base64, то не трогаем
+				if (base64_decode($entry_field_values[$i], true) !== false) {
+					continue;
+				}
+
+				// кодируем в base64
+				$entry[$entry_field][$i] = base64_encode($entry_field_values[$i]);
+			}
+		}
+
+		return $entry;
 	}
 }

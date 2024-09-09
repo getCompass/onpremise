@@ -173,7 +173,7 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Обновляем информацию участника
 	 */
-	public static function updateMemberInfo(int $user_id, string|false $description, string|false $status, int|false $badge_color_id, string|false $badge_content):void {
+	public static function updateMemberInfo(int $user_id, string|false $description, string|false $status, string|false $badge_content, int|false $badge_color_id):void {
 
 		// валидируем user_id
 		Domain_User_Entity_Validator::assertValidUserId($user_id);

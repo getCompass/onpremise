@@ -149,28 +149,29 @@ class Cron_Phphooker extends \Cron_Default {
 			// развилка по типу задачи
 			return match ($task_type) {
 
-				Type_Phphooker_Main::TASK_TYPE_UPDATE_USER_COMPANY_INFO        => $this->_doUpdateUserCompanyInfo($params["user_id"], $params["client_launch_uuid"]),
-				Type_Phphooker_Main::TASK_TYPE_LOGOUT_USER                     => $this->_doLogoutUser($params["user_id"], $params["session_uniq_list"]),
-				Type_Phphooker_Main::TASK_TYPE_KICK_USER_FROM_COMPANY          => $this->_doKickUserFromCompany($params["user_id"], $params["user_role"], $params["company_id"]),
-				Type_Phphooker_Main::TASK_TYPE_DELETE_COMPANY                  => $this->_doActionsOnCompanyDelete($params["deleted_by_user_id"], $params["company_id"]),
-				Type_Phphooker_Main::TASK_TYPE_DELETE_PROFILE                  => $this->_doActionsOnProfileDelete($params["deleted_user_id"]),
-				Type_Phphooker_Main::TASK_TYPE_COUNT_COMPANY                   => $this->_doCountCompany(),
-				Type_Phphooker_Main::TASK_TYPE_SMS_RESEND_NOTICE               => $this->_onSmsResent($params),
-				Type_Phphooker_Main::TASK_TYPE_INCORRECT_INVITE_LINK           => $this->_onTryValidateIncorrectLink($params),
-				Type_Phphooker_Main::TASK_TYPE_ON_AUTH_STORY_EXPIRE            => $this->_onAuthStoryExpire($params["auth_map"]),
-				Type_Phphooker_Main::TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE    => $this->_onTwoFaStoryExpire($params["two_fa_map"]),
-				Type_Phphooker_Main::TASK_TYPE_ON_PHONE_CHANGE_STORY_EXPIRE    => $this->_onPhoneChangeStoryExpire($params["user_id"], $params["phone_change_map"]),
-				Type_Phphooker_Main::TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE       => $this->_onPhoneAddStoryExpire($params["user_id"], $params["phone_add_map"]),
-				Type_Phphooker_Main::TASK_TYPE_SEND_ACCOUNT_STATUS_LOG         => $this->_onSendAccountStatusLog($params["user_id"], $params["action"]),
-				Type_Phphooker_Main::TASK_TYPE_SEND_SPACE_STATUS_LOG           => $this->_onSendSpaceStatusLog($params["company_id"], $params["action"]),
-				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_ON_USER_REGISTERED  => $this->_sendBitrixOnUserRegistered($task_id, $params["user_id"], $params["force_stage_id"]),
-				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_ON_USER_CHANGE_INFO => $this->_sendBitrixOnUserChangeData($task_id, $params["user_id"], $params["changed_data"]),
-				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_USER_CAMPAIGN_DATA  => $this->_sendBitrixUserCampaignData($task_id, $params["user_id"]),
-				Type_Phphooker_Main::TASK_TYPE_ACCEPT_FIRST_JOIN_LINK          => true, // удалить через 1 релиз
-				Type_Phphooker_Main::TASK_TYPE_ON_USER_LEFT_SPACE_EARLY        => $this->_onUserLeftSpaceEarly($params["user_id"], $params["company_id"], $params["entry_id"]),
-				Type_Phphooker_Main::TASK_TYPE_USER_ENTERING_FIRST_SPACE       => $this->_onUserJoinFirstSpace($params["user_id"], $params["company_id"], $params["entry_id"]),
-				Type_Phphooker_Main::TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES    => $this->_kickUserFromAllCompanies($params["user_id"]),
-				default                                                        => throw new ParseFatalException("Unhandled task_type [{$task_type}] in " . __METHOD__),
+				Type_Phphooker_Main::TASK_TYPE_UPDATE_USER_COMPANY_INFO            => $this->_doUpdateUserCompanyInfo($params["user_id"], $params["client_launch_uuid"]),
+				Type_Phphooker_Main::TASK_TYPE_LOGOUT_USER                         => $this->_doLogoutUser($params["user_id"], $params["session_uniq_list"]),
+				Type_Phphooker_Main::TASK_TYPE_KICK_USER_FROM_COMPANY              => $this->_doKickUserFromCompany($params["user_id"], $params["user_role"], $params["company_id"]),
+				Type_Phphooker_Main::TASK_TYPE_DELETE_COMPANY                      => $this->_doActionsOnCompanyDelete($params["deleted_by_user_id"], $params["company_id"]),
+				Type_Phphooker_Main::TASK_TYPE_DELETE_PROFILE                      => $this->_doActionsOnProfileDelete($params["deleted_user_id"]),
+				Type_Phphooker_Main::TASK_TYPE_COUNT_COMPANY                       => $this->_doCountCompany(),
+				Type_Phphooker_Main::TASK_TYPE_SMS_RESEND_NOTICE                   => $this->_onSmsResent($params),
+				Type_Phphooker_Main::TASK_TYPE_INCORRECT_INVITE_LINK               => $this->_onTryValidateIncorrectLink($params),
+				Type_Phphooker_Main::TASK_TYPE_ON_AUTH_STORY_EXPIRE                => $this->_onAuthStoryExpire($params["auth_map"]),
+				Type_Phphooker_Main::TASK_TYPE_ON_CONFIRMATION_STORY_EXPIRE        => $this->_onTwoFaStoryExpire($params["two_fa_map"]),
+				Type_Phphooker_Main::TASK_TYPE_ON_PHONE_CHANGE_STORY_EXPIRE        => $this->_onPhoneChangeStoryExpire($params["user_id"], $params["phone_change_map"]),
+				Type_Phphooker_Main::TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE           => $this->_onPhoneAddStoryExpire($params["user_id"], $params["phone_add_map"]),
+				Type_Phphooker_Main::TASK_TYPE_SEND_ACCOUNT_STATUS_LOG             => $this->_onSendAccountStatusLog($params["user_id"], $params["action"]),
+				Type_Phphooker_Main::TASK_TYPE_SEND_SPACE_STATUS_LOG               => $this->_onSendSpaceStatusLog($params["company_id"], $params["action"]),
+				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_ON_USER_REGISTERED      => $this->_sendBitrixOnUserRegistered($task_id, $params["user_id"], $params["force_stage_id"]),
+				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_ON_USER_CHANGE_INFO     => $this->_sendBitrixOnUserChangeData($task_id, $params["user_id"], $params["changed_data"]),
+				Type_Phphooker_Main::TASK_TYPE_SEND_BITRIX_USER_CAMPAIGN_DATA      => $this->_sendBitrixUserCampaignData($task_id, $params["user_id"]),
+				Type_Phphooker_Main::TASK_TYPE_ACCEPT_FIRST_JOIN_LINK              => true, // удалить через 1 релиз
+				Type_Phphooker_Main::TASK_TYPE_ON_USER_LEFT_SPACE_EARLY            => $this->_onUserLeftSpaceEarly($params["user_id"], $params["company_id"], $params["entry_id"]),
+				Type_Phphooker_Main::TASK_TYPE_USER_ENTERING_FIRST_SPACE           => $this->_onUserJoinFirstSpace($params["user_id"], $params["company_id"], $params["entry_id"]),
+				Type_Phphooker_Main::TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES        => $this->_kickUserFromAllCompanies($params["user_id"]),
+				Type_Phphooker_Main::TASK_TYPE_UPDATE_MEMBER_INFO_ON_ALL_COMPANIES => $this->_updateMemberInfoOnAllCompanies($params["user_id"], $params["badge_content"], $params["status"], $params["description"]),
+				default                                                            => throw new ParseFatalException("Unhandled task_type [{$task_type}] in " . __METHOD__),
 			};
 		} catch (\Exception $e) {
 
@@ -697,6 +698,45 @@ class Cron_Phphooker extends \Cron_Default {
 
 			// иначе фиксируем что пользователь проигнорировал предложение
 			Domain_User_Entity_Attribution_JoinSpaceAnalytics::onUserIgnoreMatchedJoinLink($user_id);
+		}
+
+		return true;
+	}
+
+	/**
+	 * обновляем данные пользователя во всех его командах
+	 *
+	 * @return bool
+	 */
+	protected function _updateMemberInfoOnAllCompanies(int $user_id, false|string $badge_content, false|string $status, false|string $description):bool {
+
+		// получаем все компании пользователя
+		$user_company_list = Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id);
+
+		// проходимся по каждой компании и обновляем данные об участнике
+		foreach ($user_company_list as $user_company) {
+
+			try {
+
+				$company = Domain_Company_Entity_Company::get($user_company->company_id);
+
+				// пропускаем если компания неактивная
+				if (!Domain_Company_Entity_Company::isCompanyActive($company)) {
+					continue;
+				}
+
+				$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
+
+				// получаем информацию о пользователе в контексте участника компании
+				[$current_description, $current_badge, $current_badge_color_id, $current_user_role] =
+					Gateway_Socket_Company::getUserInfo($user_id, $company->company_id, $company->domino_id, $private_key);
+
+				// если передать color без badge_content то админу при установке снесет бейдж
+				$badge_color_id = $badge_content === false ? false : $current_badge_color_id;
+				Gateway_Socket_Company::updateMemberInfo($company->domino_id, $company->company_id, $private_key, $user_id, $description, $status, $badge_content, $badge_color_id);
+			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
+				// !!! если вдруг компания неактивна, то продолжаем
+			}
 		}
 
 		return true;

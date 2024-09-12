@@ -27,11 +27,10 @@ class Apiv1_Talking extends \BaseFrame\Controller\Api {
 		// получаем device_id и платформу клиента
 		$device_id = getDeviceId();
 		$platform  = Type_Api_Platform::getPlatform();
-		$token     = COMPANY_ID . ":" . generateUUID();
 
 		// получаем и возвращаем параметры подключения
 		try {
-			Gateway_Bus_Sender::setToken($this->user_id, $token, $device_id, $platform);
+			$token = Gateway_Bus_Sender::setToken($this->user_id, $device_id, $platform);
 		} catch (cs_TalkingBadResponse) {
 
 			Gateway_Bus_Statholder::inc("messages", "row820");

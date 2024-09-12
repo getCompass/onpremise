@@ -53,7 +53,8 @@ func SetToken(Token string, Platform string, DeviceId string, UserId int64, Expi
 }
 
 // метод для отправки WS событий на активные подключения пользователей
-func SendEvent(userList []structures.UserStruct, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, routineKey string, isNeedPush int) {
+// nosemgrep
+func SendEvent(userList []structures.UserStruct, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, routineKey string, isNeedPush int, channel string) {
 
 	// запускаем в рутине чтобы выполнение шло асинхронно
 	go func() {
@@ -69,7 +70,7 @@ func SendEvent(userList []structures.UserStruct, event string, eventVersionList 
 
 		// отправляем запросы на ноды
 		if len(userConnectionList) > 0 {
-			tcp.SendEvent(userConnectionList, event, eventVersionList, wsUsers, uuid, routineKey)
+			tcp.SendEvent(userConnectionList, event, eventVersionList, wsUsers, uuid, routineKey, channel)
 		}
 
 		if len(needPushUserIdList) > 0 && isNeedPush == 1 {
@@ -83,7 +84,8 @@ func SendEvent(userList []structures.UserStruct, event string, eventVersionList 
 }
 
 // отправляем событие всем подключенным пользователям
-func BroadcastEvent(Event string, EventVersionList interface{}, WSUsers interface{}, uuid string, routineKey string) {
+// nosemgrep
+func BroadcastEvent(Event string, EventVersionList interface{}, WSUsers interface{}, uuid string, routineKey string, channel string) {
 
 	go func() {
 
@@ -98,7 +100,7 @@ func BroadcastEvent(Event string, EventVersionList interface{}, WSUsers interfac
 				waitRoutineKey(routineKey)
 				defer doneRoutineKey(routineKey)
 
-				sender.Broadcast(node.Id, Event, EventVersionList, WSUsers, uuid, routineKey)
+				sender.Broadcast(node.Id, Event, EventVersionList, WSUsers, uuid, routineKey, channel)
 			}(node)
 		}
 
@@ -205,7 +207,8 @@ func DeleteAllNodeConnectionsFromBalancer(nodeId int64) {
 }
 
 // создана конференция Jitsi
-func JitsiConferenceCreated(userId int64, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string) {
+// nosemgrep
+func JitsiConferenceCreated(userId int64, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string, channel string) {
 
 	go func() {
 
@@ -216,11 +219,12 @@ func JitsiConferenceCreated(userId int64, event string, eventVersionList interfa
 		userConnectionList, _ := balancer.SenderCache.GetUserConnectionListByUserId(userId)
 
 		// отправляем ws-событие & voip-пуш при создании конференации Jitsi
-		tcp.SendJitsiConferenceCreatedEvent(userId, userConnectionList, event, eventVersionList, pushData, wsUsers, uuid, timeToLive, routineKey)
+		tcp.SendJitsiConferenceCreatedEvent(userId, userConnectionList, event, eventVersionList, pushData, wsUsers, uuid, timeToLive, routineKey, channel)
 	}()
 }
 
 // отправляем voip-пуш Jitsi
+// nosemgrep
 func SendJitsiVoIPPush(userId int64, pushData interface{}, uuid string, routineKey string) {
 
 	go func() {

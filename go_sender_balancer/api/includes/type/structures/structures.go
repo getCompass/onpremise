@@ -32,6 +32,7 @@ type SendEventRequestStruct struct {
 	RoutineKey       string       `json:"routine_key"`
 	Uuid             string       `json:"uuid"`
 	IsNeedPush       int          `json:"is_need_push"`
+	Channel          string       `json:"channel"`
 }
 
 // структура запроса на отправку события батчинг-методом для go_sender_balancer
@@ -46,6 +47,7 @@ type BroadcastEventRequestStruct struct {
 	WSUsers          interface{} `json:"ws_users,omitempty"`
 	RoutineKey       string      `json:"routine_key"`
 	Uuid             string      `json:"uuid"`
+	Channel          string      `json:"channel"`
 }
 
 // структура запроса при создании конференции Jitsi
@@ -58,6 +60,7 @@ type JitsiConferenceCreatedRequestStruct struct {
 	Uuid             string      `json:"uuid"`
 	TimeToLive       int64       `json:"time_to_live"`
 	RoutineKey       string      `json:"routine_key"`
+	Channel          string      `json:"channel"`
 }
 
 // структура запроса при создании конференции Jitsi

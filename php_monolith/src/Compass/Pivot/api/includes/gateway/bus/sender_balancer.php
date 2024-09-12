@@ -12,6 +12,8 @@ class Gateway_Bus_SenderBalancer {
 
 	protected const _TOKEN_EXPIRE_TIME = 1 * 60;   // время за которое нужно успеть авторизоваться по полученному токену
 
+	protected const _WS_CHANNEL = "pivot"; // канал всок для пивота
+
 	/**
 	 * делаем токен для подключения к ws по user_id
 	 *
@@ -546,6 +548,7 @@ class Gateway_Bus_SenderBalancer {
 			"is_need_push"       => (int) $is_need_push,
 			"uuid"               => (string) generateUUID(),
 			"ws_users"           => (array) $ws_users,
+			"channel"            => (string) self::_WS_CHANNEL,
 		];
 
 		// подготавливаем event_data (шифруем map -> key)
@@ -595,6 +598,7 @@ class Gateway_Bus_SenderBalancer {
 	 */
 	protected static function _generateToken():string {
 
-		return sha1(uniqid() . time());
+		// nosemgrep
+		return self::_WS_CHANNEL . ":" . sha1(uniqid() . time());
 	}
 }

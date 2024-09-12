@@ -221,10 +221,11 @@ type broadcastRequestStruct struct {
 	WSUsers          interface{} `json:"ws_users,omitempty"`
 	Uuid             string      `json:"uuid"`
 	RoutineKey       string      `json:"routine_key"`
+	Channel          string      `json:"channel"`
 }
 
 // выполняет рассылку всем подключенным пользователям
-func Broadcast(nodeId int64, event string, EventVersionList interface{}, wsUsers interface{}, uuid string, routineKey string) {
+func Broadcast(nodeId int64, event string, EventVersionList interface{}, wsUsers interface{}, uuid string, routineKey string, channel string) {
 
 	request := broadcastRequestStruct{
 		Method:           "sender.sendEventToAll",
@@ -233,6 +234,7 @@ func Broadcast(nodeId int64, event string, EventVersionList interface{}, wsUsers
 		WSUsers:          wsUsers,
 		Uuid:             uuid,
 		RoutineKey:       routineKey,
+		Channel:          channel,
 	}
 
 	response := struct {

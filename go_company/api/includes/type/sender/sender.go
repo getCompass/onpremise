@@ -13,6 +13,8 @@ import (
 	"net"
 )
 
+const wsChannel = "domino"
+
 // отправляем ивент о добавлении реакции в диалог
 func SendActionConversationMessageReactionAdded(companyId int64, wsUserList interface{}, wsEventVersionList []structures.WsEventVersionItemStruct, reactionCount int, reactionIndex int, reactionsUpdatedVersion int, senderConfig conf.GoShardingStruct) {
 
@@ -137,6 +139,8 @@ func send(companyId int64, requestMap map[string]interface{}, config conf.GoShar
 
 	requestMap["method"] = "sender.sendEvent"
 	requestMap["company_id"] = companyId
+	requestMap["channel"] = wsChannel
+
 	_, err := call(requestMap, config)
 
 	if err != nil {

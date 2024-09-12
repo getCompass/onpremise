@@ -102,7 +102,7 @@ func (s *Server) SenderSendEvent(_ context.Context, in *pb.SenderSendEventReques
 	// конвертируем полученные версии события в более удобный формат
 	eventListByVersion := sender.ConvertProtobufEventVersionList(in.GetEventVersionList())
 
-	talking.SendEvent(isolation, userList, in.GetEvent(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetRoutineKey())
+	talking.SendEvent(isolation, userList, in.GetEvent(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetRoutineKey(), in.GetChannel())
 
 	return &pb.SenderSendEventResponseStruct{}, nil
 }
@@ -133,7 +133,7 @@ func (s *Server) SenderSendEventToAll(_ context.Context, in *pb.SenderSendEventT
 	// конвертируем полученные версии события в более удобный формат
 	eventListByVersion := sender.ConvertProtobufEventVersionList(in.GetEventVersionList())
 
-	talking.SendEventToAll(isolation, in.GetEvent(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetRoutineKey(), int(in.GetIsNeedPush()))
+	talking.SendEventToAll(isolation, in.GetEvent(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetRoutineKey(), int(in.GetIsNeedPush()), in.GetChannel())
 
 	return &pb.SenderSendEventToAllResponseStruct{}, nil
 }
@@ -263,7 +263,7 @@ func (s *Server) SenderAddUsersToThread(_ context.Context, in *pb.SenderAddUsers
 		return &pb.SenderAddUsersToThreadResponseStruct{}, status.Error(503, "isolation not found")
 	}
 
-	talking.AddUsersToThread(isolation, in.GetThreadKey(), in.GetUserList(), in.GetRoutineKey())
+	talking.AddUsersToThread(isolation, in.GetThreadKey(), in.GetUserList(), in.GetRoutineKey(), in.GetChannel())
 
 	return &pb.SenderAddUsersToThreadResponseStruct{}, nil
 }
@@ -279,7 +279,7 @@ func (s *Server) SenderSendTypingEvent(_ context.Context, in *pb.SenderSendTypin
 	// конвертируем полученные версии события в более удобный формат
 	eventListByVersion := sender.ConvertProtobufEventVersionList(in.GetEventVersionList())
 
-	talking.SendTypingEvent(isolation, in.GetUserList(), in.GetEvent(), eventListByVersion, in.GetRoutineKey())
+	talking.SendTypingEvent(isolation, in.GetUserList(), in.GetEvent(), eventListByVersion, in.GetRoutineKey(), in.GetChannel())
 
 	return &pb.SenderSendTypingEventResponseStruct{}, nil
 }
@@ -328,7 +328,7 @@ func (s *Server) SenderSendIncomingCall(_ context.Context, in *pb.SenderSendInco
 	// конвертируем полученные версии события в более удобный формат
 	eventListByVersion := sender.ConvertProtobufEventVersionList(in.GetEventVersionList())
 
-	talking.SendIncomingCall(isolation, in.GetUserId(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetTimeToLive(), in.GetRoutineKey())
+	talking.SendIncomingCall(isolation, in.GetUserId(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetTimeToLive(), in.GetRoutineKey(), in.GetChannel())
 
 	return &pb.SenderSendIncomingCallResponseStruct{}, nil
 }

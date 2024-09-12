@@ -18,6 +18,8 @@ class Gateway_Bus_Sender {
 
 	protected const _TOKEN_EXPIRE_TIME = 1 * 60;   // время за которое нужно успеть авторизоваться по полученному токену
 
+	protected const _WS_CHANNEL = "domino"; // канал всок для домино
+
 	/**
 	 * послать ws событие, когда изменилось имя, цвет аватара компании, аватар компании
 	 *
@@ -919,15 +921,15 @@ class Gateway_Bus_Sender {
 
 			$need_push = false;
 
-			if ($type === Domain_Member_Entity_Menu::ACTIVE_MEMBER){
+			if ($type === Domain_Member_Entity_Menu::ACTIVE_MEMBER) {
 				$need_push = NEED_SEND_ACTIVE_MEMBER_PUSH === true;
 			}
 
-			if ($type === Domain_Member_Entity_Menu::JOIN_REQUEST){
+			if ($type === Domain_Member_Entity_Menu::JOIN_REQUEST) {
 				$need_push = NEED_SEND_JOIN_REQUEST_PUSH === true;
 			}
 
-			if ($type === Domain_Member_Entity_Menu::GUEST_MEMBER){
+			if ($type === Domain_Member_Entity_Menu::GUEST_MEMBER) {
 				$need_push = NEED_SEND_GUEST_MEMBER_PUSH === true;
 			}
 
@@ -1024,6 +1026,7 @@ class Gateway_Bus_Sender {
 			"uuid"               => (string) generateUUID(),
 			"ws_users"           => (array) $ws_user_list,
 			"routine_key"        => (string) $routine_key,
+			"channel"            => (string) self::_WS_CHANNEL,
 		];
 
 		$params = self::_prepareParams($params);
@@ -1038,6 +1041,7 @@ class Gateway_Bus_Sender {
 			"uuid"               => $params["uuid"],
 			"ws_users"           => isset($params["ws_users"]) ? toJson($params["ws_users"]) : "",
 			"company_id"         => COMPANY_ID,
+			"channel"            => (string) self::_WS_CHANNEL,
 		]);
 
 		self::_sendRequestWrap("SenderSendEvent", $grpc_request, $params);
@@ -1067,6 +1071,7 @@ class Gateway_Bus_Sender {
 			"ws_users"           => (array) $ws_user_list,
 			"routine_key"        => (string) $routine_key,
 			"is_need_push"       => (int) $is_need_push,
+			"channel"            => (string) self::_WS_CHANNEL,
 		];
 		$params = self::_prepareParams($params);
 
@@ -1079,6 +1084,7 @@ class Gateway_Bus_Sender {
 			"ws_users"           => isset($params["ws_users"]) ? toJson($params["ws_users"]) : "",
 			"is_need_push"       => $is_need_push,
 			"company_id"         => COMPANY_ID,
+			"channel"            => (string) self::_WS_CHANNEL,
 		]);
 
 		self::_sendRequestWrap("SenderSendEventToAll", $grpc_request, $params);
@@ -1209,7 +1215,6 @@ class Gateway_Bus_Sender {
 	 * Делаем токен для подключения к ws по user_id
 	 *
 	 * @param int    $user_id
-	 * @param string $token
 	 * @param string $device_id
 	 * @param string $platform
 	 *
@@ -1217,7 +1222,9 @@ class Gateway_Bus_Sender {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function setToken(int $user_id, string $token, string $device_id = "", string $platform = Type_Api_Platform::PLATFORM_OTHER):array {
+	public static function setToken(int $user_id, string $device_id = "", string $platform = Type_Api_Platform::PLATFORM_OTHER):array {
+
+		$token = self::_generateToken();
 
 		// формируем массив для отправки
 		$request = self::_prepareSetTokenParameters($user_id, $token, $platform, $device_id);
@@ -1295,4 +1302,13 @@ class Gateway_Bus_Sender {
 		}
 	}
 
+	/**
+	 * сгенерировать токен
+	 *
+	 */
+	protected static function _generateToken():string {
+
+		// nosemgrep
+		return self::_WS_CHANNEL . ":" . COMPANY_ID . ":" . sha1(uniqid() . time());
+	}
 }

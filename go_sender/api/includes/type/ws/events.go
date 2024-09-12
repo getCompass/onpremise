@@ -11,7 +11,7 @@ import (
 )
 
 // отправляет событие по user_id пользователя на все открытые соединения
-func (ucStore *UserConnectionStore) SendEventViaUserID(userId int64, eventDataByVersion map[int]map[int][]byte, wsUniqueID string, eventName string) {
+func (ucStore *UserConnectionStore) SendEventViaUserID(userId int64, eventDataByVersion map[int]map[int][]byte, wsUniqueID string, eventName string, channel string) {
 
 	// достаем объект пользователя
 	ucStore.mx.RLock()
@@ -26,6 +26,11 @@ func (ucStore *UserConnectionStore) SendEventViaUserID(userId int64, eventDataBy
 	userItem.mx.RLock()
 	defer userItem.mx.RUnlock()
 	for _, connection := range userItem.connList {
+
+		// если соединение находится в другом канале - пропускаем
+		if channel != connection.Channel {
+			continue
+		}
 
 		// проверяем, что ws соединение обрабатывает этот handler события
 		eventVersionList, exist := eventDataByVersion[connection.HandlerVersion]

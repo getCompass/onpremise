@@ -88,7 +88,7 @@ func (senderController) SendEvent(data *request.Data) ResponseStruct {
 	eventVersionList := sender.ConvertEventVersionList(senderRequest.EventVersionList)
 
 	talking.SendEvent(data.Isolation, senderRequest.UserList, senderRequest.Event, eventVersionList, senderRequest.PushData, senderRequest.WSUsers,
-		senderRequest.Uuid, senderRequest.RoutineKey)
+		senderRequest.Uuid, senderRequest.RoutineKey, senderRequest.Channel)
 
 	return Ok()
 }
@@ -112,7 +112,7 @@ func (senderController) SendEventToAll(data *request.Data) ResponseStruct {
 	eventVersionList := sender.ConvertEventVersionList(senderRequest.EventVersionList)
 
 	talking.SendEventToAll(data.Isolation, senderRequest.Event, eventVersionList, senderRequest.PushData, senderRequest.WSUsers,
-		senderRequest.Uuid, senderRequest.RoutineKey, senderRequest.IsNeedPush)
+		senderRequest.Uuid, senderRequest.RoutineKey, senderRequest.IsNeedPush, senderRequest.Channel)
 
 	return Ok()
 }
@@ -258,6 +258,7 @@ func (senderController) AddUsersToThread(data *request.Data) ResponseStruct {
 		UserList   []int64 `json:"user_list"`
 		RoutineKey string  `json:"routine_key"`
 		CompanyId  int64   `json:"company_id"`
+		Channel    string  `json:"channel"`
 	}{}
 
 	err := json.Unmarshal(data.RequestData, &senderRequest)
@@ -265,7 +266,7 @@ func (senderController) AddUsersToThread(data *request.Data) ResponseStruct {
 		return Error(105, "bad json in request")
 	}
 
-	talking.AddUsersToThread(data.Isolation, senderRequest.ThreadKey, senderRequest.UserList, senderRequest.RoutineKey)
+	talking.AddUsersToThread(data.Isolation, senderRequest.ThreadKey, senderRequest.UserList, senderRequest.RoutineKey, senderRequest.Channel)
 
 	return Ok()
 }
@@ -276,6 +277,7 @@ type sendTypingEvent struct {
 	Event            string                                  `json:"event"`
 	EventVersionList []structures.SendEventVersionItemStruct `json:"event_version_list"`
 	RoutineKey       string                                  `json:"routine_key"`
+	Channel          string                                  `json:"channel"`
 }
 
 // метод для отправки typing события на ноды go_sender_*
@@ -291,7 +293,7 @@ func (senderController) SendTypingEvent(data *request.Data) ResponseStruct {
 	// конвертируем полученные версии события в более удобный формат
 	eventVersionList := sender.ConvertEventVersionList(senderRequest.EventVersionList)
 
-	talking.SendTypingEvent(data.Isolation, senderRequest.UserList, senderRequest.Event, eventVersionList, senderRequest.RoutineKey)
+	talking.SendTypingEvent(data.Isolation, senderRequest.UserList, senderRequest.Event, eventVersionList, senderRequest.RoutineKey, senderRequest.Channel)
 
 	return Ok()
 }
@@ -303,6 +305,7 @@ type sendThreadTypingEvent struct {
 	ThreadKey        string                                  `json:"thread_key"`
 	EventVersionList []structures.SendEventVersionItemStruct `json:"event_version_list"`
 	RoutineKey       string                                  `json:"routine_key"`
+	Channel          string                                  `json:"channel"`
 }
 
 // метод для отправки thread_typing события
@@ -353,6 +356,7 @@ type sendIncomingCallRequestStruct struct {
 	Uuid             string                                  `json:"uuid"`
 	TimeToLive       int64                                   `json:"time_to_live"`
 	RoutineKey       string                                  `json:"routine_key"`
+	Channel          string                                  `json:"channel"`
 }
 
 // запрос для отправки ws-события и voip-пуша о входящем звонке
@@ -372,7 +376,7 @@ func (senderController) SendIncomingCall(data *request.Data) ResponseStruct {
 	eventVersionList := sender.ConvertEventVersionList(senderRequest.EventVersionList)
 
 	talking.SendIncomingCall(data.Isolation, senderRequest.UserId, eventVersionList, senderRequest.PushData, senderRequest.WSUsers,
-		senderRequest.Uuid, senderRequest.TimeToLive, senderRequest.RoutineKey)
+		senderRequest.Uuid, senderRequest.TimeToLive, senderRequest.RoutineKey, senderRequest.Channel)
 
 	return Ok()
 }
@@ -420,7 +424,7 @@ func (senderController) SendJitsiConferenceCreatedEvent(data *request.Data) Resp
 	eventVersionList := sender.ConvertEventVersionList(senderRequest.EventVersionList)
 
 	talking.SendJitsiConferenceCreated(data.Isolation, senderRequest.UserId, senderRequest.Event, eventVersionList, senderRequest.PushData, senderRequest.WSUsers,
-		senderRequest.Uuid, senderRequest.TimeToLive, senderRequest.RoutineKey)
+		senderRequest.Uuid, senderRequest.TimeToLive, senderRequest.RoutineKey, senderRequest.Channel)
 
 	return Ok()
 }

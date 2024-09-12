@@ -66,8 +66,15 @@ func (client) Connect(data *dataStruct) {
 
 	splitToken := strings.Split(requestData.WSData.Token, ":")
 	companyId := int64(0)
+	channel := ws.DefaultChannel
+
 	if len(splitToken) == 2 {
-		companyId, _ = strconv.ParseInt(splitToken[0], 10, 64)
+		channel = splitToken[0]
+	}
+
+	if len(splitToken) == 3 {
+		channel = splitToken[0]
+		companyId, _ = strconv.ParseInt(splitToken[1], 10, 64)
 	}
 
 	isolation := data.companyEnvList.GetEnv(companyId)
@@ -86,7 +93,7 @@ func (client) Connect(data *dataStruct) {
 	}
 
 	// сохраняем информацию о подключении
-	ws.SaveConnectionInfo(data.connection, isolation.AnalyticWsStore, isolation.UserConnectionStore, isolation.AnalyticStore, isolation.ThreadKeyStore, isolation.ThreadUcStore, requestData.WSData.UserID, platform, deviceId, handlerVersion, companyId, requestData.WSData.MethodConfigHash, requestData.WSData.AppVersion)
+	ws.SaveConnectionInfo(data.connection, isolation.AnalyticWsStore, isolation.UserConnectionStore, isolation.AnalyticStore, isolation.ThreadKeyStore, isolation.ThreadUcStore, requestData.WSData.UserID, platform, deviceId, handlerVersion, companyId, requestData.WSData.MethodConfigHash, requestData.WSData.AppVersion, channel)
 
 	// проверяем существование конфига поддерживаемых версий ws событий
 	if data.connection.IsHaveSupportVersionedEvent() && !method_config.IsConfigExist(requestData.WSData.MethodConfigHash) {
@@ -234,7 +241,7 @@ func (client) Typing(data *dataStruct) {
 
 	// готовим структуру для запроса
 	EventVersionList := event.MakeConversationTyping(data.connection.UserId, getTypingType(requestData.WSData.Type), requestData.WSData.ConversationKey)
-	talking.SendEvent(isolation, userList, event.ConversationTypingEventName, EventVersionList, push.PushDataStruct{}, struct{}{}, "", "")
+	talking.SendEvent(isolation, userList, event.ConversationTypingEventName, EventVersionList, push.PushDataStruct{}, struct{}{}, "", "", data.connection.Channel)
 }
 
 // request client.create_thread_typing
@@ -283,7 +290,7 @@ func (client) CreateThreadTyping(data *dataStruct) {
 		requestData.WSData.ConversationKey,
 	)
 
-	talking.SendTypingEvent(isolation, requestData.WSData.UserList, event.ConversationCreateThreadTypingEventName, EventVersionList, functions.GenerateUuid())
+	talking.SendTypingEvent(isolation, requestData.WSData.UserList, event.ConversationCreateThreadTypingEventName, EventVersionList, functions.GenerateUuid(), data.connection.Channel)
 }
 
 // request client.ping
@@ -537,6 +544,7 @@ func getTypingHash(customSalt string, userList []int64) string {
 	userListString := functions.ArrayToString(temp, ",")
 
 	// Хэшируем conversation_hash_salt
+	// nosemgrep
 	h := sha1.New()
 	_, _ = h.Write([]byte(customSalt))
 

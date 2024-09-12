@@ -15,6 +15,8 @@ class Gateway_Bus_Sender {
 
 	protected const _PARENT_TYPE_THREAD = "thread";  // тип родителя - тред
 
+	protected const _WS_CHANNEL = "domino"; // канал всок для домино
+
 	/**
 	 * проверяем параметры
 	 *
@@ -485,6 +487,7 @@ class Gateway_Bus_Sender {
 			"user_list"   => $user_list,
 			"routine_key" => $routine_key,
 			"company_id"  => COMPANY_ID,
+			"channel"     => self::_WS_CHANNEL,
 		]);
 
 		// отправляем задачу в grpc
@@ -646,6 +649,7 @@ class Gateway_Bus_Sender {
 			"ws_users"           => (array) $ws_user_list,
 			"routine_key"        => (string) $routine_key,
 			"company_id"         => COMPANY_ID,
+			"channel"            => self::_WS_CHANNEL,
 		];
 
 		$params = self::_prepareParams($params);
@@ -663,6 +667,7 @@ class Gateway_Bus_Sender {
 			"uuid"               => $params["uuid"],
 			"ws_users"           => isset($params["ws_users"]) ? toJson($params["ws_users"]) : "",
 			"company_id"         => COMPANY_ID,
+			"channel"            => self::_WS_CHANNEL,
 		]);
 
 		/** @noinspection PhpParamsInspection $grpc_request что ты такое? */
@@ -750,7 +755,7 @@ class Gateway_Bus_Sender {
 			if ($status->code !== \Grpc\STATUS_OK) {
 				throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
 			}
-		} catch (\Error | BusFatalException) {
+		} catch (\Error|BusFatalException) {
 
 			Type_System_Admin::log("go_sender", "go_sender call grpc on {$grpc_method_name}");
 

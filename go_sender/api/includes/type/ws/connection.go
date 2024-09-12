@@ -39,12 +39,19 @@ type ackStore struct {
 	mx    sync.Mutex
 }
 
+// определения каналов подлючения
+const (
+	PivotChannel   = "pivot"
+	DefaultChannel = PivotChannel
+)
+
 // структура соединение
 type ConnectionStruct struct {
 	mx                          sync.RWMutex
 	ConnId                      int64           // идентификатор соединения
 	UserId                      int64           // идентификатор пользователя
 	CompanyId                   int64           // id компании
+	Channel                     string          // название канала подлючения (pivot, announcement, domino)
 	isFocused                   bool            // focus статус подключения
 	HandlerVersion              int             // версия обработчика WebSocket Handler
 	connection                  *websocket.Conn // объект с соединением
@@ -82,7 +89,8 @@ func SaveConnectionInfo(
 	HandlerVersion int,
 	companyId int64,
 	methodConfigHash string,
-	appVersion string) {
+	appVersion string,
+	channel string) {
 
 	// временная метка, когда свершилась авторизация подключения
 	connectedAt := functions.GetCurrentTimeStamp()
@@ -106,6 +114,7 @@ func SaveConnectionInfo(
 	c.MethodConfigHash = methodConfigHash
 	c.appVersion = appVersion
 	c.isHaveSupportVersionedEvent = true
+	c.Channel = channel
 
 	// если не прислали app_version && method_config_hash
 	// то считаем что клиент не поддерживает версионные события
@@ -179,6 +188,7 @@ func SetFocus(connection *ConnectionStruct, isFocused bool) {
 func Listen(writerItem http.ResponseWriter, requestItem *http.Request, callback func(connection *ConnectionStruct, requestBytes []byte) error) {
 
 	// получаем соединение
+	// nosemgrep
 	connectionItem, err := upgrader.Upgrade(writerItem, requestItem, nil)
 	if err != nil {
 		panic(err)

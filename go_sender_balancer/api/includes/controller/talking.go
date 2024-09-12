@@ -72,7 +72,7 @@ func (talkingController) SendEvent(requestBytes []byte) ResponseStruct {
 		return Error(105, "bad json in request")
 	}
 
-	talking.SendEvent(request.UserList, request.Event, request.EventVersionList, request.PushData, request.WSUsers, request.Uuid, request.RoutineKey, request.IsNeedPush)
+	talking.SendEvent(request.UserList, request.Event, request.EventVersionList, request.PushData, request.WSUsers, request.Uuid, request.RoutineKey, request.IsNeedPush, request.Channel)
 
 	return Ok()
 }
@@ -87,7 +87,7 @@ func (talkingController) SendEventBatching(requestBytes []byte) ResponseStruct {
 	}
 
 	for _, data := range request.BatchingData {
-		talking.SendEvent(data.UserList, data.Event, data.EventVersionList, data.PushData, data.WSUsers, data.Uuid, data.RoutineKey, data.IsNeedPush)
+		talking.SendEvent(data.UserList, data.Event, data.EventVersionList, data.PushData, data.WSUsers, data.Uuid, data.RoutineKey, data.IsNeedPush, data.Channel)
 	}
 
 	return Ok()
@@ -102,7 +102,7 @@ func (talkingController) BroadcastEvent(requestBytes []byte) ResponseStruct {
 		return Error(105, "bad json in request")
 	}
 
-	talking.BroadcastEvent(request.Event, request.EventVersionList, request.WSUsers, request.Uuid, request.RoutineKey)
+	talking.BroadcastEvent(request.Event, request.EventVersionList, request.WSUsers, request.Uuid, request.RoutineKey, request.Channel)
 
 	return Ok()
 }
@@ -232,7 +232,7 @@ func (talkingController) JitsiConferenceCreated(requestBytes []byte) ResponseStr
 		return Error(105, "bad json in request")
 	}
 
-	talking.JitsiConferenceCreated(request.UserId, request.Event, request.EventVersionList, request.PushData, request.WSUsers, request.Uuid, request.TimeToLive, request.RoutineKey)
+	talking.JitsiConferenceCreated(request.UserId, request.Event, request.EventVersionList, request.PushData, request.WSUsers, request.Uuid, request.TimeToLive, request.RoutineKey, request.Channel)
 
 	return Ok()
 }

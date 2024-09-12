@@ -15,6 +15,8 @@ class Gateway_Bus_Sender {
 	protected const _TOKEN_EXPIRE_TIME        = 1 * 60;      // время за которое нужно успеть авторизоваться по полученному токену
 	protected const _PARENT_TYPE_CONVERSATION = "conversation"; // тип родителя - диалог
 
+	protected const _WS_CHANNEL = "domino"; // канал всок для домино
+
 	// -------------------------------------------------------
 	// WS события
 	// -------------------------------------------------------
@@ -250,7 +252,7 @@ class Gateway_Bus_Sender {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function conversationMessageLinkDataChanged(array $user_list, string $conversation_map, string $message_map, array $link_list, int $messages_updated_version,
+	public static function conversationMessageLinkDataChanged(array  $user_list, string $conversation_map, string $message_map, array $link_list, int $messages_updated_version,
 										    string $preview_map = null, int $preview_type = null, array $preview_image = []):void {
 
 		// отправляем событие
@@ -878,7 +880,9 @@ class Gateway_Bus_Sender {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function setToken(int $user_id, string $token, string $device_id = "", string $platform = Type_Api_Platform::PLATFORM_OTHER):void {
+	public static function setToken(int $user_id, string $device_id = "", string $platform = Type_Api_Platform::PLATFORM_OTHER):string {
+
+		$token = self::_generateToken();
 
 		// формируем массив для отправки
 		$request = self::_prepareSetTokenParameters($user_id, $token, $platform, $device_id);
@@ -888,6 +892,8 @@ class Gateway_Bus_Sender {
 		if ($status->code !== \Grpc\STATUS_OK) {
 			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
 		}
+
+		return $token;
 	}
 
 	/**
@@ -1134,6 +1140,7 @@ class Gateway_Bus_Sender {
 			"uuid"               => (string) generateUUID(),
 			"ws_users"           => (array) $ws_user_list,
 			"company_id"         => COMPANY_ID,
+			"channel"            => (string) self::_WS_CHANNEL,
 		];
 
 		$params = self::_prepareParams($params);
@@ -1154,6 +1161,7 @@ class Gateway_Bus_Sender {
 			"uuid"               => $params["uuid"],
 			"ws_users"           => isset($params["ws_users"]) ? toJson($params["ws_users"]) : "",
 			"company_id"         => COMPANY_ID,
+			"channel"            => self::_WS_CHANNEL,
 		]);
 
 		/** @noinspection PhpParamsInspection $grpc_request что ты такое? */
@@ -1237,7 +1245,7 @@ class Gateway_Bus_Sender {
 			if ($status->code !== \Grpc\STATUS_OK) {
 				throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
 			}
-		} catch (\Error | \Exception | BusFatalException) {
+		} catch (\Error|\Exception|BusFatalException) {
 
 			Type_System_Admin::log("go_sender", "go_sender call grpc on {$grpc_method_name}");
 
@@ -1312,5 +1320,15 @@ class Gateway_Bus_Sender {
 		}
 
 		return array_values($temp_array);
+	}
+
+	/**
+	 * сгенерировать токен
+	 *
+	 */
+	protected static function _generateToken():string {
+
+		// nosemgrep
+		return self::_WS_CHANNEL . ":" . COMPANY_ID . ":" . sha1(uniqid() . time());
 	}
 }

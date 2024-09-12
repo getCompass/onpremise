@@ -9,6 +9,8 @@ use BaseFrame\Exception\Domain\ParseFatalException;
  */
 class Gateway_Bus_SenderBalancer {
 
+	protected const _WS_CHANNEL = "pivot"; // канал всок для пивота
+
 	/**
 	 * Отправка события о создании конференции
 	 *
@@ -62,6 +64,7 @@ class Gateway_Bus_SenderBalancer {
 			"push_data"          => (object) $push_data,
 			"uuid"               => (string) generateUUID(),
 			"ws_users"           => (array) $ws_users,
+			"channel"            => (string) self::_WS_CHANNEL,
 			"time_to_live"       => (int) Domain_PhpJitsi_Entity_Event_NeedCheckSingleConference::NEED_WORK_INTERVAL,
 		];
 
@@ -238,6 +241,7 @@ class Gateway_Bus_SenderBalancer {
 			"is_need_push"       => (int) $is_need_push,
 			"uuid"               => (string) generateUUID(),
 			"ws_users"           => (array) $ws_users,
+			"channel"            => (string) self::_WS_CHANNEL,
 		];
 
 		// отправляем задачу в rabbitMq

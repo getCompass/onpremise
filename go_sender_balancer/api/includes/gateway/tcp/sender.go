@@ -23,7 +23,7 @@ type ConnectionInfoStruct struct {
 }
 
 // отправить один ивент всем локальным сендерам
-func SendEvent(userConnectionList []structures.UserConnectionStruct, event string, eventVersionList interface{}, wsUsers interface{}, uuid string, routineKey string) []structures.UserConnectionStruct {
+func SendEvent(userConnectionList []structures.UserConnectionStruct, event string, eventVersionList interface{}, wsUsers interface{}, uuid string, routineKey string, channel string) []structures.UserConnectionStruct {
 
 	// получаем id всех нод go_sender
 	senderNodeIdList := getAllSenderNodeList(userConnectionList)
@@ -36,7 +36,7 @@ func SendEvent(userConnectionList []structures.UserConnectionStruct, event strin
 
 		// отправляем запрос с отправкой сообщения на локальный go_sender
 		userList := structures.ConvertUserConnectionListToUserList(userConnectionList)
-		userList = doCallPublish(item, userList, event, eventVersionList, wsUsers, uuid, routineKey)
+		userList = doCallPublish(item, userList, event, eventVersionList, wsUsers, uuid, routineKey, channel)
 
 		// формируем список соединений на которые был отправлен запрос
 		successSendEventConnection := prepareSuccessSendEventConnectionList(userList, item)
@@ -207,7 +207,7 @@ func GetOnlineUserList(nodeId int64, uuid string, limit int) []UserOnlineDevices
 }
 
 // отправить событие и voip-пуш при создании конференции Jitsi
-func SendJitsiConferenceCreatedEvent(userId int64, userConnectionList []structures.UserConnectionStruct, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string) {
+func SendJitsiConferenceCreatedEvent(userId int64, userConnectionList []structures.UserConnectionStruct, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string, channel string) {
 
 	// получаем id всех нод go_sender
 	senderNodeIdList := getAllSenderNodeList(userConnectionList)
@@ -215,7 +215,7 @@ func SendJitsiConferenceCreatedEvent(userId int64, userConnectionList []structur
 	// отправляем запросы на каждую ноду
 	for _, item := range senderNodeIdList {
 
-		doCallJitsiConferenceCreated(item, userId, event, eventVersionList, pushData, wsUsers, uuid, timeToLive, routineKey)
+		doCallJitsiConferenceCreated(item, userId, event, eventVersionList, pushData, wsUsers, uuid, timeToLive, routineKey, channel)
 	}
 }
 
@@ -393,11 +393,12 @@ type publishRequestStruct struct {
 	WSUsers          interface{}             `json:"ws_users,omitempty"`
 	Uuid             string                  `json:"uuid"`
 	RoutineKey       string                  `json:"routine_key"`
+	Channel          string                  `json:"channel"`
 }
 
 // метод для отправки события на ноду go_sender
 // @long
-func doCallPublish(nodeId int64, userList []int64, event string, eventVersionList interface{}, wsUsers interface{}, uuid string, routineKey string) []int64 {
+func doCallPublish(nodeId int64, userList []int64, event string, eventVersionList interface{}, wsUsers interface{}, uuid string, routineKey string, channel string) []int64 {
 
 	var userEventList []structures.UserStruct
 
@@ -413,6 +414,7 @@ func doCallPublish(nodeId int64, userList []int64, event string, eventVersionLis
 		WSUsers:          wsUsers,
 		Uuid:             uuid,
 		RoutineKey:       routineKey,
+		Channel:          channel,
 	}
 
 	response := struct {
@@ -442,6 +444,7 @@ type JitsiConferenceCreatedRequestStruct struct {
 	Uuid             string      `json:"uuid"`
 	TimeToLive       int64       `json:"time_to_live"`
 	RoutineKey       string      `json:"routine_key"`
+	Channel          string      `json:"channel"`
 }
 
 // структура запроса на отправку voip-пуша Jitsi
@@ -455,7 +458,7 @@ type SendJitsiVoIPPushRequestStruct struct {
 
 // метод для отправки события создания конференции Jitsi на ноду go_sender
 // @long
-func doCallJitsiConferenceCreated(nodeId int64, userId int64, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string) {
+func doCallJitsiConferenceCreated(nodeId int64, userId int64, event string, eventVersionList interface{}, pushData interface{}, wsUsers interface{}, uuid string, timeToLive int64, routineKey string, channel string) {
 
 	request := JitsiConferenceCreatedRequestStruct{
 		Method:           "sender.sendJitsiConferenceCreatedEvent",
@@ -467,6 +470,7 @@ func doCallJitsiConferenceCreated(nodeId int64, userId int64, event string, even
 		Uuid:             uuid,
 		TimeToLive:       timeToLive,
 		RoutineKey:       routineKey,
+		Channel:          channel,
 	}
 
 	log.Errorf("отправили запрос в go_sender %v. pushData %v", request, pushData)

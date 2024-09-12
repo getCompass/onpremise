@@ -46,6 +46,7 @@ type SendEventRequestStruct struct {
 	Uuid             string                       `json:"uuid"`
 	RoutineKey       string                       `json:"routine_key"`
 	ServerTime       int64                        `json:"server_time"`
+	Channel          string                       `json:"channel"`
 }
 
 // структура запроса на отправку события всем юзерам для go_sender
@@ -58,6 +59,7 @@ type SendEventToAllRequestStruct struct {
 	RoutineKey       string                       `json:"routine_key"`
 	IsNeedPush       int                          `json:"is_need_push"`
 	ServerTime       int64                        `json:"server_time"`
+	Channel          string                       `json:"channel"`
 }
 
 type SendPushRequestStruct struct {
@@ -92,6 +94,7 @@ type SendJitsiConferenceCreatedEventRequestStruct struct {
 	Uuid             string                       `json:"uuid"`
 	TimeToLive       int64                        `json:"time_to_live"`
 	RoutineKey       string                       `json:"routine_key"`
+	Channel          string                       `json:"channel"`
 }
 
 type SendJitsiVoipPushRequestStruct struct {

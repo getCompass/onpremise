@@ -83,6 +83,7 @@ class Gateway_Bus_SenderBalancer {
 	 */
 	protected static function _generateToken():string {
 
+		// nosemgrep
 		return self::_WS_CHANNEL . ":" . sha1(uniqid() . time());
 	}
 

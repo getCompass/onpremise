@@ -11,6 +11,9 @@ use BaseFrame\Exception\Domain\ParseFatalException;
  */
 class Gateway_Bus_Sender {
 
+	protected const _WS_CHANNEL_PIVOT  = "pivot"; // канал всок для пивота
+	protected const _WS_CHANNEL_DOMINO = "domino"; // канал всок для домино
+
 	/**
 	 * отправляем ws при прослушивании голосовухи
 	 *
@@ -126,6 +129,7 @@ class Gateway_Bus_Sender {
 			"uuid"               => (string) generateUUID(),
 			"ws_users"           => (object) $ws_user_list,
 			"routine_key"        => (string) $routine_key,
+			"channel"            => COMPANY_ID === 0 ? self::_WS_CHANNEL_PIVOT : self::_WS_CHANNEL_DOMINO,
 		];
 
 		// подготавливаем event_data (шифруем map -> key)
@@ -141,6 +145,7 @@ class Gateway_Bus_Sender {
 			"uuid"               => $params["uuid"],
 			"ws_users"           => isset($params["ws_users"]) ? toJson($params["ws_users"]) : "",
 			"company_id"         => COMPANY_ID,
+			"channel"            => COMPANY_ID === 0 ? self::_WS_CHANNEL_PIVOT : self::_WS_CHANNEL_DOMINO,
 		]);
 
 		/** @noinspection PhpParamsInspection $grpc_request что ты такое */

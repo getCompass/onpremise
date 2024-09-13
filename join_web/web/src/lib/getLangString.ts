@@ -143,7 +143,7 @@ const LANG_CONFIG: LangConfig = {
 			desktop_builds: {
 				macos_download: "Скачать для MacOS",
 				intel_version: "Intel",
-				m1m2_version: "M1/M2",
+				m1m2_version: "Apple Silicon",
 				windows_download: "Скачать для Windows",
 				linux_download: "Скачать для Linux",
 				deb_version: ".deb",
@@ -303,7 +303,7 @@ const LANG_CONFIG: LangConfig = {
 					builds: {
 						macos_download: "Скачать для MacOS",
 						intel_version: "Intel",
-						m1m2_version: "M1/M2",
+						m1m2_version: "Apple Silicon",
 						linux_download: "Скачать для Linux",
 						deb_version: ".deb",
 						tar_version: ".tar",

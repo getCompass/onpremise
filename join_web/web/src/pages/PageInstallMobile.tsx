@@ -11,7 +11,6 @@ import { copyToClipboardInstall } from "../lib/copyToClipboardInstall.ts";
 import Avatar1 from "../img/install_page/mobile/Avatar_1.png";
 import Avatar2 from "../img/install_page/mobile/Avatar_2.png";
 import Avatar3 from "../img/install_page/mobile/Avatar_3.png";
-import WhatsappIcon22 from "../img/install_page/mobile/WhatsappIcon22.svg";
 import TelegramIcon22 from "../img/install_page/mobile/TelegramIcon22.svg";
 import MailIcon21 from "../img/install_page/mobile/MailIcon21.svg";
 import { MenuItem, MenuItemGroup } from "../components/menu.tsx";
@@ -253,7 +252,6 @@ export default function PageInstallMobile() {
 	const langStringPageOnSuccessCopy = useLangString("install_page.mobile.page.on_success_copy");
 	const langStringPageSupportBlockTitle = useLangString("install_page.mobile.page.support_block.title");
 	const langStringPageSupportBlockDesc = useLangString("install_page.mobile.page.support_block.desc");
-	const langStringPageSupportBlockWhatsapp = useLangString("install_page.mobile.page.support_block.whatsapp");
 	const langStringPageSupportBlockTelegram = useLangString("install_page.mobile.page.support_block.telegram");
 	const langStringPageSupportBlockMail = useLangString("install_page.mobile.page.support_block.mail");
 	const isLowWidthMobile = useIsLowWidthMobile();
@@ -441,38 +439,9 @@ export default function PageInstallMobile() {
 								<div key={index}>{line}</div>
 							))}
 						</Text>
-						<HStack mt="24px" gap={isLowWidthMobile ? "8px" : "12px"}>
+						<HStack w="100%" mt="24px" gap={isLowWidthMobile ? "8px" : "12px"}>
 							<styled.a
-								href="https://wa.me/message/CJINDDW52XJYM1"
-								outline="none"
-								WebkitTapHighlightColor="transparent"
-								userSelect="none"
-							>
-								<HStack
-									w="100%"
-									className="group"
-									cursor="pointer"
-									gap="6px"
-									border="1px solid rgba(103, 115, 128, 0.1)"
-									rounded="8px"
-									p={isLowWidthMobile ? "6px 12px" : "9px 21px"}
-									_active={{ border: "1px solid rgba(103, 115, 128, 0.3)" }}
-								>
-									<Icon
-										width={isLowWidthMobile ? "20px" : "22px"}
-										height={isLowWidthMobile ? "20px" : "22px"}
-										avatar={WhatsappIcon22}
-									/>
-									<Text
-										color="677380"
-										style={isLowWidthMobile ? "inter_14_17_500" : "inter_16_19_500"}
-										_groupActive={{ color: "333e49" }}
-									>
-										{langStringPageSupportBlockWhatsapp}
-									</Text>
-								</HStack>
-							</styled.a>
-							<styled.a
+								w="100%"
 								href="https://t.me/getcompass"
 								outline="none"
 								WebkitTapHighlightColor="transparent"
@@ -482,6 +451,7 @@ export default function PageInstallMobile() {
 									w="100%"
 									className="group"
 									cursor="pointer"
+									justifyContent="center"
 									gap="6px"
 									border="1px solid rgba(103, 115, 128, 0.1)"
 									rounded="8px"

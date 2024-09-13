@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSetAtom } from "jotai/index";
-import { electronVersionState } from "./_stores.ts";
+import {useAtomValue, useSetAtom} from "jotai/index";
+import {downloadAppUrlState, electronVersionState} from "./_stores.ts";
 
 async function fetchVersionInfo(url: string) {
 	const response = await fetch(url, {
@@ -14,6 +14,7 @@ async function fetchVersionInfo(url: string) {
 
 export default function useElectronVersions(backendVersion: string) {
 	const setElectronVersion = useSetAtom(electronVersionState);
+	const downloadAppUrl = useAtomValue(downloadAppUrlState);
 
 	return useQuery({
 		retry: false,
@@ -24,7 +25,7 @@ export default function useElectronVersions(backendVersion: string) {
 				return {};
 			}
 
-			const data = await fetchVersionInfo("https://update-onpremise.getcompass.ru/electron_versions.json");
+			const data = await fetchVersionInfo(`${downloadAppUrl}electron_versions.json`);
 			if (!data.hasOwnProperty(backendVersion)) {
 				return data;
 			}

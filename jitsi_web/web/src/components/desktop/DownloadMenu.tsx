@@ -25,7 +25,7 @@ const MenuItemMacOsIntel = ({ size }: MenuItemProps) => {
 				<HStack w="100%" justifyContent="space-between">
 					<HStack gap="8px">
 						<MacOsIconSmall />
-						<Text style="inter_14_19_400" color="333e49">
+						<Text style="inter_13_19_400" color="333e49">
 							{langStringPageDesktopDownloadCompassBuildsMacosDownload}
 						</Text>
 					</HStack>
@@ -68,7 +68,7 @@ const MenuItemMacOsM1M2 = ({ size }: MenuItemProps) => {
 				<HStack w="100%" justifyContent="space-between">
 					<HStack gap="8px">
 						<MacOsIconSmall />
-						<Text style="inter_14_19_400" color="333e49">
+						<Text style="inter_13_19_400" color="333e49">
 							{langStringPageDesktopDownloadCompassBuildsMacosDownload}
 						</Text>
 					</HStack>
@@ -108,7 +108,7 @@ const MenuItemWindows = ({ size }: MenuItemProps) => {
 				<HStack w="100%" justifyContent="space-between">
 					<HStack gap="8px">
 						<WindowsIconSmall />
-						<Text style="inter_14_19_400" color="333e49">
+						<Text style="inter_13_19_400" color="333e49">
 							{langStringPageDesktopDownloadCompassBuildsWindowsDownload}
 						</Text>
 					</HStack>
@@ -147,7 +147,7 @@ const MenuItemLinuxDeb = ({ size }: MenuItemProps) => {
 				<HStack w="100%" justifyContent="space-between">
 					<HStack gap="8px">
 						<LinuxDebIconSmall />
-						<Text style="inter_14_19_400" color="333e49">
+						<Text style="inter_13_19_400" color="333e49">
 							{langStringPageDesktopDownloadCompassBuildsLinuxDownload}
 						</Text>
 					</HStack>
@@ -190,7 +190,7 @@ const MenuItemLinuxTar = ({ size }: MenuItemProps) => {
 				<HStack w="100%" justifyContent="space-between">
 					<HStack gap="8px">
 						<LinuxTarIconSmall />
-						<Text style="inter_14_19_400" color="333e49">
+						<Text style="inter_13_19_400" color="333e49">
 							{langStringPageDesktopDownloadCompassBuildsLinuxDownload}
 						</Text>
 					</HStack>
@@ -230,7 +230,7 @@ const MenuItemShowMore = ({ size }: MenuItemProps) => {
 				<HStack w="100%" justifyContent="space-between">
 					<HStack gap="8px">
 						<ShowMoreIconSmall />
-						<Text style="inter_14_19_400" color="333e49">
+						<Text style="inter_13_19_400" color="333e49">
 							{langStringPageDesktopDownloadCompassBuildsAnotherPlatforms}
 						</Text>
 					</HStack>

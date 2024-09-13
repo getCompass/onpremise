@@ -14,7 +14,6 @@ import IconDownloadButtonAppGallery from "../img/install_page/desktop/DownloadBu
 import Avatar1 from "../img/install_page/desktop/Avatar_1.png";
 import Avatar2 from "../img/install_page/desktop/Avatar_2.png";
 import Avatar3 from "../img/install_page/desktop/Avatar_3.png";
-import WhatsappIcon24 from "../img/install_page/desktop/WhatsappIcon24.svg";
 import TelegramIcon24 from "../img/install_page/desktop/TelegramIcon24.svg";
 import MailIcon26 from "../img/install_page/desktop/MailIcon26.svg";
 import { useCallback, useMemo } from "react";
@@ -124,11 +123,11 @@ const MenuItemMacOsIntel = () => {
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<MacOsIcon />
-					<Text style="inter_18_27_400" color="333e49">
+					<Text style="inter_16_24_400" color="333e49">
 						{langStringPageBuildsMacosDownload}
 					</Text>
 				</HStack>
-				<Text px="8px" py="4px" bgColor="103115128.01" rounded="8px" color="677380" style="inter_18_22_400">
+				<Text px="8px" py="4px" bgColor="103115128.01" rounded="4px" color="677380" style="inter_16_19_400">
 					{langStringPageBuildsIntelVersion}
 				</Text>
 			</HStack>
@@ -145,11 +144,11 @@ const MenuItemMacOsM1M2 = () => {
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<MacOsIcon />
-					<Text style="inter_18_27_400" color="333e49">
+					<Text style="inter_16_24_400" color="333e49">
 						{langStringPageBuildsMacosDownload}
 					</Text>
 				</HStack>
-				<Text px="8px" py="4px" bgColor="103115128.01" rounded="8px" color="677380" style="inter_18_22_400">
+				<Text px="8px" py="4px" bgColor="103115128.01" rounded="4px" color="677380" style="inter_16_19_400">
 					{langStringPageBuildsM1M2Version}
 				</Text>
 			</HStack>
@@ -166,11 +165,11 @@ const MenuItemLinuxDeb = () => {
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<LinuxDebIcon />
-					<Text style="inter_18_27_400" color="333e49">
+					<Text style="inter_16_24_400" color="333e49">
 						{langStringPageBuildsLinuxDownload}
 					</Text>
 				</HStack>
-				<Text px="8px" py="4px" bgColor="103115128.01" rounded="8px" color="677380" style="inter_18_22_400">
+				<Text px="8px" py="4px" bgColor="103115128.01" rounded="4px" color="677380" style="inter_16_19_400">
 					{langStringPageBuildsDebVersion}
 				</Text>
 			</HStack>
@@ -187,11 +186,11 @@ const MenuItemLinuxTar = () => {
 			<HStack w="100%" justifyContent="space-between">
 				<HStack gap="8px">
 					<LinuxTarIcon />
-					<Text style="inter_18_27_400" color="333e49">
+					<Text style="inter_16_24_400" color="333e49">
 						{langStringPageBuildsLinuxDownload}
 					</Text>
 				</HStack>
-				<Text px="8px" py="4px" bgColor="103115128.01" rounded="8px" color="677380" style="inter_18_22_400">
+				<Text px="8px" py="4px" bgColor="103115128.01" rounded="4px" color="677380" style="inter_16_19_400">
 					{langStringPageBuildsTarVersion}
 				</Text>
 			</HStack>
@@ -333,7 +332,6 @@ export default function PageInstallDesktop() {
 	);
 	const langStringPageSupportBlockTitle = useLangString("install_page.desktop.page.support_block.title");
 	const langStringPageSupportBlockDesc = useLangString("install_page.desktop.page.support_block.desc");
-	const langStringPageSupportBlockWhatsapp = useLangString("install_page.desktop.page.support_block.whatsapp");
 	const langStringPageSupportBlockTelegram = useLangString("install_page.desktop.page.support_block.telegram");
 	const langStringPageSupportBlockMail = useLangString("install_page.desktop.page.support_block.mail");
 	const { getDownloadLink } = useDownloadLink();
@@ -486,22 +484,6 @@ export default function PageInstallDesktop() {
 							))}
 						</Text>
 						<HStack mt="24px" gap="16px">
-							<styled.a href="https://wa.me/message/CJINDDW52XJYM1">
-								<HStack
-									className="group"
-									cursor="pointer"
-									gap="6px"
-									border="1px solid rgba(103, 115, 128, 0.3)"
-									rounded="12px"
-									p="15px 31px"
-									_hover={{ border: "1px solid rgba(103, 115, 128, 0.6)" }}
-								>
-									<Icon width="24px" height="24px" avatar={WhatsappIcon24} />
-									<Text color="677380" style="inter_20_24_500" _groupHover={{ color: "333e49" }}>
-										{langStringPageSupportBlockWhatsapp}
-									</Text>
-								</HStack>
-							</styled.a>
 							<styled.a href="https://t.me/getcompass">
 								<HStack
 									className="group"

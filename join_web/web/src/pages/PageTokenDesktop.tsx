@@ -171,18 +171,18 @@ const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 					<styled.span fontFamily="lato_bold" fontWeight="normal">
 						{langStringPageTokenStep2DescPt1Desktop}
 					</styled.span>
-					<br/>
+					<br />
 					{langStringPageTokenStep2DescPt2Desktop}
 				</Text>
 			</HStack>
 			<Menu
 				isOpen={isStoreMenuOpen}
-				onSelect={({value}) => onSelectHandler(value)}
+				onSelect={({ value }) => onSelectHandler(value)}
 				onClose={() => setStoreMenuOpen(false)}
 				onFocusOutside={() => setStoreMenuOpen(false)}
 				onInteractOutside={() => setStoreMenuOpen(false)}
 				onPointerDownOutside={() => setStoreMenuOpen(false)}
-				positioning={{placement: "bottom", offset: {mainAxis: 7}}}
+				positioning={{ placement: "bottom", offset: { mainAxis: 7 } }}
 				type="medium_desktop"
 			>
 				<VStack gap="0px">
@@ -217,7 +217,7 @@ const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 								<MenuItem id={DESKTOP_PLATFORM_MAC_OS_INTEL}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
-											<MacOsIcon/>
+											<MacOsIcon />
 											<Text fs="15" lh="22" color="333e49" font="regular">
 												{langStringPageTokenDesktopBuildsMacosDownload}
 											</Text>
@@ -237,9 +237,9 @@ const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 									</HStack>
 								</MenuItem>
 								<MenuItem id={DESKTOP_PLATFORM_MAC_OS_ARM}>
-									<HStack w="100%" justifyContent="space-between">
+									<HStack w="100%" justifyContent="space-between" gap="33px">
 										<HStack gap="8px">
-											<MacOsIcon/>
+											<MacOsIcon />
 											<Text fs="15" lh="22" color="333e49" font="regular">
 												{langStringPageTokenDesktopBuildsMacosDownload}
 											</Text>
@@ -260,12 +260,12 @@ const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 								</MenuItem>
 							</MenuItemGroup>
 							<Box w="100%" px="24px" py="7px">
-								<Box bgColor="f5f5f5" h="1px" w="100%"/>
+								<Box bgColor="f5f5f5" h="1px" w="100%" />
 							</Box>
 							<MenuItemGroup id="other_builds">
 								<MenuItem id={DESKTOP_PLATFORM_WINDOWS}>
 									<HStack gap="8px">
-										<WindowsIcon/>
+										<WindowsIcon />
 										<Text fs="15" lh="22" color="333e49" font="regular">
 											{langStringPageTokenDesktopBuildsWindowsDownload}
 										</Text>
@@ -274,7 +274,7 @@ const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 								<MenuItem id={DESKTOP_PLATFORM_LINUX_DEB}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
-											<LinuxDebIcon/>
+											<LinuxDebIcon />
 											<Text fs="15" lh="22" color="333e49" font="regular">
 												{langStringPageTokenDesktopBuildsLinuxDownload}
 											</Text>
@@ -296,7 +296,7 @@ const StepTwoContent = ({ childButtonWidth }: StepTwoContentProps) => {
 								<MenuItem id={DESKTOP_PLATFORM_LINUX_TAR}>
 									<HStack w="100%" justifyContent="space-between">
 										<HStack gap="8px">
-											<LinuxTarIcon/>
+											<LinuxTarIcon />
 											<Text fs="15" lh="22" color="333e49" font="regular">
 												{langStringPageTokenDesktopBuildsLinuxDownload}
 											</Text>
@@ -329,8 +329,7 @@ type StepOneContentProps = {
 	parentButtonRef: any;
 };
 
-const StepOneContent = ({scrollableParentBlockRef, parentButtonRef}: StepOneContentProps) => {
-
+const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneContentProps) => {
 	const langStringPageTokenStep1RegisterDescPt1 = useLangString("page_token.step_1.register_desc_pt1");
 	const langStringPageTokenStep1RegisterDescPt2 = useLangString("page_token.step_1.register_desc_pt2");
 	const langStringPageTokenStep1RegisterButton = useLangString("page_token.step_1.register_button");
@@ -363,8 +362,7 @@ const StepOneContent = ({scrollableParentBlockRef, parentButtonRef}: StepOneCont
 	};
 
 	useEffect(() => {
-
-		apiAuthGenerateToken.mutate({join_link_uniq: joinLink === null ? undefined : joinLink.join_link_uniq});
+		apiAuthGenerateToken.mutate({ join_link_uniq: joinLink === null ? undefined : joinLink.join_link_uniq });
 	}, []);
 
 	return (
@@ -392,7 +390,7 @@ const StepOneContent = ({scrollableParentBlockRef, parentButtonRef}: StepOneCont
 								? langStringPageTokenStep1RegisterDescPt1
 								: langStringPageTokenStep1LoginDescPt1}
 						</styled.span>
-						<br/>
+						<br />
 						{isRegistration
 							? langStringPageTokenStep1RegisterDescPt2
 							: langStringPageTokenStep1LoginDescPt2Desktop}
@@ -402,7 +400,9 @@ const StepOneContent = ({scrollableParentBlockRef, parentButtonRef}: StepOneCont
 					size="px20py6"
 					textSize="xl_desktop"
 					disabled={isAuthenticationTokenExpired}
-					ref={parentButtonRef} onClick={() => onClickHandler()}>
+					ref={parentButtonRef}
+					onClick={() => onClickHandler()}
+				>
 					{isRegistration ? langStringPageTokenStep1RegisterButton : langStringPageTokenStep1LoginButton}
 				</Button>
 			</HStack>
@@ -417,8 +417,8 @@ const StepOneContent = ({scrollableParentBlockRef, parentButtonRef}: StepOneCont
 					alignItems="start"
 					mt="16px"
 				>
-					<Box w="100%" h="16px" bgColor="434455" rounded="3px"/>
-					<Box w="48%" h="16px" bgColor="434455" rounded="3px"/>
+					<Box w="100%" h="16px" bgColor="434455" rounded="3px" />
+					<Box w="48%" h="16px" bgColor="434455" rounded="3px" />
 				</VStack>
 			) : (
 				<VStack w="100%" rounded="8px" gap="0px" alignItems="start">
@@ -445,13 +445,17 @@ const StepOneContent = ({scrollableParentBlockRef, parentButtonRef}: StepOneCont
 							overflow="breakWord"
 							color="f8f8f8"
 							opacity={!isAuthenticationTokenExpired ? "50%" : "10%"}
-							fs="13" lh="20" font="regular">
+							fs="13"
+							lh="20"
+							font="regular"
+						>
 							{apiAuthGenerateToken.data.authentication_token.substring(0, 120)}
 						</Text>
 					</Box>
 					<DynamicTimerAuthenticationToken
 						key="desktop_dynamic_timer"
-						apiAuthGenerateToken={apiAuthGenerateToken}/>
+						apiAuthGenerateToken={apiAuthGenerateToken}
+					/>
 				</VStack>
 			)}
 		</VStack>
@@ -509,7 +513,7 @@ const PageTokenDesktop = () => {
 			return;
 		}
 
-		apiJoinLinkAccept.mutateAsync({join_link_uniq: joinLink.join_link_uniq});
+		apiJoinLinkAccept.mutateAsync({ join_link_uniq: joinLink.join_link_uniq });
 	}, []);
 
 	// очищаем из local storage
@@ -536,7 +540,7 @@ const PageTokenDesktop = () => {
 
 	useEffect(() => {
 		if (parentButtonRef.current) {
-			const {offsetWidth} = parentButtonRef.current;
+			const { offsetWidth } = parentButtonRef.current;
 			setChildButtonWidth(offsetWidth);
 		}
 	}, [parentButtonRef.current]);
@@ -609,10 +613,10 @@ const PageTokenDesktop = () => {
 						</Box>
 					</DialogTrigger>
 					<Portal>
-						<DialogBackdrop/>
+						<DialogBackdrop />
 						<DialogContainer>
 							<DialogContent overflow="hidden" lazyMount unmountOnExit>
-								<Toast toastConfig={toastConfig}/>
+								<Toast toastConfig={toastConfig} />
 								<VStack mt="16px" gap="24px">
 									<VStack gap="16px" px="4px">
 										<Box w="80px" h="80px">
@@ -657,7 +661,7 @@ const PageTokenDesktop = () => {
 										>
 											{apiAuthLogout.isLoading ? (
 												<Box py="3.5px">
-													<Preloader16/>
+													<Preloader16 />
 												</Box>
 											) : (
 												<HStack gap="4px">
@@ -690,11 +694,11 @@ const PageTokenDesktop = () => {
 					</Portal>
 				</Dialog>
 			</HStack>
-			<Toast toastConfig={pageToastConfig}/>
+			<Toast toastConfig={pageToastConfig} />
 			<Center gap="8px" maxWidth="560px" h="100vh" className="invisible-scrollbar">
 				<VStack w="100%" gap="24px" userSelect="none">
 					<VStack w="100%" gap="16px">
-						<IconLogo/>
+						<IconLogo />
 						<VStack w="100%" alignItems="center" gap="6px">
 							<Text w="100%" textAlign="center" fs="18" lh="24" color="white" font="bold900" ls="-02">
 								{langStringPageTokenTitle}
@@ -712,7 +716,7 @@ const PageTokenDesktop = () => {
 							/>
 						</Box>
 						<Box w="100%" bgColor="434455" px="16px" pb="16px" pt="15px" rounded="12px">
-							<StepTwoContent childButtonWidth={childButtonWidth}/>
+							<StepTwoContent childButtonWidth={childButtonWidth} />
 						</Box>
 					</VStack>
 				</VStack>

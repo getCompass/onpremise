@@ -134,7 +134,7 @@ PODS:
     - AppAuth/Core (~> 1.6)
     - GTMSessionFetcher/Core (< 4.0, >= 1.5)
   - GTMSessionFetcher/Core (3.2.0)
-  - JitsiWebRTC (118.0.0)
+  - JitsiWebRTC (124.0.1)
   - libwebp (1.3.2):
     - libwebp/demux (= 1.3.2)
     - libwebp/mux (= 1.3.2)
@@ -476,7 +476,7 @@ PODS:
     - React-Core/RCTAnimationHeaders (= 0.72.9)
     - React-jsi (= 0.72.9)
     - ReactCommon/turbomodule/core (= 0.72.9)
-  - React-RCTAppDelegate (0.72.9):
+  - React-RCTAppDelegate (0.73.8):
     - RCT-Folly
     - RCTRequired
     - RCTTypeSafety
@@ -565,7 +565,7 @@ PODS:
     - React-perflogger (= 0.72.9)
   - RNCalendarEvents (2.2.0):
     - React
-  - RNCAsyncStorage (1.19.4):
+  - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNCClipboard (1.5.1):
     - React-Core
@@ -887,7 +887,7 @@ SPEC CHECKSUMS:
   React-perflogger: cb433f318c6667060fc1f62e26eb58d6eb30a627
   React-RCTActionSheet: 0af3f8ac067e8a1dde902810b7ad169d0a0ec31e
   React-RCTAnimation: 453a88e76ba6cb49819686acd8b21ce4d9ee4232
-  React-RCTAppDelegate: 009ede96d00f79460a75ab5071eadb4aaa1e5012
+  React-RCTAppDelegate: 4ec79cabb94ca17bfcf583c56dd048902c69cf69
   React-RCTBlob: a64134435f331c7cc716dcea6944a1443af49d32
   React-RCTImage: 8e059fbdfab18b86127424dc3742532aab960760
   React-RCTLinking: 05ae2aa525b21a7f1c5069c14330700f470efd97
@@ -901,7 +901,7 @@ SPEC CHECKSUMS:
   React-utils: a3ffbc321572ee91911d7bc30965abe9aa4e16af
   ReactCommon: d3522e54560e4d940554aa074a0206bf4d39ae5e
   RNCalendarEvents: 7e65eb4a94f53c1744d1e275f7fafcfaa619f7a3
-  RNCAsyncStorage: 3a8f7145d17cdd9f88e7b77666c94a09e4f759c8
+  RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNDefaultPreference: 08bdb06cfa9188d5da97d4642dac745218d7fb31
   RNDeviceInfo: 02ea8b23e2280fa18e00a06d7e62804d74028579

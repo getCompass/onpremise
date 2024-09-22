@@ -2,14 +2,17 @@
 
 namespace Compass\FileNode;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * Класс крона, который производит обработку video файлов после их загрузки на файловую ноду
  */
 class Cron_Postupload_Video extends \Cron_Default {
 
-	protected const _MAX_ERROR_COUNT   = 3; // максимальное количество ошибок
-	protected const _PRODUCER_INTERVAL = 60 * 10; // интервал продюсера
-	protected const _PRODUCER_LIMIT    = 30;
+	protected const _MAX_ERROR_COUNT             = 3; // максимальное количество ошибок
+	protected const _PRODUCER_INTERVAL           = 60 * 10; // интервал продюсера
+	protected const _ONPREMISE_PRODUCER_INTERVAL = 60 * 20; // интервал продюсера для онпрема
+	protected const _PRODUCER_LIMIT              = 30;
 
 	// параметры крона
 	protected int $sleep_time   = 0;
@@ -45,10 +48,12 @@ class Cron_Postupload_Video extends \Cron_Default {
 		// формируем IN для обновления need_work
 		$in = formatIn($list, "queue_id");
 
+		$need_work = ServerProvider::isOnPremise() ? time() + self::_ONPREMISE_PRODUCER_INTERVAL : time() + self::_PRODUCER_INTERVAL;
+
 		// обновляем need_work взятым задачам
 		$set = [
 			"error_count" => "error_count + 1",
-			"need_work"   => time() + self::_PRODUCER_INTERVAL,
+			"need_work"   => $need_work,
 		];
 		Gateway_Db_FileNode_PostUpload::updateList($in, $set);
 	}

@@ -10,6 +10,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {IReduxState} from "../../../../app/types";
 import {hideDialog} from "../../../dialog/actions";
 import {isMobileBrowser} from "../../../environment/utils";
+import {isAnyDialogOpen} from "../../../dialog/functions";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -85,10 +86,10 @@ const useStyles = makeStyles()(theme => {
             paddingBottom: '16px',
             animation: `${keyframes`
                 0% {
-                    margin-top: 85px
+                    margin-top: 63px
                 }
                 100% {
-                    margin-top: 64px
+                    margin-top: 42px
                 }
             `} 0.2s forwards ease-out`,
 
@@ -103,10 +104,10 @@ const useStyles = makeStyles()(theme => {
             '&.unmount': {
                 animation: `${keyframes`
                     0% {
-                        margin-top: 64px
+                        margin-top: 42px
                     }
                     100% {
-                        margin-top: 40px
+                        margin-top: 18px
                     }
                 `} 0.15s forwards ease-in`
             },
@@ -149,6 +150,7 @@ const useStyles = makeStyles()(theme => {
 
 export interface IProps {
     children?: ReactNode;
+    footerContent?: ReactNode;
     className?: string;
     classNameHeader?: string;
     classNameContent?: string;
@@ -167,6 +169,7 @@ export interface IProps {
 
 const BaseDialog = ({
                         children,
+                        footerContent,
                         className,
                         description,
                         disableBackdropClose,
@@ -184,6 +187,7 @@ const BaseDialog = ({
     const {isUnmounting} = useContext(DialogTransitionContext);
     const {t} = useTranslation();
     const {is_in_picture_in_picture_mode} = useSelector((state: IReduxState) => state['features/picture-in-picture']);
+    const is_open_any_dialog = useSelector((state: IReduxState) => isAnyDialogOpen(state));
     const isMobile = isMobileBrowser();
 
     const onBackdropClick = useCallback(() => {
@@ -212,6 +216,20 @@ const BaseDialog = ({
         }
     }, [is_in_picture_in_picture_mode]);
 
+    // функция для android доступная из dom, чтобы вызывать ее с kotlin
+    // @ts-ignore
+    window.dispatchNavigationBack = () => {
+
+        dispatch(hideDialog());
+
+        // @ts-ignore
+        if (typeof AndroidJitsiWebInterface !== 'undefined' && typeof AndroidJitsiWebInterface.showPictureInPictureMode === 'function' && !is_open_any_dialog) {
+
+            // @ts-ignore
+            AndroidJitsiWebInterface.showPictureInPictureMode()
+        }
+    };
+
     return (
         <div
             className={cx(classes.container, isUnmounting && 'unmount', isMobile && 'is-mobile')}
@@ -239,6 +257,19 @@ const BaseDialog = ({
                     role='dialog'
                     tabIndex={-1}>
                     {children}
+                </div>
+                <div
+                    tabIndex={-1}
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        width: "100%",
+                        marginTop: "48px",
+                        pointerEvents: "auto",
+                        zIndex: "302",
+                    }}>
+                    {footerContent}
                 </div>
             </FocusOn>
         </div>

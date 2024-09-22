@@ -59,13 +59,6 @@ const useStyles = makeStyles()(theme => {
                 color: 'rgba(255, 255, 255, 1)',
             },
 
-            '&.focus-visible': {
-                outline: 0,
-                boxShadow: `0px 0px 0px 2px ${theme.palette.focus01}`,
-                border: 0,
-                color: theme.palette.text01
-            },
-
             '&.selected': {
                 color: 'rgba(255, 255, 255, 0.75)',
                 background: 'rgba(33, 33, 33, 1)',

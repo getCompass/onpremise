@@ -29,7 +29,6 @@ services:
       domino-shared:
         aliases:
          - "{{$mysql_conf_block.Host}}"
-
 {{end}}
 networks:
   domino-shared:

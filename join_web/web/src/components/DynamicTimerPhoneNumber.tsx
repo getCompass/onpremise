@@ -19,7 +19,7 @@ type ShowGrecaptchaState = null | "need_render" | "rendered";
 type DynamicTimerPhoneNumberProps = {
 	endTimeUnix: number;
 	setNextResend: (value: number) => void;
-	setInputValues: (value: string[]) => void;
+	setConfirmCode: (value: string) => void;
 	setIsLoading: (value: boolean) => void;
 	setIsError: (value: boolean) => void;
 	setCompleted: (value: boolean) => void;
@@ -38,7 +38,7 @@ type DynamicTimerPhoneNumberProps = {
 export const DynamicTimerPhoneNumber = ({
 	endTimeUnix,
 	setNextResend,
-	setInputValues,
+	setConfirmCode,
 	setIsLoading,
 	setIsError,
 	setCompleted,
@@ -93,7 +93,7 @@ export const DynamicTimerPhoneNumber = ({
 			setIsLoading(true);
 			setIsError(false);
 			setCompleted(false);
-			setInputValues(Array(6).fill(""));
+			setConfirmCode("");
 
 			const response = await apiAuthPhoneNumberRetry.mutateAsync({
 				auth_key: authKey,

@@ -5,7 +5,6 @@ import {
 	authState,
 	captchaProviderState,
 	captchaPublicKeyState,
-	confirmCodeState,
 	isLoginCaptchaRenderedState,
 	joinLinkState,
 	needShowForgotPasswordButtonState,
@@ -910,7 +909,6 @@ type ShowGrecaptchaState = null | "need_render" | "rendered";
 
 const EmailLoginDialogContent = () => {
 	const isMobile = useIsMobile();
-	const setConfirmCode = useSetAtom(confirmCodeState);
 
 	const [showCaptchaState, setShowCaptchaState] = useState<ShowGrecaptchaState>(null);
 	const [grecaptchaResponse, setGrecaptchaResponse] = useState("");
@@ -919,7 +917,6 @@ const EmailLoginDialogContent = () => {
 	useEffect(() => {
 		if (inputRef.current) {
 			inputRef.current.focus();
-			setConfirmCode(Array(6).fill(""));
 		}
 	}, [inputRef]);
 

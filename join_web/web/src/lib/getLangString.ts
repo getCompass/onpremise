@@ -310,8 +310,7 @@ const LANG_CONFIG: LangConfig = {
 					},
 					support_block: {
 						title: "Возникли проблемы с установкой?",
-						desc: "Напишите нам в WhatsApp, Telegram или на почту.\nПоможем с установкой и настройкой.",
-						whatsapp: "WhatsApp",
+						desc: "Напишите нам в Telegram или на почту.\nПоможем с установкой и настройкой.",
 						telegram: "Telegram",
 						mail: "support@getcompass.ru",
 					},
@@ -338,8 +337,7 @@ const LANG_CONFIG: LangConfig = {
 					on_success_copy: "Ссылка на скачивание Compass для компьютера скопирована",
 					support_block: {
 						title: "Возникли проблемы с установкой?",
-						desc: "Напишите нам в WhatsApp, Telegram или на почту. Поможем с установкой и настройкой.",
-						whatsapp: "WhatsApp",
+						desc: "Напишите нам в Telegram или на почту. Поможем с установкой и настройкой.",
 						telegram: "Telegram",
 						mail: "support@getcompass.ru",
 					},

@@ -94,15 +94,6 @@ const useStyles = makeStyles()(theme => {
                 top: 0,
                 width: '100%',
 
-                '&.focus-visible': {
-                    // override global styles in order to use our own color
-                    outline: 'none !important',
-
-                    '&::-webkit-slider-runnable-track': focused,
-                    '&::ms-track': focused,
-                    '&::-moz-range-track': focused
-                },
-
                 '&::-webkit-slider-runnable-track': {
                     '-webkit-appearance': 'none',
                     ...inputTrack

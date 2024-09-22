@@ -91,11 +91,6 @@ const useStyles = makeStyles()(theme => {
             width: '100%',
             height: '100%',
             opacity: 0,
-
-            '&.focus-visible + .toggle-checkbox-ring': {
-                outline: 0,
-                boxShadow: `0px 0px 0px 2px ${theme.palette.focus01}`
-            }
         },
 
         checkboxRing: {

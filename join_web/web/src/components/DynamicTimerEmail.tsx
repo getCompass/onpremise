@@ -16,7 +16,7 @@ import { useApiSecurityMailResendResetPasswordCode } from "../api/security/mail.
 type DynamicTimerEmailProps = {
 	endTimeUnix: number;
 	setNextResend: (value: number) => void;
-	setInputValues: (value: string[]) => void;
+	setConfirmCode: (value: string) => void;
 	setIsLoading: (value: boolean) => void;
 	setIsError: (value: boolean) => void;
 	setCompleted: (value: boolean) => void;
@@ -31,7 +31,7 @@ type DynamicTimerEmailProps = {
 export const DynamicTimerEmail = ({
 	endTimeUnix,
 	setNextResend,
-	setInputValues,
+									  setConfirmCode,
 	setIsLoading,
 	setIsError,
 	setCompleted,
@@ -76,7 +76,7 @@ export const DynamicTimerEmail = ({
 			setIsLoading(true);
 			setIsError(false);
 			setCompleted(false);
-			setInputValues(Array(6).fill(""));
+			setConfirmCode("");
 
 			if (authType === APIAuthTypeResetPasswordByMail) {
 				const response = await apiSecurityMailResendResetPasswordCode.mutateAsync({

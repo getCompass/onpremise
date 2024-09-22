@@ -1,8 +1,10 @@
 import React from 'react';
-import { makeStyles } from 'tss-react/mui';
+import {makeStyles} from 'tss-react/mui';
 
-import { withPixelLineHeight } from '../../../base/styles/functions.web';
-import { IDisplayProps } from '../ConferenceTimer';
+import {withPixelLineHeight} from '../../../base/styles/functions.web';
+import {IDisplayProps} from '../ConferenceTimer';
+import {isDemoNode} from "../../../app/functions.web";
+import {toNumber} from "lodash";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -28,6 +30,10 @@ const useStyles = makeStyles()(theme => {
             '@media (max-width: 300px)': {
                 display: 'none'
             }
+        },
+        demoEndSoonTimer: {
+            color: 'rgba(0, 0, 0, 1)',
+            backgroundColor: 'rgba(255, 214, 56, 1)',
         }
     };
 });
@@ -37,10 +43,21 @@ const useStyles = makeStyles()(theme => {
  *
  * @returns {ReactElement}
  */
-export default function ConferenceTimerDisplay({ timerValue, textStyle: _textStyle }: IDisplayProps) {
-    const { classes } = useStyles();
+export default function ConferenceTimerDisplay({timerValue, textStyle: _textStyle}: IDisplayProps) {
+    const {classes, cx} = useStyles();
+    const parsedTimerValue = timerValue.split(':');
+
+    if (isDemoNode() && toNumber(parsedTimerValue[0]) <= 4) {
+
+        return (
+            <span
+                className={cx(classes.timer, classes.demoEndSoonTimer)}>
+                До конца встречи <span style={{fontFamily: "Lato Bold"}}>{timerValue}</span>
+            </span>
+        )
+    }
 
     return (
-        <span className = { classes.timer }>{ timerValue }</span>
+        <span className={classes.timer}>{timerValue}</span>
     );
 }

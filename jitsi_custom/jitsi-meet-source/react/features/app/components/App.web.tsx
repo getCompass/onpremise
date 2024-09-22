@@ -6,12 +6,14 @@ import DialogContainer from '../../base/ui/components/web/DialogContainer';
 import ChromeExtensionBanner from '../../chrome-extension-banner/components/ChromeExtensionBanner.web';
 import OverlayContainer from '../../overlay/components/web/OverlayContainer';
 
-import { AbstractApp } from './AbstractApp';
+import {AbstractApp} from './AbstractApp';
 
 // Register middlewares and reducers.
 import '../middlewares';
 import '../reducers';
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 
+const queryClient = new QueryClient();
 
 /**
  * Root app {@code Component} on Web/React.
@@ -30,9 +32,11 @@ export class App extends AbstractApp {
      */
     _createExtraElement() {
         return (
-            <JitsiThemeProvider>
-                <OverlayContainer />
-            </JitsiThemeProvider>
+            <QueryClientProvider client={queryClient}>
+                <JitsiThemeProvider>
+                    <OverlayContainer/>
+                </JitsiThemeProvider>
+            </QueryClientProvider>
         );
     }
 
@@ -44,10 +48,12 @@ export class App extends AbstractApp {
      */
     _createMainElement(component: React.ComponentType, props?: Object) {
         return (
-            <JitsiThemeProvider>
-                <GlobalStyles />
-                { super._createMainElement(component, props) }
-            </JitsiThemeProvider>
+            <QueryClientProvider client={queryClient}>
+                <JitsiThemeProvider>
+                    <GlobalStyles/>
+                    {super._createMainElement(component, props)}
+                </JitsiThemeProvider>
+            </QueryClientProvider>
         );
     }
 
@@ -58,9 +64,11 @@ export class App extends AbstractApp {
      */
     _renderDialogContainer() {
         return (
-            <JitsiThemeProvider>
-                <DialogContainer />
-            </JitsiThemeProvider>
+            <QueryClientProvider client={queryClient}>
+                <JitsiThemeProvider>
+                    <DialogContainer/>
+                </JitsiThemeProvider>
+            </QueryClientProvider>
         );
     }
 }

@@ -1,33 +1,34 @@
-import { sha512_256 as sha512 } from 'js-sha512';
-import _ from 'lodash';
+import {sha512_256 as sha512} from 'js-sha512';
+import _, {toNumber} from 'lodash';
 
-import { getName } from '../../app/functions';
-import { IReduxState, IStore } from '../../app/types';
-import { determineTranscriptionLanguage } from '../../transcribing/functions';
-import { IStateful } from '../app/types';
-import { JitsiTrackErrors } from '../lib-jitsi-meet';
+import {getName} from '../../app/functions';
+import {IReduxState, IStore} from '../../app/types';
+import {determineTranscriptionLanguage} from '../../transcribing/functions';
+import {IStateful} from '../app/types';
+import {JitsiTrackErrors} from '../lib-jitsi-meet';
 import {
     hiddenParticipantJoined,
     hiddenParticipantLeft,
     participantJoined,
     participantLeft
 } from '../participants/actions';
-import { getLocalParticipant } from '../participants/functions';
-import { toState } from '../redux/functions';
+import {getLocalParticipant} from '../participants/functions';
+import {toState} from '../redux/functions';
 import {
     appendURLParam,
     getBackendSafePath,
     safeDecodeURIComponent
 } from '../util/uri';
 
-import { setObfuscatedRoom } from './actions';
+import {setObfuscatedRoom} from './actions';
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
     JITSI_CONFERENCE_URL_KEY
 } from './constants';
 import logger from './logger';
-import { IJitsiConference } from './reducer';
+import {IJitsiConference} from './reducer';
+import {getDemoNodeMaxConferenceDurationSeconds, isDemoNode} from "../../app/functions.web";
 
 /**
  * Returns root conference state.
@@ -54,8 +55,8 @@ export const getIsConferenceJoined = (state: IReduxState) => Boolean(getConferen
  * @returns {Promise}
  */
 export function _addLocalTracksToConference(
-        conference: IJitsiConference,
-        localTracks: Array<Object>) {
+    conference: IJitsiConference,
+    localTracks: Array<Object>) {
     const conferenceLocalTracks = conference.getLocalTracks();
     const promises = [];
 
@@ -87,9 +88,9 @@ export function _addLocalTracksToConference(
  * @returns {void}
  */
 export function commonUserJoinedHandling(
-        { dispatch }: { dispatch: IStore['dispatch']; },
-        conference: IJitsiConference,
-        user: any) {
+    {dispatch}: { dispatch: IStore['dispatch']; },
+    conference: IJitsiConference,
+    user: any) {
     const id = user.getId();
     const displayName = user.getDisplayName();
 
@@ -123,9 +124,9 @@ export function commonUserJoinedHandling(
  * @returns {void}
  */
 export function commonUserLeftHandling(
-        { dispatch }: { dispatch: IStore['dispatch']; },
-        conference: IJitsiConference,
-        user: any) {
+    {dispatch}: { dispatch: IStore['dispatch']; },
+    conference: IJitsiConference,
+    user: any) {
     const id = user.getId();
 
     if (user.isHidden()) {
@@ -133,7 +134,7 @@ export function commonUserLeftHandling(
     } else {
         const isReplaced = user.isReplaced?.();
 
-        dispatch(participantLeft(id, conference, { isReplaced }));
+        dispatch(participantLeft(id, conference, {isReplaced}));
     }
 }
 
@@ -151,8 +152,8 @@ export function commonUserLeftHandling(
  * features/base/conference.
  */
 export function forEachConference(
-        stateful: IStateful,
-        predicate: (a: any, b: URL) => boolean) {
+    stateful: IStateful,
+    predicate: (a: any, b: URL) => boolean) {
     const state = getConferenceState(toState(stateful));
 
     for (const v of Object.values(state)) {
@@ -166,7 +167,7 @@ export function forEachConference(
             // alternative is necessary then to recognize JitsiConference
             // instances and myUserId is as good as any other property.
             if ((url || typeof v.myUserId === 'function')
-                    && !predicate(v, url)) {
+                && !predicate(v, url)) {
                 return false;
             }
         }
@@ -184,13 +185,13 @@ export function forEachConference(
  */
 export function getConferenceName(stateful: IStateful): string {
     const state = toState(stateful);
-    const { callee } = state['features/base/jwt'];
+    const {callee} = state['features/base/jwt'];
     const {
         callDisplayName,
         localSubject: configLocalSubject,
         subject: configSubject
     } = state['features/base/config'];
-    const { localSubject, pendingSubjectChange, room, subject } = getConferenceState(state);
+    const {localSubject, pendingSubjectChange, room, subject} = getConferenceState(state);
 
     return (pendingSubjectChange
         || configSubject
@@ -223,10 +224,10 @@ export function getConferenceOptions(stateful: IStateful) {
     const state = toState(stateful);
 
     const config = state['features/base/config'];
-    const { locationURL } = state['features/base/connection'];
-    const { tenant } = state['features/base/jwt'];
-    const { email, name: nick } = getLocalParticipant(state) ?? {};
-    const options: any = { ...config };
+    const {locationURL} = state['features/base/connection'];
+    const {tenant} = state['features/base/jwt'];
+    const {email, name: nick} = getLocalParticipant(state) ?? {};
+    const options: any = {...config};
 
     if (tenant) {
         options.siteID = tenant;
@@ -356,17 +357,39 @@ export function getVisitorOptions(stateful: IStateful, vnode: string, focusJid: 
 }
 
 /**
-* Returns the UTC timestamp when the first participant joined the conference.
-*
-* @param {IStateful} stateful - Reference that can be resolved to Redux
-* state with the {@code toState} function.
-* @returns {number}
-*/
+ * Returns the UTC timestamp when the first participant joined the conference.
+ *
+ * @param {IStateful} stateful - Reference that can be resolved to Redux
+ * state with the {@code toState} function.
+ * @returns {number}
+ */
 export function getConferenceTimestamp(stateful: IStateful) {
     const state = toState(stateful);
-    const { conferenceTimestamp } = getConferenceState(state);
+    const {conferenceTimestamp} = getConferenceState(state);
 
     return conferenceTimestamp;
+}
+
+/**
+ * Returns the UTC timestamp when the first participant joined the conference.
+ *
+ * @param {IStateful} stateful - Reference that can be resolved to Redux
+ * state with the {@code toState} function.
+ * @returns {number}
+ */
+export function getDemoConferenceTimestamp(stateful: IStateful) {
+    const state = toState(stateful);
+    const {conferenceTimestamp} = getConferenceState(state);
+    const fifteenMinutesInMs = toNumber(getDemoNodeMaxConferenceDurationSeconds() * 1000);
+
+    const jwtState = state['features/base/jwt'];
+    const hasJwt = Boolean(jwtState.jwt);
+
+    if (hasJwt && jwtState.user !== undefined) {
+        return toNumber(toNumber(jwtState.user.conference_created_at * 1000) + fifteenMinutesInMs);
+    }
+
+    return toNumber(toNumber(conferenceTimestamp) + fifteenMinutesInMs);
 }
 
 /**
@@ -380,7 +403,7 @@ export function getConferenceTimestamp(stateful: IStateful) {
  * @returns {JitsiConference|undefined}
  */
 export function getCurrentConference(stateful: IStateful): IJitsiConference | undefined {
-    const { conference, joining, leaving, membersOnly, passwordRequired }
+    const {conference, joining, leaving, membersOnly, passwordRequired}
         = getConferenceState(toState(stateful));
 
     // There is a precedence
@@ -427,8 +450,8 @@ export function getRoomName(state: IReduxState) {
  * @returns {string} - Obfuscated room name.
  */
 export function getOrCreateObfuscatedRoomName(state: IReduxState, dispatch: IStore['dispatch']) {
-    let { obfuscatedRoom } = getConferenceState(state);
-    const { obfuscatedRoomSource } = getConferenceState(state);
+    let {obfuscatedRoom} = getConferenceState(state);
+    const {obfuscatedRoomSource} = getConferenceState(state);
     const room = getRoomName(state);
 
     if (!room) {
@@ -455,7 +478,7 @@ export function getOrCreateObfuscatedRoomName(state: IReduxState, dispatch: ISto
  * @returns {string} - Analytics room name.
  */
 export function getAnalyticsRoomName(state: IReduxState, dispatch: IStore['dispatch']) {
-    const { analysis: { obfuscateRoomName = false } = {} } = state['features/base/config'];
+    const {analysis: {obfuscateRoomName = false} = {}} = state['features/base/config'];
 
     if (obfuscateRoomName) {
         return getOrCreateObfuscatedRoomName(state, dispatch);
@@ -505,8 +528,8 @@ export function isRoomValid(room?: string) {
  * @returns {Promise}
  */
 export function _removeLocalTracksFromConference(
-        conference: IJitsiConference,
-        localTracks: Array<Object>) {
+    conference: IJitsiConference,
+    localTracks: Array<Object>) {
     return Promise.all(localTracks.map(track =>
         conference.removeTrack(track)
             .catch((err: Error) => {
@@ -551,8 +574,8 @@ function _reportError(msg: string, err: Error) {
  * @returns {void}
  */
 export function sendLocalParticipant(
-        stateful: IStateful,
-        conference?: IJitsiConference) {
+    stateful: IStateful,
+    conference?: IJitsiConference) {
     const {
         avatarURL,
         email,

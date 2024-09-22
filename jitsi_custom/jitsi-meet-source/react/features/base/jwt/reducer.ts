@@ -19,6 +19,7 @@ export interface IJwtState {
         jitsi_frontend_url: string;
         is_moderator: boolean;
         is_lobby_enabled: boolean;
+        conference_created_at: number;
     };
 }
 

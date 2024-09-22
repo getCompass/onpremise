@@ -73,8 +73,6 @@ export const needShowForgotPasswordButtonState = atom(true);
 export const isNeedShowCreateProfileDialogAfterSsoRegistrationState = atom(false);
 export const isNeedShowCreateProfileDialogAfterLdapRegistrationState = atom(false);
 
-export const confirmCodeState = atom<string[]>(Array(6).fill(""));
-
 export const joinLinkState = atomWithImmer<APIJoinLinkInfo | null>(null);
 export const prepareJoinLinkErrorState = atom<PrepareJoinLinkErrorInfo | null>(null);
 

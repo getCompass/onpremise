@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import {useAtomValue, useSetAtom} from "jotai/index";
-import {downloadAppUrlState, electronVersionState} from "./_stores.ts";
+import { useAtomValue, useSetAtom } from "jotai/index";
+import { downloadAppUrlState, electronVersionState } from "./_stores.ts";
 
 async function fetchVersionInfo(url: string) {
 	const response = await fetch(url, {
@@ -25,17 +25,22 @@ export default function useElectronVersions(backendVersion: string) {
 				return {};
 			}
 
-			const data = await fetchVersionInfo(`${downloadAppUrl}electron_versions.json`);
-			if (!data.hasOwnProperty(backendVersion)) {
-				return data;
-			}
-			if (!data[backendVersion]) {
-				return data;
-			}
+			try {
+				const data = await fetchVersionInfo(`${downloadAppUrl}electron_versions.json`);
 
-			setElectronVersion(data[backendVersion]);
+				if (!data.hasOwnProperty(backendVersion)) {
+					return data;
+				}
+				if (!data[backendVersion]) {
+					return data;
+				}
 
-			return data;
+				setElectronVersion(data[backendVersion]);
+
+				return data;
+			} catch (error) {
+				return {};
+			}
 		},
 	});
 }

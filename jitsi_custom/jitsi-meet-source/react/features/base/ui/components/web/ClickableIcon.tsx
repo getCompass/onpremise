@@ -26,11 +26,6 @@ const useStyles = makeStyles()(theme => {
                 }
             },
 
-            '&.focus-visible': {
-                outline: 0,
-                boxShadow: `0px 0px 0px 2px ${theme.palette.focus01}`
-            },
-
             '&:active': {
                 backgroundColor: 'transparent',
             },

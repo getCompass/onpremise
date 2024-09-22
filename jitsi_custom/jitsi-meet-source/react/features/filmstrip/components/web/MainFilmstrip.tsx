@@ -1,20 +1,22 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 
-import { IReduxState } from '../../../app/types';
-import { isMobileBrowser } from '../../../base/environment/utils';
-import { LAYOUTS } from '../../../video-layout/constants';
-import { getCurrentLayout } from '../../../video-layout/functions.web';
+import {IReduxState} from '../../../app/types';
+import {isMobileBrowser} from '../../../base/environment/utils';
+import {LAYOUTS} from '../../../video-layout/constants';
+import {getCurrentLayout} from '../../../video-layout/functions.web';
 import {
-    ASPECT_RATIO_BREAKPOINT,
+    ASPECT_RATIO_BREAKPOINT, DEMO_HEADER_HEIGHT_MOBILE,
     FILMSTRIP_BREAKPOINT,
     FILMSTRIP_BREAKPOINT_OFFSET,
     FILMSTRIP_TYPE,
     TOOLBAR_HEIGHT,
-    TOOLBAR_HEIGHT_MOBILE } from '../../constants';
-import { isFilmstripResizable, showGridInVerticalView } from '../../functions.web';
+    TOOLBAR_HEIGHT_MOBILE
+} from '../../constants';
+import {isFilmstripResizable, showGridInVerticalView} from '../../functions.web';
 
 import Filmstrip from './Filmstrip';
+import {isDemoNode} from "../../../app/functions.web";
 
 interface IProps {
 
@@ -92,8 +94,8 @@ interface IProps {
 const MainFilmstrip = (props: IProps) => (
     <span>
         <Filmstrip
-            { ...props }
-            filmstripType = { FILMSTRIP_TYPE.MAIN } />
+            {...props}
+            filmstripType={FILMSTRIP_TYPE.MAIN}/>
     </span>
 );
 
@@ -106,12 +108,14 @@ const MainFilmstrip = (props: IProps) => (
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState, _ownProps: any) {
-    const { toolbarButtons } = state['features/toolbox'];
-    const { remoteParticipants, width: verticalFilmstripWidth } = state['features/filmstrip'];
+    const {toolbarButtons} = state['features/toolbox'];
+    const {remoteParticipants, width: verticalFilmstripWidth} = state['features/filmstrip'];
     const reduceHeight = state['features/toolbox'].visible && toolbarButtons?.length;
     const {
-        gridDimensions: dimensions = { columns: undefined,
-            rows: undefined },
+        gridDimensions: dimensions = {
+            columns: undefined,
+            rows: undefined
+        },
         filmstripHeight,
         filmstripWidth,
         hasScroll: tileViewHasScroll,
@@ -123,7 +127,7 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     let gridDimensions = dimensions;
     let _hasScroll = false;
 
-    const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
+    const {clientHeight, clientWidth} = state['features/base/responsive-ui'];
     const availableSpace = clientHeight - Number(filmstripHeight);
     let filmstripPadding = 0;
 
@@ -148,46 +152,48 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     let _thumbnailSize, remoteFilmstripHeight, remoteFilmstripWidth;
 
     switch (_currentLayout) {
-    case LAYOUTS.TILE_VIEW:
-        _hasScroll = Boolean(tileViewHasScroll);
-        _thumbnailSize = tileViewThumbnailSize;
-        remoteFilmstripHeight = Number(filmstripHeight) - (
-            collapseTileView && filmstripPadding > 0 ? filmstripPadding : 0);
-        remoteFilmstripWidth = filmstripWidth;
-        break;
-    case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
-    case LAYOUTS.STAGE_FILMSTRIP_VIEW: {
-        const {
-            remote,
-            remoteVideosContainer,
-            gridView,
-            hasScroll
-        } = state['features/filmstrip'].verticalViewDimensions;
+        case LAYOUTS.TILE_VIEW:
+            _hasScroll = Boolean(tileViewHasScroll);
+            _thumbnailSize = tileViewThumbnailSize;
+            remoteFilmstripHeight = Number(filmstripHeight) - (
+                collapseTileView && filmstripPadding > 0 ? filmstripPadding : 0) - (isDemoNode() && isMobileBrowser() && availableSpace < 100 ? DEMO_HEADER_HEIGHT_MOBILE : 0);
+            remoteFilmstripWidth = filmstripWidth;
+            break;
+        case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
+        case LAYOUTS.STAGE_FILMSTRIP_VIEW: {
+            const {
+                remote,
+                remoteVideosContainer,
+                gridView,
+                hasScroll
+            } = state['features/filmstrip'].verticalViewDimensions;
 
-        _hasScroll = Boolean(hasScroll);
-        remoteFilmstripHeight = Number(remoteVideosContainer?.height) - (!_verticalViewGrid && shouldReduceHeight
-            ? TOOLBAR_HEIGHT : 0);
-        remoteFilmstripWidth = remoteVideosContainer?.width;
+            _hasScroll = Boolean(hasScroll);
+            remoteFilmstripHeight = Number(remoteVideosContainer?.height) - (!_verticalViewGrid && shouldReduceHeight
+                ? TOOLBAR_HEIGHT : 0);
+            remoteFilmstripWidth = remoteVideosContainer?.width;
 
-        if (_verticalViewGrid) {
-            gridDimensions = gridView?.gridDimensions ?? { columns: undefined,
-                rows: undefined };
-            _thumbnailSize = gridView?.thumbnailSize;
-            _hasScroll = Boolean(gridView?.hasScroll);
-        } else {
-            _thumbnailSize = remote;
+            if (_verticalViewGrid) {
+                gridDimensions = gridView?.gridDimensions ?? {
+                    columns: undefined,
+                    rows: undefined
+                };
+                _thumbnailSize = gridView?.thumbnailSize;
+                _hasScroll = Boolean(gridView?.hasScroll);
+            } else {
+                _thumbnailSize = remote;
+            }
+            break;
         }
-        break;
-    }
-    case LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW: {
-        const { remote, remoteVideosContainer, hasScroll } = state['features/filmstrip'].horizontalViewDimensions;
+        case LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW: {
+            const {remote, remoteVideosContainer, hasScroll} = state['features/filmstrip'].horizontalViewDimensions;
 
-        _hasScroll = Boolean(hasScroll);
-        _thumbnailSize = remote;
-        remoteFilmstripHeight = remoteVideosContainer?.height;
-        remoteFilmstripWidth = remoteVideosContainer?.width;
-        break;
-    }
+            _hasScroll = Boolean(hasScroll);
+            _thumbnailSize = remote;
+            remoteFilmstripHeight = remoteVideosContainer?.height;
+            remoteFilmstripWidth = remoteVideosContainer?.width;
+            break;
+        }
     }
 
     return {

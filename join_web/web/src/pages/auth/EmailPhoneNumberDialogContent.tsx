@@ -11,7 +11,6 @@ import {
 	authState,
 	captchaProviderState,
 	captchaPublicKeyState,
-	confirmCodeState,
 	confirmPasswordState,
 	dictionaryDataState,
 	isPasswordChangedState,
@@ -539,7 +538,6 @@ const EmailPhoneNumberDialogContent = () => {
 
 	const availableAuthMethodList = useAvailableAuthMethodList();
 	const isMobile = useIsMobile();
-	const setConfirmCode = useSetAtom(confirmCodeState);
 
 	const [showCaptchaState, setShowCaptchaState] = useState<ShowGrecaptchaState>(null);
 	const [grecaptchaResponse, setGrecaptchaResponse] = useState("");
@@ -594,7 +592,6 @@ const EmailPhoneNumberDialogContent = () => {
 	useEffect(() => {
 		if (inputRef.current) {
 			inputRef.current.focus();
-			setConfirmCode(Array(6).fill(""));
 		}
 	}, [inputRef]);
 

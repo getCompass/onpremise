@@ -23,6 +23,7 @@ import {TOOLBAR_TIMEOUT} from './constants';
 import {IToolboxButton, NOTIFY_CLICK_MODE} from './types';
 import SpeakerStatsButton from '../speaker-stats/components/web/SpeakerStatsButton';
 import {isMobileBrowser} from "../base/environment/utils";
+import ToggleCameraButton from "./components/web/ToggleCameraButton";
 
 export * from './functions.any';
 
@@ -236,6 +237,12 @@ export function getAllToolboxButtons(_customToolbarButtons?: {
         group: 0
     };
 
+    const toggleCamera = {
+        key: 'toggle-camera',
+        Content: ToggleCameraButton,
+        group: 0
+    };
+
     const fullscreen = {
         key: 'fullscreen',
         Content: FullscreenButton,
@@ -295,6 +302,7 @@ export function getAllToolboxButtons(_customToolbarButtons?: {
         reactions,
         participants,
         tileview,
+        toggleCamera,
         fullscreen,
         recording,
         recording_electron,

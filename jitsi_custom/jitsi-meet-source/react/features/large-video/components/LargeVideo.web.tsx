@@ -22,6 +22,7 @@ import { setSeeWhatIsBeingShared } from '../actions.web';
 import { getLargeVideoParticipant } from '../functions';
 
 import ScreenSharePlaceholder from './ScreenSharePlaceholder.web';
+import {isDemoNode} from "../../app/functions.web";
 
 // Hack to detect Spot.
 const SPOT_DISPLAY_NAME = 'Meeting Room';
@@ -311,6 +312,9 @@ class LargeVideo extends Component<IProps> {
         } = this.props;
 
         styles.backgroundColor = "rgba(23, 23, 23, 1)";
+        if (isDemoNode()) {
+            styles.backgroundColor = "rgba(0, 0, 0, 1)";
+        }
 
         if (this.props._backgroundAlpha !== undefined) {
             const alphaColor = setColorAlpha(styles.backgroundColor, this.props._backgroundAlpha);

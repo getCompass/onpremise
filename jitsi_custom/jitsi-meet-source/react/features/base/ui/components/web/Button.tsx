@@ -82,11 +82,6 @@ const useStyles = makeStyles()(theme => {
                 },
             },
 
-            '&.focus-visible': {
-                outline: 0,
-                boxShadow: `0px 0px 0px 2px ${theme.palette.focus01}`
-            },
-
             '& div > svg': {
                 fill: 'rgba(255, 255, 255, 1)'
             },

@@ -50,11 +50,11 @@ MiddlewareRegistry.register(store => next => action => {
  */
 function _overwriteLocalParticipant(
         { dispatch, getState }: IStore,
-        { avatarURL, email, id: jwtId, name, features, type, jitsi_frontend_url, is_moderator, is_lobby_enabled }:
-        { avatarURL?: string; email?: string; features?: any; id?: string; name?: string; type?: string, jitsi_frontend_url?: string, is_moderator?: boolean, is_lobby_enabled?: boolean }) {
+        { avatarURL, email, id: jwtId, name, features, type, jitsi_frontend_url, is_moderator, is_lobby_enabled, conference_created_at }:
+        { avatarURL?: string; email?: string; features?: any; id?: string; name?: string; type?: string, jitsi_frontend_url?: string, is_moderator?: boolean, is_lobby_enabled?: boolean, conference_created_at?: number }) {
     let localParticipant;
 
-    if ((avatarURL || email || name || features || type || jitsi_frontend_url || is_moderator !== undefined || is_lobby_enabled !== undefined) && (localParticipant = getLocalParticipant(getState))) {
+    if ((avatarURL || email || name || features || type || jitsi_frontend_url || is_moderator !== undefined || is_lobby_enabled !== undefined || conference_created_at !== undefined) && (localParticipant = getLocalParticipant(getState))) {
         const newProperties: IParticipant = {
             id: localParticipant.id,
             local: true
@@ -86,6 +86,9 @@ function _overwriteLocalParticipant(
         }
         if (is_lobby_enabled !== undefined) {
             newProperties.is_lobby_enabled = is_lobby_enabled
+        }
+        if (conference_created_at !== undefined) {
+            newProperties.conference_created_at = conference_created_at
         }
         dispatch(participantUpdated(newProperties));
     }
@@ -248,9 +251,9 @@ function _undoOverwriteLocalParticipant(
  *     hidden-from-recorder: ?boolean
  * }}
  */
-export function user2participant({ avatar, avatarUrl, email, id, name, type, jitsi_frontend_url, is_moderator, is_lobby_enabled, 'hidden-from-recorder': hiddenFromRecorder }:
+export function user2participant({ avatar, avatarUrl, email, id, name, type, jitsi_frontend_url, is_moderator, is_lobby_enabled, conference_created_at, 'hidden-from-recorder': hiddenFromRecorder }:
     { avatar?: string; avatarUrl?: string; email: string; 'hidden-from-recorder': string | boolean;
-    id: string; name: string; type?: string; jitsi_frontend_url?: string, is_moderator?: boolean, is_lobby_enabled?: boolean }) {
+    id: string; name: string; type?: string; jitsi_frontend_url?: string, is_moderator?: boolean, is_lobby_enabled?: boolean, conference_created_at?: number }) {
     const participant: {
         avatarURL?: string;
         email?: string;
@@ -261,6 +264,7 @@ export function user2participant({ avatar, avatarUrl, email, id, name, type, jit
         jitsi_frontend_url?: string;
         is_moderator?: boolean;
         is_lobby_enabled?: boolean;
+        conference_created_at?: number;
     } = {};
 
     if (typeof avatarUrl === 'string') {
@@ -288,6 +292,9 @@ export function user2participant({ avatar, avatarUrl, email, id, name, type, jit
     }
     if (typeof is_lobby_enabled === 'boolean') {
         participant.is_lobby_enabled = is_lobby_enabled;
+    }
+    if (typeof conference_created_at === 'number') {
+        participant.conference_created_at = conference_created_at;
     }
 
     if (hiddenFromRecorder === 'true' || hiddenFromRecorder === true) {

@@ -2,7 +2,6 @@ import { Box, styled, VStack } from "../../../styled-system/jsx";
 import {
 	activeDialogIdState,
 	authState,
-	confirmCodeState,
 	confirmPasswordState,
 	joinLinkState,
 	passwordInputState,
@@ -643,13 +642,11 @@ const EmailRegisterDialogContentMobile = () => {
 
 const EmailRegisterDialogContent = () => {
 	const isMobile = useIsMobile();
-	const setConfirmCode = useSetAtom(confirmCodeState);
 
 	const inputRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		if (inputRef.current) {
 			inputRef.current.focus();
-			setConfirmCode(Array(6).fill(""));
 		}
 	}, [inputRef]);
 

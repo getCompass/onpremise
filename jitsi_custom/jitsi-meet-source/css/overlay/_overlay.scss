@@ -26,6 +26,12 @@
             position: absolute;
             bottom: 0;
         }
+
+        &_centered {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     }
 
     &__policy {

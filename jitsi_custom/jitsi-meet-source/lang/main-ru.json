@@ -293,6 +293,10 @@
         "cameraUnsupportedResolutionError": "Ваша камера не поддерживает необходимое разрешение видео.",
         "close": "Закрыть",
         "conferenceDisconnectMsg": "Следует проверить интернет-соединение. Попытка восстановления связи через {{seconds}} с.",
+        "conferenceNoConnection": {
+            "title": "Нет интернета",
+            "description": "Как только интернет появится, вы сразу вернётесь в конференцию."
+        },
         "conferenceDisconnectTitle": "Вы отключены.",
         "conferenceReloadMsg": "Мы стараемся это исправить. Восстановление связи через {{seconds}} с.",
         "conferenceReloadTitle": "К сожалению, что-то пошло не так.",
@@ -1333,7 +1337,7 @@
         "noiseSuppression": "Шумоподавление",
         "noisyAudioInputDesc": "Возможно, ваш микрофон создает шум. Вы можете выключить его или смените устройство.",
         "noisyAudioInputTitle": "Похоже, ваш микрофон создает шум!",
-        "openChat": "Открыть чат",
+        "openChat": "Чат",
         "openParticipantsPane": "Открыть панель участников",
         "openReactionsMenu": "Открыть меню реакций",
         "participants": "Участники",

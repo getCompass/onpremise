@@ -121,6 +121,19 @@ export const TILE_VERTICAL_CONTAINER_HORIZONTAL_MARGIN = 2;
 export const TILE_VIEW_GRID_VERTICAL_MARGIN = 14;
 
 /**
+ * The height of demo header
+ *
+ * @type {number}
+ */
+export const DEMO_HEADER_HEIGHT = 70;
+/**
+ * The height of demo header
+ *
+ * @type {number}
+ */
+export const DEMO_HEADER_HEIGHT_MOBILE = 52;
+
+/**
  * The horizontal margin of the tile grid container.
  *
  * @type {number}

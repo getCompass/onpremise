@@ -1,17 +1,13 @@
 /* eslint-disable react/jsx-no-bind */
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { connect, useDispatch } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
-import Avatar from '../../../base/avatar/components/Avatar';
 import { isNameReadOnly } from '../../../base/config/functions.web';
-import { IconArrowDown, IconArrowUp, IconPhoneRinging, IconVolumeOff } from '../../../base/icons/svg';
 import { isVideoMutedByUser } from '../../../base/media/functions';
 import { getLocalParticipant } from '../../../base/participants/functions';
-import Popover from '../../../base/popover/components/Popover.web';
-import ActionButton from '../../../base/premeeting/components/web/ActionButton';
 import PreMeetingScreen from '../../../base/premeeting/components/web/PreMeetingScreen';
 import { updateSettings } from '../../../base/settings/actions';
 import { getDisplayName } from '../../../base/settings/functions.web';
@@ -19,7 +15,6 @@ import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import { getLocalJitsiVideoTrack } from '../../../base/tracks/functions.web';
 import Button from '../../../base/ui/components/web/Button';
 import Input from '../../../base/ui/components/web/Input';
-import { BUTTON_TYPES } from '../../../base/ui/constants.any';
 import isInsecureRoomName from '../../../base/util/isInsecureRoomName';
 import { openDisplayNamePrompt } from '../../../display-name/actions';
 import { isUnsafeRoomWarningEnabled } from '../../../prejoin/functions';
@@ -38,6 +33,7 @@ import {
 import { hasDisplayName } from '../../utils';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
+import {BUTTON_TYPES} from "../../../base/ui/constants.any";
 
 interface IProps {
 
@@ -145,12 +141,20 @@ interface IProps {
 const useStyles = makeStyles()(theme => {
     return {
         inputContainer: {
-            width: '100%'
-        },
-
-        input: {
             width: '100%',
-            marginBottom: theme.spacing(3),
+            marginBottom: '24px',
+        },
+        input: {
+            backgroundColor: theme.palette.ui12,
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            height: '35px',
+        },
+        inputBlock: {
+            width: '100%',
+            marginBottom: '12px',
             '& :disabled': {
                 color: '#ffffff',
             },
@@ -158,6 +162,13 @@ const useStyles = makeStyles()(theme => {
             '& input': {
                 textAlign: 'center'
             }
+        },
+
+        buttonJoin: {
+            borderRadius: '8px',
+            width: '100%',
+            height: '35px',
+            ...withPixelLineHeight(theme.typography.bodyShortBoldLarge),
         },
 
         avatarContainer: {
@@ -189,31 +200,6 @@ const useStyles = makeStyles()(theme => {
             marginTop: `-${theme.spacing(2)}`,
             marginBottom: theme.spacing(3)
         },
-
-        dropdownContainer: {
-            position: 'relative',
-            width: '100%'
-        },
-
-        dropdownButtons: {
-            width: '300px',
-            padding: '8px 0',
-            backgroundColor: theme.palette.action02,
-            color: theme.palette.text04,
-            borderRadius: theme.shape.borderRadius,
-            position: 'relative',
-            top: `-${theme.spacing(3)}`,
-
-            '@media (max-width: 511px)': {
-                margin: '0 auto',
-                top: 0
-            },
-
-            '@media (max-width: 420px)': {
-                top: 0,
-                width: 'calc(100% - 32px)'
-            }
-        }
     };
 });
 
@@ -245,7 +231,6 @@ const Prejoin = ({
     const showErrorOnField = useMemo(
         () => showDisplayNameField && showErrorOnJoin,
         [ showDisplayNameField, showErrorOnJoin ]);
-    const [ showJoinByPhoneButtons, setShowJoinByPhoneButtons ] = useState(false);
     const { classes } = useStyles();
     const { t } = useTranslation();
     const dispatch = useDispatch();
@@ -253,7 +238,6 @@ const Prejoin = ({
     /**
      * Handler for the join button.
      *
-     * @param {Object} e - The synthetic event.
      * @returns {void}
      */
     const onJoinButtonClick = () => {
@@ -268,26 +252,6 @@ const Prejoin = ({
         joinConference();
     };
 
-    /**
-     * Closes the dropdown.
-     *
-     * @returns {void}
-     */
-    const onDropdownClose = () => {
-        setShowJoinByPhoneButtons(false);
-    };
-
-    /**
-     * Displays the join by phone buttons dropdown.
-     *
-     * @param {Object} e - The synthetic event.
-     * @returns {void}
-     */
-    const onOptionsClick = (e?: React.KeyboardEvent | React.MouseEvent | undefined) => {
-        e?.stopPropagation();
-
-        setShowJoinByPhoneButtons(show => !show);
-    };
 
     /**
      * Sets the guest participant name.
@@ -310,29 +274,6 @@ const Prejoin = ({
         setJoinByPhoneDialogVisiblity(false);
     };
 
-    /**
-     * Displays the dialog for joining a meeting by phone.
-     *
-     * @returns {undefined}
-     */
-    const doShowDialog = () => {
-        setJoinByPhoneDialogVisiblity(true);
-        onDropdownClose();
-    };
-
-    /**
-     * KeyPress handler for accessibility.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    const showDialogKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            doShowDialog();
-        }
-    };
 
     /**
      * KeyPress handler for accessibility.
@@ -349,37 +290,6 @@ const Prejoin = ({
             joinConferenceWithoutAudio();
         }
     };
-
-    /**
-     * Gets the list of extra join buttons.
-     *
-     * @returns {Object} - The list of extra buttons.
-     */
-    const getExtraJoinButtons = () => {
-        const noAudio = {
-            key: 'no-audio',
-            testId: 'prejoin.joinWithoutAudio',
-            icon: IconVolumeOff,
-            label: t('prejoin.joinWithoutAudio'),
-            onClick: joinConferenceWithoutAudio,
-            onKeyPress: onJoinConferenceWithoutAudioKeyPress
-        };
-
-        const byPhone = {
-            key: 'by-phone',
-            testId: 'prejoin.joinByPhone',
-            icon: IconPhoneRinging,
-            label: t('prejoin.joinAudioByPhone'),
-            onClick: doShowDialog,
-            onKeyPress: showDialogKeyPress
-        };
-
-        return {
-            noAudio,
-            byPhone
-        };
-    };
-
     /**
      * Handle keypress on input.
      *
@@ -391,16 +301,6 @@ const Prejoin = ({
             joinConference();
         }
     };
-
-    const extraJoinButtons = getExtraJoinButtons();
-    let extraButtonsToRender = Object.values(extraJoinButtons).filter((val: any) =>
-        !(prejoinConfig?.hideExtraJoinButtons || []).includes(val.key)
-    );
-
-    if (!hasJoinByPhoneButton) {
-        extraButtonsToRender = extraButtonsToRender.filter((btn: any) => btn.key !== 'by-phone');
-    }
-    const hasExtraJoinButtons = Boolean(extraButtonsToRender.length);
 
     return (
         <PreMeetingScreen
@@ -422,7 +322,8 @@ const Prejoin = ({
                     autoComplete = { 'name' }
                     disabled = { readOnlyName }
                     autoFocus = { true }
-                    className = { classes.input }
+                    className = { classes.inputBlock }
+                    inputClassName = { classes.input}
                     error = { showErrorOnField }
                     id = 'premeeting-name-input'
                     onChange = { setName }
@@ -434,42 +335,18 @@ const Prejoin = ({
                 {showErrorOnField && <div
                     className = { classes.error }
                     data-testid = 'prejoin.errorMessage'>{t('prejoin.errorMissingName')}</div>}
-
-                <div className = { classes.dropdownContainer }>
-                    <Popover
-                        content = { hasExtraJoinButtons && <div className = { classes.dropdownButtons }>
-                            {extraButtonsToRender.map(({ key, ...rest }) => (
-                                <Button
-                                    disabled = { joiningInProgress || showErrorOnField }
-                                    fullWidth = { true }
-                                    key = { key }
-                                    type = { BUTTON_TYPES.SECONDARY }
-                                    { ...rest } />
-                            ))}
-                        </div> }
-                        onPopoverClose = { onDropdownClose }
-                        position = 'bottom'
-                        trigger = 'click'
-                        visible = { showJoinByPhoneButtons }>
-                        <ActionButton
-                            OptionsIcon = { showJoinByPhoneButtons ? IconArrowUp : IconArrowDown }
-                            ariaDropDownLabel = { t('prejoin.joinWithoutAudio') }
-                            ariaLabel = { t('prejoin.joinMeeting') }
-                            ariaPressed = { showJoinByPhoneButtons }
-                            disabled = { joiningInProgress
-                                || (showUnsafeRoomWarning && !unsafeRoomConsent)
-                                || showErrorOnField }
-                            hasOptions = { hasExtraJoinButtons }
-                            onClick = { onJoinButtonClick }
-                            onOptionsClick = { onOptionsClick }
-                            role = 'button'
-                            tabIndex = { 0 }
-                            testId = 'prejoin.joinMeeting'
-                            type = 'primary'>
-                            {t('prejoin.joinMeeting')}
-                        </ActionButton>
-                    </Popover>
-                </div>
+                    <Button
+                        className={classes.buttonJoin}
+                        accessibilityLabel = { t('prejoin.joinMeeting') }
+                        labelKey = { t('prejoin.joinMeeting') }
+                        disabled = { joiningInProgress
+                            || (showUnsafeRoomWarning && !unsafeRoomConsent)
+                            || showErrorOnField }
+                        onClick = { onJoinButtonClick }
+                        role = 'button'
+                        tabIndex = { 0 }
+                        testId = 'prejoin.joinMeeting'
+                        type = { BUTTON_TYPES.PRIMARY } />
             </div>
             {showDialog && (
                 <JoinByPhoneDialog

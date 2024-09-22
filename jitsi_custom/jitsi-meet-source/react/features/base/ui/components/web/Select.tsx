@@ -136,6 +136,10 @@ const useStyles = makeStyles()(theme => {
             }
         },
 
+        option: {
+            backgroundColor: theme.palette.ui11,
+        },
+
         icon: {
             position: 'absolute',
             top: '8px',
@@ -203,7 +207,8 @@ const Select = ({
                     value={value}>
                     {options.map(option => (<option
                         key={option.value}
-                        value={option.value}>{option.label}</option>))}
+                        value={option.value}
+                        className={classes.option}>{option.label}</option>))}
                 </select>
                 <Icon
                     className={cx(classes.icon, isMobile && 'is-mobile')}

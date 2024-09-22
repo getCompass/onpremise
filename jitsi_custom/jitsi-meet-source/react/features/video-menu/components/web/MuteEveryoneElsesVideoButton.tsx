@@ -4,18 +4,19 @@ import {useDispatch} from 'react-redux';
 
 import {createToolbarEvent} from '../../../analytics/AnalyticsEvents';
 import {sendAnalytics} from '../../../analytics/functions';
-import {openDialog} from '../../../base/dialog/actions';
 import {IconVideoOff} from '../../../base/icons/svg';
 import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
 import {NOTIFY_CLICK_MODE} from '../../../toolbox/types';
 import {IButtonProps} from '../../types';
-
-import MuteEveryonesVideoDialog from './MuteEveryonesVideoDialog';
 import Icon from "../../../base/icons/components/Icon";
 import {isMobileBrowser} from "../../../base/environment/utils";
+import {MEDIA_TYPE} from "../../../base/media/constants";
+import {requestDisableVideoModeration, requestEnableVideoModeration} from "../../../av-moderation/actions";
+import { muteAllParticipants } from '../../actions';
 
 interface IProps extends IButtonProps {
     className?: string;
+    isEnabledVideoFromState: boolean;
 }
 
 /**
@@ -29,7 +30,8 @@ const MuteEveryoneElsesVideoButton = ({
                                           notifyClick,
                                           notifyMode,
                                           participantID,
-                                          className
+                                          className,
+                                          isEnabledVideoFromState
                                       }: IProps): JSX.Element => {
     const {t} = useTranslation();
     const isMobile = isMobileBrowser();
@@ -41,7 +43,13 @@ const MuteEveryoneElsesVideoButton = ({
             return;
         }
         sendAnalytics(createToolbarEvent('mute.everyoneelsesvideo.pressed'));
-        dispatch(openDialog(MuteEveryonesVideoDialog, {exclude: [participantID]}));
+
+        dispatch(muteAllParticipants([participantID], MEDIA_TYPE.VIDEO));
+        if (isEnabledVideoFromState) {
+            dispatch(requestEnableVideoModeration());
+        } else if (isEnabledVideoFromState !== undefined) {
+            dispatch(requestDisableVideoModeration());
+        }
     }, [notifyClick, notifyMode, participantID]);
 
     return (

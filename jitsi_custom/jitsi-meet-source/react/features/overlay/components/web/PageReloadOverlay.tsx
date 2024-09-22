@@ -1,53 +1,21 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React from "react";
+import { connect } from "react-redux";
 
-import { translate } from '../../../base/i18n/functions';
+import { translate } from "../../../base/i18n/functions";
 
-import AbstractPageReloadOverlay, {
-    IProps,
-    abstractMapStateToProps
-} from './AbstractPageReloadOverlay';
-import OverlayFrame from './OverlayFrame';
+import AbstractPageReloadOverlay, { IProps, abstractMapStateToProps } from "./AbstractPageReloadOverlay";
+import NoConnectionPopup from "./NoConnectionPopup/NoConnectionPopup";
+import ReloadPopup from "./ReloadPopup";
 
-/**
- * Implements a React Component for page reload overlay. Shown before the
- * conference is reloaded. Shows a warning message and counts down towards the
- * reload.
- */
 class PageReloadOverlay extends AbstractPageReloadOverlay<IProps> {
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
     render() {
-        const { isNetworkFailure, t } = this.props;
-        const { message, timeLeft, title } = this.state;
+        const { isNetworkFailure } = this.props;
 
-        return (
-            <OverlayFrame isLightOverlay = { isNetworkFailure }>
-                <div
-                    aria-describedby = 'reload_overlay_text'
-                    aria-labelledby = 'reload_overlay_title'
-                    className = 'inlay'
-                    role = 'dialog'>
-                    <span
-                        className = 'reload_overlay_title'
-                        id = 'reload_overlay_title'
-                        role = 'heading'>
-                        { t(title) }
-                    </span>
-                    <span
-                        className = 'reload_overlay_text'
-                        id = 'reload_overlay_text'>
-                        { t(message, { seconds: timeLeft }) }
-                    </span>
-                    { this._renderProgressBar() }
-                    { this._renderButton() }
-                </div>
-            </OverlayFrame>
-        );
+        if (!isNetworkFailure) {
+            return <ReloadPopup />;
+        }
+
+        return <NoConnectionPopup getLocalization={this.props.t} />;
     }
 }
 

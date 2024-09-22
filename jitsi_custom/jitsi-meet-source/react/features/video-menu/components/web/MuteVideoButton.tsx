@@ -5,18 +5,18 @@ import {useDispatch, useSelector} from 'react-redux';
 import {createRemoteVideoMenuButtonEvent} from '../../../analytics/AnalyticsEvents';
 import {sendAnalytics} from '../../../analytics/functions';
 import {IReduxState} from '../../../app/types';
-import {openDialog} from '../../../base/dialog/actions';
-import {IconMicSlash, IconVideoOff} from '../../../base/icons/svg';
+import {IconVideoOff} from '../../../base/icons/svg';
 import {MEDIA_TYPE} from '../../../base/media/constants';
 import {isRemoteTrackMuted} from '../../../base/tracks/functions.any';
 import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
 import {NOTIFY_CLICK_MODE} from '../../../toolbox/types';
 import {IButtonProps} from '../../types';
 
-import MuteRemoteParticipantsVideoDialog from './MuteRemoteParticipantsVideoDialog';
 import {makeStyles} from "tss-react/mui";
 import Icon from "../../../base/icons/components/Icon";
 import {isMobileBrowser} from "../../../base/environment/utils";
+import {rejectParticipantVideo} from "../../../av-moderation/actions";
+import { muteRemote } from '../../actions';
 
 const useStyles = makeStyles()(theme => {
     return {};
@@ -62,7 +62,8 @@ const MuteVideoButton = ({
                 'participant_id': participantID
             }));
 
-        dispatch(openDialog(MuteRemoteParticipantsVideoDialog, {participantID}));
+        dispatch(muteRemote(participantID, MEDIA_TYPE.VIDEO));
+        dispatch(rejectParticipantVideo(participantID));
     }, [dispatch, notifyClick, notifyClick, participantID, sendAnalytics]);
 
     if (videoTrackMuted) {

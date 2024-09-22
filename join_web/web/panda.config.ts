@@ -35,10 +35,19 @@ export default defineConfig({
 				select,
 				tooltip,
 			},
+			keyframes: {
+				"caret-blink": {
+					"0%,70%,100%": { opacity: "1" },
+					"20%,50%": { opacity: "0" },
+				},
+			},
 			tokens: {
 				animations: {
 					spin500ms: {
 						value: "spin 0.5s linear infinite",
+					},
+					caretBlink: {
+						value: "caret-blink 1.1s ease-out infinite",
 					},
 				},
 				fonts: {

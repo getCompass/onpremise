@@ -40,6 +40,13 @@ func Start(ctx context.Context, portValue int32) error {
 		return err
 	}
 
+	// ждем, пока поднимется порт
+	if !waitMysqlAlive(portValue, 30) {
+
+		log.Infof("прошло %d секунд, но порт %d все еще не отвечает", portValue)
+		return fmt.Errorf("прошло %d секунд, но порт %d все еще не отвечает", 30, portValue)
+	}
+
 	log.Infof("контейнер на порте %d запущен!", portValue)
 	return nil
 }

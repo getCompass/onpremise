@@ -245,6 +245,10 @@
         "cameraUnsupportedResolutionError": "La tua videocamera non supporta la risoluzione richiesta.",
         "close": "Chiudi",
         "conferenceDisconnectMsg": "Controlla la tua connessione. Riconnessione in {{seconds}} secondi...",
+        "conferenceNoConnection": {
+            "title": "Nessuna connessione internet",
+            "description": "Non appena Internet verrà ripristinato, tornerai immediatamente alla conferenza."
+        },
         "conferenceDisconnectTitle": "Sei stato disconnesso.",
         "conferenceReloadMsg": "Stiamo cercando di risolvere il problema. Riconnessione in {{seconds}} secondi...",
         "conferenceReloadTitle": "Purtroppo qualcosa è andato storto.",
@@ -1214,6 +1218,7 @@
         "surprised": "Sopresa",
         "talkWhileMutedPopup": "Stai provando a parlare? Il microfono è disattivato.",
         "tileViewToggle": "Vedi tutti i partecipanti insieme, o uno solo",
+        "tileViewToggled": "Vedi tutti i partecipanti insieme, o uno solo",
         "toggleCamera": "Cambia videocamera",
         "videoSettings": "Impostazioni video",
         "videomute": "Videocamera"

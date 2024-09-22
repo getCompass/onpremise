@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useIsMobile from "../../lib/useIsMobile.ts";
 import { Box, HStack, styled, VStack } from "../../../styled-system/jsx";
 import { useLangString } from "../../lib/getLangString.ts";
@@ -13,9 +13,6 @@ import {
 	passwordInputState,
 	prepareJoinLinkErrorState,
 } from "../../api/_stores.ts";
-import { PinInput, PinInputControl, PinInputInput } from "../../components/pinInput.tsx";
-import { hstack } from "../../../styled-system/patterns";
-import { Input } from "../../components/input.tsx";
 import Preloader18 from "../../components/Preloader18.tsx";
 import { useNavigateDialog } from "../../components/hooks.ts";
 import Preloader18Opacity30 from "../../components/Preloader18Opacity30.tsx";
@@ -38,6 +35,7 @@ import { useShowToast } from "../../lib/Toast.tsx";
 import { useSetAtom } from "jotai/index";
 import { DynamicTimerEmail } from "../../components/DynamicTimerEmail.tsx";
 import { useApiSecurityMailConfirmResetPassword } from "../../api/security/mail.ts";
+import PinInput from "../../components/PinInput.tsx";
 
 const ConfirmCodeEmailDialogContentDesktop = () => {
 	const langStringErrorsNetworkError = useLangString("errors.network_error");
@@ -63,11 +61,9 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 	const setPasswordInput = useSetAtom(passwordInputState);
 	const showToast = useShowToast(activeDialogId);
 
-	const refs = useRef<HTMLDivElement[]>([]);
-
 	const [isAuthBlocked, setIsAuthBlocked] = useState(false);
 	const [isCompleted, setCompleted] = useState<boolean>(false);
-	const [inputValues, setInputValues] = useState<string[]>(Array(6).fill(""));
+	const [confirmCode, setConfirmCode] = useState<string>("");
 	const [nextAttempt, setNextAttempt] = useState(0);
 	const [nextResend, setNextResend] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
@@ -77,10 +73,6 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 	const [isServerError, setIsServerError] = useState(false);
 
 	useEffect(() => {
-		if (refs.current[0]) {
-			refs.current[0].focus();
-		}
-
 		// сбрасываем пароль если это логин
 		if (auth !== null && auth.type === APIAuthTypeLoginByMail) {
 			setPasswordInput("");
@@ -154,89 +146,26 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 			<HStack w="100%" gap="10px" justify="center" mt="20px">
 				<Box w="20px" h="20px" flexShrink="0" />
 				<PinInput
-					placeholder=""
-					type="numeric"
-					value={inputValues}
-					onChange={({ value }) => {
-						if (isError) {
-							setIsError(false);
-						}
-						setInputValues(value);
+					confirmCode={confirmCode}
+					onChange={(newValue: string) => {
+						setConfirmCode(newValue);
+						setIsError(false);
 					}}
-					onPaste={(e: React.ClipboardEvent) => {
-						e.preventDefault();
-
-						const pasteValue = e.clipboardData.getData("text/plain");
-						const pasteValues = pasteValue.replace(/\D+/g, "").substring(0, 6).split("");
-
-						const newValues = [...inputValues];
-						let lastIndex = 0;
-						pasteValues.forEach((value, index) => {
-							newValues[index] = value;
-							if (value.length > 0) {
-								lastIndex = index;
-							}
-						});
-						if (isError) {
-							setIsError(false);
-						}
-						setInputValues(newValues);
-						refs.current[lastIndex].focus();
-					}}
-					onComplete={() => setCompleted(inputValues.join("").length === 6)}
-				>
-					<PinInputControl
-						className={hstack({
-							justifyContent: "center",
-							gap: "4px",
-						})}
-					>
-						{[0, 1, 2, 3, 4, 5].map((index) => (
-							<>
-								<PinInputInput key={index} index={index} asChild>
-									<Input
-										type="search"
-										autoComplete="nope"
-										ref={(el: HTMLInputElement) => (refs.current[index] = el)}
-										size="pinInput_desktop"
-										input={
-											isError ? "errorFilledPinInput" : isSuccess ? "filledPinInput" : "pinInput"
-										}
-										width="0"
-										textAlign="center"
-										disabled={
-											index !== 0 && inputValues[index - 1] === "" && inputValues[index] === ""
-										}
-										maxLength={1}
-									/>
-								</PinInputInput>
-								{index === 2 && (
-									<Box key="pin_input_delimiter" mx="4px" w="18px" h="3px">
-										<svg
-											width="18"
-											height="3"
-											viewBox="0 0 18 3"
-											fill="none"
-											xmlns="http://www.w3.org/2000/svg"
-										>
-											<rect width="18" height="3" rx="1" fill="#B4B4B4" />
-										</svg>
-									</Box>
-								)}
-							</>
-						))}
-					</PinInputControl>
-				</PinInput>
+					onComplete={() => setCompleted(confirmCode.length === 6)}
+					isError={isError}
+					isSuccess={isSuccess}
+					isCompleted={isCompleted}
+					style="Desktop"
+				/>
 				<Box w="20px" h="20px" flexShrink="0">
 					{renderedPreloaderButton}
 				</Box>
 			</HStack>
 		);
-	}, [inputValues, auth, isSuccess, isError, isCompleted, isLoading, nextAttempt, isAuthBlocked]);
+	}, [confirmCode, auth, isSuccess, isError, isCompleted, isLoading, nextAttempt, isAuthBlocked]);
 
 	useEffect(() => {
 		if (isCompleted && auth !== null) {
-			const confirmCode = inputValues.join("");
 			if (confirmCode.length != 6) {
 				return;
 			}
@@ -270,7 +199,7 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 									error.error_code === INCORRECT_LINK_ERROR_CODE ||
 									error.error_code === INACTIVE_LINK_ERROR_CODE
 								) {
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									setPrepareJoinLinkError({ error_code: error.error_code });
 									return;
@@ -278,20 +207,17 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 
 								if (error.error_code === 1708113) {
 									setIsError(true);
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
 									setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
-									if (refs.current[0]) {
-										refs.current[0].focus();
-									}
 									return;
 								}
 
 								if (error.error_code === 1708399 || error.error_code === LIMIT_ERROR_CODE) {
 									setIsAuthBlocked(true);
 									setNextAttempt(error.next_attempt);
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									return;
 								}
@@ -335,7 +261,7 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 									error.error_code === INCORRECT_LINK_ERROR_CODE ||
 									error.error_code === INACTIVE_LINK_ERROR_CODE
 								) {
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									setPrepareJoinLinkError({ error_code: error.error_code });
 									return;
@@ -343,20 +269,17 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 
 								if (error.error_code === 1708113) {
 									setIsError(true);
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
 									setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
-									if (refs.current[0]) {
-										refs.current[0].focus();
-									}
 									return;
 								}
 
 								if (error.error_code === 1708399 || error.error_code === LIMIT_ERROR_CODE) {
 									setIsAuthBlocked(true);
 									setNextAttempt(error.next_attempt);
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									return;
 								}
@@ -409,7 +332,7 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 								return;
 							}
 
-							apiAuthMailCancel.mutate({ auth_key: auth.auth_key })
+							apiAuthMailCancel.mutate({ auth_key: auth.auth_key });
 						}}
 					>
 						<HStack gap="2px">
@@ -435,7 +358,7 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 						key="desktop_dynamic_timer"
 						endTimeUnix={nextResend}
 						setNextResend={setNextResend}
-						setInputValues={setInputValues}
+						setConfirmCode={setConfirmCode}
 						setIsLoading={setIsLoading}
 						setIsError={setIsError}
 						setCompleted={setCompleted}
@@ -453,184 +376,56 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 };
 
 type ConfirmCodePhoneNumberDialogContentMobilePinInputProps = {
-	refs: React.MutableRefObject<HTMLDivElement[]>;
+	isCompleted: boolean;
 	setCompleted: (value: boolean) => void;
 	isError: boolean;
 	setIsError: (value: boolean) => void;
 	isSuccess: boolean;
-	inputValues: string[];
-	setInputValues: (value: string[]) => void;
+	confirmCode: string;
+	setConfirmCode: (value: string) => void;
 };
 
 const ConfirmCodePhoneNumberDialogContentMobilePinInput = ({
-	refs,
+	isCompleted,
 	setCompleted,
 	isError,
 	setIsError,
 	isSuccess,
-	inputValues,
-	setInputValues,
+	confirmCode,
+	setConfirmCode,
 }: ConfirmCodePhoneNumberDialogContentMobilePinInputProps) => {
 	const screenWidth = useMemo(() => document.body.clientWidth, [document.body.clientWidth]);
 
 	if (screenWidth <= 375) {
 		return (
 			<PinInput
-				placeholder=""
-				type="numeric"
-				value={inputValues}
-				onChange={({ value }) => {
-					if (isError) {
-						setIsError(false);
-					}
-					setInputValues(value);
+				confirmCode={confirmCode}
+				onChange={(newValue: string) => {
+					setConfirmCode(newValue);
+					setIsError(false);
 				}}
-				onPaste={(e: React.ClipboardEvent) => {
-					e.preventDefault();
-
-					const pasteValue = e.clipboardData.getData("text/plain");
-					const pasteValues = pasteValue.replace(/\D+/g, "").substring(0, 6).split("");
-
-					const newValues = [...inputValues];
-					let lastIndex = 0;
-					pasteValues.forEach((value, index) => {
-						newValues[index] = value;
-						if (value.length > 0) {
-							lastIndex = index;
-						}
-					});
-					if (isError) {
-						setIsError(false);
-					}
-					setInputValues(newValues);
-					refs.current[lastIndex].focus();
-				}}
-				onComplete={() => setCompleted(inputValues.join("").length === 6)}
-			>
-				<PinInputControl
-					className={hstack({
-						justifyContent: "center",
-						gap: "4px",
-					})}
-				>
-					{[0, 1, 2, 3, 4, 5].map((index) => (
-						<>
-							<PinInputInput key={index} index={index} asChild>
-								<Input
-									ref={(el: HTMLInputElement) => (refs.current[index] = el)}
-									size="pinInputMobileSmall"
-									input={isError ? "errorFilledPinInput" : isSuccess ? "filledPinInput" : "pinInput"}
-									width="0"
-									textAlign="center"
-									display="flex"
-									justifyContent="center"
-									alignItems="center"
-									disabled={
-										index !== 0 &&
-										inputValues[index - 2] === "" &&
-										inputValues[index - 1] === "" &&
-										inputValues[index] === ""
-									}
-									maxLength={1}
-								/>
-							</PinInputInput>
-							{index === 2 && (
-								<VStack key="pin_input_delimiter" w="18px">
-									<svg
-										width="14"
-										height="3"
-										viewBox="0 0 14 3"
-										fill="none"
-										xmlns="http://www.w3.org/2000/svg"
-									>
-										<path d="M0.798789 0.3475H13.1988V2.3625H0.798789V0.3475Z" fill="#333E49" />
-									</svg>
-								</VStack>
-							)}
-						</>
-					))}
-				</PinInputControl>
-			</PinInput>
+				onComplete={() => setCompleted(confirmCode.length === 6)}
+				isError={isError}
+				isSuccess={isSuccess}
+				isCompleted={isCompleted}
+				style="MobileSmall"
+			/>
 		);
 	}
 
 	return (
 		<PinInput
-			placeholder=""
-			type="numeric"
-			value={inputValues}
-			onChange={({ value }) => {
-				if (isError) {
-					setIsError(false);
-				}
-				setInputValues(value);
+			confirmCode={confirmCode}
+			onChange={(newValue: string) => {
+				setConfirmCode(newValue);
+				setIsError(false);
 			}}
-			onPaste={(e: React.ClipboardEvent) => {
-				e.preventDefault();
-
-				const pasteValue = e.clipboardData.getData("text/plain");
-				const pasteValues = pasteValue.replace(/\D+/g, "").substring(0, 6).split("");
-
-				const newValues = [...inputValues];
-				let lastIndex = 0;
-				pasteValues.forEach((value, index) => {
-					newValues[index] = value;
-					if (value.length > 0) {
-						lastIndex = index;
-					}
-				});
-				if (isError) {
-					setIsError(false);
-				}
-				setInputValues(newValues);
-				refs.current[lastIndex].focus();
-			}}
-			onComplete={() => setCompleted(inputValues.join("").length === 6)}
-		>
-			<PinInputControl
-				className={hstack({
-					justifyContent: "center",
-					gap: "4px",
-				})}
-			>
-				{[0, 1, 2, 3, 4, 5].map((index) => (
-					<>
-						<PinInputInput key={index} index={index} asChild>
-							<Input
-								ref={(el: HTMLInputElement) => (refs.current[index] = el)}
-								size="pinInput"
-								input={isError ? "errorFilledPinInput" : isSuccess ? "filledPinInput" : "pinInput"}
-								width="0"
-								textAlign="center"
-								display="flex"
-								justifyContent="center"
-								alignItems="center"
-								disabled={
-									index !== 0 &&
-									inputValues[index - 2] === "" &&
-									inputValues[index - 1] === "" &&
-									inputValues[index] === ""
-								}
-								maxLength={1}
-							/>
-						</PinInputInput>
-						{index === 2 && (
-							<VStack key="pin_input_delimiter" w="24px">
-								<svg
-									width="17"
-									height="4"
-									viewBox="0 0 17 4"
-									fill="none"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path d="M0.748438 0.899999H16.7484V3.5H0.748438V0.899999Z" fill="#333E49" />
-								</svg>
-							</VStack>
-						)}
-					</>
-				))}
-			</PinInputControl>
-		</PinInput>
+			onComplete={() => setCompleted(confirmCode.length === 6)}
+			isError={isError}
+			isSuccess={isSuccess}
+			isCompleted={isCompleted}
+			style="Mobile"
+		/>
 	);
 };
 
@@ -658,11 +453,9 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 	const setPasswordInput = useSetAtom(passwordInputState);
 	const showToast = useShowToast(activeDialogId);
 
-	const refs = useRef<HTMLDivElement[]>([]);
-
 	const [isAuthBlocked, setIsAuthBlocked] = useState(false);
 	const [isCompleted, setCompleted] = useState<boolean>(false);
-	const [inputValues, setInputValues] = useState<string[]>(Array(6).fill(""));
+	const [confirmCode, setConfirmCode] = useState<string>("");
 	const [nextAttempt, setNextAttempt] = useState(0);
 	const [nextResend, setNextResend] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
@@ -672,10 +465,6 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 	const [isServerError, setIsServerError] = useState(false);
 
 	useEffect(() => {
-		if (refs.current[0]) {
-			refs.current[0].focus();
-		}
-
 		// сбрасываем пароль если это логин
 		if (auth !== null && auth.type === APIAuthTypeLoginByMail) {
 			setPasswordInput("");
@@ -753,7 +542,6 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 
 	useEffect(() => {
 		if (isCompleted && auth !== null) {
-			const confirmCode = inputValues.join("");
 			if (confirmCode.length != 6) {
 				return;
 			}
@@ -787,7 +575,7 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 									error.error_code === INCORRECT_LINK_ERROR_CODE ||
 									error.error_code === INACTIVE_LINK_ERROR_CODE
 								) {
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									setPrepareJoinLinkError({ error_code: error.error_code });
 									return;
@@ -795,20 +583,17 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 
 								if (error.error_code === 1708113) {
 									setIsError(true);
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
 									setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
-									if (refs.current[0]) {
-										refs.current[0].focus();
-									}
 									return;
 								}
 
 								if (error.error_code === 1708399 || error.error_code === LIMIT_ERROR_CODE) {
 									setIsAuthBlocked(true);
 									setNextAttempt(error.next_attempt);
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									return;
 								}
@@ -852,7 +637,7 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 									error.error_code === INCORRECT_LINK_ERROR_CODE ||
 									error.error_code === INACTIVE_LINK_ERROR_CODE
 								) {
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									setPrepareJoinLinkError({ error_code: error.error_code });
 									return;
@@ -860,20 +645,17 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 
 								if (error.error_code === 1708113) {
 									setIsError(true);
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
 									setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
-									if (refs.current[0]) {
-										refs.current[0].focus();
-									}
 									return;
 								}
 
 								if (error.error_code === 1708399 || error.error_code === LIMIT_ERROR_CODE) {
 									setIsAuthBlocked(true);
 									setNextAttempt(error.next_attempt);
-									setInputValues(Array(6).fill(""));
+									setConfirmCode("");
 									setCompleted(false);
 									return;
 								}
@@ -943,13 +725,13 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 					<HStack key="mobile_small_pininput" w="100%" gap="8px" justify="center" mt="24px">
 						<Box w="18px" h="18px" flexShrink="0" />
 						<ConfirmCodePhoneNumberDialogContentMobilePinInput
-							refs={refs}
+							isCompleted={isCompleted}
 							setCompleted={setCompleted}
 							isError={isError}
 							setIsError={setIsError}
 							isSuccess={isSuccess}
-							inputValues={inputValues}
-							setInputValues={setInputValues}
+							confirmCode={confirmCode}
+							setConfirmCode={setConfirmCode}
 						/>
 						<Box w="18px" h="18px" display="flex" alignItems="center" flexShrink="0">
 							{renderedPreloaderButton}
@@ -959,13 +741,13 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 					<HStack key="mobile_pininput" w="100%" gap="8px" justify="center" mt="24px">
 						<Box w="28px" h="28px" flexShrink="0" />
 						<ConfirmCodePhoneNumberDialogContentMobilePinInput
-							refs={refs}
+							isCompleted={isCompleted}
 							setCompleted={setCompleted}
 							isError={isError}
 							setIsError={setIsError}
 							isSuccess={isSuccess}
-							inputValues={inputValues}
-							setInputValues={setInputValues}
+							confirmCode={confirmCode}
+							setConfirmCode={setConfirmCode}
 						/>
 						<Box w="28px" h="28px" display="flex" alignItems="center" flexShrink="0">
 							{renderedPreloaderButton}
@@ -986,7 +768,7 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 								return;
 							}
 
-							apiAuthMailCancel.mutate({ auth_key: auth.auth_key })
+							apiAuthMailCancel.mutate({ auth_key: auth.auth_key });
 						}}
 					>
 						<HStack gap="4px">
@@ -1012,7 +794,7 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 						key="mobile_dynamic_timer"
 						endTimeUnix={nextResend}
 						setNextResend={setNextResend}
-						setInputValues={setInputValues}
+						setConfirmCode={setConfirmCode}
 						setIsLoading={setIsLoading}
 						setIsError={setIsError}
 						setCompleted={setCompleted}

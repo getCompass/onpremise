@@ -114,13 +114,47 @@ const useStyles = makeStyles()(theme => {
             position: 'absolute',
             inset: '0 0 0 0',
             display: 'flex',
-            backgroundColor: theme.palette.ui01,
+            backgroundColor: theme.palette.ui13,
             zIndex: 252,
+
+            // приходится обращаться так, потому что если делать через компонент, то придется
+            // кастомный класс прокидывать слишком далеко
+            '.toolbox-icon': {
+                width: '44px',
+                height: '44px',
+                backgroundColor:' #171717',
+                borderRadius: '8px !important',
+
+                '&.toggled.is-mobile': {
+                    backgroundColor:' #171717 !important'
+                }
+            },
+
+            '.settings-button-small-icon': {
+                right: '-3px',
+                top: '-4px',
+                borderRadius: '2px',
+            },
+
+            '.settings-button-small-icon svg': {
+                width: '13px',
+                height: '13px',
+            },
+
+            // для видео придется переопределять, там при каком-то статусе оно не дает примениться
+            '.video-preview .toolbox-icon': {
+                backgroundColor:' #171717 !important',
+            },
+
+            '.video-preview .toolbox-icon:hover': {
+                backgroundColor:' #525252 !important'
+            },
 
             '@media (max-width: 720px)': {
                 flexDirection: 'column-reverse'
             }
         },
+
         lobbyNoticeContainer: {
             padding: '15px',
             width: '396px',
@@ -151,10 +185,10 @@ const useStyles = makeStyles()(theme => {
             alignItems: 'center',
             flexShrink: 0,
             boxSizing: 'border-box',
-            margin: '0 48px',
+            margin: '0 46px',
             padding: '24px 0 16px',
             position: 'relative',
-            width: '300px',
+            width: '302px',
             height: '100%',
             zIndex: 252,
 
@@ -164,13 +198,13 @@ const useStyles = makeStyles()(theme => {
             },
 
             // mobile phone landscape
-            '@media (max-width: 420px)': {
-                padding: '16px 16px 0 16px',
+            '@media (max-width: 430px)': {
+                padding: '32px 16px 32px 16px',
                 width: '100%'
             },
 
             '@media (max-width: 400px)': {
-                padding: '16px'
+                padding: '32px 16px 32px 16px',
             }
         },
         contentControls: {
@@ -184,10 +218,10 @@ const useStyles = makeStyles()(theme => {
             ...withPixelLineHeight(theme.typography.heading4),
             color: `${theme.palette.text01}!important`,
             marginTop: "0px",
-            marginBottom: "24px",
+            marginBottom: "40px",
             textAlign: 'center',
 
-            '@media (max-width: 400px)': {
+            '@media (max-width: 430px)': {
                 display: 'none'
             }
         },
@@ -205,7 +239,12 @@ const useStyles = makeStyles()(theme => {
             marginBottom: "32px",
         },
         avatarGuest: {
+            borderRadius: '0 !important',
             marginBottom: "16px",
+
+            '@media (max-width: 430px)': {
+                display: 'none'
+            }
         },
     };
 });
@@ -282,12 +321,10 @@ const PreMeetingScreen = ({
                                         className={`premeeting-screen-avatar ${classes.avatarGuest}`}
                                         displayName={name}
                                         participantId={participantId}
-                                        size={120}
+                                        size={64}
                                         url="images/compass_icon.png"
                                     />
-                                    <h1 className={classes.title}>
-                                        {title}
-                                    </h1>
+                                    <h1 className={classes.title} dangerouslySetInnerHTML={{__html: title ?? ''}}></h1>
                                 </>
                             ) : (
                                 <Avatar

@@ -15,6 +15,8 @@ STYLES_BUNDLE = css/all.bundle.css
 STYLES_DESTINATION = css/all.css
 STYLES_MAIN = css/main.scss
 ifeq ($(OS),Windows_NT)
+
+	# если у вас ошибка тут, попробуйте / на \ заменить
 	WEBPACK = .\node_modules\.bin\webpack
 	WEBPACK_DEV_SERVER = .\node_modules\.bin\webpack serve --mode development
 else
@@ -22,7 +24,20 @@ else
 	WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack serve --mode development
 endif
 
-all: compile deploy clean
+# если пустой SENTRY_DSN
+ifeq ($(SENTRY_AUTH_TOKEN),)
+	SENTRY = echo "SENTRY_AUTH_TOKEN is empty"
+else
+	# need envs:
+    # - SENTRY_DSN, SENTRY_ENVIRONMENT, RELEASE
+    # - SENTRY_PROJECT, SENTRY_PROJECT, SENTRY_URL, SENTRY_LOG_LEVEL
+    # see more https://docs.sentry.io/cli/installation/
+	SENTRY = npx sentry-cli releases new $(RELEASE) && \
+    		 npx sentry-cli sourcemaps inject $(DEPLOY_DIR)/app* && \
+    		 npx sentry-cli sourcemaps upload --release="$(RELEASE)" --log-level="debug" $(DEPLOY_DIR)/app*
+endif
+
+all: compile deploy clean sentry
 
 compile:
 	NODE_OPTIONS=--max-old-space-size=8192 \
@@ -30,6 +45,9 @@ compile:
 
 clean:
 	rm -fr $(BUILD_DIR)
+
+sentry:
+	$(SENTRY)
 
 .NOTPARALLEL:
 deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-olm deploy-tf-wasm deploy-css deploy-local deploy-face-landmarks

@@ -36,6 +36,13 @@ $response = [
 	"connect_check_url" => (string) PUBLIC_CONNECT_CHECK_URL . "/",
 	"version"           => ONPREMISE_VERSION,
 	"url_list"          => (object) $url_list,
+	"service_data"      => (object) [
+		"dsn" => (object) [
+			"electron" => SENTRY_DSN_KEY_ELECTRON,
+			"android"  => SENTRY_DSN_KEY_ANDROID,
+			"ios"      => SENTRY_DSN_KEY_IOS,
+		],
+	],
 ];
 
 

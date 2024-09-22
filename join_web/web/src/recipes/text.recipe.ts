@@ -69,16 +69,34 @@ export const text = defineRecipe({
 				fontFamily: "lato_bold",
 				fontWeight: "normal",
 			},
+			lato_18_24_900: {
+				fontSize: "18px",
+				lineHeight: "24px",
+				fontFamily: "lato_black",
+				fontWeight: "normal",
+			},
 			lato_20_28_700: {
 				fontSize: "20px",
 				lineHeight: "28px",
 				fontFamily: "lato_bold",
 				fontWeight: "normal",
 			},
-			lato_18_24_900: {
-				fontSize: "18px",
-				lineHeight: "24px",
-				fontFamily: "lato_black",
+			lato_31_31_400: {
+				fontSize: "31px",
+				lineHeight: "31px",
+				fontFamily: "lato_regular",
+				fontWeight: "normal",
+			},
+			lato_40_40_400: {
+				fontSize: "40px",
+				lineHeight: "40px",
+				fontFamily: "lato_regular",
+				fontWeight: "normal",
+			},
+			lato_42_50_400: {
+				fontSize: "42px",
+				lineHeight: "50px",
+				fontFamily: "lato_regular",
 				fontWeight: "normal",
 			},
 			inter_14_17_400: {

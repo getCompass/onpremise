@@ -276,6 +276,10 @@
         "cameraUnsupportedResolutionError": "La cámara no admite la resolución de vídeo requerida.",
         "close": "Cerrar",
         "conferenceDisconnectMsg": "Se recomienda que compruebes la conexión de la red. Reconectando en {{seconds}} segundos…",
+        "conferenceNoConnection": {
+            "title": "No hay Internet",
+            "description": "En cuanto haya conexión a Internet, volverá a la conferencia."
+        },
         "conferenceDisconnectTitle": "Ha sido desconectado.",
         "conferenceReloadMsg": "Estamos tratando de arreglar esto. Reconectando en {{seconds}} segundos…",
         "conferenceReloadTitle": "Desafortunadamente, algo salió mal.",
@@ -1294,6 +1298,7 @@
         "surprised": "Compartir audio",
         "talkWhileMutedPopup": "¿Intentas hablar? Estás silenciado.",
         "tileViewToggle": "Activar o desactivar vista en cuadrícula",
+        "tileViewToggled": "Activar o desactivar vista en cuadrícula",
         "toggleCamera": "Alternar cámara",
         "unmute": "Activar",
         "videoSettings": "Ajustes de vídeo",

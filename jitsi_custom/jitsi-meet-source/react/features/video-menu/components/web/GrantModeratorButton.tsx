@@ -3,18 +3,18 @@ import {useTranslation} from 'react-i18next';
 import {useDispatch, useSelector} from 'react-redux';
 
 import {IReduxState} from '../../../app/types';
-import {openDialog} from '../../../base/dialog/actions';
-import {IconModerator, IconRingGroup} from '../../../base/icons/svg';
+import {IconModerator} from '../../../base/icons/svg';
 import {PARTICIPANT_ROLE} from '../../../base/participants/constants';
 import {getLocalParticipant, getParticipantById, isParticipantModerator} from '../../../base/participants/functions';
 import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
 import {NOTIFY_CLICK_MODE} from '../../../toolbox/types';
 import {IButtonProps} from '../../types';
-
-import GrantModeratorDialog from './GrantModeratorDialog';
 import {makeStyles} from "tss-react/mui";
 import Icon from "../../../base/icons/components/Icon";
 import {isMobileBrowser} from "../../../base/environment/utils";
+import {sendAnalytics} from "../../../analytics/functions";
+import {createRemoteVideoMenuButtonEvent} from "../../../analytics/AnalyticsEvents";
+import {grantModerator} from "../../../base/participants/actions";
 
 const useStyles = makeStyles()(theme => {
     return {};
@@ -50,7 +50,13 @@ const GrantModeratorButton = ({
         if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
             return;
         }
-        dispatch(openDialog(GrantModeratorDialog, {participantID}));
+        sendAnalytics(createRemoteVideoMenuButtonEvent(
+            'grant.moderator.button',
+            {
+                'participant_id': participantID
+            }));
+
+        dispatch(grantModerator(participantID));
     }, [dispatch, notifyClick, notifyMode, participantID]);
 
     if (!visible) {

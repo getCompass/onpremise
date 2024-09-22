@@ -163,10 +163,6 @@ const useStyles = makeStyles()(theme => {
                 backgroundColor: 'rgba(255, 255, 255, 0.05)'
             },
 
-            '&.focus-visible': {
-                boxShadow: `inset 0 0 0 2px ${theme.palette.action01Hover}`
-            },
-
             '&.is-mobile': {
                 '& > .jitsi-icon': {
                     padding: '16px 0px 16px 16px',

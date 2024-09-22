@@ -194,6 +194,11 @@ $flagsImagePath: "../images/";
     display: none; /* Chrome, Safari, newer versions of Edge */
 }
 
+// disable select elements
+:focus-visible {
+    outline: none !important;
+}
+
 // Wrap new scrollbar properties in @supports rule for browsers without `::-webkit-scrollbar-*` support
 // This way chrome won't override `::-webkit-scrollbar-*` selectors
 @supports not (-webkit-touch-callout: none) {

@@ -1,10 +1,10 @@
-import React, { Component, ReactNode } from 'react';
+import clsx from "clsx";
+import React, { Component, ReactNode } from "react";
 
 /**
  * The type of the React {@code Component} props of {@link OverlayFrame}.
  */
 interface IProps {
-
     /**
      * The children components to be displayed into the overlay frame.
      */
@@ -20,6 +20,8 @@ interface IProps {
      * The style property.
      */
     style?: Object;
+
+    isContentCentered?: boolean;
 }
 
 /**
@@ -35,13 +37,17 @@ export default class OverlayFrame extends Component<IProps> {
     render() {
         return (
             <div
-                className = { this.props.isLightOverlay ? 'overlay__container-light' : 'overlay__container' }
-                id = 'overlay'
-                style = { this.props.style }>
-                <div className = { 'overlay__content' }>
-                    {
-                        this.props.children
-                    }
+                className={this.props.isLightOverlay ? "overlay__container-light" : "overlay__container"}
+                id="overlay"
+                style={this.props.style}
+            >
+                <div
+                    className={clsx(
+                        "overlay__content",
+                        this.props.isContentCentered ? "overlay__content_centered" : ""
+                    )}
+                >
+                    {this.props.children}
                 </div>
             </div>
         );

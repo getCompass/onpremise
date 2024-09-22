@@ -27,6 +27,9 @@ export const colors = {
     surface09: '#C2C2C2',
     surface10: '#E0E0E0',
     surface11: '#FFF',
+    surface12: '#282828',
+    surface13: '#171717',
+    surface14: '#212121',
 
     success04: '#189B55',
     success05: '#1EC26A',
@@ -63,6 +66,9 @@ export const colorMap = {
     ui08: 'surface09',
     ui09: 'surface10',
     ui10: 'surface11',
+    ui11: 'surface12',
+    ui12: 'surface13',
+    ui13: 'surface14',
 
     // ----- Actions -----
 

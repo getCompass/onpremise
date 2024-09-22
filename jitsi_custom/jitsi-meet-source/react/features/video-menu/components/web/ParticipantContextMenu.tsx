@@ -4,7 +4,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {makeStyles} from 'tss-react/mui';
 
 import {IReduxState, IStore} from '../../../app/types';
-import {isSupported as isAvModerationSupported} from '../../../av-moderation/functions';
+import {isEnabledFromState, isSupported as isAvModerationSupported} from '../../../av-moderation/functions';
 import Avatar from '../../../base/avatar/components/Avatar';
 import {isIosMobileBrowser, isMobileBrowser} from '../../../base/environment/utils';
 import {MEDIA_TYPE} from '../../../base/media/constants';
@@ -200,6 +200,8 @@ const ParticipantContextMenu = ({
     const shouldDisplayVerification = useSelector((state: IReduxState) => displayVerification(state, participant?.id));
     const buttonsWithNotifyClick = useSelector(getParticipantMenuButtonsWithNotifyClick);
     const isMobile = isMobileBrowser();
+    const isEnabledVideoFromState =  useSelector((state: IReduxState) =>isEnabledFromState(MEDIA_TYPE.VIDEO, state));
+    const isEnabledAudioModerationFromState =  useSelector((state: IReduxState) =>isEnabledFromState(MEDIA_TYPE.AUDIO, state));
 
     const _currentRoomId = useSelector(getCurrentRoomId);
     const _rooms: IRoom[] = Object.values(useSelector(getBreakoutRooms));
@@ -254,10 +256,15 @@ const ParticipantContextMenu = ({
         const notifyMode = buttonsWithNotifyClick?.get(key);
         const shouldNotifyClick = typeof notifyMode !== 'undefined';
 
+        const notifyClickCallback = (key: string)=> {
+            notifyClick(key)
+            onLeave?.();
+        }
+
         return {
             key,
             notifyMode,
-            notifyClick: shouldNotifyClick ? () => notifyClick(key) : undefined,
+            notifyClick: shouldNotifyClick ? () => notifyClickCallback(key) : onLeave,
             participantID: _getCurrentParticipantId()
         };
     }, [_getCurrentParticipantId, buttonsWithNotifyClick, notifyClick]);
@@ -286,13 +293,13 @@ const ParticipantContextMenu = ({
             if (!(isClickedFromParticipantPane && quickActionButtonType === QUICK_ACTION_BUTTON.MUTE)) {
                 buttons.push(<MuteButton {...getButtonProps(BUTTONS.MUTE)} className={styles.contextItem}/>);
             }
-            buttons.push(<MuteEveryoneElseButton {...getButtonProps(BUTTONS.MUTE_OTHERS)}
+            buttons.push(<MuteEveryoneElseButton isEnabledAudioModerationFromState={isEnabledAudioModerationFromState} {...getButtonProps(BUTTONS.MUTE_OTHERS)}
                                                  className={styles.contextItem}/>);
             if (!(isClickedFromParticipantPane && quickActionButtonType === QUICK_ACTION_BUTTON.STOP_VIDEO)) {
                 buttons.push(<MuteVideoButton {...getButtonProps(BUTTONS.MUTE_VIDEO)} className={styles.contextItem}
                                               text={isMobile ? t('participantsPane.actions.stopVideoFull') : quickActionButtonType === QUICK_ACTION_BUTTON.STOP_VIDEO ? t('participantsPane.actions.stopVideo') : t('participantsPane.actions.stopVideoFull')}/>);
             }
-            buttons.push(<MuteEveryoneElsesVideoButton {...getButtonProps(BUTTONS.MUTE_OTHERS_VIDEO)}
+            buttons.push(<MuteEveryoneElsesVideoButton isEnabledVideoFromState = {isEnabledVideoFromState} {...getButtonProps(BUTTONS.MUTE_OTHERS_VIDEO)}
                                                        className={styles.contextItem}/>);
         }
 

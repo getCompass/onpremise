@@ -283,4 +283,13 @@ define("ONPREMISE_VERSION"                , "${ONPREMISE_VERSION}");
 // список нод ВКС
 define("VIDEO_CONFERENCE_NODE_LIST"				, ${VIDEO_CONFERENCE_NODE_LIST});
 define("CA_CERTIFICATE"                			, "${CA_CERTIFICATE}");
+
+// -------------------------------------------------------
+// SENTRY DSN
+// -------------------------------------------------------
+
+define("SENTRY_DSN_KEY_ELECTRON"				, "${SENTRY_DSN_KEY_ELECTRON}");
+define("SENTRY_DSN_KEY_ANDROID"				, "${SENTRY_DSN_KEY_ANDROID}");
+define("SENTRY_DSN_KEY_IOS"					, "${SENTRY_DSN_KEY_IOS}");
+
 // @formatter:on

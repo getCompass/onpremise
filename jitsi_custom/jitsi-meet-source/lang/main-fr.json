@@ -291,6 +291,10 @@
         "cameraUnsupportedResolutionError": "Votre appareil ne prend pas en charge la résolution vidéo requise.",
         "close": "Fermer",
         "conferenceDisconnectMsg": "Veuillez vérifier votre connexion réseau. Reconnexion dans {{seconds}} sec ...",
+        "conferenceNoConnection": {
+            "title": "Pas d'Internet",
+            "description": "Une fois que l'internet sera restauré, vous vous revenez à la conférence."
+        },
         "conferenceDisconnectTitle": "Vous avez été déconnecté.",
         "conferenceReloadMsg": "On essaie d'arranger ça. Reconnexion dans {{seconds}} secondes ...",
         "conferenceReloadTitle": "Malheureusement, un problème est survenu",
@@ -1348,6 +1352,7 @@
         "surprised": "Surpris",
         "talkWhileMutedPopup": "Vous voulez parler ? Votre micro est coupé.",
         "tileViewToggle": "Activer / Désactiver la vue mosaïque",
+        "tileViewToggled": "Activer / Désactiver la vue mosaïque",
         "toggleCamera": "Changer de caméra",
         "unmute": "Rétablir le son",
         "videoSettings": "Paramètres vidéo",

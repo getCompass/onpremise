@@ -296,6 +296,10 @@
         "cameraUnsupportedResolutionError": "Your camera does not support required video resolution.",
         "close": "Close",
         "conferenceDisconnectMsg": "You may want to check your network connection. Reconnecting in {{seconds}} sec...",
+        "conferenceNoConnection": {
+            "title": "No internet connection",
+            "description": "You'll return to the conference as soon as the Internet connection is established."
+        },
         "conferenceDisconnectTitle": "You have been disconnected.",
         "conferenceReloadMsg": "We're trying to fix this. Reconnecting in {{seconds}} sec...",
         "conferenceReloadTitle": "Unfortunately, something went wrong.",
@@ -948,7 +952,7 @@
         "initiated": "Call initiated",
         "joinAudioByPhone": "Join with phone audio",
         "joinMeeting": "Join meeting",
-        "joinMeetingAsGuest": "Конференция Compass",
+        "joinMeetingAsGuest": "Конференция<br>Compass",
         "joinMeetingInLowBandwidthMode": "Join in low bandwidth mode",
         "joinWithoutAudio": "Join without audio",
         "keyboardShortcuts": "Enable Keyboard shortcuts",
@@ -1376,6 +1380,7 @@
         "surprised": "Surprised",
         "talkWhileMutedPopup": "Trying to speak? You are muted.",
         "tileViewToggle": "Toggle tile view",
+        "tileViewToggled": "Toggle tile view",
         "toggleCamera": "Toggle camera",
         "unmute": "Unmute microphone",
         "videoSettings": "Video settings",

@@ -4,18 +4,19 @@ import {useDispatch} from 'react-redux';
 
 import {createToolbarEvent} from '../../../analytics/AnalyticsEvents';
 import {sendAnalytics} from '../../../analytics/functions';
-import {openDialog} from '../../../base/dialog/actions';
 import {IconMicSlash} from '../../../base/icons/svg';
 import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
 import {NOTIFY_CLICK_MODE} from '../../../toolbox/types';
 import {IButtonProps} from '../../types';
-
-import MuteEveryoneDialog from './MuteEveryoneDialog';
 import Icon from "../../../base/icons/components/Icon";
 import {isMobileBrowser} from "../../../base/environment/utils";
+import {MEDIA_TYPE} from "../../../base/media/constants";
+import {requestDisableAudioModeration, requestEnableAudioModeration} from "../../../av-moderation/actions";
+import { muteAllParticipants } from '../../actions';
 
 interface IProps extends IButtonProps {
     className?: string;
+    isEnabledAudioModerationFromState: boolean;
 }
 
 /**
@@ -29,7 +30,8 @@ const MuteEveryoneElseButton = ({
                                     notifyClick,
                                     notifyMode,
                                     participantID,
-                                    className
+                                    className,
+                                    isEnabledAudioModerationFromState
                                 }: IProps): JSX.Element => {
     const {t} = useTranslation();
     const isMobile = isMobileBrowser();
@@ -41,7 +43,13 @@ const MuteEveryoneElseButton = ({
             return;
         }
         sendAnalytics(createToolbarEvent('mute.everyoneelse.pressed'));
-        dispatch(openDialog(MuteEveryoneDialog, {exclude: [participantID]}));
+        dispatch(muteAllParticipants([participantID], MEDIA_TYPE.AUDIO));
+        if (isEnabledAudioModerationFromState) {
+            dispatch(requestEnableAudioModeration());
+        } else if (isEnabledAudioModerationFromState !== undefined) {
+            dispatch(requestDisableAudioModeration());
+        }
+
     }, [dispatch, notifyMode, notifyClick, participantID, sendAnalytics]);
 
     return (

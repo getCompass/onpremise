@@ -291,7 +291,7 @@ const VideoSettingsContent = ({
                         </div>}
                     </div>
                     <Video
-                        className={cx(classes.previewVideo, 'flipVideoX')}
+                        className={cx(classes.previewVideo, localFlipX && 'flipVideoX')}
                         playsinline={true}
                         videoTrack={{jitsiTrack}}/>
                 </div>

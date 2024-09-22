@@ -94,10 +94,6 @@ const useStyles = makeStyles()(theme => {
                 },
             },
 
-            '&.focus-visible': {
-                boxShadow: 'none'
-            },
-
             '& > .jitsi-icon': {
                 padding: '16px 0px 16px 16px',
             },

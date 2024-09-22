@@ -68,55 +68,68 @@ const PageLayoutMobile = ({ isLoading, children }: PageLayoutProps) => {
 	if (activePage === "token" && !isLoading) {
 		if (prepareJoinLinkError === null || prepareJoinLinkError.error_code === ALREADY_MEMBER_ERROR_CODE) {
 			return (
-				<VStack userSelect="none" bgColor="393a4d" fontFamily="lato_regular" className={"main-bg h100dvh"}>
+				<>
 					<Box
 						bgColor="393a4d"
 						display="flex"
 						justifyContent="center"
 						alignItems="center"
 						width="100%"
+						minHeight="100vh"
 						height="100%"
 						overflow="hidden"
 						position="absolute"
+						className={"static-bg-mobile"}
+					/>
+					<VStack
+						userSelect="none"
+						bgColor="393a4d"
+						fontFamily="lato_regular"
+						w="100%"
+						minHeight="100vh"
+						className={"main-bg"}
 					>
-						<Box className={"static-bg-mobile"} />
-					</Box>
-					<>{children}</>
-				</VStack>
+						{children}
+					</VStack>
+				</>
 			);
 		}
 	}
 
 	return (
-		<Center
-			userSelect="none"
-			bgColor="393a4d"
-			fontFamily="lato_regular"
-			className={`main-bg ${
-				!isLoading &&
-				activePage === "auth" &&
-				(activeDialog === "auth_email_phone_number" ||
-					activeDialog === "auth_phone_number_confirm_code" ||
-					activeDialog === "auth_email_confirm_code" ||
-					activeDialog === "auth_create_profile")
-					? "h100vh"
-					: "h100dvh"
-			}`}
-		>
+		<>
 			<Box
 				bgColor="393a4d"
 				display="flex"
 				justifyContent="center"
 				alignItems="center"
 				width="100%"
+				minHeight="100vh"
 				height="100%"
 				overflow="hidden"
 				position="absolute"
+				className={"static-bg-mobile"}
+			/>
+			<Center
+				userSelect="none"
+				bgColor="393a4d"
+				w="100%"
+				minHeight="100vh"
+				fontFamily="lato_regular"
+				className={`main-bg ${
+					!isLoading &&
+					activePage === "auth" &&
+					(activeDialog === "auth_email_phone_number" ||
+						activeDialog === "auth_phone_number_confirm_code" ||
+						activeDialog === "auth_email_confirm_code" ||
+						activeDialog === "auth_create_profile")
+						? "h100vh"
+						: "h100dvh"
+				}`}
 			>
-				<Box className={"static-bg-mobile"} />
-			</Box>
-			{isLoading ? <LoadingLogoMobile /> : <>{children}</>}
-		</Center>
+				{isLoading ? <LoadingLogoMobile /> : <>{children}</>}
+			</Center>
+		</>
 	);
 };
 

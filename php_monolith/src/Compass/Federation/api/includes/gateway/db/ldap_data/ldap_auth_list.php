@@ -54,6 +54,25 @@ class Gateway_Db_LdapData_LdapAuthList extends Gateway_Db_LdapData_Main {
 	}
 
 	/**
+	 * Получить запись из базы по uid.
+	 *
+	 * @return Struct_Db_LdapData_LdapAuth
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws RowNotFoundException
+	 */
+	public static function getOneLastByUid(string $uid):Struct_Db_LdapData_LdapAuth {
+
+		$query = "SELECT * FROM `?p` WHERE `uid` = ?s ORDER BY `created_at` DESC LIMIT ?i";
+		$row   = ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_NAME, $uid, 1);
+
+		if (!isset($row["ldap_auth_token"])) {
+			throw new RowNotFoundException("row not found");
+		}
+
+		return Struct_Db_LdapData_LdapAuth::rowToStruct($row);
+	}
+
+	/**
 	 * обновляем запись в базе по PK
 	 *
 	 * @return int

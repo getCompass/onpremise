@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Request\CompanyNotServedException;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * Выполняет принятие приглашения по ссылке.
@@ -39,11 +40,15 @@ class Domain_Company_Action_JoinLink_Join {
 		$join_link_uniq = $invite_link_rel_row->join_link_uniq;
 		$company_id     = $invite_link_rel_row->company_id;
 
+		// для premise окружения пробуем получить данные ldap пользователя
+		$ldap_account_data = ServerProvider::isOnPremise() && Domain_User_Entity_Auth_Config::isProfileDataActualizationEnabled()
+			? Gateway_Socket_Federation::getSsoLdapUserData($user_id)
+			: [];
+
 		// получаем ключ для общения с пространством
 		$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
-
 		$response = Gateway_Socket_Company::acceptJoinLink(
-			$user_id, $join_link_uniq, $comment, $company_id, $company->domino_id, $private_key, $user_info, $force_postmoderation
+			$user_id, $join_link_uniq, $comment, $company_id, $company->domino_id, $private_key, $user_info, $force_postmoderation, $ldap_account_data
 		);
 
 		// создаем запись в истории принятия ссылки приглашения в компанию

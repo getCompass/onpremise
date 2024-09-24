@@ -19,16 +19,18 @@ class Type_Event_Invite_CreateAndSendAutoAcceptInvite {
 	 * Создает события для вещания.
 	 * Эта функция вызывается, когда событие пушится в систему.
 	 *
-	 * @param int   $sender_user_id
-	 * @param array $user_id_list
-	 * @param array $meta_row
+	 * @param int                        $sender_user_id
+	 * @param Struct_Conversation_User[] $user_list
+	 * @param array                      $meta_row
+	 * @param string                     $platform
 	 *
 	 * @return Struct_Event_Base
 	 * @throws ParseFatalException
 	 */
-	public static function create(int $sender_user_id, array $user_id_list, array $meta_row, string $platform):Struct_Event_Base {
+	public static function create(int $sender_user_id, array $user_list, array $meta_row, string $platform):Struct_Event_Base {
 
-		$event_data = Struct_Event_Invite_CreateAndSendAutoAcceptInvite::build($sender_user_id, $user_id_list, $meta_row, $platform);
+		$event_user_list = array_map(fn(Struct_Conversation_User $user) => $user->toArray(), $user_list);
+		$event_data      = Struct_Event_Invite_CreateAndSendAutoAcceptInvite::build($sender_user_id, $event_user_list, $meta_row, $platform);
 		return Type_Event_Base::create(self::EVENT_TYPE, $event_data);
 	}
 

@@ -14,6 +14,7 @@ class Socket_Ldap extends \BaseFrame\Controller\Socket {
 	public const ALLOW_METHODS = [
 		"validateAuthToken",
 		"createUserRelationship",
+		"getUserLdapData",
 		"hasUserRelationship",
 	];
 
@@ -66,6 +67,24 @@ class Socket_Ldap extends \BaseFrame\Controller\Socket {
 		}
 
 		return $this->ok();
+	}
+
+	/**
+	 * Получить данные ldap учётной записи для пользователя.
+	 */
+	public function getUserLdapData():array {
+
+		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
+
+		try {
+			$ldap_account_data = Domain_Ldap_Scenario_Socket::getUserLdapData($user_id);
+		} catch (Domain_Ldap_Exception_Auth_TokenNotFound|Domain_Ldap_Exception_UserRelationship_NotFound) {
+			return $this->error(1004, "token not found");
+		}
+
+		return $this->ok([
+			"ldap_account_data" => (object) $ldap_account_data->format(),
+		]);
 	}
 
 	/**

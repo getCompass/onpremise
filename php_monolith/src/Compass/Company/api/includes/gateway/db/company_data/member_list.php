@@ -28,16 +28,16 @@ class Gateway_Db_CompanyData_MemberList extends Gateway_Db_CompanyData_Main {
 	 * @mixed @long
 	 */
 	public static function insertOrUpdate(
-		int    $user_id,
-		int    $role,
-		int    $npc_type,
-		int    $permissions,
+		int $user_id,
+		int $role,
+		int $npc_type,
+		int $permissions,
 		string $mbti_type,
 		string $full_name,
 		string $short_description,
 		string $avatar_file_key,
 		string $comment,
-		array  $extra
+		array $extra
 	):string {
 
 		$insert = [
@@ -108,7 +108,7 @@ class Gateway_Db_CompanyData_MemberList extends Gateway_Db_CompanyData_Main {
 		$set["updated_at"] = time();
 
 		// запрос проверен на EXPLAIN (INDEX=PRIMARY)
-		$query     = "UPDATE `?p` SET ?u WHERE `user_id` IN (?a) LIMIT ?i";
+		$query = "UPDATE `?p` SET ?u WHERE `user_id` IN (?a) LIMIT ?i";
 		return ShardingGateway::database(self::_DB_KEY)->update($query, self::_TABLE_KEY, $set, $user_id_list, count($user_id_list));
 	}
 
@@ -192,8 +192,9 @@ class Gateway_Db_CompanyData_MemberList extends Gateway_Db_CompanyData_Main {
 	 *
 	 * @return int[]
 	 * @throws ParseFatalException
+	 * @long
 	 */
-	public static function getListByQuery(string $query, int $limit, int $offset, array $filter_npc_type, array $filter_role, array $sort_fields):array {
+	public static function getListByQuery(string $query, int $limit, int $offset, array $filter_npc_type, array $filter_role, array $filter_query_field, array $sort_fields):array {
 
 		$args         = [$filter_npc_type, $filter_role, $limit, $offset];
 		$query_clause = "";
@@ -203,7 +204,16 @@ class Gateway_Db_CompanyData_MemberList extends Gateway_Db_CompanyData_Main {
 
 			$prepared_query = self::_prepareQuery($query);
 			$query_clause   = " AND (`full_name` LIKE ?s OR `short_description` LIKE ?s)";
-			$args           = [$filter_npc_type, $filter_role, $prepared_query, $prepared_query, $limit, $offset];
+			$args           = [$filter_npc_type, $filter_role, $prepared_query, $prepared_query];
+
+			if (in_array("badge", $filter_query_field)) {
+
+				$prepared_query = self::_prepareBadgeQuery($query);
+				$query_clause = " AND JSON_SEARCH(LOWER(extra), 'all', LOWER(?s), null, '$.extra.badge.content')";
+				$args         = [$filter_npc_type, $filter_role, $prepared_query];
+			}
+			$args[] = $limit;
+			$args[] = $offset;
 		}
 
 		foreach ($sort_fields as $sort_field) {
@@ -545,6 +555,27 @@ class Gateway_Db_CompanyData_MemberList extends Gateway_Db_CompanyData_Main {
 		// экранируем символы mysql
 		$search_query = str_replace("_", "\_", $search_query);
 		$search_query = str_replace("%", "\%", $search_query);
+
+		// ищем подстроку по запросу
 		return "%$search_query%";
+	}
+
+	/**
+	 * Подготовить запрос к LIKE
+	 *
+	 * @param string $search_query
+	 *
+	 * @return string
+	 */
+	protected static function _prepareBadgeQuery(string $search_query):string {
+
+		$search_query = \Entity_Sanitizer::sanitizeUtf8Query($search_query);
+
+		// экранируем символы mysql
+		$search_query = str_replace("_", "\_", $search_query);
+		$search_query = str_replace("%", "\%", $search_query);
+
+		// ищем точное совпадение
+		return "$search_query";
 	}
 }

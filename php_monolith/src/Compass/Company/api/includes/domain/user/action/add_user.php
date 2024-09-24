@@ -45,6 +45,7 @@ class Domain_User_Action_AddUser {
 		int          $avg_screen_time = 0,
 		int          $total_action_count = 0,
 		int          $avg_message_answer_time = 0,
+		array        $ldap_account_data = [],
 	):string {
 
 		try {
@@ -56,7 +57,7 @@ class Domain_User_Action_AddUser {
 
 		// добавляем участника в компанию
 		self::_add($user_id, $role, $npc_type, $permissions, $mbti_type, $full_name, $avatar_file_key, $avatar_color_id, $comment,
-			$locale, $is_creator, $pin_code, $avg_screen_time, $total_action_count, $avg_message_answer_time);
+			$locale, $is_creator, $pin_code, $avg_screen_time, $total_action_count, $avg_message_answer_time, $ldap_account_data);
 
 		// создаем запись в dynamic-данных для карточки
 		Type_User_Card_DynamicData::add($user_id);
@@ -121,10 +122,15 @@ class Domain_User_Action_AddUser {
 	 */
 	protected static function _add(int $user_id, int $role, int $npc_type, int $permissions, string $mbti_type, string $full_name, string $avatar_file_key,
 						 int $avatar_color_id, string $comment, string $locale, bool $is_creator, string|false $pin_code = false,
-						 int $avg_screen_time = 0, int $total_action_count = 0, int $avg_message_answer_time = 0):int {
+						 int $avg_screen_time = 0, int $total_action_count = 0, int $avg_message_answer_time = 0, array $ldap_account_data = []):int {
 
 		// получаем первоначальные данные вступаемого участника
 		[$short_description, $badge_color_id, $badge_content] = Domain_Member_Entity_EmployeeCard::getJoiningInitialData($role, $is_creator, $locale);
+
+		// если переданы ldap учётное записи - актуализируем первоначальные данные
+		if (count($ldap_account_data) > 0) {
+			[$badge_content, $short_description, $comment] = self::_actualizeJoinDataByLdap($ldap_account_data, $badge_content, $short_description, $comment);
+		}
 
 		Gateway_Db_CompanyData_Main::beginTransaction();
 
@@ -153,6 +159,26 @@ class Domain_User_Action_AddUser {
 		Gateway_Db_CompanyMember_Main::commitTransaction();
 
 		return $time;
+	}
+
+	/**
+	 * Актуализировать первоначальные данные из ldap данных учётной записи.
+	 */
+	protected static function _actualizeJoinDataByLdap(array $ldap_account_data, string $badge_content, string $short_description, string $comment):array {
+
+		if (isset($ldap_account_data["role"]) && $ldap_account_data["role"] !== false) {
+			$short_description = Domain_Member_Entity_Sanitizer::sanitizeDescription($ldap_account_data["role"]);
+		}
+
+		if (isset($ldap_account_data["bio"]) && $ldap_account_data["bio"] !== false) {
+			$comment = Domain_Member_Entity_Sanitizer::sanitizeStatus($ldap_account_data["bio"]);
+		}
+
+		if (isset($ldap_account_data["badge"]) && $ldap_account_data["badge"] !== false) {
+			$badge_content = Domain_Member_Entity_Sanitizer::sanitizeBadgeContent($ldap_account_data["badge"]);
+		}
+
+		return [$badge_content, $short_description, $comment];
 	}
 
 	/**

@@ -1588,27 +1588,38 @@ class Helper_Threads {
 			return [];
 		}
 
-		$matches = [];
-
-		// ищем из текста все упоминания вот пример матча: ["@"|160593|"Имя"]
-		preg_match_all("/\[\"@\"\|(\d{1,20})\|\".*\"]/mU", $text, $matches);
-
-		// если не нашли никого отдаем пустоту
-		if (!isset($matches[1]) || count($matches[1]) < 1) {
+		$user_id_list = Domain_Thread_Entity_MentionUsers::getMentionUsersForText($text);
+		if (count($user_id_list) < 1) {
 			return [];
 		}
 
 		$filtered_mention_user_id_list = [];
 
 		// проходимся по всем упомянутым пользователям
-		foreach ($matches[1] as $user_id) {
+		foreach ($user_id_list as $user_id) {
 
 			// проверяем что указанный id в string не больше значения PHP_INT_MAX
 			if (self::_isNumberStringMorePhpIntMax($user_id)) {
 				continue;
 			}
 
-			if (!Type_Thread_Meta_Users::isMember($user_id, $meta_row["users"])) {
+			// если получили конкретный user_id, проверяем, что тот является участником чата
+			if ($user_id > 0 && !Type_Thread_Meta_Users::isMember($user_id, $meta_row["users"])) {
+				continue;
+			}
+
+			// если получили user_id = 0, то значит упомянута группа участников (@all, @badge)
+			if ($user_id == 0) {
+
+				[$_, $_, $_, $location_type] = Type_Thread_SourceParentDynamic::get($meta_row["source_parent_rel"]);
+
+				// если тип чата не позволяет упоминать по бейджу
+				if (in_array($location_type, [CONVERSATION_TYPE_SINGLE_DEFAULT, CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT, CONVERSATION_TYPE_SINGLE_NOTES, CONVERSATION_TYPE_GROUP_SUPPORT])) {
+					continue;
+				}
+
+				$mention_user_id_list          = Domain_Thread_Entity_MentionUsers::getList($text, $meta_row["users"]);
+				$filtered_mention_user_id_list = array_merge($mention_user_id_list, $filtered_mention_user_id_list);
 				continue;
 			}
 

@@ -59,6 +59,24 @@ class Domain_Ldap_Entity_AuthToken {
 	}
 
 	/**
+	 * получаем последнюю попытку
+	 *
+	 * @param string $uid
+	 *
+	 * @return Struct_Db_LdapData_LdapAuth
+	 * @throws ParseFatalException
+	 * @throws Domain_Ldap_Exception_Auth_TokenNotFound
+	 */
+	public static function getLastByUid(string $uid):Struct_Db_LdapData_LdapAuth {
+
+		try {
+			return Gateway_Db_LdapData_LdapAuthList::getOneLastByUid($uid);
+		} catch (RowNotFoundException) {
+			throw new Domain_Ldap_Exception_Auth_TokenNotFound();
+		}
+	}
+
+	/**
 	 * утверждаем, что статус попытки соответствует ожидаемой
 	 *
 	 * @throws Domain_Ldap_Exception_Auth_UnexpectedStatus

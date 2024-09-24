@@ -23,9 +23,12 @@ class Domain_Invite_Action_SendAutoAccepted {
 	 * @param Short  $member
 	 * @param array  $group_meta_row
 	 * @param string $platform
+	 * @param int    $role
 	 * @param bool   $is_async_send_invite_message
 	 *
+	 * @throws BlockException
 	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
 	 * @throws Domain_Conversation_Exception_Guest_AttemptInitialConversation
 	 * @throws Domain_Conversation_Exception_User_IsAccountDeleted
 	 * @throws Domain_Invite_Exception_IsNotHuman
@@ -33,8 +36,6 @@ class Domain_Invite_Action_SendAutoAccepted {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
-	 * @throws BlockException
-	 * @throws ControllerMethodNotFoundException
 	 * @throws \ErrorException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \returnException
@@ -47,7 +48,7 @@ class Domain_Invite_Action_SendAutoAccepted {
 	 * @throws cs_InviteStatusIsNotExpected
 	 * @throws cs_PlatformNotFound
 	 */
-	public static function run(int $sender_user_id, Short $member, array $group_meta_row, string $platform, bool $is_async_send_invite_message = true):void {
+	public static function run(int $sender_user_id, Short $member, array $group_meta_row, string $platform, bool $is_async_send_invite_message = true, int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT):void {
 
 		// если передали не человека - не выполняем добавление
 		if (!Type_User_Main::isHuman($member->npc_type)) {
@@ -76,7 +77,7 @@ class Domain_Invite_Action_SendAutoAccepted {
 			}
 
 			// добавляем в диалог
-			self::_doJoinUserToConversation($group_meta_row["conversation_map"], $sender_user_id, $member);
+			self::_doJoinUserToConversation($group_meta_row["conversation_map"], $sender_user_id, $member, $role);
 		}
 
 		// отправляем сообщения об инвайте
@@ -161,11 +162,12 @@ class Domain_Invite_Action_SendAutoAccepted {
 	 * @param string $conversation_map
 	 * @param int    $inviter_user_id
 	 * @param Short  $invited_member
+	 * @param int    $role
 	 *
 	 * @return void
 	 * @throws ParseFatalException
 	 */
-	protected static function _doJoinUserToConversation(string $conversation_map, int $inviter_user_id, Short $invited_member):void {
+	protected static function _doJoinUserToConversation(string $conversation_map, int $inviter_user_id, Short $invited_member, int $role):void {
 
 		Helper_Groups::doJoin(
 			$conversation_map,
@@ -173,6 +175,7 @@ class Domain_Invite_Action_SendAutoAccepted {
 			$invited_member->role,
 			$invited_member->permissions,
 			$inviter_user_id,
+			role: $role,
 		);
 	}
 

@@ -44,6 +44,7 @@ class Type_Conversation_Action {
 	public const SHARE_MEMBER_FROM_CONVERSATION                = "SHARE_MEMBER_FROM_CONVERSATION";
 	public const REMIND_CREATE_FROM_CONVERSATION               = "REMIND_CREATE_FROM_CONVERSATION";
 	public const REMIND_REMOVE_FROM_CONVERSATION               = "REMIND_REMOVE_FROM_CONVERSATION";
+	public const MENTION_BY_BADGE_FROM_CONVERSATION            = "MENTION_BY_BADGE_FROM_CONVERSATION";
 
 	// описывает возможные действия над конкретными типами диалогов
 	protected const _ALLOWED_FOR_ACTIONS = [
@@ -171,7 +172,7 @@ class Type_Conversation_Action {
 			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT,
 			CONVERSATION_TYPE_GROUP_HIRING,
 			CONVERSATION_TYPE_SINGLE_NOTES,
-			CONVERSATION_TYPE_GROUP_SUPPORT
+			CONVERSATION_TYPE_GROUP_SUPPORT,
 		],
 
 		// в этих диалогах можно скрывать сообщения
@@ -364,6 +365,14 @@ class Type_Conversation_Action {
 			CONVERSATION_TYPE_SINGLE_NOTES,
 			CONVERSATION_TYPE_GROUP_RESPECT,
 			CONVERSATION_TYPE_GROUP_SUPPORT,
+		],
+
+		// можно упоминать пользователей по @бейджу
+		self::MENTION_BY_BADGE_FROM_CONVERSATION            => [
+			CONVERSATION_TYPE_GROUP_DEFAULT,
+			CONVERSATION_TYPE_GROUP_GENERAL,
+			CONVERSATION_TYPE_GROUP_HIRING,
+			CONVERSATION_TYPE_GROUP_RESPECT,
 		],
 	];
 

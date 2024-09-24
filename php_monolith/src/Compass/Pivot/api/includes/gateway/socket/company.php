@@ -32,7 +32,7 @@ class Gateway_Socket_Company {
 	public static function addCreator(
 		int    $user_id, int $company_id, int $npc_type, string $domino_id, string $private_key,
 		string $full_name, string $avatar_file_map, int $avatar_color_id, string $locale, bool $is_trial_activated, bool $is_need_create_intercom_conversation,
-		string $ip, string $user_agent, int $avg_screen_time, int $total_action_count, int $avg_message_answer_time):array {
+		string $ip, string $user_agent, int $avg_screen_time, int $total_action_count, int $avg_message_answer_time, array $ldap_account_data):array {
 
 		// формируем параметры для запроса
 		$params = [
@@ -49,6 +49,7 @@ class Gateway_Socket_Company {
 			"avg_screen_time"                      => (int) $avg_screen_time,
 			"total_action_count"                   => (int) $total_action_count,
 			"avg_message_answer_time"              => (int) $avg_message_answer_time,
+			"ldap_account_data"                    => (array) $ldap_account_data,
 		];
 
 		[$status, $response] = self::_call("company.member.addCreator", $params, $user_id, $company_id, $domino_id, $private_key);
@@ -1015,7 +1016,7 @@ class Gateway_Socket_Company {
 	 */
 	public static function acceptJoinLink(
 		int $user_id, string $invite_link_uniq, string $comment,
-		int $company_id, string $domino_id, string $private_key, Struct_Db_PivotUser_User $user_info, bool $force_postmoderation
+		int $company_id, string $domino_id, string $private_key, Struct_Db_PivotUser_User $user_info, bool $force_postmoderation, array $ldap_account_data
 	):Struct_Dto_Socket_Company_AcceptJoinLinkResponse {
 
 		$params = [
@@ -1030,6 +1031,7 @@ class Gateway_Socket_Company {
 			"total_action_count"           => Type_User_Main::getTotalActionCount($user_info->extra),
 			"avg_message_answer_time"      => Type_User_Main::getAvgMessageAnswerTime($user_info->extra),
 			"force_postmoderation"         => (int) $force_postmoderation,
+			"ldap_account_data"            => $ldap_account_data,
 		];
 
 		// отправим запрос на удаление из списка

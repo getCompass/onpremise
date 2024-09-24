@@ -97,19 +97,6 @@ class Domain_JoinLink_Scenario_Socket {
 	/**
 	 * Принимаем инвайт
 	 *
-	 * @param int    $user_id
-	 * @param string $invite_link_uniq
-	 * @param string $comment
-	 * @param string $full_name
-	 * @param string $avatar_file_key
-	 * @param int    $avatar_color_id
-	 * @param string $locale
-	 * @param bool   $is_force_exit_task_not_exist
-	 * @param int    $avg_screen_time
-	 * @param int    $total_action_count
-	 * @param int    $avg_message_answer_time
-	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\LocaleTextNotFound
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
@@ -129,7 +116,7 @@ class Domain_JoinLink_Scenario_Socket {
 	 */
 	public static function acceptInvite(int    $user_id, string $invite_link_uniq, string $comment, string $full_name, string $avatar_file_key, int $avatar_color_id,
 							string $locale, bool $is_force_exit_task_not_exist, int $avg_screen_time, int $total_action_count, int $avg_message_answer_time,
-							bool   $force_postmoderation):array {
+							bool   $force_postmoderation, array $ldap_account_data):array {
 
 		// смотрим, что компания не удалена
 		Domain_Company_Entity_Dynamic::assertCompanyIsNotDeleted();
@@ -190,6 +177,7 @@ class Domain_JoinLink_Scenario_Socket {
 				avg_screen_time: $avg_screen_time,
 				total_action_count: $total_action_count,
 				avg_message_answer_time: $avg_message_answer_time,
+				ldap_account_data: $ldap_account_data,
 			);
 
 			// создаем диалог с создателем заявки

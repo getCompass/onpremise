@@ -151,6 +151,40 @@ class Gateway_Socket_Federation extends Gateway_Socket_Default {
 	}
 
 	/**
+	 * Получить данные учётной записи ldap пользователя.
+	 *
+	 * @return array
+	 * @throws ReturnFatalException
+	 */
+	public static function getSsoLdapUserData(int $user_id):array {
+
+		$ar_post = [
+			"user_id" => $user_id,
+		];
+		[$status, $response] = self::_doCallSocket("ldap.getUserLdapData", $ar_post);
+
+		if ($status === "error") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			if ($response["error_code"] == 1004) {
+				return [];
+			}
+		}
+
+		foreach ($response["ldap_account_data"] as $k => $v) {
+
+			if (is_null($v)) {
+				$response["ldap_account_data"][$k] = false;
+			}
+		}
+
+		return $response["ldap_account_data"];
+	}
+
+	/**
 	 * имеется ли связь пользователя с sso аккаунтом по протоколу ldap
 	 *
 	 * @return bool

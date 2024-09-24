@@ -64,6 +64,7 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 		$avg_screen_time                      = $this->post(\Formatter::TYPE_INT, "avg_screen_time", 0);
 		$total_action_count                   = $this->post(\Formatter::TYPE_INT, "total_action_count", 0);
 		$avg_message_answer_time              = $this->post(\Formatter::TYPE_INT, "avg_message_answer_time", 0);
+		$ldap_account_data                    = $this->post(\Formatter::TYPE_ARRAY, "ldap_account_data", []);
 
 		if ($is_force_exit_task_not_exist && !isTestServer()) {
 			throw new ParamException("only for test-server");
@@ -86,7 +87,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 				$user_agent,
 				$avg_screen_time,
 				$total_action_count,
-				$avg_message_answer_time
+				$avg_message_answer_time,
+				$ldap_account_data
 			);
 		} catch (cs_UsersFromSingleListErrorOrUserCannotAddToGroups $e) {
 

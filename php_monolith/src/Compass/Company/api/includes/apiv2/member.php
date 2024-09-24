@@ -42,19 +42,20 @@ class Apiv2_Member extends \BaseFrame\Controller\Api {
 	 */
 	public function getList():array {
 
-		$query           = $this->post(\Formatter::TYPE_STRING, "query", "");
-		$offset          = $this->post(\Formatter::TYPE_INT, "offset", 0);
-		$limit           = $this->post(\Formatter::TYPE_INT, "limit", 100);
-		$filter_npc_type = $this->post(\Formatter::TYPE_ARRAY, "filter_npc_type", []);
-		$filter_role     = $this->post(\Formatter::TYPE_ARRAY, "filter_role", []);
-		$sort_field      = $this->post(\Formatter::TYPE_STRING, "sort_field", "");
+		$query              = $this->post(\Formatter::TYPE_STRING, "query", "");
+		$offset             = $this->post(\Formatter::TYPE_INT, "offset", 0);
+		$limit              = $this->post(\Formatter::TYPE_INT, "limit", 100);
+		$filter_npc_type    = $this->post(\Formatter::TYPE_ARRAY, "filter_npc_type", []);
+		$filter_role        = $this->post(\Formatter::TYPE_ARRAY, "filter_role", []);
+		$filter_query_field = $this->post(\Formatter::TYPE_ARRAY, "filter_query_field", []);
+		$sort_field         = $this->post(\Formatter::TYPE_STRING, "sort_field", "");
 
 		try {
 
 			$member_id_list = Domain_Member_Scenario_Apiv2::getList(
-				$this->user_id, $this->role, $this->permissions, $query, $limit + 1, $offset, $filter_npc_type, $filter_role, $sort_field
+				$this->user_id, $this->role, $this->permissions, $query, $limit + 1, $offset, $filter_npc_type, $filter_role, $filter_query_field, $sort_field
 			);
-		} catch (IsNotAdministrator|\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
+		} catch (IsNotAdministrator | \CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		} catch (UserIsGuest) {
 

@@ -53,6 +53,7 @@ class Socket_Hiring_InviteLink extends \BaseFrame\Controller\Socket {
 		$total_action_count           = $this->post(\Formatter::TYPE_INT, "total_action_count", 0);
 		$avg_message_answer_time      = $this->post(\Formatter::TYPE_INT, "avg_message_answer_time", 0);
 		$force_postmoderation         = $this->post(\Formatter::TYPE_INT, "force_postmoderation", 0);
+		$ldap_account_data            = $this->post(\Formatter::TYPE_ARRAY, "ldap_account_data", []);
 
 		if ($is_force_exit_task_not_exist && !isTestServer()) {
 			throw new ParamException("only for test-server");
@@ -73,7 +74,8 @@ class Socket_Hiring_InviteLink extends \BaseFrame\Controller\Socket {
 					$avg_screen_time,
 					$total_action_count,
 					$avg_message_answer_time,
-					$force_postmoderation
+					$force_postmoderation,
+					$ldap_account_data
 				);
 		} catch (cs_CompanyUserIsEmployee|cs_InviteLinkNotActive|cs_InviteLinkNotExist|cs_InviteLinkAlreadyUsed|cs_InviteLinkIdExpired|cs_CompanyIsDeleted) {
 			return $this->error(404, "invite is not active");

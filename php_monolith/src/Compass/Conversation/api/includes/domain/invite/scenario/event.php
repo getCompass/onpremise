@@ -69,12 +69,19 @@ class Domain_Invite_Scenario_Event {
 	#[Type_Attribute_EventListener(Type_Event_Invite_CreateAndSendAutoAcceptInvite::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
 	public static function createAndSendAutoAcceptedInviteForUserIdList(Struct_Event_Invite_CreateAndSendAutoAcceptInvite $event_data):void {
 
-		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList($event_data->user_id_list);
+		$user_list      = $event_data->user_list;
+		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList(array_column($user_list, "user_id"));
 
-		foreach ($user_info_list as $user_info) {
+		foreach ($user_list as $user) {
+
+			if (!isset($user_info_list[$user->user_id])) {
+				continue;
+			}
+
+			$user_info = $user_info_list[$user->user_id];
 
 			try {
-				Domain_Invite_Action_SendAutoAccepted::run($event_data->sender_user_id, $user_info, $event_data->meta_row, $event_data->platform, false);
+				Domain_Invite_Action_SendAutoAccepted::run($event_data->sender_user_id, $user_info, $event_data->meta_row, $event_data->platform, false, $user->role);
 			} catch (cs_InviteIsDuplicated) {
 				continue;
 			}

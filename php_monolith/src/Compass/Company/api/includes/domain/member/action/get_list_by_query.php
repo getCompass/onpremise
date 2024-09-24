@@ -24,16 +24,25 @@ class Domain_Member_Action_GetListByQuery {
 		"left"          => Member::ROLE_LEFT,
 	];
 
+	protected const _ALLOWED_FILTER_QUERY_FIELDS = [
+		"badge",
+	];
+
+	protected const _FILTER_BADGE_FOR_GUEST = [
+		"гость",
+		"guest",
+	];
+
 	/**
 	 * Получаем список пользователей по запросу
 	 */
-	public static function do(string $query, int $limit, int $offset, array $filter_npc_type, array $filter_role, array $sort_fields, bool $is_legacy = false):array {
+	public static function do(string $query, int $limit, int $offset, array $filter_npc_type, array $filter_role, array $filter_query_field, array $sort_fields, bool $is_legacy = false):array {
 
 		// для старых версий получаем пользователей старым способом
 		if ($is_legacy) {
 			return Gateway_Db_CompanyData_MemberList::getListByQueryLegacy($query, $limit, $offset, $filter_npc_type, $filter_role);
 		} else {
-			return Gateway_Db_CompanyData_MemberList::getListByQuery($query, $limit, $offset, $filter_npc_type, $filter_role, $sort_fields);
+			return Gateway_Db_CompanyData_MemberList::getListByQuery($query, $limit, $offset, $filter_npc_type, $filter_role, $filter_query_field, $sort_fields);
 		}
 	}
 
@@ -46,13 +55,15 @@ class Domain_Member_Action_GetListByQuery {
 	 * @param string $sort_field
 	 * @param array  $filter_npc_type
 	 * @param array  $filter_role
+	 * @param array  $filter_query_field
+	 * @param string $query
 	 *
 	 * @return array
 	 * @throws ParamException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Request\ParamException
+	 * @long - множество проверок
 	 */
-	public static function prepareParams(int $member_role, int $limit, int $offset, string $sort_field, array $filter_npc_type, array $filter_role):array {
+	public static function prepareParams(int $member_role, int $limit, int $offset, string $sort_field, array $filter_npc_type, array $filter_role, array $filter_query_field, string $query):array {
 
 		if ($limit < 1 || $offset < 0) {
 			throw new ParamException("invalid limit or offset");
@@ -75,21 +86,37 @@ class Domain_Member_Action_GetListByQuery {
 			$filter_role = self::_prepareFilterRole($filter_role);
 		}
 
+		if (count($filter_query_field) > 0) {
+
+			self::_prepareFilterQueryField($filter_query_field);
+
+			// если клиент ожидает получить гостей по бейджу
+			if (in_array(mb_strtolower($query), self::_FILTER_BADGE_FOR_GUEST)) {
+
+				// актуализируем параметры для поиска - роль "гость" и поисковый запрос "Guest"
+				$filter_role = [Member::ROLE_GUEST];
+				$query       = "guest";
+			}
+		}
+
 		$sort_field = self::_prepareSortFields($member_role, $sort_field);
 
-		return [$sort_field, $filter_npc_type, $filter_role];
+		return [$sort_field, $filter_npc_type, $filter_role, $query];
 	}
 
 	/**
 	 * получаем список npc_type для фильтра
-	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
 	protected static function _prepareFilterNpcTypeList(array $filter_client_npc_type):array {
 
 		$filter_npc_type = [];
 		foreach ($filter_client_npc_type as $user_type) {
-			$filter_npc_type[] = Type_User_Main::getNpcTypeByUserType($user_type);
+
+			try {
+				$filter_npc_type[] = Type_User_Main::getNpcTypeByUserType($user_type);
+			} catch (\BaseFrame\Exception\Domain\ParseFatalException) {
+				throw new ParamException("invalid client npc_type");
+			}
 		}
 
 		return $filter_npc_type;
@@ -113,6 +140,21 @@ class Domain_Member_Action_GetListByQuery {
 		}
 
 		return $filter_role;
+	}
+
+	/**
+	 * получаем список полей для фильтра по поисковому запросу
+	 *
+	 * @throws ParamException
+	 */
+	protected static function _prepareFilterQueryField(array $filter_client_query_field):void {
+
+		foreach ($filter_client_query_field as $query_field) {
+
+			if (!in_array($query_field, self::_ALLOWED_FILTER_QUERY_FIELDS)) {
+				throw new ParamException("unknown filter_query_field: {$query_field}");
+			}
+		}
 	}
 
 	/**

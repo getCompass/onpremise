@@ -4498,7 +4498,15 @@ class Type_Conversation_Message_Handler_Default {
 			return [];
 		}
 
-		return arrayValuesInt($message["mention_user_id_list"]);
+		$mention_user_id_list = arrayValuesInt($message["mention_user_id_list"]);
+
+		if (isset($message["data"]["text"]) && Domain_Conversation_Entity_Message_MentionUsers::isMentionByBadge($message["data"]["text"])) {
+
+			$user_id_list = Domain_Conversation_Entity_Message_MentionUsers::getMentionUsersForText($message["data"]["text"]);
+			return array_values(array_intersect($user_id_list, $mention_user_id_list));
+		}
+
+		return $mention_user_id_list;
 	}
 
 	// добавляем в массив map в зависимости от родительской сущности

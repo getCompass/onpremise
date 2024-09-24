@@ -24,6 +24,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"ldap.validateAuthToken",
 			"ldap.createUserRelationship",
 			"ldap.hasUserRelationship",
+			"ldap.getUserLdapData",
 			"sso.hasUserRelationship",
 			"sso.deleteUserRelationship",
 		],

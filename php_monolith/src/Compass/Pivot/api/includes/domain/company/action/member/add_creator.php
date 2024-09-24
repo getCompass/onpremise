@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * Базовый класс для действия добавления создателя в компанию
  */
@@ -53,6 +55,11 @@ class Domain_Company_Action_Member_AddCreator {
 			$user_info = Domain_User_Action_UpdateAvatarColor::do($user_id, \BaseFrame\Domain\User\Avatar::getSpaceCreatorColor());
 		}
 
+		// для premise окружения пробуем получить данные ldap пользователя
+		$ldap_account_data = ServerProvider::isOnPremise() && Domain_User_Entity_Auth_Config::isProfileDataActualizationEnabled()
+			? Gateway_Socket_Federation::getSsoLdapUserData($user_id)
+			: [];
+
 		// добавляем пользователя в компанию как участника
 		$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
 
@@ -73,6 +80,7 @@ class Domain_Company_Action_Member_AddCreator {
 			Type_User_Main::getAvgScreenTime($user_info->extra),
 			Type_User_Main::getTotalActionCount($user_info->extra),
 			Type_User_Main::getAvgMessageAnswerTime($user_info->extra),
+			$ldap_account_data,
 		);
 
 		// удаляем пользователя из лобби

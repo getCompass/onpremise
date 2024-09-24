@@ -41,13 +41,13 @@ class Domain_Member_Scenario_Apiv2 {
 	 * @throws \queryException
 	 */
 	public static function getList(int   $user_id, int $role, int $permissions, string $query, int $limit, int $offset, array $filter_npc_type,
-						 array $filter_role = [], string $sort_field = ""):array {
+						 array $filter_role = [], array $filter_query_field = [], string $sort_field = ""):array {
 
 		Member::assertUserNotGuest($role);
 
 		// проверяем параметры
-		[$sort_fields, $filter_npc_type, $filter_role] = Domain_Member_Action_GetListByQuery::prepareParams(
-			$role, $limit, $offset, $sort_field, $filter_npc_type, $filter_role
+		[$sort_fields, $filter_npc_type, $filter_role, $query] = Domain_Member_Action_GetListByQuery::prepareParams(
+			$role, $limit, $offset, $sort_field, $filter_npc_type, $filter_role, $filter_query_field, $query
 		);
 
 		// если получаем ботов или удалённых, то проверяем права на админа
@@ -63,6 +63,6 @@ class Domain_Member_Scenario_Apiv2 {
 		}
 
 		// получаем список участников
-		return Domain_Member_Action_GetListByQuery::do($query, $limit, $offset, $filter_npc_type, $filter_role, $sort_fields);
+		return Domain_Member_Action_GetListByQuery::do($query, $limit, $offset, $filter_npc_type, $filter_role, $filter_query_field, $sort_fields);
 	}
 }

@@ -232,21 +232,27 @@ class Domain_Group_Scenario_Api {
 		}
 
 		// получаем пользователей состоящих в диалоге (кроме себя)
-		$user_id_list = [];
+		$user_list = [];
 		foreach ($meta_row["users"] as $invited_user_id => $_) {
 
 			if ($user_id !== $invited_user_id && Type_Conversation_Meta_Users::isMember($invited_user_id, $meta_row["users"])) {
-				$user_id_list[] = $invited_user_id;
+
+				$user_list[$invited_user_id] = new Struct_Conversation_User(
+					$invited_user_id,
+					Type_Conversation_Meta_Users::getRole($invited_user_id, $meta_row["users"])
+				);
 			}
 		}
 
 		// удаляем исключенных пользователей
 		if (count($excluded_user_id_list) > 0) {
-			$user_id_list = array_diff($user_id_list, $excluded_user_id_list);
+
+			$user_list = array_filter($user_list, fn(int $invited_user_id) => !in_array($invited_user_id, $excluded_user_id_list),
+				ARRAY_FILTER_USE_KEY);
 		}
 
 		// фильтруем массив пользователей
-		$user_id_list = self::_filterInvitedUserList($user_id_list);
+		$user_list = self::_filterInvitedUserList($user_list);
 
 		// создаем групповой диалог
 		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description);
@@ -254,10 +260,10 @@ class Domain_Group_Scenario_Api {
 		// получаем запись из левого меню
 		$left_menu_row = Type_Conversation_LeftMenu::get($user_id, $meta_row["conversation_map"]);
 
-		if (count($user_id_list) > 0) {
+		if (count($user_list) > 0) {
 
 			// пушим событие на создание и отправку инвайта списку пользователей
-			Gateway_Event_Dispatcher::dispatch(Type_Event_Invite_CreateAndSendInvite::create($user_id, $user_id_list, $meta_row));
+			Gateway_Event_Dispatcher::dispatch(Type_Event_Invite_CreateAndSendInvite::create($user_id, array_keys($user_list), $meta_row));
 		}
 
 		return Type_Conversation_Utils::prepareConversationForFormat($meta_row, $left_menu_row);
@@ -301,21 +307,27 @@ class Domain_Group_Scenario_Api {
 		}
 
 		// получаем пользователей состоящих в диалоге (кроме себя)
-		$user_id_list = [];
+		$user_list = [];
 		foreach ($meta_row["users"] as $invited_user_id => $_) {
 
 			if ($user_id !== $invited_user_id && Type_Conversation_Meta_Users::isMember($invited_user_id, $meta_row["users"])) {
-				$user_id_list[] = $invited_user_id;
+
+				$user_list[$invited_user_id] = new Struct_Conversation_User(
+					$invited_user_id,
+					Type_Conversation_Meta_Users::getRole($invited_user_id, $meta_row["users"]),
+				);
 			}
 		}
 
 		// удаляем исключенных пользователей
 		if (count($excluded_user_id_list) > 0) {
-			$user_id_list = array_diff($user_id_list, $excluded_user_id_list);
+
+			$user_list = array_filter($user_list, fn(int $invited_user_id) => !in_array($invited_user_id, $excluded_user_id_list),
+				ARRAY_FILTER_USE_KEY);
 		}
 
 		// фильтруем массив пользователей
-		$user_id_list = self::_filterInvitedUserList($user_id_list);
+		$user_list = self::_filterInvitedUserList($user_list);
 
 		// создаем групповой диалог
 		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description);
@@ -323,11 +335,11 @@ class Domain_Group_Scenario_Api {
 		// получаем запись из левого меню
 		$left_menu_row = Type_Conversation_LeftMenu::get($user_id, $meta_row["conversation_map"]);
 
-		if (count($user_id_list) > 0) {
+		if (count($user_list) > 0) {
 
 			// пушим событие на создание и отправку инвайта списку пользователей
 			$platform = Type_Api_Platform::getPlatform();
-			Gateway_Event_Dispatcher::dispatch(Type_Event_Invite_CreateAndSendAutoAcceptInvite::create($user_id, $user_id_list, $meta_row, $platform));
+			Gateway_Event_Dispatcher::dispatch(Type_Event_Invite_CreateAndSendAutoAcceptInvite::create($user_id, $user_list, $meta_row, $platform));
 		}
 
 		return Type_Conversation_Utils::prepareConversationForFormat($meta_row, $left_menu_row);
@@ -382,16 +394,16 @@ class Domain_Group_Scenario_Api {
 	/**
 	 * фильтруем массив пользователей
 	 *
-	 * @param array $user_id_list
+	 * @param Struct_Conversation_User[] $user_list
 	 *
-	 * @return array
+	 * @return Struct_Conversation_User[]
 	 * @throws BusFatalException
 	 * @throws ControllerMethodNotFoundException
 	 */
-	protected static function _filterInvitedUserList(array $user_id_list):array {
+	protected static function _filterInvitedUserList(array $user_list):array {
 
 		// получаем нужных пользователей
-		$user_info_list = Gateway_Bus_CompanyCache::getMemberList($user_id_list);
+		$user_info_list = Gateway_Bus_CompanyCache::getMemberList(array_keys($user_list));
 
 		$deleted_user_id_list = [];
 		foreach ($user_info_list as $member) {
@@ -403,9 +415,11 @@ class Domain_Group_Scenario_Api {
 
 		// не шлем удаленным пользователям
 		if (count($deleted_user_id_list) > 0) {
-			$user_id_list = array_diff($user_id_list, $deleted_user_id_list);
+
+			$user_list = array_filter($user_list, fn(int $invited_user_id) => !in_array($invited_user_id, $deleted_user_id_list),
+				ARRAY_FILTER_USE_KEY);
 		}
 
-		return $user_id_list;
+		return $user_list;
 	}
 }

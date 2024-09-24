@@ -58,7 +58,8 @@ class Domain_User_Scenario_Socket {
 		string       $user_agent,
 		int          $avg_screen_time,
 		int          $total_action_count,
-		int          $avg_message_answer_time
+		int          $avg_message_answer_time,
+		array        $ldap_account_data,
 	):array {
 
 		// получаем статус увольнения кандидата (уволился, вообще не увольнялся, на этапе увольнения)
@@ -75,7 +76,8 @@ class Domain_User_Scenario_Socket {
 			$avatar_file_key, $avatar_color_id, "", $locale, $pin_code, $inviter_user_id, npc_type: $npc_type, approved_by_user_id: $user_id,
 			is_trial_activated: (bool) $is_trial_activated, is_need_create_intercom_conversation: $is_need_create_intercom_conversation,
 			ip: $ip, user_agent: $user_agent, is_creator: true,
-			avg_screen_time: $avg_screen_time, total_action_count: $total_action_count, avg_message_answer_time: $avg_message_answer_time);
+			avg_screen_time: $avg_screen_time, total_action_count: $total_action_count, avg_message_answer_time: $avg_message_answer_time,
+			ldap_account_data: $ldap_account_data);
 		return [$entry_id, $token_hash, $role, $permissions];
 	}
 

@@ -2032,9 +2032,9 @@ class Helper_Conversations {
 	}
 
 	// хелпер для удаления нескольких сообщения
-	public static function deleteMessageList(int   $user_id, string $conversation_map, int $conversation_type,
+	public static function deleteMessageList(int $user_id, string $conversation_map, int $conversation_type,
 							     array $message_map_list, array $meta_row,
-							     bool  $is_force_delete = false):array {
+							     bool $is_force_delete = false):array {
 
 		$dynamic_row = Domain_Conversation_Entity_Dynamic::get($conversation_map);
 		self::_throwIfConversationIsLocked($dynamic_row);
@@ -2085,12 +2085,12 @@ class Helper_Conversations {
 		$message["type"] = $message_type;
 
 		$intercom_text = match ($message_type) {
-			CONVERSATION_MESSAGE_TYPE_TEXT   => self::_getIntercomText($message),
-			CONVERSATION_MESSAGE_TYPE_FILE   => self::_getIntercomFileText($message),
+			CONVERSATION_MESSAGE_TYPE_TEXT => self::_getIntercomText($message),
+			CONVERSATION_MESSAGE_TYPE_FILE => self::_getIntercomFileText($message),
 			CONVERSATION_MESSAGE_TYPE_MASS_QUOTE,
-			CONVERSATION_MESSAGE_TYPE_QUOTE  => self::_getQuoteIntercomText($message, [$message]),
+			CONVERSATION_MESSAGE_TYPE_QUOTE => self::_getQuoteIntercomText($message, [$message]),
 			CONVERSATION_MESSAGE_TYPE_REPOST => self::_getRepostIntercomText($message, [$message]),
-			default                          => ""
+			default => ""
 		};
 
 		$system_text = Gateway_Socket_Intercom::SYSTEM_DELETE_MESSAGE;
@@ -2148,7 +2148,7 @@ class Helper_Conversations {
 	 * @long
 	 */
 	protected static function _doDeleteMessageList(string $conversation_map, int $conversation_type, array $message_map_list_grouped_by_block_id,
-								     int    $user_id, array $meta_row, int $user_role, bool $is_force_delete = false):array {
+								     int $user_id, array $meta_row, int $user_role, bool $is_force_delete = false):array {
 
 		// проходимся по всем сообщениям сгруппированным по block_id и формируем массивы
 		$block_row_grouped_by_block_id       = [];
@@ -2199,7 +2199,7 @@ class Helper_Conversations {
 	}
 
 	// удаляем сообщения диалога в зависимости от его типа
-	protected static function _doDeleteMessageListDependedByConversationType(int   $user_id, string $conversation_map, int $conversation_type, int $block_id,
+	protected static function _doDeleteMessageListDependedByConversationType(int $user_id, string $conversation_map, int $conversation_type, int $block_id,
 													 array $message_map_list, int $user_role, bool $is_force_delete = false):array {
 
 		// если это диалог публичный
@@ -2685,27 +2685,36 @@ class Helper_Conversations {
 	// метод для получения списка упомянутых из текста
 	public static function getMentionUserIdListFromText(array $meta_row, string $text):array {
 
-		$matches = [];
-
-		// ищем из текста все упоминания вот пример матча: ["@"|160593|"Имя"]
-		preg_match_all("/\[\"@\"\|(\d{1,20})\|\".*\"]/mU", $text, $matches);
-
-		// если не нашли никого отдаем пустоту
-		if (!isset($matches[1]) || count($matches[1]) < 1) {
+		$user_id_list = Domain_Conversation_Entity_Message_MentionUsers::getMentionUsersForText($text);
+		if (count($user_id_list) < 1) {
 			return [];
 		}
 
 		$filtered_mention_user_id_list = [];
 
 		// проходимся по всем упомянутым пользователям
-		foreach ($matches[1] as $user_id) {
+		foreach ($user_id_list as $user_id) {
 
 			// проверяем что указанный id в string не больше значения PHP_INT_MAX
 			if (self::_isNumberStringMorePhpIntMax($user_id)) {
 				continue;
 			}
 
-			if (!Type_Conversation_Meta_Users::isExistInUsers($user_id, $meta_row["users"])) {
+			// если получили конкретный user_id, проверяем, что тот является участником чата
+			if ($user_id > 0 && !Type_Conversation_Meta_Users::isExistInUsers($user_id, $meta_row["users"])) {
+				continue;
+			}
+
+			// если получили user_id = 0, то значит упомянута группа участников (@all, @badge)
+			if ($user_id == 0) {
+
+				// если тип чата не позволяет упоминать по бейджу
+				if (!Type_Conversation_Action::isValidForAction((int) $meta_row["type"], Type_Conversation_Action::MENTION_BY_BADGE_FROM_CONVERSATION)) {
+					continue;
+				}
+
+				$mention_user_id_list          = Domain_Conversation_Entity_Message_MentionUsers::getList($text, $meta_row["users"]);
+				$filtered_mention_user_id_list = array_merge($mention_user_id_list, $filtered_mention_user_id_list);
 				continue;
 			}
 

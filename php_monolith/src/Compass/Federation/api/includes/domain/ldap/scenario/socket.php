@@ -68,6 +68,20 @@ class Domain_Ldap_Scenario_Socket {
 	}
 
 	/**
+	 * Получить данные об учётной записи ldap.
+	 */
+	public static function getUserLdapData(int $user_id):Struct_Ldap_AccountData {
+
+		// получаем связь sso-аккаунта и compass пользователя
+		$account_user_rel = Domain_Ldap_Entity_AccountUserRel::getByUserID($user_id);
+		$ldap_auth        = Domain_Ldap_Entity_AuthToken::getLastByUid($account_user_rel->uid);
+
+		// собираем объект с данными о учетной записе
+		$entry = Domain_Ldap_Entity_Utils::prepareEntry(Domain_Ldap_Entity_AuthToken_Data::getEntry($ldap_auth->data));
+		return Domain_Ldap_Entity_AccountData::parse($entry, $ldap_auth->username);
+	}
+
+	/**
 	 * проверяем, что связь «LDAP аккаунт» – «Пользователь Compass» существует
 	 *
 	 * @return bool

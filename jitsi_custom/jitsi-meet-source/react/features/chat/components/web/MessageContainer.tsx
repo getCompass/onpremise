@@ -178,12 +178,28 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
     componentDidUpdate(prevProps: IProps) {
         const hasNewMessages = this.props.messages.length !== prevProps.messages.length;
 
+        // фильтруем, оставляя только новеы сообщения
+        const newMessages = this.props.messages.filter(
+            (message) => !prevProps.messages.includes(message)
+        );
+
+        // проверяем есть ли хоть одно сообщение от другого пользователя
+        const hasRemoteMessage = newMessages.some(
+            (message) => message.messageType === "remote"
+        );
+
         if (hasNewMessages) {
             if (this.state.isScrolledToBottom) {
                 this.scrollToElement(false, null);
             } else {
-                // eslint-disable-next-line react/no-did-update-set-state
-                this.setState({hasNewMessages: true});
+                // если кто-то кроме нас написал сообщение - отображаем плашку "новое сообщение"
+                if (hasRemoteMessage) {
+                    // eslint-disable-next-line react/no-did-update-set-state
+                    this.setState({hasNewMessages: true});
+                } else {
+                    // иначе просто скроллим вниз, если писали мы сами
+                    this.scrollToElement(false, null);
+                }
             }
         }
     }

@@ -86,10 +86,10 @@ const useStyles = makeStyles()(theme => {
             paddingBottom: '16px',
             animation: `${keyframes`
                 0% {
-                    margin-top: 63px
+                    margin-top: 85px
                 }
                 100% {
-                    margin-top: 42px
+                    margin-top: 64px
                 }
             `} 0.2s forwards ease-out`,
 
@@ -104,10 +104,10 @@ const useStyles = makeStyles()(theme => {
             '&.unmount': {
                 animation: `${keyframes`
                     0% {
-                        margin-top: 42px
+                        margin-top: 64px
                     }
                     100% {
-                        margin-top: 18px
+                        margin-top: 40px
                     }
                 `} 0.15s forwards ease-in`
             },
@@ -150,7 +150,6 @@ const useStyles = makeStyles()(theme => {
 
 export interface IProps {
     children?: ReactNode;
-    footerContent?: ReactNode;
     className?: string;
     classNameHeader?: string;
     classNameContent?: string;
@@ -169,7 +168,6 @@ export interface IProps {
 
 const BaseDialog = ({
                         children,
-                        footerContent,
                         className,
                         description,
                         disableBackdropClose,
@@ -257,19 +255,6 @@ const BaseDialog = ({
                     role='dialog'
                     tabIndex={-1}>
                     {children}
-                </div>
-                <div
-                    tabIndex={-1}
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        width: "100%",
-                        marginTop: "48px",
-                        pointerEvents: "auto",
-                        zIndex: "302",
-                    }}>
-                    {footerContent}
                 </div>
             </FocusOn>
         </div>

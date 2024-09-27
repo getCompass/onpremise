@@ -25,7 +25,7 @@ import {getCurrentLayout, getNotResponsiveTileViewGridDimensions} from '../video
 import {
     ASPECT_RATIO_BREAKPOINT,
     DEFAULT_FILMSTRIP_WIDTH,
-    DEFAULT_LOCAL_TILE_ASPECT_RATIO, DEMO_HEADER_HEIGHT,
+    DEFAULT_LOCAL_TILE_ASPECT_RATIO,
     DISPLAY_AVATAR,
     DISPLAY_VIDEO,
     FILMSTRIP_GRID_BREAKPOINT,
@@ -45,7 +45,6 @@ import {
     TILE_VIEW_GRID_VERTICAL_MARGIN, TOP_INDICATORS_TOOLTIP_POSITION,
     VERTICAL_VIEW_HORIZONTAL_MARGIN
 } from './constants';
-import {isDemoNode} from "../app/functions.web";
 
 export * from './functions.any';
 
@@ -430,7 +429,7 @@ export function calculateThumbnailSizeForTileView({
     const minHeight = minTileHeight || getThumbnailMinHeight(clientWidth);
     const viewWidth = clientWidth - (columns * TILE_HORIZONTAL_MARGIN)
         - (noHorizontalContainerMargin ? SCROLL_SIZE : TILE_VIEW_GRID_HORIZONTAL_MARGIN);
-    const availableHeight = isDemoNode() ? clientHeight - TILE_VIEW_GRID_VERTICAL_MARGIN - DEMO_HEADER_HEIGHT : clientHeight - TILE_VIEW_GRID_VERTICAL_MARGIN;
+    const availableHeight = clientHeight - TILE_VIEW_GRID_VERTICAL_MARGIN;
     const viewHeight = availableHeight - (minVisibleRows * TILE_VERTICAL_MARGIN);
     const initialWidth = viewWidth / columns;
     let initialHeight = viewHeight / minVisibleRows;

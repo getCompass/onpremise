@@ -20,7 +20,6 @@ import KeyboardAvoider from './KeyboardAvoider';
 import MessageContainer from './MessageContainer';
 import MessageRecipient from './MessageRecipient';
 import {isMobileBrowser} from "../../../base/environment/utils";
-import {isDemoNode} from "../../../app/functions.web";
 
 interface IProps extends AbstractProps {
 
@@ -107,10 +106,6 @@ const useStyles = makeStyles()(theme => {
                 userSelect: 'text',
                 '-webkit-user-select': 'text'
             }
-        },
-
-        containerDemo: {
-            borderRadius: '0 4px 0 0',
         },
 
         backdrop: {
@@ -317,7 +312,7 @@ const Chat = ({
         _isOpen ? <>
             {isMobile && (<div className={cx(classes.backdrop, isMobile && 'is-mobile')}/>)}
             <div
-                className={cx(classes.container, isDemoNode() && classes.containerDemo)}
+                className={classes.container}
                 id='sideToolbarContainer'
                 onKeyDown={onEscClick}>
                 <ChatHeader

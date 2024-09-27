@@ -12,11 +12,11 @@ import {getConferenceInfo} from '../functions.web';
 
 import ConferenceInfoContainer from './ConferenceInfoContainer';
 import RaisedHandsCountLabel from './RaisedHandsCountLabel';
+import ToggleTopPanelLabel from './ToggleTopPanelLabel';
 import ToggleCameraButton from "../../../toolbox/components/web/ToggleCameraButton";
 import ChatButton from "../../../chat/components/web/ChatButton";
 import {isMobileBrowser} from "../../../base/environment/utils";
 import AndroidPipButton from "../AndroidPipButton";
-import {isDemoNode} from "../../../app/functions.web";
 
 /**
  * The type of the React {@code Component} props of {@link Subject}.
@@ -167,9 +167,9 @@ class ConferenceInfo extends Component<IProps> {
 
         return (
             <div
-                className={`details-container ${isDemoNode() ? 'demo-conference' : ''} ${isMobile ? 'is-mobile' : ''} ${this.props._visible ? 'visible' : ''}`}
+                className={`details-container ${isMobile ? 'is-mobile' : ''} ${this.props._visible ? 'visible' : ''}`}
                 onFocus={this._onTabIn}>
-                <div style={isMobile ? {
+                <div style={isMobileBrowser() ? {
                     display: 'flex',
                     paddingLeft: '16px',
                     justifyContent: 'center',
@@ -179,7 +179,7 @@ class ConferenceInfo extends Component<IProps> {
                     {this._renderAutoHide()}
                 </div>
                 <div className={`header-buttons-mobile-container ${this.props._visible ? 'visible' : ''}`}>
-                    {isMobile && !isDemoNode() && (
+                    {isMobile && (
                         <>
                             <ToggleCameraButton customClass='mobile-header-button'/>
                             <ChatButton customClass='mobile-header-button'/>
@@ -203,8 +203,10 @@ class ConferenceInfo extends Component<IProps> {
  * }}
  */
 function _mapStateToProps(state: IReduxState) {
+    const {is_in_picture_in_picture_mode} = state['features/picture-in-picture'];
+
     return {
-        _visible: isToolboxVisible(state) || (isMobileBrowser() && isDemoNode()), // на мобилке на демо ноде всегда видно
+        _visible: isToolboxVisible(state) && !is_in_picture_in_picture_mode,
         _conferenceInfo: getConferenceInfo(state)
     };
 }

@@ -27,7 +27,6 @@ import Drawer from './Drawer';
 import JitsiPortal from './JitsiPortal';
 import OverflowToggleButton from './OverflowToggleButton';
 import {isMobileBrowser} from "../../../base/environment/utils";
-import {isDemoNode} from "../../../app/functions.web";
 
 /**
  * The type of the React {@code Component} props of {@link OverflowMenuButton}.
@@ -198,7 +197,7 @@ const OverflowMenuButton = ({
                 {buttons.map((buttonGroup: any) => (
                     buttonGroup
                         .filter(({key}: { key: string; }) => {
-                            return isDemoNode() ? !['select-background'].includes(key) : !['select-background', 'chat'].includes(key);
+                            return !['select-background', 'chat'].includes(key);
 
                         })
                         .map(({key, Content, ...rest}: { Content: React.ElementType; key: string; }) => {

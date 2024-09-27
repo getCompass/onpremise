@@ -207,6 +207,11 @@ interface IProps extends WithTranslation {
     _videosClassName: string;
 
     /**
+     * True if is in pip mode.
+     */
+    _isInPipMode: boolean;
+
+    /**
      * An object containing the CSS classes.
      */
     classes?: Partial<Record<keyof ReturnType<typeof styles>, string>>;
@@ -838,13 +843,18 @@ class Filmstrip extends PureComponent <IProps, IState> {
             _isVerticalFilmstrip,
             _mainFilmstripVisible,
             _topPanelFilmstrip,
-            _topPanelVisible
+            _topPanelVisible,
+            _isInPipMode
         } = this.props;
         const classes = withStyles.getClasses(this.props);
         const icon = (_topPanelFilmstrip ? _topPanelVisible : _mainFilmstripVisible) ? IconArrowDownCustom : IconArrowUpCustom;
         const actions = isMobileBrowser()
             ? {onTouchStart: this._onToggleButtonTouch}
             : {onClick: this._onToolbarToggleFilmstrip};
+
+        if (_isInPipMode) {
+            return <></>;
+        }
 
         return (
             <div
@@ -898,6 +908,7 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
     const {clientWidth, clientHeight} = state['features/base/responsive-ui'];
     const filmstripDisabled = isFilmstripDisabled(state);
     const isMobile = isMobileBrowser();
+    const {is_in_picture_in_picture_mode} = state['features/picture-in-picture'];
 
     const collapseTileView = reduceHeight
         && isMobile
@@ -942,7 +953,8 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
         _topPanelVisible,
         _verticalFilmstripWidth: verticalFilmstripWidth.current,
         _verticalViewMaxWidth: getVerticalViewMaxWidth(state),
-        _videosClassName: videosClassName
+        _videosClassName: videosClassName,
+        _isInPipMode: is_in_picture_in_picture_mode,
     };
 }
 

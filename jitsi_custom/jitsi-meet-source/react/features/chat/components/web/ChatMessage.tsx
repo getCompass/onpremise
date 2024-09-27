@@ -186,12 +186,6 @@ const ChatMessage = ({
                             </div>
                         )}
                         <div className={cx('usermessage', classes.userMessage)}>
-                            <span className='sr-only'>
-                                {message.displayName === message.recipient
-                                    ? t('chat.messageAccessibleTitleMe')
-                                    : t('chat.messageAccessibleTitle',
-                                        {user: message.displayName})}
-                            </span>
                             <Message text={getMessageText(message)}/>
                         </div>
                     </div>

@@ -1,7 +1,6 @@
-import {IStateful} from '../base/app/types';
-import {toState} from '../base/redux/functions';
-import {getServerURL} from '../base/settings/functions.web';
-import {toNumber} from "lodash";
+import { IStateful } from '../base/app/types';
+import { toState } from '../base/redux/functions';
+import { getServerURL } from '../base/settings/functions.web';
 
 export * from './functions.any';
 
@@ -15,7 +14,7 @@ export * from './functions.any';
  */
 export function getDefaultURL(stateful: IStateful) {
     const state = toState(stateful);
-    const {href} = window.location;
+    const { href } = window.location;
 
     if (href) {
         return href;
@@ -31,22 +30,4 @@ export function getDefaultURL(stateful: IStateful) {
  */
 export function getName() {
     return interfaceConfig.APP_NAME;
-}
-
-/**
- * Returns true if demo node.
- *
- * @returns {boolean} True if demo node.
- */
-export function isDemoNode(): boolean {
-    return Boolean(toNumber(__IS_DEMO_NODE__) === 1);
-}
-
-/**
- * Returns seconds max duration for demo conference
- *
- * @returns {number} seconds.
- */
-export function getDemoNodeMaxConferenceDurationSeconds(): number {
-    return toNumber(__DEMO_NODE_MAX_CONFERENCE_DURATION__);
 }

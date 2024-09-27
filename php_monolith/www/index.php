@@ -22,6 +22,7 @@ $url_list = [
 	"video_conference"           => PUBLIC_ENTRYPOINT_VIDEO_CONFERENCE . "/",
 	"video_conference_node_list" => VIDEO_CONFERENCE_NODE_LIST,
 	"electron_update"            => PUBLIC_ENTRYPOINT_ELECTRON_UPDATE . "/",
+	"electron_update30"          => PUBLIC_ENTRYPOINT_ELECTRON_UPDATE30 . "/",
 ];
 
 foreach ($url_list as &$url) {

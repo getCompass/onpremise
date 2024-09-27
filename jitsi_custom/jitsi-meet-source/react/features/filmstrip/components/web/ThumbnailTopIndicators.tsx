@@ -12,6 +12,7 @@ import StatusIndicators from './StatusIndicators';
 import VideoMenuTriggerButton from "./VideoMenuTriggerButton";
 import ConnectionIndicator from "../../../connection-indicator/components/web/ConnectionIndicator";
 import {IReduxState} from "../../../app/types";
+import {isScreenShareParticipantById} from "../../../base/participants/functions";
 
 interface IProps {
 
@@ -94,6 +95,24 @@ const ThumbnailTopIndicators = ({
     const _connectionIndicatorDisabled = _isMobile || disableConnectionIndicator
         || Boolean(useSelector((state: IReduxState) => state['features/base/config'].connectionIndicators?.disabled));
     const showConnectionIndicator = isHovered || !_connectionIndicatorAutoHideEnabled;
+    const isVirtualScreenshareParticipant = useSelector(
+        (state: IReduxState) => isScreenShareParticipantById(state, participantId)
+    );
+
+    if (isVirtualScreenshareParticipant) {
+        return (
+            <div className={styles.container}>
+                {!_connectionIndicatorDisabled
+                    && <ConnectionIndicator
+                        alwaysVisible={showConnectionIndicator}
+                        enableStatsDisplay={true}
+                        iconSize={_indicatorIconSize}
+                        participantId={participantId}
+                        statsPopoverPosition={STATS_POPOVER_POSITION[thumbnailType]}/>
+                }
+            </div>
+        );
+    }
 
     const tooltipPosition = getTopIndicatorsTooltipPosition(thumbnailType);
 

@@ -100,6 +100,13 @@ export default class LargeVideoManager {
         this.preferredHeight = undefined;
 
         /**
+         * True if in pip mode.
+         *
+         * @type {boolean}
+         */
+        this.isInPipMode = false;
+
+        /**
          * The calculated width that will be used for the large video.
          * @type {number}
          */
@@ -466,9 +473,13 @@ export default class LargeVideoManager {
         let widthToUse = this.preferredWidth || window.innerWidth;
         const state = APP.store.getState();
         const { isOpen } = state['features/chat'];
+        const { is_in_picture_in_picture_mode: isInPipMode } = state['features/picture-in-picture'];
         const { width: filmstripWidth, visible } = state['features/filmstrip'];
         const isParticipantsPaneOpen = getParticipantsPaneOpen(state);
         const resizableFilmstrip = isFilmstripResizable(state);
+        const prevInPipMode = this.isInPipMode;
+
+        this.isInPipMode = isInPipMode;
 
         if (isParticipantsPaneOpen) {
             widthToUse -= theme.participantsPaneWidth;
@@ -488,6 +499,12 @@ export default class LargeVideoManager {
 
         this.width = widthToUse;
         this.height = this.preferredHeight || window.innerHeight;
+
+        // если перешли в пип режим - обновляем аватар
+        if (prevInPipMode !== isInPipMode) {
+
+            this.updateAvatar();
+        }
     }
 
     /**
@@ -520,7 +537,7 @@ export default class LargeVideoManager {
                 <Avatar
                     id = "dominantSpeakerAvatar"
                     participantId = { this.id }
-                    size = { 200 } />
+                    size = { this.isInPipMode ? 100 : 200 } />
             </Provider>,
             this._dominantSpeakerAvatarContainer
         );

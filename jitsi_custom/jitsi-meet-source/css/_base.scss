@@ -189,23 +189,3 @@ form {
     width: 1px !important;
     white-space: nowrap !important;
 }
-
-.hstack {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-}
-
-.vstack {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-}
-
-.dialog_close_button path {
-    fill: rgba(255, 255, 255, 0.15);
-}
-
-.dialog_close_button:hover path {
-    fill: rgba(248, 248, 248, 1);
-}

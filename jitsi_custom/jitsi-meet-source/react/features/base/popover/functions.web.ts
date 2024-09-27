@@ -50,12 +50,6 @@ const getTopBotStartAlign = (bounds: DOMRect) => {
     };
 };
 
-const getTopBotEnd32Align = () => {
-    return {
-        right: '32px'
-    };
-};
-
 const getTopBotMidAlign = (bounds: DOMRect, size: DOMRectReadOnly) => {
     return {
         right: `${window.innerWidth - bounds.x - (bounds.width / 2) - (size.width / 2)}px`
@@ -107,12 +101,11 @@ export const getContextMenuStyle = (triggerBounds: DOMRect,
             let alignmentStyle = {};
 
             if (parsed[1]) {
-                alignmentStyle = parsed[1] === 'end32' ?
-                    getTopBotEnd32Align() : alignmentStyle = parsed[1] === 'start'
-                        ? getTopBotStartAlign(triggerBounds)
-                        : parsed[1] === 'mid'
-                            ? getTopBotMidAlign(triggerBounds, dialogSize)
-                            : getTopBotEndAlign(triggerBounds);
+                alignmentStyle = parsed[1] === 'start'
+                    ? getTopBotStartAlign(triggerBounds)
+                    : parsed[1] === 'mid'
+                        ? getTopBotMidAlign(triggerBounds, dialogSize)
+                        : getTopBotEndAlign(triggerBounds);
             } else {
                 alignmentStyle = getTopBotMidAlign(triggerBounds, dialogSize);
             }
@@ -130,25 +123,25 @@ export const getContextMenuStyle = (triggerBounds: DOMRect,
                     ? getLeftRightStartAlign(triggerBounds, dialogSize)
                     : parsed[1] === 'mid'
                         ? getLeftRightMidAlign(triggerBounds, dialogSize)
-                        : getLeftRightEndAlign(triggerBounds, dialogSize);
+                        : getLeftRightEndAlign(triggerBounds,dialogSize);
             } else {
                 alignmentStyle = getLeftRightMidAlign(triggerBounds, dialogSize);
             }
 
-            return {
-                ...getLeftAlignedStyle(triggerBounds),
-                ...alignmentStyle
-            };
-        }
-        case 'right': {
-            let alignmentStyle = {};
+        return {
+            ...getLeftAlignedStyle(triggerBounds),
+            ...alignmentStyle
+        };
+    }
+    case 'right': {
+        let alignmentStyle = {};
 
             if (parsed[1]) {
                 alignmentStyle = parsed[1] === 'start'
                     ? getLeftRightStartAlign(triggerBounds, dialogSize)
                     : parsed[1] === 'mid'
                         ? getLeftRightMidAlign(triggerBounds, dialogSize)
-                        : getLeftRightEndAlign(triggerBounds, dialogSize);
+                        : getLeftRightEndAlign(triggerBounds,dialogSize);
             } else {
                 alignmentStyle = getLeftRightMidAlign(triggerBounds, dialogSize);
             }

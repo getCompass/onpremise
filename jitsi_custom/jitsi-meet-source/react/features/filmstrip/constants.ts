@@ -36,7 +36,7 @@ export const ASPECT_RATIO_BREAKPOINT = 500;
 /**
  * Minimum height of tile for small screens.
  */
-export const TILE_MIN_HEIGHT_SMALL = 150;
+export const TILE_MIN_HEIGHT_SMALL = 80;
 
 /**
  * Minimum height of tile for large screens.
@@ -119,19 +119,6 @@ export const TILE_VERTICAL_CONTAINER_HORIZONTAL_MARGIN = 2;
  * @type {number}
  */
 export const TILE_VIEW_GRID_VERTICAL_MARGIN = 14;
-
-/**
- * The height of demo header
- *
- * @type {number}
- */
-export const DEMO_HEADER_HEIGHT = 70;
-/**
- * The height of demo header
- *
- * @type {number}
- */
-export const DEMO_HEADER_HEIGHT_MOBILE = 52;
 
 /**
  * The horizontal margin of the tile grid container.

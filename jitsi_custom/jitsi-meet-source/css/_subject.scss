@@ -54,11 +54,6 @@
         transition: opacity .6s ease-in-out;
         opacity: 0;
 
-        &.demo-conference {
-            pointer-events: none;
-            background: transparent;
-        }
-
         &.visible {
             opacity: 1;
         }

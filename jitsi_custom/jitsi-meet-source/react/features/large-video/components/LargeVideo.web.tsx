@@ -22,7 +22,6 @@ import { setSeeWhatIsBeingShared } from '../actions.web';
 import { getLargeVideoParticipant } from '../functions';
 
 import ScreenSharePlaceholder from './ScreenSharePlaceholder.web';
-import {isDemoNode} from "../../app/functions.web";
 
 // Hack to detect Spot.
 const SPOT_DISPLAY_NAME = 'Meeting Room';
@@ -116,6 +115,11 @@ interface IProps {
     _whiteboardEnabled: boolean;
 
     /**
+     * Whether or not in a pip mode.
+     */
+    _isInPipMode: boolean;
+
+    /**
      * The Redux dispatch function.
      */
     dispatch: IStore['dispatch'];
@@ -162,7 +166,8 @@ class LargeVideo extends Component<IProps> {
             _seeWhatIsBeingShared,
             _largeVideoParticipantId,
             _hideSelfView,
-            _localParticipantId } = this.props;
+            _localParticipantId
+        } = this.props;
 
         if (prevProps._visibleFilmstrip !== _visibleFilmstrip) {
             this._updateLayout();
@@ -194,7 +199,8 @@ class LargeVideo extends Component<IProps> {
             _isChatOpen,
             _noAutoPlayVideo,
             _showDominantSpeakerBadge,
-            _whiteboardEnabled
+            _whiteboardEnabled,
+            _isInPipMode
         } = this.props;
         const style = this._getCustomStyles();
         const className = `videocontainer${_isChatOpen ? ' shift-right' : ''}`;
@@ -213,9 +219,10 @@ class LargeVideo extends Component<IProps> {
 
                 <div
                     id = 'dominantSpeaker'
-                    onTouchEnd = { this._onDoubleTap }>
-                    <div className = 'dynamic-shadow' />
-                    <div id = 'dominantSpeakerAvatarContainer' />
+                    onTouchEnd = { this._onDoubleTap }
+                    className={`${_isInPipMode ? 'pipMode ' : ''}`}>
+                    <div className = { `dynamic-shadow ${_isInPipMode ? 'pipMode' : ''}` }/>
+                    <div id = 'dominantSpeakerAvatarContainer' className={`${_isInPipMode ? 'pipMode ' : ''}`}/>
                 </div>
                 <div id = 'remotePresenceMessage' />
                 <span id = 'remoteConnectionMessage' />
@@ -312,9 +319,6 @@ class LargeVideo extends Component<IProps> {
         } = this.props;
 
         styles.backgroundColor = "rgba(23, 23, 23, 1)";
-        if (isDemoNode()) {
-            styles.backgroundColor = "rgba(0, 0, 0, 1)";
-        }
 
         if (this.props._backgroundAlpha !== undefined) {
             const alphaColor = setColorAlpha(styles.backgroundColor, this.props._backgroundAlpha);
@@ -375,6 +379,7 @@ function _mapStateToProps(state: IReduxState) {
     const isLocalScreenshareOnLargeVideo = largeVideoParticipant?.id?.includes(localParticipantId ?? '')
         && videoTrack?.videoType === VIDEO_TYPE.DESKTOP;
     const isOnSpot = defaultLocalDisplayName === SPOT_DISPLAY_NAME;
+    const {is_in_picture_in_picture_mode} = state['features/picture-in-picture'];
 
     return {
         _backgroundAlpha: state['features/base/config'].backgroundAlpha,
@@ -393,7 +398,8 @@ function _mapStateToProps(state: IReduxState) {
         _verticalFilmstripWidth: verticalFilmstripWidth.current,
         _verticalViewMaxWidth: getVerticalViewMaxWidth(state),
         _visibleFilmstrip: visible,
-        _whiteboardEnabled: isWhiteboardEnabled(state)
+        _whiteboardEnabled: isWhiteboardEnabled(state),
+        _isInPipMode: is_in_picture_in_picture_mode
     };
 }
 

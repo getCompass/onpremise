@@ -1,13 +1,12 @@
-/* eslint-disable max-len */
 /* global __dirname */
 
 const CircularDependencyPlugin = require("circular-dependency-plugin");
 const fs = require("fs");
-const {join, resolve} = require("path");
+const { join, resolve } = require("path");
 const process = require("process");
 const webpack = require("webpack");
-const {BundleAnalyzerPlugin} = require("webpack-bundle-analyzer");
-const {sentryWebpackPlugin} = require("@sentry/webpack-plugin");
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
 const packageJson = require('./package.json');
 
 /**
@@ -15,16 +14,6 @@ const packageJson = require('./package.json');
  * development with webpack-dev-server.
  */
 const devServerProxyTarget = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || "https://alpha.jitsi.net";
-const isDemoNode = process.env.IS_DEMO_NODE || 0;
-const getDemoNodeMaxConferenceDurationSeconds = process.env.DEMO_NODE_MAX_CONFERENCE_DURATION || 0;
-const desktopCompassDownloadLinkMacOsIntel = process.env.DESKTOP_DOWNLOAD_LINK_MAC_OS_INTEL || "https://getcompass.ru/download/mac-os-intel?start-download=true&platform=macintel";
-const desktopCompassDownloadLinkMacOsArm = process.env.DESKTOP_DOWNLOAD_LINK_MAC_OS_ARM || "https://getcompass.ru/download/mac-os-m1-m2?start-download=true&platform=macapple";
-const desktopCompassDownloadLinkWindows = process.env.DESKTOP_DOWNLOAD_LINK_WINDOWS || "https://getcompass.ru/download/windows?start-download=true&platform=windows";
-const desktopCompassDownloadLinkLinuxDeb = process.env.DESKTOP_DOWNLOAD_LINK_LINUX_DEB || "https://getcompass.ru/download/ubuntu?start-download=true&platform=linuxdeb";
-const desktopCompassDownloadLinkLinuxTar = process.env.DESKTOP_DOWNLOAD_LINK_LINUX_TAR || "https://getcompass.ru/download/linux?start-download=true&platform=linuxtar";
-const mobileCompassDownloadLinkAppStore = process.env.MOBILE_DOWNLOAD_LINK_APP_STORE || "https://apps.apple.com/ru/app/compass-app/id1571087451";
-const mobileCompassDownloadLinkGooglePlay = process.env.MOBILE_DOWNLOAD_LINK_GOOGLE_PLAY || "https://play.google.com/store/apps/details?id=com.getcompass.android";
-const mobileCompassDownloadLinkAppGallery = process.env.MOBILE_DOWNLOAD_LINK_APP_GALLERY || "https://appgallery.huawei.com/app/C104435977";
 
 /**
  * Build a Performance configuration object for the given size.
@@ -37,7 +26,7 @@ const mobileCompassDownloadLinkAppGallery = process.env.MOBILE_DOWNLOAD_LINK_APP
  * @returns {Object} a performance hints object.
  */
 function getPerformanceHints(options, size) {
-    const {analyzeBundle, isProduction} = options;
+    const { analyzeBundle, isProduction } = options;
 
     return {
         hints: isProduction && !analyzeBundle ? "error" : false,
@@ -76,7 +65,7 @@ function getBundleAnalyzerPlugin(analyzeBundle, name) {
  * @returns {string|undefined} If the request is to be served by the proxy
  * target, undefined; otherwise, the path to the local file to be served.
  */
-function devServerProxyBypass({path}) {
+function devServerProxyBypass({ path }) {
     if (
         path.startsWith("/css/") ||
         path.startsWith("/doc/") ||
@@ -109,7 +98,7 @@ function devServerProxyBypass({path}) {
  * @returns {Object} the base config object.
  */
 function getConfig(options = {}) {
-    const {detectCircularDeps, isProduction} = options;
+    const { detectCircularDeps, isProduction } = options;
     const release = process.env.RELEASE ?? `${packageJson.name}@${packageJson.version}`;
     const sentryDsn = process.env.SENTRY_DSN;
     const sentryEnvironment = process.env.SENTRY_ENVIRONMENT ?? 'development';
@@ -204,26 +193,16 @@ function getConfig(options = {}) {
         },
         plugins: [
             detectCircularDeps &&
-            new CircularDependencyPlugin({
-                allowAsyncCycles: false,
-                exclude: /node_modules/,
-                failOnError: false,
-            }),
+                new CircularDependencyPlugin({
+                    allowAsyncCycles: false,
+                    exclude: /node_modules/,
+                    failOnError: false,
+                }),
             new webpack.DefinePlugin({
                 __RELEASE__: JSON.stringify(release),
                 __SENTRY_DSN__: JSON.stringify(sentryDsn),
                 __IS_PRODUCTION__: JSON.stringify(isProduction),
-                __SENTRY_ENVIRONMENT__: JSON.stringify(sentryEnvironment),
-                __IS_DEMO_NODE__: isDemoNode,
-                __DEMO_NODE_MAX_CONFERENCE_DURATION__: getDemoNodeMaxConferenceDurationSeconds,
-                __DESKTOP_DOWNLOAD_LINK_MAC_OS_INTEL__: JSON.stringify(desktopCompassDownloadLinkMacOsIntel),
-                __DESKTOP_DOWNLOAD_LINK_MAC_OS_ARM__: JSON.stringify(desktopCompassDownloadLinkMacOsArm),
-                __DESKTOP_DOWNLOAD_LINK_WINDOWS__: JSON.stringify(desktopCompassDownloadLinkWindows),
-                __DESKTOP_DOWNLOAD_LINK_LINUX_DEB__: JSON.stringify(desktopCompassDownloadLinkLinuxDeb),
-                __DESKTOP_DOWNLOAD_LINK_LINUX_TAR__: JSON.stringify(desktopCompassDownloadLinkLinuxTar),
-                __MOBILE_DOWNLOAD_LINK_APP_STORE__: JSON.stringify(mobileCompassDownloadLinkAppStore),
-                __MOBILE_DOWNLOAD_LINK_GOOGLE_PLAY__: JSON.stringify(mobileCompassDownloadLinkGooglePlay),
-                __MOBILE_DOWNLOAD_LINK_APP_GALLERY__: JSON.stringify(mobileCompassDownloadLinkAppGallery)
+                __SENTRY_ENVIRONMENT__: JSON.stringify(sentryEnvironment)
             })
         ].filter(Boolean),
         resolve: {

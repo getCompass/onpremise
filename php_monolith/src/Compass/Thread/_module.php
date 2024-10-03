@@ -28,7 +28,7 @@ include_once THREAD_MODULE_ROOT . "_module/sharding.php";
 // инициализируем необходимые данные для вендоров
 \BaseFrame\Error\ErrorHandler::init(DISPLAY_ERRORS);
 \BaseFrame\Server\ServerHandler::init(SERVER_TAG_LIST);
-\BaseFrame\Socket\SocketHandler::init(getConfig("SOCKET_URL"), getConfig("SOCKET_MODULE"), SOCKET_KEY_THREAD);
+\BaseFrame\Socket\SocketHandler::init(getConfig("SOCKET_URL"), getConfig("SOCKET_MODULE"), SOCKET_KEY_THREAD, CA_CERTIFICATE);
 \BaseFrame\Module\ModuleHandler::init(CURRENT_MODULE);
 \BaseFrame\Crypt\CryptProvider::init([
 	\BaseFrame\Crypt\CryptProvider::DEFAULT => new \BaseFrame\Crypt\CryptData(ENCRYPT_KEY_DEFAULT, ENCRYPT_IV_DEFAULT),

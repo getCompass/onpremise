@@ -2,6 +2,7 @@ package socket
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
@@ -19,12 +20,29 @@ type Response struct {
 	HttpCode int         `json:"http_code"`
 }
 
-var client = &http.Client{
-	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
+var client *http.Client
+
+// инициализируем клиент
+func init() {
+
+	config, err := conf.GetConfig()
+
+	if err != nil {
+		panic(err)
+	}
+
+	rootCAs := x509.NewCertPool()
+	rootCAs.AppendCertsFromPEM([]byte(config.CaCertificate))
+	client = &http.Client{
+		Transport: &http.Transport{
+
+			// nosemgrep
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: false,
+				RootCAs:            rootCAs,
+			},
 		},
-	},
+	}
 }
 
 // DoCall выполнить tcp запрос по url

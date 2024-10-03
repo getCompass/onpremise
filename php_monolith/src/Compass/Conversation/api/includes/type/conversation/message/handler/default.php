@@ -613,13 +613,14 @@ class Type_Conversation_Message_Handler_Default {
 
 	// создать сообщение типа "конференция"
 	public static function makeMediaConference(int $sender_user_id, string $conference_id, string $conference_accept_status
-		, string $conference_link, string $platform = self::WITHOUT_PLATFORM):array {
+		, string $conference_link, string $conference_code, string $platform = self::WITHOUT_PLATFORM):array {
 
 		$message                          = self::_getDefaultStructure(
 			CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE, $sender_user_id, "", $platform);
 		$message["data"]["conference_id"] = $conference_id;
 		$message["data"]["conference_accept_status"] = $conference_accept_status;
 		$message["data"]["conference_link"]          = $conference_link;
+		$message["data"]["conference_code"]          = $conference_code;
 
 		return $message;
 	}
@@ -4957,6 +4958,7 @@ class Type_Conversation_Message_Handler_Default {
 		$output["data"]["conference_id"] = $message["data"]["conference_id"];
 		$output["data"]["conference_accept_status"] = $message["data"]["conference_accept_status"];
 		$output["data"]["conference_link"]          = $message["data"]["conference_link"];
+		$output["data"]["conference_code"]          = $message["data"]["conference_code"] ?? "";
 
 		return $output;
 	}
@@ -4985,6 +4987,7 @@ class Type_Conversation_Message_Handler_Default {
 		$output["data"]["conference_id"] = $message["data"]["conference_id"];
 		$output["data"]["conference_accept_status"] = $message["data"]["conference_accept_status"];
 		$output["data"]["conference_link"]          = $message["data"]["conference_link"];
+		$output["data"]["conference_code"]          = $message["data"]["conference_code"];
 
 		// заменяем тип сообщения THREAD_MESSAGE_TYPE_CONVERSATION_CALL -> CONVERSATION_MESSAGE_TYPE_CALL
 		$output["type"] = CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE;

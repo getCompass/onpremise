@@ -183,6 +183,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		$conference_id    = $this->post(\Formatter::TYPE_STRING, "conference_id");
 		$status           = $this->post(\Formatter::TYPE_STRING, "status");
 		$link             = $this->post(\Formatter::TYPE_STRING, "link");
+		$conference_code  = $this->post(\Formatter::TYPE_STRING, "conference_code");
 		$platform         = $this->post(\Formatter::TYPE_STRING, "platform", Type_Conversation_Message_Handler_Default::WITHOUT_PLATFORM);
 
 		// получаем мету диалога
@@ -198,7 +199,9 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		}
 
 		// формируем сообщение
-		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeMediaConference($this->user_id, $conference_id, $status, $link, $platform);
+		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeMediaConference(
+			$this->user_id, $conference_id, $status, $link, $conference_code, $platform
+		);
 
 		try {
 
@@ -2858,11 +2861,11 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		$exception_class = get_class($e);
 		$allow_status    = match ($exception_class) {
 
-			cs_Conversation_MemberIsDisabled::class => Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DISABLED,
+			cs_Conversation_MemberIsDisabled::class                    => Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DISABLED,
 			Domain_Conversation_Exception_User_IsAccountDeleted::class => Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DELETED,
-			cs_Conversation_UserbotIsDisabled::class => Type_Conversation_Utils::ALLOW_STATUS_USERBOT_IS_DISABLED,
-			cs_Conversation_UserbotIsDeleted::class => Type_Conversation_Utils::ALLOW_STATUS_USERBOT_IS_DELETED,
-			default => throw new ParseFatalException(__METHOD__ . ": passed unhandled exception class"),
+			cs_Conversation_UserbotIsDisabled::class                   => Type_Conversation_Utils::ALLOW_STATUS_USERBOT_IS_DISABLED,
+			cs_Conversation_UserbotIsDeleted::class                    => Type_Conversation_Utils::ALLOW_STATUS_USERBOT_IS_DELETED,
+			default                                                    => throw new ParseFatalException(__METHOD__ . ": passed unhandled exception class"),
 		};
 
 		return $this->error(10010, "single conversations is blocked", [

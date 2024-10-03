@@ -32,7 +32,9 @@ class Domain_Jitsi_Scenario_Event {
 		try {
 			$space = Domain_Company_Entity_Company::get($event_data->space_id);
 			Gateway_Socket_Conversation::addMediaConferenceMessage(
-				$space, $event_data->user_id, $event_data->conversation_map, $event_data->conference_id, $event_data->accept_status, $event_data->link);
+				$space, $event_data->user_id, $event_data->conversation_map, $event_data->conference_id,
+				$event_data->accept_status, $event_data->link, $event_data->conference_code
+			);
 		} catch (cs_CompanyNotExist|ReturnFatalException) {
 			// ничего не делаем
 		}

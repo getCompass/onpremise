@@ -35,7 +35,7 @@ include_once FEDERATION_MODULE_ROOT . "_module/sharding.php";
 	\BaseFrame\Crypt\PackCryptProvider::FILE => new \BaseFrame\Crypt\PackCryptData(SALT_PACK_FILE, \BaseFrame\Crypt\CryptProvider::default())
 ]);
 
-\BaseFrame\Socket\SocketHandler::init(getConfig("SOCKET_URL"), getConfig("SOCKET_MODULE"), SOCKET_KEY_FEDERATION);
+\BaseFrame\Socket\SocketHandler::init(getConfig("SOCKET_URL"), getConfig("SOCKET_MODULE"), SOCKET_KEY_FEDERATION, CA_CERTIFICATE);
 
 \BaseFrame\Module\ModuleHandler::init(CURRENT_MODULE);
 

@@ -2,6 +2,8 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\Socket\SocketProvider;
+
 /**
  * задача класса общаться между проектами
  * универсальная функция - общение между серверами
@@ -57,6 +59,7 @@ class Type_Socket_Main {
 		$curl = new \Curl();
 		$curl->setTimeout(self::_CURL_TIMEOUT);
 		$curl->needVerify();
+		$curl->setCaCertificate(SocketProvider::caCertificate());
 
 		// необходимо для комфортного дебага + удобный функционал на любой окружении манипулировать таймаутами
 		// локально устанавливается в docker-compose.yml::app.environment

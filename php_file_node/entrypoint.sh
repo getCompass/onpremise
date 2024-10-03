@@ -33,4 +33,4 @@ bash /app/src/Compass/_entrypoint.sh || die "entrypoint.sh unsuccessful";
 bash /app/cron/start_cron.sh || die "start_cron.sh unsuccessful";
 
 echo "ready to serve" > status
-/usr/sbin/php-fpm8.1 --nodaemonize --fpm-config /etc/php/8.1/fpm/php-fpm.conf
+/usr/sbin/php-fpm8.2 --nodaemonize --fpm-config /etc/php/8.2/fpm/php-fpm.conf

@@ -117,7 +117,7 @@ class Gateway_Db_PivotRating_ScreenTimeUserDayList extends Gateway_Db_PivotRatin
 	 */
 	protected static function _listToStruct(array $list):array {
 
-		return array_map("self::_rowToStruct", $list);
+		return array_map(fn(array $row) => self::_rowToStruct($row), $list);
 	}
 
 	/**

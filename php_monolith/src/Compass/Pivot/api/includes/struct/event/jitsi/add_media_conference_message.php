@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Compass\Pivot;
 
@@ -14,6 +14,7 @@ class Struct_Event_Jitsi_AddMediaConferenceMessage extends Struct_Event_Default 
 	public string $conference_id;
 	public string $accept_status;
 	public string $link;
+	public string $conference_code;
 
 	/**
 	 * Статический конструктор.
@@ -24,12 +25,13 @@ class Struct_Event_Jitsi_AddMediaConferenceMessage extends Struct_Event_Default 
 	 * @param string $conference_id
 	 * @param string $accept_status
 	 * @param string $link
+	 * @param string $conference_code
 	 * @param string $unique_key
 	 *
 	 * @return static
 	 * @throws \parseException
 	 */
-	public static function build(int $space_id, int $user_id, string $conversation_map, string $conference_id, string $accept_status, string $link, string $unique_key = ""):static {
+	public static function build(int $space_id, int $user_id, string $conversation_map, string $conference_id, string $accept_status, string $link, string $conference_code, string $unique_key = ""):static {
 
 		return new static([
 			"unique_key"       => $unique_key,
@@ -39,6 +41,7 @@ class Struct_Event_Jitsi_AddMediaConferenceMessage extends Struct_Event_Default 
 			"conference_id"    => $conference_id,
 			"space_id"         => $space_id,
 			"user_id"          => $user_id,
+			"conference_code"  => $conference_code,
 		]);
 	}
 }

@@ -19,9 +19,9 @@ class Type_Event_Jitsi_AddMediaConferenceMessage {
 	 *
 	 * @throws \parseException
 	 */
-	public static function create(string $space_id, string $user_id, string $conversation_map, string $conference_id, string $accept_status, string $link):Struct_Event_Base {
+	public static function create(string $space_id, string $user_id, string $conversation_map, string $conference_id, string $accept_status, string $link, string $conference_code):Struct_Event_Base {
 
-		$event_data = Struct_Event_Jitsi_AddMediaConferenceMessage::build($space_id, $user_id, $conversation_map, $conference_id, $accept_status, $link);
+		$event_data = Struct_Event_Jitsi_AddMediaConferenceMessage::build($space_id, $user_id, $conversation_map, $conference_id, $accept_status, $link, $conference_code);
 		return Type_Event_Base::create(self::EVENT_TYPE, $event_data);
 	}
 

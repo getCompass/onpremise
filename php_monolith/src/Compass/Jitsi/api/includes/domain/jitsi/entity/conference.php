@@ -219,4 +219,14 @@ class Domain_Jitsi_Entity_Conference {
 
 		return in_array($user_id, [$conference->creator_user_id, Domain_Jitsi_Entity_Conference_Data::getOpponentUserId($conference->data)]);
 	}
+
+	/**
+	 * Возвращает код конференции. Код является уникальным идентификатором
+	 * для сообщения о звонке и отображается в сообщениях
+	 */
+	public static function getConferenceCode(Struct_Db_JitsiData_Conference $conference):string {
+
+		[, $conference_code] = Domain_Jitsi_Entity_Conference_Id::explodeConferenceId($conference->conference_id);
+		return $conference_code;
+	}
 }

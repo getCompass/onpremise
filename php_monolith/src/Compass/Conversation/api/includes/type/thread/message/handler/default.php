@@ -235,7 +235,9 @@ class Type_Thread_Message_Handler_Default {
 				$new_message = Type_Thread_Message_Main::getLastVersionHandler()
 					::makeThreadQuoteItemParentMediaConference(
 						$message["sender_user_id"], $message["data"]["conference_id"],
-						$message["data"]["conference_accept_status"], $message["data"]["conference_link"]);
+						$message["data"]["conference_accept_status"], $message["data"]["conference_link"],
+						$message["data"]["conference_code"]
+					);
 				break;
 
 			default:
@@ -405,12 +407,13 @@ class Type_Thread_Message_Handler_Default {
 	}
 
 	// создать сообщение типа "родитель-конференция для цитаты в треде"
-	public static function makeThreadQuoteItemParentMediaConference(int $sender_user_id, string $conference_id, string $conference_accept_status, string $conference_link):array {
+	public static function makeThreadQuoteItemParentMediaConference(int $sender_user_id, string $conference_id, string $conference_accept_status, string $conference_link, string $conference_code):array {
 
-		$message                          = self::_getDefaultStructure(THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE, $sender_user_id);
-		$message["data"]["conference_id"] = $conference_id;
-		$message["data"]["conference_accept_status"]        = $conference_accept_status;
+		$message                                     = self::_getDefaultStructure(THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE, $sender_user_id);
+		$message["data"]["conference_id"]            = $conference_id;
+		$message["data"]["conference_accept_status"] = $conference_accept_status;
 		$message["data"]["conference_link"]          = $conference_link;
+		$message["data"]["conference_code"]          = $conference_code;
 
 		return $message;
 	}

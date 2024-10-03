@@ -2,6 +2,8 @@
 
 namespace Compass\Jitsi;
 
+use BaseFrame\Socket\SocketProvider;
+
 /**
  * задача класса общаться между проектами
  * универсальная функция - общение между серверами
@@ -58,6 +60,7 @@ class Type_Socket_Main {
 
 		// включаем верификацию хоста
 		$curl->needVerify();
+		$curl->setCaCertificate(SocketProvider::caCertificate());
 
 		// необходимо для комфортного дебага + удобный функционал на любой окружении манипулировать таймаутами
 		// локально устанавливается в compass_docker/docker-compose.yml::app.environment

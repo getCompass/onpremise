@@ -311,6 +311,7 @@ class Apiv2_Format {
 					"conference_id"            => (string) $prepared_message["data"]["conference_id"],
 					"conference_accept_status" => (string) $prepared_message["data"]["conference_accept_status"],
 					"conference_link"          => (string) $prepared_message["data"]["conference_link"],
+					"conference_code"          => (string) $prepared_message["data"]["conference_code"],
 				];
 
 				return $data;

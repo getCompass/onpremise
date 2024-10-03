@@ -120,7 +120,7 @@ class Gateway_Db_PivotRating_MessageAnswerTimeUserDayList extends Gateway_Db_Piv
 	 */
 	protected static function _listToStruct(array $list):array {
 
-		return array_map("self::_rowToStruct", $list);
+		return array_map(fn(array $row) => self::_rowToStruct($row), $list);
 	}
 
 	/**

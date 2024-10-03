@@ -38,6 +38,7 @@ type ConfigStruct struct {
 
 	ListenAddress string `json:"listen_address"`
 	SocketKeyMe   string `json:"socket_key_me"`
+	CaCertificate string `json:"ca_certificate"`
 
 	CapacityLimit   int    `json:"capacity_limit"`
 	WorldConfigPath string `json:"world_config_path"`

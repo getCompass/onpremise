@@ -29,7 +29,7 @@ include_once USERBOT_MODULE_ROOT . "_module/sharding.php";
 // инициализируем данные в вендоре
 \BaseFrame\Url\UrlHandler::init(DOMAIN_PIVOT);
 \BaseFrame\Error\ErrorHandler::init(DISPLAY_ERRORS);
-\BaseFrame\Socket\SocketHandler::init(getConfig("SOCKET_URL"), getConfig("SOCKET_MODULE"));
+\BaseFrame\Socket\SocketHandler::init(getConfig("SOCKET_URL"), getConfig("SOCKET_MODULE"), ca_certificate: CA_CERTIFICATE);
 \BaseFrame\Module\ModuleHandler::init(CURRENT_MODULE);
 \BaseFrame\Crypt\CryptProvider::init([
 	\BaseFrame\Crypt\CryptProvider::DEFAULT => new \BaseFrame\Crypt\CryptData(ENCRYPT_KEY_DEFAULT, ENCRYPT_IV_DEFAULT),

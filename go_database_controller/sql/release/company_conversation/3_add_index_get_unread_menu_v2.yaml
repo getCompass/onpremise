@@ -218,6 +218,7 @@ tableList:
       get_allowed: { fields: [ user_id,is_hidden,allow_status_alias,type,is_favorite,updated_at ] }
       get_left_menu: { fields: [ user_id,is_hidden,is_favorite,is_mentioned,updated_at ] }
       get_unread_menu: { fields: [ user_id,is_hidden,is_have_notice,is_mentioned,updated_at ] }
+      get_unread_menu_v2: { fields: [ user_id,is_hidden,is_have_notice,is_mentioned,type,updated_at ] }
       get_versioned_menu: { fields: [ user_id,version ] }
     engine: InnoDB
     charset: utf8mb4

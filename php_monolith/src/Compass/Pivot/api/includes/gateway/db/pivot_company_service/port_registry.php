@@ -19,14 +19,14 @@ class Gateway_Db_PivotCompanyService_PortRegistry extends Gateway_Db_PivotCompan
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
 	 */
-	public static function getOne(string $domino_id, int $port):Struct_Db_PivotCompanyService_PortRegistry {
+	public static function getOne(string $domino_id, int $port, string $host):Struct_Db_PivotCompanyService_PortRegistry {
 
 		$db_key    = self::_getDbKey();
 		$table_key = self::_getTableKey($domino_id);
 
 		// запрос проверен на EXPLAIN(INDEX=PRIMARY)
-		$query = "SELECT * from `?p` WHERE `port` = ?i LIMIT ?i";
-		$row   = ShardingGateway::database($db_key)->getOne($query, $table_key, $port, 1);
+		$query = "SELECT * from `?p` WHERE `port` = ?i AND `host` = ?s LIMIT ?i";
+		$row   = ShardingGateway::database($db_key)->getOne($query, $table_key, $port, $host, 1);
 
 		if (!isset($row["port"])) {
 			throw new \BaseFrame\Exception\Gateway\RowNotFoundException("domino not found in registry");
@@ -68,7 +68,7 @@ class Gateway_Db_PivotCompanyService_PortRegistry extends Gateway_Db_PivotCompan
 	 *
 	 * @return Struct_Db_PivotCompanyService_PortRegistry
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
+	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException | \cs_RowIsEmpty |\Compass\Pivot\cs_CompanyIncorrectCompanyId
 	 */
 	public static function getActiveByCompanyId(string $domino_id, int $company_id):Struct_Db_PivotCompanyService_PortRegistry {
 
@@ -135,14 +135,14 @@ class Gateway_Db_PivotCompanyService_PortRegistry extends Gateway_Db_PivotCompan
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
 	 */
-	public static function getForUpdate(string $domino_id, int $port):Struct_Db_PivotCompanyService_PortRegistry {
+	public static function getForUpdate(string $domino_id, int $port, string $host):Struct_Db_PivotCompanyService_PortRegistry {
 
 		$db_key    = self::_getDbKey();
 		$table_key = self::_getTableKey($domino_id);
 
 		// индекс не нужен так как запрос для скрипта
-		$query = "SELECT * from `?p` WHERE `port` = ?i LIMIT ?i FOR UPDATE";
-		$row   = ShardingGateway::database($db_key)->getOne($query, $table_key, $port, 1);
+		$query = "SELECT * from `?p` WHERE `port` = ?i AND `host` = ?s LIMIT ?i FOR UPDATE";
+		$row   = ShardingGateway::database($db_key)->getOne($query, $table_key, $port, $host, 1);
 
 		if (!isset($row["port"])) {
 			throw new \BaseFrame\Exception\Gateway\RowNotFoundException("port not found in registry");
@@ -292,6 +292,7 @@ class Gateway_Db_PivotCompanyService_PortRegistry extends Gateway_Db_PivotCompan
 
 		$insert_arr = [
 			"port"       => $domino->port,
+			"host"       => $domino->host,
 			"status"     => $domino->status,
 			"type"       => $domino->type,
 			"created_at" => $domino->created_at,
@@ -312,7 +313,7 @@ class Gateway_Db_PivotCompanyService_PortRegistry extends Gateway_Db_PivotCompan
 	 * @return int
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public static function set(string $domino_id, int $port, array $set):int {
+	public static function set(string $domino_id, int $port, string $host, array $set):int {
 
 		$db_key    = self::_getDbKey();
 		$table_key = self::_getTableKey($domino_id);
@@ -325,9 +326,9 @@ class Gateway_Db_PivotCompanyService_PortRegistry extends Gateway_Db_PivotCompan
 
 		// формируем и осуществляем запрос
 		// запрос проверен на EXPLAIN(INDEX=PRIMARY)
-		$query = "UPDATE `?p` SET ?u WHERE `port` = ?i LIMIT ?i";
+		$query = "UPDATE `?p` SET ?u WHERE `port` = ?i AND `host` = ?s LIMIT ?i";
 
-		return ShardingGateway::database($db_key)->update($query, $table_key, $set, $port, 1);
+		return ShardingGateway::database($db_key)->update($query, $table_key, $set, $port, $host, 1);
 	}
 
 	/**
@@ -345,6 +346,7 @@ class Gateway_Db_PivotCompanyService_PortRegistry extends Gateway_Db_PivotCompan
 
 		return new Struct_Db_PivotCompanyService_PortRegistry(
 			$row["port"],
+			$row["host"],
 			$row["status"],
 			$row["type"],
 			$row["locked_till"],

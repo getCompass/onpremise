@@ -33,7 +33,7 @@ func GetAllCompanyPortList(ctx context.Context) (map[int]map[string]string, erro
 }
 
 // GetOne получаем одну запись по порту
-func GetOne(ctx context.Context, port int32) (map[string]string, error) {
+func GetOne(ctx context.Context, port int32, host string) (map[string]string, error) {
 
 	// проверяем, что у нас имеется подключение к необходимой базе данных
 	conn := sharding.Mysql(ctx, GetDbName())
@@ -41,8 +41,8 @@ func GetOne(ctx context.Context, port int32) (map[string]string, error) {
 		return nil, fmt.Errorf("пришел DbName: %s для которого не найдено подключение", GetDbName())
 	}
 
-	query := fmt.Sprintf("SELECT * FROM `%s` WHERE `port` = ? LIMIT ?", portRegistryTableKey)
-	row, err := conn.FetchQuery(ctx, query, port, 1)
+	query := fmt.Sprintf("SELECT * FROM `%s` WHERE `port` = ? AND `host` = ? LIMIT ?", portRegistryTableKey)
+	row, err := conn.FetchQuery(ctx, query, port, host, 1)
 	if err != nil {
 		return nil, fmt.Errorf("неудачный запрос: %s в базу %s Error: %v", query, GetDbName(), err)
 	}
@@ -69,7 +69,7 @@ func GetOneWithStatusByCompanyId(ctx context.Context, companyId int64, status in
 }
 
 // SetStatus метод, для обновления записи которая с локом
-func SetStatus(ctx context.Context, port int32, status int, lockedTill int64, companyId int64) (int64, error) {
+func SetStatus(ctx context.Context, port int32, host string, status int, lockedTill int64, companyId int64) (int64, error) {
 
 	// проверяем, что у нас имеется подключение к необходимой базе данных
 	conn := sharding.Mysql(ctx, GetDbName())
@@ -84,12 +84,12 @@ func SetStatus(ctx context.Context, port int32, status int, lockedTill int64, co
 		"`status` = ?, "+
 		"`company_id` = ?, "+
 		"`locked_till` = ? "+
-		"WHERE `port` = ? LIMIT %d", portRegistryTableKey, 1)
-	return conn.Update(ctx, query, functions.GetCurrentTimeStamp(), status, companyId, lockedTill, port)
+		"WHERE `port` = ? AND host = ? LIMIT %d", portRegistryTableKey, 1)
+	return conn.Update(ctx, query, functions.GetCurrentTimeStamp(), status, companyId, lockedTill, port, host)
 }
 
 // UpdateStatus метод, для обновления записи
-func UpdateStatus(ctx context.Context, port int32, status int) (int64, error) {
+func UpdateStatus(ctx context.Context, port int32, host string, status int) (int64, error) {
 
 	// проверяем, что у нас имеется подключение к необходимой базе данных
 	conn := sharding.Mysql(ctx, GetDbName())
@@ -99,22 +99,22 @@ func UpdateStatus(ctx context.Context, port int32, status int) (int64, error) {
 
 	// совершаем запрос
 	// запрос проверен на EXPLAIN (INDEX=PRIMARY)
-	query := fmt.Sprintf(fmt.Sprintf("UPDATE `%s` SET `updated_at` = ?, `status` = ? WHERE `port` = ? LIMIT %d", portRegistryTableKey, 1))
-	return conn.Update(ctx, query, functions.GetCurrentTimeStamp(), status, port)
+	query := fmt.Sprintf(fmt.Sprintf("UPDATE `%s` SET `updated_at` = ?, `status` = ? WHERE `port` = ? AND `host` = ? LIMIT %d", portRegistryTableKey, 1))
+	return conn.Update(ctx, query, functions.GetCurrentTimeStamp(), status, port, host)
 }
 
 // InsertIgnoreOne создать запись
-func InsertIgnoreOne(ctx context.Context, port int32, status int32, portType int32, lockedTill int32, createdAt int32, updatedAt int32, companyId int64, extra string) error {
+func InsertIgnoreOne(ctx context.Context, port int32, host string, status int32, portType int32, lockedTill int32, createdAt int32, updatedAt int32, companyId int64, extra string) error {
 
 	conn := sharding.Mysql(ctx, GetDbName())
 	if conn == nil {
 		return fmt.Errorf("пришел DbName: %s для которого не найдено подключение", GetDbName())
 	}
 
-	query := fmt.Sprintf("INSERT IGNORE INTO `%s` (`port`, `status`, `type`, `locked_till`, `created_at`, `updated_at`, `company_id`,`extra`) "+
-		"VALUES (?,?,?,?,?,?,?,?)", portRegistryTableKey)
+	query := fmt.Sprintf("INSERT IGNORE INTO `%s` (`port`, `host`, `status`, `type`, `locked_till`, `created_at`, `updated_at`, `company_id`,`extra`) "+
+		"VALUES (?,?,?,?,?,?,?,?,?)", portRegistryTableKey)
 
-	return conn.Query(ctx, query, port, status, portType, lockedTill, createdAt, updatedAt, companyId, extra)
+	return conn.Query(ctx, query, port, host, status, portType, lockedTill, createdAt, updatedAt, companyId, extra)
 }
 
 // GetServicePortForUpdate получаем одну запись с сервисным портом

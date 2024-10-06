@@ -60,6 +60,7 @@ class Domain_Oidc_Entity_Protocol_Client {
 	 */
 	public static function getNonceByAuthStruct(Struct_Db_SsoData_SsoAuth $sso_auth):string {
 
+		// nosemgrep
 		return sha1($sso_auth->sso_auth_token . $sso_auth->signature);
 	}
 

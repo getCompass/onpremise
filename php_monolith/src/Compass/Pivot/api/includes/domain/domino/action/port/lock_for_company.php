@@ -26,10 +26,12 @@ class Domain_Domino_Action_Port_LockForCompany {
 		try {
 
 			// синхронизируем статус порта на домино
-			Gateway_Bus_DatabaseController::syncPortStatus($domino, $void_port->port, $void_port->status, $void_port->locked_till, $void_port->company_id);
+			Gateway_Bus_DatabaseController::syncPortStatus(
+				$domino, $void_port->port, $void_port->host, $void_port->status, $void_port->locked_till, $void_port->company_id
+			);
 		} catch (\Exception $e) {
 
-			Domain_Domino_Action_Port_Invalidate::run($domino, $void_port->port, "error on lock");
+			Domain_Domino_Action_Port_Invalidate::run($domino, $void_port, "error on lock");
 			throw $e;
 		}
 
@@ -78,7 +80,7 @@ class Domain_Domino_Action_Port_LockForCompany {
 		$void_port->updated_at  = time();
 
 		// обновляем запись для порта, устанавливая время блокировки
-		Gateway_Db_PivotCompanyService_PortRegistry::set($domino->domino_id, $void_port->port, [
+		Gateway_Db_PivotCompanyService_PortRegistry::set($domino->domino_id, $void_port->port, $void_port->host, [
 			"status"      => $void_port->status,
 			"company_id"  => $void_port->company_id,
 			"locked_till" => $void_port->locked_till,
@@ -128,7 +130,7 @@ class Domain_Domino_Action_Port_LockForCompany {
 		$existing_port->updated_at = time();
 
 		// обновляем запись для порта, устанавливая время блокировки
-		Gateway_Db_PivotCompanyService_PortRegistry::set($domino->domino_id, $existing_port->port, [
+		Gateway_Db_PivotCompanyService_PortRegistry::set($domino->domino_id, $existing_port->port, $existing_port->host, [
 			"updated_at" => $existing_port->updated_at,
 		]);
 

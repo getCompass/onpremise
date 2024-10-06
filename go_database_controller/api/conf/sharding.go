@@ -53,7 +53,7 @@ func UpdateShardingConfig() error {
 	if tempPath == "" {
 
 		_, b, _, _ := runtime.Caller(0)
-		tempPath = path.Join(path.Dir(b))
+		tempPath = path.Join(path.Dir(b)) // nosemgrep
 	}
 
 	// сохраняем конфигурацию

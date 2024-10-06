@@ -1,6 +1,9 @@
 <?php
 
+// скрипт для добавления предопределенных хостов на домино
 namespace Compass\Pivot;
+
+use BaseFrame\Exception\Gateway\RowNotFoundException;
 
 require_once __DIR__ . "/../../../../../../start.php";
 
@@ -13,11 +16,10 @@ if (Type_Script_InputParser::getArgumentValue("--help", Type_Script_InputParser:
 	console("Добавляет порты в доминошку");
 	console("Параметры:");
 	console("--domino-id - id доминошки");
+	console("--host-list - список хостов в формате hostname:port");
+	console("--type - тип портов (service, common, reserve)");
 	console("--mysql-user - пользователь для доступа к mysql");
 	console("--mysql-pass - пароль для доступа к mysql");
-	console("--start-port - начальный порт (включительно)");
-	console("--end-port - конечный порт (включительно)");
-	console("--type - тип портов (service, common, reserve)");
 	exit;
 }
 
@@ -32,6 +34,24 @@ if (mb_strlen($domino_id) < 1) {
 		exit(1);
 	}
 }
+
+$type = Type_Script_InputParser::getArgumentValue("--type", Type_Script_InputParser::TYPE_STRING, false, false);
+if ($type === false) {
+
+	console("тип портов (service, common, reserve)");
+	$type = trim(readline());
+}
+if (!in_array($type, ["service", "common", "reserve"])) {
+
+	console(redText("неизвестный тип портов"));
+	exit(1);
+}
+
+$type_int = match ($type) {
+	"service" => Domain_Domino_Entity_Port_Registry::TYPE_SERVICE,
+	"common" => Domain_Domino_Entity_Port_Registry::TYPE_COMMON,
+	"reserve" => Domain_Domino_Entity_Port_Registry::TYPE_RESERVE,
+};
 
 $mysql_user = Type_Script_InputParser::getArgumentValue("--mysql-user", Type_Script_InputParser::TYPE_STRING, "", false);
 if (mb_strlen($mysql_user) < 1) {
@@ -57,53 +77,32 @@ if (mb_strlen($mysql_pass) < 1) {
 	}
 }
 
-$start_port = Type_Script_InputParser::getArgumentValue("--start-port", Type_Script_InputParser::TYPE_INT, false, false);
-if ($start_port === false) {
-
-	console("начальный порт (включительно)");
-	$start_port = intval(trim(readline()));
-}
-
-if ($start_port < 1000) {
-
-	console(redText("Нельзя использовать порт меньше 1000"));
+$host_list = Type_Script_InputParser::getArgumentValue("--host-list", Type_Script_InputParser::TYPE_ARRAY, false, false);
+if ($host_list === false) {
+	console(redText("Требуется добавить хотя бы один хост"));
 	exit(1);
 }
 
-$end_port = Type_Script_InputParser::getArgumentValue("--end-port", Type_Script_InputParser::TYPE_INT, false, false);
-if ($end_port === false) {
+$create_host_list = [];
 
-	console("конечный порт (включительно)");
-	$end_port = intval(trim(readline()));
+foreach ($host_list as $host) {
+
+	$exploded_host = explode(":", $host);
+	if (count($exploded_host) !== 2 || !ctype_digit($exploded_host[1])) {
+		console(redText("Хост в списке задан неверно, используйте формат HOSTNAME:PORT"));
+	}
+
+	$hostname           = $exploded_host[0];
+	$port               = (int) $exploded_host[1];
+	$create_host_list[] = [
+		"hostname" => $hostname,
+		"port"     => $port,
+	];
 }
-
-if ($end_port < $start_port) {
-
-	console(redText("range задан не правильно"));
-	exit(1);
-}
-
-$type = Type_Script_InputParser::getArgumentValue("--type", Type_Script_InputParser::TYPE_STRING, false, false);
-if ($type === false) {
-
-	console("тип портов (service, common, reserve)");
-	$type = trim(readline());
-}
-if (!in_array($type, ["service", "common", "reserve"])) {
-
-	console(redText("неизвестный тип портов"));
-	exit(1);
-}
-
-$type_int = match ($type) {
-	"service" => Domain_Domino_Entity_Port_Registry::TYPE_SERVICE,
-	"common"  => Domain_Domino_Entity_Port_Registry::TYPE_COMMON,
-	"reserve" => Domain_Domino_Entity_Port_Registry::TYPE_RESERVE,
-};
 
 try {
 
-	$domino_row = Gateway_Db_PivotCompanyService_DominoRegistry::getOne($domino_id);
+	Gateway_Db_PivotCompanyService_DominoRegistry::getOne($domino_id);
 } catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 	console(redText("Такая доминошка не существует"));
@@ -113,6 +112,15 @@ try {
 $encrypted_mysql_user = \BaseFrame\System\Crypt::encrypt($mysql_user);
 $encrypted_mysql_pass = \BaseFrame\System\Crypt::encrypt($mysql_pass);
 
-for ($port = $start_port; $port <= $end_port; $port++) {
-	Domain_Domino_Action_CreatePort::do($domino_id, $port, "", $type_int, $encrypted_mysql_user, $encrypted_mysql_pass);
+foreach ($create_host_list as $host) {
+
+	// если передали существующий порт, то не надо его создавать
+	try {
+		Gateway_Db_PivotCompanyService_PortRegistry::getOne($domino_id, $host["port"], $host["hostname"]);
+	} catch (RowNotFoundException) {
+
+		// если на нашли - делаем
+		Domain_Domino_Action_CreatePort::do(
+			$domino_id, $host["port"], $host["hostname"], $type_int, $encrypted_mysql_user, $encrypted_mysql_pass);
+	}
 }

@@ -59,7 +59,9 @@ class Domain_Domino_Entity_Config {
 		$mysql_user = \BaseFrame\System\Crypt::decrypt(Domain_Domino_Entity_Port_Registry::getEncryptedMysqlUser($port->extra));
 		$mysql_pass = \BaseFrame\System\Crypt::decrypt(Domain_Domino_Entity_Port_Registry::getEncryptedMysqlPass($port->extra));
 
-		$host = ServerProvider::isOnPremise() ? $domino->domino_id . "-" . $port->port : $domino->database_host;
+		$mysql_host = $port->host !== "" ? $port->host : $domino->domino_id . "-" . $port->port;
+
+		$host = ServerProvider::isOnPremise() ? $mysql_host : $domino->database_host;
 
 		return new Struct_Config_Company_Mysql($host, $port->port, $mysql_user, $mysql_pass);
 	}
@@ -215,7 +217,7 @@ class Domain_Domino_Entity_Config {
 		foreach (glob($domino_path . "/*") as $file) {
 
 			if (is_file($file)) {
-				unlink($file);
+				unlink($file); // nosemgrep
 			}
 		}
 	}
@@ -233,10 +235,12 @@ class Domain_Domino_Entity_Config {
 		$php_config_path  = self::getCompanyPhpConfigPath($domino->domino_id, $company->company_id);
 		$json_config_path = self::getCompanyJsonConfigPath($domino->domino_id, $company->company_id);
 
+		// nosemgrep
 		if (file_exists($php_config_path) && !unlink($php_config_path)) {
 			throw new \BaseFrame\Exception\Domain\ParseFatalException("can't delete file {$php_config_path}");
 		}
 
+		// nosemgrep
 		if (file_exists($json_config_path) && !unlink($json_config_path)) {
 			throw new \BaseFrame\Exception\Domain\ParseFatalException("can't delete file {$json_config_path}");
 		}

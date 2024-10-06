@@ -198,3 +198,5 @@ define(__NAMESPACE__ . "\BITRIX_TEST_USER_NAME"                        , "${BITR
 
 // промежуток времени с момента регистрации пользователя, за который выбираем /join/ посещения для поиска совпадений
 define(__NAMESPACE__ . "\ATTRIBUTION_JOIN_SPACE_VISITS_MATCHING_PERIOD"      , ${ATTRIBUTION_JOIN_SPACE_VISITS_MATCHING_PERIOD});
+
+define(__NAMESPACE__ . "\DATABASE_DRIVER"                               , "${DATABASE_DRIVER}");

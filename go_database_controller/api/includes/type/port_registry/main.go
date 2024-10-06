@@ -19,6 +19,7 @@ const PortInvalid = 90 // с портом при последней операц
 // PortRegistryStruct тип — порт компании на домино
 type PortRegistryStruct struct {
 	Port       int32      `json:"port"`
+	Host       string     `json:"host"`
 	Status     int        `json:"status"`
 	Type       int        `json:"type"`
 	LockedTill int        `json:"locked_till"`
@@ -125,9 +126,9 @@ func BindServicePort(ctx context.Context, companyId int64) (*PortRegistryStruct,
 }
 
 // GetByPort получаем запись по порту
-func GetByPort(ctx context.Context, port int32) (*PortRegistryStruct, error) {
+func GetByPort(ctx context.Context, port int32, host string) (*PortRegistryStruct, error) {
 
-	row, err := domino_service.GetOne(ctx, port)
+	row, err := domino_service.GetOne(ctx, port, host)
 
 	if err != nil {
 		return nil, err
@@ -197,6 +198,7 @@ func makePortRegistryStruct(row map[string]string) (*PortRegistryStruct, error) 
 
 	portRegistry := &PortRegistryStruct{
 		Port:       functions.StringToInt32(row["port"]),
+		Host:       row["host"],
 		Status:     functions.StringToInt(row["status"]),
 		Type:       functions.StringToInt(row["type"]),
 		LockedTill: functions.StringToInt(row["locked_till"]),
@@ -224,9 +226,9 @@ func getExtra(row map[string]string) (ExtraField, error) {
 
 // SyncPort выполняет синхронизацию порта
 // данную функцию нельзя вызывать в локальных методах, только через апи с pivot-сервера
-func SyncPort(ctx context.Context, port, status, lockedTill int32, companyId int64) error {
+func SyncPort(ctx context.Context, port int32, host string, status, lockedTill int32, companyId int64) error {
 
-	if _, err := domino_service.SetStatus(ctx, port, int(status), int64(lockedTill), companyId); err != nil {
+	if _, err := domino_service.SetStatus(ctx, port, host, int(status), int64(lockedTill), companyId); err != nil {
 		return err
 	}
 

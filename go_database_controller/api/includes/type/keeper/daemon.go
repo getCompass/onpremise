@@ -6,7 +6,6 @@ import (
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_database_controller/api/conf"
-	"go_database_controller/api/includes/type/db/company"
 	"go_database_controller/api/includes/type/port_registry"
 	"go_database_controller/api/includes/type/sh"
 	"net"
@@ -15,13 +14,18 @@ import (
 )
 
 // Start стартуем mysql
-func Start(ctx context.Context, portValue int32) error {
+func Start(ctx context.Context, portValue int32, host string) error {
+
+	// мы не управляем predefined базами
+	if conf.GetConfig().DatabaseDriver == "host" {
+		return nil
+	}
 
 	log.Infof("пытаюсь поднять контейнер на порте %d...", portValue)
 
 	// читаем из базы, чтобы данные были актуальны,
 	// а то там все может посыпаться из-за ошибки
-	port, err := port_registry.GetByPort(ctx, portValue)
+	port, err := port_registry.GetByPort(ctx, portValue, host)
 	if err != nil {
 
 		log.Infof("контейнер на порте %d не запустился: %s", portValue, err.Error())
@@ -40,19 +44,17 @@ func Start(ctx context.Context, portValue int32) error {
 		return err
 	}
 
-	// ждем, пока поднимется порт
-	if !waitMysqlAlive(portValue, 30) {
-
-		log.Infof("прошло %d секунд, но порт %d все еще не отвечает", portValue)
-		return fmt.Errorf("прошло %d секунд, но порт %d все еще не отвечает", 30, portValue)
-	}
-
 	log.Infof("контейнер на порте %d запущен!", portValue)
 	return nil
 }
 
 // Stop останавливаем mysql
-func Stop(ctx context.Context, portValue int32) error {
+func Stop(ctx context.Context, portValue int32, host string) error {
+
+	// мы не управляем predefined базами
+	if conf.GetConfig().DatabaseDriver == "host" {
+		return nil
+	}
 
 	log.Infof("пытаюсь остановить контейнер на порте %d...", portValue)
 
@@ -63,7 +65,7 @@ func Stop(ctx context.Context, portValue int32) error {
 	}
 
 	log.Infof("команда остановки контейнера на порте %d успешно выполнена, ждем ответа...", portValue)
-	if !waitMysqlNotAlive(portValue, 5) {
+	if !waitMysqlNotAlive(portValue, host, 5) {
 
 		log.Infof("прошло %d секунд, но порт %d все еще отвечает", portValue)
 		return fmt.Errorf("прошло %d секунд, но порт %d все еще отвечает", 5, portValue)
@@ -115,6 +117,7 @@ func update() error {
 		fmt.Sprintf("%s-%s-company", conf.GetConfig().StackNamePrefix, conf.GetConfig().DominoId)
 
 	// запускаем команду старта контейнера
+	// nosemgrep
 	startCmd := exec.Command("sh", "-c", cmdStr)
 	startPipe := sh.MakePipe(sh.MakeCommand(startCmd, 10*time.Second))
 	if err := startPipe.Exec(); err != nil {
@@ -129,10 +132,16 @@ func update() error {
 // Delete удаляем стак
 func Delete() error {
 
+	// мы не управляем predefined базами
+	if conf.GetConfig().DatabaseDriver == "host" {
+		return nil
+	}
+
 	cmdStr := "/usr/bin/docker stack rm " +
 		fmt.Sprintf("%s-%s-company", conf.GetConfig().StackNamePrefix, conf.GetConfig().DominoId)
 
 	// запускаем команду удаления стака
+	// nosemgrep
 	deleteCmd := exec.Command("sh", "-c", cmdStr)
 	deletePipe := sh.MakePipe(sh.MakeCommand(deleteCmd, 10*time.Second))
 	if err := deletePipe.Exec(); err != nil {
@@ -145,38 +154,19 @@ func Delete() error {
 }
 
 // Report получаем статус mysql
-func Report(port int32) bool {
+func Report(port int32, host string) bool {
 
-	return isMysqlAlive(port)
-}
-
-// ждем пока mysql оживет
-func waitMysqlAlive(port int32, timeout int64) bool {
-
-	endAt := functions.GetCurrentTimeStamp() + timeout
-
-	for {
-
-		if isMysqlAlive(port) {
-			return true
-		}
-
-		if endAt < functions.GetCurrentTimeStamp() {
-			return false
-		}
-
-		time.Sleep(100 * time.Millisecond)
-	}
+	return isMysqlAlive(port, host)
 }
 
 // ждем пока mysql умрет
-func waitMysqlNotAlive(port int32, timeout int64) bool {
+func waitMysqlNotAlive(port int32, host string, timeout int64) bool {
 
 	endAt := functions.GetCurrentTimeStamp() + timeout
 
 	for true {
 
-		if !isMysqlAlive(port) {
+		if !isMysqlAlive(port, host) {
 			return true
 		}
 
@@ -191,9 +181,9 @@ func waitMysqlNotAlive(port int32, timeout int64) bool {
 }
 
 // проверяем жив ли mysql
-func isMysqlAlive(port int32) bool {
+func isMysqlAlive(port int32, host string) bool {
 
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", company.GetCompanyHost(port), port), 3*time.Second)
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", host, port), 3*time.Second)
 	if err != nil {
 		return false
 	}

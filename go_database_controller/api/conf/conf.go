@@ -38,6 +38,7 @@ type ConfigStruct struct {
 	MysqlHostPrivateKey                string `json:"mysql_host_private_key"`
 	DominoSecretKey                    string `json:"domino_secret_key"`
 	DominoNetwork                      string `json:"domino_network"`
+	DatabaseDriver                     string `json:"database_driver"`
 }
 
 // переменная содержащая конфигурацию

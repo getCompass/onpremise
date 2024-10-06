@@ -8,6 +8,7 @@ import (
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"go_database_controller/api/conf"
+	"go_database_controller/api/includes/type/db/company"
 	"go_database_controller/api/includes/type/port_registry"
 	"os"
 	"os/user"
@@ -45,6 +46,7 @@ func CreateDatabase(companyId int64) error {
 
 	newDir := getDataDirPath(companyId)
 
+	// nosemgrep
 	if err := os.MkdirAll(newDir, 0755); err != nil {
 		return err
 	}
@@ -107,10 +109,15 @@ func chownUser(userName string, path string) error {
 // возвращает флаг необходимости проинициализировать директорию
 func PrepareDataDir(ctx context.Context, companyId int64, nonExistingPolicy, duplicatePolicy int32) (bool, error) {
 
+	// мы не управляем predefined базами
+	if conf.GetConfig().DatabaseDriver == "host" {
+		return false, nil
+	}
+
 	dirName := getDataDirPath(companyId)
 
 	// убеждаемся, что с директорией никто не работает
-	if port, _ := port_registry.GetByCompany(ctx, companyId); port != nil && isMysqlAlive(port.Port) {
+	if port, _ := port_registry.GetByCompany(ctx, companyId); port != nil && isMysqlAlive(port.Port, company.GetCompanyHost(port)) {
 		return false, fmt.Errorf("company datadir %s is used by another daemon on %d port", dirName, port.Port)
 	}
 

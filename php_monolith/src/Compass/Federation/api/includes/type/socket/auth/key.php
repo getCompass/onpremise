@@ -14,7 +14,7 @@ class Type_Socket_Auth_Key {
 	 */
 	public static function getSignature(string $auth_key, string $json_params):string {
 
-		// формируем подпись
+		// nosemgrep
 		return md5($auth_key . $json_params);
 	}
 

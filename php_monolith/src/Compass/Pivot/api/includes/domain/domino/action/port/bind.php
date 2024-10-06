@@ -65,12 +65,13 @@ class Domain_Domino_Action_Port_Bind {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException
 	 * @throws \returnException
+	 * @throws \Exception
 	 */
 	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list):Struct_Db_PivotCompanyService_PortRegistry {
 
 		console("биндю порт {$port->port} для компании {$company_id}");
-		$port_to_bound = static::_makeLocalBinding($domino, $port->port, $company_id);
-		static::_makeRemoteBinding($domino, $port->port, $company_id, $policy_list);
+		$port_to_bound = static::_makeLocalBinding($domino, $port, $company_id);
+		static::_makeRemoteBinding($domino, $port, $company_id, $policy_list);
 
 		return $port_to_bound;
 	}
@@ -81,19 +82,20 @@ class Domain_Domino_Action_Port_Bind {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \returnException
 	 * @throws Domain_Domino_Exception_PortBindingIsNotAllowed
+	 * @throws \Exception
 	 */
-	protected static function _makeLocalBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port_value, int $company_id):Struct_Db_PivotCompanyService_PortRegistry {
+	protected static function _makeLocalBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id):Struct_Db_PivotCompanyService_PortRegistry {
 
 		/** начало транзакции */
 		Gateway_Db_PivotCompanyService_Main::beginTransaction();
 
 		try {
 
-			$port_to_bound = Gateway_Db_PivotCompanyService_PortRegistry::getForUpdate($domino->domino_id, $port_value);
+			$port_to_bound = Gateway_Db_PivotCompanyService_PortRegistry::getForUpdate($domino->domino_id, $port->port, $port->host);
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 			Gateway_Db_PivotCompanyService_Main::rollback();
-			throw new \BaseFrame\Exception\Domain\ParseFatalException("passed non-existing port {$port_value}");
+			throw new \BaseFrame\Exception\Domain\ParseFatalException("passed non-existing port {$port->port}");
 		}
 
 		// проверяем, что этот порт можно связать с этой компаний;
@@ -102,11 +104,11 @@ class Domain_Domino_Action_Port_Bind {
 		if (!Domain_Domino_Entity_Port_Registry::canBeBound($port_to_bound)) {
 
 			Gateway_Db_PivotCompanyService_Main::rollback();
-			throw new Domain_Domino_Exception_PortBindingIsNotAllowed("port {$port_value} can't be bound because of status {$port_to_bound->status}");
+			throw new Domain_Domino_Exception_PortBindingIsNotAllowed("port {$port->port} can't be bound because of status {$port_to_bound->status}");
 		} elseif (!Domain_Domino_Entity_Port_Registry::canBeBoundWithCompany($port_to_bound, $company_id)) {
 
 			Gateway_Db_PivotCompanyService_Main::rollback();
-			throw new Domain_Domino_Exception_PortBindingIsNotAllowed("port {$port_value} can't be bound, company {$port_to_bound->company_id} already bound");
+			throw new Domain_Domino_Exception_PortBindingIsNotAllowed("port {$port->port} can't be bound, company {$port_to_bound->company_id} already bound");
 		}
 
 		try {
@@ -118,7 +120,7 @@ class Domain_Domino_Action_Port_Bind {
 			Gateway_Db_PivotCompanyService_Main::rollback();
 
 			// если что-то пошло не так, то нужно вызвать инвалидацию порта
-			Domain_Domino_Action_Port_Invalidate::run($domino, $port_value, "error on bind update");
+			Domain_Domino_Action_Port_Invalidate::run($domino, $port, "error on bind update");
 			throw $e;
 		}
 
@@ -136,18 +138,18 @@ class Domain_Domino_Action_Port_Bind {
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
+	 * @throws \busException|\Exception
 	 */
-	protected static function _makeRemoteBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port_value, int $company_id, array $policy_list):void {
+	protected static function _makeRemoteBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list):void {
 
 		try {
 
 			// выполняем привязку порта на домино и сращу накатываем миграции
-			Gateway_Bus_DatabaseController::bindPort($domino, $port_value, $company_id, $policy_list);
+			Gateway_Bus_DatabaseController::bindPort($domino, $port->port, $port->host, $company_id, $policy_list);
 		} catch (\Exception $e) {
 
 			// если что-то пошло не так, то нужно вызвать инвалидацию порта
-			Domain_Domino_Action_Port_Invalidate::run($domino, $port_value, "error on remote bind");
+			Domain_Domino_Action_Port_Invalidate::run($domino, $port, "error on remote bind");
 			throw $e;
 		}
 	}
@@ -163,7 +165,7 @@ class Domain_Domino_Action_Port_Bind {
 		$port->company_id = $company_id;
 		$port->updated_at = time();
 
-		Gateway_Db_PivotCompanyService_PortRegistry::set($domino_id, $port->port, [
+		Gateway_Db_PivotCompanyService_PortRegistry::set($domino_id, $port->port, $port->host, [
 			"status"     => $port->status,
 			"company_id" => $port->company_id,
 			"updated_at" => $port->updated_at,

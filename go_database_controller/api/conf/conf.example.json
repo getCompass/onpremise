@@ -27,5 +27,6 @@
 	"mysql_host_certificate": "${MYSQL_HOST_CERTIFICATE}",
 	"mysql_host_private_key": "${MYSQL_HOST_PRIVATE_KEY}",
 	"domino_secret_key": "${DOMINO_SECRET_KEY}",
-	"domino_network": "${DOMINO_NETWORK}"
+	"domino_network": "${DOMINO_NETWORK}",
+	"database_driver": "${DATABASE_DRIVER}"
 }

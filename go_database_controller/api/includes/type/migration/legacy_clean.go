@@ -58,14 +58,28 @@ func migrateLegacyClean(routineChan chan *routine.Status, companyId int64, logIt
 	pass, err := registry.GetDecryptedMysqlPass()
 
 	credentials := &sharding.DbCredentials{
-		Host: company.GetCompanyHost(registry.Port),
+		Host: company.GetCompanyHost(registry),
 		User: user,
 		Pass: pass,
 		Port: registry.Port,
 	}
 
+	rootPass, err := company.GetRootPassword(registry)
+
+	if err != nil {
+
+		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("could not get company port, error: %v", err))
+		return
+	}
+
+	rootCredentials := &sharding.DbCredentials{
+		Host: company.GetCompanyHost(registry),
+		User: "root",
+		Pass: rootPass,
+		Port: registry.Port,
+	}
 	// проверяем, что база company_system существует, и создаем, если нужно
-	isCreated, err := company.CreateIfNotExistDatabase(ctx, credentials, "company_system")
+	isCreated, err := company.CreateIfNotExistDatabase(ctx, credentials, rootCredentials, "company_system")
 
 	if err != nil {
 

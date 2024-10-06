@@ -69,7 +69,7 @@ func InitTable(ctx context.Context, spaceId int64) error {
 	pass, err := registry.GetDecryptedMysqlPass()
 
 	credentials := &sharding.DbCredentials{
-		Host: company.GetCompanyHost(registry.Port),
+		Host: company.GetCompanyHost(registry),
 		User: user,
 		Pass: pass,
 		Port: registry.Port,

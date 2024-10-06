@@ -22,7 +22,7 @@ class Domain_Domino_Action_CreatePort {
 	 * @throws \busException
 	 * @throws \queryException
 	 */
-	public static function do(string $domino_id, int $port, int $type_int, string $encrypted_mysql_user, string $encrypted_mysql_pass):void {
+	public static function do(string $domino_id, int $port, string $host, int $type_int, string $encrypted_mysql_user, string $encrypted_mysql_pass):void {
 
 		$status = Domain_Domino_Entity_Port_Registry::STATUS_VOID;
 		$time   = time();
@@ -30,12 +30,12 @@ class Domain_Domino_Action_CreatePort {
 		// формируем extra
 		$extra  = Domain_Domino_Entity_Port_Registry::initExtra($encrypted_mysql_user, $encrypted_mysql_pass);
 		$domino = new Struct_Db_PivotCompanyService_PortRegistry(
-			$port, $status, $type_int, 0, $time, 0, 0, $extra
+			$port, $host, $status, $type_int, 0, $time, 0, 0, $extra
 		);
 
 		// создаем на домино
 		$domino_registry = Gateway_Db_PivotCompanyService_DominoRegistry::getOne($domino_id);
-		Gateway_Bus_DatabaseController::addPort($domino_registry, $port, $status, $type_int, 0, $time, 0, 0, 0, $extra);
+		Gateway_Bus_DatabaseController::addPort($domino_registry, $port, $host, $status, $type_int, 0, $time, 0, 0, 0, $extra);
 
 		// создаем в локальной базе
 		Gateway_Db_PivotCompanyService_PortRegistry::insert($domino_id, $domino);

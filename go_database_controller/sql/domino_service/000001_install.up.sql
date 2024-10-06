@@ -1,4 +1,4 @@
-CREATE SCHEMA IF NOT EXISTS `domino_service` DEFAULT CHARACTER SET utf8;
+USE `domino_service`;
 
 CREATE TABLE IF NOT EXISTS `domino_service`.`port_registry` (
 `port` INT(11) NOT NULL COMMENT 'порт',

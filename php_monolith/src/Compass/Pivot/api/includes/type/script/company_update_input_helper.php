@@ -49,7 +49,7 @@ class Type_Script_CompanyUpdateInputHelper {
 	public static function getScriptData():array {
 
 		// получаем значение
-		$list = Type_Script_InputParser::getArgumentValue("--script-data", Type_Script_InputParser::TYPE_ARRAY, required: false);
+		$list = Type_Script_InputParser::getArgumentValue("--script-data", Type_Script_InputParser::TYPE_ARRAY_ASSOC, required: false);
 
 		return is_array($list) ? $list : [];
 	}

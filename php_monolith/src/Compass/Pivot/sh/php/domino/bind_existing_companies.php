@@ -5,7 +5,7 @@ namespace Compass\Pivot;
 require_once __DIR__ . "/../../../../../../start.php";
 
 ini_set("memory_limit", "4096M");
-ini_set("display_errors", 1);
+ini_set("display_errors", 1); // nosemgrep
 set_time_limit(0);
 
 // какие компании биндим
@@ -67,7 +67,7 @@ foreach ($company_list as $company) {
 	Gateway_Db_PivotCompanyService_Main::commitTransaction();
 
 	// биндим порт
-	$port_row = Gateway_Db_PivotCompanyService_PortRegistry::getOne($domino_row->domino_id, $port_row->port);
+	$port_row = Gateway_Db_PivotCompanyService_PortRegistry::getOne($domino_row->domino_id, $port_row->port, $port_row->host);
 
 	// обновляем конфиг
 	Domain_Domino_Action_Config_UpdateMysql::do($company, $domino_row, $port_row);

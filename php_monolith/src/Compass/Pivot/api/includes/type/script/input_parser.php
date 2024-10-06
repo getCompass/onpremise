@@ -14,11 +14,12 @@ use BaseFrame\Exception\Request\ParamException;
  */
 class Type_Script_InputParser {
 
-	public const TYPE_NONE   = 0;
-	public const TYPE_STRING = 1;
-	public const TYPE_INT    = 2;
-	public const TYPE_NUMBER = 3;
-	public const TYPE_ARRAY  = 4;
+	public const TYPE_NONE        = 0;
+	public const TYPE_STRING      = 1;
+	public const TYPE_INT         = 2;
+	public const TYPE_NUMBER      = 3;
+	public const TYPE_ARRAY       = 4;
+	public const TYPE_ARRAY_ASSOC = 5;
 
 	/** @var array|null переданные скрипту данные через консоль */
 	protected static array|null $_args = null;
@@ -85,9 +86,10 @@ class Type_Script_InputParser {
 		return match ($expected_type) {
 			static::TYPE_STRING => $value,
 			static::TYPE_NUMBER => is_numeric($value) ? floatval($value) : throw new \InvalidArgumentException("passed non-numeric value"),
-			static::TYPE_INT    => is_numeric($value) ? intval($value) : throw new \InvalidArgumentException("passed non-integer value"),
-			static::TYPE_ARRAY  => static::_parseArrayValue($value),
-			default             => throw new \InvalidArgumentException("passed unknown type")
+			static::TYPE_INT => is_numeric($value) ? intval($value) : throw new \InvalidArgumentException("passed non-integer value"),
+			static::TYPE_ARRAY => static::_parseArrayValue($value),
+			static::TYPE_ARRAY_ASSOC => static::_parseArrayAssocValue($value),
+			default => throw new \InvalidArgumentException("passed unknown type")
 		};
 	}
 
@@ -99,6 +101,30 @@ class Type_Script_InputParser {
 	 * @return array
 	 */
 	protected static function _parseArrayValue(string $value):array {
+
+		if (!preg_match("#\[.*]#u", $value)) {
+			throw new \InvalidArgumentException("passed non-array value");
+		}
+
+		$value = mb_substr($value, 1, -1);
+
+		$output = [];
+
+		foreach (explode(",", $value) as $k => $v) {
+			$output[] = $v;
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Парсит массив из строки параметров.
+	 *
+	 * @param string $value
+	 *
+	 * @return array
+	 */
+	protected static function _parseArrayAssocValue(string $value):array {
 
 		if (!preg_match("#\[.*]#u", $value)) {
 			throw new \InvalidArgumentException("passed non-array value");

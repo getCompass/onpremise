@@ -49,7 +49,7 @@ class Domain_Domino_Action_CreateVacantCompany {
 
 		// создаем конфиг для компании
 
-		$port_registry_row = Gateway_Db_PivotCompanyService_PortRegistry::getOne($domino_row->domino_id, $port_row->port);
+		$port_registry_row = Gateway_Db_PivotCompanyService_PortRegistry::getOne($domino_row->domino_id, $port_row->port, $port_row->host);
 		Domain_Domino_Action_Config_UpdateMysql::do($company, $domino_row, $port_registry_row, true);
 		Domain_Domino_Action_WaitConfigSync::do($company, $domino_row);
 

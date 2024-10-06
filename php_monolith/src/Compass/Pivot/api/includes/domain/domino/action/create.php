@@ -7,25 +7,25 @@ namespace Compass\Pivot;
  */
 class Domain_Domino_Action_Create {
 
-	/**
-	 * Создает новую пусту доминошку
-	 *
-	 * @param string $domino_id
-	 * @param int    $tier
-	 * @param int    $is_company_creating_allowed
-	 * @param int    $go_database_controller_port
-	 * @param string $url
-	 * @param string $database_host
-	 * @param string $code_host
-	 *
-	 * @throws cs_NotCreatedDominoTable
-	 * @throws \queryException
-	 */
-	public static function do(string $domino_id, int $tier, int $is_company_creating_allowed, int $go_database_controller_port, string $url, string $database_host, string $code_host):void {
+    /**
+     * Создает новую пусту доминошку
+     *
+     * @param string $domino_id
+     * @param int $tier
+     * @param int $is_company_creating_allowed
+     * @param int $go_database_controller_port
+     * @param string $url
+     * @param string $database_host
+     * @param string $code_host
+     * @param string $go_database_controller_host
+     * @throws \queryException
+     * @throws cs_NotCreatedDominoTable
+     */
+	public static function do(string $domino_id, int $tier, int $is_company_creating_allowed, int $go_database_controller_port, string $url, string $database_host, string $code_host, string $go_database_controller_host = ""):void {
 
 		self::_createDominoTable($domino_id);
 
-		$extra = Domain_Domino_Entity_Registry_Extra::initExtra($go_database_controller_port, $url);
+		$extra = Domain_Domino_Entity_Registry_Extra::initExtra($go_database_controller_host, $go_database_controller_port, $url);
 
 		$domino = new Struct_Db_PivotCompanyService_DominoRegistry(
 			$domino_id,
@@ -57,6 +57,7 @@ class Domain_Domino_Action_Create {
 		// формируем sql для создания таблицы для портов доминошки
 		$sql = "CREATE TABLE IF NOT EXISTS `port_registry_$domino_id` (
 `port` INT(11) NOT NULL COMMENT 'порт',
+`host` VARCHAR(255) NOT NULL COMMENT 'кастомный домен, на котором доступен порт',
 `status` TINYINT(4) NOT NULL COMMENT 'статус порта',
 `type` INT(11) NOT NULL DEFAULT 0 COMMENT 'тип порта сервисный (10), обычный (20), резервный (30)',
 `locked_till` INT(11) NOT NULL DEFAULT 0 COMMENT 'до какого времени слот заблокирован, блокировка должна быть снята задачей, которая ее повесила',

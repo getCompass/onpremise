@@ -49,10 +49,10 @@ $CONFIG["SHARDING_MYSQL"] = [
 	"pivot_system"      => [
 		"db"      => "pivot_system",
 		"mysql"   => [
-			"host" => MYSQL_PIVOT_SYSTEM_HOST,
-			"user" => MYSQL_PIVOT_SYSTEM_USER,
-			"pass" => MYSQL_PIVOT_SYSTEM_PASS,
-			"ssl"  => MYSQL_PIVOT_SYSTEM_SSL,
+			"host" => MYSQL_SYSTEM_HOST,
+			"user" => MYSQL_SYSTEM_USER,
+			"pass" => MYSQL_SYSTEM_PASS,
+			"ssl"  => MYSQL_SYSTEM_SSL,
 		],
 		"schemas" => [
 			"sharding_info" => [
@@ -72,10 +72,10 @@ $CONFIG["SHARDING_MYSQL"] = [
 	"pivot_company_10m" => [
 		"db"      => "pivot_company_10m",
 		"mysql"   => [
-			"host" => MYSQL_PIVOT_COMPANY_HOST,
-			"user" => MYSQL_PIVOT_COMPANY_USER,
-			"pass" => MYSQL_PIVOT_COMPANY_PASS,
-			"ssl"  => MYSQL_PIVOT_COMPANY_SSL,
+			"host" => MYSQL_COMPANY_HOST,
+			"user" => MYSQL_COMPANY_USER,
+			"pass" => MYSQL_COMPANY_PASS,
+			"ssl"  => MYSQL_COMPANY_SSL,
 		],
 		"schemas" => [
 			"sharding_info" => [
@@ -139,8 +139,8 @@ $CONFIG["SHARDING_GO"] = [
 		"url"  => PUBLIC_WEBSOCKET_PIVOT,
 	],
 	"event"           => [
-		"host" => GO_EVENT_GRPC_HOST,
-		"port" => GO_EVENT_GRPC_PORT,
+		"host" => GO_EVENT_HOST,
+		"port" => GO_EVENT_PORT,
 	],
 ];
 

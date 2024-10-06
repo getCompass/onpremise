@@ -8,7 +8,6 @@ import (
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_database_controller/api/conf"
-	"go_database_controller/api/includes/type/db/domino"
 	"go_database_controller/www"
 	"runtime"
 )
@@ -35,13 +34,6 @@ func start() {
 	// устанавливаем максимальное количество ядер
 	numCPU := runtime.NumCPU()
 	runtime.GOMAXPROCS(numCPU)
-
-	// накатываем миграции
-	err := domino.MigrateInit(flags.ExecutableDir)
-
-	if err != nil {
-		panic(err)
-	}
 
 	// начинаем слушать внешнее окружение
 	www.StartListenGrpc()

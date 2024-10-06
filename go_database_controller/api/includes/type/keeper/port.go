@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"go_database_controller/api/conf"
 	"go_database_controller/api/includes/type/db/company"
 	"go_database_controller/api/includes/type/db/domino_service"
 	"go_database_controller/api/includes/type/logger"
@@ -20,54 +21,31 @@ const routineStoreName = "bind"
 // хранилище рутин привязки портов компаний
 var bindPortRoutineStore = routine.MakeStore(routineStoreName)
 
-// создает данные свободной компании на указанном порте
-// @long миллион обработок ошибок
-func CreateVacantCompany(ctx context.Context, portValue int32, companyId int64) error {
-
-	port, err := port_registry.GetByPort(ctx, portValue)
-	if err != nil {
-		return err
-	}
-
-	// убеждаемся, что порт никем не занят
-	if port.CompanyId > 0 || port.Status != port_registry.PortVoid {
-		return fmt.Errorf("port is not allowed")
-	}
-
-	// создаем файлы пустой базы данных для компании
-	if err = CreateDatabase(companyId); err != nil {
-		return err
-	}
-
-	// переводим порт в статус активных
-	if _, err = domino_service.SetStatus(ctx, portValue, port_registry.PortActive, 0, companyId); err != nil {
-		return err
-	}
-
-	// пытаемся запустить контейнер на выбранном порте
-	if err = Start(ctx, portValue); err != nil {
-		return err
-	}
-
-	return company.CreateUserOnEmptyDb(port)
-}
-
 // добавляем порт новый в систему
-func AddPort(ctx context.Context, port int32, status int32, portType int32, lockedTill int32, createdAt int32, updatedAt int32, companyId int64, extra string) error {
+func AddPort(ctx context.Context, port int32, host string, status int32, portType int32, lockedTill int32, createdAt int32, updatedAt int32, companyId int64, extra string) error {
 
-	return domino_service.InsertIgnoreOne(ctx, port, status, portType, lockedTill, createdAt, updatedAt, companyId, extra)
+	// проверяем, что такой порт есть
+	if conf.GetConfig().DatabaseDriver == "host" {
+
+		dbKey := fmt.Sprintf("%s:%d", host, port)
+
+		if _, ok := conf.GetPredefinedDbConfig()[dbKey]; !ok {
+			return fmt.Errorf("cant find db in predefined config")
+		}
+	}
+	return domino_service.InsertIgnoreOne(ctx, port, host, status, portType, lockedTill, createdAt, updatedAt, companyId, extra)
 }
 
 // помечаем порт невалидным
-func InvalidatePort(ctx context.Context, port int32) error {
+func InvalidatePort(ctx context.Context, port int32, host string) error {
 
 	log.Infof("начинаем инвалидацию порта %d...", port)
 
-	_, err := domino_service.UpdateStatus(ctx, port, port_registry.PortInvalid)
+	_, err := domino_service.UpdateStatus(ctx, port, host, port_registry.PortInvalid)
 
 	// пытаемся остановить контейнер; результат неинтересен по большей части,
 	// потому что явно уже что-то идет не так
-	if err := Stop(ctx, port); err != nil {
+	if err := Stop(ctx, port, host); err != nil {
 		log.Errorf("error occurred on port invalidation: %s", err.Error())
 	}
 
@@ -75,7 +53,7 @@ func InvalidatePort(ctx context.Context, port int32) error {
 }
 
 // BindPort привязываем порт к указанной компании
-func BeginBindPort(portValue int32, companyId int64, nonExistingDataDirPolicy, duplicateDataDirPolicy int32) string {
+func BeginBindPort(portValue int32, host string, companyId int64, nonExistingDataDirPolicy, duplicateDataDirPolicy int32) string {
 
 	routineChan := make(chan *routine.Status)
 	routineUniq := functions.GenerateUuid()
@@ -83,31 +61,31 @@ func BeginBindPort(portValue int32, companyId int64, nonExistingDataDirPolicy, d
 	// добавляем рутину в хранилище рутин
 	routineKey := bindPortRoutineStore.Push(routineUniq, routineChan, &logger.Log{})
 
-	go bindPort(routineChan, portValue, companyId, nonExistingDataDirPolicy, duplicateDataDirPolicy)
+	go bindPort(routineChan, portValue, host, companyId, nonExistingDataDirPolicy, duplicateDataDirPolicy)
 
 	return routineKey
 }
 
 // UnbindPort отвязываем порт от любой компании, которая висит на нем
-func UnbindPort(ctx context.Context, port int32) error {
+func UnbindPort(ctx context.Context, port int32, host string) error {
 
 	log.Infof("начинаем анбинд порта %d...", port)
 
-	row, err := port_registry.GetByPort(ctx, port)
+	row, err := port_registry.GetByPort(ctx, port, host)
 	if err != nil {
 		return err
 	}
 
 	lockedTill := functions.GetCurrentTimeStamp() + 60
-	if _, err = domino_service.SetStatus(ctx, port, port_registry.PortLocked, lockedTill, 0); err != nil {
+	if _, err = domino_service.SetStatus(ctx, port, host, port_registry.PortLocked, lockedTill, 0); err != nil {
 		return err
 	}
 
-	if err = Stop(ctx, row.Port); err != nil {
+	if err = Stop(ctx, row.Port, row.Host); err != nil {
 		return err
 	}
 
-	if _, err = domino_service.SetStatus(ctx, port, port_registry.PortVoid, 0, 0); err != nil {
+	if _, err = domino_service.SetStatus(ctx, port, host, port_registry.PortVoid, 0, 0); err != nil {
 		return err
 	}
 	return err
@@ -122,11 +100,11 @@ func BindOnServicePort(ctx context.Context, companyId int64) (int32, string, str
 		return 0, "", "", err
 	}
 
-	if _, err = domino_service.SetStatus(ctx, port.Port, port_registry.PortActive, 0, companyId); err != nil {
+	if _, err = domino_service.SetStatus(ctx, port.Port, port.Host, port_registry.PortActive, 0, companyId); err != nil {
 		return 0, "", "", err
 	}
 
-	if err = Start(ctx, port.Port); err != nil {
+	if err = Start(ctx, port.Port, port.Host); err != nil {
 		return 0, "", "", err
 	}
 
@@ -139,32 +117,32 @@ func BindOnServicePort(ctx context.Context, companyId int64) (int32, string, str
 }
 
 // GetCompanyPort возвращает порт по id компании
-func GetCompanyPort(ctx context.Context, companyId int64) (int32, string, string, error) {
+func GetCompanyPort(ctx context.Context, companyId int64) (int32, string, string, string, error) {
 
 	port, err := port_registry.GetByCompany(ctx, companyId)
 	if err != nil {
 
 		log.Errorf("%v", err)
-		return 0, "", "", err
+		return 0, "", "", "", err
 	}
 
 	if port == nil {
-		return 0, "", "", nil
+		return 0, "", "", "", nil
 	}
 
 	mysqlUser, mysqlPass, err := port.GetCredentials()
 	if err != nil {
-		return 0, "", "", err
+		return 0, "", "", "", err
 	}
 
-	return port.Port, mysqlUser, mysqlPass, nil
+	return port.Port, port.Host, mysqlUser, mysqlPass, nil
 }
 
 // ResetPort сбрасывает состояние порта до void
 // убивает контейнер, если запущен, данные компании при этом не трогает
-func ResetPort(ctx context.Context, portValue int32) error {
+func ResetPort(ctx context.Context, portValue int32, host string) error {
 
-	port, err := port_registry.GetByPort(ctx, portValue)
+	port, err := port_registry.GetByPort(ctx, portValue, host)
 	if err != nil {
 		return err
 	}
@@ -173,23 +151,23 @@ func ResetPort(ctx context.Context, portValue int32) error {
 	if port.NeedDaemon() {
 
 		// отвязываем порт
-		if err = UnbindPort(ctx, portValue); err != nil {
+		if err = UnbindPort(ctx, portValue, host); err != nil {
 			return err
 		}
 	}
 
 	// обновляем статус для порта
-	_, err = domino_service.SetStatus(ctx, portValue, port_registry.PortVoid, 0, 0)
+	_, err = domino_service.SetStatus(ctx, portValue, host, port_registry.PortVoid, 0, 0)
 
 	return err
 }
 
-func bindPort(routineChan chan *routine.Status, portValue int32, companyId int64, nonExistingDataDirPolicy, duplicateDataDirPolicy int32) {
+func bindPort(routineChan chan *routine.Status, portValue int32, host string, companyId int64, nonExistingDataDirPolicy, duplicateDataDirPolicy int32) {
 
 	ctx := context.Background()
 
 	// проверяем, что такой порт есть
-	port, err := port_registry.GetByPort(ctx, portValue)
+	port, err := port_registry.GetByPort(ctx, portValue, host)
 	if err != nil {
 
 		routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
@@ -205,14 +183,14 @@ func bindPort(routineChan chan *routine.Status, portValue int32, companyId int64
 	}
 
 	// отмечаем порт активным
-	if _, err = domino_service.SetStatus(ctx, portValue, port_registry.PortActive, 0, companyId); err != nil {
+	if _, err = domino_service.SetStatus(ctx, portValue, host, port_registry.PortActive, 0, companyId); err != nil {
 
 		routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
 		return
 	}
 
 	// запускаем контейнер
-	if err = Start(ctx, portValue); err != nil {
+	if err = Start(ctx, portValue, host); err != nil {
 		routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
 	}
 
@@ -224,8 +202,17 @@ func bindPort(routineChan chan *routine.Status, portValue int32, companyId int64
 		return
 	}
 
+	// проверяем наличие пользователя
+	isUserExists, err := company.IsUserExists(port)
+
+	if err != nil {
+
+		routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
+		return
+	}
+
 	// если вдруг нужно проинициализировать данные
-	if needInit {
+	if needInit || !isUserExists {
 
 		if err = company.CreateUserOnEmptyDb(port); err != nil {
 
@@ -270,7 +257,19 @@ func isPortAlive(port *port_registry.PortRegistryStruct, needInit bool) error {
 		password = "root"
 	}
 
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/", user, password, company.GetCompanyHost(port.Port), port.Port))
+	if conf.GetConfig().DatabaseDriver == "host" {
+
+		dbKey := fmt.Sprintf("%s:%d", port.Host, port.Port)
+
+		if _, ok := conf.GetPredefinedDbConfig()[dbKey]; !ok {
+			return fmt.Errorf("cant find db in predefined config")
+		}
+
+		user = "root"
+		password = conf.GetPredefinedDbConfig()[dbKey].RootPassword
+	}
+
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/", user, password, company.GetCompanyHost(port), port.Port))
 	defer db.Close()
 	if err != nil {
 		return err

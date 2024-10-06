@@ -17,7 +17,7 @@ class Domain_Domino_Action_Port_Reset {
 	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, bool $need_update_domino_counter = true):void {
 
 		// сбрасываем порт на домино
-		Gateway_Bus_DatabaseController::resetPort($domino, $port->port);
+		Gateway_Bus_DatabaseController::resetPort($domino, $port->port, $port->host);
 
 		// уменьшаем число активных портов на домино
 		if ($need_update_domino_counter && $port->status === Domain_Domino_Entity_Port_Registry::STATUS_ACTIVE) {
@@ -25,7 +25,7 @@ class Domain_Domino_Action_Port_Reset {
 		}
 
 		// меняем запись в базе данных
-		Gateway_Db_PivotCompanyService_PortRegistry::set($domino->domino_id, $port->port, [
+		Gateway_Db_PivotCompanyService_PortRegistry::set($domino->domino_id, $port->port, $port->host, [
 			"status"      => Domain_Domino_Entity_Port_Registry::STATUS_VOID,
 			"locked_till" => 0,
 			"company_id"  => 0,

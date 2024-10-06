@@ -38,16 +38,14 @@ func MysqlWithCredentials(ctx context.Context, dbKey string, credentials *DbCred
 	mysqlConnectionPoolItem, err := mysql.GetMysqlConnection(ctx, dbKey, credentials.Host+":"+functions.IntToString(int(credentials.Port)),
 		credentials.User, credentials.Pass, 10, false)
 
-	err = mysqlConnectionPoolItem.Ping()
-	if err != nil {
+	if err != nil || mysqlConnectionPoolItem.Ping() != nil {
 
 		// пытаемся переподключиться - вдруг изменилось подключение
 		mysqlConnectionPoolItem, err = mysql.GetMysqlConnection(ctx, dbKey, credentials.Host+":"+functions.IntToString(int(credentials.Port)),
 			credentials.User, credentials.Pass, 10, false)
 
 		// снова пингуем - должны были подключиться
-		err = mysqlConnectionPoolItem.Ping()
-		if err != nil {
+		if err != nil || mysqlConnectionPoolItem.Ping() != nil {
 
 			log.Errorf("cant connect to db %s, %s", dbKey, err.Error())
 			return nil

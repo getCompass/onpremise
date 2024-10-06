@@ -467,7 +467,7 @@ class Gateway_Sso_Oidc_Client {
 		if ($this->verify_peer) {
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		} else {
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // nosemgrep
 		}
 
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

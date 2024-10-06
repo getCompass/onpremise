@@ -25,7 +25,7 @@ type Server struct {
 // GetStatus возвращает статус демона на указанном порте
 func (s *Server) GetStatus(_ context.Context, in *pb.GetStatusRequestStruct) (*pb.GetStatusResponseStruct, error) {
 
-	ok := keeper.Report(in.GetPort())
+	ok := keeper.Report(in.GetPort(), in.GetHost())
 	var databaseStatus string
 
 	if ok {
@@ -40,20 +40,11 @@ func (s *Server) GetStatus(_ context.Context, in *pb.GetStatusRequestStruct) (*p
 	}, nil
 }
 
-// CreateVacantCompany создает свободную компанию
-// Deprecated: лучше в два шага делать — создание данных + привязка порта
-func (s *Server) CreateVacantCompany(ctx context.Context, in *pb.CreateVacantCompanyRequestStruct) (*pb.NullResponseStruct, error) {
-
-	err := keeper.CreateVacantCompany(ctx, in.GetPort(), in.GetCompanyId())
-
-	return &pb.NullResponseStruct{}, err
-}
-
 // AddPort добавляет порты на домино
 // порты должны быть синхронизованы с pivot-сервером
 func (s *Server) AddPort(ctx context.Context, in *pb.AddPortRequestStruct) (*pb.NullResponseStruct, error) {
 
-	err := keeper.AddPort(ctx, in.GetPort(), in.GetStatus(), in.GetType(), in.GetLockedTill(), in.GetCreatedAt(), in.GetUpdatedAt(), in.GetCompanyId(), in.GetExtra())
+	err := keeper.AddPort(ctx, in.GetPort(), in.GetHost(), in.GetStatus(), in.GetType(), in.GetLockedTill(), in.GetCreatedAt(), in.GetUpdatedAt(), in.GetCompanyId(), in.GetExtra())
 
 	return &pb.NullResponseStruct{}, err
 }
@@ -61,7 +52,7 @@ func (s *Server) AddPort(ctx context.Context, in *pb.AddPortRequestStruct) (*pb.
 // SetPortInvalid инвалидирует порт
 func (s *Server) SetPortInvalid(ctx context.Context, in *pb.SetPortInvalidRequestStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, keeper.InvalidatePort(ctx, in.GetPort())
+	return &pb.NullResponseStruct{}, keeper.InvalidatePort(ctx, in.GetPort(), in.GetHost())
 }
 
 // BindPort выполняет привязку порта и компании на любой порт
@@ -69,7 +60,7 @@ func (s *Server) BindPort(ctx context.Context, in *pb.BindPortRequestStruct) (*p
 
 	// запускаем рутину и пробуем дождаться выполнения
 	// начало процесса мгновенное, туда можно не передавать контекст
-	routineKey := keeper.BeginBindPort(in.GetPort(), in.GetCompanyId(), in.NonExistingDataDirPolicy, in.DuplicateDataDirPolicy)
+	routineKey := keeper.BeginBindPort(in.GetPort(), in.GetHost(), in.GetCompanyId(), in.NonExistingDataDirPolicy, in.DuplicateDataDirPolicy)
 	waitCtx, cancel := context.WithDeadline(ctx, time.Now().Add(5*time.Second))
 
 	// дожидаемся ответа рутины
@@ -87,29 +78,17 @@ func (s *Server) BindPort(ctx context.Context, in *pb.BindPortRequestStruct) (*p
 	return &response, nil
 }
 
-// BindOnServicePort выполняет привязку порта и компании на сервисный порт
-// Deprecated: привязку нужно делать только через BindPort
-func (s *Server) BindOnServicePort(ctx context.Context, in *pb.BindOnServicePortRequestStruct) (*pb.BindOnServicePortResponseStruct, error) {
-
-	port, user, pass, err := keeper.BindOnServicePort(ctx, in.GetCompanyId())
-
-	return &pb.BindOnServicePortResponseStruct{
-		Port:      port,
-		MysqlUser: user,
-		MysqlPass: pass,
-	}, err
-}
-
 // GetCompanyPort возвращает порт и данные  для компании, который связан с указанной компанией
 func (s *Server) GetCompanyPort(ctx context.Context, in *pb.GetCompanyPortRequestStruct) (*pb.GetCompanyPortResponseStruct, error) {
 
-	port, user, pass, err := keeper.GetCompanyPort(ctx, in.GetCompanyId())
+	port, host, user, pass, err := keeper.GetCompanyPort(ctx, in.GetCompanyId())
 	if port == 0 && err == nil {
 		return nil, status.Errorf(404, "port not found")
 	}
 
 	return &pb.GetCompanyPortResponseStruct{
 		Port:      port,
+		Host:      host,
 		MysqlUser: user,
 		MysqlPass: pass,
 	}, err
@@ -118,7 +97,7 @@ func (s *Server) GetCompanyPort(ctx context.Context, in *pb.GetCompanyPortReques
 // UnbindPort отвязывает порт от любой компании, которая на нем развернута
 func (s *Server) UnbindPort(ctx context.Context, in *pb.UnbindPortRequestStruct) (*pb.NullResponseStruct, error) {
 
-	err := keeper.UnbindPort(ctx, in.GetPort())
+	err := keeper.UnbindPort(ctx, in.GetPort(), in.GetHost())
 
 	return &pb.NullResponseStruct{}, err
 }
@@ -262,14 +241,14 @@ func (s *Server) GetRoutineStatus(ctx context.Context, in *pb.GetRoutineStatusRe
 // SyncPortStatus выполняет синхронизацию порта между pivot-сервером и контроллером
 func (s *Server) SyncPortStatus(ctx context.Context, in *pb.SyncPortStatusRequestStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, port_registry.SyncPort(ctx, in.GetPort(), in.GetStatus(), in.GetLockedTill(), in.GetCompanyId())
+	return &pb.NullResponseStruct{}, port_registry.SyncPort(ctx, in.GetPort(), in.GetHost(), in.GetStatus(), in.GetLockedTill(), in.GetCompanyId())
 }
 
 // ResetPort выполняет сброс порта
 // останавливает демон базы, если дернуть метод неправильно, то компания отвалится
 func (s *Server) ResetPort(ctx context.Context, in *pb.ResetPortRequestStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, keeper.ResetPort(ctx, in.GetPort())
+	return &pb.NullResponseStruct{}, keeper.ResetPort(ctx, in.GetPort(), in.GetHost())
 }
 
 // InitSearch выполняем инициализацию таблиц поиска
@@ -285,7 +264,7 @@ func (s *Server) DropSearchTable(_ context.Context, in *pb.DropSearchTableReques
 }
 
 // UpdateDeployment обновить деплой
-func (s *Server) UpdateDeployment(ctx context.Context, _ *pb.NullResponseStruct) (*pb.NullResponseStruct, error) {
+func (s *Server) UpdateDeployment(ctx context.Context, _ *pb.NullRequestStruct) (*pb.NullResponseStruct, error) {
 
 	return &pb.NullResponseStruct{}, keeper.UpdateDeployment(ctx)
 }

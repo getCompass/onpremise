@@ -23,7 +23,7 @@ class Domain_Domino_Action_Port_Unlock {
 		$port->updated_at  = time();
 
 		// обновляем запись для порта, сбрасывая данные блокировки
-		Gateway_Db_PivotCompanyService_PortRegistry::set($domino->domino_id, $port->port, [
+		Gateway_Db_PivotCompanyService_PortRegistry::set($domino->domino_id, $port->port, $port->host, [
 			"status"      => $port->status,
 			"company_id"  => $port->company_id,
 			"locked_till" => $port->locked_till,
@@ -31,7 +31,7 @@ class Domain_Domino_Action_Port_Unlock {
 		]);
 
 		// синхронизируем статус порта на домино
-		Gateway_Bus_DatabaseController::syncPortStatus($domino, $port->port, $port->status, $port->locked_till, $port->company_id);
+		Gateway_Bus_DatabaseController::syncPortStatus($domino, $port->port, $port->host, $port->status, $port->locked_till, $port->company_id);
 
 		// логируем изменение статуса порта
 		Domain_System_Action_TestLog::do(Domain_System_Action_TestLog::UPDATE_PORT_LOG, [

@@ -27,7 +27,7 @@ envsubst < "${SCRIPT_PATH}/private/custom.local.php" > "${SCRIPT_PATH}/private/c
 bash "/app/wait-services.sh" || die "service waiting failed"
 
 # приступаем к миграциям
-mysql --user="${MYSQL_ROOT_USER}" --password="${MYSQL_ROOT_PASS}" --host="$MYSQL_HOST" < "${SCRIPT_PATH}/sql/init.sql"
+mysql --user="${MYSQL_ROOT_USER}" --password="${MYSQL_ROOT_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" < "${SCRIPT_PATH}/sql/init.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/userbot_main" -database mysql://${MYSQL_ROOT_USER}:${MYSQL_ROOT_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/userbot_main?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/userbot_main" -database mysql://${MYSQL_ROOT_USER}:${MYSQL_ROOT_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/userbot_main?tls=false version

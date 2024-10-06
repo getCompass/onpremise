@@ -64,14 +64,29 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 	pass, err := registry.GetDecryptedMysqlPass()
 
 	credentials := &sharding.DbCredentials{
-		Host: company.GetCompanyHost(registry.Port),
+		Host: company.GetCompanyHost(registry),
 		User: user,
 		Pass: pass,
 		Port: registry.Port,
 	}
 
+	rootPass, err := company.GetRootPassword(registry)
+
+	if err != nil {
+
+		routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
+		return
+	}
+
+	rootCredentials := &sharding.DbCredentials{
+		Host: company.GetCompanyHost(registry),
+		User: "root",
+		Pass: rootPass,
+		Port: registry.Port,
+	}
+
 	// выполняем миграцию для баз данных
-	errMessage := doMigrateDb(ctx, credentials, logItem)
+	errMessage := doMigrateDb(ctx, credentials, rootCredentials, logItem)
 	if errMessage != "" {
 
 		routineChan <- routine.MakeRoutineStatus(routine.StatusError, errMessage)
@@ -109,7 +124,7 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 
 // выполнить миграцию для баз данных
 // @long
-func doMigrateDb(ctx context.Context, credentials *sharding.DbCredentials, logItem *logger.Log) string {
+func doMigrateDb(ctx context.Context, credentials *sharding.DbCredentials, rootCredentials *sharding.DbCredentials, logItem *logger.Log) string {
 
 	// получаем список баз данных для миграции
 	databaseList, err := getDatabaseList()
@@ -123,7 +138,7 @@ func doMigrateDb(ctx context.Context, credentials *sharding.DbCredentials, logIt
 	}
 
 	// проверяем, что база company_system существует. Если нет - создаем
-	isCreated, err := company.CreateIfNotExistDatabase(ctx, credentials, "company_system")
+	isCreated, err := company.CreateIfNotExistDatabase(ctx, credentials, rootCredentials, "company_system")
 
 	if err != nil {
 
@@ -149,7 +164,7 @@ func doMigrateDb(ctx context.Context, credentials *sharding.DbCredentials, logIt
 		b, _ := json.Marshal(database)
 		fmt.Println(string(b))
 
-		err = migrateDatabaseUp(ctx, &database, credentials, logItem)
+		err = migrateDatabaseUp(ctx, &database, credentials, rootCredentials, logItem)
 		if err != nil {
 
 			return fmt.Sprintf("could not migrated database, error: %v", err)
@@ -163,7 +178,7 @@ func doMigrateDb(ctx context.Context, credentials *sharding.DbCredentials, logIt
 
 // мигрируем отдельную базу данных
 // @long
-func migrateDatabaseUp(ctx context.Context, database *databaseSchemaStruct, credentials *sharding.DbCredentials, logItem *logger.Log) error {
+func migrateDatabaseUp(ctx context.Context, database *databaseSchemaStruct, credentials *sharding.DbCredentials, rootCredentials *sharding.DbCredentials, logItem *logger.Log) error {
 
 	// для базы получаем все названия с шардингом
 	shardDatabaseList, err := getShardDatabaseNameList(database)
@@ -200,7 +215,7 @@ func migrateDatabaseUp(ctx context.Context, database *databaseSchemaStruct, cred
 
 		// если накатываемой базы нет - создаем
 		if migrationDatabaseStruct.CreatedAt == 0 {
-			err := company.CreateDatabase(ctx, credentials, shardDatabaseName)
+			err := company.CreateDatabase(ctx, credentials, rootCredentials, shardDatabaseName)
 			if err != nil {
 				return err
 			}

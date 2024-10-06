@@ -30,6 +30,11 @@ define("DOMINO_ID"				, "${DOMINO_ID}");
 define("DOMAIN_PIVOT"				, "${PIVOT_DOMAIN}");
 define("DOMAIN_ANNOUNCEMENT"			, "${ANNOUNCEMENT_DOMAIN}");
 define("DOMAIN_REGEX"           		, "${DOMAIN_REGEX}");
+define("DOMAIN_JITSI"				, "${JITSI_DOMAIN}");
+
+// константа которая указывает на путь к куки
+define("SESSION_COOKIE_DOMAIN"				, "${PIVOT_DOMAIN}");
+define("SESSION_WEB_COOKIE_DOMAIN"				, "${JITSI_DOMAIN}");
 
 // протоколы для точек входа, сами точки входа уже содержат
 // в себе протоколы, эти константы нужны для ряда редких случав
@@ -59,6 +64,7 @@ define("PUBLIC_ENTRYPOINT_INTERCOM"			, "${PUBLIC_ENTRYPOINT_INTERCOM}");
 define("PUBLIC_ENTRYPOINT_PARTNER"			, "${PUBLIC_ENTRYPOINT_PARTNER}");
 define("PUBLIC_ENTRYPOINT_STAGE"			, "${PUBLIC_ENTRYPOINT_STAGE}");
 define("PUBLIC_ENTRYPOINT_GO_TEST"			, "${PUBLIC_ENTRYPOINT_GO_TEST}");
+define("PUBLIC_ENTRYPOINT_VIDEO_CONFERENCE"	, "${PUBLIC_ENTRYPOINT_VIDEO_CONFERENCE}");
 define("PUBLIC_ENTRYPOINT_ELECTRON_UPDATE"	, "${PUBLIC_ENTRYPOINT_ELECTRON_UPDATE}");
 define("PUBLIC_ENTRYPOINT_ELECTRON_UPDATE30"	, "${PUBLIC_ENTRYPOINT_ELECTRON_UPDATE30}");
 define("PUBLIC_CONNECT_CHECK_URL"			, "${PUBLIC_CONNECT_CHECK_URL}");
@@ -71,7 +77,6 @@ define("PUBLIC_ENTRYPOINT_INVITE"			, "${PUBLIC_ENTRYPOINT_INVITE}");
 define("PUBLIC_ENTRYPOINT_SOLUTION"			, "${PUBLIC_ENTRYPOINT_SOLUTION}");
 define("PUBLIC_ENTRYPOINT_BILLING"        	, "${PUBLIC_ENTRYPOINT_BILLING}");
 define("PUBLIC_ENTRYPOINT_LICENSE"		      , "${PUBLIC_ENTRYPOINT_LICENSE}");
-define("PUBLIC_ENTRYPOINT_VIDEO_CONFERENCE"	, "${PUBLIC_ENTRYPOINT_VIDEO_CONFERENCE}");
 define("PUBLIC_ENTRYPOINT_JOIN_VARIETY"		, ${PUBLIC_ENTRYPOINT_JOIN_VARIETY});
 
 // точки входа для веб-сокет подключений
@@ -194,8 +199,9 @@ define("SOCKET_KEY_CRM"		      			, "${SOCKET_KEY_CRM}");
 define("SOCKET_KEY_FILE_NODE"             		, "${SOCKET_KEY_FILE_NODE}");
 define("SOCKET_KEY_WWW"						, "${SOCKET_KEY_WWW}");
 define("SOCKET_KEY_GO_PUSHER"					, "${SOCKET_KEY_GO_PUSHER}");
-define("SOCKET_KEY_JITSI"					, "${SOCKET_KEY_JITSI}");
+define("SOCKET_KEY_JITSI"		      		, "${SOCKET_KEY_JITSI}");
 define("SOCKET_KEY_FEDERATION"		      	, "${SOCKET_KEY_FEDERATION}");
+
 
 define("INTEGRATION_AUTHORIZATION_TOKEN"        	, "${INTEGRATION_AUTHORIZATION_TOKEN}");
 
@@ -253,6 +259,9 @@ define("COMPANY_USERBOT_PRIVATE_KEY"		, "${COMPANY_USERBOT_PRIVATE_KEY}");
 // глобально отключенные группы событий для логирования
 define("GLOBAL_DISABLED_ANALYTICS_EVENT_GROUP_LIST", ${GLOBAL_DISABLED_ANALYTICS_EVENT_GROUP_LIST});
 
+// список нод ВКС
+define("VIDEO_CONFERENCE_NODE_LIST"				, ${VIDEO_CONFERENCE_NODE_LIST});
+
 // для работы с гибернацией компаний
 define("NEED_COMPANY_HIBERNATE"				, ${NEED_COMPANY_HIBERNATE});
 define("COMPANY_HIBERNATION_DELAYED_TIME"			, ${COMPANY_HIBERNATION_DELAYED_TIME});
@@ -281,8 +290,6 @@ define("TEST_USER_NAME_PREFIX"                        , "${TEST_USER_NAME_PREFIX
 
 define("ONPREMISE_VERSION"                , "${ONPREMISE_VERSION}");
 
-// список нод ВКС
-define("VIDEO_CONFERENCE_NODE_LIST"				, ${VIDEO_CONFERENCE_NODE_LIST});
 define("CA_CERTIFICATE"                			, "${CA_CERTIFICATE}");
 
 // -------------------------------------------------------

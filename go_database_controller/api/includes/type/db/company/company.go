@@ -16,8 +16,52 @@ type Database struct {
 	Database string `json:"Database"`
 }
 
+func GetRootPassword(port *port_registry.PortRegistryStruct) (string, error) {
+
+	if conf.GetConfig().DatabaseDriver == "host" {
+
+		dbKey := fmt.Sprintf("%s:%d", port.Host, port.Port)
+
+		if _, ok := conf.GetPredefinedDbConfig()[dbKey]; !ok {
+			return "", fmt.Errorf("cant find db in predefined config")
+		}
+
+		return conf.GetPredefinedDbConfig()[dbKey].RootPassword, nil
+	}
+
+	return "root", nil
+}
+
+// IsUserExists проверить, суещствует ли пользователь
+func IsUserExists(port *port_registry.PortRegistryStruct) (bool, error) {
+
+	// тут меняем пароль и создавать пользователя
+	dbUser, dbPass, err := port.GetCredentials()
+	if err != nil {
+		return false, err
+	}
+
+	// получаем параметры подключения к базе данных
+	connection, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/", dbUser, dbPass, GetCompanyHost(port), port.Port))
+	if err != nil {
+		return false, err
+	}
+
+	err = connection.Ping()
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 // CreateUserOnEmptyDb создает пользователя на пустой базе данных
 func CreateUserOnEmptyDb(port *port_registry.PortRegistryStruct) error {
+
+	rootPassword, err := GetRootPassword(port)
+	if err != nil {
+		return err
+	}
 
 	// тут меняем пароль и создавать пользователя
 	dbUser, dbPass, err := port.GetCredentials()
@@ -26,7 +70,7 @@ func CreateUserOnEmptyDb(port *port_registry.PortRegistryStruct) error {
 	}
 
 	// получаем параметры подключения к базе данных
-	connection, err := sql.Open("mysql", fmt.Sprintf("root:root@tcp(%s:%d)/", GetCompanyHost(port.Port), port.Port))
+	connection, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/", rootPassword, GetCompanyHost(port), port.Port))
 	if err != nil {
 		return err
 	}
@@ -39,40 +83,32 @@ func CreateUserOnEmptyDb(port *port_registry.PortRegistryStruct) error {
 		}
 	}()
 
-	_, err = connection.Exec(fmt.Sprintf("CREATE USER '%s'@'127.0.0.1' IDENTIFIED BY '%s';", dbUser, dbPass))
-	if err != nil {
-		return err
-	}
-
-	_, err = connection.Exec(fmt.Sprintf("GRANT ALL ON *.* TO '%s'@'127.0.0.1' WITH GRANT OPTION;", dbUser))
-	if err != nil {
-		return err
-	}
-
+	// nosemgrep
 	_, err = connection.Exec(fmt.Sprintf("CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", dbUser, dbPass))
 	if err != nil {
 		return err
 	}
 
-	_, err = connection.Exec(fmt.Sprintf("GRANT ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE TABLESPACE, CREATE TEMPORARY TABLES, CREATE USER, CREATE VIEW, DELETE, DROP, EVENT, GRANT OPTION, INDEX, INSERT, PROCESS, LOCK TABLES, EXECUTE, REFERENCES, RELOAD, SELECT, SHOW DATABASES, TRIGGER, SHOW VIEW, UPDATE, SYSTEM_VARIABLES_ADMIN ON *.* TO '%s'@'%%' WITH GRANT OPTION;", dbUser))
-	if err != nil {
-		return err
-	}
-
 	// добавляем пользователя для бэкапа данных при релокации
-	_, err = connection.Exec(fmt.Sprintf("CREATE USER '%s'@localhost IDENTIFIED BY '%s';", conf.GetConfig().BackupUser, conf.GetConfig().BackupUserPassword))
+	// nosemgrep
+	_, err = connection.Exec(fmt.Sprintf("CREATE USER '%s'@'127.0.0.1' IDENTIFIED BY '%s';", conf.GetConfig().BackupUser, conf.GetConfig().BackupUserPassword))
 	if err != nil {
 		return err
 	}
 
-	_, err = connection.Exec(fmt.Sprintf("GRANT RELOAD, BACKUP_ADMIN, LOCK TABLES, REPLICATION CLIENT, CREATE TABLESPACE, PROCESS, SUPER, CREATE, INSERT, SELECT ON * . * TO '%s'@localhost;", conf.GetConfig().BackupUser))
-	if err != nil {
-		return err
-	}
+	// для predefined драйвера НИ В КОЕМ СЛУЧАЕ НЕ УДАЛЯТЬ НИКАКИХ ПОЛЬЗОВАТЕЛЕЙ И НЕ УПРАВЛЯТЬ ИХ ПРАВАМИ
+	if conf.GetConfig().DatabaseDriver != "host" {
 
-	_, err = connection.Exec("DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
-	if err != nil {
-		return err
+		// nosemgrep
+		_, err = connection.Exec(fmt.Sprintf("GRANT ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE TABLESPACE, CREATE TEMPORARY TABLES, CREATE USER, CREATE VIEW, DELETE, DROP, EVENT, GRANT OPTION, INDEX, INSERT, PROCESS, LOCK TABLES, EXECUTE, REFERENCES, RELOAD, SELECT, SHOW DATABASES, TRIGGER, SHOW VIEW, UPDATE, SYSTEM_VARIABLES_ADMIN ON *.* TO '%s'@'%%' WITH GRANT OPTION;", dbUser))
+		if err != nil {
+			return err
+		}
+
+		_, err = connection.Exec("DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err = connection.Exec(fmt.Sprintf("FLUSH PRIVILEGES"))
@@ -82,6 +118,7 @@ func CreateUserOnEmptyDb(port *port_registry.PortRegistryStruct) error {
 
 	return nil
 }
+
 func GetTableInformationSchema(ctx context.Context, credentials *sharding.DbCredentials, dbKey string, tableName string) (map[string]string, error) {
 
 	conn := sharding.MysqlWithCredentials(ctx, "information_schema", credentials)
@@ -157,8 +194,43 @@ func ExecSql(ctx context.Context, credentials *sharding.DbCredentials, dbKey str
 	return nil
 }
 
+// выдать права на базу
+func GrantPermissionsOnDatabase(ctx context.Context, credentials *sharding.DbCredentials, rootCredentials *sharding.DbCredentials, dbKey string) error {
+
+	if conf.GetConfig().DatabaseDriver != "host" {
+		return nil
+	}
+
+	// пустой ключ, так как мы просто хотим подключиться к хосту
+	conn := sharding.MysqlWithCredentials(ctx, "", rootCredentials)
+	if conn == nil {
+
+		return fmt.Errorf("не удалось установить соединение с портом %d", rootCredentials.Port)
+	}
+
+	// nosemgrep
+	_, err := conn.ConnectionPool.Exec(fmt.Sprintf("GRANT ALL ON %s.* TO '%s'@'%%' WITH GRANT OPTION;", dbKey, credentials.User))
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.ConnectionPool.Exec(fmt.Sprintf("FLUSH PRIVILEGES"))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // инициализировать базу
-func CreateIfNotExistDatabase(ctx context.Context, credentials *sharding.DbCredentials, dbKey string) (bool, error) {
+func CreateIfNotExistDatabase(ctx context.Context, credentials *sharding.DbCredentials, rootCredentials *sharding.DbCredentials, dbKey string) (bool, error) {
+
+	// выдаем права на базу
+
+	err := GrantPermissionsOnDatabase(ctx, credentials, rootCredentials, dbKey)
+	if err != nil {
+		return false, err
+	}
 
 	// пустой ключ, так как мы просто хотим подключиться к хосту
 	conn := sharding.MysqlWithCredentials(ctx, "", credentials)
@@ -184,7 +256,13 @@ func CreateIfNotExistDatabase(ctx context.Context, credentials *sharding.DbCrede
 }
 
 // инициализировать базу company_system
-func CreateDatabase(ctx context.Context, credentials *sharding.DbCredentials, dbKey string) error {
+func CreateDatabase(ctx context.Context, credentials *sharding.DbCredentials, rootCredentials *sharding.DbCredentials, dbKey string) error {
+
+	// выдаем права на базу
+	err := GrantPermissionsOnDatabase(ctx, credentials, rootCredentials, dbKey)
+	if err != nil {
+		return err
+	}
 
 	// пустой ключ, так как мы просто хотим подключиться к хосту
 	conn := sharding.MysqlWithCredentials(ctx, "", credentials)
@@ -192,7 +270,7 @@ func CreateDatabase(ctx context.Context, credentials *sharding.DbCredentials, db
 		return fmt.Errorf("не удалось установить соединение с портом %d", credentials.Port)
 	}
 
-	err := conn.Query(ctx, fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s DEFAULT CHARACTER SET utf8;", dbKey))
+	err = conn.Query(ctx, fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s DEFAULT CHARACTER SET utf8;", dbKey))
 	if err != nil {
 		return err
 	}
@@ -200,7 +278,10 @@ func CreateDatabase(ctx context.Context, credentials *sharding.DbCredentials, db
 	return nil
 }
 
-func GetCompanyHost(port int32) string {
+func GetCompanyHost(port *port_registry.PortRegistryStruct) string {
 
-	return fmt.Sprintf("%s-%d", conf.GetConfig().DominoId, port)
+	if port.Host != "" {
+		return port.Host
+	}
+	return fmt.Sprintf("%s-%d", conf.GetConfig().DominoId, port.Port)
 }

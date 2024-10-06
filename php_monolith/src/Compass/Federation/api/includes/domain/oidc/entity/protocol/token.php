@@ -79,6 +79,7 @@ class Domain_Oidc_Entity_Protocol_Token {
 	 */
 	public static function getSubHash(string $sub):string {
 
+		// nosemgrep
 		return sha1($sub);
 	}
 

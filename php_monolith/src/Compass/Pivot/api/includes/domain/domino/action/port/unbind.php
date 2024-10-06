@@ -14,13 +14,12 @@ class Domain_Domino_Action_Port_Unbind {
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
-	 * @throws \returnException
+	 * @throws \Exception
 	 */
 	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, string $unbind_reason = ""):Struct_Db_PivotCompanyService_PortRegistry {
 
 		console("анбиндю порт {$port->port}");
-		static::_makeRemoteUnbinding($domino, $port->port);
+		static::_makeRemoteUnbinding($domino, $port);
 		return static::_makeLocalUnbinding($domino, $port, $unbind_reason);
 	}
 
@@ -28,7 +27,7 @@ class Domain_Domino_Action_Port_Unbind {
 	 * Выполняет удаление привязки порта и компании на удаленном сервере.
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \returnException
+	 * @throws \Exception
 	 */
 	protected static function _makeLocalUnbinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, string $unbind_reason):Struct_Db_PivotCompanyService_PortRegistry {
 
@@ -36,7 +35,7 @@ class Domain_Domino_Action_Port_Unbind {
 
 			/** начало транзакции */
 			Gateway_Db_PivotCompanyService_Main::beginTransaction();
-			$port_to_unbound = Gateway_Db_PivotCompanyService_PortRegistry::getForUpdate($domino->domino_id, $port->port);
+			$port_to_unbound = Gateway_Db_PivotCompanyService_PortRegistry::getForUpdate($domino->domino_id, $port->port, $port->host);
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 			Gateway_Db_PivotCompanyService_Main::rollback();
@@ -51,7 +50,7 @@ class Domain_Domino_Action_Port_Unbind {
 			Gateway_Db_PivotCompanyService_Main::rollback();
 
 			// если что-то пошло не так, то нужно вызвать инвалидацию порта
-			Domain_Domino_Action_Port_Invalidate::run($domino, $port_to_unbound->port, "error on unbind update");
+			Domain_Domino_Action_Port_Invalidate::run($domino, $port_to_unbound, "error on unbind update");
 			throw $e;
 		}
 
@@ -69,18 +68,18 @@ class Domain_Domino_Action_Port_Unbind {
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
+	 * @throws \Exception
 	 */
-	protected static function _makeRemoteUnbinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port_value):void {
+	protected static function _makeRemoteUnbinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port):void {
 
 		try {
 
 			// выполняем привязку порта на домино
-			Gateway_Bus_DatabaseController::unbindPort($domino, $port_value);
+			Gateway_Bus_DatabaseController::unbindPort($domino, $port->port, $port->host);
 		} catch (\Exception $e) {
 
 			// если что-то пошло не так, то нужно вызвать инвалидацию порта
-			Domain_Domino_Action_Port_Invalidate::run($domino, $port_value, "error on unbind remote");
+			Domain_Domino_Action_Port_Invalidate::run($domino, $port, "error on unbind remote");
 			throw $e;
 		}
 	}
@@ -99,7 +98,7 @@ class Domain_Domino_Action_Port_Unbind {
 		$port->updated_at  = time();
 		$port->locked_till = 0;
 
-		Gateway_Db_PivotCompanyService_PortRegistry::set($domino_id, $port->port, [
+		Gateway_Db_PivotCompanyService_PortRegistry::set($domino_id, $port->port, $port->host, [
 			"status"      => $port->status,
 			"company_id"  => $port->company_id,
 			"updated_at"  => $port->updated_at,

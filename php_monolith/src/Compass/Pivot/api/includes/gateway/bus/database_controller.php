@@ -4,7 +4,6 @@ namespace Compass\Pivot;
 
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Server\ServerProvider;
-use Random\RandomException;
 
 /**
  * Class Gateway_Bus_DatabaseController
@@ -26,10 +25,11 @@ class Gateway_Bus_DatabaseController {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException
 	 */
-	public static function getStatus(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port):string {
+	public static function getStatus(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host):string {
 
 		$request = new \DatabaseControllerGrpc\GetStatusRequestStruct([
 			"port" => $port,
+			"host" => $host,
 		]);
 
 		/** @var \DatabaseControllerGrpc\GetStatusResponseStruct $response */
@@ -82,10 +82,11 @@ class Gateway_Bus_DatabaseController {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException
 	 */
-	public static function addPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, int $status, int $type, int $locked_till, int $created_at, int $updated_at, int $company_id, int $locked_by_company_id, array $extra):void {
+	public static function addPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $status, int $type, int $locked_till, int $created_at, int $updated_at, int $company_id, int $locked_by_company_id, array $extra):void {
 
 		$request = new \DatabaseControllerGrpc\AddPortRequestStruct([
 			"port"                 => $port,
+			"host"                 => $host,
 			"status"               => $status,
 			"type"                 => $type,
 			"locked_till"          => $locked_till,
@@ -115,41 +116,15 @@ class Gateway_Bus_DatabaseController {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException
 	 */
-	public static function invalidatePort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port):void {
+	public static function invalidatePort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host):void {
 
 		$request = new \DatabaseControllerGrpc\SetPortInvalidRequestStruct([
 			"port" => $port,
+			"host" => $host,
 		]);
 
 		/** @var \DatabaseControllerGrpc\NullResponseStruct $response */
 		[, $status] = self::_doCallGrpc($domino_registry_row, "SetPortInvalid", $request);
-		if ($status->code !== \Grpc\STATUS_OK) {
-
-			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
-		}
-	}
-
-	/**
-	 * Занять порты на доминошке
-	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row
-	 * @param int                                          $company_id
-	 * @param int                                          $port
-	 *
-	 * @return void
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
-	 */
-	public static function createVacantCompany(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $company_id, int $port):void {
-
-		$request = new \DatabaseControllerGrpc\CreateVacantCompanyRequestStruct([
-			"company_id" => $company_id,
-			"port"       => $port,
-		]);
-
-		/** @var \DatabaseControllerGrpc\NullResponseStruct $response */
-		[$_, $status] = self::_doCallGrpc($domino_registry_row, "CreateVacantCompany", $request);
 		if ($status->code !== \Grpc\STATUS_OK) {
 
 			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
@@ -167,10 +142,11 @@ class Gateway_Bus_DatabaseController {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException
 	 */
-	public static function bindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, int $company_id, array $policy_list):void {
+	public static function bindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $company_id, array $policy_list):void {
 
 		$request = new \DatabaseControllerGrpc\BindPortRequestStruct([
 			"port"                         => $port,
+			"host"                         => $host,
 			"company_id"                   => $company_id,
 			"duplicate_data_dir_policy"    => $policy_list["duplicate_data_dir_policy"],
 			"non_existing_data_dir_policy" => $policy_list["non_existing_data_dir_policy"],
@@ -198,10 +174,11 @@ class Gateway_Bus_DatabaseController {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException
 	 */
-	public static function unbindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port):void {
+	public static function unbindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host):void {
 
 		$request = new \DatabaseControllerGrpc\UnbindPortRequestStruct([
 			"port" => $port,
+			"host" => $host,
 		]);
 
 		/** @var \DatabaseControllerGrpc\NullResponseStruct $response */
@@ -270,10 +247,11 @@ class Gateway_Bus_DatabaseController {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 */
-	public static function syncPortStatus(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port, int $status, int $locked_till, int $company_id):void {
+	public static function syncPortStatus(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port, string $host, int $status, int $locked_till, int $company_id):void {
 
 		$request = new \DatabaseControllerGrpc\SyncPortStatusRequestStruct([
 			"port"                 => $port,
+			"host"                 => $host,
 			"status"               => $status,
 			"locked_till"          => $locked_till,
 			"company_id"           => $company_id,
@@ -295,10 +273,11 @@ class Gateway_Bus_DatabaseController {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 */
-	public static function resetPort(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port):void {
+	public static function resetPort(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port, string $host):void {
 
 		$request = new \DatabaseControllerGrpc\ResetPortRequestStruct([
 			"port" => $port,
+			"host" => $host,
 		]);
 
 		/** @var \DatabaseControllerGrpc\NullResponseStruct $response */
@@ -437,7 +416,7 @@ class Gateway_Bus_DatabaseController {
 		}
 
 		// если случился таймаут для рутины
-		if ($status === static::_ROUTINE_STATUS_PENDING) {
+		if ($status !== static::_ROUTINE_STATUS_DONE) {
 			throw new \BaseFrame\Exception\Gateway\SocketException("routine deadline exceeded");
 		}
 	}
@@ -455,8 +434,9 @@ class Gateway_Bus_DatabaseController {
 	 */
 	protected static function _doCallGrpc(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, string $method_name, \Google\Protobuf\Internal\Message $request):array {
 
-		$conf = [
-			"host"           => $domino_registry_row->database_host,
+		$go_database_controller_host = Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerHost($domino_registry_row->extra);
+		$conf                        = [
+			"host"           => $go_database_controller_host !== "" ? $go_database_controller_host : $domino_registry_row->database_host,
 			"port"           => Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerPort($domino_registry_row->extra),
 			"ca_certificate" => CA_CERTIFICATE,
 			"token"          => self::_generateSignature($domino_registry_row->domino_id),
@@ -473,7 +453,7 @@ class Gateway_Bus_DatabaseController {
 	 * @param string $domino_id
 	 *
 	 * @return string
-	 * @throws RandomException
+	 * @throws
 	 */
 	protected static function _generateSignature(string $domino_id):string {
 

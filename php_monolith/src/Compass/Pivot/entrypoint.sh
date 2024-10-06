@@ -27,7 +27,7 @@ envsubst < "${SCRIPT_PATH}/private/custom.local.php" > "${SCRIPT_PATH}/private/c
 bash "/app/wait-services.sh" || die "service waiting failed"
 
 # приступаем к миграциям
-mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" < "${SCRIPT_PATH}/sql/init_pivot.sql"
+mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" < "${SCRIPT_PATH}/sql/init_pivot.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/pivot_phone" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_phone?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/pivot_phone" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_phone?tls=false version
@@ -116,7 +116,7 @@ migrate -path "${SCRIPT_PATH}/sql/pivot_history_logs_2027" -database mysql://${M
 migrate -path "${SCRIPT_PATH}/sql/pivot_history_logs_2028" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_history_logs_2028?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/pivot_history_logs_2028" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_history_logs_2028?tls=false version
 
-mysql --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_SYSTEM_PASS}" --host="$MYSQL_SYSTEM_HOST" -P "$MYSQL_SYSTEM_PORT" < "${SCRIPT_PATH}/sql/init_system.sql"
+mysql --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_SYSTEM_PASS}" --host="$MYSQL_SYSTEM_HOST" --port="$MYSQL_SYSTEM_PORT" < "${SCRIPT_PATH}/sql/init_system.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/pivot_system" -database mysql://${MYSQL_SYSTEM_USER}:${MYSQL_SYSTEM_PASS}@tcp\(${MYSQL_SYSTEM_HOST}:${MYSQL_SYSTEM_PORT}\)/pivot_system?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/pivot_system" -database mysql://${MYSQL_SYSTEM_USER}:${MYSQL_SYSTEM_PASS}@tcp\(${MYSQL_SYSTEM_HOST}:${MYSQL_SYSTEM_PORT}\)/pivot_system?tls=false version
@@ -153,6 +153,9 @@ migrate -path "${SCRIPT_PATH}/sql/pivot_mail" -database mysql://${MYSQL_USER}:${
 
 migrate -path "${SCRIPT_PATH}/sql/pivot_mail_service" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_mail_service?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/pivot_mail_service" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_mail_service?tls=false version
+
+# тоже миграция, но особенная
+php "${SCRIPT_PATH}/sh/php/domino/migrate_database.php"
 
 # запускаем всякие служебные скрипты
 runuser -l www-data -c "php ${SCRIPT_PATH}/sh/php/config/init_config.php"

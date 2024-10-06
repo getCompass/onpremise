@@ -88,7 +88,7 @@ func makePortBlockData(portList []*port_registry.PortRegistryStruct) []*MysqlCon
 
 		// составляем объект, из которого будем составлять конфиг
 		mysqlConfBlockList = append(mysqlConfBlockList, &MysqlConfBlockStruct{
-			Host:   company.GetCompanyHost(port.Port),
+			Host:   company.GetCompanyHost(port),
 			Port:   port.Port,
 			DbPath: getDataDirPath(port.CompanyId),
 		})

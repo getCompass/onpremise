@@ -37,7 +37,7 @@ class Domain_Ldap_Scenario_Event {
 		$account_user_rel_list = Domain_Ldap_Entity_AccountUserRel::getAll();
 
 		// устанавливаем соединение с LDAP
-		$client = Domain_Ldap_Entity_Client::resolve(Domain_Ldap_Entity_Config::getServerHost(), Domain_Ldap_Entity_Config::getServerPort());
+		$client = Domain_Ldap_Entity_Client::resolve(Domain_Ldap_Entity_Config::getServerHost(), Domain_Ldap_Entity_Config::getServerPort(), Domain_Ldap_Entity_Config::getUseSslFlag());
 		if (!$client->bind(Domain_Ldap_Entity_Config::getUserSearchAccountDn(), Domain_Ldap_Entity_Config::getUserSearchAccountPassword())) {
 
 			Domain_Ldap_Entity_Logger::log(sprintf("Механизм ldap.account_checking завершился неудачей. Не удалось аутентифицироваться в LDAP под учетной записью [username: %s]", Domain_Ldap_Entity_Config::getUserSearchAccountDn()));

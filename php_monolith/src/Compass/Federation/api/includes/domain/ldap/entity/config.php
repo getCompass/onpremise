@@ -34,6 +34,17 @@ class Domain_Ldap_Entity_Config {
 	}
 
 	/**
+	 * получаем флаг, необходимо ли устанавливать ssl соединение
+	 *
+	 * @return int
+	 */
+	public static function getUseSslFlag():int {
+
+		$config = getConfig(self::_KEY);
+		return $config["use_ssl"];
+	}
+
+	/**
 	 * получаем user_search_base из конфига LDAP
 	 *
 	 * @return string

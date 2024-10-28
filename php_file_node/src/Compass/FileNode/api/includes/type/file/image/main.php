@@ -27,5 +27,6 @@ class Type_File_Image_Main extends Type_File_Main {
 		"bmp",
 		"jpg",
 		"ico",
+		"jfif",
 	];
 }

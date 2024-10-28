@@ -40,7 +40,7 @@ export const electronVersionState = atom<ClientVersionItem>({
 	min_version: "",
 	min_version_code: 0,
 });
-export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({ auth_sso_start_button_text: "" });
+export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({ auth_sso_start_button_text: "Войти через корп. портал (SSO LDAP)", auth_sso_ldap_description_text: "Для авторизации введите username и пароль от вашей корпоративной учётной записи LDAP:" });
 
 export const userInfoDataState = atomWithImmer<ApiUserInfoData | null>(null);
 

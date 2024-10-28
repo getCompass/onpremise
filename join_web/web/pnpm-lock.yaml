@@ -7,7 +7,7 @@ settings:
 dependencies:
   '@ark-ui/react':
     specifier: ^0.15.0
-    version: 0.15.0(@internationalized/date@3.5.2)(react-dom@18.2.0)(react@18.2.0)
+    version: 0.15.0(@internationalized/date@3.5.6)(react-dom@18.2.0)(react@18.2.0)
   '@radix-ui/react-portal':
     specifier: ^1.0.4
     version: 1.0.4(@types/react-dom@18.2.11)(@types/react@18.2.25)(react-dom@18.2.0)(react@18.2.0)
@@ -25,7 +25,7 @@ dependencies:
     version: 2.4.3(@types/react@18.2.25)(react@18.2.0)
   jotai-immer:
     specifier: ^0.2.0
-    version: 0.2.0(immer@10.0.4)(jotai@2.4.3)(react@18.2.0)
+    version: 0.2.0(immer@10.1.1)(jotai@2.4.3)(react@18.2.0)
   lodash:
     specifier: ^4.17.21
     version: 4.17.21
@@ -51,7 +51,7 @@ devDependencies:
     version: 4.0.0(postcss@8.4.31)
   '@pandacss/dev':
     specifier: ^0.15.5
-    version: 0.15.5(@internationalized/date@3.5.2)(@types/react-dom@18.2.11)(@types/react@18.2.25)(typescript@5.2.2)
+    version: 0.15.5(@internationalized/date@3.5.6)(@types/react-dom@18.2.11)(@types/react@18.2.25)(typescript@5.2.2)
   '@types/lodash':
     specifier: ^4.14.199
     version: 4.14.199
@@ -128,7 +128,7 @@ packages:
       '@jridgewell/trace-mapping': 0.3.19
     dev: true
 
-  /@ark-ui/react@0.15.0(@internationalized/date@3.5.2)(react-dom@18.2.0)(react@18.2.0):
+  /@ark-ui/react@0.15.0(@internationalized/date@3.5.6)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-Y4vkTy969pAcWPKFvgHNoAJ0cv2VoES43/CMeWmJRUuT6WTSE8WcLbOzEQoZ6vuFcOXQh65Dk5le1CVXrVC2cQ==}
     peerDependencies:
       react: '>=18.0.0'
@@ -144,7 +144,7 @@ packages:
       '@zag-js/combobox': 0.19.1
       '@zag-js/core': 0.19.1
       '@zag-js/date-picker': 0.19.1
-      '@zag-js/date-utils': 0.19.1(@internationalized/date@3.5.2)
+      '@zag-js/date-utils': 0.19.1(@internationalized/date@3.5.6)
       '@zag-js/dialog': 0.19.1
       '@zag-js/editable': 0.19.1
       '@zag-js/hover-card': 0.19.1
@@ -175,7 +175,7 @@ packages:
       - '@internationalized/date'
     dev: false
 
-  /@ark-ui/react@0.9.0(@internationalized/date@3.5.2)(react-dom@18.2.0)(react@18.2.0):
+  /@ark-ui/react@0.9.0(@internationalized/date@3.5.6)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-lg9Sl9/SfVG9pqyCwjSFldNFGKMrs6aoFG7J83fk2ha8XKcpFIMNZwn9Hc3qkzeKLIYGhtED8vYG8UeNTT5psw==}
     peerDependencies:
       react: '>=18.0.0'
@@ -190,7 +190,7 @@ packages:
       '@zag-js/color-utils': 0.12.0
       '@zag-js/combobox': 0.12.0
       '@zag-js/date-picker': 0.12.0
-      '@zag-js/date-utils': 0.12.0(@internationalized/date@3.5.2)
+      '@zag-js/date-utils': 0.12.0(@internationalized/date@3.5.6)
       '@zag-js/dialog': 0.12.0
       '@zag-js/editable': 0.12.0
       '@zag-js/hover-card': 0.12.0
@@ -1120,10 +1120,10 @@ packages:
     dependencies:
       '@swc/helpers': 0.5.3
 
-  /@internationalized/date@3.5.2:
-    resolution: {integrity: sha512-vo1yOMUt2hzp63IutEaTUxROdvQg1qlMRsbCvbay2AK2Gai7wIgCyK5weEX3nHkiLgo4qCXHijFNC/ILhlRpOQ==}
+  /@internationalized/date@3.5.6:
+    resolution: {integrity: sha512-jLxQjefH9VI5P9UQuqB6qNKnvFt1Ky1TPIzHGsIlCi7sZZoMR8SdYbBGRvM0y+Jtb+ez4ieBzmiAUcpmPYpyOw==}
     dependencies:
-      '@swc/helpers': 0.5.8
+      '@swc/helpers': 0.5.13
 
   /@jridgewell/gen-mapping@0.3.3:
     resolution: {integrity: sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==}
@@ -1213,7 +1213,7 @@ packages:
       ts-pattern: 5.0.5
     dev: true
 
-  /@pandacss/dev@0.15.5(@internationalized/date@3.5.2)(@types/react-dom@18.2.11)(@types/react@18.2.25)(typescript@5.2.2):
+  /@pandacss/dev@0.15.5(@internationalized/date@3.5.6)(@types/react-dom@18.2.11)(@types/react@18.2.25)(typescript@5.2.2):
     resolution: {integrity: sha512-j7zAOCfjuzL1vPX57zxzVAa+QnA50q3+sTOOYF7nRLtbN7Xa6QwoOWxygv0NDF52hzs1IVmr/JapmjOPgUW0DA==}
     hasBin: true
     dependencies:
@@ -1225,7 +1225,7 @@ packages:
       '@pandacss/postcss': 0.15.5(typescript@5.2.2)
       '@pandacss/preset-panda': 0.15.5
       '@pandacss/shared': 0.15.5
-      '@pandacss/studio': 0.15.5(@internationalized/date@3.5.2)(@types/react-dom@18.2.11)(@types/react@18.2.25)(typescript@5.2.2)
+      '@pandacss/studio': 0.15.5(@internationalized/date@3.5.6)(@types/react-dom@18.2.11)(@types/react@18.2.25)(typescript@5.2.2)
       '@pandacss/token-dictionary': 0.15.5
       '@pandacss/types': 0.15.5
       cac: 6.7.14
@@ -1376,10 +1376,10 @@ packages:
     resolution: {integrity: sha512-CsVNHOUVXxy4U/8ZBepWftGkhH7y0oBEo1YvH8ymiov+DY7k6iwYeWmnMSTC15q+bLccA6bYG2pzc6zM96ApPg==}
     dev: true
 
-  /@pandacss/studio@0.15.5(@internationalized/date@3.5.2)(@types/react-dom@18.2.11)(@types/react@18.2.25)(typescript@5.2.2):
+  /@pandacss/studio@0.15.5(@internationalized/date@3.5.6)(@types/react-dom@18.2.11)(@types/react@18.2.25)(typescript@5.2.2):
     resolution: {integrity: sha512-m/BlbCex8fq2X4x7g8aX6BSKjexbvB/cCtALHQ7wbcFyVcxglra4Ligbxn9mPEnAsDSGG1LY/aXIXP86gFEoAQ==}
     dependencies:
-      '@ark-ui/react': 0.9.0(@internationalized/date@3.5.2)(react-dom@18.2.0)(react@18.2.0)
+      '@ark-ui/react': 0.9.0(@internationalized/date@3.5.6)(react-dom@18.2.0)(react@18.2.0)
       '@astrojs/react': 2.2.1(@types/react-dom@18.2.11)(@types/react@18.2.25)(react-dom@18.2.0)(react@18.2.0)
       '@pandacss/config': 0.15.5
       '@pandacss/logger': 0.15.5
@@ -1789,13 +1789,13 @@ packages:
     engines: {node: '>=14.0.0'}
     dev: false
 
+  /@swc/helpers@0.5.13:
+    resolution: {integrity: sha512-UoKGxQ3r5kYI9dALKJapMmuK+1zWM/H17Z1+iwnNmzcJRnfFuevZs375TA5rW31pu4BS4NoSy1fRsexDXfWn5w==}
+    dependencies:
+      tslib: 2.8.0
+
   /@swc/helpers@0.5.3:
     resolution: {integrity: sha512-FaruWX6KdudYloq1AHD/4nU+UsMTdNE8CKyrseXWEcgjDAbvkwJg2QGPAnfIJLIWsjZOSPLOAykK6fuYp4vp4A==}
-    dependencies:
-      tslib: 2.6.2
-
-  /@swc/helpers@0.5.8:
-    resolution: {integrity: sha512-lruDGw3pnfM3wmZHeW7JuhkGQaJjPyiKjxeGhdmfoOT53Ic9qb5JLDNaK2HUdl1zLDeX28H221UvKjfdvSLVMg==}
     dependencies:
       tslib: 2.6.2
 
@@ -2417,12 +2417,12 @@ packages:
       '@internationalized/date': 3.5.0
     dev: true
 
-  /@zag-js/date-utils@0.12.0(@internationalized/date@3.5.2):
+  /@zag-js/date-utils@0.12.0(@internationalized/date@3.5.6):
     resolution: {integrity: sha512-BYhhw3xFTIR9lUymLiBCkELZwd8VI8JeK16SmhFRAMAWG5ymrKKMz22PeaM4VX92/fzsMSNFQU1FK2kaEHsurA==}
     peerDependencies:
       '@internationalized/date': '>=3.0.0'
     dependencies:
-      '@internationalized/date': 3.5.2
+      '@internationalized/date': 3.5.6
     dev: true
 
   /@zag-js/date-utils@0.19.1(@internationalized/date@3.5.0):
@@ -2433,12 +2433,12 @@ packages:
       '@internationalized/date': 3.5.0
     dev: false
 
-  /@zag-js/date-utils@0.19.1(@internationalized/date@3.5.2):
+  /@zag-js/date-utils@0.19.1(@internationalized/date@3.5.6):
     resolution: {integrity: sha512-oGwwnb8HuEsLjeh0baB8/t2YoL+qv3YRQNKfmxGIppYMY8heuYRr/PAOWkBbQIGOrd90y+cg1MeXeuwkWeAIDA==}
     peerDependencies:
       '@internationalized/date': '>=3.0.0'
     dependencies:
-      '@internationalized/date': 3.5.2
+      '@internationalized/date': 3.5.6
     dev: false
 
   /@zag-js/dialog@0.12.0:
@@ -3438,7 +3438,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.22.1
-      caniuse-lite: 1.0.30001606
+      caniuse-lite: 1.0.30001669
       fraction.js: 4.3.6
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -3454,7 +3454,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.22.1
-      caniuse-lite: 1.0.30001606
+      caniuse-lite: 1.0.30001669
       fraction.js: 4.3.6
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -3538,7 +3538,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001606
+      caniuse-lite: 1.0.30001669
       electron-to-chromium: 1.4.544
       node-releases: 2.0.13
       update-browserslist-db: 1.0.13(browserslist@4.22.1)
@@ -3584,13 +3584,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.22.1
-      caniuse-lite: 1.0.30001606
+      caniuse-lite: 1.0.30001669
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
 
-  /caniuse-lite@1.0.30001606:
-    resolution: {integrity: sha512-LPbwnW4vfpJId225pwjZJOgX1m9sGfbw/RKJvw/t0QhYOOaTXHvkjVGFGPpvwEzufrjvTlsULnVTxdy4/6cqkg==}
+  /caniuse-lite@1.0.30001669:
+    resolution: {integrity: sha512-DlWzFDJqstqtIVx1zeSpIMLjunf5SmwOw0N2Ck/QSQdS8PLS4+9HrLaYei4w8BIAL7IB/UEDu889d8vhCTPA0w==}
     dev: true
 
   /ccount@2.0.1:
@@ -4540,8 +4540,8 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
-  /immer@10.0.4:
-    resolution: {integrity: sha512-cuBuGK40P/sk5IzWa9QPUaAdvPHjkk1c+xYsd9oZw+YQQEV+10G0P5uMpGctZZKnyQ+ibRO08bD25nWLmYi2pw==}
+  /immer@10.1.1:
+    resolution: {integrity: sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==}
     dev: false
 
   /import-fresh@3.3.0:
@@ -4708,14 +4708,14 @@ packages:
     hasBin: true
     dev: true
 
-  /jotai-immer@0.2.0(immer@10.0.4)(jotai@2.4.3)(react@18.2.0):
+  /jotai-immer@0.2.0(immer@10.1.1)(jotai@2.4.3)(react@18.2.0):
     resolution: {integrity: sha512-hahK8EPiROS9RoNWmX/Z8rY9WkAijspX4BZ1O7umpcwI4kPNkbcCpu/PhiQ8FMcpEcF6KmbpbMpSSj/GFmo8NA==}
     peerDependencies:
       immer: '*'
       jotai: '>=1.11.0'
       react: '>=17.0.0'
     dependencies:
-      immer: 10.0.4
+      immer: 10.1.1
       jotai: 2.4.3(@types/react@18.2.25)(react@18.2.0)
       react: 18.2.0
     dev: false
@@ -6512,6 +6512,9 @@ packages:
 
   /tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
+
+  /tslib@2.8.0:
+    resolution: {integrity: sha512-jWVzBLplnCmoaTr13V9dYbiQ99wvZRd0vNWaDRg+aVYRcjDF3nDksxFDE/+fkXnKhpnUUkmx5pK/v8mCtLVqZA==}
 
   /type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}

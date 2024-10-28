@@ -51,7 +51,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	protected static function _prepareStartDictionary():array {
 
 		return [
-			"auth_sso_start_button_text" => Domain_User_Entity_Auth_Config::getSsoStartButtonText(),
+			"auth_sso_start_button_text"     => Domain_User_Entity_Auth_Config::getSsoStartButtonText(),
+			"auth_sso_ldap_description_text" => Domain_User_Entity_Auth_Config::getSsoLdapDescriptionText(),
 		];
 	}
 

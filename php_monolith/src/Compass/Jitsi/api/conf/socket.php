@@ -24,6 +24,13 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"task.processList",
 		],
 	],
+	"pivot"    => [
+		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
+		"auth_key"      => SOCKET_KEY_PIVOT,
+		"allow_methods" => [
+			"conference.removeAllPermanentConference",
+		],
+	],
 ];
 
 return $CONFIG;

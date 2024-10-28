@@ -17,8 +17,9 @@ export function timeoutPromise<T>(
         timeout: number
 ): Promise<T> {
     return new Promise((resolve, reject) => {
-        const timeoutID
-            = setTimeout(() => reject(new Error('timeout')), timeout);
+        // const timeoutID
+        //     = setTimeout(() => reject(new Error('timeout')), timeout);
+        const timeoutID = 0;
 
         promise.then(
             /* onFulfilled */ value => {

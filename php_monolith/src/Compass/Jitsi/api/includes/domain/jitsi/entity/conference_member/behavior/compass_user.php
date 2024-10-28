@@ -2,6 +2,8 @@
 
 namespace Compass\Jitsi;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
  * класс описывающий поведение пользователя Compass в конференции
  * @package Compass\Jitsi
@@ -93,12 +95,25 @@ class Domain_Jitsi_Entity_ConferenceMember_Behavior_CompassUser implements Domai
 	}
 
 	/**
-	 * обработка события о покидании конференции
+	 * Обработка события о покидании конференции
+	 *
+	 * @throws \parseException
+	 * @throws Domain_Jitsi_Exception_Conference_NotFound
+	 * @throws ParseFatalException
 	 */
-	public function onLeftConference(string $conference_id, string $member_id):void {
+	public function onLeftConference(string $conference_id, string $member_id, bool $is_lost_connections):void {
+
+		// получаем запись с информацией о конференции
+		$conference = Domain_Jitsi_Entity_Conference::get($conference_id);
+
+		// нужно ли сбросить роль модератора участнику?
+		$reset_moderator_role = true;
+		if (Domain_Jitsi_Entity_Conference::isPermanent($conference)) {
+			$reset_moderator_role = false;
+		}
 
 		// обновляем статус участника конференции
-		Domain_Jitsi_Entity_ConferenceMember::updateOnLeft(Domain_Jitsi_Entity_ConferenceMember_Type::COMPASS_USER, $member_id, $conference_id);
+		Domain_Jitsi_Entity_ConferenceMember::updateOnLeft(Domain_Jitsi_Entity_ConferenceMember_Type::COMPASS_USER, $member_id, $conference_id, $reset_moderator_role);
 
 		// получаем id пользователя
 		$user_id = Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveId($member_id);
@@ -106,16 +121,18 @@ class Domain_Jitsi_Entity_ConferenceMember_Behavior_CompassUser implements Domai
 		// очищаем ID активной конференции
 		Domain_Jitsi_Entity_UserActiveConference::set($user_id, "");
 
-		// получаем запись с информацией о конференции
-		$conference = Domain_Jitsi_Entity_Conference::get($conference_id);
-
 		// получаем запись с информацией об участнике конференции
-		$conference_member = Domain_Jitsi_Entity_ConferenceMember::getForCompassUser($conference_id, $user_id);
+		try {
+			$conference_member = Domain_Jitsi_Entity_ConferenceMember::getForCompassUser($conference_id, $user_id);
+		} catch (Domain_Jitsi_Exception_ConferenceMember_NotFound) {
+			return;
+		}
 
 		// отправляем событие
+		$action = $is_lost_connections ? Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V2::ACTION_LOST_CONNECTION : Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V1::ACTION_LEFT_CONFERENCE;
 		Gateway_Bus_SenderBalancer::activeConferenceUpdated(
 			[$user_id],
-			Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V1::ACTION_LEFT_CONFERENCE,
+			$action,
 			Struct_Api_Conference_Data::buildFromDB($conference),
 			Struct_Api_Conference_MemberData::buildFromDB($conference_member),
 			null,

@@ -2,6 +2,7 @@
 
 namespace Compass\Jitsi;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Gateway\RowDuplicationException;
 use BaseFrame\Exception\Gateway\RowNotFoundException;
 
@@ -14,25 +15,28 @@ class Gateway_Db_JitsiData_ConferenceList extends Gateway_Db_JitsiData_Main {
 	protected const _TABLE_NAME = "conference_list";
 
 	/**
-	 * создаем запись
+	 * Создаем запись
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 * @throws \queryException
+	 * @throws RowDuplicationException
 	 */
 	public static function insert(Struct_Db_JitsiData_Conference $conference):void {
 
 		$insert_array = [
-			"conference_id"         => $conference->conference_id,
-			"space_id"              => $conference->space_id,
-			"status"                => $conference->status,
-			"is_private"            => intval($conference->is_private),
-			"is_lobby"              => intval($conference->is_lobby),
-			"creator_user_id"       => $conference->creator_user_id,
-			"password"              => $conference->password,
-			"jitsi_instance_domain" => $conference->jitsi_instance_domain,
-			"created_at"            => $conference->created_at,
-			"updated_at"            => $conference->updated_at,
-			"data"                  => $conference->data,
+			"conference_id"              => $conference->conference_id,
+			"space_id"                   => $conference->space_id,
+			"status"                     => $conference->status,
+			"is_private"                 => intval($conference->is_private),
+			"is_lobby"                   => intval($conference->is_lobby),
+			"creator_user_id"            => $conference->creator_user_id,
+			"conference_url_custom_name" => $conference->conference_url_custom_name,
+			"description"                => $conference->description,
+			"password"                   => $conference->password,
+			"jitsi_instance_domain"      => $conference->jitsi_instance_domain,
+			"created_at"                 => $conference->created_at,
+			"updated_at"                 => $conference->updated_at,
+			"data"                       => $conference->data,
 		];
 
 		try {
@@ -49,11 +53,10 @@ class Gateway_Db_JitsiData_ConferenceList extends Gateway_Db_JitsiData_Main {
 	}
 
 	/**
-	 * получаем запись из базы по PK
+	 * Получаем запись из базы по PK
 	 *
-	 * @return Struct_Db_JitsiData_Conference
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws RowNotFoundException
+	 * @throws ParseFatalException
 	 */
 	public static function getOne(string $conference_id):Struct_Db_JitsiData_Conference {
 
@@ -69,10 +72,23 @@ class Gateway_Db_JitsiData_ConferenceList extends Gateway_Db_JitsiData_Main {
 	}
 
 	/**
-	 * обновляем запись в базе по PK
+	 * Получаем массив записей
 	 *
-	 * @return int
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
+	 */
+	public static function getList(array $conference_id_list):array {
+
+		// EXPLAIN PRIMARY KEY
+		$query  = "SELECT * FROM `?p` WHERE `conference_id` IN (?a) LIMIT ?i";
+		$result = ShardingGateway::database(self::_DB_KEY)->getAll($query, self::_TABLE_NAME, $conference_id_list, count($conference_id_list));
+
+		return array_map(fn(array $row) => Struct_Db_JitsiData_Conference::rowToStruct($row), $result);
+	}
+
+	/**
+	 * Обновляем запись в базе по PK
+	 *
+	 * @throws ParseFatalException
 	 */
 	public static function set(string $conference_id, array $set):int {
 

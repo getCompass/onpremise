@@ -7,8 +7,9 @@ class Struct_Api_Conference_Data {
 
 	// типы конференций для клиентов
 	protected const _CONFERENCE_TYPE_SCHEMA = [
-		Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_DEFAULT => "default",
-		Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_SINGLE  => "single",
+		Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_DEFAULT   => "default",
+		Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_SINGLE    => "single",
+		Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_PERMANENT => "permanent",
 	];
 
 	// схема для статусов
@@ -28,6 +29,8 @@ class Struct_Api_Conference_Data {
 		public bool   $is_private,
 		public bool   $is_lobby,
 		public string $conference_type,
+		public string $description,
+		public string $conference_url_custom_name,
 	) {
 	}
 
@@ -45,6 +48,8 @@ class Struct_Api_Conference_Data {
 			is_private: boolval($conference->is_private),
 			is_lobby: boolval($conference->is_lobby),
 			conference_type: self::_CONFERENCE_TYPE_SCHEMA[$conference_type],
+			description: $conference->description,
+			conference_url_custom_name: $conference->conference_url_custom_name,
 		);
 	}
 
@@ -52,14 +57,16 @@ class Struct_Api_Conference_Data {
 	public function format():array {
 
 		return [
-			"conference_id"   => (string) $this->conference_id,
-			"space_id"        => (int) $this->space_id,
-			"status"          => (string) $this->status,
-			"link"            => (string) $this->link,
-			"created_at"      => (int) $this->created_at,
-			"is_private"      => (int) $this->is_private,
-			"is_lobby"        => (int) $this->is_lobby,
-			"conference_type" => (string) $this->conference_type,
+			"conference_id"              => (string) $this->conference_id,
+			"space_id"                   => (int) $this->space_id,
+			"status"                     => (string) $this->status,
+			"link"                       => (string) $this->link,
+			"created_at"                 => (int) $this->created_at,
+			"is_private"                 => (int) $this->is_private,
+			"is_lobby"                   => (int) $this->is_lobby,
+			"conference_type"            => (string) $this->conference_type,
+			"description"                => (string) $this->description,
+			"conference_url_custom_name" => (string) $this->conference_url_custom_name,
 		];
 	}
 }

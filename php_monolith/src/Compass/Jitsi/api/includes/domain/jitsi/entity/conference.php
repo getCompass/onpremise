@@ -6,7 +6,7 @@ use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Gateway\RowDuplicationException;
 use BaseFrame\Exception\Gateway\RowNotFoundException;
 
-/** класс для работы с сущностью конференции */
+/** Класс для работы с сущностью конференции */
 class Domain_Jitsi_Entity_Conference {
 
 	/** @var int длинна генерируемого пароля */
@@ -18,31 +18,26 @@ class Domain_Jitsi_Entity_Conference {
 	public const STATUS_FINISHED = 8; // конференция завершена
 
 	/**
-	 * создаем черновик объекта конференции
-	 *
-	 * @param int    $user_id
-	 * @param int    $space_id
-	 * @param string $domain
-	 *
-	 * @return Struct_Db_JitsiData_Conference
+	 * Создаем черновик объекта конференции
 	 */
-	public static function makeDraft(int $user_id, int $space_id, string $domain):Struct_Db_JitsiData_Conference {
+	public static function makeDraft(int $user_id, int $space_id, string $domain, string $conference_url_custom_name, string $description):Struct_Db_JitsiData_Conference {
 
 		return new Struct_Db_JitsiData_Conference(
 			space_id: $space_id,
 			creator_user_id: $user_id,
+			conference_url_custom_name: $conference_url_custom_name,
+			description: $description,
 			jitsi_instance_domain: $domain,
 			data: Domain_Jitsi_Entity_Conference_Data::initData()
 		);
 	}
 
 	/**
-	 * создаем конференцию
+	 * Создаем конференцию
 	 *
-	 * @return Struct_Db_JitsiData_Conference
-	 * @throws Domain_Jitsi_Exception_Conference_ConferenceIdDuplication
 	 * @throws ParseFatalException
 	 * @throws \queryException
+	 * @throws Domain_Jitsi_Exception_Conference_ConferenceIdDuplication
 	 */
 	public static function create(Struct_Db_JitsiData_Conference $conference_draft):Struct_Db_JitsiData_Conference {
 
@@ -130,6 +125,16 @@ class Domain_Jitsi_Entity_Conference {
 	}
 
 	/**
+	 * Получаем несколько конференций
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function getList(array $permanent_conference_id_list):array {
+
+		return Gateway_Db_JitsiData_ConferenceList::getList($permanent_conference_id_list);
+	}
+
+	/**
 	 * проверяем существование конференции по ссылке и корректность параметров из ссылки (пароль, домен)
 	 *
 	 * @return Struct_Db_JitsiData_Conference
@@ -151,6 +156,17 @@ class Domain_Jitsi_Entity_Conference {
 	}
 
 	/**
+	 * Определяем статус конференции, при ее завершении
+	 */
+	public static function resolveStatusOnFinish(Struct_Db_JitsiData_Conference $conference):int {
+
+		return match (Domain_Jitsi_Entity_Conference_Data::getConferenceType($conference->data)) {
+			Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_DEFAULT, Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_SINGLE => self::STATUS_FINISHED,
+			Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_PERMANENT                                                            => self::STATUS_NEW,
+		};
+	}
+
+	/**
 	 * обновляем статус конференции
 	 *
 	 * @throws ParseFatalException
@@ -164,9 +180,8 @@ class Domain_Jitsi_Entity_Conference {
 	}
 
 	/**
-	 * устанавливаем опции
+	 * Устанавливаем опции
 	 *
-	 * @return Struct_Db_JitsiData_Conference
 	 * @throws ParseFatalException
 	 */
 	public static function setOptions(Struct_Db_JitsiData_Conference $conference, bool $is_private, bool $is_lobby):Struct_Db_JitsiData_Conference {
@@ -208,6 +223,14 @@ class Domain_Jitsi_Entity_Conference {
 	public static function isSingle(Struct_Db_JitsiData_Conference $conference):bool {
 
 		return Domain_Jitsi_Entity_Conference_Data::getConferenceType($conference->data) === Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_SINGLE;
+	}
+
+	/**
+	 * Является ли конференция постоянной
+	 */
+	public static function isPermanent(Struct_Db_JitsiData_Conference $conference):bool {
+
+		return Domain_Jitsi_Entity_Conference_Data::getConferenceType($conference->data) === Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_PERMANENT;
 	}
 
 	/**

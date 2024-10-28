@@ -58,4 +58,32 @@ class Domain_Jitsi_Entity_Conference_Asserts {
 
 		return $this;
 	}
+
+	/**
+	 * Проверяем, что переданный пользователь – создатель конференции
+	 *
+	 * @throws Domain_Jitsi_Exception_Conference_AllowedOnlyForCreator
+	 */
+	public function assertCreator(int $user_id):self {
+
+		if ($user_id !== $this->_conference->creator_user_id) {
+			throw new Domain_Jitsi_Exception_Conference_AllowedOnlyForCreator();
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Проверяем, что конференция является постоянной
+	 *
+	 * @throws Domain_Jitsi_Exception_Conference_UnexpectedType
+	 */
+	public function assertPermanent():self {
+
+		if (!Domain_Jitsi_Entity_Conference::isPermanent($this->_conference)) {
+			throw new Domain_Jitsi_Exception_Conference_UnexpectedType();
+		}
+
+		return $this;
+	}
 }

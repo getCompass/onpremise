@@ -68,7 +68,7 @@ class Gateway_Db_JitsiData_ConferenceMemberList extends Gateway_Db_JitsiData_Mai
 			"data"          => $conference_member->data,
 		];
 		try {
-			ShardingGateway::database(self::_DB_KEY)->insert(self::_TABLE_NAME, $insert_array);
+			ShardingGateway::database(self::_DB_KEY)->insert(self::_TABLE_NAME, $insert_array, false);
 		} catch (\PDOException $e) {
 
 			// если это дупликат записи

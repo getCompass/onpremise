@@ -20,6 +20,7 @@ class Apiv2_Jitsi extends \BaseFrame\Controller\Api {
 		"setConferenceOptions",
 		"finishConference",
 		"leaveActiveConference",
+		"getPermanentList",
 	];
 
 	// -------------------------------------------------------
@@ -130,7 +131,7 @@ class Apiv2_Jitsi extends \BaseFrame\Controller\Api {
 			throw new CaseException(1219003, "conference not found");
 		} catch (Domain_Jitsi_Exception_ConferenceMember_AttemptJoinToPrivateConference) {
 			throw new CaseException(1219001, "attempt join to private conference");
-		} catch (Domain_Jitsi_Exception_Conference_IsFinished) {
+		} catch (Domain_Jitsi_Exception_Conference_IsFinished|Domain_Jitsi_Exception_PermanentConference_ConferenceIsDeleted) {
 			throw new CaseException(1219005, "conference is finished");
 		} catch (BlockException $e) {
 
@@ -239,14 +240,13 @@ class Apiv2_Jitsi extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * метод для покидания активной конференции
+	 * Метод для покидания активной конференции
 	 *
-	 * @return array
 	 * @throws Domain_Jitsi_Exception_ConferenceMember_IncorrectMemberId
-	 * @throws Domain_Jitsi_Exception_ConferenceMember_NotFound
 	 * @throws Domain_Jitsi_Exception_Conference_NotFound
+	 * @throws Domain_Jitsi_Exception_Node_NotFound
 	 * @throws ParseFatalException
-	 * @throws \parseException
+	 * @throws \cs_CurlError
 	 */
 	public function leaveActiveConference():array {
 

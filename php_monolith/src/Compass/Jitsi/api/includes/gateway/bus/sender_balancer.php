@@ -111,9 +111,15 @@ class Gateway_Bus_SenderBalancer {
 								     ?Struct_Api_Conference_JoiningData $conference_joining_data,
 								     ?int                               $conference_active_at):void {
 
+		$conference_data_1 = clone $conference_data;
+		$conference_data_2 = clone $conference_data;
+
 		self::_sendEvent([
 			Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V1::makeEvent(
-				$action, $conference_data, $conference_member_data, $conference_joining_data, $conference_active_at
+				$action, $conference_data_1, $conference_member_data, $conference_joining_data, $conference_active_at
+			),
+			Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V2::makeEvent(
+				$action, $conference_data_2, $conference_member_data, $conference_joining_data, $conference_active_at
 			),
 		], $user_id_list);
 	}

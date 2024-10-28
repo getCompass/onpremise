@@ -12,7 +12,8 @@ use BaseFrame\Handler\Api;
 class Socket_Handler extends Api implements \RouteHandler {
 
 	public const ALLOW_CONTROLLERS = [
-		"task"
+		"task",
+		"conference",
 	];
 
 	/**

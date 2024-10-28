@@ -11,10 +11,10 @@ use BaseFrame\Exception\Domain\ParseFatalException;
 class Domain_Jitsi_Scenario_Event {
 
 	/**
-	 * при завершении конференции
+	 * При завершении конференции
 	 *
+	 * @throws \parseException
 	 * @throws ParseFatalException
-	 * @long
 	 */
 	public static function onConferenceFinished(string $conference_id):void {
 
@@ -25,8 +25,8 @@ class Domain_Jitsi_Scenario_Event {
 			return;
 		}
 
-		// обновляем статус конференции
-		$conference->status = Domain_Jitsi_Entity_Conference::STATUS_FINISHED;
+		// определяем статус, который установим конференции
+		$conference->status = Domain_Jitsi_Entity_Conference::resolveStatusOnFinish($conference);
 		Domain_Jitsi_Entity_Conference::updateStatus($conference_id, $conference->status);
 
 		$ws_user_id_list = array_column($user_active_conference_list, "user_id");
@@ -87,11 +87,11 @@ class Domain_Jitsi_Scenario_Event {
 	 * @throws ParseFatalException
 	 * @throws Domain_Jitsi_Exception_ConferenceMember_IncorrectMemberId
 	 */
-	public static function onConferenceMemberLeft(string $conference_id, string $member_id):void {
+	public static function onConferenceMemberLeft(string $conference_id, string $member_id, bool $is_lost_connections = false):void {
 
 		$member_type      = Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveMemberType($member_id);
 		$member_behaviour = Domain_Jitsi_Entity_ConferenceMember_Behavior_Strategy::get($member_type);
-		$member_behaviour->onLeftConference($conference_id, $member_id);
+		$member_behaviour->onLeftConference($conference_id, $member_id, $is_lost_connections);
 	}
 
 	/**

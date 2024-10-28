@@ -52,7 +52,7 @@ class Domain_Jitsi_Entity_ConferenceMember {
 
 			// обновляем данные в существующей записи
 			$conference_member->status       = Domain_Jitsi_Entity_ConferenceMember_Status::JOINING;
-			$conference_member->is_moderator = $member_context->is_moderator;
+			$conference_member->is_moderator = $conference_member->is_moderator || $member_context->is_moderator;
 			$conference_member->ip_address   = $member_context->ip_address;
 			$conference_member->user_agent   = self::_prepareUserAgent($member_context->user_agent);
 			$conference_member->created_at   = time();
@@ -60,7 +60,7 @@ class Domain_Jitsi_Entity_ConferenceMember {
 
 			// обновляем запись
 			Gateway_Db_JitsiData_ConferenceMemberList::set($conference->conference_id, $member_context->member_type->value, $member_context->member_id, [
-				"status"       => $conference_member->status,
+				"status"       => $conference_member->status->value,
 				"is_moderator" => $conference_member->is_moderator,
 				"ip_address"   => $conference_member->ip_address,
 				"user_agent"   => $conference_member->user_agent,
@@ -103,39 +103,45 @@ class Domain_Jitsi_Entity_ConferenceMember {
 		return $status;
 	}
 
-    /**
-     * обновляем запись при принятии звонка участником
-     *
-     * @throws ParseFatalException
-     */
-    public static function updateOnAccept(Domain_Jitsi_Entity_ConferenceMember_Type $member_type, string $member_id, string $conference_id, ?array $data = null):Domain_Jitsi_Entity_ConferenceMember_Status {
-
-        // формируем массив для обновления
-        $status = Domain_Jitsi_Entity_ConferenceMember_Status::ACCEPTED;
-        $set    = [
-            "status"     => Domain_Jitsi_Entity_ConferenceMember_Status::ACCEPTED->value,
-            "updated_at" => time(),
-        ];
-        if (!is_null($data)) {
-            $set["data"] = $data;
-        }
-        Gateway_Db_JitsiData_ConferenceMemberList::set($conference_id, $member_type->value, $member_id, $set);
-
-        return $status;
-    }
-
 	/**
-	 * обновляем запись при покидании конференции участником
+	 * Обновляем запись при принятии звонка участником
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function updateOnLeft(Domain_Jitsi_Entity_ConferenceMember_Type $member_type, string $member_id, string $conference_id):void {
+	public static function updateOnAccept(Domain_Jitsi_Entity_ConferenceMember_Type $member_type, string $member_id, string $conference_id, ?array $data = null):Domain_Jitsi_Entity_ConferenceMember_Status {
 
-		Gateway_Db_JitsiData_ConferenceMemberList::set($conference_id, $member_type->value, $member_id, [
-			"is_moderator" => 0,
-			"status"       => Domain_Jitsi_Entity_ConferenceMember_Status::LEFT->value,
-			"updated_at"   => time(),
-		]);
+		// формируем массив для обновления
+		$status = Domain_Jitsi_Entity_ConferenceMember_Status::ACCEPTED;
+		$set    = [
+			"status"     => Domain_Jitsi_Entity_ConferenceMember_Status::ACCEPTED->value,
+			"updated_at" => time(),
+		];
+		if (!is_null($data)) {
+			$set["data"] = $data;
+		}
+		Gateway_Db_JitsiData_ConferenceMemberList::set($conference_id, $member_type->value, $member_id, $set);
+
+		return $status;
+	}
+
+	/**
+	 * Обновляем запись при покидании конференции участником
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function updateOnLeft(Domain_Jitsi_Entity_ConferenceMember_Type $member_type, string $member_id, string $conference_id, bool $reset_moderator_role):void {
+
+		$set = [
+			"status"     => Domain_Jitsi_Entity_ConferenceMember_Status::LEFT->value,
+			"updated_at" => time(),
+		];
+
+		// если нужно сбросить роль модератора участнику
+		if ($reset_moderator_role) {
+			$set["is_moderator"] = 0;
+		}
+
+		Gateway_Db_JitsiData_ConferenceMemberList::set($conference_id, $member_type->value, $member_id, $set);
 	}
 
 	/**

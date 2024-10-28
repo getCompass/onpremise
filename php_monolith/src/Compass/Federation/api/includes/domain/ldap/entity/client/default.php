@@ -21,14 +21,19 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 	public const ERROR_NUM_UNWILLING_TO_PERFORM      = 53;
 	public const ERROR_NUM_FILTER_ERROR              = -7;
 
-	public function __construct(string $host, int $port) {
+	public function __construct(string $host, int $port, bool $use_ssl) {
 
-		$this->ldap_connection = ldap_connect(sprintf("ldap://%s", $host), $port);
+		$protocol              = $use_ssl ? "ldaps" : "ldap";
+		$this->ldap_connection = ldap_connect(sprintf("%s://%s", $protocol, $host), $port);
 		if (!$this->ldap_connection) {
 			throw new ParseFatalException(sprintf("could not connect to ldap server [%s]", ldap_error($this->ldap_connection)));
 		}
 		ldap_set_option($this->ldap_connection, LDAP_OPT_REFERRALS, false);
 		ldap_set_option($this->ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+		// в случае use_ssl = true – проверяем сертификат ldap провайдера
+		// в случае use_ssl = false – сертификат проверке не подлежит
+		ldap_set_option($this->ldap_connection, LDAP_OPT_X_TLS_REQUIRE_CERT, $use_ssl ? LDAP_OPT_X_TLS_DEMAND : LDAP_OPT_X_TLS_NEVER);
 	}
 
 	public function bind(string $dn, string $password):bool {

@@ -68,6 +68,7 @@ export function getLangFullName(langCode: Lang): string {
 // словарь с текстами, возвращаемый в api-методе /global/start/
 export type ApiGlobalStartDictionaryData = {
 	auth_sso_start_button_text: string;
+	auth_sso_ldap_description_text: string;
 };
 
 // информация о пользователе, возвращаемая в различных api-методах

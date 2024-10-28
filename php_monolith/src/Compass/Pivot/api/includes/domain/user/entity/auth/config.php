@@ -92,7 +92,7 @@ class Domain_User_Entity_Auth_Config {
 	/**
 	 * получаем протокол, через который работает аутентификаци через SSO
 	 *
-	 * @return bool
+	 * @return string
 	 * @throws ParseFatalException
 	 */
 	public static function getSsoProtocol():string {
@@ -103,12 +103,23 @@ class Domain_User_Entity_Auth_Config {
 	/**
 	 * получаем текст для кнопки начала аутентификации через SSO
 	 *
-	 * @return bool
+	 * @return string
 	 * @throws ParseFatalException
 	 */
 	public static function getSsoStartButtonText():string {
 
 		return self::_getConfig(self::_KEY_AUTH_SSO)["start_button_text"];
+	}
+
+	/**
+	 * получаем текст для описания авторизации через LDAP
+	 *
+	 * @return string
+	 * @throws ParseFatalException
+	 */
+	public static function getSsoLdapDescriptionText():string {
+
+		return self::_getConfig(self::_KEY_AUTH_SSO)["ldap_description_text"];
 	}
 
 	/**

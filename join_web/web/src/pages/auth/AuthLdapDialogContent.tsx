@@ -10,7 +10,7 @@ import PasswordInput from "../../components/PasswordInput.tsx";
 import { useApiFederationLdapAuthTryAuthenticate, useApiPivotAuthLdapBegin } from "../../api/auth/ldap.ts";
 import { ApiError, NetworkError, ServerError } from "../../api/_index.ts";
 import { useAtom, useAtomValue } from "jotai/index";
-import { activeDialogIdState, prepareJoinLinkErrorState } from "../../api/_stores.ts";
+import { activeDialogIdState, dictionaryDataState, prepareJoinLinkErrorState } from "../../api/_stores.ts";
 import { useShowToast } from "../../lib/Toast.tsx";
 import {
 	ALREADY_MEMBER_ERROR_CODE,
@@ -30,7 +30,6 @@ const AuthLdapDialogContentDesktop = () => {
 	const langStringTwoMinutes = useLangString("two_minutes");
 	const langStringFiveMinutes = useLangString("five_minutes");
 	const langStringLdapLoginDialogTitle = useLangString("ldap_login_dialog.title");
-	const langStringLdapLoginDialogDesc = useLangString("ldap_login_dialog.desc");
 	const langStringLdapLoginDialogUsernameInputPlaceholder = useLangString(
 		"ldap_login_dialog.username_input_placeholder"
 	);
@@ -47,6 +46,8 @@ const AuthLdapDialogContentDesktop = () => {
 	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
 	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
 	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
+
+	const ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
 
 	const apiFederationLdapAuthTryAuthenticate = useApiFederationLdapAuthTryAuthenticate();
 	const apiPivotAuthLdapBegin = useApiPivotAuthLdapBegin();
@@ -269,13 +270,13 @@ const AuthLdapDialogContentDesktop = () => {
 
 	return (
 		<VStack w="100%" gap="0px">
-			<VStack gap="0px" mt="20px">
+			<VStack gap="0px" mt="20px" minW="100%">
 				<KeyIcon80 />
 				<Text mt="16px" style="lato_18_24_900" ls="-02">
 					{langStringLdapLoginDialogTitle}
 				</Text>
 				<Text mt="6px" textAlign="center" style="lato_14_20_400" ls="-015" maxW="328px" overflow="wrapEllipsis">
-					{langStringLdapLoginDialogDesc}
+					{ssoLdapLoginDialogDesc}
 				</Text>
 				<Input
 					disabled={apiFederationLdapAuthTryAuthenticate.isLoading || apiPivotAuthLdapBegin.isLoading}
@@ -358,7 +359,6 @@ const AuthLdapDialogContentMobile = () => {
 	const langStringTwoMinutes = useLangString("two_minutes");
 	const langStringFiveMinutes = useLangString("five_minutes");
 	const langStringLdapLoginDialogTitle = useLangString("ldap_login_dialog.title");
-	const langStringLdapLoginDialogDesc = useLangString("ldap_login_dialog.desc");
 	const langStringLdapLoginDialogUsernameInputPlaceholder = useLangString(
 		"ldap_login_dialog.username_input_placeholder"
 	);
@@ -376,6 +376,8 @@ const AuthLdapDialogContentMobile = () => {
 	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
 	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
 	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
+
+	const ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
 
 	const { navigateToDialog } = useNavigateDialog();
 
@@ -613,7 +615,7 @@ const AuthLdapDialogContentMobile = () => {
 					{langStringLdapLoginDialogBackButton}
 				</Button>
 			</Box>
-			<VStack gap="0px" mt="-6px">
+			<VStack gap="0px" mt="-6px" minW="100%">
 				<KeyIcon80 />
 				<Text mt="16px" style="lato_20_28_700" ls="-03">
 					{langStringLdapLoginDialogTitle}
@@ -625,7 +627,7 @@ const AuthLdapDialogContentMobile = () => {
 					maxW={screenWidth <= 390 ? "326px" : "350px"}
 					overflow="wrapEllipsis"
 				>
-					{langStringLdapLoginDialogDesc}
+					{ssoLdapLoginDialogDesc}
 				</Text>
 				<Input
 					disabled={apiFederationLdapAuthTryAuthenticate.isLoading || apiPivotAuthLdapBegin.isLoading}

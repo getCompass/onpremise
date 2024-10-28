@@ -193,8 +193,9 @@ class JitsiEvent_Handler {
 		}
 
 		$event_data["room_name"] = self::_sanitizeRoomName($event_data["room_name"]);
+		$is_lost_connection      = self::_checkLostConnectionState($event_data);
 
-		Domain_Jitsi_Scenario_Event::onConferenceMemberLeft($event_data["room_name"], $event_data["occupant"]["id"]);
+		Domain_Jitsi_Scenario_Event::onConferenceMemberLeft($event_data["room_name"], $event_data["occupant"]["id"], $is_lost_connection);
 	}
 
 	/**
@@ -227,5 +228,53 @@ class JitsiEvent_Handler {
 
 		// заменяем найденный текст на пустую строку
 		return preg_replace($pattern, "", $room_name);
+	}
+
+	/**
+	 * Проверяем было ли потеряно соединение
+	 */
+	protected static function _checkLostConnectionState(array $event_data):bool {
+
+		// проверяем наличие параметра stanza
+		if (!isset($event_data["stanza"]) || count($event_data["stanza"]) < 1) {
+			return false;
+		}
+
+		// логика ниже определяет, что участник потерял соединение
+		$stanza = $event_data["stanza"];
+		if ($stanza["name"] !== "presence") {
+			return false;
+		}
+
+		$status_tag = [];
+		foreach ($stanza["tags"] as $tag) {
+
+			if ($tag["name"] === "status") {
+
+				$status_tag = $tag;
+				break;
+			}
+		}
+
+		if (!isset($status_tag["name"])) {
+			return false;
+		}
+
+		if (isset($status_tag["__array"]) && is_array($status_tag["__array"])) {
+
+			$lost_connection_item = array_filter($status_tag["__array"], function(mixed $item) {
+
+				if (!is_string($item)) {
+					return false;
+				}
+
+				$item = mb_strtolower($item);
+				return inHtml($item, "disconnected") && inHtml($item, "client silent");
+			});
+
+			return count($lost_connection_item) > 0;
+		}
+
+		return false;
 	}
 }

@@ -20,10 +20,10 @@ class Domain_Jitsi_Entity_ConferenceMember_Behavior_Guest implements Domain_Jits
 	/**
 	 * обработка события о покидании конференции
 	 */
-	public function onLeftConference(string $conference_id, string $member_id):void {
+	public function onLeftConference(string $conference_id, string $member_id, bool $is_lost_connections):void {
 
 		// обновляем статус участника конференции
-		Domain_Jitsi_Entity_ConferenceMember::updateOnLeft(Domain_Jitsi_Entity_ConferenceMember_Type::GUEST, $member_id, $conference_id);
+		Domain_Jitsi_Entity_ConferenceMember::updateOnLeft(Domain_Jitsi_Entity_ConferenceMember_Type::GUEST, $member_id, $conference_id, true);
 	}
 
 	/**

@@ -26,6 +26,9 @@ envsubst < "${SCRIPT_PATH}/private/custom.local.php" > "${SCRIPT_PATH}/private/c
 # возможно это стоит делать отдельным шагом инициализации
 bash "/app/wait-services.sh" || die "service waiting failed"
 
+# чиним миграции
+php "${SCRIPT_PATH}/sh/php/update/fix_migration.php"
+
 # приступаем к миграциям
 mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" < "${SCRIPT_PATH}/sql/init_pivot.sql"
 

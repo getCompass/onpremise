@@ -2,20 +2,21 @@
 
 namespace Compass\Jitsi;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
- * класс описывающий действие по созданию конференции
+ * Класс описывающий действие по созданию конференции
  * @package Compass\Jitsi
  */
 class Domain_Jitsi_Action_Conference_Create {
 
 	/**
-	 * выполняем действие
+	 * Выполняем действие
 	 *
-	 * @return Struct_Db_JitsiData_Conference
 	 * @throws Domain_Jitsi_Exception_Conference_ConferenceIdDuplication
 	 * @throws Domain_Jitsi_Exception_Node_NotFound
 	 * @throws Domain_Jitsi_Exception_Node_RequestFailed
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 * @throws \cs_CurlError
 	 * @throws \queryException
 	 */
@@ -28,7 +29,7 @@ class Domain_Jitsi_Action_Conference_Create {
 		$unique_part = is_null($custom_unique_part) ? Domain_Jitsi_Entity_Conference_Id::generateRandomUniquePart() : $custom_unique_part;
 
 		// создаем сущность конференции
-		$conference_draft                = Domain_Jitsi_Entity_Conference::makeDraft($user_id, $space_id, $jitsi_node_config->domain);
+		$conference_draft                = Domain_Jitsi_Entity_Conference::makeDraft($user_id, $space_id, $jitsi_node_config->domain, "", "");
 		$conference_draft->conference_id = Domain_Jitsi_Entity_Conference_Id::getConferenceId($user_id, $unique_part, $password);
 		$conference_draft->password      = $password;
 		$conference_draft->is_private    = $is_private;

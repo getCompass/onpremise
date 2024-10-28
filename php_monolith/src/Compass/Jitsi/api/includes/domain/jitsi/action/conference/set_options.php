@@ -2,21 +2,22 @@
 
 namespace Compass\Jitsi;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
- * класс описывает действие по обновлению параметров конференции
+ * Класс описывает действие по обновлению параметров конференции
  * @package Compass\Jitsi
  */
 class Domain_Jitsi_Action_Conference_SetOptions {
 
 	/**
-	 * выполняем действие
+	 * Выполняем действие
 	 *
-	 * @return Struct_Db_JitsiData_Conference
-	 * @throws Domain_Jitsi_Exception_Node_NotFound
-	 * @throws Domain_Jitsi_Exception_Node_RequestFailed
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \cs_CurlError
 	 * @throws \parseException
+	 * @throws Domain_Jitsi_Exception_Node_NotFound
+	 * @throws Domain_Jitsi_Exception_Node_RequestFailed
+	 * @throws ParseFatalException
 	 */
 	public static function do(Struct_Db_JitsiData_Conference $conference, bool $is_private, bool $is_lobby):Struct_Db_JitsiData_Conference {
 
@@ -32,7 +33,7 @@ class Domain_Jitsi_Action_Conference_SetOptions {
 			// если это не 404 (комната не найдена), то что-то серьезное
 			// 404 может вернуться в случае, если конференция завершается и со стороны jitsi сущность была уже удалена, но не успела
 			// синхронизироваться с приложением
-			if ($e->getHttpCode() != 404) {
+			if ($e->getResponseHttpCode() != 404) {
 				throw $e;
 			}
 		}

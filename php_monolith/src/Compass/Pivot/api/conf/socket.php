@@ -13,6 +13,7 @@ $CONFIG["SOCKET_URL"] = [
 	"premise"          => ENTRYPOINT_PREMISE,
 	"crm"              => ENTRYPOINT_PIVOT,
 	"integration"      => ENTRYPOINT_INTEGRATION,
+	"jitsi"            => ENTRYPOINT_PIVOT,
 ];
 
 // конфиг с query для обращения к определенному модулю
@@ -58,6 +59,9 @@ $CONFIG["SOCKET_MODULE"] = [
 	],
 	"premise"       => [
 		"socket_path" => "/api/socket/premise/",
+	],
+	"jitsi"         => [
+		"socket_path" => "/api/socket/jitsi/",
 	],
 ];
 

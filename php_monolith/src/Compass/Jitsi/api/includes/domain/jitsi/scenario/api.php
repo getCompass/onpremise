@@ -17,29 +17,28 @@ use BaseFrame\Exception\Request\ParamException;
 class Domain_Jitsi_Scenario_Api {
 
 	/**
-	 * создаем конференцию
-	 *
+	 * Создаем конференцию
 	 *
 	 * @throws BusFatalException
 	 * @throws Domain_Jitsi_Exception_Conference_ConferenceIdDuplication
 	 * @throws Domain_Jitsi_Exception_Conference_CreatorIsNotMemberOfSpace
+	 * @throws Domain_Jitsi_Exception_Conference_GuestAccessDenied
+	 * @throws Domain_Jitsi_Exception_Conference_NoCreatePermissions
 	 * @throws Domain_Jitsi_Exception_Node_NotFound
 	 * @throws Domain_Jitsi_Exception_Node_RequestFailed
 	 * @throws Domain_Jitsi_Exception_UserActiveConference_UserHaveActiveConference
 	 * @throws Domain_Space_Exception_NotFound
 	 * @throws Domain_Space_Exception_UnexpectedStatus
 	 * @throws EndpointAccessDeniedException
+	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
-	 * @throws ParamException
-	 * @throws \cs_CurlError
-	 * @throws \queryException
-	 * @throws cs_UserNotFound
-	 * @throws \returnException
-	 * @throws \parseException
-	 * @throws Domain_Jitsi_Exception_Conference_NoCreatePermissions
-	 * @throws Domain_Jitsi_Exception_Conference_GuestAccessDenied
 	 * @throws RowNotFoundException
+	 * @throws \cs_CurlError
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws \returnException
+	 * @throws cs_UserNotFound
 	 */
 	public static function createConference(int $user_id, int $space_id, bool $is_private, bool $is_lobby, ?string $custom_conference_id = null):array {
 
@@ -76,24 +75,20 @@ class Domain_Jitsi_Scenario_Api {
 	}
 
 	/**
-	 * присоединяем участника в конференцию, если можно
+	 * Присоединяем участника в конференцию, если можно
 	 *
-	 * @param int    $user_id
-	 * @param int    $space_id
-	 * @param string $link
-	 *
-	 * @long
-	 * @return array
 	 * @throws BusFatalException
-	 * @throws Domain_Jitsi_Exception_ConferenceLink_IncorrectLink
 	 * @throws Domain_Jitsi_Exception_Conference_NotFound
 	 * @throws Domain_Jitsi_Exception_Conference_WrongPassword
 	 * @throws Domain_Jitsi_Exception_Node_NotFound
+	 * @throws Domain_Jitsi_Exception_Node_RequestFailed
+	 * @throws Domain_Jitsi_Exception_PermanentConference_ConferenceIsDeleted
 	 * @throws Domain_Jitsi_Exception_UserActiveConference_UserHaveActiveConference
 	 * @throws EndpointAccessDeniedException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws RowNotFoundException
+	 * @throws \cs_CurlError
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws cs_UserNotFound
@@ -120,8 +115,20 @@ class Domain_Jitsi_Scenario_Api {
 		// верифицируем ссылку на конференцию
 		$conference = Domain_Jitsi_Entity_Conference::verifyConferenceLink($parsed_link);
 
+		// Проверяем что постоянная конференция не удалена
+		if (Domain_Jitsi_Entity_Conference::isPermanent($conference)) {
+
+			$permanent_conference = Domain_Jitsi_Entity_PermanentConference::getOne($conference->conference_id);
+			Domain_Jitsi_Entity_PermanentConference::assertNotDeleted($permanent_conference);
+		}
+
 		// подготавливаем все к подключению участника к конференции
 		[$conference_joining_data, $conference_member_data, $conference_creator_data] = self::prepareConferenceJoiningData($user_id, $space_id, $conference);
+
+		// пересоздаем комнату в jitsi для постоянной конференции, если пользователь подключается к конференции первым
+		if (Domain_Jitsi_Entity_Conference::isPermanent($conference) && Domain_Jitsi_Entity_Conference::STATUS_NEW == $conference->status) {
+			Domain_Jitsi_Action_Conference_RecreateJitsiConference::do($conference);
+		}
 
 		// если участник модератор или в комнате не включен зал ожидания
 		if ($conference_member_data->is_moderator || !$conference->is_lobby) {
@@ -320,7 +327,7 @@ class Domain_Jitsi_Scenario_Api {
 	}
 
 	/**
-	 * устанавливаем параметры конференции
+	 * Устанавливаем параметры конференции
 	 *
 	 * @throws Domain_Jitsi_Exception_ConferenceMember_NoModeratorRights
 	 * @throws Domain_Jitsi_Exception_ConferenceMember_NotFound
@@ -630,7 +637,7 @@ class Domain_Jitsi_Scenario_Api {
 	}
 
 	/**
-	 * метод для покидания активной конференции
+	 * Метод для покидания активной конференции
 	 *
 	 * @param int $user_id
 	 *

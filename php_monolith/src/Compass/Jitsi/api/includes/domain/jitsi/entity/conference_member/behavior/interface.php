@@ -15,7 +15,7 @@ interface Domain_Jitsi_Entity_ConferenceMember_Behavior_Interface {
 	/**
 	 * обработка события о покидании конференции
 	 */
-	public function onLeftConference(string $conference_id, string $member_id):void;
+	public function onLeftConference(string $conference_id, string $member_id, bool $is_lost_connections):void;
 
 	/**
 	 * обработка события о выдаче прав модератора

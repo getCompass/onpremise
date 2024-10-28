@@ -36,9 +36,10 @@ export async function loadScript(
     const controller = new AbortController();
     const signal = controller.signal;
 
-    const timer = setTimeout(() => {
-        controller.abort();
-    }, timeout);
+    // const timer = setTimeout(() => {
+    //     controller.abort();
+    // }, timeout);
+    const timer = 0;
 
     const response = await fetch(url, { signal });
 

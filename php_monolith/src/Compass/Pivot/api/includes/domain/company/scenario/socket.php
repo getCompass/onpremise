@@ -191,6 +191,9 @@ class Domain_Company_Scenario_Socket {
 			Type_Phphooker_Main::onUserLeftSpaceEarly($user_id, $company_id, $user_company->entry_id);
 		}
 
+		// чистим постоянные конференции
+		Gateway_Socket_Jitsi::removeAllPermanentConference($user_id, $company_id);
+
 		return true;
 	}
 

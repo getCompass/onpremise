@@ -32,10 +32,24 @@ class Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V1 extends Gatewa
 	 * @return Struct_SenderBalancer_Event
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public static function makeEvent(string $action, Struct_Api_Conference_Data $conference_data,
-						   ?Struct_Api_Conference_MemberData $conference_member_data,
+	public static function makeEvent(string                             $action, Struct_Api_Conference_Data $conference_data,
+						   ?Struct_Api_Conference_MemberData  $conference_member_data,
 						   ?Struct_Api_Conference_JoiningData $joining_data,
-						   ?int $conference_active_at):Struct_SenderBalancer_Event {
+						   ?int                               $conference_active_at):Struct_SenderBalancer_Event {
+
+		// решение для поддержки старых версий клиентов, где не может быть постоянной конференции:
+		// - если конференций постоянная и мы отдаем статус active или new при ее покидании
+		// - то отправляем статус finished
+		if (($action === self::ACTION_LEFT_CONFERENCE || $action === Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V2::ACTION_LOST_CONNECTION)
+			&& ($conference_data->status === "active" || $conference_data->status === "new")
+			&& $conference_data->conference_type === "permanent") {
+			$conference_data->status = "finished";
+		}
+
+		// решение для поддержки старых версий клиентов, где не может быть события lost_connection
+		if ($action === Gateway_Bus_SenderBalancer_Event_ActiveConferenceUpdated_V2::ACTION_LOST_CONNECTION) {
+			$action = self::ACTION_LEFT_CONFERENCE;
+		}
 
 		return self::_buildEvent([
 			"action"                  => (string) $action,

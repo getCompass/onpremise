@@ -37,18 +37,16 @@ class Domain_Jitsi_Scenario_Www {
 	}
 
 	/**
-	 * присоединяем участника в конференцию, если можно
+	 * Присоединяем участника в конференцию, если можно
 	 *
-	 * @param string $guest_id
-	 * @param string $link
-	 *
-	 * @return array
-	 * @throws Domain_Jitsi_Exception_Node_NotFound
-	 * @throws ParseFatalException
-	 * @throws RowNotFoundException
-	 * @throws \queryException
 	 * @throws Domain_Jitsi_Exception_Conference_NotFound
 	 * @throws Domain_Jitsi_Exception_Conference_WrongPassword
+	 * @throws Domain_Jitsi_Exception_Node_NotFound
+	 * @throws Domain_Jitsi_Exception_Node_RequestFailed
+	 * @throws ParseFatalException
+	 * @throws RowNotFoundException
+	 * @throws \cs_CurlError
+	 * @throws \queryException
 	 */
 	public static function joinConference(string $guest_id, string $link):array {
 
@@ -72,6 +70,11 @@ class Domain_Jitsi_Scenario_Www {
 
 		// создаем jwt токен для авторизованного пользователя
 		$jwt_token = Domain_Jitsi_Action_Conference_JoinAsGuest::do($guest_id, $conference);
+
+		// пересоздаем комнату в jitsi для постоянной конференции, если пользователь подключается к конференции первым
+		if (Domain_Jitsi_Entity_Conference::isPermanent($conference) && Domain_Jitsi_Entity_Conference::STATUS_NEW == $conference->status) {
+			Domain_Jitsi_Action_Conference_RecreateJitsiConference::do($conference);
+		}
 
 		// получаем конфиг ноды
 		$node_config = Domain_Jitsi_Entity_Node::getConfig($conference->jitsi_instance_domain);

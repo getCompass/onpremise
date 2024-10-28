@@ -12,21 +12,23 @@ class Domain_Jitsi_Entity_Conference_Data {
 	// версия упаковщика
 	protected const _DATA_VERSION = 1;
 
-	public const CONFERENCE_TYPE_DEFAULT = 0; // дефолтная конференция
-	public const CONFERENCE_TYPE_SINGLE  = 1; // сингл звонок
+	public const CONFERENCE_TYPE_DEFAULT   = 0; // дефолтная конференция
+	public const CONFERENCE_TYPE_SINGLE    = 1; // сингл звонок
+	public const CONFERENCE_TYPE_PERMANENT = 2; // постоянная конференция
 
 	protected const _ALLOWED_CONFERENCE_TYPE = [
 		self::CONFERENCE_TYPE_SINGLE,
 		self::CONFERENCE_TYPE_DEFAULT,
+		self::CONFERENCE_TYPE_PERMANENT,
 	];
 
 	// схема data
 	protected const _DATA_SCHEME = [
 
 		1 => [
-			"conference_type"    => self::CONFERENCE_TYPE_DEFAULT,
-			"opponent_user_id"   => 0,
-			"conversation_map"   => "",
+			"conference_type"  => self::CONFERENCE_TYPE_DEFAULT,
+			"opponent_user_id" => 0,
+			"conversation_map" => "",
 		],
 	];
 
@@ -72,7 +74,7 @@ class Domain_Jitsi_Entity_Conference_Data {
 			throw new ParseFatalException("invalid conference type");
 		}
 
-		$data                             = self::_getData($data);
+		$data                            = self::_getData($data);
 		$data["data"]["conference_type"] = $value;
 
 		return $data;
@@ -102,7 +104,7 @@ class Domain_Jitsi_Entity_Conference_Data {
 	 */
 	public static function setOpponentUserId(array $data, int $value):array {
 
-		$data                              = self::_getData($data);
+		$data                             = self::_getData($data);
 		$data["data"]["opponent_user_id"] = $value;
 
 		return $data;
@@ -132,7 +134,7 @@ class Domain_Jitsi_Entity_Conference_Data {
 	 */
 	public static function setConversationMap(array $data, string $value):array {
 
-		$data                              = self::_getData($data);
+		$data                             = self::_getData($data);
 		$data["data"]["conversation_map"] = $value;
 
 		return $data;

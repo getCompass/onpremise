@@ -328,6 +328,9 @@ class Cron_Phphooker extends \Cron_Default {
 
 				$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
 				Gateway_Socket_Company::deleteUser($user_id, $company->company_id, $company->domino_id, $private_key);
+
+				// чистим постоянные конференции
+				Gateway_Socket_Jitsi::removeAllPermanentConference($user_id, $company->company_id);
 			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
 				// !!! если вдруг компания неактивна, то продолжаем дальнейшее выполнение на пивоте
 			}

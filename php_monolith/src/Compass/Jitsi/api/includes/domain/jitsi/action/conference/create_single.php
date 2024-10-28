@@ -29,7 +29,7 @@ class Domain_Jitsi_Action_Conference_CreateSingle {
 	public static function do(int $creator_user_id, int $opponent_user_id, int $space_id, string $conversation_map, Struct_Jitsi_Node_Config $jitsi_node_config):Struct_Db_JitsiData_Conference {
 
 		// создаем сущность конференции
-		$conference_draft             = Domain_Jitsi_Entity_Conference::makeDraft($creator_user_id, $space_id, $jitsi_node_config->domain);
+		$conference_draft             = Domain_Jitsi_Entity_Conference::makeDraft($creator_user_id, $space_id, $jitsi_node_config->domain, "", "");
 		$conference_draft->is_private = true;
 		$conference_draft->is_lobby   = false;
 		$conference_draft->data       = Domain_Jitsi_Entity_Conference_Data::setConferenceType(

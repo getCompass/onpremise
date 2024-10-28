@@ -53,6 +53,9 @@ class Domain_User_Action_KickUserFromCompany {
 			// шлем запрос в нужную компанию
 			Type_System_Admin::log("user-kicker", "send kick user {$user_id} command to company {$company_id}");
 			Gateway_Socket_Company::kickUser($user_id, $company_id, $company->domino_id, Domain_Company_Entity_Company::getPrivateKey($company->extra));
+
+			// удаляем у пользователя все постоянные комнаты
+			Gateway_Socket_Jitsi::removeAllPermanentConference($user_id, $company_id);
 		} catch (cs_CompanyIsHibernate $e) { // кетчим если компания в гибернации чтобы отловить один кейс
 
 			// если это тестовый сервер - значит компанию усыпили и она уже не проснется(физически удаляется база компании), ничего не делаем

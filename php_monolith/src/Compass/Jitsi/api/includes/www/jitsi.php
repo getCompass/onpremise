@@ -2,8 +2,11 @@
 
 namespace Compass\Jitsi;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\RowNotFoundException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CaseException;
+use BaseFrame\Exception\Request\ParamException;
 
 /**
  * контроллер для методов www/jitsi/...
@@ -26,7 +29,6 @@ class Www_Jitsi extends \BaseFrame\Controller\Www {
 	public function getConferenceData():array {
 
 		$link = $this->post(\Formatter::TYPE_STRING, "link");
-
 
 		try {
 			Type_Antispam_Ip::check(Type_Antispam_Ip::JITSI_INVALID_CONFERENCE_ID);
@@ -54,12 +56,18 @@ class Www_Jitsi extends \BaseFrame\Controller\Www {
 	}
 
 	/**
-	 * присоединяемся гостем к конференции
+	 * Присоединяемся гостем к конференции
+	 *
+	 * @throws BlockException
+	 * @throws CaseException
+	 * @throws ParseFatalException
+	 * @throws RowNotFoundException
+	 * @throws ParamException
+	 * @throws \queryException
 	 */
 	public function joinConference():array {
 
 		$link = $this->post(\Formatter::TYPE_STRING, "link");
-
 
 		try {
 

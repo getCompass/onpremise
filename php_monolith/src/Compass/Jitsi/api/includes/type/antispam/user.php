@@ -25,6 +25,24 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => 10 * 60,
 	];
 
+	public const JITSI_CREATE_PERMANENT_CONFERENCE = [
+		"key"    => "JITSI_CREATE_PERMANENT_CONFERENCE",
+		"limit"  => 10,
+		"expire" => 60,
+	];
+
+	public const JITSI_CHANGE_PERMANENT_CONFERENCE = [
+		"key"    => "JITSI_CHANGE_PERMANENT_CONFERENCE",
+		"limit"  => 10,
+		"expire" => 60,
+	];
+
+	public const JITSI_REMOVE_PERMANENT_CONFERENCE = [
+		"key"    => "JITSI_REMOVE_PERMANENT_CONFERENCE",
+		"limit"  => 10,
+		"expire" => 60,
+	];
+
 	# endregion
 	##########################################################
 

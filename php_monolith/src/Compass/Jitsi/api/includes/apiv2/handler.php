@@ -31,6 +31,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	public const ALLOW_CONTROLLERS = [
 		"jitsi",
 		"jitsi_single",
+		"jitsi_permanent",
 	];
 
 	// поддерживаемые методы которые доступны без авторизации (при создании новой группы заносятся вручную)

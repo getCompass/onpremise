@@ -5,6 +5,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/getCompassUtils/go_base_frame v1.0.3 h1:aECGEq/rskb/XucxoLt/TR/sT9gP/0bvEWiekNNLIl4=
 github.com/getCompassUtils/go_base_frame v1.0.3/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
+github.com/getCompassUtils/go_base_frame v1.0.5 h1:VOtSwUFSGdWID9tDywz97hXtJMAn2ScX7T6PqWnw3Mo=
+github.com/getCompassUtils/go_base_frame v1.0.5/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
 github.com/getCompassUtils/pivot_protobuf_schemes v1.1.1 h1:eN5c+ughwr+MErshgsUwfkIGgwihS43qxEbNK5VKUC4=
 github.com/getCompassUtils/pivot_protobuf_schemes v1.1.1/go.mod h1:UvQcFoz/HTWkf/51Cput3T4lTjtO/X2g/e4qqAwzBjA=
 github.com/go-sql-driver/mysql v1.8.1 h1:LedoTUt/eveggdHS9qUFC1EFSa8bU2+1pZjSRpvNJ1Y=

@@ -358,7 +358,7 @@ class Domain_User_Scenario_Socket {
 		$company_id_list = array_unique($company_id_list);
 
 		// получаем список записей с счетчиком непрочитанных сообщений
-		$unread_count_list = Gateway_Db_PivotUser_CompanyInbox::getByCompanyList($user_id, $company_id_list);
+		$unread_count_list = $company_id_list !== [] ? Gateway_Db_PivotUser_CompanyInbox::getByCompanyList($user_id, $company_id_list) : [];
 
 		// суммируем количество непрочитанных сообщений для каждого девайса
 		foreach ($filtered_device_list as $device) {

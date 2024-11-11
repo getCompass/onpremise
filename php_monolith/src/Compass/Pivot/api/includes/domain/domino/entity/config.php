@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Server\ServerProvider;
+use BaseFrame\System\File;
 
 /**
  * Action для генерации конфигов компании
@@ -61,7 +62,7 @@ class Domain_Domino_Entity_Config {
 
 		$mysql_host = $port->host !== "" ? $port->host : $domino->domino_id . "-" . $port->port;
 
-		$host = ServerProvider::isOnPremise() ? $mysql_host : $domino->database_host;
+		$host = (ServerProvider::isOnPremise() && !ServerProvider::isMaster()) ? $mysql_host : $domino->database_host;
 
 		return new Struct_Config_Company_Mysql($host, $port->port, $mysql_user, $mysql_pass);
 	}
@@ -297,15 +298,18 @@ class Domain_Domino_Entity_Config {
 	 */
 	public static function addDominoHost(Struct_Db_PivotCompanyService_DominoRegistry $domino):void {
 
-		if (!file_exists(DOMINO_CONFIG_PATH . self::_DOMINO_HOSTS_FILE)) {
+		$domino_hosts_file = File::init(DOMINO_CONFIG_PATH, self::_DOMINO_HOSTS_FILE);
 
-			file_put_contents(DOMINO_CONFIG_PATH . self::_DOMINO_HOSTS_FILE, "{}");
-			chmod(DOMINO_CONFIG_PATH . self::_DOMINO_HOSTS_FILE, 0600);
+		if (!$domino_hosts_file->isExists()) {
+
+			$domino_hosts_file->write("{}");
+			$domino_hosts_file->chmod(0600);
 		}
 
-		$domino_hosts                     = fromJson(file_get_contents(DOMINO_CONFIG_PATH . self::_DOMINO_HOSTS_FILE));
+		$domino_hosts                     = fromJson($domino_hosts_file->read());
 		$domino_hosts[$domino->domino_id] = $domino->code_host;
-		file_put_contents(DOMINO_CONFIG_PATH . self::_DOMINO_HOSTS_FILE, toJson($domino_hosts));
+
+		$domino_hosts_file->write(toJson($domino_hosts));
 	}
 
 	/**
@@ -318,13 +322,18 @@ class Domain_Domino_Entity_Config {
 	 */
 	protected static function _setTimestampFile(string $path, string $domino_id):void {
 
-		// если файлов не было - создаем
-		if (!file_exists($path . self::_TIMESTAMP_FILE)) {
-			file_put_contents($path . self::_TIMESTAMP_FILE, "{}");
+		$timestamp_file = File::init($path, self::_TIMESTAMP_FILE);
+
+
+		if (!$timestamp_file->isExists()) {
+
+			$timestamp_file->write("{}");
+			$timestamp_file->chmod(0600);
 		}
 
-		$timestamp_arr             = fromJson(file_get_contents($path . self::_TIMESTAMP_FILE));
+		$timestamp_arr             = fromJson($timestamp_file->read());
 		$timestamp_arr[$domino_id] = time();
-		file_put_contents($path . self::_TIMESTAMP_FILE, toJson($timestamp_arr));
+
+		$timestamp_file->write(toJson($timestamp_arr));
 	}
 }

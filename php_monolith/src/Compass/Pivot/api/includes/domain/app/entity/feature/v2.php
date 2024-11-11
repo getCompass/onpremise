@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\System\File;
+
 /**
  * Работа с фичами второй версии
  */
@@ -11,7 +13,7 @@ class Domain_App_Entity_Feature_V2 extends Domain_App_Entity_Feature {
 	protected const _CONFIG_VERSION = 2;
 
 	// местоположение инициализирующего конфига фич
-	protected const _INITIALIZATION_CONFIG_PATH = PIVOT_MODULE_ROOT . "/conf/feature_v2.json";
+	protected const _INITIALIZATION_CONFIG_SUBPATH = "feature_v2.json";
 
 	// какой класс с правилами используется для фичи
 	protected const _RULE_LIST_CLASS = Domain_App_Entity_Rule_V2::class;
@@ -112,12 +114,14 @@ class Domain_App_Entity_Feature_V2 extends Domain_App_Entity_Feature {
 			return;
 		}
 
-		if (!file_exists(self::_INITIALIZATION_CONFIG_PATH)) {
+		$initialization_config_file = File::init(self::_INITIALIZATION_CONFIG_DIR, self::_INITIALIZATION_CONFIG_SUBPATH);
+
+		if (!$initialization_config_file->isExists()) {
 			throw new \BaseFrame\Exception\Domain\ParseFatalException("cant find initialization config");
 		}
 
 		$output_config        = [];
-		$config_file_contents = file_get_contents(self::_INITIALIZATION_CONFIG_PATH);
+		$config_file_contents = $initialization_config_file->read();
 
 		$initialization_config = fromJson($config_file_contents);
 

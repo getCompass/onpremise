@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Server\ServerProvider;
+use BaseFrame\System\File;
 
 /**
  * класс для инициализации конфига
@@ -18,8 +19,8 @@ class Type_App_Config {
 	 */
 	public static function start():void {
 
-		$feature_data = fromJson(file_get_contents(PIVOT_MODULE_ROOT . "conf/feature_v1.json"));
-		$rule_data    = fromJson(file_get_contents(PIVOT_MODULE_ROOT . "conf/rule_v1.json"));
+		$feature_data = fromJson(File::init(PIVOT_MODULE_ROOT . "conf", "feature_v1.json")->read());
+		$rule_data    = fromJson(File::init(PIVOT_MODULE_ROOT . "conf", "rule_v1.json")->read());
 
 		$feature_electron_compass = $feature_data[Type_Api_Platform::PLATFORM_ELECTRON . Domain_User_Entity_Feature::COMPASS_POSTFIX];
 		$feature_electron_comteam = $feature_data[Type_Api_Platform::PLATFORM_ELECTRON . Domain_User_Entity_Feature::COMTEAM_POSTFIX];
@@ -48,8 +49,8 @@ class Type_App_Config {
 			return;
 		}
 
-		$feature_data = fromJson(file_get_contents(PIVOT_MODULE_ROOT . "conf/feature_v1.json"));
-		$rule_data    = fromJson(file_get_contents(PIVOT_MODULE_ROOT . "conf/rule_v1.json"));
+		$feature_data = fromJson(File::init(PIVOT_MODULE_ROOT . "conf", "feature_v1.json")->read());
+		$rule_data    = fromJson(File::init(PIVOT_MODULE_ROOT . "conf", "rule_v1.json")->read());
 
 		$feature_electron_compass = $feature_data[Type_Api_Platform::PLATFORM_ELECTRON . Domain_User_Entity_Feature::COMPASS_POSTFIX];
 		$feature_electron_comteam = $feature_data[Type_Api_Platform::PLATFORM_ELECTRON . Domain_User_Entity_Feature::COMTEAM_POSTFIX];

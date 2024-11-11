@@ -2,6 +2,8 @@
 
 namespace Compass\Company;
 
+use BaseFrame\System\File;
+
 /**
  * Класс для системных админских функций
  */
@@ -27,7 +29,7 @@ class Type_System_Admin {
 
 		$date = date(DATE_FORMAT_FULL_S, time());
 		$txt  = "{$date}\t{$txt}\n";
-		@file_put_contents(PATH_LOGS . "info/" . mb_strtolower($log_name) . ".log", $txt, FILE_APPEND);
+		File::init(PATH_LOGS . "info/", mb_strtolower($log_name) . ".log")->write($txt, true);
 
 		// если массив и нужны уведомления в "__admin.log" надо поставить на true
 		if ($notice === true) {

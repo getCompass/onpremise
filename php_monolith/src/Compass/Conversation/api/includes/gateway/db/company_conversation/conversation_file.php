@@ -207,7 +207,7 @@ class Gateway_Db_CompanyConversation_ConversationFile extends Gateway_Db_Company
 	public static function insertArray(array $insert_array):void {
 
 		$sharding_key = self::_getDbKey();
-		static::_connect($sharding_key)->insertArray(self::_getTable(), $insert_array);
+		static::_connect($sharding_key)->insertArray(self::_getTable(), array_map(fn (Struct_Db_CompanyConversation_ConversationFile $insert) => (array) $insert, $insert_array));
 	}
 
 	// метод для получения записи на обновление

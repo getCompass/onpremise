@@ -10,6 +10,7 @@ import (
 	"go_rating/api/conf"
 	CompanyEnvironment "go_rating/api/includes/type/company_config"
 	Isolation "go_rating/api/includes/type/isolation"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -173,12 +174,24 @@ func (c *Connection) Transact(callback func() error) (err error) {
 	return err
 }
 
-// Query выполняет указанный запрос в указанном контексте,
+// GetAll выполняет указанный запрос в указанном контексте,
 // если контекста нет, то нужно передать nil
-func (c *Connection) Query(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+func (c *Connection) GetAll(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 
 	if err := c.ping(ctx); err != nil {
 		return nil, err
+	}
+
+	// если попытались выполнить не селект - отбрасываем
+	if !strings.HasPrefix(query, "SELECT") {
+		return nil, fmt.Errorf("tried to execute not SELECT query")
+	}
+
+	// считаем количество плейсхолдеров и аргументов
+	pc := strings.Count(query, "?")
+
+	if pc != len(args) {
+		return nil, fmt.Errorf("placeholder count doesn't match to args count")
 	}
 
 	if ctx == nil {
@@ -188,11 +201,26 @@ func (c *Connection) Query(ctx context.Context, query string, args ...interface{
 	}
 }
 
-// QueryRow выполняет указанный запрос в указанном контексте,
+// GetOne выполняет указанный запрос в указанном контексте,
 // если контекста нет, то нужно передать nil
-func (c *Connection) QueryRow(ctx context.Context, query string, args ...interface{}) *sql.Row {
+func (c *Connection) GetOne(ctx context.Context, query string, args ...interface{}) *sql.Row {
 
 	if err := c.ping(ctx); err != nil {
+		return nil
+	}
+
+	// если попытались выполнить не селект - отбрасываем
+	if !strings.HasPrefix(query, "SELECT") {
+
+		log.Errorf("tried to execute not SELECT query")
+		return nil
+	}
+	// считаем количество плейсхолдеров и аргументов
+	pc := strings.Count(query, "?")
+
+	if pc != len(args) {
+
+		log.Errorf("placeholder count doesn't match to args count")
 		return nil
 	}
 
@@ -205,7 +233,7 @@ func (c *Connection) QueryRow(ctx context.Context, query string, args ...interfa
 
 // InsertIgnore Выполняет вставку записи в указанном контексте
 // если контекста нет, то нужно передать nil
-func (c *Connection) InsertIgnore(ctx context.Context, tableName string, insert map[string]interface{}) (sql.Result, error) {
+func (c *Connection) InsertIgnore(ctx context.Context, tableName string, insert interface{}) (sql.Result, error) {
 
 	if err := c.ping(ctx); err != nil {
 		return nil, err
@@ -221,7 +249,7 @@ func (c *Connection) InsertIgnore(ctx context.Context, tableName string, insert 
 }
 
 // Update выполняет обновление записи
-func (c *Connection) Update(ctx context.Context, query string, update map[string]interface{}, values ...interface{}) (err error) {
+func (c *Connection) Update(ctx context.Context, query string, update interface{}, values ...interface{}) (err error) {
 
 	if err = c.ping(ctx); err != nil {
 		return err
@@ -258,17 +286,31 @@ func (c *Connection) Delete(ctx context.Context, query string, args ...interface
 }
 
 // FormatInsertOrUpdate готовим запрос для InsertOrUpdate
-func FormatInsertOrUpdate(tableName string, insert map[string]interface{}) (string, []interface{}) {
+func FormatInsertOrUpdate(tableName string, insert interface{}) (string, []interface{}) {
 
 	var keys, valueKeys, updateKeys string
 	var values []interface{}
 
-	for k, v := range insert {
+	v := reflect.ValueOf(insert)
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	for i := 0; i < v.NumField(); i++ {
+
+		// получаем имя для вставки использования в mysql
+		k, ok := v.Type().Field(i).Tag.Lookup("sqlname")
+
+		// если не нашли - пропускаем
+		if !ok || k == "-" {
+			continue
+		}
 
 		keys += fmt.Sprintf("`%s` , ", k)
 		valueKeys += "? , "
 		updateKeys += fmt.Sprintf("`%s` = ? , ", k)
-		values = append(values, v)
+		values = append(values, v.Field(i).Interface())
 	}
 
 	values = append(values, values...)
@@ -282,15 +324,31 @@ func FormatInsertOrUpdate(tableName string, insert map[string]interface{}) (stri
 }
 
 // FormatUpdate готовим строку для обновления записи
-func FormatUpdate(insert map[string]interface{}) (string, []interface{}) {
+func FormatUpdate(update interface{}) (string, []interface{}) {
 
 	var str string
 	var values []interface{}
 
-	for k, v := range insert {
+	v := reflect.ValueOf(update)
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	for i := 0; i < v.NumField(); i++ {
+
+		f := v.Field(i)
+
+		// получаем имя для вставки использования в mysql
+		k, ok := v.Type().Field(i).Tag.Lookup("sqlname")
+
+		// если не нашли - пропускаем
+		if !ok || k == "-" {
+			continue
+		}
 
 		str += fmt.Sprintf("`%s` = ? , ", k)
-		values = append(values, v)
+		values = append(values, f.Interface())
 	}
 
 	return strings.TrimSuffix(str, " , "), values

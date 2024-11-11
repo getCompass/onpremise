@@ -49,7 +49,7 @@ class Gateway_Db_PivotUser_CompanyLobbyList extends Gateway_Db_PivotUser_Main {
 
 		// группируем по шарду
 		foreach ($user_lobby_list as $user_id => $user_lobby) {
-			$grouped_by_shard[self::_getDbKey($user_id)][self::_getTableKey($user_id)][] = $user_lobby;
+			$grouped_by_shard[self::_getDbKey($user_id)][self::_getTableKey($user_id)][] = (array) $user_lobby;
 		}
 
 		// для каждого шарда базы данных

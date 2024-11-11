@@ -6,18 +6,17 @@ package relocation
 import (
 	"context"
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/functions"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_database_controller/api/conf"
 	"go_database_controller/api/includes/type/keeper"
 	"go_database_controller/api/includes/type/logger"
 	"go_database_controller/api/includes/type/port_registry"
 	"go_database_controller/api/includes/type/routine"
-	"go_database_controller/api/includes/type/sh"
-	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"os"
 	"time"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/functions"
+	"golang.org/x/crypto/ssh"
 )
 
 // таймаут отправки дампа базы на другой сервер
@@ -53,75 +52,7 @@ func BeginDataCopying(companyId int64, targetHost string) (string, string) {
 // @long много проверок на ошибки + пуш результата в канал
 func copyData(routineChan chan *routine.Status, companyId int64, targetHost, dumpFileName string) {
 
-	log.Infof("начинаю перенос данных компании %d на домино %s", companyId, targetHost)
-
-	ctx := context.Background()
-
-	// получаем порт, на котором развернута компания
-	maintenancePort, err := port_registry.GetByCompany(ctx, companyId)
-
-	if err != nil {
-
-		// проверяем, что можно получить запись для компании
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
-		return
-	} else if maintenancePort.Port == 0 {
-
-		// проверяем, что к компании привязан порт
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("company %d has no maintenance port", companyId))
-		return
-	}
-
-	// снимаем дамп с базы данных
-	if err = keeper.DumpDatabase(maintenancePort); err != nil {
-
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("can't dump database: %s", err.Error()))
-		return
-	}
-
-	// пытаемся перенести файл на удаленную машину
-	sshCredential, err := resolveRemoteHostCredentials()
-	if err != nil {
-
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("can't dump database: %s", err.Error()))
-		return
-	}
-
-	backupPath := fmt.Sprintf("%s%s", conf.GetConfig().RelocationSourceDumpPath, "mysql_company_"+functions.Int64ToString(maintenancePort.CompanyId))
-
-	// файл для записи дампа
-	outfile, err := os.Open(backupPath + ".zip")
-	if err != nil {
-
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("can't create database dump file: %s", err.Error()))
-		return
-	}
-
-	//goland:noinspection GoUnhandledErrorResult
-	defer outfile.Close()
-
-	sshTunnel := sh.MakeSshTunnel(targetHost, sh.DefaultSshPort, sshCredential)
-	if err = sshTunnel.SendFile(outfile, copyDumpFileTimeout, conf.GetConfig().RelocationTargetDumpPath, "mysql_company_"+functions.Int64ToString(maintenancePort.CompanyId)+".zip"); err != nil {
-
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("can't sync database dump file with host %s: %s", err.Error(), targetHost))
-		return
-	}
-
-	err = os.RemoveAll(backupPath)
-	if err != nil {
-
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("can't delete backup folder: %s", err.Error()))
-		return
-	}
-
-	err = os.Remove(backupPath + ".zip")
-	if err != nil {
-
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("can't delete backup zip-file: %s", err.Error()))
-		return
-	}
-
-	routineChan <- routine.MakeRoutineStatus(routine.StatusDone, "routine done")
+	routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("can't sync database dump file with host %s: %s", fmt.Errorf("no available on onpremise"), targetHost))
 }
 
 // BeginDataApplying запускает рутину применения скопированных данных, используется при релокации компаний

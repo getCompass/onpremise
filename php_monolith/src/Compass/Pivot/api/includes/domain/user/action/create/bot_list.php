@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\System\File;
 
 /**
  * Действие создания дефолтных ботов
@@ -30,7 +31,7 @@ class Domain_User_Action_Create_BotList {
 	public static function do(array $bot_info_list = []):array {
 
 		if (count($bot_info_list) < 1) {
-			$bot_info_list = fromJson(file_get_contents(PIVOT_MODULE_ROOT . "sh/start/bot_info_list.json"));
+			$bot_info_list = fromJson(File::init(PIVOT_MODULE_ROOT . "sh/start", "bot_info_list.json")->read());
 		}
 
 		$bot_user_id_list = [];

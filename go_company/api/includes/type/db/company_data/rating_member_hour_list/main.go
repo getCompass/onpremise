@@ -3,6 +3,7 @@ package dbEventHoursList
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
@@ -59,6 +60,13 @@ func GetOne(ctx context.Context, dbConn *company_data.DbConn, hourStart int64, u
 	return row, true, nil
 }
 
+type insertRow struct {
+	UserId    int64           `sqlname:"user_id"`
+	HourStart int64           `sqlname:"hour_start"`
+	UpdatedAt int64           `sqlname:"updated_at"`
+	Data      json.RawMessage `sqlname:"data"`
+}
+
 // метод, создания новой записи
 func InsertOrUpdate(transactionItem *sql.Tx, hourStart int64, userId int64, data interface{}) error {
 
@@ -69,11 +77,12 @@ func InsertOrUpdate(transactionItem *sql.Tx, hourStart int64, userId int64, data
 	}
 
 	// формируем массив вставки
-	insert := make(map[string]interface{})
-	insert["user_id"] = userId
-	insert["hour_start"] = hourStart
-	insert["updated_at"] = functions.GetCurrentTimeStamp()
-	insert["data"] = dataJson
+	insert := insertRow{
+		UserId:    userId,
+		HourStart: hourStart,
+		UpdatedAt: functions.GetCurrentTimeStamp(),
+		Data:      dataJson,
+	}
 
 	query, values := mysql.FormatInsertOrUpdate(tableName, insert)
 	_, err = transactionItem.Exec(query, values...)

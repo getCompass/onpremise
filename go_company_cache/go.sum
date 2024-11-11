@@ -7,6 +7,8 @@ github.com/getCompassUtils/company_protobuf_schemes v1.1.1 h1:IMS1A02ry1J/qkl6WJ
 github.com/getCompassUtils/company_protobuf_schemes v1.1.1/go.mod h1:3udxr/8nx5CLjCQyHt/jxaJGqtHc+d5tdjXysMTC3TE=
 github.com/getCompassUtils/go_base_frame v1.0.3 h1:aECGEq/rskb/XucxoLt/TR/sT9gP/0bvEWiekNNLIl4=
 github.com/getCompassUtils/go_base_frame v1.0.3/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
+github.com/getCompassUtils/go_base_frame v1.0.5 h1:VOtSwUFSGdWID9tDywz97hXtJMAn2ScX7T6PqWnw3Mo=
+github.com/getCompassUtils/go_base_frame v1.0.5/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
 github.com/go-sql-driver/mysql v1.8.1 h1:LedoTUt/eveggdHS9qUFC1EFSa8bU2+1pZjSRpvNJ1Y=
 github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqwuVSjsCm7DZg=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=

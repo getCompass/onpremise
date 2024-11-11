@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\System\File;
+
 /**
  * метод устанавливает дефолтный аватар боту объявлений и имя
  */
@@ -18,7 +20,7 @@ class Domain_User_Action_UpdateNoticeBot {
 
 		$user_id         = AUTH_BOT_USER_ID;
 		$default_file    = Gateway_Db_PivotSystem_DefaultFileList::get("notice_bot_avatar");
-		$bot_info_list   = fromJson(file_get_contents(PIVOT_MODULE_ROOT . "sh/start/bot_info_list.json"));
+		$bot_info_list   = fromJson(File::init(PIVOT_MODULE_ROOT ."/sh/start/" , "bot_info_list.json")->read());
 		$full_name       = $bot_info_list[0]["name"];
 		$avatar_file_map = Type_Pack_File::doDecrypt($default_file->file_key);
 

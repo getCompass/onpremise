@@ -5,46 +5,28 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"go_event/api/includes/type/database"
+	Database "go_event/api/includes/type/database"
 )
 
 // AsyncTaskRecord структура для чтения из таблицы
 type AsyncTaskRecord struct {
 	asyncTaskId int64           // идентификатор для задачи
-	IsFailed    int             `json:"is_failed,omitempty"`    // статус задачи
-	TaskType    int             `json:"type,omitempty"`         // тип задачи
-	NeedWorkAt  int64           `json:"need_work_at,omitempty"` // когда задачу нужно взять в работу
-	ErrorCount  int             `json:"error_count,omitempty"`  // количество ошибок
-	CreatedAt   int64           `json:"created_at,omitempty"`   // дата создания задачи
-	UpdatedAt   int64           `json:"updated_at,omitempty"`   // дата обновления задачи
-	UniqueKey   string          `json:"unique_key,omitempty"`   // уникальный ключ задачи
-	Module      string          `json:"module,omitempty"`       // целевой модуль для задачи
-	Group       string          `json:"group,omitempty"`        // целевой модуль для задачи
-	Name        string          `json:"name,omitempty"`         // читаемое название задачи
-	Data        json.RawMessage `json:"data,omitempty"`         // данные задачи
+	IsFailed    int             `json:"is_failed,omitempty" sqlname:"is_failed"`       // статус задачи
+	TaskType    int             `json:"type,omitempty" sqlname:"task_type"`            // тип задачи
+	NeedWorkAt  int64           `json:"need_work_at,omitempty" sqlname:"need_work_at"` // когда задачу нужно взять в работу
+	ErrorCount  int             `json:"error_count,omitempty" sqlname:"error_count"`   // количество ошибок
+	CreatedAt   int64           `json:"created_at,omitempty" sqlname:"created_at"`     // дата создания задачи
+	UpdatedAt   int64           `json:"updated_at,omitempty" sqlname:"updated_at"`     // дата обновления задачи
+	UniqueKey   string          `json:"unique_key,omitempty" sqlname:"unique_key"`     // уникальный ключ задачи
+	Module      string          `json:"module,omitempty" sqlname:"module"`             // целевой модуль для задачи
+	Group       string          `json:"group,omitempty" sqlname:"group"`               // целевой модуль для задачи
+	Name        string          `json:"name,omitempty" sqlname:"name"`                 // читаемое название задачи
+	Data        json.RawMessage `json:"data,omitempty" sqlname:"data"`                 // данные задачи
 }
 
 // IsStored возвращает флаг — сохранена задача или нет
 func (r *AsyncTaskRecord) IsStored() bool {
 	return r.asyncTaskId != 0
-}
-
-// конвертирует структуру в map из интерфейсов
-func (r *AsyncTaskRecord) toStringMap() map[string]interface{} {
-
-	return map[string]interface{}{
-		"is_failed":    r.IsFailed,
-		"task_type":    r.TaskType,
-		"need_work_at": r.NeedWorkAt,
-		"error_count":  r.ErrorCount,
-		"created_at":   r.CreatedAt,
-		"updated_at":   r.UpdatedAt,
-		"unique_key":   r.UniqueKey,
-		"module":       r.Module,
-		"group":        r.Group,
-		"name":         r.Name,
-		"data":         r.Data,
-	}
 }
 
 // структура хендлера таблицы асинхронных задач
@@ -65,7 +47,15 @@ func (t *asyncTaskTable) GetAll(ctx context.Context, connection *Database.Connec
 	// EXPLAIN INDEX get_by_need_work
 	query := fmt.Sprintf("SELECT %s FROM `%s` WHERE `is_failed` = ? LIMIT ? OFFSET ?", t.fieldList, t.tableName)
 
-	rows, err := connection.Query(ctx, query, 0, limit, offset)
+	fl := make([]interface{}, len(t.fieldList))
+
+	for i, v := range t.fieldList {
+		fl[i] = v
+	}
+
+	fl = append(fl, limit, offset)
+
+	rows, err := connection.GetAll(ctx, query, fl...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +70,7 @@ func (t *asyncTaskTable) Insert(ctx context.Context, connection *Database.Connec
 		return task, fmt.Errorf("task %s already stored", task.UniqueKey)
 	}
 
-	result, err := connection.InsertIgnore(ctx, t.tableName, task.toStringMap())
+	result, err := connection.InsertIgnore(ctx, t.tableName, task)
 	if err != nil {
 		return task, err
 	}
@@ -103,7 +93,7 @@ func (t *asyncTaskTable) Update(ctx context.Context, connection *Database.Connec
 
 	// EXPLAIN INDEX PRIMARY
 	query := fmt.Sprintf("UPDATE `%s` SET ?? WHERE `async_task_id` = ? LIMIT ?", t.tableName)
-	return connection.Update(ctx, query, task.toStringMap(), task.asyncTaskId, 1)
+	return connection.Update(ctx, query, task, task.asyncTaskId, 1)
 }
 
 // Delete удаляет одну запись

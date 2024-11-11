@@ -1,7 +1,6 @@
 package handlerHttp
 
 import (
-	"encoding/json"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"strings"
 )
@@ -17,7 +16,7 @@ var allowControllers = controllerMap{
 
 // вспомогательные типы даннных
 type controllerMap map[string]methodMap
-type methodMap map[string]func([]byte, int64, int) []byte // массив методов
+type methodMap map[string]func([]byte, int64, int) ResponseStruct // массив методов
 
 // структура ответа
 type ResponseStruct struct {
@@ -36,7 +35,7 @@ type ErrorStruct struct {
 // -------------------------------------------------------
 
 // вызываем необходимый метод
-func DoStart(method string, request string, userId int64, companyId int) []byte {
+func DoStart(method string, request string, userId int64, companyId int) ResponseStruct {
 
 	// вызываем метод
 	response := work(method, request, userId, companyId)
@@ -45,7 +44,7 @@ func DoStart(method string, request string, userId int64, companyId int) []byte 
 }
 
 // возвращает ответ
-func Ok(responseList ...interface{}) []byte {
+func Ok(responseList ...interface{}) ResponseStruct {
 
 	// получаем ответ из массива
 	responseInterface := getResponseFromList(responseList...)
@@ -55,19 +54,11 @@ func Ok(responseList ...interface{}) []byte {
 		Response: responseInterface,
 	}
 
-	// переводим ответ в json
-	bytes, err := json.Marshal(response)
-	if err != nil {
-
-		log.Errorf("unable to marshal response, error: %v", err)
-		return []byte{}
-	}
-
-	return bytes
+	return response
 }
 
 // возвращает код ошибки с сообщением
-func Error(errorCode int, message string) []byte {
+func Error(errorCode int, message string) ResponseStruct {
 
 	response := ResponseStruct{
 		Status: "error",
@@ -77,15 +68,7 @@ func Error(errorCode int, message string) []byte {
 		},
 	}
 
-	// переводим ответ в json
-	bytes, err := json.Marshal(response)
-	if err != nil {
-
-		log.Errorf("unable to marshal response, error: %v", err)
-		return []byte{}
-	}
-
-	return bytes
+	return response
 }
 
 // -------------------------------------------------------
@@ -93,7 +76,7 @@ func Error(errorCode int, message string) []byte {
 // -------------------------------------------------------
 
 // вызываем метод
-func work(method string, request string, userId int64, companyId int) []byte {
+func work(method string, request string, userId int64, companyId int) ResponseStruct {
 
 	// приводим метод к нижнему регистру
 	method = strings.ToLower(method)

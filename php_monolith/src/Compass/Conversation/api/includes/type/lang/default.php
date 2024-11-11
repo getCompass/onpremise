@@ -2,6 +2,8 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\System\File;
+
 /**
  * дефолтный класс для работы c языковыми конфигами
  */
@@ -15,18 +17,18 @@ class Type_Lang_Default {
 	 */
 	protected static function _getConfig(string $lang, string $file_name, bool $is_force_update = false):bool|array {
 
-		$file_path = self::_getFilePath($lang, $file_name);
+		$file = self::_getFile($lang, $file_name);
 
-		if (isset($GLOBALS[__CLASS__][$file_path]) && !$is_force_update) {
-			return $GLOBALS[__CLASS__][$file_path];
+		if (isset($GLOBALS[__CLASS__][$file->getFilePath()]) && !$is_force_update) {
+			return $GLOBALS[__CLASS__][$file->getFilePath()];
 		}
 
-		if (!file_exists($file_path) && !is_file($file_path)) {
+		if (!$file->isExists()) {
 			return false;
 		}
 
 		// получаем из файла конфиг
-		$file_content = file_get_contents($file_path);
+		$file_content = $file->read();
 
 		if ($file_content === false) {
 			return false;
@@ -44,16 +46,16 @@ class Type_Lang_Default {
 	 */
 	protected static function _setConfig(string $lang, string $file_name, array $config):void {
 
-		$file_path                      = self::_getFilePath($lang, $file_name);
-		$GLOBALS[__CLASS__][$file_path] = $config;
+		$file                                     = self::_getFile($lang, $file_name);
+		$GLOBALS[__CLASS__][$file->getFilePath()] = $config;
 	}
 
 	/**
-	 * получаем file_path
+	 * получаем file
 	 *
 	 */
-	protected static function _getFilePath(string $lang, string $file_name):string {
+	protected static function _getFile(string $lang, string $file_name):File {
 
-		return PATH_ROOT . "lang/" . $lang . "/" . $file_name;
+		return File::init(PATH_ROOT . "lang/" . $lang . "/", $file_name);
 	}
 }

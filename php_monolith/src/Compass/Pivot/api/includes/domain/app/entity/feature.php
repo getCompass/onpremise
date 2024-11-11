@@ -9,6 +9,9 @@ abstract class Domain_App_Entity_Feature {
 
 	protected const _CONFIG_VERSION = 0;
 
+	// в какой папке находятся конфиги инициализации
+	protected const _INITIALIZATION_CONFIG_DIR = PIVOT_MODULE_ROOT . "/conf";
+
 	/**
 	 * Получить версию списка функционала
 	 *

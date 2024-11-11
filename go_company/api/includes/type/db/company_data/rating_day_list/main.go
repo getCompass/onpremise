@@ -8,6 +8,7 @@ package dbRatingDayList
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
@@ -37,6 +38,13 @@ type RatingDayRowWithoutData struct {
 	UpdatedAt    int64
 }
 
+type insertRow struct {
+	DayStart     int64           `sqlname:"day_start"`
+	GeneralCount int             `sqlname:"general_count"`
+	UpdatedAt    int64           `sqlname:"updated_at"`
+	Data         json.RawMessage `sqlname:"data"`
+}
+
 // добавить или обновить запись
 func InsertOrUpdate(ctx context.Context, transactionItem *sql.Tx, year int, day int, generalCount int, data interface{}) error {
 
@@ -47,11 +55,13 @@ func InsertOrUpdate(ctx context.Context, transactionItem *sql.Tx, year int, day 
 	}
 
 	dayStart := rating_utils.GetDayStartByYearAndDay(year, day)
-	insert := make(map[string]interface{})
-	insert["day_start"] = dayStart
-	insert["general_count"] = generalCount
-	insert["updated_at"] = functions.GetCurrentTimeStamp()
-	insert["data"] = dataJson
+
+	insert := insertRow{
+		DayStart:     dayStart,
+		GeneralCount: generalCount,
+		UpdatedAt:    functions.GetCurrentTimeStamp(),
+		Data:         dataJson,
+	}
 
 	query, values := mysql.FormatInsertOrUpdate(tableName, insert)
 

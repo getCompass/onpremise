@@ -71,12 +71,12 @@ class Type_Sms_Dispatcher {
 		$set = [
 			"need_work" => time() + self::_NEED_WORK_INTERVAL,
 		];
-		ShardingGateway::database(self::_DB_KEY)
+		count($send_sms_id_list) > 0 && ShardingGateway::database(self::_DB_KEY)
 			->update("UPDATE `?p` SET ?u WHERE sms_id IN (?a) LIMIT ?i", self::_TABLE_KEY, $set, $send_sms_id_list, self::_PRODUCER_LIMIT);
 
 		// для этапа need_send обновляем need_work и error_count
 		$set["error_count"] = "error_count + 1";
-		ShardingGateway::database(self::_DB_KEY)
+		count($check_sms_id_list) > 0 && ShardingGateway::database(self::_DB_KEY)
 			->update("UPDATE `?p` SET ?u WHERE sms_id IN (?a) LIMIT ?i", self::_TABLE_KEY, $set, $check_sms_id_list, self::_PRODUCER_LIMIT);
 	}
 

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"go_rating/api/includes/type/database"
+	Database "go_rating/api/includes/type/database"
 )
 
 // ConversationDynamicRecord структура для чтения из таблицы
@@ -33,11 +33,16 @@ type ConversationDynamicRecord struct {
 	ConversationClearInfo   json.RawMessage `json:"conversation_clear_info,omitempty"`
 }
 
-// конвертирует структуру в map из интерфейсов для апдейта
-func (r *ConversationDynamicRecord) toUpdateStringMap() map[string]interface{} {
+// UpdateTotalActionCount объект для обновления количества действий
+type UpdateTotalActionCount struct {
+	TotalActionCount int64 `json:"total_action_count,omitempty" sqlname:"total_action_count"`
+}
 
-	return map[string]interface{}{
-		"total_action_count": r.TotalActionCount,
+// конвертирует структуру в интерфейс для апдейта
+func (r *ConversationDynamicRecord) toUpdateTotalActionCount() UpdateTotalActionCount {
+
+	return UpdateTotalActionCount{
+		TotalActionCount: r.TotalActionCount,
 	}
 }
 
@@ -61,7 +66,7 @@ func (t *conversationDynamicTable) GetOne(ctx context.Context, connection *Datab
 	// запрос проверен на EXPLAIN (INDEX=PRIMARY)
 	query := fmt.Sprintf("SELECT %s FROM `%s` WHERE `conversation_map` = ? LIMIT ?", t.fieldList, t.tableName)
 
-	err := connection.QueryRow(ctx, query, conversationMap, 1).Scan(
+	err := connection.GetOne(ctx, query, conversationMap, 1).Scan(
 		&result.ConversationMap,
 		&result.IsLocked,
 		&result.LastBlockId,
@@ -101,5 +106,5 @@ func (t *conversationDynamicTable) UpdateTotalActionCount(ctx context.Context, c
 
 	// запрос проверен на EXPLAIN (INDEX=PRIMARY)
 	query := fmt.Sprintf("UPDATE `%s` SET ?? WHERE `conversation_map` = ? LIMIT ?", t.tableName)
-	return connection.Update(ctx, query, conversation.toUpdateStringMap(), conversation.ConversationMap, 1)
+	return connection.Update(ctx, query, conversation.toUpdateTotalActionCount(), conversation.ConversationMap, 1)
 }

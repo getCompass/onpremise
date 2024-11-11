@@ -4,6 +4,7 @@ namespace Compass\Pivot;
 
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Server\ServerProvider;
+use BaseFrame\System\File;
 
 /**
  * дефолтный класс для работы c дефолтными файлами
@@ -67,12 +68,14 @@ class Type_File_Default {
 	 */
 	public static function getDefaultFileList():array {
 
+		$test_manifest_file = File::init(self::_PATH_TO_FILE . "test", "manifest.json");
+
 		// загружаем файлы из отдельного конфига
-		if (ServerProvider::isCi() && file_exists(self::_PATH_TO_FILE . "test/manifest.json")) {
-			return fromJson(file_get_contents(self::_PATH_TO_FILE . "test/manifest.json"));
+		if (ServerProvider::isCi() && $test_manifest_file->isExists()) {
+			return fromJson($test_manifest_file->read());
 		}
 
-		return fromJson(file_get_contents(self::_PATH_TO_FILE . "manifest.json"));
+		return fromJson(File::init(self::_PATH_TO_FILE, "manifest.json")->read());
 	}
 
 	/**

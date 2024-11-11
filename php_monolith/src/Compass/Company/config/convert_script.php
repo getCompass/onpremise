@@ -1,5 +1,7 @@
 <?php
 
+use BaseFrame\System\File;
+
 const IMPORT_CONFIG_PATH = "/config/";
 const COMPANY_CONFIG_PATH = "/app/api/conf/company/";
 
@@ -101,7 +103,7 @@ function convertCompanyJsonConfig():void {
 	foreach ($company_config_list as $company_config_name) {
 
 		// загружаем конфиг компании
-		$company_config = json_decode(file_get_contents(IMPORT_CONFIG_PATH . "$company_config_name"), true);
+		$company_config = json_decode(File::init(IMPORT_CONFIG_PATH, "$company_config_name")->read(), true);
 		$company_constants = [];
 
 		foreach ($company_config as $key => $config_item) {

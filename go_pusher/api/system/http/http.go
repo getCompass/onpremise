@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
@@ -42,7 +43,16 @@ func (h *httpHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	response := handlerHttp.DoStart(method, jsonParams, userId, companyId)
-	_, err = w.Write(response)
+
+	responseJson, err := json.Marshal(response)
+
+	if err != nil {
+
+		log.Errorf("Cant marshal http response: %v", response)
+		return
+	}
+	// nosemgrep
+	_, err = w.Write(responseJson)
 	if err != nil {
 
 		log.Errorf("Write http error: %v", err)

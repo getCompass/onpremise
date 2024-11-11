@@ -9,6 +9,9 @@ abstract class Domain_App_Entity_Rule {
 
 	protected const _RULE_VERSION = 0;
 
+	// рабочая папка с инициализирующими конфигами
+	protected const _INITIALIZATION_CONFIG_DIR = PIVOT_MODULE_ROOT . "/conf";
+
 	/**
 	 * Получить версию списка функционала
 	 *

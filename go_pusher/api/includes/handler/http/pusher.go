@@ -3,8 +3,8 @@ package handlerHttp
 import (
 	"encoding/json"
 	jitsiVoipPushQueue "go_pusher/api/includes/type/push/jitsivoippush/queue"
-	"go_pusher/api/includes/type/push/textpush/queue"
-	"go_pusher/api/includes/type/push/voippush/queue"
+	textPushQueue "go_pusher/api/includes/type/push/textpush/queue"
+	voipPushQueue "go_pusher/api/includes/type/push/voippush/queue"
 )
 
 // -------------------------------------------------------
@@ -25,7 +25,7 @@ var pusherMethods = methodMap{
 // -------------------------------------------------------
 
 // отправить пуш
-func (pusherHandler) sendPush(requestBytes []byte, userId int64, companyId int) []byte {
+func (pusherHandler) sendPush(requestBytes []byte, userId int64, companyId int) ResponseStruct {
 
 	// получаем объект запроса из пула и парсим запрос
 	request := textPushQueue.TextPushStruct{}
@@ -41,7 +41,7 @@ func (pusherHandler) sendPush(requestBytes []byte, userId int64, companyId int) 
 }
 
 // отправляем voip analyticspush на firebase & apns
-func (pusherHandler) SendVoipPush(requestBytes []byte, userId int64, companyId int) []byte {
+func (pusherHandler) SendVoipPush(requestBytes []byte, userId int64, companyId int) ResponseStruct {
 
 	request := voipPushQueue.VoipPushStruct{}
 
@@ -57,7 +57,7 @@ func (pusherHandler) SendVoipPush(requestBytes []byte, userId int64, companyId i
 }
 
 // отправляем пользователю voip-пуш для jitsi из pivot
-func (pusherHandler) SendJitsiVoipPush(requestBytes []byte, userId int64, companyId int) []byte {
+func (pusherHandler) SendJitsiVoipPush(requestBytes []byte, userId int64, companyId int) ResponseStruct {
 
 	request := jitsiVoipPushQueue.VoIPJitsiStruct{}
 	err := json.Unmarshal(requestBytes, &request)

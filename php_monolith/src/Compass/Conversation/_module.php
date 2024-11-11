@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 /**
  * Файл подключения модуля к проекту.
@@ -52,6 +52,30 @@ if (isCLi()) {
 		getConfig("SHARDING_MYSQL"), getConfig("SHARDING_MCACHE"), getConfig("GLOBAL_OFFICE_IP")
 	);
 }
+
+/**
+ * Экземпляр \BaseFrame\Crypt\CryptProvider для модуля.
+ */
+class CrypterProvider extends \BaseFrame\Crypt\CrypterProvider {
+
+	protected static array $_store = [];
+}
+
+// шифровальщик для ключа шифрования
+CrypterProvider::add("database_secret_key", \BaseFrame\Crypt\Crypter\OpenSSLDerivedCBC::instance(null, init_fn: function() {
+
+	$this->_key = base64_decode(DATABASE_ENCRYPTION_MASTER_KEY);
+}));
+
+// шифровальщик данных БД
+CrypterProvider::add("database_crypt_key", \BaseFrame\Crypt\Crypter\OpenSSL::instance(null, init_fn: function() {
+
+	/** @var \BaseFrame\Crypt\Crypter\OpenSSL $this функция получает контекст экземпляра шифровальщика */
+	$secret_key = getenv("DATABASE_CRYPT_SECRET_KEY");
+	$cipher_key = CrypterProvider::get("database_secret_key")->decrypt(base64_decode($secret_key));
+
+	$this->_key = $cipher_key;
+}));
 
 // возвращаем обработчики
 return include_once CONVERSATION_MODULE_ROOT . "_module/route.php";

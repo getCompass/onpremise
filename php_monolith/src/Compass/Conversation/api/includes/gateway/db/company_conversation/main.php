@@ -52,7 +52,7 @@ class Gateway_Db_CompanyConversation_Main {
 	/**
 	 * Создает подключение к базе данных
 	 */
-	protected static function _connect(string $sharding_key):\myPDObasic {
+	protected static function _connect(string $sharding_key):\BaseFrame\Database\PDODriver {
 
 		return ShardingGateway::database($sharding_key);
 	}

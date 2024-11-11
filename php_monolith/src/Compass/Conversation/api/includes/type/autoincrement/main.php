@@ -76,7 +76,7 @@ class Type_Autoincrement_Main {
 	/**
 	 * Создает подключение к базе данных
 	 */
-	protected static function _connect():\myPDObasic {
+	protected static function _connect():\BaseFrame\Database\PDODriver {
 
 		return ShardingGateway::database(static::_DB_KEY);
 	}

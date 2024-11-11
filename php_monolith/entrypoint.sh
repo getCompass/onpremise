@@ -22,6 +22,11 @@ if [[ "${IS_LOCAL}" == "false" ]] && [[ "${DEV_SERVER}" == "true" ]]; then
   mv /usr/local/etc/php-fpm.d/www.conf.dev /usr/local/etc/php-fpm.d/www.conf
 fi
 
+# shellcheck disable=SC2155
+if [ -f "/run/secrets/compass_database_encryption_secret_key" ]; then
+  export DATABASE_CRYPT_SECRET_KEY=$(cat "/run/secrets/compass_database_encryption_secret_key");
+fi;
+
 rm /usr/local/etc/php-fpm.d/www.conf.*
 rm /usr/local/etc/php/php.ini.*
 bash "/app/src/Compass/Conversation/init_submodule.sh" "Conversation" || exit 1;

@@ -211,6 +211,16 @@ define("COMPANY_ANNOUNCEMENT_PRIVATE_KEY"	, "${COMPANY_ANNOUNCEMENT_PRIVATE_KEY}
 define("CDN_URL"                          , "${CDN_URL}");
 
 // -------------------------------------------------------
+// ПАРАМЕТРЫ ШИФРОВАНИЯ БАЗЫ
+// -------------------------------------------------------
+
+// мастер ключ шифрования БД
+define("DATABASE_ENCRYPTION_MODE", "${DATABASE_ENCRYPTION_MODE}");
+
+// мастер ключ шифрования БД
+define("DATABASE_ENCRYPTION_MASTER_KEY", "${DATABASE_ENCRYPTION_MASTER_KEY}");
+
+// -------------------------------------------------------
 // ОСТАЛЬНОЕ
 // -------------------------------------------------------
 

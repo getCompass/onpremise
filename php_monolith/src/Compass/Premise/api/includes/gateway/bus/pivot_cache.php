@@ -2,7 +2,6 @@
 
 namespace Compass\Premise;
 
-use BaseFrame\Exception\Request\EndpointAccessDeniedException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 
 /**

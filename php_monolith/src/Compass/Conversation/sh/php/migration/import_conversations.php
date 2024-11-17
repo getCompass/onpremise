@@ -5,6 +5,7 @@ namespace Compass\Conversation;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Search\Exception\ExecutionException;
+use BaseFrame\System\Locale;
 
 require_once "/app/src/Compass/Conversation/api/includes/type/script/input_parser.php";
 require_once "/app/src/Compass/Conversation/api/includes/type/script/input_helper.php";
@@ -31,6 +32,9 @@ class Migration_Import_Conversations {
 
 	protected const  _RAW_TABLE_NAME      = "raw_conversation";
 	protected const  _BOUND_TABLE_NAME    = "bound_conversation";
+	protected const  _BOUND_FILE_TABLE    = "bound_file";
+	protected const  _BOUND_USERS_TABLE   = "bound_user";
+	protected const  _USERS_COUNT         = 1000000;
 	protected const  _CONVERSATIONS_COUNT = 900;
 	protected string $_local_manticore_host;
 	protected int    $_local_manticore_port;
@@ -93,24 +97,147 @@ class Migration_Import_Conversations {
 
 		// создаём диалоги в php_world
 		$conversation_map_list = [];
+
 		foreach ($slack_conversation_list as $slack_conversation) {
 
-			if (mb_strlen($slack_conversation["name"]) == 0) {
-				$slack_conversation["name"] = "Группа";
-			}
+			$conversation_meta = match ((int) $slack_conversation["type"]) {
+				CONVERSATION_TYPE_SINGLE_DEFAULT => $this->_createSingleConversationMeta($slack_conversation),
+				default => $this->_createGroupConversationMeta($slack_conversation),
+			};
 
-			$conversation = Type_Conversation_Group::addByMigration(
-				$slack_conversation["creator_user_id"], $slack_conversation["name"], $slack_conversation["description"]
-			);
+			if ($conversation_meta === false) {
+				continue;
+			}
 
 			$conversation_map_list[$slack_conversation["uniq"]] = [
 				"id"                => $slack_conversation["id"],
-				"conversation_map"  => $conversation["conversation_map"],
-				"conversation_name" => $conversation["conversation_name"],
+				"conversation_map"  => $conversation_meta["conversation_map"],
+				"conversation_name" => $conversation_meta["conversation_name"],
 			];
 		}
 
 		return $conversation_map_list;
+	}
+
+	/**
+	 * Создает новый личный диалог и возвращает мету диалога.
+	 * Если чат уже существует, новый создан не будет.
+	 * @long
+	 */
+	protected function _createSingleConversationMeta(array $slack_conversation):array|false {
+
+		$member_list = fromJson($slack_conversation["members"]);
+
+		if (count($member_list) !== 2) {
+
+			console("некорректный список пользователей для личного чата {$slack_conversation["uniq"]}, пропускаю");
+			return false;
+		}
+
+		$user_id_1 = (int) $member_list[0];
+		$user_id_2 = (int) $member_list[1];
+
+		if ($user_id_1 === $user_id_2) {
+
+			console("некорректный список пользователей для личного чата {$slack_conversation["uniq"]}, пропускаю");
+			return false;
+		}
+
+		$compass_extra        = isset($slack_conversation["compass_extra"]) ? fromJson($slack_conversation["compass_extra"]) : [];
+		$conversation_type    = $compass_extra["meta_type"] ?? null;
+		$conversation_extra   = $compass_extra["meta_extra"] ?? null;
+		$conversation_dynamic = $compass_extra["conversation_dynamic"] ?? null;
+
+		if (!is_null($conversation_dynamic)) {
+			$conversation_dynamic = self::_prepareConversationDynamic($conversation_dynamic, [$user_id_1, $user_id_2]);
+		}
+
+		$conversation_meta                      = Type_Conversation_Single::addFromMigration(
+			$user_id_1, $user_id_2, $conversation_type, $conversation_extra, $conversation_dynamic
+		);
+		$conversation_meta["conversation_name"] = "Личный чат";
+
+		return $conversation_meta;
+	}
+
+	/**
+	 * Создает новый групповой диалога и возвращает мету диалога.
+	 * Всегда создает новый диалог.
+	 * @long
+	 */
+	protected function _createGroupConversationMeta(array $slack_conversation):array|false {
+
+		if (mb_strlen($slack_conversation["name"]) === 0) {
+			$slack_conversation["name"] = "Группа";
+		}
+
+		$compass_extra        = isset($slack_conversation["compass_extra"]) ? fromJson($slack_conversation["compass_extra"]) : [];
+		$conversation_type    = $compass_extra["meta_type"] ?? null;
+		$conversation_extra   = $compass_extra["meta_extra"] ?? null;
+		$conversation_dynamic = $compass_extra["conversation_dynamic"] ?? null;
+		$avatar_file_key      = $compass_extra["avatar_file_key"] ?? null;
+
+		$avatar_file_map = "";
+		if (!is_null($avatar_file_key) && mb_strlen($avatar_file_key) > 0) {
+
+			$file_bound      = self::_getBoundFile($avatar_file_key);
+			$avatar_file_map = $file_bound[0]["file_map"] ?? "";
+		}
+
+		// импортируем чат заметок как обычную группу
+		if (!is_null($conversation_type) && $conversation_type == CONVERSATION_TYPE_SINGLE_NOTES) {
+			$conversation_type = CONVERSATION_TYPE_GROUP_DEFAULT;
+		}
+
+		// для Главного чата возвращаем текущий чат ГЧ
+		if (!is_null($conversation_type) && $conversation_type == CONVERSATION_TYPE_GROUP_GENERAL) {
+
+			$value = Domain_Conversation_Action_Config_Get::do(Domain_Company_Entity_Config::GENERAL_CONVERSATION_KEY_NAME);
+			if (isset($value["value"]) && mb_strlen($value["value"]) > 0) {
+				return (array) Gateway_Db_CompanyConversation_ConversationMeta::getOne($value["value"]);
+			}
+		}
+
+		if (!is_null($conversation_dynamic)) {
+
+			$member_list          = fromJson($slack_conversation["members"]);
+			$conversation_dynamic = self::_prepareConversationDynamic($conversation_dynamic, array_map(static fn($user_id) => (int) $user_id, $member_list));
+		}
+
+		return Type_Conversation_Group::addByMigration(
+			$slack_conversation["creator_user_id"],
+			$slack_conversation["name"],
+			$slack_conversation["description"],
+			$conversation_type,
+			$conversation_extra,
+			$conversation_dynamic,
+			$avatar_file_map,
+		);
+	}
+
+	/**
+	 * Получаем записи файлов из bound табли
+	 *
+	 * @param string $uniq
+	 *
+	 * @return array
+	 * @throws ExecutionException
+	 */
+	protected function _getBoundFile(string $uniq):array {
+
+		$query = "SELECT * FROM ?t WHERE `uniq` = ?s LIMIT ?i OPTION max_matches=?i";
+		return self::search()->select($query, [self::_BOUND_FILE_TABLE, $uniq, 1, 100000]);
+	}
+
+	/**
+	 * Получаем список пользователей с bound таблицы
+	 *
+	 * @throws ExecutionException
+	 */
+	protected function _getBoundUsers(array $user_id_list):array {
+
+		$query = "SELECT * FROM ?t WHERE `user_id` IN (?an) LIMIT ?i OPTION max_matches=?i";
+		return self::search()->select($query, [self::_BOUND_USERS_TABLE, $user_id_list, count($user_id_list), self::_USERS_COUNT]);
 	}
 
 	/**
@@ -138,6 +265,47 @@ class Migration_Import_Conversations {
 		}
 
 		self::search()->insert(self::_BOUND_TABLE_NAME, $insert_array);
+	}
+
+	/**
+	 * Подготавливаем dynamic диалога для миграции
+	 * @throws ExecutionException
+	 */
+	protected function _prepareConversationDynamic(array $dynamic, array $users_id_list):array {
+
+		// получаем связь id участников группы
+		$bound_user_list = self::_getBoundUsers($users_id_list);
+
+		// uniq - id c Compass; user_id - id в новом мире.
+		foreach ($bound_user_list as $bound_user) {
+
+			$saas_user_id = $bound_user["uniq"];
+			if (isset($dynamic["user_mute_info"][$saas_user_id])) {
+
+				$dynamic["user_mute_info"][$bound_user["user_id"]] = $dynamic["user_mute_info"][$saas_user_id];
+				unset($dynamic["user_mute_info"][$saas_user_id]);
+			}
+
+			if (isset($dynamic["user_clear_info"][$saas_user_id])) {
+
+				$dynamic["user_clear_info"][$bound_user["user_id"]] = $dynamic["user_clear_info"][$saas_user_id];
+				unset($dynamic["user_clear_info"][$saas_user_id]);
+			}
+
+			if (isset($dynamic["user_file_clear_info"][$saas_user_id])) {
+
+				$dynamic["user_file_clear_info"][$bound_user["user_id"]] = $dynamic["user_file_clear_info"][$saas_user_id];
+				unset($dynamic["user_file_clear_info"][$saas_user_id]);
+			}
+
+			if (isset($dynamic["conversation_clear_info"][$saas_user_id])) {
+
+				$dynamic["conversation_clear_info"][$bound_user["user_id"]] = $dynamic["conversation_clear_info"][$saas_user_id];
+				unset($dynamic["conversation_clear_info"][$saas_user_id]);
+			}
+		}
+
+		return $dynamic;
 	}
 
 	/**
@@ -199,7 +367,7 @@ function _getCompanyUrl():string {
 		$company_url = Type_Script_InputParser::getArgumentValue("--company_url");
 	} catch (\Exception) {
 
-		console("Передайте корректный url компании в которую обращаемся, например: --company_url='c1-bob.nikitak.backend-local.apitest.team'");
+		console("Передайте корректный url компании в которую обращаемся, например: --company_url='c1-d1.company.com'");
 		exit;
 	}
 

@@ -30,14 +30,17 @@ class Migration_Import_Messages {
 
 	protected const  _RAW_MESSAGES_TABLE        = "raw_message";
 	protected const  _BOUND_CONVERSATIONS_TABLE = "bound_conversation";
+	protected const  _BOUND_USERS_TABLE         = "bound_user";
 	protected const  _BOUND_MESSAGES_TABLE      = "bound_conversation_message";
 	protected const  _MESSAGES_COUNT            = 1000000;
 	protected const  _CONVERSATIONS_COUNT       = 1000000;
+	protected const  _USERS_COUNT               = 1000000;
 	protected string $_local_manticore_host;
 	protected int    $_local_manticore_port;
 
 	/**
 	 * Запускаем скрипт
+	 * @long
 	 */
 	public function run(string $local_manticore_host, int $local_manticore_port):void {
 
@@ -58,6 +61,10 @@ class Migration_Import_Messages {
 			} catch (ParamException) {
 				console("Не смогли найти чат: {$conversation_map} - (проверьте был ли импорт)");
 				Type_System_Admin::log("migration-conversation-error", "uniq: {$conversation["uniq"]} conversation_map: {$conversation["conversation_map"]}");
+				continue;
+			}
+
+			if ((int) $meta_row["type"] == CONVERSATION_TYPE_GROUP_HIRING) {
 				continue;
 			}
 
@@ -99,6 +106,17 @@ class Migration_Import_Messages {
 				self::_insertBoundConversationMessages($raw_bound_message_rel_list);
 			}
 
+			// отправляем заново ивент о вступлении в диалог, чтобы обновить ласт_мессадж в левом меню
+			foreach ($meta_row["users"] as $user_id => $v) {
+
+				$role = $user_id == $meta_row["creator_user_id"]
+					? Type_Conversation_Meta_Users::ROLE_OWNER
+					: Type_Conversation_Meta_Users::ROLE_DEFAULT;
+
+				$created_at = Type_Conversation_Meta_Users::getCreatedAt($v);
+				Gateway_Event_Dispatcher::dispatch(Type_Event_UserConversation_UserJoinedConversation::create($user_id, $conversation_map, $role, $created_at, true));
+			}
+
 			$conversations_counter++;
 			console("Добавили сообщения для {$conversations_counter}/{$conversations_count} чатов");
 		}
@@ -113,6 +131,17 @@ class Migration_Import_Messages {
 
 		$query = "SELECT * FROM ?t WHERE `id`>?i LIMIT ?i OFFSET ?i OPTION max_matches=?i";
 		return self::_search()->select($query, [self::_BOUND_CONVERSATIONS_TABLE, 0, self::_CONVERSATIONS_COUNT, 0, self::_CONVERSATIONS_COUNT]);
+	}
+
+	/**
+	 * Получаем список пользователей с bound таблицы
+	 *
+	 * @throws ExecutionException
+	 */
+	protected function _getBoundUsers(array $user_id_list):array {
+
+		$query = "SELECT * FROM ?t WHERE `user_id` IN (?an) LIMIT ?i OPTION max_matches=?i";
+		return self::_search()->select($query, [self::_BOUND_USERS_TABLE, $user_id_list, count($user_id_list), self::_USERS_COUNT]);
 	}
 
 	/**
@@ -131,8 +160,18 @@ class Migration_Import_Messages {
 	 *
 	 * @throws ParseFatalException
 	 * @throws cs_PlatformNotFound
+	 * @long
 	 */
 	protected function _prepareRawMessageList(array $client_message_list, array $meta_row):array {
+
+		$bound_user_list = self::_getBoundUsers(array_keys($meta_row["users"]));
+
+		$user_list_by_uniq = [];
+
+		// uniq - id c Compass; user_id - id в новом мире.
+		foreach ($bound_user_list as $bound_user) {
+			$user_list_by_uniq[$bound_user["uniq"]] = $bound_user["user_id"];
+		}
 
 		$raw_message_list = [];
 		$platform         = Type_Api_Platform::getPlatform();
@@ -151,7 +190,18 @@ class Migration_Import_Messages {
 			}
 
 			$message["created_at"] = $v["created_at"];
-			$raw_message_list[]    = Type_Conversation_Message_Main::getHandler($message)::addMentionUserIdList($message, $mention_user_id_list);
+
+			if (isset($v["compass_extra"]["hidden_user_list"])) {
+
+				foreach ($v["compass_extra"]["hidden_user_list"] as $user_id) {
+
+					if (isset($user_list_by_uniq[$user_id])) {
+						$message = Type_Conversation_Message_Main::getLastVersionHandler()::addToHiddenBy($message, $user_list_by_uniq[$user_id]);
+					}
+				}
+			}
+
+			$raw_message_list[] = Type_Conversation_Message_Main::getHandler($message)::addMentionUserIdList($message, $mention_user_id_list);
 		}
 
 		return $raw_message_list;
@@ -187,6 +237,7 @@ class Migration_Import_Messages {
 				"file_map"          => $file_map, // сюда чет докидываем если файл
 				"file_name"         => $file_name, // сюда чет докидываем если файл
 				"uniq"              => $v["uniq"], // сюда чет докидываем если файл
+				"compass_extra"     => isset($v["compass_extra"]) ? fromJson($v["compass_extra"]) : [],
 			];
 		}
 
@@ -196,7 +247,7 @@ class Migration_Import_Messages {
 	/**
 	 * Форматируем массив для записи связи отправленных сообщений с raw
 	 */
-	protected function _generateRawBoundMessageRelList($raw_message_list, $added_message_list):array {
+	protected function _generateRawBoundMessageRelList(array $raw_message_list, array $added_message_list):array {
 
 		$raw_bound_message_rel_list = [];
 		foreach ($raw_message_list as $raw_message) {
@@ -285,7 +336,7 @@ function _getCompanyUrl():string {
 		$company_url = Type_Script_InputParser::getArgumentValue("--company_url");
 	} catch (\Exception) {
 
-		console("Передайте корректный url компании в которую обращаемся, например: --company_url='c1-bob.nikitak.backend-local.apitest.team'");
+		console("Передайте корректный url компании в которую обращаемся, например: --company_url='c1-d1.company.com'");
 		exit;
 	}
 

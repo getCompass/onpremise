@@ -45,6 +45,17 @@ class Domain_Ldap_Entity_Config {
 	}
 
 	/**
+	 * получаем стратегию, по которой проверяется сертификат
+	 *
+	 * @return string
+	 */
+	public static function getRequireCertStrategy():string {
+
+		$config = getConfig(self::_KEY);
+		return $config["require_cert_strategy"];
+	}
+
+	/**
 	 * получаем user_search_base из конфига LDAP
 	 *
 	 * @return string

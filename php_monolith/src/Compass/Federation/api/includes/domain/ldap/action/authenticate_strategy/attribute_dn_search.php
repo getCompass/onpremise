@@ -26,7 +26,12 @@ class Domain_Ldap_Action_AuthenticateStrategy_AttributeDnSearch implements Domai
 	public function authenticate(string $username, string $password):array {
 
 		// создаем клиент
-		$client = Domain_Ldap_Entity_Client::resolve(Domain_Ldap_Entity_Config::getServerHost(), Domain_Ldap_Entity_Config::getServerPort(), Domain_Ldap_Entity_Config::getUseSslFlag());
+		$client = Domain_Ldap_Entity_Client::resolve(
+			Domain_Ldap_Entity_Config::getServerHost(),
+			Domain_Ldap_Entity_Config::getServerPort(),
+			Domain_Ldap_Entity_Config::getUseSslFlag(),
+			Domain_Ldap_Entity_Client_RequireCertStrategy::convertStringToConst(Domain_Ldap_Entity_Config::getRequireCertStrategy()),
+		);
 
 		// пытаемся авторизоваться из под аккаунта для поиска
 		$client->bind(Domain_Ldap_Entity_Config::getUserSearchAccountDn(), Domain_Ldap_Entity_Config::getUserSearchAccountPassword());

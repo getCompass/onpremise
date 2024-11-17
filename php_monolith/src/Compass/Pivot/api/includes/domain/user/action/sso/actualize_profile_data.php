@@ -25,28 +25,64 @@ class Domain_User_Action_Sso_ActualizeProfileData {
 	 * @throws \queryException
 	 * @throws cs_FileIsNotImage
 	 */
-	public static function do(int $user_id, false|string $name, false|string $avatar_file_key, false|string $badge, false|string $role, false|string $description):void {
-
-		// проверяем, передан ли аватар
-		if ($avatar_file_key !== false && mb_strlen($avatar_file_key) == 0) {
-			$avatar_file_key = false;
-		}
+	public static function do(int $user_id, false|string $name, Domain_User_Action_Sso_ActualizeProfileData_AvatarAction $avatar_action, string $avatar_file_key, false|string $badge, false|string $role, false|string $description):void {
 
 		// подготавливаем имя
 		$name = Domain_User_Entity_Sanitizer::sanitizeProfileName($name);
 
-		// получаем avatar_file_map
-		$avatar_file_map = $avatar_file_key;
-		if ($avatar_file_key !== false) {
-			$avatar_file_map = Type_Pack_File::doDecrypt($avatar_file_key);
-		}
+		// подготавливаем avatar_file_map
+		$avatar_file_map = match ($avatar_action) {
+			Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::NO_ACTION,
+			Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::CLEAR  => false,
+			Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::CHANGE => Type_Pack_File::doDecrypt($avatar_file_key),
+		};
 
-		// обновляем данные на пивоте
-		Domain_User_Action_UpdateProfile::do($user_id, $name, $avatar_file_map, is_need_delete_avatar: true);
+		// обновляем информацию о пользователе на пивоте
+		Domain_User_Action_UpdateProfile::do($user_id, $name, $avatar_file_map);
+
+		// если требуется очистить аватар пользователя
+		if ($avatar_action === Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::CLEAR) {
+			Domain_User_Action_ClearAvatar::do($user_id);
+		}
 
 		// асинхронно обновляем данные на каждой из компаний пользователя
 		// делаем это с небольшой задержкой, чтобы
 		Type_Phphooker_Main::updateMemberInfoOnAllCompanies($user_id, time() + 10, $badge, $description, $role);
+	}
+
+	/**
+	 * подготавливаем параметры для обновления аватара пользователя
+	 *
+	 * @return array
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 */
+	public static function prepareAvatarData(?string $sso_account_data):array {
+
+		// если пришел null, то нет никакого маппинга – ничего делать не нужно
+		if (is_null($sso_account_data)) {
+			return [Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::NO_ACTION, ""];
+		}
+
+		// если пришла пустота – значит аватара у учетной записи нет
+		// сотрем аватар пользователю
+		if ($sso_account_data === "") {
+			return [Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::CLEAR, ""];
+		}
+
+		// иначе загружаем аватар
+		try {
+			$avatar_file_key = self::uploadSsoAvatar($sso_account_data);
+		} catch (\cs_CurlError $e) {
+
+			// логируем
+			Type_System_Admin::log("sso_oidc", ["text" => "Не удалось загрузить аватар из учетной записи", "exception" => $e->getMessage(), "trace" => $e->getTraceAsString()]);
+
+			// в таком случае ничего не делаем, чтобы не снести аватарку
+			return [Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::NO_ACTION, ""];
+		}
+
+		return [Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::CHANGE, $avatar_file_key];
 	}
 
 	/**

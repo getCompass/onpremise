@@ -31,7 +31,7 @@ class Domain_User_Action_UpdateProfile {
 	 * @throws cs_FileIsNotImage
 	 * @long
 	 */
-	public static function do(int $user_id, string|false $name, string|false $avatar_file_map, string $client_launch_uuid = "", bool $is_need_delete_avatar = false):array {
+	public static function do(int $user_id, string|false $name, string|false $avatar_file_map, string $client_launch_uuid = ""):array {
 
 		Gateway_Db_PivotUser_UserList::beginTransaction($user_id);
 		$user_info = Gateway_Db_PivotUser_UserList::getForUpdate($user_id);
@@ -60,11 +60,6 @@ class Domain_User_Action_UpdateProfile {
 
 			$updated["avatar_file_map"] = $avatar_file_map;
 			$user_info->avatar_file_map = $avatar_file_map;
-		} else {
-			if ($is_need_delete_avatar) {
-				$updated["avatar_file_map"] = "";
-				$user_info->avatar_file_map = "";
-			}
 		}
 
 		Gateway_Db_PivotUser_UserList::set($user_id, $updated);

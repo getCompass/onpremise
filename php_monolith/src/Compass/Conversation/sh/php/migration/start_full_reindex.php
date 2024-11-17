@@ -50,7 +50,7 @@ function _getCompanyUrl():string {
 		$company_url = Type_Script_InputParser::getArgumentValue("--company_url");
 	} catch (\Exception) {
 
-		console("Передайте корректный url компании в которую обращаемся, например: --company_url='c1-bob.nikitak.backend-local.apitest.team'");
+		console("Передайте корректный url компании в которую обращаемся, например: --company_url='c1-d1.company.com'");
 		exit;
 	}
 

@@ -59,6 +59,21 @@ class Migration_Import_User {
 			try {
 
 				if ($user["expected_user_id"] == 0 || $user["expected_user_id"] < 1 || $user["expected_user_id"] > 9999999) {
+
+					if (isset($user["compass_extra"])) {
+
+						$compass_extra = fromJson($user["compass_extra"]);
+						if (isset($compass_extra["is_remind_bot"]) && $compass_extra["is_remind_bot"] == true) {
+
+							$bound_user_list[] = [
+								"uniq"      => $user["uniq"],
+								"user_id"   => REMIND_BOT_USER_ID,
+								"full_name" => "Напоминание",
+							];
+							continue;
+						}
+					}
+
 					throw new \cs_RowIsEmpty();
 				}
 
@@ -145,7 +160,7 @@ class Migration_Import_User {
 							$company->domino_id, $company->company_id, $private_key,
 							$delete_user_id, "Уволенный сотрудник", false, false, false,
 						);
-					} catch (\cs_SocketRequestIsFailed|Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate|Error) {
+					} catch (\cs_SocketRequestIsFailed | Gateway_Socket_Exception_CompanyIsNotServed | cs_CompanyIsHibernate | Error) {
 
 						Type_System_Admin::log("slack_user", "Не смогли поменять описание пользователю user_id = {$delete_user_id}");
 						console("Не смогли поменять описание пользователю user_id = {$delete_user_id}");

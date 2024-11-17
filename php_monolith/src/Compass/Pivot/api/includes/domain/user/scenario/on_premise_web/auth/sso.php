@@ -214,23 +214,18 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Sso {
 	 */
 	protected static function _actualizeProfileData(int $user_id, Struct_User_Auth_Sso_AccountData $sso_account_data):void {
 
-		// актуальный аватар пользователя
-		$avatar_file_key = false;
-
-		// если для пользователя передана аватарка из sso, то пытаемся загрузить ее
-		if (!is_null($sso_account_data->avatar)) {
-
-			try {
-				$avatar_file_key = Domain_User_Action_Sso_ActualizeProfileData::uploadSsoAvatar($sso_account_data->avatar);
-			} catch (\cs_CurlError $e) {
-				// TODO логирование
-			}
-		}
+		/**
+		 * подготавливаем параметры для обновления аватара пользователя
+		 *
+		 * @var Domain_User_Action_Sso_ActualizeProfileData_AvatarAction $avatar_action
+		 */
+		[$avatar_action, $avatar_file_key] = Domain_User_Action_Sso_ActualizeProfileData::prepareAvatarData($sso_account_data->avatar);
 
 		// записываем актуальную информацию о пользователе
 		Domain_User_Action_Sso_ActualizeProfileData::do(
 			$user_id,
 			is_null($sso_account_data->name) ? false : $sso_account_data->name,
+			$avatar_action,
 			$avatar_file_key,
 			is_null($sso_account_data->badge) ? false : $sso_account_data->badge,
 			is_null($sso_account_data->role) ? false : $sso_account_data->role,

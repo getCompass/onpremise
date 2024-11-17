@@ -174,8 +174,8 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	public const GROUPS_DOLEAVE = [
 		"key"    => "GROUPS_DOLEAVE",
-		"limit"  => 20,
-		"expire" => 60 * 60,
+		"limit"  => 50,
+		"expire" => 60 * 10,
 	];
 
 	public const GROUPS_TRYKICK = [
@@ -192,7 +192,7 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	public const GROUPS_SETINFO = [
 		"key"    => "GROUPS_SETINFO",
-		"limit"  => 20,
+		"limit"  => 50,
 		"expire" => 60 * 60,
 	];
 
@@ -327,13 +327,13 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	public const INVITES_GETALLOWEDUSERSFORINVITE = [
 		"key"    => "INVITES_GETALLOWEDUSERSFORINVITE",
-		"limit"  => 10,
+		"limit"  => 50,
 		"expire" => 60 * 5,
 	];
 
 	public const INVITES_TRYSENDBATCHING = [
 		"key"    => "INVITES_TRYSENDBATCHING",
-		"limit"  => 10,
+		"limit"  => 50,
 		"expire" => 60 * 5,
 	];
 

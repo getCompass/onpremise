@@ -20,8 +20,9 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 	public const ERROR_NUM_INVALID_CREDENTIALS       = 49;
 	public const ERROR_NUM_UNWILLING_TO_PERFORM      = 53;
 	public const ERROR_NUM_FILTER_ERROR              = -7;
+	public const ERROR_NUM_TIMEOUT_EXCEEDED          = 85;
 
-	public function __construct(string $host, int $port, bool $use_ssl) {
+	public function __construct(string $host, int $port, bool $use_ssl, int $require_cert_strategy, int $timeout) {
 
 		$protocol              = $use_ssl ? "ldaps" : "ldap";
 		$this->ldap_connection = ldap_connect(sprintf("%s://%s", $protocol, $host), $port);
@@ -30,10 +31,9 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		}
 		ldap_set_option($this->ldap_connection, LDAP_OPT_REFERRALS, false);
 		ldap_set_option($this->ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+		ldap_set_option($this->ldap_connection, LDAP_OPT_NETWORK_TIMEOUT, $timeout);
 
-		// в случае use_ssl = true – проверяем сертификат ldap провайдера
-		// в случае use_ssl = false – сертификат проверке не подлежит
-		ldap_set_option($this->ldap_connection, LDAP_OPT_X_TLS_REQUIRE_CERT, $use_ssl ? LDAP_OPT_X_TLS_DEMAND : LDAP_OPT_X_TLS_NEVER);
+		ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, $require_cert_strategy);
 	}
 
 	public function bind(string $dn, string $password):bool {
@@ -121,6 +121,7 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 			self::ERROR_NUM_INVALID_CREDENTIALS       => throw new Domain_Ldap_Exception_ProtocolError_InvalidCredentials(),
 			self::ERROR_NUM_UNWILLING_TO_PERFORM      => throw new Domain_Ldap_Exception_ProtocolError_UnwillingToPerform(),
 			self::ERROR_NUM_FILTER_ERROR              => throw new Domain_Ldap_Exception_ProtocolError_FilterError(),
+			self::ERROR_NUM_TIMEOUT_EXCEEDED          => throw new Domain_Ldap_Exception_ProtocolError_TimeoutExceeded(),
 			default                                   => throw new Domain_Ldap_Exception_ProtocolError($error_num, $error_message),
 		};
 	}

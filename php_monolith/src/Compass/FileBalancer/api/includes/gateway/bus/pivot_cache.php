@@ -2,6 +2,8 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\Exception\Gateway\BusFatalException;
+
 /**
  * класс для работы с go_pivot_cache
  */
@@ -12,7 +14,7 @@ class Gateway_Bus_PivotCache {
 	// -------------------------------------------------------
 
 	// получить информацию по сессии
-	public static function getInfo(string $session_uniq, string $shard_id, int $table_id):int {
+	public static function getInfo(string $session_uniq, string $shard_id, int $table_id):array {
 
 		if (isset($GLOBALS["session_list"][$session_uniq])) {
 			return $GLOBALS["session_list"][$session_uniq];
@@ -30,7 +32,7 @@ class Gateway_Bus_PivotCache {
 
 			// если go_pivot_cache не смог получить данные из БД
 			if ($status->code == 500) {
-				throw new \busException("database error in go_pivot_cache");
+				throw new BusFatalException("database error in go_pivot_cache");
 			}
 
 			// если сессия не найдена
@@ -38,13 +40,16 @@ class Gateway_Bus_PivotCache {
 				throw new \cs_SessionNotFound();
 			}
 
-			throw new \busException("undefined error_code in " . __CLASS__ . " code " . $status->code);
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
 		}
 
-		$user_id                                = $response->getUserId();
-		$GLOBALS["session_list"][$session_uniq] = $user_id;
+		// записываем сессию в GLOBALS
+		$GLOBALS["session_list"][$session_uniq] = [
+			"user_id"      => $response->getUserId(),
+			"refreshed_at" => $response->getRefreshedAt(),
+		];
 
-		return $user_id;
+		return $GLOBALS["session_list"][$session_uniq];
 	}
 
 	// очистить кэш go_pivot_cache по session_uniq [все ноды ТЕКУЩЕГО DPC]

@@ -88,7 +88,7 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 				$avg_screen_time,
 				$total_action_count,
 				$avg_message_answer_time,
-				$ldap_account_data
+				$ldap_account_data,
 			);
 		} catch (cs_UsersFromSingleListErrorOrUserCannotAddToGroups $e) {
 
@@ -292,6 +292,7 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 				"badge"          => \CompassApp\Domain\Member\Entity\Extra::getBadgeContent($user_info->extra),
 				"badge_color_id" => \CompassApp\Domain\Member\Entity\Extra::getBadgeColor($user_info->extra),
 				"role"           => $user_info->role,
+				"comment"        => $user_info->comment,
 			],
 		]);
 	}

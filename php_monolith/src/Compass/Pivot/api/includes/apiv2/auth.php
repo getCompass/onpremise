@@ -2,10 +2,9 @@
 
 namespace Compass\Pivot;
 
-use BaseFrame\Exception\Request\EndpointAccessDeniedException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Server\ServerProvider;
-use BaseFrame\Exception\DomainException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CaseException;
 
@@ -103,7 +102,7 @@ class Apiv2_Auth extends \BaseFrame\Controller\Api {
 		$authentication_token = $this->post(\Formatter::TYPE_STRING, "authentication_token");
 
 		if (!ServerProvider::isOnPremise()) {
-			throw new EndpointAccessDeniedException("only for on-premise server");
+			throw new ControllerMethodNotFoundException("only for on-premise server");
 		}
 
 		Type_Antispam_Ip::check(Type_Antispam_User::TRY_AUTHENTICATION_TOKEN);

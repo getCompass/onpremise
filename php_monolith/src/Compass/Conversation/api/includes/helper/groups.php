@@ -56,7 +56,7 @@ class Helper_Groups {
 	 */
 	public static function doJoin(string $conversation_map, int $user_id, int|false $member_role = false, int|false $member_permissions = false,
 						int    $inviter_user_id = 0, int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT, bool $is_favorite = false,
-						bool   $is_mentioned = false, string $userbot_id = "", bool $is_need_silent = false):array {
+						bool   $is_mentioned = false, string $userbot_id = "", bool $is_need_silent = false, int $migration_clear_until = 0, bool $is_migration_muted = false):array {
 
 		// если пользователь администратор всех групп - добавляем в группу как администратора
 		if (Permission::isGroupAdministrator($member_role, $member_permissions)) {
@@ -64,11 +64,13 @@ class Helper_Groups {
 		}
 
 		// добавляем пользователя в группу
-		[$conversation_data] = Type_Conversation_Group::addUserToGroup($conversation_map, $user_id, $role, $is_favorite, $is_mentioned, $userbot_id);
+		[$conversation_data] = Type_Conversation_Group::addUserToGroup(
+			$conversation_map, $user_id, $role, $is_favorite, $is_mentioned, $userbot_id, $is_migration_muted
+		);
 		$meta_row      = Type_Conversation_Utils::getMetaRowFromConversationData($conversation_data);
 		$left_menu_row = Type_Conversation_Utils::getLeftMenuRowFromConversationData($conversation_data);
 
-		self::setClearMessagesConversationForJoinGroup($user_id, $member_role, $conversation_map, $left_menu_row, $meta_row, $is_need_silent);
+		self::setClearMessagesConversationForJoinGroup($user_id, $member_role, $conversation_map, $left_menu_row, $meta_row, $is_need_silent, $migration_clear_until);
 
 		$need_send_system = true;
 
@@ -102,12 +104,13 @@ class Helper_Groups {
 	}
 
 	// устанавливаем очистку диалога при вступлении в группу
-	public static function setClearMessagesConversationForJoinGroup(int $user_id, int $member_role, string $conversation_map, array $left_menu_row, array $meta_row, bool $is_need_silent = false):void {
+	public static function setClearMessagesConversationForJoinGroup(int $user_id, int $member_role, string $conversation_map, array $left_menu_row, array $meta_row, bool $is_need_silent = false, int $migration_clear_until = 0):void {
 
 		// если для диалога убрана опция — "Показывать историю сообщений" — очищаем
-		if (!Type_Conversation_Meta_Extra::isShowHistoryForNewMembers($meta_row["extra"]) || Member::ROLE_GUEST === $member_role) {
+		if ((!Type_Conversation_Meta_Extra::isShowHistoryForNewMembers($meta_row["extra"]) || Member::ROLE_GUEST === $member_role)) {
 
-			Helper_Conversations::clearMessages($user_id, $conversation_map, $left_menu_row, false, time(), $is_need_silent);
+			$clear_until = $migration_clear_until > 0 ? $migration_clear_until : time();
+			Helper_Conversations::clearMessages($user_id, $conversation_map, $left_menu_row, false, $clear_until, $is_need_silent);
 			return;
 		}
 

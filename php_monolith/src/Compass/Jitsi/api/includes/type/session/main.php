@@ -7,57 +7,50 @@ namespace Compass\Jitsi;
  */
 class Type_Session_Main {
 
-	protected const _TOKEN_HEADER_UNIQUE = "pivot_authorization_token";                            // уникальный ключ установки заголовка
-	protected const _PIVOT_COOKIE_KEY    = "pivot_session_key";                                    // ключ, передаваемый в cookie пользователя
-	protected const _HEADER_AUTH_TYPE    = \BaseFrame\Http\Header\Authorization::AUTH_TYPE_BEARER; // тип токена для запроса
+	protected const _PIVOT_COOKIE_KEY = "pivot_session_key";                                    // ключ, передаваемый в cookie пользователя
+	protected const _HEADER_AUTH_TYPE = \BaseFrame\Http\Header\Authorization::AUTH_TYPE_BEARER; // тип токена для запроса
 
-	protected const _SESSION_STATUS_GUEST      = 1;
-	protected const _SESSION_STATUS_LOGGED_IN  = 2;
-	protected const _SESSION_STATUS_LOGGED_OUT = 3;
+	protected const _SESSION_STATUS_GUEST = 1;
 
 	/**
 	 * проверяем что сессия существует и валидна
-	 * @return int
-	 * @throws \cs_SessionNotFound
-	 * @throws cs_CookieIsEmpty|\BaseFrame\Exception\Gateway\BusFatalException
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws \BaseFrame\Exception\Request\InvalidAuthorizationException
+	 * @throws \BaseFrame\Exception\Request\EmptyAuthorizationException
 	 */
 	public static function getUserIdBySession():int {
 
-		try {
-			$pivot_session_map = self::_getSessionMap();
-		} catch (\BaseFrame\Exception\Request\EmptyAuthorizationException|\BaseFrame\Exception\Request\InvalidAuthorizationException) {
-			throw new cs_CookieIsEmpty();
-		}
+		$pivot_session_map = self::_getSessionMap();
 
 		if (Type_Pack_PivotSession::getStatus($pivot_session_map) == self::_SESSION_STATUS_GUEST) {
 			return 0;
 		}
 
-		// отдаем сессию пользователя
-		$session = Gateway_Bus_PivotCache::getInfo(
-			Type_Pack_PivotSession::getSessionUniq($pivot_session_map),
-			Type_Pack_PivotSession::getShardId($pivot_session_map),
-			Type_Pack_PivotSession::getTableId($pivot_session_map)
-		);
+		try {
+
+			// получаем сессию из микросервиса авторизации
+			$session = Gateway_Bus_PivotCache::getInfo(
+				Type_Pack_PivotSession::getSessionUniq($pivot_session_map),
+				Type_Pack_PivotSession::getShardId($pivot_session_map),
+				Type_Pack_PivotSession::getTableId($pivot_session_map)
+			);
+		} catch (\cs_SessionNotFound $e) {
+			throw new \BaseFrame\Exception\Request\InvalidAuthorizationException($e->getMessage());
+		}
 
 		return $session["user_id"];
 	}
 
 	/**
 	 * Получаем session_uniq из сессии
-	 *
-	 * @return string
-	 * @throws cs_CookieIsEmpty
+	 * @throws \BaseFrame\Exception\Request\InvalidAuthorizationException
+	 * @throws \BaseFrame\Exception\Request\EmptyAuthorizationException
 	 */
 	public static function getSessionUniqBySession():string {
 
-		try {
-			$pivot_session_map = self::_getSessionMap();
-		} catch (\BaseFrame\Exception\Request\EmptyAuthorizationException|\BaseFrame\Exception\Request\InvalidAuthorizationException) {
-			throw new cs_CookieIsEmpty();
-		}
-
-		return Type_Pack_PivotSession::getSessionUniq($pivot_session_map);
+		return Type_Pack_PivotSession::getSessionUniq(static::_getSessionMap());
 	}
 
 	/**
@@ -102,8 +95,6 @@ class Type_Session_Main {
 		try {
 			$pivot_session_map = Type_Pack_PivotSession::doDecrypt($pivot_session_key);
 		} catch (\cs_DecryptHasFailed) {
-
-			self::_clearRequestAuthData();
 			throw new \BaseFrame\Exception\Request\InvalidAuthorizationException("decrypt failed");
 		}
 
@@ -154,57 +145,5 @@ class Type_Session_Main {
 		}
 
 		return urldecode($_COOKIE[self::_PIVOT_COOKIE_KEY]);
-	}
-
-
-	/**
-	 * Сбрасывает данные авторизации для клиента.
-	 */
-	protected static function _clearRequestAuthData():void {
-
-		// готовим сброс заголовка
-		static::_clearHeader();
-
-		// сбрасываем авторизацию в куках,
-		// даже если клиент пользовался заголовком
-		static::_clearCookie();
-	}
-
-	/**
-	 * Готовит данные для action сброса заголовка авторизации.
-	 */
-	protected static function _clearHeader():void {
-
-		// инвалидируем заголовок
-		\BaseFrame\Http\Header\Authorization::invalidate();
-
-		// устанавливаем данные для authorization action
-		\BaseFrame\Http\Authorization\Data::inst()->drop(static::_TOKEN_HEADER_UNIQUE);
-	}
-
-	/**
-	 * Очищает cookie авторизации клиенту.
-	 */
-	protected static function _clearCookie():void {
-
-		unset($_COOKIE[self::_PIVOT_COOKIE_KEY]);
-
-		if (!isCLi()) {
-			setcookie(self::_PIVOT_COOKIE_KEY, "", -1, "/", SESSION_COOKIE_DOMAIN);
-		}
-	}
-
-	/**
-	 * Устанавливает данные, которые клиент клиент будет использовать для авторизации в дальнейшем.
-	 *
-	 * <b>!!! Функция имеет public уровень только для миграции куки -> заголовок, в остальных
-	 *  случая публичное использование функции запрещено !!!<b>
-	 */
-	public static function setHeaderAction(string $session_key):void {
-
-		\BaseFrame\Http\Authorization\Data::inst()->set(
-			static::_TOKEN_HEADER_UNIQUE,
-			sprintf("%s %s", static::_HEADER_AUTH_TYPE, base64_encode($session_key))
-		);
 	}
 }

@@ -8,7 +8,7 @@ namespace Compass\Conversation;
 abstract class Type_Conversation_Default {
 
 	// создает новый пустой диалог (company_conversation.meta + company_conversation.dynamic)
-	protected static function _createNewConversation(int $type, int $allow_status, int $creator_user_id, array $users, array $extra, string $name = "", string $avatar_file_map = ""):array {
+	protected static function _createNewConversation(int $type, int $allow_status, int $creator_user_id, array $users, array $extra, string $name = "", string $avatar_file_map = "", array|null $dynamic = null):array {
 
 		// получаем shard_id
 		$created_at = time();
@@ -24,7 +24,8 @@ abstract class Type_Conversation_Default {
 		);
 
 		// делаем insert в таблицу company_conversation.dynamic
-		self::_insertCloudConversationDynamic($meta_row["conversation_map"], $created_at);
+		$dynamic = !is_null($dynamic) ? $dynamic : [];
+		self::_insertCloudConversationDynamic($meta_row["conversation_map"], $created_at, $dynamic);
 
 		Gateway_Db_CompanyConversation_ConversationMetaLegacy::commitTransaction();
 
@@ -70,7 +71,7 @@ abstract class Type_Conversation_Default {
 	}
 
 	// вставляем запись в company_conversation.dynamic
-	protected static function _insertCloudConversationDynamic(string $conversation_map, int $created_at):array {
+	protected static function _insertCloudConversationDynamic(string $conversation_map, int $created_at, array $dynamic):array {
 
 		$insert = [
 			"conversation_map"        => $conversation_map,
@@ -81,9 +82,9 @@ abstract class Type_Conversation_Default {
 			"file_count"              => 0,
 			"created_at"              => $created_at,
 			"updated_at"              => 0,
-			"user_mute_info"          => [],
-			"user_clear_info"         => [],
-			"conversation_clear_info" => [],
+			"user_mute_info"          => $dynamic["user_mute_info"] ?? [],
+			"user_clear_info"         => $dynamic["user_clear_info"] ?? [],
+			"conversation_clear_info" => $dynamic["conversation_clear_info"] ?? [],
 		];
 		Gateway_Db_CompanyConversation_ConversationDynamicLegacy::insert($insert);
 
@@ -95,13 +96,13 @@ abstract class Type_Conversation_Default {
 	// -------------------------------------------------------
 
 	// создаем записи в таблицах юзера
-	protected static function _createUserCloudData(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, string $conversation_name = "", string $avatar_file_map = "", bool $is_favorite = false, bool $is_mentioned = false, int $opponent_user_id = 0, bool $is_hidden = false):void {
+	protected static function _createUserCloudData(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, string $conversation_name = "", string $avatar_file_map = "", bool $is_favorite = false, bool $is_mentioned = false, int $opponent_user_id = 0, bool $is_hidden = false, bool $is_migration_muted = false):void {
 
 		Gateway_Db_CompanyConversation_Main::beginTransaction();
 
 		$created_at = time();
 		self::_doUserLeftMenuInsert($user_id, $conversation_map, $user_role, $conversation_type, $allow_status_alias, $member_count, $created_at,
-			$opponent_user_id, $conversation_name, $avatar_file_map, $is_favorite, $is_mentioned, $is_hidden);
+			$opponent_user_id, $conversation_name, $avatar_file_map, $is_favorite, $is_mentioned, $is_hidden, $is_migration_muted);
 
 		// создаем запись в dynamic пользователя
 		self::_doUserDynamicInsert($user_id, $created_at);
@@ -110,29 +111,32 @@ abstract class Type_Conversation_Default {
 	}
 
 	// создаем запись в left_menu
-	private static function _doUserLeftMenuInsert(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden):void {
+	private static function _doUserLeftMenuInsert(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted = fales):void {
 
 		$left_menu_row = self::_makeInsertDataLeftMenuRow(
 			$user_id, $conversation_map, $user_role,
 			$conversation_type, $allow_status_alias,
 			$member_count, $created_at, $opponent_user_id,
 			$conversation_name,
-			$avatar_file_map, $is_favorite, $is_mentioned, $is_hidden
+			$avatar_file_map, $is_favorite, $is_mentioned, $is_hidden, $is_migration_muted
 		);
 
 		Gateway_Db_CompanyConversation_UserLeftMenu::insert($left_menu_row);
 	}
 
 	// формируем данные для вставки в левое меню
-	protected static function _makeInsertDataLeftMenuRow(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden):array {
+	// @long - большая структура
+	protected static function _makeInsertDataLeftMenuRow(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted):array {
+
+		$muted_until = $is_migration_muted ? time() : 0;
 
 		return [
 			"user_id"               => $user_id,
 			"conversation_map"      => $conversation_map,
 			"is_favorite"           => $is_favorite ? 1 : 0,
 			"is_mentioned"          => $is_mentioned ? 1 : 0,
-			"is_muted"              => 0,
-			"muted_until"           => 0,
+			"is_muted"              => $is_migration_muted ? 1 : 0,
+			"muted_until"           => $muted_until,
 			"is_hidden"             => $is_hidden ? 1 : 0,
 			"allow_status_alias"    => $allow_status_alias,
 			"is_leaved"             => 0,

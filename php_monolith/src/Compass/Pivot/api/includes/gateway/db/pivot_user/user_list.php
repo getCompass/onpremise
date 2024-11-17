@@ -226,6 +226,33 @@ class Gateway_Db_PivotUser_UserList extends Gateway_Db_PivotUser_Main {
 		return $result_rows;
 	}
 
+	/**
+	 * Получаем пользователей по массиву user_id
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function getByUserIdList(array $user_id_list):array {
+
+		$shard_key  = self::_getDbKey(1);
+		$table_name = self::_getTableKey(1);
+
+		// запрос проверен на EXPLAIN(INDEX=PRIMARY)
+		$query = "SELECT * FROM `?p` WHERE `user_id` in (?a) LIMIT ?i";
+		$rows  = ShardingGateway::database($shard_key)->getAll($query, $table_name, $user_id_list, count($user_id_list));
+
+		if (count($rows) === 0) {
+			return [];
+		}
+
+		$result_rows = [];
+
+		foreach ($rows as $row) {
+			$result_rows[] = self::_rowToStruct($row);
+		}
+
+		return $result_rows;
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------

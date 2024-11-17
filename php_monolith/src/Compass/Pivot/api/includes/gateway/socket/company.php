@@ -2151,7 +2151,7 @@ class Gateway_Socket_Company {
 			throw new ParseFatalException("passed unknown error_code");
 		}
 
-		return [$response["user"]["description"], $response["user"]["badge"], $response["user"]["badge_color_id"], $response["user"]["role"]];
+		return [$response["user"]["description"], $response["user"]["badge"], $response["user"]["badge_color_id"], $response["user"]["role"], $response["user"]["comment"]];
 	}
 
 	/**

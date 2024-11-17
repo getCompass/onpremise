@@ -2,7 +2,6 @@
 
 namespace Compass\Jitsi;
 
-use BaseFrame\Exception\Request\EndpointAccessDeniedException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 
 /**
@@ -92,7 +91,6 @@ class Gateway_Bus_PivotCache {
 	 *
 	 * @return Struct_Db_PivotUser_User
 	 * @throws BusFatalException
-	 * @throws EndpointAccessDeniedException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws cs_UserNotFound
 	 */
@@ -107,10 +105,6 @@ class Gateway_Bus_PivotCache {
 		]);
 		[$response, $status] = self::_doCallGrpc("UserGetInfo", $request);
 		if ($status->code !== \Grpc\STATUS_OK) {
-
-			if ($status->code == 401) {
-				throw new EndpointAccessDeniedException("error user get info");
-			}
 
 			if ($status->code == 901) {
 				throw new cs_UserNotFound();
@@ -133,7 +127,6 @@ class Gateway_Bus_PivotCache {
 	 * @return Struct_Db_PivotUser_User[]
 	 *
 	 * @throws BusFatalException
-	 * @throws EndpointAccessDeniedException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws cs_UserNotFound
 	 */
@@ -158,7 +151,6 @@ class Gateway_Bus_PivotCache {
 
 			throw match ($status->code) {
 
-				400     => new EndpointAccessDeniedException("error: " . formatArgs($user_id_list)),
 				903     => new cs_UserNotFound(),
 				default => new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code),
 			};

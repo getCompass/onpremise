@@ -70,7 +70,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function addByMigration(int $creator_user_id, string $group_name, string $description, bool $is_need_add_creator = false):array {
+	public static function addByMigration(int $creator_user_id, string $group_name, string $description, int|null $conversation_type = null, array|null $extra = null, array|null $dynamic = null, string $avatar_file_map = "", bool $is_need_add_creator = false):array {
 
 		// формируем users добавляя туда создателя
 		$users = [];
@@ -83,18 +83,30 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 		$description = Type_Api_Filter::sanitizeGroupDescription($description);
 
 		// инициируем extra для диалога и устанавливаем подтип диалога
-		$extra = Type_Conversation_Meta_Extra::initExtra();
-		$extra = Type_Conversation_Meta_Extra::setDescription($extra, $description);
+		if (is_null($extra)) {
+
+			$extra = Type_Conversation_Meta_Extra::initExtra();
+			$extra = Type_Conversation_Meta_Extra::setDescription($extra, $description);
+		}
+
+		$meta_type = is_null($conversation_type) ? CONVERSATION_TYPE_GROUP_DEFAULT : $conversation_type;
 
 		$meta_row = self::_createNewConversation(
-			CONVERSATION_TYPE_GROUP_DEFAULT, ALLOW_STATUS_GREEN_LIGHT, $creator_user_id, $users, $extra, $group_name,
+			$meta_type, ALLOW_STATUS_GREEN_LIGHT, $creator_user_id, $users, $extra, $group_name, $avatar_file_map, dynamic: $dynamic
 		);
 
 		if ($is_need_add_creator) {
 
+			$is_migration_muted = false;
+			if (!is_null($dynamic)) {
+
+				$user_mute_info     = $dynamic["user_mute_info"] ?? [];
+				$is_migration_muted = Domain_Conversation_Entity_Dynamic::isMuted($user_mute_info, $creator_user_id, time());
+			}
+
 			self::_createUserCloudData(
 				$creator_user_id, $meta_row["conversation_map"], Type_Conversation_Meta_Users::ROLE_OWNER,
-				CONVERSATION_TYPE_GROUP_DEFAULT, 0, count($users), $group_name
+				$meta_type, 0, count($users), $group_name, $avatar_file_map, is_migration_muted: $is_migration_muted
 			);
 		}
 
@@ -127,7 +139,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 	}
 
 	// добавить пользователя в группу.
-	public static function addUserToGroup(string $conversation_map, int $user_id, int $role, bool $is_favorite = false, bool $is_mentioned = false, string $userbot_id = ""):array {
+	public static function addUserToGroup(string $conversation_map, int $user_id, int $role, bool $is_favorite = false, bool $is_mentioned = false, string $userbot_id = "", bool $is_migration_muted = false):array {
 
 		// открываем транзакцию на cluster_conversation и получаем запись на обновление, если пользователь уже состоит делаем rollback, иначе обновляем запись
 		Gateway_Db_CompanyConversation_ConversationMetaLegacy::beginTransaction();
@@ -153,7 +165,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 
 			return [$conversation_data, false];
 		}
-		$conversation_data = self::_firstAttachUser($user_id, $conversation_map, $role, $meta_row, $is_favorite, $is_mentioned);
+		$conversation_data = self::_firstAttachUser($user_id, $conversation_map, $role, $meta_row, $is_favorite, $is_mentioned, $is_migration_muted);
 		Gateway_Db_CompanyConversation_ConversationMetaLegacy::commitTransaction();
 
 		// пушим событие о добавлении пользователя в группу
@@ -487,13 +499,13 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 	// -------------------------------------------------------
 
 	// добавляем записи в таблицах пользователя при первом вступлении в диалог (cloud_user_conversation)
-	protected static function _firstAttachUser(int $user_id, string $conversation_map, int $role, array $meta_row, bool $is_favorite, bool $is_mentioned):array {
+	protected static function _firstAttachUser(int $user_id, string $conversation_map, int $role, array $meta_row, bool $is_favorite, bool $is_mentioned, bool $is_migration_muted = false):array {
 
 		// создаем записи в таблице dynamic
 		self::_insertUserDynamicOnUserJoinToGroup($user_id);
 
 		// создаем запись в таблице left_menu
-		$insert_left_menu = self::_insertLeftMenuOnUserJoinToGroup($conversation_map, $meta_row, $user_id, $role, $is_favorite, $is_mentioned);
+		$insert_left_menu = self::_insertLeftMenuOnUserJoinToGroup($conversation_map, $meta_row, $user_id, $role, $is_favorite, $is_mentioned, $is_migration_muted);
 
 		// формируем conversation_data
 		return Type_Conversation_Utils::makeConversationData($meta_row, $insert_left_menu);
@@ -514,16 +526,19 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 
 	// создаем запись в таблице left_menu
 	// @long т.к. большая структура
-	protected static function _insertLeftMenuOnUserJoinToGroup(string $conversation_map, array $meta_row, int $user_id, int $role, bool $is_favorite, bool $is_mentioned):array {
+	protected static function _insertLeftMenuOnUserJoinToGroup(string $conversation_map, array $meta_row, int $user_id, int $role,
+										     bool $is_favorite, bool $is_mentioned, bool $is_migration_muted = false):array {
+
+		$muted_until = $is_migration_muted ? time() : 0;
 
 		$insert_left_menu = [
 			"user_id"               => $user_id,
 			"conversation_map"      => $conversation_map,
 			"is_favorite"           => $is_favorite ? 1 : 0,
 			"is_mentioned"          => $is_mentioned ? 1 : 0,
-			"is_muted"              => 0,
+			"is_muted"              => $is_migration_muted ? 1 : 0,
 			"is_have_notice"        => 0,
-			"muted_until"           => 0,
+			"muted_until"           => $muted_until,
 			"role"                  => $role,
 			"is_hidden"             => 0,
 			"is_leaved"             => 0,

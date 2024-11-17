@@ -133,13 +133,13 @@ class Type_Pack_PivotSession {
 
 		// если расшировка закончилась неудачно
 		if ($decrypt_result === false) {
-			throw new cs_DecryptHasFailed();
+			throw new \cs_DecryptHasFailed();
 		}
 
 		// проверяем наличие ключа session_map
 		$decrypt_result = fromJson($decrypt_result);
 		if (!isset($decrypt_result["session_map"])) {
-			throw new cs_DecryptHasFailed();
+			throw new \cs_DecryptHasFailed();
 		}
 
 		// возвращаем session_map
@@ -217,12 +217,12 @@ class Type_Pack_PivotSession {
 		$packet = fromJson($session_map);
 
 		if (!isset($packet["_"], $packet["?"])) {
-			throw new cs_UnpackHasFailed();
+			throw new \cs_UnpackHasFailed();
 		}
 
 		// проверяем что передали ожидаемую сущность
 		if ($packet["?"] != self::_MAP_ENTITY_TYPE) {
-			throw new cs_UnpackHasFailed();
+			throw new \cs_UnpackHasFailed();
 		}
 
 		return $packet;
@@ -236,7 +236,7 @@ class Type_Pack_PivotSession {
 
 		// проверяем существование такой версии
 		if (!isset(self::_PACKET_SCHEMA[$version])) {
-			throw new cs_UnpackHasFailed();
+			throw new \cs_UnpackHasFailed();
 		}
 
 		return $version;
@@ -250,7 +250,7 @@ class Type_Pack_PivotSession {
 
 		// если подпись не совпала
 		if ($sign != $passed_sign) {
-			throw new cs_UnpackHasFailed();
+			throw new \cs_UnpackHasFailed();
 		}
 	}
 
@@ -285,7 +285,7 @@ class Type_Pack_PivotSession {
 	protected static function _throwIfReplacementKeyNotSet(array $flipped_packet_schema, string $key):void {
 
 		if (!isset($flipped_packet_schema[$key])) {
-			throw new cs_UnpackHasFailed();
+			throw new \cs_UnpackHasFailed();
 		}
 	}
 }

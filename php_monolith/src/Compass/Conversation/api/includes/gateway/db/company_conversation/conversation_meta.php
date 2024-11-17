@@ -79,6 +79,48 @@ class Gateway_Db_CompanyConversation_ConversationMeta extends Gateway_Db_Company
 		);
 	}
 
+	/**
+	 * получаем все записи для миграции
+	 *
+	 * @param array $conversation_map_list
+	 * @param array $type_list
+	 * @param int   $limit
+	 * @param bool  $assoc_list
+	 *
+	 * @return Struct_Db_CompanyConversation_ConversationMeta[]
+	 * @throws \cs_DecryptHasFailed
+	 * @throws \cs_UnpackHasFailed
+	 */
+	public static function getFromMigration(array $conversation_map_list, array $type_list, int $limit, bool $assoc_list = false):array {
+
+		$meta_year_list           = [];
+		$conversation_meta_list   = [];
+		$conversation_meta_output = [];
+		$meta_map_list            = [];
+		foreach ($conversation_map_list as $v) {
+
+			$meta_year_list[\CompassApp\Pack\Conversation::getShardId($v)][] = \CompassApp\Pack\Conversation::getMetaId($v);
+
+			$meta_map_list[\CompassApp\Pack\Conversation::getMetaId($v) . "_" . \CompassApp\Pack\Conversation::getShardId($v)] = $v;
+		}
+
+		foreach ($meta_year_list as $year => $meta_list) {
+
+			// отсутствует проверка на EXPLAIN (запрос используется только для миграции)
+			$query                  = "SELECT * FROM `?p` WHERE `meta_id` IN (?a) AND `type` IN (?a) AND `year` = ?i LIMIT ?i";
+			$conversation_meta_list = array_merge($conversation_meta_list, static::_connect(self::_getDbKey())->getAll(
+				$query, self::_getTable(), $meta_list, $type_list, $year, $limit
+			));
+		}
+
+		return self::_doFormatOutputConversationList(
+			$conversation_meta_output,
+			$conversation_meta_list,
+			$meta_map_list,
+			$assoc_list,
+		);
+	}
+
 	// метод для обновления записи
 	public static function set(string $conversation_map, array $set):void {
 

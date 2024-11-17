@@ -323,7 +323,12 @@ class Type_Session_Main {
 			$pivot_session_map = Type_Pack_PivotSession::doDecrypt($pivot_session_key);
 		} catch (\cs_DecryptHasFailed) {
 
-			self::_clearRequestAuthData();
+			// если клиенту нужно почистить куку (чистим для старых клиентов
+			// или если клиент зачем-то захотел, чтобы мы чистили ее вне start)
+			if (\BaseFrame\Http\Header\AuthorizationControl::parse()::needClear()) {
+				self::_clearRequestAuthData();
+			}
+
 			throw new \BaseFrame\Exception\Request\InvalidAuthorizationException("decrypt failed");
 		}
 

@@ -360,6 +360,15 @@ class Type_Conversation_Meta_Users {
 		return $user_schema["role"];
 	}
 
+	// возвращаем дату инициализации структуры
+	public static function getCreatedAt(array $user_schema):int {
+
+		// актуализируем user_schema
+		$user_schema = self::_getUserSchema($user_schema);
+
+		return $user_schema["created_at"] ?? 0;
+	}
+
 	// создать новую структуру для users
 	public static function initUserSchema(int $role):array {
 

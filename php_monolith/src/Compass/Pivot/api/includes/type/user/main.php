@@ -226,8 +226,17 @@ class Type_User_Main {
 		try {
 			$user_info = self::get($user_id);
 		} catch (cs_UserNotFound) {
-			throw new EndpointAccessDeniedException("not found user");
+
+			// если клиент ожидает 401, то возвращаем ему 401
+			if (\BaseFrame\Http\Header\AuthorizationControl::parse()::expect401()) {
+				throw new EndpointAccessDeniedException("User not authorized for this actions.");
+			}
+
+			// иногда клиенты не хотят 401 и им нужно запустить
+			// весь флоу валидации сессии через start + doStart
+			throw new cs_AnswerCommand("need_call_start", []);
 		}
+
 		return Domain_User_Entity_User::isEmptyProfile($user_info);
 	}
 

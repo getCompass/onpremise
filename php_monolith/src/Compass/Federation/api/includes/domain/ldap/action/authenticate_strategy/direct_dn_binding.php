@@ -19,7 +19,12 @@ class Domain_Ldap_Action_AuthenticateStrategy_DirectDnBinding implements Domain_
 	public function authenticate(string $username, string $password):array {
 
 		// создаем клиент
-		$client = Domain_Ldap_Entity_Client::resolve(Domain_Ldap_Entity_Config::getServerHost(), Domain_Ldap_Entity_Config::getServerPort(), Domain_Ldap_Entity_Config::getUseSslFlag());
+		$client = Domain_Ldap_Entity_Client::resolve(
+			Domain_Ldap_Entity_Config::getServerHost(),
+			Domain_Ldap_Entity_Config::getServerPort(),
+			Domain_Ldap_Entity_Config::getUseSslFlag(),
+			Domain_Ldap_Entity_Client_RequireCertStrategy::convertStringToConst(Domain_Ldap_Entity_Config::getRequireCertStrategy()),
+		);
 
 		// пытаемся аутентифицироваться с помощью ldap_bind сформировав DN учетной записи
 		$client->bind(self::_makeUserDN($username), $password);

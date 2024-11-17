@@ -30,11 +30,14 @@ class Migration_Import_Group_User {
 
 	protected const  _RAW_CONVERSATION_TABLE   = "raw_conversation";
 	protected const  _BOUND_CONVERSATION_TABLE = "bound_conversation";
+	protected const  _BOUND_USERS_TABLE        = "bound_user";
+	protected const  _USERS_COUNT              = 1000000;
 	protected string $_local_manticore_host;
 	protected int    $_local_manticore_port;
 
 	/**
 	 * Запускаем скрипт
+	 * @long
 	 */
 	public function run(string $local_manticore_host, int $local_manticore_port, bool $is_dry):void {
 
@@ -58,13 +61,26 @@ class Migration_Import_Group_User {
 				continue;
 			}
 
-			$members = fromJson($conversation_raw["members"]);
+			$compass_extra     = isset($conversation_raw["compass_extra"]) ? fromJson($conversation_raw["compass_extra"]) : [];
+			$conversation_type = $compass_extra["meta_type"] ?? null;
+			if (!is_null($conversation_type) && $conversation_type == CONVERSATION_TYPE_GROUP_HIRING) {
+				continue;
+			}
+
+			$members              = fromJson($conversation_raw["members"]);
+			$dynamic              = $compass_extra["conversation_dynamic"] ?? null;
+			$meta_owners          = $compass_extra["meta_owners"] ?? [];
+			$meta_users_joined_at = $compass_extra["meta_users_joined_at"] ?? [];
 
 			// делаем запрос в bound_conversation
 			$conversation_bound = self::_getBoundConversation($conversation_raw["uniq"])[0];
 
 			// получаем мету диалога
 			$meta_row = Type_Conversation_Meta::get($conversation_bound["conversation_map"]);
+
+			if (!is_null($dynamic)) {
+				[$dynamic, $meta_users_joined_at] = self::_prepareConversationData($dynamic, $meta_users_joined_at, $members);
+			}
 
 			// добавляем пользователей в группу, если не состоят в ней
 			foreach ($members as $user_id) {
@@ -88,7 +104,26 @@ class Migration_Import_Group_User {
 						? Type_Conversation_Meta_Users::ROLE_OWNER
 						: Type_Conversation_Meta_Users::ROLE_DEFAULT;
 
-					Helper_Groups::doJoin($meta_row["conversation_map"], $user_id, role: $role, is_need_silent: true);
+					if ($role == Type_Conversation_Meta_Users::ROLE_DEFAULT && in_array($user_id, $meta_owners)) {
+						$role = Type_Conversation_Meta_Users::ROLE_OWNER;
+					}
+
+					$is_muted    = false;
+					$clear_until = 0;
+					if (!is_null($dynamic)) {
+
+						$user_mute_info = $dynamic["user_mute_info"] ?? [];
+						$is_muted       = Domain_Conversation_Entity_Dynamic::isMuted($user_mute_info, $user_id, time());
+						$clear_until    = Domain_Conversation_Entity_Dynamic::getClearUntil($dynamic["user_clear_info"], $dynamic["conversation_clear_info"], $user_id);
+
+						if ($clear_until == 0) {
+							$clear_until = $meta_users_joined_at[$user_id] ?? 0;
+						}
+					}
+
+					Helper_Groups::doJoin(
+						$meta_row["conversation_map"], $user_id, role: $role, is_need_silent: true, migration_clear_until: $clear_until, is_migration_muted: $is_muted
+					);
 
 					Type_System_Admin::log("import_group_user", "Добавили пользователя user_id = {$user_id} в группу c uniq = " . $conversation_raw["uniq"] . " и conversation_map = " . $meta_row["conversation_map"]);
 					console("Добавили пользователя user_id = {$user_id} в группу c uniq = " . $conversation_raw["uniq"] . " и conversation_map = " . $meta_row["conversation_map"]);
@@ -117,6 +152,65 @@ class Migration_Import_Group_User {
 
 		$query = "SELECT * FROM ?t WHERE uniq=?s ORDER BY `id` ASC LIMIT ?i OFFSET ?i";
 		return self::_manticore()->select($query, [self::_BOUND_CONVERSATION_TABLE, $uniq, 1, 0]);
+	}
+
+	/**
+	 * Получаем список пользователей с bound таблицы
+	 *
+	 * @throws ExecutionException
+	 */
+	protected function _getBoundUsers(array $user_id_list):array {
+
+		$query = "SELECT * FROM ?t WHERE `user_id` IN (?an) LIMIT ?i OPTION max_matches=?i";
+		return self::_manticore()->select($query, [self::_BOUND_USERS_TABLE, $user_id_list, count($user_id_list), self::_USERS_COUNT]);
+	}
+
+	/**
+	 * Подготавливаем dynamic диалога для миграции
+	 * @throws ExecutionException
+	 */
+	protected function _prepareConversationData(array $dynamic, array $meta_users_joined_at, array $users_id_list):array {
+
+		// получаем связь id участников группы
+		$bound_user_list = self::_getBoundUsers($users_id_list);
+
+		// uniq - id c Compass; user_id - id в новом мире.
+		foreach ($bound_user_list as $bound_user) {
+
+			$saas_user_id = $bound_user["uniq"];
+
+			if (isset($meta_users_joined_at[$saas_user_id])) {
+
+				$meta_users_joined_at[$bound_user["user_id"]] = $meta_users_joined_at[$saas_user_id];
+				unset($meta_users_joined_at[$saas_user_id]);
+			}
+
+			if (isset($dynamic["user_mute_info"][$saas_user_id])) {
+
+				$dynamic["user_mute_info"][$bound_user["user_id"]] = $dynamic["user_mute_info"][$saas_user_id];
+				unset($dynamic["user_mute_info"][$saas_user_id]);
+			}
+
+			if (isset($dynamic["user_clear_info"][$saas_user_id])) {
+
+				$dynamic["user_clear_info"][$bound_user["user_id"]] = $dynamic["user_clear_info"][$saas_user_id];
+				unset($dynamic["user_clear_info"][$saas_user_id]);
+			}
+
+			if (isset($dynamic["user_file_clear_info"][$saas_user_id])) {
+
+				$dynamic["user_file_clear_info"][$bound_user["user_id"]] = $dynamic["user_file_clear_info"][$saas_user_id];
+				unset($dynamic["user_file_clear_info"][$saas_user_id]);
+			}
+
+			if (isset($dynamic["conversation_clear_info"][$saas_user_id])) {
+
+				$dynamic["conversation_clear_info"][$bound_user["user_id"]] = $dynamic["conversation_clear_info"][$saas_user_id];
+				unset($dynamic["conversation_clear_info"][$saas_user_id]);
+			}
+		}
+
+		return [$dynamic, $meta_users_joined_at];
 	}
 
 	/**

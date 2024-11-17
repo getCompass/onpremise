@@ -179,19 +179,23 @@ class Apiv1_Pivot_Auth extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * ралогинить пользователя
-	 *
-	 * @throws cs_IncorrectSaltVersion
-	 * @throws \queryException
-	 * @throws \returnException
-	 * @throws \userAccessException
+	 * Закрывает текущую сессию пользователя.
+	 * @throws
 	 */
 	public function doLogout():array {
 
 		try {
 			Domain_User_Scenario_Api::doLogout($this->user_id);
 		} catch (\cs_RowIsEmpty) {
-			throw new EndpointAccessDeniedException("not found login user");
+
+			// если клиент ожидает 401, то возвращаем ему 401
+			if (\BaseFrame\Http\Header\AuthorizationControl::parse()::expect401()) {
+				throw new EndpointAccessDeniedException("User not authorized for this actions.");
+			}
+
+			// иногда клиенты не хотят 401 и им нужно запустить
+			// весь флоу валидации сессии через start + doStart
+			throw new cs_AnswerCommand("need_call_start", []);
 		}
 
 		Gateway_Bus_CollectorAgent::init()->inc("row26");

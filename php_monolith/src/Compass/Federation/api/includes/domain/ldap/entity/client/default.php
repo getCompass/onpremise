@@ -22,6 +22,47 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 	public const ERROR_NUM_FILTER_ERROR              = -7;
 	public const ERROR_NUM_TIMEOUT_EXCEEDED          = 85;
 
+	/** атрибуты LDAP для получения */
+	protected const _GET_LDAP_ATTRIBUTES = [
+		"objectclass",
+		"samaccountname",
+		"samaccounttype",
+		"uid",
+		"thumbnailphoto",
+		"cn",
+		"sn",
+		"title",
+		"description",
+		"telephonenumber",
+		"givenname",
+		"distinguishedname",
+		"distinguishedname",
+		"whencreated",
+		"whenchanged",
+		"displayname",
+		"memberof",
+		"department",
+		"company",
+		"proxyaddresses",
+		"name",
+		"countrycode",
+		"homedirectory",
+		"homedrive",
+		"badpasswordtime",
+		"lastlogoff",
+		"lastlogon",
+		"primarygroupid",
+		"userparameters",
+		"admincount",
+		"accountexpires",
+		"showinaddressbook",
+		"managedobjects",
+		"userprincipalname",
+		"lockouttime",
+		"objectcategory",
+		"mail",
+	];
+
 	public function __construct(string $host, int $port, bool $use_ssl, int $require_cert_strategy, int $timeout) {
 
 		$protocol              = $use_ssl ? "ldaps" : "ldap";
@@ -57,7 +98,7 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 	}
 
 	// @long
-	public function searchEntries(string $base, string $filter, int $page_size, array $attribute_list = []):array {
+	public function searchEntries(string $base, string $filter, int $page_size, array $attribute_list = self::_GET_LDAP_ATTRIBUTES):array {
 
 		// кука, с которой совершается запрос в LDAP провайдер
 		$cookie = "";

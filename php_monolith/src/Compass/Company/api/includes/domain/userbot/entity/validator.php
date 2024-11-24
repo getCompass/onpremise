@@ -7,9 +7,9 @@ namespace Compass\Company;
  */
 class Domain_Userbot_Entity_Validator {
 
-	public const COMMAND_LENGTH_MIN_LIMIT = 2;   // минимальная длина команды боты
+	public const COMMAND_LENGTH_MIN_LIMIT = 2;  // минимальная длина команды боты
 	public const COMMAND_LIST_LIMIT       = 100; // максимальное количество команд для бота
-	public const COMMAND_LENGTH_MAX_LIMIT = 80;  // максимальная длина для команды бота
+	public const COMMAND_LENGTH_MAX_LIMIT = 80; // максимальная длина для команды бота
 
 	/**
 	 * проверяем корректность avatar_color_id

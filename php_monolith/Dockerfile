@@ -1,9 +1,9 @@
-FROM docker.getcompass.ru/service/packages:0.1.7-devonpremise AS packages
-FROM docker.getcompass.ru/service/php-8:8.2.22
+FROM docker.getcompass.ru/service/packages:0.1.12 AS packages
+FROM docker.getcompass.ru/service/php-8:8.2.25-1
 ARG BRANCH
 
 RUN apk update && apk add --no-cache curl-dev
-ARG COUNT=131
+ARG COUNT=128
 COPY --chown=www-data:www-data . /app
 
 COPY --from=packages /tmp/migrate /usr/local/bin/migrate

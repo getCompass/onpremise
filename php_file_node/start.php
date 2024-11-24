@@ -11,6 +11,7 @@ const PATH_API  = PATH_ROOT . "api/";
 const PATH_TEMP = PATH_ROOT . "cache/";
 const PATH_LOGS = PATH_ROOT . "logs/";
 const PATH_WWW  = PATH_ROOT . "www/";
+const PATH_TMP  = "/tmp/";
 
 const CODE_UNIQ_VERSION = 103000;
 

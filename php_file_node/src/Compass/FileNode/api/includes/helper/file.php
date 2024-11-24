@@ -3,6 +3,7 @@
 namespace Compass\FileNode;
 
 use BaseFrame\Server\ServerProvider;
+use BaseFrame\System\File;
 
 /**
  * хелпер для работы с файлами
@@ -14,7 +15,7 @@ class Helper_File {
 	public const    MAX_FILE_DOWNLOAD_CONTENT_LENGTH  = 50 * 1024 * 1024;  // максимальный размер содержимого для файлов
 
 	// скачивание файла
-	public static function downloadFile(string $file_url, bool $is_source_trusted = false, int $timeout = 2, string|bool $node_id = false, int $max_file_size = self::MAX_IMAGE_DOWNLOAD_CONTENT_LENGTH):string {
+	public static function downloadFile(string $file_url, bool $is_source_trusted = false, int $timeout = 2, string|bool $node_id = false, int $max_file_size = self::MAX_IMAGE_DOWNLOAD_CONTENT_LENGTH, string $proxy = ""):string {
 
 		// если файл находится на этой же ноде
 		if (NODE_ID == $node_id) {
@@ -22,7 +23,7 @@ class Helper_File {
 			$path = parse_url($file_url)["path"];
 			$path = strstr($path, FOLDER_FILE_NAME);
 
-			return file_get_contents(PATH_WWW . $path);
+			return File::init(PATH_WWW, $path)->read();
 		}
 
 		$curl = new \Curl();
@@ -32,6 +33,11 @@ class Helper_File {
 		$curl->setOpt(CURLOPT_NOBODY, true);
 		$curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
 		$curl->setOpt(CURLOPT_MAXREDIRS, self::_REDIRECT_MAX_COUNT);
+
+		// если указали прокси
+		if (mb_strlen($proxy) > 0) {
+			$curl->setOpt(CURLOPT_PROXY, $proxy);
+		}
 
 		$curl->get($file_url);
 

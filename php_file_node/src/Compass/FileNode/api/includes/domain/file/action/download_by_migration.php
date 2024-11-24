@@ -2,6 +2,8 @@
 
 namespace Compass\FileNode;
 
+use BaseFrame\System\File;
+
 /**
  * Класс описывает действие скачивания файла по ссылке и его сохранения на ноде через миграцию
  */
@@ -28,13 +30,13 @@ class Domain_File_Action_DownloadByMigration {
 
 		// сохраняем содержимое скачиваемого файла во временный файл
 		$tmp_file_path = Type_File_Utils::generateTmpPath();
-		Type_File_Utils::saveContentToFile($tmp_file_path, $file_content);
+		Type_File_Utils::saveContentToTmp($tmp_file_path, $file_content);
 
 		if ($file_source === FILE_SOURCE_MESSAGE_VOICE) {
 
 			ffmpeg_exec("-i", $tmp_file_path, "-map", "a", $new_tmp_file_path = Type_File_Utils::generateTmpPath("aac"));
 			$original_file_name = pathinfo($original_file_name, PATHINFO_FILENAME) . ".aac";
-			unlink($tmp_file_path);
+			unlink($tmp_file_path); // nosemgrep
 			$tmp_file_path = $new_tmp_file_path;
 		}
 
@@ -58,7 +60,7 @@ class Domain_File_Action_DownloadByMigration {
 			$path = parse_url($file_url)["path"];
 			$path = strstr($path, FOLDER_FILE_NAME);
 
-			return file_get_contents(PATH_WWW . $path);
+			return File::init(PATH_WWW, $path)->read();
 		}
 
 		$curl = new \Curl();

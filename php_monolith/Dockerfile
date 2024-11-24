@@ -3,7 +3,7 @@ FROM docker.getcompass.ru/service/php-8:8.2.25-1
 ARG BRANCH
 
 RUN apk update && apk add --no-cache curl-dev
-ARG COUNT=128
+ARG COUNT=130
 COPY --chown=www-data:www-data . /app
 
 COPY --from=packages /tmp/migrate /usr/local/bin/migrate

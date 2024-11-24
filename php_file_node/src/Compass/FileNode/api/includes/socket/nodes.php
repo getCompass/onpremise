@@ -193,7 +193,7 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 
 		// сохраняем содержимое скачиваемого файла во временный файл
 		$tmp_file_path = Type_File_Utils::generateTmpPath();
-		Type_File_Utils::saveContentToFile($tmp_file_path, $file_content);
+		Type_File_Utils::saveContentToTmp($tmp_file_path, $file_content);
 
 		// загружаем файл
 		try {

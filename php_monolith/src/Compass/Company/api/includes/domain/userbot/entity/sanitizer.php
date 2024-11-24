@@ -15,7 +15,7 @@ class Domain_Userbot_Entity_Sanitizer {
 	public static function sanitizeWebhookUrl(string $webhook_url):string {
 
 		// удаляем весь левак
-		$webhook_url = preg_replace("/[^\w _.\/\-$&+,:;=?@#]/uism", "", $webhook_url);
+		$webhook_url = preg_replace("/[^\w _.\/\-$&+,:;~!'()*=?%\[\]@#]/uism", "", $webhook_url);
 
 		// удаляем лишние пробелы
 		$webhook_url = trim(preg_replace("/[ ]{2,}/", " ", $webhook_url));

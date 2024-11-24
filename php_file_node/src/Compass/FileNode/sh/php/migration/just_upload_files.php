@@ -4,7 +4,6 @@ namespace Compass\FileNode;
 
 use BaseFrame\Search\Exception\ExecutionException;
 use BaseFrame\Search\Manticore;
-use Matrix\Exception;
 
 require_once "/app/src/Compass/FileNode/api/includes/type/script/input_parser.php";
 require_once "/app/src/Compass/FileNode/api/includes/type/script/input_helper.php";
@@ -79,7 +78,7 @@ class Migration_Just_Upload_Files {
 
 				console("Невалидный file_source $file_source для файла {$tmp_file_path}");
 				Type_System_Admin::log("migration-file-upload-error", "uniq: {$raw_file["uniq"]}");
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 
 				console("Не смогли загрузить файл {$tmp_file_path} из-за непредвиденной ошибки");
 				Type_System_Admin::log("migration-file-upload-error", "uniq: {$raw_file["uniq"]}");

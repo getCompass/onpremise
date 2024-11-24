@@ -57,14 +57,14 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 		// пробуем скачать файл
 		try {
 			$file_content = Helper_File::downloadFile($file_url, true, 10,
-				false, Helper_File::MAX_FILE_DOWNLOAD_CONTENT_LENGTH);
+				false, Helper_File::MAX_FILE_DOWNLOAD_CONTENT_LENGTH, INTERCOM_PROXY);
 		} catch (cs_DownloadFailed) {
 			return $this->error(10020, "file download error");
 		}
 
 		// сохраняем содержимое скачиваемого файла во временный файл
 		$tmp_file_path = Type_File_Utils::generateTmpPath();
-		Type_File_Utils::saveContentToFile($tmp_file_path, $file_content);
+		Type_File_Utils::saveContentToTmp($tmp_file_path, $file_content);
 
 		// определяем file_source файла
 		$file_source = self::_doIdentifyFileSource($tmp_file_path);

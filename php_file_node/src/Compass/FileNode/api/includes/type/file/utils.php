@@ -2,6 +2,8 @@
 
 namespace Compass\FileNode;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\System\File;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 
@@ -337,14 +339,73 @@ class Type_File_Utils {
 		mkdir($dir, 0755, true);
 	}
 
+	// сохраняем файл в tmp папку
+	public static function saveContentToTmp(string $file_path, string $file_content):void {
+
+		$work_dir     = PATH_TMP;
+		$file_subpath = self::_makeSubpath($work_dir, $file_path);
+
+		if ($file_subpath === "") {
+			throw new ParseFatalException("try to save to not tmp path");
+		}
+
+		self::_save($work_dir, $file_subpath, $file_content);
+	}
+
+	/**
+	 * Перемещаем файл из tmp папки в папку файлов
+	 *
+	 * @param string $src_file_path - путь до копируемого файла
+	 * @param string $dst_file_path - путь до файла назначения
+	 *
+	 * @return void
+	 */
+	public static function moveFromTmpToFiles(string $src_file_path, string $dst_file_path):void {
+
+		$tmp_files_dir  = PATH_TMP;
+		$files_work_dir = PATH_WWW . FOLDER_FILE_NAME . "/";
+
+		$src_file_subpath = self::_makeSubpath($tmp_files_dir, $src_file_path);
+		$dst_file_subpath = self::_makeSubpath($files_work_dir, $dst_file_path);
+
+		$src_file = File::init($tmp_files_dir, $src_file_subpath);
+		$dst_file = File::init($files_work_dir, $dst_file_subpath);
+
+		// если успешно скопировали - удаляем файл, с которого копировали
+		if ($src_file->copy($dst_file)) {
+			$src_file->delete();
+		}
+
+		$dst_file->chmod(0644);
+	}
+
+	/**
+	 * Получить подкаталог в рабочей директории
+	 */
+	protected static function _makeSubpath(string $work_dir, string $file_path):string {
+
+		// узнаем, действительно ли путь ведет в tmp папку
+		$file_subpath = "";
+		if (substr($file_path, 0, strlen($work_dir)) == $work_dir) {
+			$file_subpath = substr($file_path, strlen($work_dir));
+		}
+
+		if ($file_subpath === "") {
+			throw new ParseFatalException("try to save to not $work_dir dir");
+		}
+
+		return $file_subpath;
+	}
+
 	// сохраняем файл по пути
-	public static function saveContentToFile(string $file_path, string $file_content):void {
+	protected static function _save(string $work_dir, string $file_subpath, string $file_content):void {
 
 		// сохраняем содержимое скачиваемого файла в локальный
-		file_put_contents($file_path, $file_content);
+		$file = File::init($work_dir, $file_subpath);
+		$file->write($file_content);
 
 		// устанавливаем разрешение для файла только на чтение
-		chmod($file_path, 0644);
+		$file->chmod(0644);
 	}
 
 	// получаем хэш файла

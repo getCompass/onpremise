@@ -26,7 +26,7 @@ class Domain_File_Action_DownloadFile {
 
 		// сохраняем содержимое скачиваемого файла во временный файл
 		$tmp_file_path = Type_File_Utils::generateTmpPath();
-		Type_File_Utils::saveContentToFile($tmp_file_path, $file_content);
+		Type_File_Utils::saveContentToTmp($tmp_file_path, $file_content);
 
 		// сохраняем файл
 		return Helper_File::uploadFile($user_id, $company_id, $company_url, $file_source, $original_file_name, $tmp_file_path);

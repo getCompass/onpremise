@@ -150,13 +150,8 @@ class Type_File_Main {
 		// делаем проверку, что такой файл уже существует
 		self::_throwIfFileExist($file_path);
 
-		// перемещает файл который был загружен не с помощью post
-		if (copy($src_file_path, $file_path)) {
-			unlink($src_file_path);
-		}
-
-		// задаем права
-		chmod($file_path, 0644);
+		// перемещаем файл
+		Type_File_Utils::moveFromTmpToFiles($src_file_path, $file_path);
 
 		return $part_path;
 	}
@@ -173,11 +168,8 @@ class Type_File_Main {
 		// делаем проверку, что такой файл уже существует
 		self::_throwIfFileExist($file_path);
 
-		// перемещает файл который был загружен не с помощью post
-		copy($src_file_path, $file_path);
-
-		// задаем права
-		chmod($file_path, 0644);
+		// перемещаем файл
+		Type_File_Utils::moveFromTmpToFiles($src_file_path, $file_path);
 
 		return $part_path;
 	}

@@ -81,11 +81,22 @@ class Migration_Import_Comments {
 				$added_message_list = [];
 				foreach ($message_list as $message) {
 
-					$data                 = Domain_Thread_Action_Message_AddList::do($thread_map, $meta_row, [$message], is_silent: true);
+					try {
+						$data = Domain_Thread_Action_Message_AddList::do($thread_map, $meta_row, [$message], is_silent: true);
+					} catch (\Exception) {
+
+						console(redText("Не смогли добавить сообщение для треда {$thread_map}. Пропускаем"));
+						Type_System_Admin::log("migration-comment-error", "thread_map: {$thread_map}");
+						continue;
+					}
+
 					$added_message_list[] = $data["message_list"];
 				}
 
 				$raw_bound_message_rel_list = self::_generateRawBoundMessageRelList($raw_message_list, $added_message_list);
+				if (count($raw_bound_message_rel_list) < 1) {
+					continue;
+				}
 				self::_insertBoundThreadMessages($raw_bound_message_rel_list);
 			}
 

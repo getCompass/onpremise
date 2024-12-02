@@ -83,4 +83,5 @@ define("VIDEO_PROCESS_THREAD_COUNT"		, "${VIDEO_PROCESS_THREAD_COUNT}");
 
 define("INTEGRATION_AUTHORIZATION_TOKEN"  , "${INTEGRATION_AUTHORIZATION_TOKEN}");
 
+define("CA_CERTIFICATE"                			, "${CA_CERTIFICATE}");
 // @formatter:on <чтобы автоформатирование не убирало табы>

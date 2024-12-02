@@ -33,7 +33,7 @@ class Type_Extension_File {
 				"-vf", "scale={$width}:{$height},fps=30,zscale=t=linear:npl=300,format=gbrpf32le,tonemap=tonemap=mobius,zscale=t=bt709:p=bt709:m=bt709:d=error_diffusion,format=yuv420p", // скейлим видео и доводим количество кадров до 30
 				"-c:v", "libx264", "-crf", "21", "-preset", "veryfast",  // параметры для видео кодека, пока оставил h264 возможно в будущем перейдем на webm
 				// "-c:a", "copy",                                       // параметры для аудио кодека пока не устанавливаем
-				"-movflags", "+faststart",                           // перемещаем флаг moov_atom в начало
+				"-movflags", "+faststart",                               // перемещаем флаг moov_atom в начало
 				$output_file_path                                        // выходное видео
 			);
 		}
@@ -44,7 +44,7 @@ class Type_Extension_File {
 			"-vf", "scale={$width}:{$height},fps=30", // скейлим видео и доводим количество кадров до 30
 			"-c:v", "libx264", "-crf", "21", "-preset", "veryfast",  // параметры для видео кодека, пока оставил h264 возможно в будущем перейдем на webm
 			// "-c:a", "copy",                                       // параметры для аудио кодека пока не устанавливаем
-			"-movflags", "+faststart",                           // перемещаем флаг moov_atom в начало
+			"-movflags", "+faststart",                               // перемещаем флаг moov_atom в начало
 			$output_file_path                                        // выходное видео
 		);
 	}

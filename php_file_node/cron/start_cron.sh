@@ -13,6 +13,7 @@ rm /app/cache/*.lock > /dev/null 2>&1;
 
 # создаем файл для кронов и меняем ему владельца
 touch "${SCRIPT_PATH}/.cronjob";
+chown www-data:www-data "${SCRIPT_PATH}/.cronjob"
 
 # формируем список для всех кронов
 MODULE_CRONTAB=$(bash "${SCRIPT_PATH}/../src/Compass/_provide_crontab.sh");
@@ -20,14 +21,14 @@ APPLICATION_CRONTAB=$(cat "${SCRIPT_PATH}/crontab.cron");
 CRONTAB=$(echo -e "${APPLICATION_CRONTAB}\n\n${MODULE_CRONTAB}");
 
 echo "${CRONTAB}" > "${SCRIPT_PATH}/.cronjob";
-crontab - < "${SCRIPT_PATH}/.cronjob";
+crontab -u www-data - < "${SCRIPT_PATH}/.cronjob";
 
-/etc/init.d/cron start;
+/usr/sbin/crond
 
-crontab -l | grep -v '^#' | cut -f 6- -d ' ' | while read -r CRON; do
+crontab -u www-data -l | grep -v '^#' | cut -f 6- -d ' ' | while read -r CRON; do
 
   sleep 0.25;
-  su -c "$CRON > /dev/null 2>&1 &" root;
+  su -c "$CRON > /dev/null 2>&1 &" www-data;
 
   echo $CRON;
 done

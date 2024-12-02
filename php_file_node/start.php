@@ -75,6 +75,7 @@ require PATH_ROOT . "src/Modules/vendor/autoload.php";
 
 // загружаем глобальные конфиги
 require_once PATH_ROOT . "private/custom.php";
+\BaseFrame\Url\UrlHandler::init(PIVOT_DOMAIN);
 require_once PATH_ROOT . "private/main.php";
 
 // загружаем проекты

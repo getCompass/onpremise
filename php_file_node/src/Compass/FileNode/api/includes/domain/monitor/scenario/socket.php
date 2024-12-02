@@ -5,6 +5,7 @@ namespace Compass\FileNode;
 use BaseFrame\Monitor\Core;
 use BaseFrame\Monitor\MetricAggregator;
 use BaseFrame\Monitor\Helper\Metric;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * Сценарии мониторинга для prometheus
@@ -32,6 +33,7 @@ class Domain_Monitor_Scenario_Socket {
 
 		// отправляем
 		Core::flush();
+
 		return $prometheus_sender->metricToString();
 	}
 

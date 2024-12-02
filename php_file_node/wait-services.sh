@@ -3,11 +3,11 @@
 sh /app/wait-for-it.sh "${MYSQL_HOST}:${MYSQL_PORT}" -t 100
 
 iteration_count=0
-timeout=200
+timeout=100
 success_count=0
 while true; do
-    echo "/usr/bin/mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USER} -p${MYSQL_PASS}"
-    /usr/bin/mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USER} -p${MYSQL_PASS} --get-server-public-key -e "SHOW DATABASES" >> /dev/null
+
+    /usr/bin/mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USER} -p${MYSQL_PASS} -e "SHOW DATABASES" >> /dev/null
     status=$?
     if [ $status -eq 0 ]; then
 

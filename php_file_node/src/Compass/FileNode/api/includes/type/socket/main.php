@@ -60,6 +60,7 @@ class Type_Socket_Main {
 		$curl = new \Curl();
 		$curl->setTimeout(self::_CURL_TIMEOUT);
 		$curl->needVerify();
+		$curl->setCaCertificate(CA_CERTIFICATE);
 
 		// необходимо для комфортного дебага + удобный функционал на любой окружении манипулировать таймаутами
 		// локально устанавливается в docker/docker-compose.yml::app.environment

@@ -1,22 +1,22 @@
 # cron general
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/general.php start bot0 > /dev/null 2>&1"
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/general.php start bot0 > /dev/null 2>&1 &
 
 # Cron_File_Relocate [0-9]
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/file/relocate.php start bot0 >> /dev/null 2>&1"
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/file/relocate.php start bot10 >> /dev/null 2>&1"
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/file/relocate.php start bot0 >> /dev/null 2>&1 &
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/file/relocate.php start bot10 >> /dev/null 2>&1 &
 
 # Cron_PostUpload_Image [0-9]
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/postupload/image.php start bot0 >> /dev/null 2>&1"
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/postupload/image.php start bot10 >> /dev/null 2>&1"
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/postupload/image.php start bot0 >> /dev/null 2>&1 &
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/postupload/image.php start bot10 >> /dev/null 2>&1 &
 
 # Cron_PostUpload_Video [0-9]
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/postupload/video.php start bot0 >> /dev/null 2>&1"
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/postupload/video.php start bot10 >> /dev/null 2>&1"
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/postupload/video.php start bot0 >> /dev/null 2>&1 &
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/postupload/video.php start bot10 >> /dev/null 2>&1 &
 
 # Cron_PostUpload_Audio [0-9]
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/postupload/audio.php start bot0 >> /dev/null 2>&1"
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/postupload/audio.php start bot10 >> /dev/null 2>&1"
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/postupload/audio.php start bot0 >> /dev/null 2>&1 &
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/postupload/audio.php start bot10 >> /dev/null 2>&1 &
 
 # Cron_PostUpload_Document [0-9]
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/postupload/document.php start bot0 >> /dev/null 2>&1"
-* * * * *  bash -l -c "/usr/bin/php8.2 -dxdebug.start_with_request=0 /app/src/Compass/FileNode/api/cron/postupload/document.php start bot10 >> /dev/null 2>&1"
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/postupload/document.php start bot0 >> /dev/null 2>&1 &
+* * * * *  /usr/local/bin/php /app/src/Compass/FileNode/api/cron/postupload/document.php start bot10 >> /dev/null 2>&1 &

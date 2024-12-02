@@ -29,7 +29,14 @@ class Domain_Member_Entity_Validator {
 		"ESTP", // делец
 		"ESFP", // развлекатель
 	];
-	protected const _AVAILABLE_BADGE_COLOR_LIST = [1, 2, 3, 4];  // массив доступных цветов badge
+
+	/**
+	 * Массив доступных цветов badge
+	 *
+	 * 1,2,3,6,7,8 - пользовательские
+	 * 4,5 - боты
+	 */
+	protected const _AVAILABLE_BADGE_COLOR_LIST = [1, 2, 3, 4, 5, 6, 7, 8];
 
 	// -------------------------------------------------------
 	// PUBLIC

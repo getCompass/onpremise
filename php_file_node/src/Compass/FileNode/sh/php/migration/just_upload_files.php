@@ -57,7 +57,7 @@ class Migration_Just_Upload_Files {
 
 			$file_source        = (int) $raw_file["source_type"];
 			$original_file_name = $raw_file["original_name"];
-			$tmp_file_path      = "/app/www" . $raw_file["tmp_file_path"];
+			$tmp_file_path      = $raw_file["tmp_file_path"];
 
 			// обрезаем имя файла если необходимо
 			$original_file_name = $this->_cutFileName($original_file_name);
@@ -80,7 +80,7 @@ class Migration_Just_Upload_Files {
 				Type_System_Admin::log("migration-file-upload-error", "uniq: {$raw_file["uniq"]}");
 			} catch (\Exception $e) {
 
-				console("Не смогли загрузить файл {$tmp_file_path} из-за непредвиденной ошибки");
+				console("Не смогли загрузить файл {$tmp_file_path} из-за непредвиденной ошибки: " . $e->getMessage());
 				Type_System_Admin::log("migration-file-upload-error", "uniq: {$raw_file["uniq"]}");
 			}
 

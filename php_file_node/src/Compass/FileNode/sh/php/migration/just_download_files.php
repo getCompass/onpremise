@@ -67,9 +67,8 @@ class Migration_Just_Download_Files {
 				$file_content = $this->_downloadFile($file_url);
 
 				// сохраняем содержимое скачиваемого файла во временный файл
-				$file_extension = Type_File_Utils::getExtension($raw_file["original_name"]);
 				$tmp_file_path  = Type_File_Utils::generateTmpPath();
-				Type_File_Utils::saveContentToFile($tmp_file_path, $file_content);
+				Type_File_Utils::saveContentToTmp($tmp_file_path, $file_content);
 
 				if ($file_source === FILE_SOURCE_MESSAGE_VOICE) {
 
@@ -79,8 +78,7 @@ class Migration_Just_Download_Files {
 					$tmp_file_path = $new_tmp_file_path;
 				}
 
-				$file_path = Type_File_Main::generatePathPart($save_file_path, $tmp_file_path, $file_extension);
-				$this->_writeToFile("migration-file-download", "{$raw_file["uniq"]}|||||{$original_file_name}|||||{$file_source}|||||{$file_path}");
+				$this->_writeToFile("migration-file-download", "{$raw_file["uniq"]}|||||{$original_file_name}|||||{$file_source}|||||{$tmp_file_path}");
 
 				// делаем вывод чтобы было понятно что скрипт что-то делает
 				console("Успешно скачали файл: {$file_url}");

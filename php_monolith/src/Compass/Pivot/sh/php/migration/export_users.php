@@ -36,9 +36,6 @@ class Migration_Export_Users {
 		// получаем список участников пространства
 		$space_user_id_list = Gateway_Db_PivotCompany_CompanyUserList::getFullUserIdList($space_id);
 
-		// разбиваем на чанки
-		$space_user_id_list = array_chunk($space_user_id_list, self::_USER_COUNT_PER_CHUNK);
-
 		// получаем пространство
 		$company = Domain_Company_Entity_Company::get($space_id);
 
@@ -47,6 +44,15 @@ class Migration_Export_Users {
 			return;
 		}
 		$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
+
+		// получаем кикнутых из пространства пользователей
+		$kicked_user_id_list = Gateway_Socket_Company::getKickedUserList($space_id, $company->domino_id, $private_key);
+
+		// собираем в один список
+		$space_user_id_list = array_unique(array_merge($space_user_id_list, $kicked_user_id_list));
+
+		// разбиваем на чанки
+		$space_user_id_list = array_chunk($space_user_id_list, self::_USER_COUNT_PER_CHUNK);
 
 		// проходимся по всем чанкам
 		foreach ($space_user_id_list as $user_id_list) {

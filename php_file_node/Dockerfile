@@ -1,14 +1,11 @@
-FROM docker.getcompass.ru/service/packages:0.1.12 as packages
-FROM docker.getcompass.ru/service/php-8:8.2.25-2
+FROM docker.getcompass.ru/service/packages:0.1.13 as packages
+FROM docker.getcompass.ru/service/php-8:8.2.25-3
 
-COPY --from=packages /tmp/openssl-1.1.1g.tar.gz /tmp/openssl-1.1.1g.tar.gz
-COPY --from=packages /tmp/pcre-8.45.tar.gz /tmp/pcre-8.45.tar.gz
-COPY --from=packages /tmp/zlib-1.2.11.tar.gz /tmp/zlib-1.2.11.tar.gz
 COPY --from=packages /tmp/migrate /usr/local/bin/migrate
 
 RUN apk update && apk add --no-cache wget libxslt-dev curl-dev vips vips-dev memcached php82-pecl-vips imagemagick imagemagick-dev php82-pecl-imagick libtool \
 ffmpeg ffmpeg-libavformat ffmpeg-libavfilter ffmpeg-libavcodec ffmpeg-libswscale ffmpeg-libavutil ffmpeg-libavdevice ffmpeg-libpostproc ffmpeg-libswresample
-ARG COUNT=1
+
 COPY . /app
 
 RUN cd /app \

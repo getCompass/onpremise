@@ -11,6 +11,7 @@ import { createScreenSharingIssueEvent } from '../../../react/features/analytics
 import { sendAnalytics } from '../../../react/features/analytics/functions';
 import Avatar from '../../../react/features/base/avatar/components/Avatar';
 import theme from '../../../react/features/base/components/themes/participantsPaneTheme.json';
+import { getSsrcRewritingFeatureFlag } from '../../../react/features/base/config/functions.any';
 import i18next from '../../../react/features/base/i18n/i18next';
 import { JitsiTrackEvents } from '../../../react/features/base/lib-jitsi-meet';
 import { VIDEO_TYPE } from '../../../react/features/base/media/constants';
@@ -43,6 +44,7 @@ import { createDeferred } from '../../util/helpers';
 import AudioLevels from '../audio_levels/AudioLevels';
 
 import { VIDEO_CONTAINER_TYPE, VideoContainer } from './VideoContainer';
+import { isMobileBrowser } from "../../../react/features/base/environment/utils";
 
 const logger = Logger.getLogger(__filename);
 
@@ -228,10 +230,10 @@ export default class LargeVideoManager {
 
         this.updateInProcess = true;
 
-        // Include hide()/fadeOut only if we're switching between users
-        // eslint-disable-next-line eqeqeq
+        // Include hide()/fadeOut if we're switching between users or between different sources of the same user.
         const container = this.getCurrentContainer();
-        const isUserSwitch = this.newStreamData.id !== container.id;
+        const isUserSwitch = container.id !== this.newStreamData.id
+            || container.stream?.getSourceName() !== this.newStreamData.stream?.getSourceName();
         const preUpdate = isUserSwitch ? container.hide() : Promise.resolve();
 
         preUpdate.then(() => {
@@ -417,6 +419,10 @@ export default class LargeVideoManager {
     updateParticipantConnStatusIndication(id, messageKey) {
         const state = APP.store.getState();
 
+        if (isMobileBrowser()) {
+            return;
+        }
+
         if (messageKey) {
             // Get user's display name
             const displayName
@@ -561,7 +567,7 @@ export default class LargeVideoManager {
      * @returns {void}
      */
     updatePresenceLabel(id) {
-        const isConnectionMessageVisible = getComputedStyle(
+        const isConnectionMessageVisible = isMobileBrowser() ? false : getComputedStyle(
             document.getElementById('remoteConnectionMessage')).display !== 'none';
 
         if (isConnectionMessageVisible) {
@@ -621,6 +627,10 @@ export default class LargeVideoManager {
      * the user's connection is either interrupted or inactive.
      */
     showRemoteConnectionMessage(show) {
+        if (isMobileBrowser()) {
+            return;
+        }
+
         if (typeof show !== 'boolean') {
             const participant = getParticipantById(APP.store.getState(), this.id);
             const state = APP.store.getState();
@@ -649,6 +659,10 @@ export default class LargeVideoManager {
      * @private
      */
     _setRemoteConnectionMessage(msgKey, msgOptions) {
+        if (isMobileBrowser()) {
+            return;
+        }
+
         if (msgKey) {
             $('#remoteConnectionMessage')
                 .attr('data-i18n', msgKey)
@@ -738,7 +752,10 @@ export default class LargeVideoManager {
 
         if (LargeVideoManager.isVideoContainer(this.state)) {
             this.showWatermark(false);
-            this.showRemoteConnectionMessage(false);
+
+            if (!isMobileBrowser()) {
+                this.showRemoteConnectionMessage(false);
+            }
         }
         oldContainer.hide();
 

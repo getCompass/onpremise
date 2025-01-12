@@ -1,7 +1,7 @@
 import React from 'react';
-import {makeStyles} from 'tss-react/mui';
-import AbstractPollResults, {AbstractProps} from '../AbstractPollResults';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { makeStyles } from 'tss-react/mui';
+import AbstractPollResults, { AbstractProps } from '../AbstractPollResults';
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -197,64 +197,64 @@ const useStyles = makeStyles()(theme => {
  * @returns {React.Node}
  */
 const PollResults = ({
-                         answers,
-                         changeVote,
-                         creatorName,
-                         haveVoted,
-                         showDetails,
-                         question,
-                         t,
-                         toggleIsDetailed
-                     }: AbstractProps) => {
-    const {classes, cx} = useStyles();
+    answers,
+    changeVote,
+    creatorName,
+    haveVoted,
+    showDetails,
+    question,
+    t,
+    toggleIsDetailed
+}: AbstractProps) => {
+    const { classes, cx } = useStyles();
     const isMobile = isMobileBrowser();
 
     return (
-        <div className={classes.container}>
-            <div className={cx(classes.header, isMobile && 'is-mobile')}>
-                <div className={cx(classes.question, isMobile && 'is-mobile')}>
+        <div className = {classes.container}>
+            <div className = {cx(classes.header, isMobile && 'is-mobile')}>
+                <div className = {cx(classes.question, isMobile && 'is-mobile')}>
                     {question}
                 </div>
-                <div className={cx(classes.creator, isMobile && 'is-mobile')}>
+                <div className = {cx(classes.creator, isMobile && 'is-mobile')}>
                     {creatorName}
                 </div>
             </div>
-            <ul className={classes.resultList}>
-                {answers.map(({name, percentage, voters, voterCount}, index) =>
-                    (<li key={index} className={isMobile ? 'is-mobile' : ''}>
-                        <div className={cx(classes.answerNameVoteContainer, isMobile && 'is-mobile')}>
-                            <div className={cx(classes.answerName, isMobile && 'is-mobile')}>
+            <ul className = {classes.resultList}>
+                {answers.map(({ name, percentage, voters, voterCount }, index) =>
+                    (<li key = {index} className = {isMobile ? 'is-mobile' : ''}>
+                        <div className = {cx(classes.answerNameVoteContainer, isMobile && 'is-mobile')}>
+                            <div className = {cx(classes.answerName, isMobile && 'is-mobile')}>
                                 {name}
                             </div>
-                            <div className={cx(classes.voteCount, isMobile && 'is-mobile')}>
+                            <div className = {cx(classes.voteCount, isMobile && 'is-mobile')}>
                                 {voterCount} ({percentage}%)
                             </div>
                         </div>
-                        <div className={classes.answerResultContainer}>
-                            <span className={cx(classes.barContainer, isMobile && 'is-mobile')}>
+                        <div className = {classes.answerResultContainer}>
+                            <span className = {cx(classes.barContainer, isMobile && 'is-mobile')}>
                                 <div
-                                    className={classes.bar}
-                                    style={{width: `${percentage}%`}}/>
+                                    className = {classes.bar}
+                                    style = {{ width: `${percentage}%` }} />
                             </span>
                         </div>
                         {showDetails && voters && voterCount > 0
-                            && <ul className={classes.votersContainer}>
+                            && <ul className = {classes.votersContainer}>
                                 {voters.map(voter =>
-                                    <li key={voter?.id}>{voter?.name}</li>
+                                    <li key = {voter?.id}>{voter?.name}</li>
                                 )}
                             </ul>}
                     </li>)
                 )}
             </ul>
-            <div className={classes.buttonsContainer}>
+            <div className = {classes.buttonsContainer}>
                 <button
-                    className={cx(classes.buttonHideDetailedResults, isMobile && 'is-mobile')}
-                    onClick={toggleIsDetailed}>
+                    className = {cx(classes.buttonHideDetailedResults, isMobile && 'is-mobile')}
+                    onClick = {toggleIsDetailed}>
                     {showDetails ? t('polls.results.hideDetailedResults') : t('polls.results.showDetailedResults')}
                 </button>
                 <button
-                    className={cx(classes.changeVote, isMobile && 'is-mobile')}
-                    onClick={changeVote}>
+                    className = {cx(classes.changeVote, isMobile && 'is-mobile')}
+                    onClick = {changeVote}>
                     {haveVoted ? t('polls.results.changeVote') : t('polls.results.vote')}
                 </button>
             </div>

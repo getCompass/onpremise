@@ -30,9 +30,12 @@ import {
     SET_START_RECORDING_NOTIFICATION_SHOWN,
     SET_STREAM_KEY,
     START_LOCAL_RECORDING,
-    STOP_LOCAL_RECORDING,
+    STOP_LOCAL_RECORDING
 } from './actionTypes';
-import { START_RECORDING_NOTIFICATION_ID } from './constants';
+import {
+    RECORDING_METADATA_ID,
+    START_RECORDING_NOTIFICATION_ID
+} from './constants';
 import {
     getRecordButtonProps,
     getRecordingLink,
@@ -135,7 +138,7 @@ export function setLiveStreamKey(streamKey: string) {
  * @returns {Function}
  */
 export function showPendingRecordingNotification(streamType: string) {
-    return async (dispatch: IStore['dispatch']) => {
+    return (dispatch: IStore['dispatch']) => {
         const isLiveStreaming
             = streamType === JitsiMeetJS.constants.recording.mode.STREAM;
         const dialogProps = isLiveStreaming ? {
@@ -145,7 +148,7 @@ export function showPendingRecordingNotification(streamType: string) {
             descriptionKey: 'recording.pending',
             titleKey: 'dialog.recording'
         };
-        const notification = await dispatch(showNotification({
+        const notification = dispatch(showNotification({
             ...dialogProps
         }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
 
@@ -451,6 +454,9 @@ export function showStartRecordingNotificationWithCallback(openRecordingDialog: 
                     });
 
                     if (autoTranscribeOnRecord) {
+                        conference?.getMetadataHandler().setMetadata(RECORDING_METADATA_ID, {
+                            isTranscribingEnabled: true
+                        });
                         dispatch(setRequestingSubtitles(true, false, null));
                     }
                 } else {

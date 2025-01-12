@@ -1,8 +1,8 @@
-import {IStateful} from '../app/types';
-import {toState} from '../redux/functions';
-import {toURLString} from '../util/uri';
+import { IStateful } from '../app/types';
+import { toState } from '../redux/functions';
+import { toURLString } from '../util/uri';
 
-import {getURLWithoutParams} from './utils';
+import { getURLWithoutParams } from './utils';
 
 /**
  * Figures out what's the current conference URL which is supposed to indicate what conference is currently active.
@@ -62,7 +62,7 @@ export function getInviteURL(stateOrGetState: IStateful): string {
         throw new Error('Can not get invite URL - the app is not ready');
     }
 
-    const {inviteDomain} = state['features/dynamic-branding'];
+    const { inviteDomain } = state['features/dynamic-branding'];
     const urlWithoutParams = getURLWithoutParams(locationURL);
 
     if (inviteDomain) {
@@ -96,7 +96,7 @@ export function isInviteURLReady(stateOrGetState: IStateful): boolean {
  * @returns {string} A string in the form of a JID (i.e.
  * {@code user@server.com}).
  */
-export function toJid(id: string, {authdomain, domain}: {
+export function toJid(id: string, { authdomain, domain }: {
     anonymousdomain?: string;
     authdomain?: string;
     domain?: string;

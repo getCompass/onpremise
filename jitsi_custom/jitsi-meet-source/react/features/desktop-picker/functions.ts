@@ -1,5 +1,5 @@
 import logger from './logger';
-import {ElectronWindowType} from './types';
+import { ElectronWindowType } from './types';
 
 
 /**
@@ -13,7 +13,7 @@ import {ElectronWindowType} from './types';
  * @returns {Function}
  */
 export function obtainDesktopSources(options: { thumbnailSize?: Object; types: string[]; }) {
-    const {JitsiMeetElectron} = window as ElectronWindowType;
+    const { JitsiMeetElectron } = window as ElectronWindowType;
 
     // TODO: delete this after 2 releases
     if (JitsiMeetElectron?.obtainDesktopStreams) {
@@ -31,7 +31,7 @@ export function obtainDesktopSources(options: { thumbnailSize?: Object; types: s
     }
 
     return APP.API.requestDesktopSources(options).then(
-        ({sources, error}: { error: Error; sources: Array<{ id: string; name:string; }>; }) => {
+        ({ sources, error }: { error: Error; sources: Array<{ id: string; name: string; }>; }) => {
             if (sources) {
                 return _separateSourcesByType(sources);
             } else if (error) {
@@ -44,12 +44,34 @@ export function obtainDesktopSources(options: { thumbnailSize?: Object; types: s
 }
 
 /**
+ * Оповестим electron что закрыли попап выбора экрана трансляции/шаринга
+ * нужно для решения багов на linux
+ */
+export function stopObtainDesktopSources() {
+    const { JitsiMeetElectron } = window as ElectronWindowType;
+    if (JitsiMeetElectron?.stopObtainDesktopStreams) {
+        return JitsiMeetElectron?.stopObtainDesktopStreams();
+    }
+}
+
+export function isAudioScreenSharingSupported() {
+    // @ts-ignore
+    if (navigator.mediaDevices.getDisplayMedia) {
+        const { JitsiMeetElectron } = window as ElectronWindowType;
+        if (JitsiMeetElectron) {
+            return JitsiMeetElectron.isAudioScreenSharingSupported && JitsiMeetElectron.isAudioScreenSharingSupported();
+        }
+    }
+    return false;
+}
+
+/**
  * Check usage of old jitsi meet electron version.
  *
  * @returns {boolean} True if we use old jitsi meet electron, otherwise false.
  */
 export function oldJitsiMeetElectronUsage() {
-    const {JitsiMeetElectron} = window as ElectronWindowType;
+    const { JitsiMeetElectron } = window as ElectronWindowType;
 
     if (JitsiMeetElectron?.obtainDesktopStreams) {
         return true;
@@ -73,7 +95,7 @@ export function _separateSourcesByType(sources: Array<{ id: string; name: string
         window: []
     };
 
-    const filteredSourceNames = ["StatusIndicator"];
+    const filteredSourceNames = [ "StatusIndicator" ];
     sources = sources.filter(source => !filteredSourceNames.includes(source.name));
 
     sources.forEach(source => {

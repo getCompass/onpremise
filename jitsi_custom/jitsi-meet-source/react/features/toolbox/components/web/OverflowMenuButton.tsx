@@ -1,15 +1,15 @@
-import React, {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {createToolbarEvent} from '../../../analytics/AnalyticsEvents';
-import {sendAnalytics} from '../../../analytics/functions';
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
 import Popover from '../../../base/popover/components/Popover.web';
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
 import ContextMenuItemGroup from '../../../base/ui/components/web/ContextMenuItemGroup';
-import {setGifMenuVisibility} from '../../../gifs/actions';
-import {isGifsMenuOpen} from '../../../gifs/functions.web';
+import { setGifMenuVisibility } from '../../../gifs/actions';
+import { isGifsMenuOpen } from '../../../gifs/functions.web';
 import ReactionEmoji from '../../../reactions/components/web/ReactionEmoji';
 import ReactionsMenu from '../../../reactions/components/web/ReactionsMenu';
 import {
@@ -18,15 +18,15 @@ import {
     REACTIONS_MENU_HEIGHT_DRAWER,
     REACTIONS_MENU_HEIGHT_IN_OVERFLOW_MENU
 } from '../../../reactions/constants';
-import {getReactionsQueue} from '../../../reactions/functions.any';
-import {IReactionsMenuParent} from '../../../reactions/types';
-import {DRAWER_MAX_HEIGHT} from '../../constants';
-import {showOverflowDrawer} from '../../functions.web';
+import { getReactionsQueue } from '../../../reactions/functions.any';
+import { IReactionsMenuParent } from '../../../reactions/types';
+import { DRAWER_MAX_HEIGHT } from '../../constants';
+import { showOverflowDrawer } from '../../functions.web';
 
 import Drawer from './Drawer';
 import JitsiPortal from './JitsiPortal';
 import OverflowToggleButton from './OverflowToggleButton';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link OverflowMenuButton}.
@@ -70,7 +70,7 @@ interface IProps {
 }
 
 const useStyles = makeStyles<{ overflowDrawer: boolean; reactionsMenuHeight: number; }>()(
-    (_theme, {reactionsMenuHeight, overflowDrawer}) => {
+    (_theme, { reactionsMenuHeight, overflowDrawer }) => {
         return {
             overflowMenuDrawer: {
                 overflowY: 'scroll',
@@ -132,13 +132,13 @@ const useStyles = makeStyles<{ overflowDrawer: boolean; reactionsMenuHeight: num
     });
 
 const OverflowMenuButton = ({
-                                buttons,
-                                isOpen,
-                                onToolboxEscKey,
-                                onVisibilityChange,
-                                showRaiseHandInReactionsMenu,
-                                showReactionsMenu
-                            }: IProps) => {
+    buttons,
+    isOpen,
+    onToolboxEscKey,
+    onVisibilityChange,
+    showRaiseHandInReactionsMenu,
+    showReactionsMenu
+}: IProps) => {
     const overflowDrawer = useSelector(showOverflowDrawer);
     const reactionsQueue = useSelector(getReactionsQueue);
     const isGiphyVisible = useSelector(isGifsMenuOpen);
@@ -150,11 +150,11 @@ const OverflowMenuButton = ({
         if (isGiphyVisible && !overflowDrawer) {
             dispatch(setGifMenuVisibility(false));
         }
-    }, [onVisibilityChange, setGifMenuVisibility, isGiphyVisible, overflowDrawer, dispatch]);
+    }, [ onVisibilityChange, setGifMenuVisibility, isGiphyVisible, overflowDrawer, dispatch ]);
 
     const onOpenDialog = useCallback(() => {
         onVisibilityChange(true);
-    }, [onVisibilityChange]);
+    }, [ onVisibilityChange ]);
 
     const onEscClick = useCallback((event: React.KeyboardEvent) => {
         if (event.key === 'Escape' && isOpen) {
@@ -162,16 +162,16 @@ const OverflowMenuButton = ({
             event.stopPropagation();
             onCloseDialog();
         }
-    }, [onCloseDialog]);
+    }, [ onCloseDialog ]);
 
     const toggleDialogVisibility = useCallback(() => {
         sendAnalytics(createToolbarEvent('overflow'));
 
         onVisibilityChange(!isOpen);
-    }, [isOpen, onVisibilityChange]);
+    }, [ isOpen, onVisibilityChange ]);
 
     const toolbarAccLabel = 'toolbar.accessibilityLabel.moreActionsMenu';
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     let reactionsMenuHeight = 0;
 
     if (showReactionsMenu) {
@@ -186,26 +186,26 @@ const OverflowMenuButton = ({
             reactionsMenuHeight += GIFS_MENU_HEIGHT_IN_OVERFLOW_MENU;
         }
     }
-    const {classes, cx} = useStyles({
+    const { classes, cx } = useStyles({
         reactionsMenuHeight,
         overflowDrawer
     });
 
     const groupsJSX = isMobile ? (
         <>
-            <ContextMenuItemGroup key={`group-0`}>
+            <ContextMenuItemGroup key = {`group-0`}>
                 {buttons.map((buttonGroup: any) => (
                     buttonGroup
-                        .filter(({key}: { key: string; }) => {
-                            return !['select-background', 'chat'].includes(key);
+                        .filter(({ key }: { key: string; }) => {
+                            return ![ 'select-background', 'chat' ].includes(key);
 
                         })
-                        .map(({key, Content, ...rest}: { Content: React.ElementType; key: string; }) => {
+                        .map(({ key, Content, ...rest }: { Content: React.ElementType; key: string; }) => {
                             const props: {
                                 buttonKey?: string;
                                 contextMenu?: boolean;
                                 showLabel?: boolean;
-                            } = {...rest};
+                            } = { ...rest };
 
                             if (key !== 'reactions') {
                                 props.buttonKey = key;
@@ -215,7 +215,7 @@ const OverflowMenuButton = ({
 
                             return (<Content
                                 {...props}
-                                key={key}/>);
+                                key = {key} />);
                         })
                 ))}
             </ContextMenuItemGroup>
@@ -224,17 +224,17 @@ const OverflowMenuButton = ({
         buttons.map((buttonGroup: any, index: number) => (
             <>
                 {index !== 0 && (
-                    <div className={classes.separateLineContainer}>
-                        <div className={classes.separateLine}/>
+                    <div className = {classes.separateLineContainer}>
+                        <div className = {classes.separateLine} />
                     </div>
                 )}
-                <ContextMenuItemGroup key={`group-${buttonGroup[0].group}`}>
-                    {buttonGroup.map(({key, Content, ...rest}: { Content: React.ElementType; key: string; }) => {
+                <ContextMenuItemGroup key = {`group-${buttonGroup[0].group}`}>
+                    {buttonGroup.map(({ key, Content, ...rest }: { Content: React.ElementType; key: string; }) => {
                         const props: {
                             buttonKey?: string;
                             contextMenu?: boolean;
                             showLabel?: boolean;
-                        } = {...rest};
+                        } = { ...rest };
 
                         if (key !== 'reactions') {
                             props.buttonKey = key;
@@ -245,7 +245,7 @@ const OverflowMenuButton = ({
                         return (
                             <Content
                                 {...props}
-                                key={key}/>);
+                                key = {key} />);
                     })}
                 </ContextMenuItemGroup>
             </>
@@ -254,25 +254,25 @@ const OverflowMenuButton = ({
 
     const overflowMenu = groupsJSX && (
         <ContextMenu
-            accessibilityLabel={t(toolbarAccLabel)}
-            className={classes.contextMenu}
-            hidden={false}
-            id='overflow-context-menu'
-            inDrawer={overflowDrawer}
-            onKeyDown={onToolboxEscKey}>
-            <div className={classes.content}>
+            accessibilityLabel = {t(toolbarAccLabel)}
+            className = {cx(classes.contextMenu, isMobile && 'is-mobile')}
+            hidden = {false}
+            id = 'overflow-context-menu'
+            inDrawer = {overflowDrawer}
+            onKeyDown = {onToolboxEscKey}>
+            <div className = {classes.content}>
                 {groupsJSX}
             </div>
             {
                 showReactionsMenu && (<>
-                    <div className={classes.footerSeparatorContainer}>
-                        <div className={classes.footerSeparator}/>
+                    <div className = {classes.footerSeparatorContainer}>
+                        <div className = {classes.footerSeparator} />
                     </div>
-                    <div className={cx(classes.footer, isMobile && 'is-mobile')}>
+                    <div className = {cx(classes.footer, isMobile && 'is-mobile')}>
                         <ReactionsMenu
-                            parent={
+                            parent = {
                                 overflowDrawer ? IReactionsMenuParent.OverflowDrawer : IReactionsMenuParent.OverflowMenu}
-                            showRaisedHand={showRaiseHandInReactionsMenu}/>
+                            showRaisedHand = {showRaiseHandInReactionsMenu} />
                     </div>
                 </>)
             }
@@ -280,31 +280,31 @@ const OverflowMenuButton = ({
 
     if (overflowDrawer) {
         return (
-            <div className='toolbox-button-wth-dialog context-menu'>
+            <div className = 'toolbox-button-wth-dialog context-menu'>
                 <>
                     <OverflowToggleButton
-                        handleClick={toggleDialogVisibility}
-                        isOpen={isOpen}
-                        onKeyDown={onEscClick}/>
+                        handleClick = {toggleDialogVisibility}
+                        isOpen = {isOpen}
+                        onKeyDown = {onEscClick} />
                     <JitsiPortal>
                         <Drawer
-                            isOpen={isOpen}
-                            onClose={onCloseDialog}>
+                            isOpen = {isOpen}
+                            onClose = {onCloseDialog}>
                             <>
-                                <div className={classes.overflowMenuDrawer}>
+                                <div className = {classes.overflowMenuDrawer}>
                                     {overflowMenu}
                                     {!isMobile && (
-                                        <div className={classes.reactionsPadding}/>
+                                        <div className = {classes.reactionsPadding} />
                                     )}
                                 </div>
                             </>
                         </Drawer>
-                        {showReactionsMenu && <div className='reactions-animations-overflow-container'>
-                            {reactionsQueue.map(({reaction, uid}, index) => (<ReactionEmoji
-                                index={index}
-                                key={uid}
-                                reaction={reaction}
-                                uid={uid}/>))}
+                        {showReactionsMenu && <div className = 'reactions-animations-overflow-container'>
+                            {reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
+                                index = {index}
+                                key = {uid}
+                                reaction = {reaction}
+                                uid = {uid} />))}
                         </div>}
                     </JitsiPortal>
                 </>
@@ -313,26 +313,26 @@ const OverflowMenuButton = ({
     }
 
     return (
-        <div className='toolbox-button-wth-dialog context-menu'>
+        <div className = 'toolbox-button-wth-dialog context-menu'>
             <Popover
-                content={overflowMenu}
-                headingId='overflow-context-menu'
-                onPopoverClose={onCloseDialog}
-                onPopoverOpen={onOpenDialog}
-                position='top'
-                trigger='click'
-                visible={isOpen}>
+                content = {overflowMenu}
+                headingId = 'overflow-context-menu'
+                onPopoverClose = {onCloseDialog}
+                onPopoverOpen = {onOpenDialog}
+                position = 'top'
+                trigger = 'click'
+                visible = {isOpen}>
                 <OverflowToggleButton
-                    isMenuButton={true}
-                    isOpen={isOpen}
-                    onKeyDown={onEscClick}/>
+                    isMenuButton = {true}
+                    isOpen = {isOpen}
+                    onKeyDown = {onEscClick} />
             </Popover>
-            {showReactionsMenu && <div className='reactions-animations-container'>
-                {reactionsQueue.map(({reaction, uid}, index) => (<ReactionEmoji
-                    index={index}
-                    key={uid}
-                    reaction={reaction}
-                    uid={uid}/>))}
+            {showReactionsMenu && <div className = 'reactions-animations-container'>
+                {reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
+                    index = {index}
+                    key = {uid}
+                    reaction = {reaction}
+                    uid = {uid} />))}
             </div>}
         </div>
     );

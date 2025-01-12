@@ -97,9 +97,17 @@ class AudioTrack extends Component<IProps> {
         if (this._ref?.current) {
             const audio = this._ref?.current;
             const { _muted, _volume } = this.props;
+            let volume = _volume;
 
-            if (typeof _volume === 'number') {
-                audio.volume = _volume;
+            if (typeof _volume === 'number' && typeof volume === 'number') {
+
+                // чтобы не крашилась конфа, когда за границы увели
+                if (volume < 0) {
+                    volume = 0;
+                } else if (volume > 1) {
+                    volume = 1;
+                }
+                audio.volume = volume;
             }
 
             if (typeof _muted === 'boolean') {
@@ -147,9 +155,16 @@ class AudioTrack extends Component<IProps> {
         if (this._ref?.current) {
             const audio = this._ref?.current;
             const currentVolume = audio.volume;
-            const nextVolume = nextProps._volume;
+            let nextVolume = nextProps._volume;
 
             if (typeof nextVolume === 'number' && !isNaN(nextVolume) && currentVolume !== nextVolume) {
+
+                // чтобы не крашилась конфа, когда за границы увели
+                if (nextVolume < 0) {
+                    nextVolume = 0;
+                } else if (nextVolume > 1) {
+                    nextVolume = 1;
+                }
                 if (nextVolume === 0) {
                     logger.debug(`Setting audio element ${nextProps?.id} volume to 0`);
                 }
@@ -180,9 +195,9 @@ class AudioTrack extends Component<IProps> {
 
         return (
             <audio
-                autoPlay = { autoPlay }
-                id = { id }
-                ref = { this._ref } />
+                autoPlay = {autoPlay}
+                id = {id}
+                ref = {this._ref} />
         );
     }
 
@@ -269,27 +284,27 @@ class AudioTrack extends Component<IProps> {
             // case where the local video container was moved and re-attached, in which
             // case the audio may not autoplay.
             this._ref.current.play()
-            .then(() => {
-                if (retries !== 0) {
-                    // success after some failures
-                    this._playTimeout = undefined;
-                    sendAnalytics(createAudioPlaySuccessEvent(id));
-                    logger.info(`Successfully played audio track! retries: ${retries}`);
-                }
-            }, e => {
-                logger.error(`Failed to play audio track on audio element ${id}! retry: ${retries} ; Error:`, e);
-
-                if (retries < 3) {
-                    this._playTimeout = window.setTimeout(() => this._play(retries + 1), 1000);
-
-                    if (retries === 0) {
-                        // send only 1 error event.
-                        sendAnalytics(createAudioPlayErrorEvent(id));
+                .then(() => {
+                    if (retries !== 0) {
+                        // success after some failures
+                        this._playTimeout = undefined;
+                        sendAnalytics(createAudioPlaySuccessEvent(id));
+                        logger.info(`Successfully played audio track! retries: ${retries}`);
                     }
-                } else {
-                    this._playTimeout = undefined;
-                }
-            });
+                }, e => {
+                    logger.error(`Failed to play audio track on audio element ${id}! retry: ${retries} ; Error:`, e);
+
+                    if (retries < 3) {
+                        this._playTimeout = window.setTimeout(() => this._play(retries + 1), 1000);
+
+                        if (retries === 0) {
+                            // send only 1 error event.
+                            sendAnalytics(createAudioPlayErrorEvent(id));
+                        }
+                    } else {
+                        this._playTimeout = undefined;
+                    }
+                });
         }
     }
 }

@@ -1,15 +1,15 @@
-import React, {PureComponent} from 'react';
-import {WithTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
+import React, { PureComponent } from 'react';
+import { WithTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
 
-import {IReduxState, IStore} from '../../../app/types';
-import {translate} from '../../../base/i18n/functions';
-import {updateSettings} from '../../../base/settings/actions';
+import { IReduxState, IStore } from '../../../app/types';
+import { translate } from '../../../base/i18n/functions';
+import { updateSettings } from '../../../base/settings/actions';
 import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
-import {NOTIFY_CLICK_MODE} from '../../../toolbox/types';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 import Icon from "../../../base/icons/components/Icon";
-import {IconFlipImage} from "../../../base/icons/svg";
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { IconFlipImage } from "../../../base/icons/svg";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link FlipLocalVideoButton}.
@@ -83,17 +83,17 @@ class FlipLocalVideoButton extends PureComponent<IProps> {
 
         return (
             <ContextMenuItem
-                accessibilityLabel={t('videothumbnail.flip')}
-                className='fliplink'
-                id='flipLocalVideoButton'
-                customIcon={<Icon
-                    className={isMobile ? 'is-mobile' : ''}
-                    size={isMobile ? 22 : 18}
-                    src={IconFlipImage}
-                    color={'rgba(255, 255, 255, 0.3)'}/>}
-                onClick={this._onClick}
-                text={t('videothumbnail.flip')}
-                textClassName={className}/>
+                accessibilityLabel = {t('videothumbnail.flip')}
+                className = 'fliplink'
+                id = 'flipLocalVideoButton'
+                customIcon = {<Icon
+                    className = {isMobile ? 'is-mobile' : ''}
+                    size = {isMobile ? 22 : 18}
+                    src = {IconFlipImage}
+                    color = {'rgba(255, 255, 255, 0.3)'} />}
+                onClick = {this._onClick}
+                text = {t('videothumbnail.flip')}
+                textClassName = {className} />
         );
     }
 
@@ -104,7 +104,7 @@ class FlipLocalVideoButton extends PureComponent<IProps> {
      * @returns {void}
      */
     _onClick() {
-        const {_localFlipX, dispatch, notifyClick, notifyMode, onClick} = this.props;
+        const { _localFlipX, dispatch, notifyClick, notifyMode, onClick } = this.props;
 
         notifyClick?.();
         if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
@@ -125,7 +125,7 @@ class FlipLocalVideoButton extends PureComponent<IProps> {
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState) {
-    const {localFlipX} = state['features/base/settings'];
+    const { localFlipX } = state['features/base/settings'];
 
     return {
         _localFlipX: Boolean(localFlipX)

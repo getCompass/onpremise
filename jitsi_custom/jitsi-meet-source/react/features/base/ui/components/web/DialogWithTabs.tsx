@@ -1,16 +1,16 @@
-import React, {ComponentType, useCallback, useEffect, useMemo, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { ComponentType, useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../../app/types';
-import {hideDialog} from '../../../dialog/actions';
-import {IconCloseLarge} from '../../../icons/svg';
+import { IReduxState } from '../../../../app/types';
+import { hideDialog } from '../../../dialog/actions';
+import { IconCloseLarge } from '../../../icons/svg';
 
-import BaseDialog, {IProps as IBaseProps} from './BaseDialog';
+import BaseDialog, { IProps as IBaseProps } from './BaseDialog';
 import ClickableIcon from './ClickableIcon';
 import ContextMenuItem from './ContextMenuItem';
-import {CHAT_SIZE} from "../../../../chat/constants";
+import { CHAT_SIZE } from "../../../../chat/constants";
 import theme from "../../../components/themes/participantsPaneTheme.json";
 
 const MOBILE_BREAKPOINT = 607;
@@ -189,21 +189,21 @@ interface IProps extends IBaseProps {
 }
 
 const DialogWithTabs = ({
-                            className,
-                            defaultTab,
-                            isChatOpen,
-                            isParticipantsPaneOpen,
-                            titleKey,
-                            tabs
-                        }: IProps) => {
-    const {classes, cx} = useStyles();
+    className,
+    defaultTab,
+    isChatOpen,
+    isParticipantsPaneOpen,
+    titleKey,
+    tabs
+}: IProps) => {
+    const { classes, cx } = useStyles();
     const dispatch = useDispatch();
-    const {t} = useTranslation();
-    const [selectedTab, setSelectedTab] = useState<string | undefined>(defaultTab ?? tabs[0].name);
-    const [userSelected, setUserSelected] = useState(false);
-    const [tabStates, setTabStates] = useState(tabs.map(tab => tab.props));
+    const { t } = useTranslation();
+    const [ selectedTab, setSelectedTab ] = useState<string | undefined>(defaultTab ?? tabs[0].name);
+    const [ userSelected, setUserSelected ] = useState(false);
+    const [ tabStates, setTabStates ] = useState(tabs.map(tab => tab.props));
     const clientWidth = useSelector((state: IReduxState) => state['features/base/responsive-ui'].clientWidth);
-    const [isMobile, setIsMobile] = useState(false);
+    const [ isMobile, setIsMobile ] = useState(false);
 
     useEffect(() => {
 
@@ -224,7 +224,7 @@ const DialogWithTabs = ({
         } else {
             isMobile && setIsMobile(false);
         }
-    }, [clientWidth, isMobile]);
+    }, [ clientWidth, isMobile ]);
 
     useEffect(() => {
         if (isMobile) {
@@ -232,7 +232,7 @@ const DialogWithTabs = ({
         } else {
             setSelectedTab(defaultTab ?? tabs[0].name);
         }
-    }, [isMobile]);
+    }, [ isMobile ]);
 
     const onUserSelection = useCallback((tabName?: string) => {
         setUserSelected(true);
@@ -254,11 +254,11 @@ const DialogWithTabs = ({
             )?.focus();
             setUserSelected(false);
         }
-    }, [isMobile, userSelected, selectedTab]);
+    }, [ isMobile, userSelected, selectedTab ]);
 
     const onClose = useCallback((isCancel = true) => {
         if (isCancel) {
-            tabs.forEach(({cancel}) => {
+            tabs.forEach(({ cancel }) => {
                 cancel && dispatch(cancel());
             });
         }
@@ -283,13 +283,13 @@ const DialogWithTabs = ({
         if (newTab !== null) {
             onUserSelection(newTab.name);
         }
-    }, [tabs.length]);
+    }, [ tabs.length ]);
 
     const onMobileKeyDown = useCallback((tabName: string) => (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key === ' ' || event.key === 'Enter') {
             onUserSelection(tabName);
         }
-    }, [classes.contentContainer]);
+    }, [ classes.contentContainer ]);
 
     const getTabProps = (tabId: number) => {
         const tabConfiguration = tabs[tabId];
@@ -302,22 +302,22 @@ const DialogWithTabs = ({
                 tabStates);
         }
 
-        return {...currentTabState};
+        return { ...currentTabState };
     };
 
     const onTabStateChange = useCallback((tabId: number, state: IObject) => {
-        const newTabStates = [...tabStates];
+        const newTabStates = [ ...tabStates ];
 
         newTabStates[tabId] = state;
         setTabStates(newTabStates);
-    }, [tabStates]);
+    }, [ tabStates ]);
 
     const onSubmit = useCallback(() => {
-        tabs.forEach(({submit}, idx) => {
+        tabs.forEach(({ submit }, idx) => {
             submit?.(tabStates[idx]);
         });
         onClose(false);
-    }, [tabs, tabStates]);
+    }, [ tabs, tabStates ]);
 
     const selectedTabIndex = useMemo(() => {
         if (selectedTab) {
@@ -325,7 +325,7 @@ const DialogWithTabs = ({
         }
 
         return null;
-    }, [selectedTab]);
+    }, [ selectedTab ]);
 
     const selectedTabComponent = useMemo(() => {
         if (selectedTabIndex !== null) {
@@ -333,42 +333,42 @@ const DialogWithTabs = ({
 
             return (
                 <div
-                    className={tabs[selectedTabIndex].className}
-                    key={tabs[selectedTabIndex].name}>
+                    className = {tabs[selectedTabIndex].className}
+                    key = {tabs[selectedTabIndex].name}>
                     <TabComponent
-                        onTabStateChange={onTabStateChange}
-                        tabId={selectedTabIndex}
+                        onTabStateChange = {onTabStateChange}
+                        tabId = {selectedTabIndex}
                         {...getTabProps(selectedTabIndex)} />
                 </div>
             );
         }
 
         return null;
-    }, [selectedTabIndex, tabStates]);
+    }, [ selectedTabIndex, tabStates ]);
 
     const closeIcon = useMemo(() => (
         <ClickableIcon
-            accessibilityLabel={t('dialog.accessibilityLabel.close')}
-            icon={IconCloseLarge}
-            id='modal-header-close-button'
-            onClick={onSubmit}/>
-    ), [onSubmit]);
+            accessibilityLabel = {t('dialog.accessibilityLabel.close')}
+            icon = {IconCloseLarge}
+            id = 'modal-header-close-button'
+            onClick = {onSubmit} />
+    ), [ onSubmit ]);
 
     return (
         <BaseDialog
-            className={cx(classes.dialog, className)}
-            onClose={onSubmit}
-            size='large'
-            titleKey={titleKey}>
+            className = {cx(classes.dialog, className)}
+            onClose = {onSubmit}
+            size = 'large'
+            titleKey = {titleKey}>
             {(!isMobile || !selectedTab) && (
                 <div
-                    aria-orientation='vertical'
-                    className={classes.sidebar}
-                    role={isMobile ? undefined : 'tablist'}>
-                    <div className={classes.titleContainer}>
+                    aria-orientation = 'vertical'
+                    className = {classes.sidebar}
+                    role = {isMobile ? undefined : 'tablist'}>
+                    <div className = {classes.titleContainer}>
                         <h1
-                            className={classes.title}
-                            tabIndex={-1}>
+                            className = {classes.title}
+                            tabIndex = {-1}>
                             {t(titleKey ?? '')}
                         </h1>
                     </div>
@@ -382,42 +382,42 @@ const DialogWithTabs = ({
                          */
                         return (
                             <ContextMenuItem
-                                accessibilityLabel={label}
-                                className={cx(isMobile && classes.menuItemMobile, !isMobile && classes.menuItemDesktop)}
-                                controls={isMobile ? undefined : `dialogtab-content-${tab.name}`}
-                                icon={tab.icon}
-                                id={`dialogtab-button-${tab.name}`}
-                                key={tab.name}
-                                onClick={onClick(tab.name)}
-                                onKeyDown={isMobile ? onMobileKeyDown(tab.name) : onTabKeyDown(index)}
-                                role={isMobile ? undefined : 'tab'}
-                                hoverSelected={tab.name === selectedTab}
-                                text={label}/>
+                                accessibilityLabel = {label}
+                                className = {cx(isMobile && classes.menuItemMobile, !isMobile && classes.menuItemDesktop)}
+                                controls = {isMobile ? undefined : `dialogtab-content-${tab.name}`}
+                                icon = {tab.icon}
+                                id = {`dialogtab-button-${tab.name}`}
+                                key = {tab.name}
+                                onClick = {onClick(tab.name)}
+                                onKeyDown = {isMobile ? onMobileKeyDown(tab.name) : onTabKeyDown(index)}
+                                role = {isMobile ? undefined : 'tab'}
+                                hoverSelected = {tab.name === selectedTab}
+                                text = {label} />
                         );
                     })}
                 </div>
             )}
             {(!isMobile || selectedTab) && (
                 <div
-                    className={classes.contentContainer}
-                    tabIndex={isMobile ? -1 : undefined}>
+                    className = {classes.contentContainer}
+                    tabIndex = {isMobile ? -1 : undefined}>
                     {tabs.map(tab => (
                         <div
-                            aria-labelledby={isMobile ? undefined : `${tab.name}-button`}
-                            className={cx(classes.content, tab.name !== selectedTab && 'hide')}
-                            id={`dialogtab-content-${tab.name}`}
-                            key={tab.name}
-                            role={isMobile ? undefined : 'tabpanel'}
-                            tabIndex={isMobile ? -1 : 0}>
+                            aria-labelledby = {isMobile ? undefined : `${tab.name}-button`}
+                            className = {cx(classes.content, tab.name !== selectedTab && 'hide')}
+                            id = {`dialogtab-content-${tab.name}`}
+                            key = {tab.name}
+                            role = {isMobile ? undefined : 'tabpanel'}
+                            tabIndex = {isMobile ? -1 : 0}>
                             {tab.name === selectedTab && selectedTabComponent}
                         </div>
                     ))}
                     {/* But show the close button *after* tab panels when not on mobile (using tabs).
                     This is so that we can tab back and forth tab buttons and tab panels easily. */}
                     {!isMobile && (
-                        <div className={cx(classes.buttonContainer, classes.header)}>
+                        <div className = {cx(classes.buttonContainer, classes.header)}>
                             <div
-                                className={classes.headerTitle}>{selectedTabIndex === null ? '' : t(tabs[selectedTabIndex].headerTitleKey)}</div>
+                                className = {classes.headerTitle}>{selectedTabIndex === null ? '' : t(tabs[selectedTabIndex].headerTitleKey)}</div>
                             {closeIcon}
                         </div>
                     )}

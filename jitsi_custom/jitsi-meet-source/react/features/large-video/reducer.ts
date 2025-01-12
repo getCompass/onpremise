@@ -11,6 +11,7 @@ import {
 export interface ILargeVideoState {
     height?: number;
     participantId?: string;
+    prevParticipantId?: string;
     resolution?: number;
     seeWhatIsBeingShared?: boolean;
     width?: number;
@@ -34,9 +35,11 @@ ReducerRegistry.register<ILargeVideoState>('features/large-video', (state = {}, 
         break;
 
     case SELECT_LARGE_VIDEO_PARTICIPANT:
+
         return {
             ...state,
-            participantId: action.participantId
+            prevParticipantId: state.participantId,
+            participantId: action.participantId,
         };
 
     case SET_LARGE_VIDEO_DIMENSIONS:

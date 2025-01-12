@@ -1,22 +1,14 @@
 /* eslint-disable react/no-multi-comp */
-import React, {Component} from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import {IReduxState, IStore} from '../../../app/types';
-import {JitsiRecordingConstants} from '../../../base/lib-jitsi-meet';
+import { IReduxState, IStore } from '../../../app/types';
+import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
 import RecordingLabel from '../../../recording/components/web/RecordingLabel';
-import {showToolbox} from '../../../toolbox/actions.web';
-import {isToolboxVisible} from '../../../toolbox/functions.web';
-import ConferenceTimer from '../ConferenceTimer';
-import {getConferenceInfo} from '../functions.web';
+import { isToolboxVisible } from '../../../toolbox/functions.web';
+import { getConferenceInfo } from '../functions.web';
 
 import ConferenceInfoContainer from './ConferenceInfoContainer';
-import RaisedHandsCountLabel from './RaisedHandsCountLabel';
-import ToggleTopPanelLabel from './ToggleTopPanelLabel';
-import ToggleCameraButton from "../../../toolbox/components/web/ToggleCameraButton";
-import ChatButton from "../../../chat/components/web/ChatButton";
-import {isMobileBrowser} from "../../../base/environment/utils";
-import AndroidPipButton from "../AndroidPipButton";
 
 /**
  * The type of the React {@code Component} props of {@link Subject}.
@@ -47,25 +39,13 @@ const COMPONENTS: Array<{
     id: string;
 }> = [
     {
-        Component: AndroidPipButton,
-        id: 'android-pip-button',
-    },
-    {
-        Component: ConferenceTimer,
-        id: 'conference-timer'
-    },
-    {
         Component: () => (
             <>
-                <RecordingLabel mode={JitsiRecordingConstants.mode.FILE}/>
-                <RecordingLabel mode={JitsiRecordingConstants.mode.STREAM}/>
+                <RecordingLabel mode = {JitsiRecordingConstants.mode.FILE} />
+                <RecordingLabel mode = {JitsiRecordingConstants.mode.STREAM} />
             </>
         ),
         id: 'recording'
-    },
-    {
-        Component: RaisedHandsCountLabel,
-        id: 'raised-hands-count'
     }
 ];
 
@@ -87,19 +67,6 @@ class ConferenceInfo extends Component<IProps> {
 
         this._renderAutoHide = this._renderAutoHide.bind(this);
         this._renderAlwaysVisible = this._renderAlwaysVisible.bind(this);
-        this._onTabIn = this._onTabIn.bind(this);
-    }
-
-    /**
-     * Callback invoked when the component is focused to show the conference
-     * info if necessary.
-     *
-     * @returns {void}
-     */
-    _onTabIn() {
-        if (this.props._conferenceInfo.autoHide?.length && !this.props._visible) {
-            this.props.dispatch(showToolbox());
-        }
     }
 
     /**
@@ -108,7 +75,7 @@ class ConferenceInfo extends Component<IProps> {
      * @returns {void}
      */
     _renderAutoHide() {
-        const {autoHide} = this.props._conferenceInfo;
+        const { autoHide } = this.props._conferenceInfo;
 
         if (!autoHide?.length) {
             return null;
@@ -116,13 +83,13 @@ class ConferenceInfo extends Component<IProps> {
 
         return (
             <ConferenceInfoContainer
-                id='autoHide'
-                visible={this.props._visible}>
+                id = 'autoHide'
+                visible = {this.props._visible}>
                 {
                     COMPONENTS
                         .filter(comp => autoHide.includes(comp.id))
                         .map(c =>
-                            <c.Component key={c.id}/>
+                            <c.Component key = {c.id} />
                         )
                 }
             </ConferenceInfoContainer>
@@ -135,7 +102,7 @@ class ConferenceInfo extends Component<IProps> {
      * @returns {void}
      */
     _renderAlwaysVisible() {
-        const {alwaysVisible} = this.props._conferenceInfo;
+        const { alwaysVisible } = this.props._conferenceInfo;
 
         if (!alwaysVisible?.length) {
             return null;
@@ -143,13 +110,13 @@ class ConferenceInfo extends Component<IProps> {
 
         return (
             <ConferenceInfoContainer
-                id='alwaysVisible'
-                visible={true}>
+                id = 'alwaysVisible'
+                visible = {true}>
                 {
                     COMPONENTS
                         .filter(comp => alwaysVisible.includes(comp.id))
                         .map(c =>
-                            <c.Component key={c.id}/>
+                            <c.Component key = {c.id} />
                         )
                 }
             </ConferenceInfoContainer>
@@ -163,28 +130,12 @@ class ConferenceInfo extends Component<IProps> {
      * @returns {ReactElement}
      */
     render() {
-        const isMobile = isMobileBrowser();
-
         return (
             <div
-                className={`details-container ${isMobile ? 'is-mobile' : ''} ${this.props._visible ? 'visible' : ''}`}
-                onFocus={this._onTabIn}>
-                <div style={isMobileBrowser() ? {
-                    display: 'flex',
-                    paddingLeft: '16px',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                } : {display: 'flex', paddingLeft: '16px'}}>
+                className = {`details-container ${this.props._visible ? 'visible' : ''}`}>
+                <div style = {{ display: 'flex', paddingLeft: '16px' }}>
                     {this._renderAlwaysVisible()}
                     {this._renderAutoHide()}
-                </div>
-                <div className={`header-buttons-mobile-container ${this.props._visible ? 'visible' : ''}`}>
-                    {isMobile && (
-                        <>
-                            <ToggleCameraButton customClass='mobile-header-button'/>
-                            <ChatButton customClass='mobile-header-button'/>
-                        </>
-                    )}
                 </div>
             </div>
         );
@@ -203,7 +154,7 @@ class ConferenceInfo extends Component<IProps> {
  * }}
  */
 function _mapStateToProps(state: IReduxState) {
-    const {is_in_picture_in_picture_mode} = state['features/picture-in-picture'];
+    const { is_in_picture_in_picture_mode } = state['features/picture-in-picture'];
 
     return {
         _visible: isToolboxVisible(state) && !is_in_picture_in_picture_mode,

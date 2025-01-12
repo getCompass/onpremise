@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {makeStyles} from 'tss-react/mui';
-import {getDecodedURI} from '../../../../base/util/uri';
-import {isMobileBrowser} from "../../../../base/environment/utils";
-import {copyText} from "../../../../base/util/copyText.web";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
+import { getDecodedURI } from '../../../../base/util/uri';
+import { isMobileBrowser } from "../../../../base/environment/utils";
+import { copyText } from "../../../../base/util/copyText.web";
 
 
 interface IProps {
@@ -109,10 +109,10 @@ const useStyles = makeStyles()(theme => {
  *
  * @returns {React$Element<any>}
  */
-function CopyMeetingLinkSection({url}: IProps) {
-    const {classes, cx} = useStyles();
-    const {t} = useTranslation();
-    const [isCopied, setIsCopied] = useState(false);
+function CopyMeetingLinkSection({ url }: IProps) {
+    const { classes, cx } = useStyles();
+    const { t } = useTranslation();
+    const [ isCopied, setIsCopied ] = useState(false);
 
     /**
      * Click handler for the element.
@@ -146,35 +146,35 @@ function CopyMeetingLinkSection({url}: IProps) {
         if (isCopied) {
             setTimeout(() => setIsCopied(false), 2500);
         }
-    }, [isCopied]);
+    }, [ isCopied ]);
 
     return (
-        <div className='invite-more-dialog'>
+        <div className = 'invite-more-dialog'>
             {isCopied && (
-                <div className={classes.copiedPopoverContainer}>
-                    <div className={classes.copiedPopover}>
+                <div className = {classes.copiedPopoverContainer}>
+                    <div className = {classes.copiedPopover}>
                         {t('addPeople.linkCopied')}
                     </div>
                     <div>
-                        <svg width="40" height="5" viewBox="0 0 40 5" fill="none"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 0L20 5L24 0H16Z" fill="#04A45A"/>
+                        <svg width = "40" height = "5" viewBox = "0 0 40 5" fill = "none"
+                             xmlns = "http://www.w3.org/2000/svg">
+                            <path d = "M16 0L20 5L24 0H16Z" fill = "#04A45A" />
                         </svg>
                     </div>
                 </div>
             )}
             <div
-                className={cx(classes.urlInput, isMobileBrowser() && 'is-mobile', isCopied && 'is-copied')}>{url}
+                className = {cx(classes.urlInput, isMobileBrowser() && 'is-mobile', isCopied && 'is-copied')}>{url}
             </div>
             <div
-                aria-label={t('addPeople.accessibilityLabel.meetingLink', {url: getDecodedURI(url)})}
-                className={cx('invite-more-dialog-conference-url', classes.copyButton, isMobileBrowser() ? 'is-mobile' : '')}
-                id='add-people-copy-link-button'
-                onClick={onClick}
-                onKeyPress={onKeyPress}
-                role='button'
-                tabIndex={0}>
-                <div className={classes.copyButtonContent}>
+                aria-label = {t('addPeople.accessibilityLabel.meetingLink', { url: getDecodedURI(url) })}
+                className = {cx('invite-more-dialog-conference-url', classes.copyButton, isMobileBrowser() ? 'is-mobile' : '')}
+                id = 'add-people-copy-link-button'
+                onClick = {onClick}
+                onKeyPress = {onKeyPress}
+                role = 'button'
+                tabIndex = {0}>
+                <div className = {classes.copyButtonContent}>
                     <span> {t('addPeople.copyLink')} </span>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 
 import { IReduxState } from '../../../../app/types';
@@ -45,6 +45,7 @@ export interface IProps {
 function Preview(props: IProps) {
     const { _participantId, flipVideo, name, videoMuted, videoTrack } = props;
     const className = flipVideo ? 'flipVideoX' : '';
+    const videoRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         APP.API.notifyPrejoinVideoVisibilityChanged(Boolean(!videoMuted && videoTrack));
@@ -56,22 +57,45 @@ function Preview(props: IProps) {
         return () => APP.API.notifyPrejoinVideoVisibilityChanged(false);
     }, []);
 
+    useEffect(() => {
+        const updateVideoHeight = () => {
+            if (videoRef.current) {
+
+                // устанавливаем высоту в зависимости от ширины и соотношения 16:9
+                videoRef.current.style.height = `${videoRef.current.clientWidth / (16 / 9)}px`;
+            }
+        };
+
+        // вызываем функцию для первоначальной установки высоты
+        if (videoRef.current) {
+            updateVideoHeight();
+        }
+
+        // добавляем обработчик на изменение размера окна, чтобы высота менялась динамически
+        window.addEventListener('resize', updateVideoHeight);
+
+        // убираем обработчик при размонтировании компонента
+        return () => window.removeEventListener('resize', updateVideoHeight);
+    }, [ videoTrack, videoMuted ]);
+
     return (
         <div id = 'preview'>
             {!videoMuted && videoTrack
                 ? (
-                    <Video
-                        className = { className }
-                        id = 'prejoinVideo'
-                        videoTrack = {{ jitsiTrack: videoTrack }} />
+                    <div className = 'web-prejoin-video' ref = {videoRef}>
+                        <Video
+                            className = {className}
+                            id = 'prejoinVideo'
+                            videoTrack = {{ jitsiTrack: videoTrack }} />
+                    </div>
                 )
                 : (
                     <Avatar
                         className = 'premeeting-screen-avatar'
-                        displayName = { name }
-                        participantId = { _participantId }
-                        size = { 200 }
-                        url="images/video_offline.svg" />
+                        displayName = {name}
+                        participantId = {_participantId}
+                        size = {200}
+                        url = "images/video_offline.svg" />
                 )}
         </div>
     );

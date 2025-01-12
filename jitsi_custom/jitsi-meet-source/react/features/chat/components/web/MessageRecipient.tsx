@@ -1,14 +1,14 @@
-import React, {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IconCloseLargeNoColor} from '../../../base/icons/svg';
+import { IconCloseLargeNoColor } from '../../../base/icons/svg';
 import Button from '../../../base/ui/components/web/Button';
-import {BUTTON_TYPES} from '../../../base/ui/constants.any';
-import {_mapDispatchToProps, _mapStateToProps, IProps} from '../AbstractMessageRecipient';
+import { BUTTON_TYPES } from '../../../base/ui/constants.any';
+import { _mapDispatchToProps, _mapStateToProps, IProps } from '../AbstractMessageRecipient';
 import Icon from "../../../base/icons/components/Icon";
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -101,25 +101,25 @@ const MessageRecipient = ({
 
     return (
         <div
-            className = { cx(classes.container, isMobile && 'is-mobile') }
+            className = {cx(classes.container, isMobile && 'is-mobile')}
             id = 'chat-recipient'
             role = 'alert'>
-            <span className = { classes.text }>
+            <span className = {classes.text}>
                 {t(_isLobbyChatActive ? 'chat.lobbyChatMessageTo' : 'chat.messageTo', {
                     recipient: _isLobbyChatActive ? _lobbyMessageRecipient : _privateMessageRecipient
                 })}
             </span>
             <Button
-                accessibilityLabel = { t('dialog.close') }
-                className = { classes.iconButton }
-                customIcon={<Icon
-                    size={24}
-                    src={IconCloseLargeNoColor}
-                    color={'rgba(0, 107, 224, 1)'}/>}
-                onClick = { _isLobbyChatActive
-                    ? _onHideLobbyChatRecipient : _onRemovePrivateMessageRecipient }
-                onKeyPress = { _onKeyPress }
-                type = { BUTTON_TYPES.TERTIARY } />
+                accessibilityLabel = {t('dialog.close')}
+                className = {classes.iconButton}
+                customIcon = {<Icon
+                    size = {24}
+                    src = {IconCloseLargeNoColor}
+                    color = {'rgba(0, 107, 224, 1)'} />}
+                onClick = {_isLobbyChatActive
+                    ? _onHideLobbyChatRecipient : _onRemovePrivateMessageRecipient}
+                onKeyPress = {_onKeyPress}
+                type = {BUTTON_TYPES.TERTIARY} />
         </div>
     );
 };

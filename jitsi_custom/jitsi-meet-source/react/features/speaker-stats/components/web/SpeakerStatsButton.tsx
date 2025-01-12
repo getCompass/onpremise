@@ -1,14 +1,15 @@
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {createToolbarEvent} from '../../../analytics/AnalyticsEvents';
-import {sendAnalytics} from '../../../analytics/functions';
-import {IReduxState} from '../../../app/types';
-import {openDialog} from '../../../base/dialog/actions';
-import {translate} from '../../../base/i18n/functions';
-import {isSpeakerStatsDisabled} from '../../functions';
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { IReduxState } from '../../../app/types';
+import { openDialog } from '../../../base/dialog/actions';
+import { translate } from '../../../base/i18n/functions';
+import { isSpeakerStatsDisabled } from '../../functions';
 import AbstractSpeakerStatsButton from '../AbstractSpeakerStatsButton';
 
 import SpeakerStats from './SpeakerStats';
+
 
 /**
  * Implementation of a button for opening speaker stats dialog.
@@ -22,7 +23,7 @@ class SpeakerStatsButton extends AbstractSpeakerStatsButton {
      * @returns {void}
      */
     _handleClick() {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
 
         sendAnalytics(createToolbarEvent('speaker.stats'));
         dispatch(openDialog(SpeakerStats));
@@ -47,7 +48,7 @@ class SpeakerStatsButton extends AbstractSpeakerStatsButton {
  * @returns {Object}
  */
 const mapStateToProps = (state: IReduxState) => {
-    const {knocking} = state['features/lobby'];
+    const { knocking } = state['features/lobby'];
 
     return {
         visible: !isSpeakerStatsDisabled(state),

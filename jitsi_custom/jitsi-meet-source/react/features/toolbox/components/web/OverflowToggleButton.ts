@@ -1,8 +1,8 @@
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {translate} from '../../../base/i18n/functions';
-import {IconDotsHorizontal, IconDotsHorizontalEmpty} from '../../../base/icons/svg';
-import AbstractButton, {IProps as AbstractButtonProps} from '../../../base/toolbox/components/AbstractButton';
+import { translate } from '../../../base/i18n/functions';
+import { IconDotsHorizontal, IconDotsHorizontalEmpty } from '../../../base/icons/svg';
+import AbstractButton, { IProps as AbstractButtonProps } from '../../../base/toolbox/components/AbstractButton';
 
 
 /**

@@ -5,6 +5,7 @@ import { setTokenAuthUrlSuccess } from '../authentication/actions.web';
 import { isTokenAuthEnabled } from '../authentication/functions';
 import {
     setFollowMe,
+    setFollowMeRecorder,
     setStartMutedPolicy,
     setStartReactionsMuted
 } from '../base/conference/actions';
@@ -12,6 +13,7 @@ import { hangup } from '../base/connection/actions.web';
 import { openDialog } from '../base/dialog/actions';
 import i18next from '../base/i18n/i18next';
 import { browser } from '../base/lib-jitsi-meet';
+import { getNormalizedDisplayName } from '../base/participants/functions';
 import { updateSettings } from '../base/settings/actions';
 import { getLocalVideoTrack } from '../base/tracks/functions.web';
 import { appendURLHashParam } from '../base/util/uri';
@@ -20,7 +22,7 @@ import { toggleBackgroundEffect } from '../virtual-background/actions';
 import virtualBackgroundLogger from '../virtual-background/logger';
 
 import {
-    SET_AUDIO_SETTINGS_VISIBILITY,
+    SET_AUDIO_SETTINGS_VISIBILITY, SET_MODERATOR_SETTINGS_VISIBILITY,
     SET_VIDEO_SETTINGS_VISIBILITY
 } from './actionTypes';
 import LogoutDialog from './components/web/LogoutDialog';
@@ -102,6 +104,19 @@ export function openSettingsDialog(defaultTab?: string, isDisplayedOnWelcomePage
 function setAudioSettingsVisibility(value: boolean) {
     return {
         type: SET_AUDIO_SETTINGS_VISIBILITY,
+        value
+    };
+}
+
+/**
+ * Sets the visibility of the moderator settings.
+ *
+ * @param {boolean} value - The new value.
+ * @returns {Function}
+ */
+function setModeratorSettingsVisibility(value: boolean) {
+    return {
+        type: SET_MODERATOR_SETTINGS_VISIBILITY,
         value
     };
 }
@@ -197,6 +212,10 @@ export function submitModeratorTab(newState: any) {
             dispatch(setFollowMe(newState.followMeEnabled));
         }
 
+        if (newState.followMeRecorderEnabled !== currentState.followMeRecorderEnabled) {
+            dispatch(setFollowMeRecorder(newState.followMeRecorderEnabled));
+        }
+
         if (newState.startReactionsMuted !== currentState.startReactionsMuted) {
             batch(() => {
                 // updating settings we want to update and backend (notify the rest of the participants)
@@ -224,7 +243,7 @@ export function submitProfileTab(newState: any) {
         const currentState = getProfileTabProps(getState());
 
         if (newState.displayName !== currentState.displayName) {
-            APP.conference.changeLocalDisplayName(newState.displayName);
+            dispatch(updateSettings({ displayName: getNormalizedDisplayName(newState.displayName) }));
         }
 
         if (newState.email !== currentState.email) {
@@ -293,6 +312,19 @@ export function toggleAudioSettings() {
 }
 
 /**
+ * Toggles the visibility of the moderator settings.
+ *
+ * @returns {void}
+ */
+export function toggleModeratorSettings() {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        const value = getState()['features/settings'].moderatorSettingsVisible;
+
+        dispatch(setModeratorSettingsVisibility(!value));
+    };
+}
+
+/**
  * Toggles the visibility of the video settings.
  *
  * @returns {void}
@@ -336,6 +368,7 @@ export function submitVirtualBackgroundTab(newState: any, isCancel = false) {
     return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const track = getLocalVideoTrack(state['features/base/tracks'])?.jitsiTrack;
+        const { localFlipX } = state['features/base/settings'];
 
         if (newState.options?.selectedThumbnail) {
             await dispatch(toggleBackgroundEffect(newState.options, track));
@@ -343,7 +376,7 @@ export function submitVirtualBackgroundTab(newState: any, isCancel = false) {
             if (!isCancel) {
                 // Set x scale to default value.
                 dispatch(updateSettings({
-                    localFlipX: true
+                    localFlipX
                 }));
 
                 virtualBackgroundLogger.info(`Virtual background type: '${

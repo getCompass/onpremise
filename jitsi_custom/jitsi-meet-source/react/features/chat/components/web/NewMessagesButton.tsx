@@ -7,6 +7,7 @@ import Icon from '../../../base/icons/components/Icon';
 import { IconArrowDown } from '../../../base/icons/svg';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import BaseTheme from '../../../base/ui/components/BaseTheme.web';
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 export interface INewMessagesButtonProps extends WithTranslation {
 
@@ -60,15 +61,19 @@ const useStyles = makeStyles()(theme => {
 function NewMessagesButton({ onGoToFirstUnreadMessage, t }: INewMessagesButtonProps): JSX.Element {
     const { classes: styles } = useStyles();
 
+    if (isMobileBrowser()) {
+        return <></>;
+    }
+
     return (
         <div
-            className = { styles.container }>
+            className = {styles.container}>
             <button
-                aria-label = { t('chat.newMessages') }
-                className = { styles.newMessagesButton }
-                onClick = { onGoToFirstUnreadMessage }
+                aria-label = {t('chat.newMessages')}
+                className = {styles.newMessagesButton}
+                onClick = {onGoToFirstUnreadMessage}
                 type = 'button'>
-                <div className = { styles.textContainer }> { t('chat.newMessages') }</div>
+                <div className = {styles.textContainer}> {t('chat.newMessages')}</div>
             </button>
         </div>
     );

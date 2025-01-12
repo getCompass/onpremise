@@ -1,4 +1,4 @@
-import {PARTICIPANTS_PANE_OPEN} from './actionTypes';
+import { PARTICIPANTS_PANE_OPEN } from './actionTypes';
 
 export * from './actions.any';
 

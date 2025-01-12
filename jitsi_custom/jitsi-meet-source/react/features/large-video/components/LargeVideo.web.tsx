@@ -11,7 +11,7 @@ import { getHideSelfView } from '../../base/settings/functions.any';
 import { getVideoTrackByParticipant } from '../../base/tracks/functions.web';
 import { setColorAlpha } from '../../base/util/helpers';
 import StageParticipantNameLabel from '../../display-name/components/web/StageParticipantNameLabel';
-import { FILMSTRIP_BREAKPOINT } from '../../filmstrip/constants';
+import { COMPASS_HORIZONTAL_FILMSTRIP_HEIGHT, FILMSTRIP_BREAKPOINT } from '../../filmstrip/constants';
 import { getVerticalViewMaxWidth, isFilmstripResizable } from '../../filmstrip/functions.web';
 import SharedVideo from '../../shared-video/components/web/SharedVideo';
 import Captions from '../../subtitles/components/web/Captions';
@@ -20,8 +20,10 @@ import Whiteboard from '../../whiteboard/components/web/Whiteboard';
 import { isWhiteboardEnabled } from '../../whiteboard/functions';
 import { setSeeWhatIsBeingShared } from '../actions.web';
 import { getLargeVideoParticipant } from '../functions';
-
-import ScreenSharePlaceholder from './ScreenSharePlaceholder.web';
+import StageParticipantTopIndicators from "../../display-name/components/web/StageParticipantTopIndicators";
+import { getCurrentLayout } from "../../video-layout/functions.any";
+import { LAYOUTS } from "../../video-layout/constants";
+import { isMobileBrowser } from "../../base/environment/utils";
 
 // Hack to detect Spot.
 const SPOT_DISPLAY_NAME = 'Meeting Room';
@@ -44,11 +46,6 @@ interface IProps {
     _customBackgroundImageUrl: string;
 
     /**
-     * Whether the screen-sharing placeholder should be displayed or not.
-     */
-    _displayScreenSharingPlaceholder: boolean;
-
-    /**
      * Whether or not the hideSelfView is enabled.
      */
     _hideSelfView: boolean;
@@ -57,6 +54,11 @@ interface IProps {
      * Prop that indicates whether the chat is open.
      */
     _isChatOpen: boolean;
+
+    /**
+     * Prop that indicates whether the participant pane is open.
+     */
+    _isParticipantPaneOpen: boolean;
 
     /**
      * Whether or not the local screen share is on large-video.
@@ -119,6 +121,13 @@ interface IProps {
      */
     _isInPipMode: boolean;
 
+    _remoteParticipantsLength: number;
+
+    /**
+     * The current layout of the filmstrip.
+     */
+    _currentLayout?: string;
+
     /**
      * The Redux dispatch function.
      */
@@ -136,6 +145,8 @@ class LargeVideo extends Component<IProps> {
 
     _containerRef: React.RefObject<HTMLDivElement>;
 
+    _wrapperContainerRef: React.RefObject<HTMLDivElement>;
+
     _wrapperRef: React.RefObject<HTMLDivElement>;
 
     /**
@@ -147,11 +158,26 @@ class LargeVideo extends Component<IProps> {
         super(props);
 
         this._containerRef = React.createRef<HTMLDivElement>();
+        this._wrapperContainerRef = React.createRef<HTMLDivElement>();
         this._wrapperRef = React.createRef<HTMLDivElement>();
 
         this._clearTapTimeout = this._clearTapTimeout.bind(this);
         this._onDoubleTap = this._onDoubleTap.bind(this);
         this._updateLayout = this._updateLayout.bind(this);
+        this._updateVideoHeight = this._updateVideoHeight.bind(this);
+    }
+
+    componentDidMount() {
+        // инициализируем высоту видео
+        this._updateVideoHeight();
+
+        // добавляем слушатель изменения размера окна
+        window.addEventListener('resize', this._updateVideoHeight);
+    }
+
+    componentWillUnmount() {
+        // удаляем слушатель изменения размера окна
+        window.removeEventListener('resize', this._updateVideoHeight);
     }
 
     /**
@@ -166,7 +192,11 @@ class LargeVideo extends Component<IProps> {
             _seeWhatIsBeingShared,
             _largeVideoParticipantId,
             _hideSelfView,
-            _localParticipantId
+            _localParticipantId,
+            _currentLayout,
+            _remoteParticipantsLength,
+            _isChatOpen,
+            _isParticipantPaneOpen
         } = this.props;
 
         if (prevProps._visibleFilmstrip !== _visibleFilmstrip) {
@@ -178,14 +208,66 @@ class LargeVideo extends Component<IProps> {
         }
 
         if (_isScreenSharing && _seeWhatIsBeingShared) {
+            this._updateVideoHeight();
             VideoLayout.updateLargeVideo(_largeVideoParticipantId, true, true);
         }
 
         if (_largeVideoParticipantId === _localParticipantId
             && prevProps._hideSelfView !== _hideSelfView) {
+            this._updateVideoHeight();
             VideoLayout.updateLargeVideo(_largeVideoParticipantId, true, false);
         }
+
+        if ((prevProps._currentLayout !== _currentLayout || prevProps._remoteParticipantsLength !== _remoteParticipantsLength) && _currentLayout !== LAYOUTS.TILE_VIEW) {
+            this._updateLayout();
+        }
+
+        if (prevProps._isChatOpen != _isChatOpen) {
+            this._updateVideoHeight();
+        }
+
+        if (prevProps._isParticipantPaneOpen != _isParticipantPaneOpen) {
+            this._updateVideoHeight();
+        }
     }
+
+    _updateVideoHeight() {
+        if (this._containerRef.current && this._wrapperContainerRef.current && this._wrapperContainerRef.current.style) {
+            const containerWidth = this._containerRef.current.clientWidth;
+            const onlyLocalParticipantMarginTop = 10;
+            let containerHeight = this._containerRef.current.clientHeight - onlyLocalParticipantMarginTop;
+            const isOnlyLocalParticipantInConference = this.props._remoteParticipantsLength < 1;
+            if (this.props._currentLayout === LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW && !isOnlyLocalParticipantInConference) {
+                containerHeight = containerHeight - COMPASS_HORIZONTAL_FILMSTRIP_HEIGHT + onlyLocalParticipantMarginTop;
+            }
+
+            const aspectRatio = 16 / 9;
+
+            let videoWidth = containerWidth - 16; // паддинг
+            let videoHeight = containerWidth / aspectRatio;
+
+            // Если высота видео больше высоты контейнера, уменьшаем ширину
+            if (videoHeight > containerHeight) {
+                videoHeight = containerHeight;
+                videoWidth = containerHeight * aspectRatio;
+            }
+
+            this._wrapperContainerRef.current.style.width = `${videoWidth}px`;
+            this._wrapperContainerRef.current.style.height = `${videoHeight}px`;
+
+            const horizontalIndent = Math.floor((containerWidth - videoWidth) / 2);
+            const verticalIndent = Math.floor((containerHeight - videoHeight) / 2);
+
+            this._wrapperContainerRef.current.style.inset = `${verticalIndent}px ${horizontalIndent}px`;
+
+            if (isOnlyLocalParticipantInConference) {
+                this._wrapperContainerRef.current.style.margin = "5px 2px 2px 2px";
+            } else {
+                this._wrapperContainerRef.current.style.margin = `${COMPASS_HORIZONTAL_FILMSTRIP_HEIGHT}px 0px 0px 0px`;
+            }
+        }
+    }
+
 
     /**
      * Implements React's {@link Component#render()}.
@@ -195,74 +277,77 @@ class LargeVideo extends Component<IProps> {
      */
     render() {
         const {
-            _displayScreenSharingPlaceholder,
             _isChatOpen,
             _noAutoPlayVideo,
             _showDominantSpeakerBadge,
             _whiteboardEnabled,
-            _isInPipMode
+            _isInPipMode,
+            _remoteParticipantsLength
         } = this.props;
         const style = this._getCustomStyles();
-        const className = `videocontainer${_isChatOpen ? ' shift-right' : ''}`;
+        const className = `videocontainer${_isChatOpen ? ' shift-right' : ''}${isMobileBrowser() ? ' is-mobile' : ''}`;
 
         return (
             <div
-                className = { className }
+                className = {className}
                 id = 'largeVideoContainer'
-                ref = { this._containerRef }
-                style = { style }>
-                <SharedVideo />
-                {_whiteboardEnabled && <Whiteboard />}
-                <div id = 'etherpad' />
-
-                <Watermarks />
-
+                ref = {this._containerRef}
+                style = {style}>
                 <div
-                    id = 'dominantSpeaker'
-                    onTouchEnd = { this._onDoubleTap }
-                    className={`${_isInPipMode ? 'pipMode ' : ''}`}>
-                    <div className = { `dynamic-shadow ${_isInPipMode ? 'pipMode' : ''}` }/>
-                    <div id = 'dominantSpeakerAvatarContainer' className={`${_isInPipMode ? 'pipMode ' : ''}`}/>
-                </div>
-                <div id = 'remotePresenceMessage' />
-                <span id = 'remoteConnectionMessage' />
-                <div id='largeVideoElementsContainer'>
-                    <div id='largeVideoBackgroundContainer'>
-                        <div className="large-video-background">
-                            <div className="animation_spin500ms preloader25">
-                                <svg width="25" height="25" viewBox="0 0 25 25" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M21.3388 3.66116C23.087 5.40932 24.2775 7.63661 24.7598 10.0614C25.2421 12.4861 24.9946 14.9995 24.0485 17.2835C23.1024 19.5676 21.5002 21.5199 19.4446 22.8934C17.389 24.2669 14.9723 25 12.5 25C10.0277 25 7.61098 24.2669 5.55537 22.8934C3.49976 21.5199 1.8976 19.5676 0.951505 17.2835C0.00540978 14.9995 -0.242131 12.4861 0.240185 10.0614C0.722501 7.6366 1.91301 5.40932 3.66117 3.66116L5.2528 5.25279C3.81943 6.68615 2.8433 8.51237 2.44784 10.5005C2.05237 12.4886 2.25534 14.5494 3.03107 16.4222C3.8068 18.2949 5.12045 19.8956 6.80591 21.0218C8.49136 22.148 10.4729 22.7491 12.5 22.7491C14.5271 22.7491 16.5086 22.148 18.1941 21.0218C19.8795 19.8956 21.1932 18.2949 21.9689 16.4222C22.7447 14.5494 22.9476 12.4886 22.5522 10.5005C22.1567 8.51237 21.1806 6.68615 19.7472 5.25279L21.3388 3.66116Z"
-                                        fill="#BFBFC1"></path>
-                                </svg>
+                    id = 'largeVideoWrapperContainer'
+                    className = {_remoteParticipantsLength > 0 ? 'have-remote-participants' : 'no-remote-participants'}
+                    ref = {this._wrapperContainerRef}
+                    style = {{
+                        backgroundColor: "rgba(255, 255, 255, 0.02)",
+                        borderRadius: "4px",
+                    }}>
+                    <SharedVideo />
+                    {_whiteboardEnabled && <Whiteboard />}
+                    <div id = 'etherpad' />
+
+                    <Watermarks />
+
+                    <div
+                        id = 'dominantSpeaker'
+                        onTouchEnd = {this._onDoubleTap}
+                        className = {`${_isInPipMode ? 'pipMode ' : ''}`}>
+                        <div className = {`dynamic-shadow ${_isInPipMode ? 'pipMode' : ''}`} />
+                        <div id = 'dominantSpeakerAvatarContainer' className = {`${_isInPipMode ? 'pipMode ' : ''}`} />
+                    </div>
+                    <div id = 'remotePresenceMessage' />
+                    <span id = 'remoteConnectionMessage' />
+                    <div id = 'largeVideoElementsContainer'>
+                        <div id = 'largeVideoCompassContainer'>
+                            <div id = 'largeVideoBackgroundContainer'>
+                                <div className = "large-video-background">
+                                    <div className = "animation_spin500ms preloader25">
+                                        <svg width = "25" height = "25" viewBox = "0 0 25 25" fill = "none"
+                                             xmlns = "http://www.w3.org/2000/svg">
+                                            <path
+                                                d = "M21.3388 3.66116C23.087 5.40932 24.2775 7.63661 24.7598 10.0614C25.2421 12.4861 24.9946 14.9995 24.0485 17.2835C23.1024 19.5676 21.5002 21.5199 19.4446 22.8934C17.389 24.2669 14.9723 25 12.5 25C10.0277 25 7.61098 24.2669 5.55537 22.8934C3.49976 21.5199 1.8976 19.5676 0.951505 17.2835C0.00540978 14.9995 -0.242131 12.4861 0.240185 10.0614C0.722501 7.6366 1.91301 5.40932 3.66117 3.66116L5.2528 5.25279C3.81943 6.68615 2.8433 8.51237 2.44784 10.5005C2.05237 12.4886 2.25534 14.5494 3.03107 16.4222C3.8068 18.2949 5.12045 19.8956 6.80591 21.0218C8.49136 22.148 10.4729 22.7491 12.5 22.7491C14.5271 22.7491 16.5086 22.148 18.1941 21.0218C19.8795 19.8956 21.1932 18.2949 21.9689 16.4222C22.7447 14.5494 22.9476 12.4886 22.5522 10.5005C22.1567 8.51237 21.1806 6.68615 19.7472 5.25279L21.3388 3.66116Z"
+                                                fill = "#BFBFC1"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                id = 'largeVideoWrapper'
+                                onTouchEnd = {this._onDoubleTap}
+                                ref = {this._wrapperRef}
+                                role = 'figure'>
+                                <video
+                                    autoPlay = {!_noAutoPlayVideo}
+                                    id = 'largeVideo'
+                                    muted = {true}
+                                    playsInline = {true} /* for Safari on iOS to work */ />
                             </div>
                         </div>
                     </div>
-                    {/*
-                      * FIXME: the architecture of elements related to the large
-                      * video and the naming. The background is not part of
-                      * largeVideoWrapper because we are controlling the size of
-                      * the video through largeVideoWrapper. That's why we need
-                      * another container for the background and the
-                      * largeVideoWrapper in order to hide/show them.
-                      */}
-                    {_displayScreenSharingPlaceholder ? <ScreenSharePlaceholder/> : <></>}
-                    <div
-                        id='largeVideoWrapper'
-                        onTouchEnd={this._onDoubleTap}
-                        ref={this._wrapperRef}
-                        role='figure'>
-                        <video
-                            autoPlay={!_noAutoPlayVideo}
-                            id='largeVideo'
-                            muted={true}
-                            playsInline={true} /* for Safari on iOS to work */ />
-                    </div>
+                    {interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES
+                        || <Captions />}
+                    <StageParticipantTopIndicators />
+                    {_showDominantSpeakerBadge && <StageParticipantNameLabel />}
                 </div>
-                {interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES
-                    || <Captions/>}
-                {_showDominantSpeakerBadge && <StageParticipantNameLabel/>}
             </div>
         );
     }
@@ -275,8 +360,9 @@ class LargeVideo extends Component<IProps> {
      * @returns {void}
      */
     _updateLayout() {
-        const {_verticalFilmstripWidth, _resizableFilmstrip} = this.props;
+        const { _verticalFilmstripWidth, _resizableFilmstrip } = this.props;
 
+        this._updateVideoHeight();
         if (_resizableFilmstrip && Number(_verticalFilmstripWidth) >= FILMSTRIP_BREAKPOINT) {
             this._containerRef.current?.classList.add('transition');
             this._wrapperRef.current?.classList.add('transition');
@@ -370,24 +456,26 @@ function _mapStateToProps(state: IReduxState) {
     const testingConfig = state['features/base/config'].testing;
     const { backgroundColor, backgroundImageUrl } = state['features/dynamic-branding'];
     const { isOpen: isChatOpen } = state['features/chat'];
+    const { isOpen: isParticipantPaneOpen } = state['features/participants-pane'];
     const { width: verticalFilmstripWidth, visible } = state['features/filmstrip'];
-    const { defaultLocalDisplayName, hideDominantSpeakerBadge } = state['features/base/config'];
-    const { seeWhatIsBeingShared } = state['features/large-video'];
+    const { hideDominantSpeakerBadge } = state['features/base/config'];
+    const seeWhatIsBeingShared = true;
     const localParticipantId = getLocalParticipant(state)?.id;
     const largeVideoParticipant = getLargeVideoParticipant(state);
     const videoTrack = getVideoTrackByParticipant(state, largeVideoParticipant);
     const isLocalScreenshareOnLargeVideo = largeVideoParticipant?.id?.includes(localParticipantId ?? '')
         && videoTrack?.videoType === VIDEO_TYPE.DESKTOP;
-    const isOnSpot = defaultLocalDisplayName === SPOT_DISPLAY_NAME;
-    const {is_in_picture_in_picture_mode} = state['features/picture-in-picture'];
+    const { is_in_picture_in_picture_mode } = state['features/picture-in-picture'];
+    const { remoteParticipants } = state['features/filmstrip'];
+    const _currentLayout = getCurrentLayout(state);
 
     return {
         _backgroundAlpha: state['features/base/config'].backgroundAlpha,
         _customBackgroundColor: backgroundColor,
         _customBackgroundImageUrl: backgroundImageUrl,
-        _displayScreenSharingPlaceholder: Boolean(isLocalScreenshareOnLargeVideo && !seeWhatIsBeingShared && !isOnSpot),
         _hideSelfView: getHideSelfView(state),
         _isChatOpen: isChatOpen,
+        _isParticipantPaneOpen: isParticipantPaneOpen,
         _isScreenSharing: Boolean(isLocalScreenshareOnLargeVideo),
         _largeVideoParticipantId: largeVideoParticipant?.id ?? '',
         _localParticipantId: localParticipantId ?? '',
@@ -399,7 +487,9 @@ function _mapStateToProps(state: IReduxState) {
         _verticalViewMaxWidth: getVerticalViewMaxWidth(state),
         _visibleFilmstrip: visible,
         _whiteboardEnabled: isWhiteboardEnabled(state),
-        _isInPipMode: is_in_picture_in_picture_mode
+        _isInPipMode: is_in_picture_in_picture_mode,
+        _remoteParticipantsLength: remoteParticipants.length,
+        _currentLayout,
     };
 }
 

@@ -6,11 +6,20 @@ import { toggleScreensharing } from '../base/tracks/actions.web';
 
 import {
     SET_SCREENSHARE_TRACKS,
-    SET_SCREEN_AUDIO_SHARE_STATE
+    SET_SCREEN_AUDIO_SHARE_STATE, SET_LOCAL_VIDEO_WAS_MUTED_BEFORE_SCREENSHARING
 } from './actionTypes';
 import ShareAudioDialog from './components/web/ShareAudioDialog';
 import ShareMediaWarningDialog from './components/web/ShareScreenWarningDialog';
 import { isAudioOnlySharing, isScreenVideoShared } from './functions';
+import { getLocalParticipant, isParticipantModerator } from "../base/participants/functions";
+import { isEnabledFromState } from "../av-moderation/functions";
+import { MEDIA_TYPE } from "../base/media/constants";
+import { showNotification } from "../notifications/actions";
+import {
+    NOTIFICATION_ICON,
+    NOTIFICATION_TIMEOUT_TYPE,
+    SCREENSHARE_NO_PERMISSIONS_NOTIFICATION_ID
+} from "../notifications/constants";
 
 export * from './actions.any';
 
@@ -43,6 +52,22 @@ export function setScreenshareAudioTrack(desktopAudioTrack: any) {
     return {
         type: SET_SCREENSHARE_TRACKS,
         desktopAudioTrack
+    };
+}
+
+/**
+ * Updates the current known status of the video before screensharing.
+ *
+ * @param {boolean} isMuted - Is video was muted or not.
+ * @returns {{
+ *     type: SET_LOCAL_VIDEO_WAS_MUTED_BEFORE_SCREENSHARING,
+ *     videoWasMutedBeforeScreensharing: boolean
+ * }}
+ */
+export function setLocalVideoWasMutedBeforeScreensharingState(isMuted: boolean) {
+    return {
+        type: SET_LOCAL_VIDEO_WAS_MUTED_BEFORE_SCREENSHARING,
+        videoWasMutedBeforeScreensharing: isMuted
     };
 }
 
@@ -91,6 +116,22 @@ export function startScreenShareFlow(enabled: boolean) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const audioOnlySharing = isAudioOnlySharing(state);
+        const localParticipant = getLocalParticipant(state);
+        const isLocalParticipantModerator = isParticipantModerator(localParticipant);
+        const isScreenshareModerationEnabled = isEnabledFromState(MEDIA_TYPE.SCREENSHARE, state);
+        const hasPermissions = isLocalParticipantModerator || (!isLocalParticipantModerator && !isScreenshareModerationEnabled);
+
+        // если скриншейринг запрещен модератором
+        if (!hasPermissions) {
+
+            dispatch(showNotification({
+                titleKey: 'screenshare.no_permissions_notification.title',
+                descriptionKey: 'screenshare.no_permissions_notification.description',
+                uid: SCREENSHARE_NO_PERMISSIONS_NOTIFICATION_ID,
+                icon: NOTIFICATION_ICON.SCREENSHARE,
+            }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
+            return;
+        }
 
         // If we're in an audio screen sharing session, warn the user.
         if (audioOnlySharing) {

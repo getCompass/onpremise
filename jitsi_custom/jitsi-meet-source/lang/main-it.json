@@ -94,7 +94,7 @@
         "message": "Messaggio",
         "messageAccessibleTitle": "{{user}} dice:",
         "messageAccessibleTitleMe": "io dico:",
-        "messageTo": "Messaggio privato a {{recipient}}",
+        "messageTo": "Lei → {{recipient}}",
         "messagebox": "Digitare un messaggio",
         "newMessages": "Nuovi messaggi",
         "nickname": {
@@ -103,7 +103,7 @@
             "titleWithPolls": "Inserire un nickname per utilizzare la conversazione"
         },
         "noMessagesMessage": "Non ci sono ancora messaggi nella riunione. Comincia una conversazione, qui!",
-        "privateNotice": "Messaggio privato a {{recipient}}",
+        "privateNotice": "Lei → {{recipient}}",
         "sendButton": "Invia",
         "smileysPanel": "Pannello emoji",
         "tabs": {
@@ -120,6 +120,12 @@
         "close": "Chiudi",
         "dontShowAgain": "Non mostrare più questo messaggio",
         "installExtensionText": "Installa un'estensione per integrare Google Calendar e Office 365"
+    },
+    "conference": {
+        "title": "Conferenza",
+        "one_member": "partecipante",
+        "two_members": "partecipanti",
+        "five_members": "partecipanti"
     },
     "connectingOverlay": {
         "joiningRoom": "Collegamento alla riunione in corso..."
@@ -162,7 +168,9 @@
             "inactive": "Inattiva",
             "lost": "Persa",
             "nonoptimal": "Non ottimale",
-            "poor": "Scarsa"
+            "poor": "Scarsa",
+            "medium": "Connessione media",
+            "low": "Connessione scarsa"
         },
         "remoteaddress": "Indirizzo remoto:",
         "remoteaddress_plural": "Indirizzi remoti:",
@@ -359,7 +367,9 @@
         "reservationError": "Errore di sistema in prenotazione",
         "reservationErrorMsg": "Codice di errore: {{code}}, messaggio: {{msg}}",
         "retry": "Riprova",
-        "screenSharingAudio": "Condividi audio",
+        "screenSharingAudio": "Trasmetti l'audio dallo schermo",
+        "screenSharingAudioNotAvailable": "Il vostro OS non supporta la trasmissione del suono dello schermo",
+        "screenSharingAudioNotAvailableOS": "La trasmissione del suono è disponibile su {{os}}",
         "screenSharingFailed": "Ops! Non è stato possibile avviare la condivisione dello schermo!",
         "screenSharingFailedTitle": "Condivisione dello schermo fallita!",
         "screenSharingPermissionDeniedError": "Qualcosa non funziona nei permessi di condivisione dello schermo. Ricarica e riprova.",
@@ -769,7 +779,7 @@
             "anotherAnswerPlaceholder": "Risposta {{index}}",
             "cancel": "Annulla",
             "create": "Crea un sondaggio",
-            "pollOptions": "Risposta {{index}} al sondaggio",
+            "pollOption": "Risposta {{index}} al sondaggio",
             "pollQuestion": "Domanda Sondaggio a risposta multipla",
             "questionPlaceholder": "Scrivi una domanda",
             "removeOption": "Elimina risposta",
@@ -830,6 +840,7 @@
         "errorDialOutFailed": "Impossibile fare la chiamata. Chiamata fallita",
         "errorDialOutStatus": "Errore nel ricevere lo stato della rete",
         "errorMissingName": "Inserire il proprio nome, per accedere alla riunione",
+        "errorNoPermissionsTitle": "Нет доступа к микрофону или камере",
         "errorNoPermissions": "Devi autorizzare l'accesso al microfono e alla videocamera",
         "errorStatusCode": "Errore nella chiamata, codice: {{status}}",
         "errorValidation": "Numero inesistente",
@@ -954,6 +965,7 @@
         "title": "Impostazioni di sicurezza"
     },
     "settings": {
+        "audioNoPermissions": "Нет доступа к звуку",
         "buttonLabel": "Impostazioni",
         "calendar": {
             "about": "L’integrazione del calendario con {{appName}} è usata per accedere in sicurezza al proprio calendario e poter leggere i prossimi appuntamenti ",
@@ -982,6 +994,7 @@
         "participantLeft": "Partecipante Uscito",
         "playSounds": "Suoni attivati",
         "reactions": "Reazioni riunione",
+        "videoNoPermissions": "Нет доступа к видео",
         "sameAsSystem": "Stesso del computer ({{label}})",
         "selectAudioOutput": "Uscita audio",
         "selectCamera": "Videocamera",
@@ -994,6 +1007,25 @@
         "startVideoMuted": "Tutti cominciano a videocamera disattivata",
         "talkWhileMuted": "Parli a microfono spento",
         "title": "Impostazioni"
+    },
+    "moderatorSettings": {
+        "conferenceQualityTitle": "Qualità video della conferenza per tutti",
+        "highQuality": "Alta",
+        "mediumQuality": "Media",
+        "lowQuality": "Bassa",
+        "startRecording": "Inizia a registrare una conferenza",
+        "stopRecording": "Interrompere la registrazione di una conferenza",
+        "muteAllAudio": "Disattiva l'audio dei partecipanti",
+        "muteAllVideo": "Disattiva il video dei partecipanti",
+        "participantsCanUnmuteAudio": "I partecipanti possono attivare l'audio",
+        "participantsCanUnmuteVideo": "I partecipanti possono attivare il video",
+        "participantsCanScreenshare": "I partecipanti possono attivare la dimostrazione"
+    },
+    "screenshare": {
+        "no_permissions_notification": {
+            "description": "Alza la mano se desideri parlare.",
+            "title": "Dimostrazione disabilitata dal moderatore"
+        }
     },
     "settingsView": {
         "advanced": "Avanzate",
@@ -1153,7 +1185,7 @@
         "embedMeeting": "Incorpora riunione altrove",
         "endConference": "Termina la riunione per tutti",
         "enterFullScreen": "Schermo intero",
-        "enterTileView": "Vedi tutti i partecipanti",
+        "enterTileView": "Abilita la modalità Galleria",
         "exitFullScreen": "Esci da schermo intero",
         "exitTileView": "Vedi una persona sola",
         "feedback": "Lascia un feedback",
@@ -1173,6 +1205,7 @@
         "login": "Accedi",
         "logout": "Scollegati",
         "lowerYourHand": "Abbassa la mano",
+        "moderatorSettings": "Impostazioni moderatore",
         "moreActions": "Altre azioni",
         "moreOptions": "Altre opzioni",
         "mute": "Microfono",
@@ -1186,7 +1219,7 @@
         "noiseSuppression": "Riduzione del rumore",
         "noisyAudioInputDesc": "Sembra che il tuo microfono faccia dei rumori, prova a spegnerlo o cambiarlo per favore.",
         "noisyAudioInputTitle": "Il tuo microfono sembra rumoroso!",
-        "openChat": "Apri le conversazioni",
+        "openChat": "Chat della conferenza",
         "openReactionsMenu": "Apri il menù reazioni",
         "participants": "Partecipanti",
         "pip": "Abilita visualizzazione immagine nell'immagine",
@@ -1217,8 +1250,8 @@
         "stopSubtitles": "Ferma sottotitoli",
         "surprised": "Sopresa",
         "talkWhileMutedPopup": "Stai provando a parlare? Il microfono è disattivato.",
-        "tileViewToggle": "Vedi tutti i partecipanti insieme, o uno solo",
-        "tileViewToggled": "Vedi tutti i partecipanti insieme, o uno solo",
+        "tileViewToggle": "Abilita la modalità Galleria",
+        "tileViewToggled": "Disabilita la modalità Galleria",
         "toggleCamera": "Cambia videocamera",
         "videoSettings": "Impostazioni video",
         "videomute": "Videocamera"
@@ -1277,6 +1310,7 @@
         "ldTooltip": "Stai vedendo a bassa definizione",
         "lowDefinition": "Bassa definizione",
         "performanceSettings": "Imposta prestazioni",
+        "recording": "Registrazione...",
         "sd": "SD",
         "sdTooltip": "Stai vedendo a definizione standard",
         "standardDefinition": "Definizione standard"
@@ -1300,7 +1334,7 @@
         "screenSharing": "Il partecipante sta condividendo lo schermo",
         "show": "Mostra tra gli oratori",
         "showSelfView": "Mostra tua immagine",
-        "unpinFromStage": "Libera questo video",
+        "unpinFromStage": "Sganciare",
         "videoMuted": "Video disattivato",
         "videomute": "Il partecipante ha la videocamera spenta"
     },

@@ -10,6 +10,88 @@ const BACKGROUND_COLOR = 'rgba(33, 33, 33, 0.8)';
  */
 export const styles = (theme: Theme) => {
     return {
+        filmstripPaginationButton: {
+            background: "rgba(33, 33, 33, 1)",
+            borderRadius: "4px",
+            padding: "10px 4px",
+            cursor: "pointer",
+
+            "&:hover": {
+                background: "rgba(55, 55, 55, 1)",
+            }
+        },
+        tileViewPaginationButtonsMobile: {
+            display: "flex",
+            width: "100%",
+            gap: "4px",
+        },
+        tileViewPaginationButtonContainerMobile: {
+            background: "rgba(33, 33, 33, 0.9)",
+            padding: "10px 4px 11px 4px",
+            color: "rgba(255, 255, 255, 1)",
+            display: "flex",
+            gap: "4px",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            flexGrow: 1,
+            borderRadius: "4px",
+            '-webkit-tap-highlight-color': 'transparent',
+        },
+        tileViewPaginationButtonContainerMobileEnabled: {
+            "&:active": {
+                background: "rgba(33, 33, 33, 0.3)",
+            }
+        },
+        tileViewPaginationButtonPageMobile: {
+            fontFamily: "Lato SemiBold",
+            fontWeight: "normal" as const,
+            fontSize: "12px",
+            lineHeight: "15px",
+            color: "rgba(255, 255, 255, 1)",
+            minWidth: "36px",
+            textAlign: "center"
+        },
+        tileViewPaginationButtonDisabledMobile: {
+            opacity: "30%"
+        },
+        tileViewPaginationButtonContainer: {
+            position: "absolute",
+            zIndex: 1,
+            background: "rgba(33, 33, 33, 0.9)",
+            padding: "8px 4px",
+            color: "rgba(255, 255, 255, 1)",
+            display: "flex",
+            gap: "4px",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+
+            "&:hover": {
+                background: "rgba(33, 33, 33, 1)",
+            }
+        },
+        tileViewPaginationButtonContainerLeft: {
+            borderRadius: "0px 8px 8px 0px",
+            left: 0
+        },
+        tileViewPaginationButtonContainerRight: {
+            borderRadius: "8px 0px 0px 8px",
+            right: 0
+        },
+        tileViewPaginationButtonPage: {
+            fontFamily: "Lato SemiBold",
+            fontWeight: "normal" as const,
+            fontSize: "12px",
+            lineHeight: "15px",
+            color: "rgba(255, 255, 255, 1)",
+            minWidth: "36px",
+            textAlign: "center"
+        },
+        tileViewPaginationButtonDisabled: {
+            opacity: "20%"
+        },
+
         toggleFilmstripContainer: {
             display: 'flex',
             flexWrap: 'nowrap' as const,
@@ -66,27 +148,9 @@ export const styles = (theme: Theme) => {
         },
 
         filmstrip: {
-            transition: 'background .2s ease-in-out, right 1s, bottom 1s, top 1s, height .3s ease-in',
+            background: 'rgba(23, 23, 23, 1)',
             right: 0,
-            bottom: 0,
-
-            '&:hover, &:focus-within': {
-                '& .resizable-filmstrip': {
-                    backgroundColor: BACKGROUND_COLOR
-                },
-
-                '& .filmstrip-hover': {
-                    backgroundColor: BACKGROUND_COLOR
-                },
-
-                '& .toggleFilmstripContainer': {
-                    opacity: 1
-                },
-
-                '& .dragHandleContainer': {
-                    visibility: 'visible' as const
-                }
-            },
+            top: 0,
 
             '.horizontal-filmstrip &.hidden': {
                 bottom: '-50px',
@@ -121,6 +185,11 @@ export const styles = (theme: Theme) => {
             transition: 'background .2s ease-in-out',
 
             '& .avatar-container': {
+                maxWidth: 'initial',
+                maxHeight: 'initial'
+            },
+
+            '& .avatar-container-mobile': {
                 maxWidth: 'initial',
                 maxHeight: 'initial'
             },

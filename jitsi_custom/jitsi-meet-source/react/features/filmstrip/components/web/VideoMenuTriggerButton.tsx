@@ -52,24 +52,17 @@ const VideoMenuTriggerButton = ({
     visible
 }: IProps) => local
     ? (
-        <span id = 'localvideomenu'>
-            <LocalVideoMenuTriggerButton
-                buttonVisible = { visible }
-                hidePopover = { hidePopover }
-                popoverVisible = { popoverVisible }
-                showPopover = { showPopover }
-                thumbnailType = { thumbnailType } />
-        </span>
+        <></>
     )
     : (
         <span id = 'remotevideomenu'>
             <RemoteVideoMenuTriggerButton
-                buttonVisible = { visible }
-                hidePopover = { hidePopover }
-                participantID = { participantId }
-                popoverVisible = { popoverVisible }
-                showPopover = { showPopover }
-                thumbnailType = { thumbnailType } />
+                buttonVisible = {visible}
+                hidePopover = {hidePopover}
+                participantID = {participantId}
+                popoverVisible = {popoverVisible}
+                showPopover = {showPopover}
+                thumbnailType = {thumbnailType} />
         </span>
     );
 

@@ -1,9 +1,9 @@
-import React, {useCallback, useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../app/types';
+import { IReduxState } from '../../../app/types';
 import {
     IconEmotionsAngry,
     IconEmotionsDisgusted,
@@ -14,11 +14,11 @@ import {
     IconEmotionsSurprised
 } from '../../../base/icons/svg';
 import Dialog from '../../../base/ui/components/web/Dialog';
-import {escapeRegexp} from '../../../base/util/helpers';
-import {initSearch, resetSearchCriteria, toggleFaceExpressions} from '../../actions.any';
-import {DISPLAY_SWITCH_BREAKPOINT, MOBILE_BREAKPOINT} from '../../constants';
+import { escapeRegexp } from '../../../base/util/helpers';
+import { initSearch, resetSearchCriteria, toggleFaceExpressions } from '../../actions.any';
+import { DISPLAY_SWITCH_BREAKPOINT, MOBILE_BREAKPOINT } from '../../constants';
 import SpeakerStatsList from './SpeakerStatsList';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -41,6 +41,7 @@ const useStyles = makeStyles()(theme => {
 
                 '&.is-mobile': {
                     fontFamily: 'Lato Bold',
+                    fontWeight: 'normal' as const,
                     fontSize: '20px',
                     lineHeight: '28px',
                     letterSpacing: '-0.3px',
@@ -174,28 +175,28 @@ const EMOTIONS_LEGEND = [
 ];
 
 const SpeakerStats = () => {
-    const {faceLandmarks} = useSelector((state: IReduxState) => state['features/base/config']);
-    const {showFaceExpressions} = useSelector((state: IReduxState) => state['features/speaker-stats']);
-    const {clientWidth} = useSelector((state: IReduxState) => state['features/base/responsive-ui']);
+    const { faceLandmarks } = useSelector((state: IReduxState) => state['features/base/config']);
+    const { showFaceExpressions } = useSelector((state: IReduxState) => state['features/speaker-stats']);
+    const { clientWidth } = useSelector((state: IReduxState) => state['features/base/responsive-ui']);
     const displaySwitch = faceLandmarks?.enableDisplayFaceExpressions && clientWidth > DISPLAY_SWITCH_BREAKPOINT;
     const displayLabels = clientWidth > MOBILE_BREAKPOINT;
     const dispatch = useDispatch();
-    const {classes, cx} = useStyles();
-    const {t} = useTranslation();
+    const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const isMobile = isMobileBrowser();
 
     const onToggleFaceExpressions = useCallback(() =>
             dispatch(toggleFaceExpressions())
-        , [dispatch]);
+        , [ dispatch ]);
 
     const onSearch = useCallback((criteria = '') => {
             dispatch(initSearch(escapeRegexp(criteria)));
         }
-        , [dispatch]);
+        , [ dispatch ]);
 
     useEffect(() => {
         showFaceExpressions && !displaySwitch && dispatch(toggleFaceExpressions());
-    }, [clientWidth]);
+    }, [ clientWidth ]);
 
     useEffect(() => () => {
         dispatch(resetSearchCriteria());
@@ -203,17 +204,17 @@ const SpeakerStats = () => {
 
     return (
         <Dialog
-            cancel={{hidden: true}}
-            ok={{hidden: true}}
-            size={showFaceExpressions ? 'large' : 'medium'}
-            className={cx(classes.dialogClassNameContainer, isMobile && 'is-mobile')}
-            classNameHeader={cx(classes.dialogClassNameHeader, isMobile && 'is-mobile')}
-            classNameContent={cx(classes.dialogClassNameContent, isMobile && 'is-mobile')}
-            titleKey='speakerStats.speakerStats'
-            hideCloseButton={isMobile}
+            cancel = {{ hidden: true }}
+            ok = {{ hidden: true }}
+            size = {showFaceExpressions ? 'large' : 'medium'}
+            className = {cx(classes.dialogClassNameContainer, isMobile && 'is-mobile')}
+            classNameHeader = {cx(classes.dialogClassNameHeader, isMobile && 'is-mobile')}
+            classNameContent = {cx(classes.dialogClassNameContent, isMobile && 'is-mobile')}
+            titleKey = 'speakerStats.speakerStats'
+            hideCloseButton = {isMobile}
         >
-            <div className={classes.speakerStats}>
-                <SpeakerStatsList/>
+            <div className = {classes.speakerStats}>
+                <SpeakerStatsList />
             </div>
         </Dialog>
 

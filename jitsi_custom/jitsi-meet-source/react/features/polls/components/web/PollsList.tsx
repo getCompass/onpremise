@@ -1,13 +1,13 @@
-import React, {useCallback, useEffect, useRef} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../app/types';
-import {browser} from '../../../base/lib-jitsi-meet';
+import { IReduxState } from '../../../app/types';
+import { browser } from '../../../base/lib-jitsi-meet';
 
 import PollItem from './PollItem';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -45,11 +45,15 @@ const useStyles = makeStyles()(theme => {
     };
 });
 
-const PollsList = () => {
-    const {t} = useTranslation();
-    const {classes, cx} = useStyles();
+interface IPollListProps {
+    setCreateMode: (mode: boolean) => void;
+}
 
-    const polls = useSelector((state: IReduxState) => state['features/polls'].polls);
+const PollsList = ({ setCreateMode }: IPollListProps) => {
+    const { t } = useTranslation();
+    const { classes, cx } = useStyles();
+    const { polls } = useSelector((state: IReduxState) => state['features/polls']);
+
     const pollListEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = useCallback(() => {
@@ -64,26 +68,27 @@ const PollsList = () => {
 
             pollListEndRef.current.scrollIntoView(param);
         }
-    }, [pollListEndRef.current]);
+    }, [ pollListEndRef.current ]);
 
     useEffect(() => {
         scrollToBottom();
-    }, [polls]);
+    }, [ polls ]);
 
     const listPolls = Object.keys(polls);
 
     return (
         <>
             {listPolls.length === 0
-                ? <div className={classes.container}>
+                ? <div className = {classes.container}>
                     <span
-                        className={cx(classes.emptyMessage, isMobileBrowser() && 'is-mobile')}>{t('polls.results.empty')}</span>
+                        className = {cx(classes.emptyMessage, isMobileBrowser() && 'is-mobile')}>{t('polls.results.empty')}</span>
                 </div>
                 : listPolls.map((id, index) => (
                     <PollItem
-                        key={id}
-                        pollId={id}
-                        ref={listPolls.length - 1 === index ? pollListEndRef : null}/>
+                        key = { id }
+                        pollId = { id }
+                        ref = { listPolls.length - 1 === index ? pollListEndRef : null }
+                        setCreateMode = { setCreateMode } />
                 ))}
         </>
     );

@@ -1,11 +1,11 @@
-import React, {useCallback} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import Icon from '../../../icons/components/Icon';
-import {withPixelLineHeight} from '../../../styles/functions.web';
-import {isIcon} from '../../functions';
-import {IAvatarProps} from '../../types';
-import {PRESENCE_AVAILABLE_COLOR, PRESENCE_AWAY_COLOR, PRESENCE_BUSY_COLOR, PRESENCE_IDLE_COLOR} from '../styles';
+import { withPixelLineHeight } from '../../../styles/functions.web';
+import { isIcon } from '../../functions';
+import { IAvatarProps } from '../../types';
+import { PRESENCE_AVAILABLE_COLOR, PRESENCE_AWAY_COLOR, PRESENCE_BUSY_COLOR, PRESENCE_IDLE_COLOR } from '../styles';
 
 interface IProps extends IAvatarProps {
 
@@ -13,6 +13,8 @@ interface IProps extends IAvatarProps {
      * External class name passed through props.
      */
     className?: string;
+
+    iconClassName?: string;
 
     /**
      * The default avatar URL if we want to override the app bundled one (e.g. AlwaysOnTop).
@@ -45,18 +47,30 @@ interface IProps extends IAvatarProps {
     useCORS?: boolean;
 }
 
-const useStyles = makeStyles()(theme => {
+const useStyles = makeStyles()(() => {
     return {
         avatar: {
-            backgroundColor: '#1E1E1E',
-            borderRadius: '50%',
-            fontWeight: '600',
-            color: theme.palette?.text01 || '#fff',
-            ...withPixelLineHeight(theme.typography?.heading1 ?? {}),
+            backgroundColor: 'rgba(255, 255, 255, 0.06)',
+            borderRadius: '100%',
+            fontFamily: 'Lato SemiBold',
+            fontWeight: 'normal' as const,
+            color: '#fff',
             fontSize: 'inherit',
             objectFit: 'cover',
             textAlign: 'center',
             overflow: 'hidden',
+
+            '&.defaultAvatar': {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                '& .jitsi-icon': {
+                    paddingTop: '0px',
+                    paddingLeft: '0px',
+                    height: '70% !important',
+                    width: '70% !important',
+                },
+            },
 
             '&.avatar-small': {
                 height: '28px !important',
@@ -69,8 +83,17 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& .jitsi-icon': {
-                height: '36px !important',
-                width: '36px !important',
+                paddingTop: '7px',
+                paddingLeft: '7px',
+                height: '22px !important',
+                width: '22px !important',
+
+                '&.custom-notification-icon': {
+                    paddingTop: 0,
+                    paddingLeft: 0,
+                    height: '36px !important',
+                    width: '36px !important',
+                },
 
                 '& svg': {
                     width: '100%',
@@ -125,20 +148,21 @@ const useStyles = makeStyles()(theme => {
 });
 
 const StatelessAvatar = ({
-                             className,
-                             color,
-                             iconUser,
-                             id,
-                             initials,
-                             onAvatarLoadError,
-                             onAvatarLoadErrorParams,
-                             size,
-                             status,
-                             testId,
-                             url,
-                             useCORS
-                         }: IProps) => {
-    const {classes, cx} = useStyles();
+    className,
+    iconClassName,
+    color,
+    iconUser,
+    id,
+    initials,
+    onAvatarLoadError,
+    onAvatarLoadErrorParams,
+    size,
+    status,
+    testId,
+    url,
+    useCORS
+}: IProps) => {
+    const { classes, cx } = useStyles();
 
     const _getAvatarStyle = (backgroundColor?: string) => {
         return {
@@ -164,33 +188,34 @@ const StatelessAvatar = ({
         if (typeof onAvatarLoadError === 'function') {
             onAvatarLoadError(onAvatarLoadErrorParams);
         }
-    }, [onAvatarLoadError, onAvatarLoadErrorParams]);
+    }, [ onAvatarLoadError, onAvatarLoadErrorParams ]);
 
     if (isIcon(url)) {
         return (
             <div
-                className={cx(_getAvatarClassName(), _getBadgeClassName())}
-                data-testid={testId}
-                id={id}
-                style={_getAvatarStyle(color)}>
+                className = {cx(_getAvatarClassName(), _getBadgeClassName())}
+                data-testid = {testId}
+                id = {id}
+                style = {_getAvatarStyle(color)}>
                 <Icon
-                    src={url}/>
+                    className = {iconClassName}
+                    src = {url} />
             </div>
         );
     }
 
     if (url) {
         return (
-            <div className={_getBadgeClassName()}>
+            <div className = {_getBadgeClassName()}>
                 <img
-                    alt='avatar'
-                    className={_getAvatarClassName()}
-                    crossOrigin={useCORS ? '' : undefined}
-                    data-testid={testId}
-                    id={id}
-                    onError={_onAvatarLoadError}
-                    src={url}
-                    style={_getAvatarStyle()}/>
+                    alt = 'avatar'
+                    className = {_getAvatarClassName()}
+                    crossOrigin = {useCORS ? '' : undefined}
+                    data-testid = {testId}
+                    id = {id}
+                    onError = {_onAvatarLoadError}
+                    src = {url}
+                    style = {_getAvatarStyle()} />
             </div>
         );
     }
@@ -198,11 +223,11 @@ const StatelessAvatar = ({
     if (initials) {
         return (
             <div
-                className={cx(_getAvatarClassName(), _getBadgeClassName())}
-                data-testid={testId}
-                id={id}
-                style={_getAvatarStyle(color)}>
-                <div className={classes.initialsContainer}>
+                className = {cx(_getAvatarClassName(), _getBadgeClassName())}
+                data-testid = {testId}
+                id = {id}
+                style = {_getAvatarStyle(color)}>
+                <div className = {classes.initialsContainer}>
                     {initials}
                 </div>
             </div>
@@ -212,13 +237,14 @@ const StatelessAvatar = ({
     // default avatar
     return (
         <div
-            className={cx(_getAvatarClassName('defaultAvatar'), _getBadgeClassName())}
-            data-testid={testId}
-            id={id}
-            style={_getAvatarStyle()}>
+            className = {cx(_getAvatarClassName('defaultAvatar'), _getBadgeClassName())}
+            data-testid = {testId}
+            id = {id}
+            style = {_getAvatarStyle()}>
             <Icon
-                size={'50%'}
-                src={iconUser}/>
+                size = {'50%'}
+                className = {iconClassName}
+                src = {iconUser} />
         </div>
     );
 };

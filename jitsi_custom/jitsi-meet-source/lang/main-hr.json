@@ -764,7 +764,7 @@
             "answerPlaceholder": "Opcija {{index}}",
             "cancel": "Odustani",
             "create": "Stvori anketu",
-            "pollOptions": "Opcija ankete {{index}}",
+            "pollOption": "Opcija ankete {{index}}",
             "pollQuestion": "Pitanje ankete",
             "questionPlaceholder": "Postavi pitanje",
             "removeOption": "Ukloni opciju",

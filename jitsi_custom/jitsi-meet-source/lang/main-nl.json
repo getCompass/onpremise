@@ -662,7 +662,7 @@
             "answerPlaceholder": "Optie {{index}}",
             "cancel": "Annuleer",
             "create": "Creeër een peiling",
-            "pollOptions": "Peiling optie {{index}}",
+            "pollOption": "Peiling optie {{index}}",
             "pollQuestion": "Peiling vraag",
             "questionPlaceholder": "Stel een vraag",
             "removeOption": "Verwijder optie",

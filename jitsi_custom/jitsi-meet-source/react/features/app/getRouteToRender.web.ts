@@ -15,6 +15,8 @@ import WelcomePage from '../welcome/components/WelcomePage.web';
 import { getCustomLandingPageURL, isWelcomePageEnabled } from '../welcome/functions';
 
 import { IReduxState } from './types';
+import { isMobileBrowser } from "../base/environment/utils";
+import ConferenceMobile from "../conference/components/web/ConferenceMobile";
 
 /**
  * Determines which route is to be rendered in order to depict a specific Redux
@@ -50,8 +52,8 @@ function _getWebConferenceRoute(state: IReduxState) {
     // if we have auto redirect enabled, and we have previously logged in successfully
     // let's redirect to the auth url to get the token and login again
     if (!browser.isElectron() && config.tokenAuthUrl && config.tokenAuthUrlAutoRedirect
-            && state['features/authentication'].tokenAuthUrlSuccessful
-            && !state['features/base/jwt'].jwt && room) {
+        && state['features/authentication'].tokenAuthUrlSuccessful
+        && !state['features/base/jwt'].jwt && room) {
         const { locationURL = { href: '' } as URL } = state['features/base/connection'];
         const { tenant } = parseURIString(locationURL.href) || {};
         const { startAudioOnly } = config;
@@ -88,8 +90,14 @@ function _getWebConferenceRoute(state: IReduxState) {
         return Promise.resolve(route);
     }
 
+    // compass changes
     if (isSupportedBrowser()) {
-        route.component = Conference;
+
+        if (isMobileBrowser()) {
+            route.component = ConferenceMobile;
+        } else {
+            route.component = Conference;
+        }
     } else {
         route.component = UnsupportedDesktopBrowser;
     }
@@ -137,7 +145,7 @@ function _getWebWelcomePageRoute(state: IReduxState) {
 function _getEmptyRoute(): {
     component: React.ReactNode;
     href?: string;
-    } {
+} {
     return {
         component: BlankPage,
         href: undefined

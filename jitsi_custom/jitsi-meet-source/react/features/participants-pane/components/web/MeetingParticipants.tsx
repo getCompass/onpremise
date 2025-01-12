@@ -1,23 +1,25 @@
-import React, {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {connect, useDispatch, useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { connect, useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../app/types';
-import {rejectParticipantAudio, rejectParticipantVideo} from '../../../av-moderation/actions';
-import {MEDIA_TYPE} from '../../../base/media/constants';
-import {getParticipantById, isScreenShareParticipant} from '../../../base/participants/functions';
+import { IReduxState } from '../../../app/types';
+import { rejectParticipantAudio, rejectParticipantVideo } from '../../../av-moderation/actions';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import { getParticipantById, isScreenShareParticipant } from '../../../base/participants/functions';
 import useContextMenu from '../../../base/ui/hooks/useContextMenu.web';
-import {normalizeAccents} from '../../../base/util/strings.web';
-import {getBreakoutRooms, getCurrentRoomId, isInBreakoutRoom} from '../../../breakout-rooms/functions';
-import {isButtonEnabled, showOverflowDrawer} from '../../../toolbox/functions.web';
-import {muteRemote} from '../../../video-menu/actions.web';
-import {getSortedParticipantIds, shouldRenderInviteButton} from '../../functions';
-import {useParticipantDrawer} from '../../hooks';
+import { normalizeAccents } from '../../../base/util/strings.web';
+import { getBreakoutRooms, getCurrentRoomId, isInBreakoutRoom } from '../../../breakout-rooms/functions';
+import { isButtonEnabled, showOverflowDrawer } from '../../../toolbox/functions.web';
+import { muteRemote } from '../../../video-menu/actions.web';
+import { getSortedParticipantIds, shouldRenderInviteButton } from '../../functions';
+import { useParticipantDrawer } from '../../hooks';
 import MeetingParticipantContextMenu from './MeetingParticipantContextMenu';
 import MeetingParticipantItems from './MeetingParticipantItems';
-import {isMobileBrowser} from "../../../base/environment/utils";
-import {getKnockingParticipants, getLobbyEnabled} from "../../../lobby/functions";
+import { isMobileBrowser } from "../../../base/environment/utils";
+import { getKnockingParticipants, getLobbyEnabled } from "../../../lobby/functions";
+import { getVisitorsCount, getVisitorsInQueueCount, isVisitorsLive } from "../../../visitors/functions";
+import { isNeedShowElectronOnlyElements } from "../../../base/environment/utils_web";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -43,8 +45,13 @@ const useStyles = makeStyles()(theme => {
                 color: 'rgba(255, 255, 255, 0.3)'
             }
         },
+
         separateLine: {
             marginBottom: '16px',
+        },
+
+        marginTop: {
+            marginTop: '16px',
         },
 
         search: {
@@ -82,27 +89,27 @@ interface IProps {
  * @returns {ReactNode} - The component.
  */
 function MeetingParticipants({
-                                 currentRoom,
-                                 overflowDrawer,
-                                 participantsCount,
-                                 searchString,
-                                 setSearchString,
-                                 showInviteButton,
-                                 sortedParticipantIds = []
-                             }: IProps) {
+    currentRoom,
+    overflowDrawer,
+    participantsCount,
+    searchString,
+    setSearchString,
+    showInviteButton,
+    sortedParticipantIds = []
+}: IProps) {
     const dispatch = useDispatch();
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
-    const [lowerMenu, , toggleMenu, menuEnter, menuLeave, raiseContext] = useContextMenu<string>();
+    const [ lowerMenu, , toggleMenu, menuEnter, menuLeave, raiseContext ] = useContextMenu<string>();
     const muteAudio = useCallback(id => () => {
         dispatch(muteRemote(id, MEDIA_TYPE.AUDIO));
         dispatch(rejectParticipantAudio(id));
-    }, [dispatch]);
+    }, [ dispatch ]);
     const stopVideo = useCallback(id => () => {
         dispatch(muteRemote(id, MEDIA_TYPE.VIDEO));
         dispatch(rejectParticipantVideo(id));
-    }, [dispatch]);
-    const [drawerParticipant, closeDrawer, openDrawerForParticipant] = useParticipantDrawer();
+    }, [ dispatch ]);
+    const [ drawerParticipant, closeDrawer, openDrawerForParticipant ] = useParticipantDrawer();
     const isMobile = isMobileBrowser();
 
     // FIXME:
@@ -116,49 +123,59 @@ function MeetingParticipants({
     const isBreakoutRoom = useSelector(isInBreakoutRoom);
 
     const lobbyEnabled = useSelector(getLobbyEnabled);
-    const participants = useSelector(getKnockingParticipants);
-    const visitorsCount = useSelector((state: IReduxState) => state['features/visitors'].count || 0);
+    const lobbyParticipants = useSelector(getKnockingParticipants);
+    const isLobbyParticipantsVisible = lobbyEnabled && lobbyParticipants.length > 0;
 
-    const {classes, cx} = useStyles();
+    const visitorsCount = useSelector(getVisitorsCount);
+    const visitorsInQueueCount = useSelector(getVisitorsInQueueCount);
+    const isLive = useSelector(isVisitorsLive);
+    const showVisitorsInQueue = visitorsInQueueCount > 0 && isLive === false;
+    const isVisitorListVisible = visitorsCount > 0 && showVisitorsInQueue;
+
+    const { classes, cx } = useStyles();
 
     return (
         <>
             {isMobile ? (
-                ((lobbyEnabled && participants.length > 0) || visitorsCount > 0) && (
-                    <div className={cx(classes.headingContainer, isMobile && 'is-mobile')}>
-                        <div className={cx(classes.heading, isMobile && 'is-mobile')}>
+                (isVisitorListVisible || isLobbyParticipantsVisible) && (
+                    <div className = {cx(classes.headingContainer, isMobile && 'is-mobile')}>
+                        <div className = {cx(classes.heading, isMobile && 'is-mobile')}>
                             {t('participantsPane.headings.connected')}
                         </div>
                     </div>
                 )
             ) : (
-                <div className={cx('dotted-separate-line', classes.separateLine)}/>
+                (isNeedShowElectronOnlyElements() || isVisitorListVisible || isLobbyParticipantsVisible) ? (
+                    <div className = {cx('dotted-separate-line', classes.separateLine)} />
+                ) : (
+                    <div className = {classes.marginTop} />
+                )
             )}
             <div>
                 <MeetingParticipantItems
-                    isInBreakoutRoom={isBreakoutRoom}
-                    lowerMenu={lowerMenu}
-                    muteAudio={muteAudio}
-                    openDrawerForParticipant={openDrawerForParticipant}
-                    overflowDrawer={overflowDrawer}
-                    participantActionEllipsisLabel={participantActionEllipsisLabel}
-                    participantIds={sortedParticipantIds}
-                    raiseContextId={raiseContext.entity}
-                    searchString={normalizeAccents(searchString)}
-                    stopVideo={stopVideo}
-                    toggleMenu={toggleMenu}
-                    youText={youText}/>
+                    isInBreakoutRoom = {isBreakoutRoom}
+                    lowerMenu = {lowerMenu}
+                    muteAudio = {muteAudio}
+                    openDrawerForParticipant = {openDrawerForParticipant}
+                    overflowDrawer = {overflowDrawer}
+                    participantActionEllipsisLabel = {participantActionEllipsisLabel}
+                    participantIds = {sortedParticipantIds}
+                    raiseContextId = {raiseContext.entity}
+                    searchString = {normalizeAccents(searchString)}
+                    stopVideo = {stopVideo}
+                    toggleMenu = {toggleMenu}
+                    youText = {youText} />
             </div>
             <MeetingParticipantContextMenu
-                closeDrawer={closeDrawer}
-                drawerParticipant={drawerParticipant}
-                muteAudio={muteAudio}
-                offsetTarget={raiseContext?.offsetTarget}
-                onEnter={menuEnter}
-                onLeave={menuLeave}
-                onSelect={lowerMenu}
-                overflowDrawer={overflowDrawer}
-                participantID={raiseContext?.entity}/>
+                closeDrawer = {closeDrawer}
+                drawerParticipant = {drawerParticipant}
+                muteAudio = {muteAudio}
+                offsetTarget = {raiseContext?.offsetTarget}
+                onEnter = {menuEnter}
+                onLeave = {menuLeave}
+                onSelect = {lowerMenu}
+                overflowDrawer = {overflowDrawer}
+                participantID = {raiseContext?.entity} />
         </>
     );
 }

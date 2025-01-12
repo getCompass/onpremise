@@ -6,6 +6,7 @@ import { set } from '../redux/functions';
 
 import {
     DOMINANT_SPEAKER_CHANGED,
+    NOTIFIED_TO_SPEAK,
     OVERWRITE_PARTICIPANT_NAME,
     PARTICIPANT_ID_CHANGED,
     PARTICIPANT_JOINED,
@@ -92,7 +93,7 @@ export interface IParticipantsState {
     numberOfParticipantsNotSupportingE2EE: number;
     overwrittenNameList: { [id: string]: string; };
     pinnedParticipant?: string;
-    raisedHandsQueue: Array<{ id: string; raisedHandTimestamp: number; }>;
+    raisedHandsQueue: Array<{ hasBeenNotified?: boolean; id: string; raisedHandTimestamp: number; }>;
     remote: Map<string, IParticipant>;
     remoteVideoSources: Set<string>;
     sortedRemoteParticipants: Map<string, string>;
@@ -114,6 +115,23 @@ export interface IParticipantsState {
 ReducerRegistry.register<IParticipantsState>('features/base/participants',
 (state = DEFAULT_STATE, action): IParticipantsState => {
     switch (action.type) {
+    case NOTIFIED_TO_SPEAK: {
+        return {
+            ...state,
+            raisedHandsQueue: state.raisedHandsQueue.map((item, index) => {
+                if (index === 0) {
+
+                    return {
+                        ...item,
+                        hasBeenNotified: true
+                    };
+                }
+
+                return item;
+            })
+        };
+    }
+
     case PARTICIPANT_ID_CHANGED: {
         const { local } = state;
 
@@ -152,7 +170,7 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
         }
 
         // Keep the remote speaker list sorted alphabetically.
-        sortedSpeakersList.sort((a, b) => a[1].localeCompare(b[1]));
+        sortedSpeakersList.sort((a, b) => a[0].localeCompare(b[0]));
 
         // Only one dominant speaker is allowed.
         if (dominantSpeaker) {
@@ -247,7 +265,7 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
             const sortedRemoteVirtualScreenshareParticipants = [ ...state.sortedRemoteVirtualScreenshareParticipants ];
 
             sortedRemoteVirtualScreenshareParticipants.push([ id, name ]);
-            sortedRemoteVirtualScreenshareParticipants.sort((a, b) => a[1].localeCompare(b[1]));
+            sortedRemoteVirtualScreenshareParticipants.sort((a, b) => a[0].localeCompare(b[0]));
 
             state.sortedRemoteVirtualScreenshareParticipants = new Map(sortedRemoteVirtualScreenshareParticipants);
         }
@@ -333,7 +351,7 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
         const sortedRemoteParticipants = Array.from(state.sortedRemoteParticipants);
 
         sortedRemoteParticipants.push([ id, displayName ]);
-        sortedRemoteParticipants.sort((a, b) => a[1].localeCompare(b[1]));
+        sortedRemoteParticipants.sort((a, b) => a[0].localeCompare(b[0]));
 
         // The sort order of participants is preserved since Map remembers the original insertion order of the keys.
         state.sortedRemoteParticipants = new Map(sortedRemoteParticipants);
@@ -342,7 +360,7 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
             const sortedRemoteVirtualScreenshareParticipants = [ ...state.sortedRemoteVirtualScreenshareParticipants ];
 
             sortedRemoteVirtualScreenshareParticipants.push([ id, name ?? '' ]);
-            sortedRemoteVirtualScreenshareParticipants.sort((a, b) => a[1].localeCompare(b[1]));
+            sortedRemoteVirtualScreenshareParticipants.sort((a, b) => a[0].localeCompare(b[0]));
 
             state.sortedRemoteVirtualScreenshareParticipants = new Map(sortedRemoteVirtualScreenshareParticipants);
         }

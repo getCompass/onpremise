@@ -1,22 +1,22 @@
 // @ts-ignore
-import {jitsiLocalStorage} from '@jitsi/js-utils/jitsi-local-storage';
+import { jitsiLocalStorage } from '@jitsi/js-utils/jitsi-local-storage';
 // eslint-disable-next-line lines-around-comment
 // @ts-ignore
-import {safeJsonParse} from '@jitsi/js-utils/json';
-import React, {useCallback, useEffect, useState} from 'react';
-import {WithTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import { safeJsonParse } from '@jitsi/js-utils/json';
+import React, { useCallback, useEffect, useState } from 'react';
+import { WithTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState, IStore} from '../../app/types';
-import {translate} from '../../base/i18n/functions';
+import { IReduxState, IStore } from '../../app/types';
+import { translate } from '../../base/i18n/functions';
 import Icon from '../../base/icons/components/Icon';
-import {IconVirtualBackgroundDelete} from '../../base/icons/svg';
+import { IconVirtualBackgroundDelete } from '../../base/icons/svg';
 import Spinner from '../../base/ui/components/web/Spinner';
-import {BACKGROUNDS_LIMIT, type Image, IMAGES, VIRTUAL_BACKGROUND_TYPE} from '../constants';
-import {toDataURL} from '../functions';
+import { BACKGROUNDS_LIMIT, type Image, IMAGES, VIRTUAL_BACKGROUND_TYPE } from '../constants';
+import { toDataURL } from '../functions';
 import logger from '../logger';
-import {IVirtualBackground} from '../reducer';
+import { IVirtualBackground } from '../reducer';
 
 import UploadImageButton from './UploadImageButton';
 import VirtualBackgroundPreview from './VirtualBackgroundPreview';
@@ -59,6 +59,8 @@ interface IProps extends WithTranslation {
      * The id of the selected video device.
      */
     selectedVideoInputId: string;
+
+    _localFlipX: boolean;
 }
 
 const onError = (event: any) => {
@@ -78,7 +80,9 @@ const useStyles = makeStyles()(theme => {
         container: {
             width: '100%',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            overflowY: 'auto',
+            maxHeight: '212px',
         },
 
         thumbnailContainer: {
@@ -113,7 +117,7 @@ const useStyles = makeStyles()(theme => {
             color: 'rgba(255, 255, 255, 0.75)',
             objectFit: 'cover',
 
-            [['&:hover', '&:focus'] as any]: {
+            [[ '&:hover', '&:focus' ] as any]: {
                 opacity: 0.5,
                 cursor: 'pointer',
 
@@ -169,7 +173,7 @@ const useStyles = makeStyles()(theme => {
                 padding: '3px'
             },
 
-            [['&:hover', '&:focus'] as any]: {
+            [[ '&:hover', '&:focus' ] as any]: {
                 display: 'block'
             }
         }
@@ -182,32 +186,33 @@ const useStyles = makeStyles()(theme => {
  * @returns {ReactElement}
  */
 function VirtualBackgrounds({
-                                _images,
-                                _showUploadButton,
-                                onOptionsChange,
-                                options,
-                                selectedVideoInputId,
-                                t
-                            }: IProps) {
-    const {classes, cx} = useStyles();
-    const [previewIsLoaded, setPreviewIsLoaded] = useState(false);
+    _images,
+    _showUploadButton,
+    _localFlipX,
+    onOptionsChange,
+    options,
+    selectedVideoInputId,
+    t
+}: IProps) {
+    const { classes, cx } = useStyles();
+    const [ previewIsLoaded, setPreviewIsLoaded ] = useState(false);
     const localImages = jitsiLocalStorage.getItem('virtualBackgrounds');
-    const [storedImages, setStoredImages] = useState<Array<Image>>((localImages && safeJsonParse(localImages)) || []);
-    const [loading, setLoading] = useState(false);
+    const [ storedImages, setStoredImages ] = useState<Array<Image>>((localImages && safeJsonParse(localImages)) || []);
+    const [ loading, setLoading ] = useState(false);
 
     const deleteStoredImage = useCallback(e => {
         const imageId = e.currentTarget.getAttribute('data-imageid');
 
         setStoredImages(storedImages.filter(item => item.id !== imageId));
         removeBackground();
-    }, [storedImages]);
+    }, [ storedImages ]);
 
     const deleteStoredImageKeyPress = useCallback(e => {
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             deleteStoredImage(e);
         }
-    }, [deleteStoredImage]);
+    }, [ deleteStoredImage ]);
 
     /**
      * Updates stored images on local storage.
@@ -222,7 +227,7 @@ function VirtualBackgrounds({
         if (storedImages.length === BACKGROUNDS_LIMIT) {
             setStoredImages(storedImages.slice(1));
         }
-    }, [storedImages]);
+    }, [ storedImages ]);
 
     const enableBlur = useCallback(async () => {
         onOptionsChange({
@@ -240,7 +245,7 @@ function VirtualBackgrounds({
             e.preventDefault();
             enableBlur();
         }
-    }, [enableBlur]);
+    }, [ enableBlur ]);
 
     const enableSlideBlur = useCallback(async () => {
         onOptionsChange({
@@ -258,7 +263,7 @@ function VirtualBackgrounds({
             e.preventDefault();
             enableSlideBlur();
         }
-    }, [enableSlideBlur]);
+    }, [ enableSlideBlur ]);
 
     const removeBackground = useCallback(async () => {
         onOptionsChange({
@@ -274,7 +279,7 @@ function VirtualBackgrounds({
             e.preventDefault();
             removeBackground();
         }
-    }, [removeBackground]);
+    }, [ removeBackground ]);
 
     const setUploadedImageBackground = useCallback(async e => {
         const imageId = e.currentTarget.getAttribute('data-imageid');
@@ -289,7 +294,7 @@ function VirtualBackgrounds({
             });
             logger.info('Uploaded image set for virtual background preview!');
         }
-    }, [storedImages]);
+    }, [ storedImages ]);
 
     const setImageBackground = useCallback(async e => {
         const imageId = e.currentTarget.getAttribute('data-imageid');
@@ -319,14 +324,14 @@ function VirtualBackgrounds({
             e.preventDefault();
             setImageBackground(e);
         }
-    }, [setImageBackground]);
+    }, [ setImageBackground ]);
 
     const setUploadedImageBackgroundKeyPress = useCallback(e => {
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             setUploadedImageBackground(e);
         }
-    }, [setUploadedImageBackground]);
+    }, [ setUploadedImageBackground ]);
 
     const loadedPreviewState = useCallback(async loaded => {
         await setPreviewIsLoaded(loaded);
@@ -343,125 +348,126 @@ function VirtualBackgrounds({
             return acc;
         }, {}),
         ...storedImages.reduce<Record<string, string>>((acc, image, index) => {
-            acc[image.id] = t('virtualBackground.uploadedImage', {index: index + 1});
+            acc[image.id] = t('virtualBackground.uploadedImage', { index: index + 1 });
 
             return acc;
         }, {})
     };
     const currentBackgroundLabel = options?.selectedThumbnail ? labelsMap[options.selectedThumbnail] : labelsMap.none;
-    const isThumbnailSelected = useCallback(thumbnail => options?.selectedThumbnail === thumbnail, [options]);
+    const isThumbnailSelected = useCallback(thumbnail => options?.selectedThumbnail === thumbnail, [ options ]);
     const getSelectedThumbnailClass = useCallback(
-        thumbnail => isThumbnailSelected(thumbnail) && classes.selectedThumbnail, [isThumbnailSelected, options]
+        thumbnail => isThumbnailSelected(thumbnail) && classes.selectedThumbnail, [ isThumbnailSelected, options ]
     );
 
     return (
         <>
             <VirtualBackgroundPreview
-                loadedPreview={loadedPreviewState}
-                options={options}
-                selectedVideoInputId={selectedVideoInputId}/>
+                localFlipX = {_localFlipX}
+                loadedPreview = {loadedPreviewState}
+                options = {options}
+                selectedVideoInputId = {selectedVideoInputId} />
             {loading ? (
-                <div className={classes.virtualBackgroundLoading}>
-                    <Spinner/>
+                <div className = {classes.virtualBackgroundLoading}>
+                    <Spinner />
                 </div>
             ) : (
-                <div className={classes.container}>
+                <div className = {classes.container}>
                     <span
-                        className='sr-only'
-                        id='virtual-background-current-info'>
+                        className = 'sr-only'
+                        id = 'virtual-background-current-info'>
                         {t('virtualBackground.accessibilityLabel.currentBackground', {
                             background: currentBackgroundLabel
                         })}
                     </span>
                     <div
-                        aria-describedby='virtual-background-current-info'
-                        aria-label={t('virtualBackground.accessibilityLabel.selectBackground')}
-                        className={classes.thumbnailContainer}
-                        role='radiogroup'
-                        tabIndex={-1}>
+                        aria-describedby = 'virtual-background-current-info'
+                        aria-label = {t('virtualBackground.accessibilityLabel.selectBackground')}
+                        className = {classes.thumbnailContainer}
+                        role = 'radiogroup'
+                        tabIndex = {-1}>
                         <div
-                            aria-checked={isThumbnailSelected('none')}
-                            aria-label={t('virtualBackground.removeBackground')}
-                            className={cx(classes.thumbnail, classes.noneThumbnail,
+                            aria-checked = {isThumbnailSelected('none')}
+                            aria-label = {t('virtualBackground.removeBackground')}
+                            className = {cx(classes.thumbnail, classes.noneThumbnail,
                                 getSelectedThumbnailClass('none'))}
-                            onClick={removeBackground}
-                            onKeyPress={removeBackgroundKeyPress}
-                            role='radio'
-                            tabIndex={0}>
+                            onClick = {removeBackground}
+                            onKeyPress = {removeBackgroundKeyPress}
+                            role = 'radio'
+                            tabIndex = {0}>
                             {t('virtualBackground.none')}
                         </div>
                         <div
-                            aria-checked={isThumbnailSelected('slight-blur')}
-                            aria-label={t('virtualBackground.slightBlur')}
-                            className={cx(classes.thumbnail, classes.slightBlur,
+                            aria-checked = {isThumbnailSelected('slight-blur')}
+                            aria-label = {t('virtualBackground.slightBlur')}
+                            className = {cx(classes.thumbnail, classes.slightBlur,
                                 getSelectedThumbnailClass('slight-blur'))}
-                            onClick={enableSlideBlur}
-                            onKeyPress={enableSlideBlurKeyPress}
-                            role='radio'
-                            tabIndex={0}>
+                            onClick = {enableSlideBlur}
+                            onKeyPress = {enableSlideBlurKeyPress}
+                            role = 'radio'
+                            tabIndex = {0}>
                             {t('virtualBackground.slightBlur')}
                         </div>
                         <div
-                            aria-checked={isThumbnailSelected('blur')}
-                            aria-label={t('virtualBackground.blur')}
-                            className={cx(classes.thumbnail, classes.blur,
+                            aria-checked = {isThumbnailSelected('blur')}
+                            aria-label = {t('virtualBackground.blur')}
+                            className = {cx(classes.thumbnail, classes.blur,
                                 getSelectedThumbnailClass('blur'))}
-                            onClick={enableBlur}
-                            onKeyPress={enableBlurKeyPress}
-                            role='radio'
-                            tabIndex={0}>
+                            onClick = {enableBlur}
+                            onKeyPress = {enableBlurKeyPress}
+                            role = 'radio'
+                            tabIndex = {0}>
                             {t('virtualBackground.blur')}
                         </div>
                         {_images.map(image => (
                             <img
-                                alt={image.tooltip && t(`virtualBackground.${image.tooltip}`)}
-                                aria-checked={isThumbnailSelected(image.id)}
-                                className={cx(classes.thumbnail,
+                                alt = {image.tooltip && t(`virtualBackground.${image.tooltip}`)}
+                                aria-checked = {isThumbnailSelected(image.id)}
+                                className = {cx(classes.thumbnail,
                                     getSelectedThumbnailClass(image.id))}
-                                data-imageid={image.id}
-                                onClick={setImageBackground}
-                                onError={onError}
-                                onKeyPress={setImageBackgroundKeyPress}
-                                role='radio'
-                                src={image.src}
-                                tabIndex={0}/>
+                                data-imageid = {image.id}
+                                onClick = {setImageBackground}
+                                onError = {onError}
+                                onKeyPress = {setImageBackgroundKeyPress}
+                                role = 'radio'
+                                src = {image.src}
+                                tabIndex = {0} />
                         ))}
                         {storedImages.map((image, index) => (
                             <div
-                                className={classes.storedImageContainer}
-                                key={image.id}>
+                                className = {classes.storedImageContainer}
+                                key = {image.id}>
                                 <img
-                                    alt={t('virtualBackground.uploadedImage', {index: index + 1})}
-                                    aria-checked={isThumbnailSelected(image.id)}
-                                    className={cx(classes.thumbnail,
+                                    alt = {t('virtualBackground.uploadedImage', { index: index + 1 })}
+                                    aria-checked = {isThumbnailSelected(image.id)}
+                                    className = {cx(classes.thumbnail,
                                         getSelectedThumbnailClass(image.id))}
-                                    data-imageid={image.id}
-                                    onClick={setUploadedImageBackground}
-                                    onError={onError}
-                                    onKeyPress={setUploadedImageBackgroundKeyPress}
-                                    role='radio'
-                                    src={image.src}
-                                    tabIndex={0}/>
+                                    data-imageid = {image.id}
+                                    onClick = {setUploadedImageBackground}
+                                    onError = {onError}
+                                    onKeyPress = {setUploadedImageBackgroundKeyPress}
+                                    role = 'radio'
+                                    src = {image.src}
+                                    tabIndex = {0} />
 
                                 <Icon
-                                    ariaLabel={t('virtualBackground.deleteImage')}
-                                    className={cx(classes.deleteImageIcon, 'delete-image-icon')}
-                                    data-imageid={image.id}
-                                    onClick={deleteStoredImage}
-                                    onKeyPress={deleteStoredImageKeyPress}
-                                    role='button'
-                                    size={14}
-                                    src={IconVirtualBackgroundDelete}
-                                    tabIndex={0}/>
+                                    ariaLabel = {t('virtualBackground.deleteImage')}
+                                    className = {cx(classes.deleteImageIcon, 'delete-image-icon')}
+                                    data-imageid = {image.id}
+                                    onClick = {deleteStoredImage}
+                                    onKeyPress = {deleteStoredImageKeyPress}
+                                    role = 'button'
+                                    size = {14}
+                                    src = {IconVirtualBackgroundDelete}
+                                    tabIndex = {0} />
                             </div>
                         ))}
                         {_showUploadButton
                             && <UploadImageButton
-                                setLoading={setLoading}
-                                setOptions={onOptionsChange}
-                                setStoredImages={setStoredImages}
-                                showLabel={previewIsLoaded}
-                                storedImages={storedImages}/>}
+                                setLoading = {setLoading}
+                                setOptions = {onOptionsChange}
+                                setStoredImages = {setStoredImages}
+                                showLabel = {previewIsLoaded}
+                                storedImages = {storedImages} />}
                     </div>
                 </div>
             )}
@@ -480,10 +486,12 @@ function VirtualBackgrounds({
 function _mapStateToProps(state: IReduxState) {
     const dynamicBrandingImages = state['features/dynamic-branding'].virtualBackgrounds;
     const hasBrandingImages = Boolean(dynamicBrandingImages.length);
+    const localFlipX = Boolean(state['features/base/settings'].localFlipX);
 
     return {
         _images: (hasBrandingImages && dynamicBrandingImages) || IMAGES,
-        _showUploadButton: !state['features/base/config'].disableAddingBackgroundImages
+        _showUploadButton: !state['features/base/config'].disableAddingBackgroundImages,
+        _localFlipX: localFlipX,
     };
 }
 

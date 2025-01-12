@@ -796,7 +796,7 @@
             "answerPlaceholder": "Сонголт {{index}}",
             "cancel": "Цуцлах",
             "create": "Санал асуулга үүсгэх",
-            "pollOptions": "Санал асуулгын сонголт {{index}}",
+            "pollOption": "Санал асуулгын сонголт {{index}}",
             "pollQuestion": "Санал асуулга",
             "questionPlaceholder": "Асуух",
             "removeOption": "Сонголт хасах",

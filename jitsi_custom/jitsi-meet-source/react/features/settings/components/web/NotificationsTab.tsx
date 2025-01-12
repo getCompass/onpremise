@@ -1,14 +1,14 @@
-import {Theme} from '@mui/material';
+import { Theme } from '@mui/material';
 import React from 'react';
-import {WithTranslation} from 'react-i18next';
-import {withStyles} from 'tss-react/mui';
+import { WithTranslation } from 'react-i18next';
+import { withStyles } from 'tss-react/mui';
 
 import AbstractDialogTab, {
     IProps as AbstractDialogTabProps
 } from '../../../base/dialog/components/web/AbstractDialogTab';
-import {translate} from '../../../base/i18n/functions';
+import { translate } from '../../../base/i18n/functions';
 import Checkbox from '../../../base/ui/components/web/Checkbox';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 import Switch from "../../../base/ui/components/web/Switch";
 import clsx from "clsx";
 
@@ -220,8 +220,8 @@ class NotificationsTab extends AbstractDialogTab<IProps, any> {
      *
      * @returns {void}
      */
-    _onChange({target}: React.ChangeEvent<HTMLInputElement>) {
-        super._onChange({[target.name]: target.checked});
+    _onChange({ target }: React.ChangeEvent<HTMLInputElement>) {
+        super._onChange({ [target.name]: target.checked });
     }
 
     /**
@@ -234,7 +234,7 @@ class NotificationsTab extends AbstractDialogTab<IProps, any> {
      */
     _onChangeSwitch(name: string, checked: boolean) {
 
-        super._onChange({[name]: checked});
+        super._onChange({ [name]: checked });
     }
 
     /**
@@ -246,7 +246,7 @@ class NotificationsTab extends AbstractDialogTab<IProps, any> {
      *
      * @returns {void}
      */
-    _onEnabledNotificationsChanged({target: {checked}}: React.ChangeEvent<HTMLInputElement>, type: any) {
+    _onEnabledNotificationsChanged({ target: { checked } }: React.ChangeEvent<HTMLInputElement>, type: any) {
         super._onChange({
             enabledNotifications: {
                 ...this.props.enabledNotifications,
@@ -301,84 +301,84 @@ class NotificationsTab extends AbstractDialogTab<IProps, any> {
         if (isMobile) {
             return (
                 <div
-                    className={classes.container}
-                    key='sounds'>
-                    <div className={clsx(classes.tabTitleContainer, 'is-mobile')}>
-                        <div className={clsx(classes.tabTitle, 'is-mobile')}>{t('settings.notifications')}</div>
-                        <div className={clsx(classes.tabTitleDivider, 'is-mobile')}/>
+                    className = {classes.container}
+                    key = 'sounds'>
+                    <div className = {clsx(classes.tabTitleContainer, 'is-mobile')}>
+                        <div className = {clsx(classes.tabTitle, 'is-mobile')}>{t('settings.notifications')}</div>
+                        <div className = {clsx(classes.tabTitleDivider, 'is-mobile')} />
                     </div>
                     {showSoundsSettings && (
-                        <div className={clsx(classes.column, 'is-mobile')}>
-                            <h2 className={clsx(classes.title, 'is-mobile')}>
+                        <div className = {clsx(classes.column, 'is-mobile')}>
+                            <h2 className = {clsx(classes.title, 'is-mobile')}>
                                 {t('settings.playSounds')}
                             </h2>
-                            <div className={clsx(classes.controlRowContainer, 'is-mobile')}>
-                                <label htmlFor='soundsIncomingMessage-switch' className='is-mobile'>
+                            <div className = {clsx(classes.controlRowContainer, 'is-mobile')}>
+                                <label htmlFor = 'soundsIncomingMessage-switch' className = 'is-mobile'>
                                     {t('settings.incomingMessage')}
                                 </label>
                                 <Switch
-                                    checked={soundsIncomingMessage && !disabledSounds.includes('INCOMING_MSG_SOUND')}
-                                    id='soundsIncomingMessage-switch'
-                                    onChange={checked => this._onChangeSwitch("soundsIncomingMessage", checked ?? false)}/>
+                                    checked = {soundsIncomingMessage && !disabledSounds.includes('INCOMING_MSG_SOUND')}
+                                    id = 'soundsIncomingMessage-switch'
+                                    onChange = {checked => this._onChangeSwitch("soundsIncomingMessage", checked ?? false)} />
                             </div>
-                            <div className={clsx(classes.controlRowContainer, 'is-mobile')}>
-                                <label htmlFor='soundsParticipantJoined-switch' className='is-mobile'>
+                            <div className = {clsx(classes.controlRowContainer, 'is-mobile')}>
+                                <label htmlFor = 'soundsParticipantJoined-switch' className = 'is-mobile'>
                                     {t('settings.participantJoined')}
                                 </label>
                                 <Switch
-                                    checked={soundsParticipantJoined
+                                    checked = {soundsParticipantJoined
                                         && !disabledSounds.includes('PARTICIPANT_JOINED_SOUND')}
-                                    id='soundsParticipantJoined-switch'
-                                    onChange={checked => this._onChangeSwitch("soundsParticipantJoined", checked ?? false)}/>
+                                    id = 'soundsParticipantJoined-switch'
+                                    onChange = {checked => this._onChangeSwitch("soundsParticipantJoined", checked ?? false)} />
                             </div>
-                            <div className={clsx(classes.controlRowContainer, 'is-mobile')}>
-                                <label htmlFor='soundsParticipantLeft-switch' className='is-mobile'>
+                            <div className = {clsx(classes.controlRowContainer, 'is-mobile')}>
+                                <label htmlFor = 'soundsParticipantLeft-switch' className = 'is-mobile'>
                                     {t('settings.participantLeft')}
                                 </label>
                                 <Switch
-                                    checked={soundsParticipantLeft && !disabledSounds.includes('PARTICIPANT_LEFT_SOUND')}
-                                    id='soundsParticipantLeft-switch'
-                                    onChange={checked => this._onChangeSwitch("soundsParticipantLeft", checked ?? false)}/>
+                                    checked = {soundsParticipantLeft && !disabledSounds.includes('PARTICIPANT_LEFT_SOUND')}
+                                    id = 'soundsParticipantLeft-switch'
+                                    onChange = {checked => this._onChangeSwitch("soundsParticipantLeft", checked ?? false)} />
                             </div>
-                            <div className={clsx(classes.controlRowContainer, 'is-mobile')}>
-                                <label htmlFor='soundsTalkWhileMuted-switch' className='is-mobile'>
+                            <div className = {clsx(classes.controlRowContainer, 'is-mobile')}>
+                                <label htmlFor = 'soundsTalkWhileMuted-switch' className = 'is-mobile'>
                                     {t('settings.talkWhileMuted')}
                                 </label>
                                 <Switch
-                                    checked={soundsTalkWhileMuted && !disabledSounds.includes('TALK_WHILE_MUTED_SOUND')}
-                                    id='soundsTalkWhileMuted-switch'
-                                    onChange={checked => this._onChangeSwitch("soundsTalkWhileMuted", checked ?? false)}/>
+                                    checked = {soundsTalkWhileMuted && !disabledSounds.includes('TALK_WHILE_MUTED_SOUND')}
+                                    id = 'soundsTalkWhileMuted-switch'
+                                    onChange = {checked => this._onChangeSwitch("soundsTalkWhileMuted", checked ?? false)} />
                             </div>
-                            <div className={clsx(classes.controlRowContainer, 'is-mobile')}>
-                                <label htmlFor='soundsParticipantKnocking-switch' className='is-mobile'>
+                            <div className = {clsx(classes.controlRowContainer, 'is-mobile')}>
+                                <label htmlFor = 'soundsParticipantKnocking-switch' className = 'is-mobile'>
                                     {t('settings.participantKnocking')}
                                 </label>
                                 <Switch
-                                    checked={soundsParticipantKnocking
+                                    checked = {soundsParticipantKnocking
                                         && !disabledSounds.includes('KNOCKING_PARTICIPANT_SOUND')}
-                                    id='soundsParticipantKnocking-switch'
-                                    onChange={checked => this._onChangeSwitch("soundsParticipantKnocking", checked ?? false)}/>
+                                    id = 'soundsParticipantKnocking-switch'
+                                    onChange = {checked => this._onChangeSwitch("soundsParticipantKnocking", checked ?? false)} />
                             </div>
                         </div>
                     )}
                     {showNotificationsSettings && (
-                        <div className={clsx(classes.column, 'is-mobile')}>
-                            {showSoundsSettings && (<div className={clsx(classes.tabTitleDivider, 'is-mobile')}/>)}
-                            <h2 className={clsx(classes.title, 'is-mobile')}>
+                        <div className = {clsx(classes.column, 'is-mobile')}>
+                            {showSoundsSettings && (<div className = {clsx(classes.tabTitleDivider, 'is-mobile')} />)}
+                            <h2 className = {clsx(classes.title, 'is-mobile')}>
                                 {t('notify.displayNotifications')}
                             </h2>
                             {
                                 Object.keys(enabledNotifications).map(key => (
-                                    <div className={clsx(classes.controlRowContainer, 'is-mobile')}>
-                                        <label htmlFor={`show-${key}-switch`} className='is-mobile'>
+                                    <div className = {clsx(classes.controlRowContainer, 'is-mobile')}>
+                                        <label htmlFor = {`show-${key}-switch`} className = 'is-mobile'>
                                             {t(key)}
                                         </label>
                                         <Switch
-                                            checked={Boolean(enabledNotifications[key as
+                                            checked = {Boolean(enabledNotifications[key as
                                                 keyof typeof enabledNotifications])}
-                                            id={`show-${key}-switch`}
+                                            id = {`show-${key}-switch`}
                                             /* eslint-disable-next-line react/jsx-no-bind */
-                                            onChange={checked => this._onEnabledNotificationsChangedSwitch(key, checked ?? false)}/>
+                                            onChange = {checked => this._onEnabledNotificationsChangedSwitch(key, checked ?? false)} />
                                     </div>
                                 ))
                             }
@@ -392,74 +392,74 @@ class NotificationsTab extends AbstractDialogTab<IProps, any> {
 
         return (
             <div
-                className={classes.container}
-                key='sounds'>
+                className = {classes.container}
+                key = 'sounds'>
                 {showSoundsSettings && (
-                    <div className={classes.column}>
-                        <h2 className={classes.title}>
+                    <div className = {classes.column}>
+                        <h2 className = {classes.title}>
                             {t('settings.playSounds')}
                         </h2>
                         <Checkbox
-                            checked={soundsIncomingMessage && !disabledSounds.includes('INCOMING_MSG_SOUND')}
-                            className={classes.checkbox}
-                            classNameText={classes.text}
-                            disabled={disabledSounds.includes('INCOMING_MSG_SOUND')}
-                            label={t('settings.incomingMessage')}
-                            name='soundsIncomingMessage'
-                            onChange={this._onChange}/>
+                            checked = {soundsIncomingMessage && !disabledSounds.includes('INCOMING_MSG_SOUND')}
+                            className = {classes.checkbox}
+                            classNameText = {classes.text}
+                            disabled = {disabledSounds.includes('INCOMING_MSG_SOUND')}
+                            label = {t('settings.incomingMessage')}
+                            name = 'soundsIncomingMessage'
+                            onChange = {this._onChange} />
                         <Checkbox
-                            checked={soundsParticipantJoined
+                            checked = {soundsParticipantJoined
                                 && !disabledSounds.includes('PARTICIPANT_JOINED_SOUND')}
-                            className={classes.checkbox}
-                            classNameText={classes.text}
-                            disabled={disabledSounds.includes('PARTICIPANT_JOINED_SOUND')}
-                            label={t('settings.participantJoined')}
-                            name='soundsParticipantJoined'
-                            onChange={this._onChange}/>
+                            className = {classes.checkbox}
+                            classNameText = {classes.text}
+                            disabled = {disabledSounds.includes('PARTICIPANT_JOINED_SOUND')}
+                            label = {t('settings.participantJoined')}
+                            name = 'soundsParticipantJoined'
+                            onChange = {this._onChange} />
                         <Checkbox
-                            checked={soundsParticipantLeft && !disabledSounds.includes('PARTICIPANT_LEFT_SOUND')}
-                            className={classes.checkbox}
-                            classNameText={classes.text}
-                            disabled={disabledSounds.includes('PARTICIPANT_LEFT_SOUND')}
-                            label={t('settings.participantLeft')}
-                            name='soundsParticipantLeft'
-                            onChange={this._onChange}/>
+                            checked = {soundsParticipantLeft && !disabledSounds.includes('PARTICIPANT_LEFT_SOUND')}
+                            className = {classes.checkbox}
+                            classNameText = {classes.text}
+                            disabled = {disabledSounds.includes('PARTICIPANT_LEFT_SOUND')}
+                            label = {t('settings.participantLeft')}
+                            name = 'soundsParticipantLeft'
+                            onChange = {this._onChange} />
                         <Checkbox
-                            checked={soundsTalkWhileMuted && !disabledSounds.includes('TALK_WHILE_MUTED_SOUND')}
-                            className={classes.checkbox}
-                            classNameText={classes.text}
-                            disabled={disabledSounds.includes('TALK_WHILE_MUTED_SOUND')}
-                            label={t('settings.talkWhileMuted')}
-                            name='soundsTalkWhileMuted'
-                            onChange={this._onChange}/>
+                            checked = {soundsTalkWhileMuted && !disabledSounds.includes('TALK_WHILE_MUTED_SOUND')}
+                            className = {classes.checkbox}
+                            classNameText = {classes.text}
+                            disabled = {disabledSounds.includes('TALK_WHILE_MUTED_SOUND')}
+                            label = {t('settings.talkWhileMuted')}
+                            name = 'soundsTalkWhileMuted'
+                            onChange = {this._onChange} />
                         <Checkbox
-                            checked={soundsParticipantKnocking
+                            checked = {soundsParticipantKnocking
                                 && !disabledSounds.includes('KNOCKING_PARTICIPANT_SOUND')}
-                            className={classes.checkbox}
-                            classNameText={classes.text}
-                            disabled={disabledSounds.includes('KNOCKING_PARTICIPANT_SOUND')}
-                            label={t('settings.participantKnocking')}
-                            name='soundsParticipantKnocking'
-                            onChange={this._onChange}/>
+                            className = {classes.checkbox}
+                            classNameText = {classes.text}
+                            disabled = {disabledSounds.includes('KNOCKING_PARTICIPANT_SOUND')}
+                            label = {t('settings.participantKnocking')}
+                            name = 'soundsParticipantKnocking'
+                            onChange = {this._onChange} />
                     </div>
                 )}
                 {showNotificationsSettings && (
-                    <div className={classes.column}>
-                        <h2 className={classes.title}>
+                    <div className = {classes.column}>
+                        <h2 className = {classes.title}>
                             {t('notify.displayNotifications')}
                         </h2>
                         {
                             Object.keys(enabledNotifications).map(key => (
                                 <Checkbox
-                                    checked={Boolean(enabledNotifications[key as
+                                    checked = {Boolean(enabledNotifications[key as
                                         keyof typeof enabledNotifications])}
-                                    className={classes.checkbox}
-                                    classNameText={classes.text}
-                                    key={key}
-                                    label={t(key)}
-                                    name={`show-${key}`}
+                                    className = {classes.checkbox}
+                                    classNameText = {classes.text}
+                                    key = {key}
+                                    label = {t(key)}
+                                    name = {`show-${key}`}
                                     /* eslint-disable-next-line react/jsx-no-bind */
-                                    onChange={e => this._onEnabledNotificationsChanged(e, key)}/>
+                                    onChange = {e => this._onEnabledNotificationsChanged(e, key)} />
                             ))
                         }
                     </div>

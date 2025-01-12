@@ -1,14 +1,14 @@
-import { IconHangup } from '../../icons/svg';
+import { IconHangup, IconHangupToggled } from '../../icons/svg';
 
 import AbstractButton, { IProps } from './AbstractButton';
 
 /**
  * An abstract implementation of a button for disconnecting a conference.
  */
-export default class AbstractHangupButton<P extends IProps, S=any>
-    extends AbstractButton<P, S> {
+export default class AbstractHangupButton<P extends IProps, S = any> extends AbstractButton<P, S> {
 
     icon = IconHangup;
+    hoveredIcon = IconHangupToggled;
 
     /**
      * Handles clicking / pressing the button, and disconnects the conference.

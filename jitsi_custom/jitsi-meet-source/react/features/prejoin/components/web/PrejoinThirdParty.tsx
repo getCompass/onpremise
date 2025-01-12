@@ -8,12 +8,14 @@ import { isVideoMutedByUser } from '../../../base/media/functions';
 import PreMeetingScreen from '../../../base/premeeting/components/web/PreMeetingScreen';
 import { getLocalJitsiVideoTrack } from '../../../base/tracks/functions.web';
 import { isDeviceStatusVisible } from '../../functions';
+import { isMobileBrowser } from "../../../base/environment/utils";
+import PreMeetingScreenMobile from "../../../base/premeeting/components/web/PreMeetingScreenMobile";
 
 interface IProps extends WithTranslation {
 
     /**
      * Indicates the className that needs to be applied.
-    */
+     */
     className: string;
 
     /**
@@ -51,15 +53,28 @@ class PrejoinThirdParty extends Component<IProps> {
             videoTrack
         } = this.props;
 
+        if (isMobileBrowser()) {
+            return (
+                <PreMeetingScreenMobile
+                    className = {`prejoin-third-party ${className}`}
+                    showDeviceStatus = {deviceStatusVisible}
+                    skipPrejoinButton = {false}
+                    thirdParty = {true}
+                    videoMuted = {!showCameraPreview}
+                    videoTrack = {videoTrack}
+                    isLobby = {false} />
+            );
+        }
+
         return (
             <PreMeetingScreen
-                className = { `prejoin-third-party ${className}` }
-                showDeviceStatus = { deviceStatusVisible }
-                skipPrejoinButton = { false }
-                thirdParty = { true }
-                videoMuted = { !showCameraPreview }
-                videoTrack = { videoTrack }
-                isLobby = { false } />
+                className = {`prejoin-third-party ${className}`}
+                showDeviceStatus = {deviceStatusVisible}
+                skipPrejoinButton = {false}
+                thirdParty = {true}
+                videoMuted = {!showCameraPreview}
+                videoTrack = {videoTrack}
+                isLobby = {false} />
         );
     }
 }

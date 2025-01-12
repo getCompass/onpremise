@@ -87,10 +87,10 @@ const useStyles = makeStyles()(theme => {
             },
 
             '&.is-mobile': {
-                height: '42px',
-                padding: '11px 0',
-                fontSize: '16px',
-                lineHeight: '20px'
+                height: '44px',
+                padding: '9px 0',
+                fontSize: '17px',
+                lineHeight: '26px'
             },
 
             '&.icon-input': {

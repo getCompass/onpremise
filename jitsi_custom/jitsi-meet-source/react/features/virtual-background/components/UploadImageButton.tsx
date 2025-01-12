@@ -1,14 +1,14 @@
-import React, {useCallback, useRef} from 'react';
-import {WithTranslation} from 'react-i18next';
-import {makeStyles} from 'tss-react/mui';
-import {v4 as uuidv4} from 'uuid';
+import React, { useCallback, useRef } from 'react';
+import { WithTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
+import { v4 as uuidv4 } from 'uuid';
 
-import {translate} from '../../base/i18n/functions';
+import { translate } from '../../base/i18n/functions';
 import Icon from '../../base/icons/components/Icon';
-import {IconPlus} from '../../base/icons/svg';
-import {withPixelLineHeight} from '../../base/styles/functions.web';
-import {type Image, VIRTUAL_BACKGROUND_TYPE} from '../constants';
-import {resizeImage} from '../functions';
+import { IconPlus } from '../../base/icons/svg';
+import { withPixelLineHeight } from '../../base/styles/functions.web';
+import { type Image, VIRTUAL_BACKGROUND_TYPE } from '../constants';
+import { resizeImage } from '../functions';
 import logger from '../logger';
 import Tooltip from "../../base/tooltip/components/Tooltip";
 
@@ -80,7 +80,7 @@ const useStyles = makeStyles()(theme => {
             color: 'rgba(255, 255, 255, 0.75)',
             objectFit: 'cover',
 
-            [['&:hover', '&:focus'] as any]: {
+            [[ '&:hover', '&:focus' ] as any]: {
                 opacity: 0.5,
                 cursor: 'pointer',
 
@@ -103,21 +103,21 @@ const useStyles = makeStyles()(theme => {
  * @returns {React$Node}
  */
 function UploadImageButton({
-                               setLoading,
-                               setOptions,
-                               setStoredImages,
-                               showLabel,
-                               storedImages,
-                               t
-                           }: IProps) {
-    const {classes} = useStyles();
+    setLoading,
+    setOptions,
+    setStoredImages,
+    showLabel,
+    storedImages,
+    t
+}: IProps) {
+    const { classes } = useStyles();
     const uploadImageButton = useRef<HTMLInputElement>(null);
     const uploadImageKeyPress = useCallback(e => {
         if (uploadImageButton.current && (e.key === ' ' || e.key === 'Enter')) {
             e.preventDefault();
             uploadImageButton.current.click();
         }
-    }, [uploadImageButton.current]);
+    }, [ uploadImageButton.current ]);
 
 
     const uploadImage = useCallback(async e => {
@@ -149,35 +149,35 @@ function UploadImageButton({
             setLoading(false);
             logger.error('Failed to upload virtual image!');
         };
-    }, [storedImages]);
+    }, [ storedImages ]);
 
     return (
         <>
             <Tooltip
-                content={t('virtualBackground.addBackground')}
-                position={'top'}>
+                content = {t('virtualBackground.addBackground')}
+                position = {'top'}>
                 <div
-                    aria-checked={false}
-                    aria-label={t('virtualBackground.addBackground')}
-                    className={classes.thumbnail}
-                    onClick={() => uploadImageButton?.current?.click()}
-                    onKeyPress={uploadImageKeyPress}
-                    role='radio'
-                    tabIndex={0}>
+                    aria-checked = {false}
+                    aria-label = {t('virtualBackground.addBackground')}
+                    className = {classes.thumbnail}
+                    onClick = {() => uploadImageButton?.current?.click()}
+                    onKeyPress = {uploadImageKeyPress}
+                    role = 'radio'
+                    tabIndex = {0}>
                     <Icon
-                        size={30}
-                        src={IconPlus}
-                        color={'rgba(255, 255, 255, 0.7)'}/>
+                        size = {30}
+                        src = {IconPlus}
+                        color = {'rgba(255, 255, 255, 0.7)'} />
                 </div>
             </Tooltip>
 
             <input
-                accept='image/*'
-                className={classes.input}
-                id='file-upload'
-                onChange={uploadImage}
-                ref={uploadImageButton}
-                type='file'/>
+                accept = 'image/*'
+                className = {classes.input}
+                id = 'file-upload'
+                onChange = {uploadImage}
+                ref = {uploadImageButton}
+                type = 'file' />
         </>
     );
 }

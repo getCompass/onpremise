@@ -1,24 +1,24 @@
-import {Theme} from '@mui/material';
+import { Theme } from '@mui/material';
 import React from 'react';
-import {WithTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
-import {withStyles} from 'tss-react/mui';
+import { WithTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
+import { withStyles } from 'tss-react/mui';
 
-import {IReduxState, IStore} from '../../app/types';
-import {getAvailableDevices} from '../../base/devices/actions.web';
+import { IReduxState, IStore } from '../../app/types';
+import { getAvailableDevices } from '../../base/devices/actions.web';
 import AbstractDialogTab, {
     type IProps as AbstractDialogTabProps
 } from '../../base/dialog/components/web/AbstractDialogTab';
-import {translate} from '../../base/i18n/functions';
-import {createLocalTrack} from '../../base/lib-jitsi-meet/functions.web';
+import { translate } from '../../base/i18n/functions';
+import { createLocalTrack } from '../../base/lib-jitsi-meet/functions.web';
 import Select from '../../base/ui/components/web/Select';
-import {SS_DEFAULT_FRAME_RATE} from '../../settings/constants';
+import { SS_DEFAULT_FRAME_RATE } from '../../settings/constants';
 import logger from '../logger';
 
 import DeviceSelector from './DeviceSelector.web';
 import VideoInputPreview from './VideoInputPreview';
-import {IconVideo} from "../../base/icons/svg";
-import {isMobileBrowser} from "../../base/environment/utils";
+import { IconVideo } from "../../base/icons/svg";
+import { isMobileBrowser } from "../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link VideoDeviceSelection}.
@@ -51,6 +51,11 @@ export interface IProps extends AbstractDialogTabProps, WithTranslation {
      * will display as disabled.
      */
     disableDeviceChange: boolean;
+
+    /**
+     * Whether the local video can be flipped or not.
+     */
+    disableLocalVideoFlip: boolean | undefined;
 
     /**
      * Whether video input dropdown should be enabled or not.
@@ -161,7 +166,7 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
         Promise.all([
             this._createVideoInputTrack(this.props.selectedVideoInputId)
         ])
-            .catch(err => logger.warn('Failed to initialize preview tracks', err))
+        .catch(err => logger.warn('Failed to initialize preview tracks', err))
             .then(() => {
                 this.props.dispatch(getAvailableDevices());
             });
@@ -199,6 +204,7 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
      */
     render() {
         const {
+            disableLocalVideoFlip,
             hideAdditionalSettings,
             hideVideoInputPreview,
             localFlipX,
@@ -208,15 +214,15 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
         const classes = withStyles.getClasses(this.props);
 
         return (
-            <div className={classes.container}>
-                {!hideVideoInputPreview
+            <div className = { classes.container }>
+                { !hideVideoInputPreview
                     && <VideoInputPreview
-                        error={this.state.previewVideoTrackError}
-                        localFlipX={localFlipX}
-                        track={this.state.previewVideoTrack}/>
+                        error = { this.state.previewVideoTrackError }
+                        localFlipX = { localFlipX }
+                        track = { this.state.previewVideoTrack } />
                 }
                 <div
-                    aria-live='polite'>
+                    aria-live = 'polite'>
                     {this._renderVideoSelector()}
                 </div>
             </div>
@@ -231,7 +237,7 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
      * @returns {void}
      */
     _createVideoInputTrack(deviceId: string) {
-        const {hideVideoInputPreview} = this.props;
+        const { hideVideoInputPreview } = this.props;
 
         if (hideVideoInputPreview) {
             return;
@@ -282,7 +288,7 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
      * @returns {ReactElement}
      */
     _renderVideoSelector() {
-        const {availableDevices, hasVideoPermission} = this.props;
+        const { availableDevices, hasVideoPermission } = this.props;
 
         const videoConfig = {
             devices: availableDevices.videoInput,
@@ -291,7 +297,7 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
             key: 'videoInput',
             id: 'videoInput',
             label: 'settings.selectCamera',
-            onSelect: (selectedVideoInputId: string) => super._onChange({selectedVideoInputId}),
+            onSelect: (selectedVideoInputId: string) => super._onChange({ selectedVideoInputId }),
             icon: isMobileBrowser() ? IconVideo : undefined,
             selectedDeviceId: this.state.previewVideoTrack
                 ? this.state.previewVideoTrack.getDeviceId() : this.props.selectedVideoInputId
@@ -300,7 +306,7 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
         return (
             <DeviceSelector
                 {...videoConfig}
-                key={videoConfig.id}/>
+                key = {videoConfig.id} />
         );
     }
 
@@ -314,7 +320,7 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
     _onFramerateItemSelect(e: React.ChangeEvent<HTMLSelectElement>) {
         const frameRate = e.target.value;
 
-        super._onChange({currentFramerate: frameRate});
+        super._onChange({ currentFramerate: frameRate });
     }
 
     /**
@@ -323,7 +329,7 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
      * @returns {JSX}
      */
     _renderFramerateSelect() {
-        const {currentFramerate, desktopShareFramerates, t} = this.props;
+        const { currentFramerate, desktopShareFramerates, t } = this.props;
         const frameRateItems = desktopShareFramerates.map((frameRate: number) => {
             return {
                 value: frameRate,
@@ -333,14 +339,14 @@ class VideoDeviceSelection extends AbstractDialogTab<IProps, IState> {
 
         return (
             <Select
-                bottomLabel={parseInt(currentFramerate, 10) > SS_DEFAULT_FRAME_RATE
+                bottomLabel = {parseInt(currentFramerate, 10) > SS_DEFAULT_FRAME_RATE
                     ? t('settings.desktopShareHighFpsWarning')
                     : t('settings.desktopShareWarning')}
-                id='more-framerate-select'
-                label={t('settings.desktopShareFramerate')}
-                onChange={this._onFramerateItemSelect}
-                options={frameRateItems}
-                value={currentFramerate}/>
+                id = 'more-framerate-select'
+                label = {t('settings.desktopShareFramerate')}
+                onChange = {this._onFramerateItemSelect}
+                options = {frameRateItems}
+                value = {currentFramerate} />
         );
     }
 }

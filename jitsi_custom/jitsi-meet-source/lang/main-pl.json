@@ -797,7 +797,7 @@
             "answerPlaceholder": "Opcja {{index}}",
             "cancel": "Anuluj",
             "create": "Stwórz ankietę",
-            "pollOptions": "Opcja {{index}}",
+            "pollOption": "Opcja {{index}}",
             "pollQuestion": "Pytanie",
             "questionPlaceholder": "Zadaj pytanie",
             "removeOption": "Usuń opcję",

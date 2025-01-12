@@ -12,3 +12,15 @@ export function getLargeVideoParticipant(state: IReduxState) {
 
     return getParticipantById(state, participantId ?? '');
 }
+
+/**
+ * Selector for the participant previously displaying on the large video.
+ *
+ * @param {Object} state - The redux state.
+ * @returns {Object}
+ */
+export function getPrevLargeVideoParticipant(state: IReduxState) {
+    const { prevParticipantId } = state['features/large-video'];
+
+    return getParticipantById(state, prevParticipantId ?? '');
+}

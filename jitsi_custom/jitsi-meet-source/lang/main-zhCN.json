@@ -839,7 +839,7 @@
             "answerPlaceholder": "选项{{index}}",
             "cancel": "取消",
             "create": "创建投票",
-            "pollOptions": "投票选项{{index}}",
+            "pollOption": "投票选项{{index}}",
             "pollQuestion": "投票内容",
             "questionPlaceholder": "提出问题",
             "removeOption": "移除选项",

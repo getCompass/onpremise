@@ -1,9 +1,9 @@
-import React, {ReactNode} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { ReactNode } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
-import {ACTION_TRIGGER} from '../../../../participants-pane/constants';
+import { ACTION_TRIGGER } from '../../../../participants-pane/constants';
 import participantsPaneTheme from '../../../components/themes/participantsPaneTheme.json';
-import {isMobileBrowser} from '../../../environment/utils';
+import { isMobileBrowser } from '../../../environment/utils';
 
 interface IProps {
 
@@ -88,6 +88,7 @@ const useStyles = makeStyles()(theme => {
             color: 'rgba(255, 255, 255, 0.75)',
             display: 'flex',
             fontFamily: 'Lato Bold',
+            fontWeight: 'normal' as const,
             fontSize: '15px',
             lineHeight: '20px',
             margin: `0 -${participantsPaneTheme.panePadding}px`,
@@ -161,10 +162,6 @@ const useStyles = makeStyles()(theme => {
             justifyContent: 'flex-end',
             paddingRight: '3px',
 
-            '&.is-mobile': {
-                paddingRight: 0,
-            },
-
             '& > *': {
                 alignItems: 'center',
                 display: 'flex',
@@ -173,15 +170,23 @@ const useStyles = makeStyles()(theme => {
 
             '& > *:not(:last-child)': {
                 marginRight: '12px',
-
-                '&.is-mobile': {
-                    marginRight: '16px',
-                }
             },
 
             '& .jitsi-icon': {
-                padding: '2px'
-            }
+                padding: '2px',
+            },
+
+            '&.is-mobile': {
+                paddingRight: 0,
+
+                '& > *:not(:last-child)': {
+                    marginRight: '16px',
+                },
+
+                '& .jitsi-icon': {
+                    padding: 0,
+                },
+            },
         },
 
         indicatorsHidden: {
@@ -220,23 +225,23 @@ const useStyles = makeStyles()(theme => {
 });
 
 const ListItem = ({
-                      actions,
-                      className,
-                      defaultName,
-                      icon,
-                      iconClassName,
-                      id,
-                      hideActions = false,
-                      indicators,
-                      isHighlighted,
-                      onClick,
-                      onLongPress,
-                      onMouseLeave,
-                      testId,
-                      textChildren,
-                      trigger
-                  }: IProps) => {
-    const {classes, cx} = useStyles();
+    actions,
+    className,
+    defaultName,
+    icon,
+    iconClassName,
+    id,
+    hideActions = false,
+    indicators,
+    isHighlighted,
+    onClick,
+    onLongPress,
+    onMouseLeave,
+    testId,
+    textChildren,
+    trigger
+}: IProps) => {
+    const { classes, cx } = useStyles();
     const isMobile = isMobileBrowser();
     let timeoutHandler: number;
 
@@ -274,17 +279,17 @@ const ListItem = ({
 
     return (
         <div
-            aria-label={defaultName}
-            className={cx('list-item-container',
+            aria-label = {defaultName}
+            className = {cx('list-item-container',
                 classes.container,
                 isHighlighted && classes.highlighted,
                 className,
                 isMobileBrowser() && 'is-mobile'
             )}
-            data-testid={testId}
-            id={id}
-            onClick={onClick}
-            role='listitem'
+            data-testid = {testId}
+            id = {id}
+            onClick = {onClick}
+            role = 'listitem'
             {...(isMobile
                     ? {
                         onTouchEnd: _onTouchEnd,
@@ -295,14 +300,14 @@ const ListItem = ({
                         onMouseLeave
                     }
             )}>
-            <div className={iconClassName ?? ''}> {icon} </div>
-            <div className={cx(classes.detailsContainer, isMobile && 'is-mobile')}>
-                <div className={classes.name}>
+            <div className = {iconClassName ?? ''}> {icon} </div>
+            <div className = {cx(classes.detailsContainer, 'list-item-details-container', isMobile && 'is-mobile')}>
+                <div className = {classes.name}>
                     {textChildren}
                 </div>
                 {indicators && (
                     <div
-                        className={cx('indicators',
+                        className = {cx('indicators',
                             classes.indicators,
                             (isHighlighted || trigger === ACTION_TRIGGER.PERMANENT) && classes.indicatorsHidden,
                             isMobile && 'is-mobile'
@@ -312,13 +317,13 @@ const ListItem = ({
                 )}
                 {!hideActions && (
                     <div
-                        className={cx('actions',
+                        className = {cx('actions',
                             classes.actionsContainer,
                             isMobile && 'is-mobile',
                             trigger === ACTION_TRIGGER.PERMANENT && classes.actionsPermanent,
                             isHighlighted && classes.actionsVisible
                         )}>
-                        {!isMobile && <div className={classes.actionsGradient}/>}
+                        {!isMobile && <div className = {classes.actionsGradient} />}
                         {actions}
                     </div>
                 )}

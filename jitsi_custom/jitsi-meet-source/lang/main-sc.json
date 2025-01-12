@@ -766,7 +766,7 @@
             "answerPlaceholder": "Optzione {{index}}",
             "cancel": "Annulla",
             "create": "Crea unu sondàgiu",
-            "pollOptions": "Optzione de sondàgiu {{index}}",
+            "pollOption": "Optzione de sondàgiu {{index}}",
             "pollQuestion": "Dimanda de sondàgiu",
             "questionPlaceholder": "Faghe una pregonta",
             "removeOption": "Boga s'optzione",

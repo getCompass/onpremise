@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { useEffect, useState } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import JitsiMeetJS from '../../base/lib-jitsi-meet/_.web';
 import Icon from "../../base/icons/components/Icon";
-import {IconMicFilled} from "../../base/icons/svg";
+import { IconMicFilled } from "../../base/icons/svg";
 
 const JitsiTrackEvents = JitsiMeetJS.events.track;
 
@@ -20,7 +20,7 @@ interface IProps {
 
 const useStyles = makeStyles()(theme => {
     return {
-        containerWithIcon:{
+        containerWithIcon: {
             display: 'flex',
             gap: '8px',
             paddingTop: '16px',
@@ -100,17 +100,17 @@ const AudioInputPreview = (props: IProps) => {
     const audioMeterFill = Math.ceil(Math.floor(audioLevel * 100) / (100 / NO_OF_PREVIEW_SECTIONS));
 
     return (
-        <div className={classes.containerWithIcon}>
+        <div className = {classes.containerWithIcon}>
             <Icon
-                color={'rgba(255, 255, 255, 0.3)'}
-                size={18}
-                src={IconMicFilled}/>
-            <div className={classes.container}>
+                color = {'rgba(255, 255, 255, 0.3)'}
+                size = {18}
+                src = {IconMicFilled} />
+            <div className = {classes.container}>
                 {new Array(NO_OF_PREVIEW_SECTIONS).fill(0)
                     .map((_, idx) =>
                         (<div
-                            className={cx(classes.section, idx < audioMeterFill && classes.activeSection)}
-                            key={idx}/>)
+                            className = {cx(classes.section, idx < audioMeterFill && classes.activeSection)}
+                            key = {idx} />)
                     )}
             </div>
         </div>

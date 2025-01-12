@@ -1,5 +1,5 @@
 import { sha512_256 as sha512 } from 'js-sha512';
-import _ from 'lodash';
+import { upperFirst, words } from 'lodash-es';
 
 import { getName } from '../../app/functions';
 import { IReduxState, IStore } from '../../app/types';
@@ -36,14 +36,6 @@ import { IJitsiConference } from './reducer';
  * @returns {Object} Conference state.
  */
 export const getConferenceState = (state: IReduxState) => state['features/base/conference'];
-
-/**
- * Is the conference joined or not.
- *
- * @param {IReduxState} state - Global state.
- * @returns {boolean}
- */
-export const getIsConferenceJoined = (state: IReduxState) => Boolean(getConferenceState(state).conference);
 
 /**
  * Attach a set of local tracks to a conference.
@@ -98,7 +90,9 @@ export function commonUserJoinedHandling(
     } else {
         const isReplacing = user?.isReplacing();
 
+        // the identity and avatar come from jwt and never change in the presence
         dispatch(participantJoined({
+            avatarURL: user.getIdentity()?.user?.avatar,
             botType: user.getBotType(),
             conference,
             id,
@@ -185,18 +179,12 @@ export function forEachConference(
 export function getConferenceName(stateful: IStateful): string {
     const state = toState(stateful);
     const { callee } = state['features/base/jwt'];
-    const {
-        callDisplayName,
-        localSubject: configLocalSubject,
-        subject: configSubject
-    } = state['features/base/config'];
+    const { callDisplayName } = state['features/base/config'];
     const { localSubject, pendingSubjectChange, room, subject } = getConferenceState(state);
 
-    return (pendingSubjectChange
-        || configSubject
+    return (localSubject
+        || pendingSubjectChange
         || subject
-        || configLocalSubject
-        || localSubject
         || callDisplayName
         || callee?.name
         || (room && safeStartCase(safeDecodeURIComponent(room)))) ?? '';
@@ -585,7 +573,7 @@ export function sendLocalParticipant(
  * @returns {string}
  */
 function safeStartCase(s = '') {
-    return _.words(`${s}`.replace(/['\u2019]/g, '')).reduce(
-        (result, word, index) => result + (index ? ' ' : '') + _.upperFirst(word)
+    return words(`${s}`.replace(/['\u2019]/g, '')).reduce(
+        (result, word, index) => result + (index ? ' ' : '') + upperFirst(word)
         , '');
 }

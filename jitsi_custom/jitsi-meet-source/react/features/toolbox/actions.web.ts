@@ -1,20 +1,23 @@
 import { IStore } from '../app/types';
 import { overwriteConfig } from '../base/config/actions';
 import { isMobileBrowser } from '../base/environment/utils';
-import { isLayoutTileView } from '../video-layout/functions.any';
 
 import {
     CLEAR_TOOLBOX_TIMEOUT,
     FULL_SCREEN_CHANGED,
+    SET_COMPASS_MAIN_TOOLBAR_BUTTONS_THRESHOLDS,
     SET_FULL_SCREEN,
     SET_HANGUP_MENU_VISIBLE,
+    SET_MAIN_TOOLBAR_BUTTONS_THRESHOLDS,
     SET_OVERFLOW_DRAWER,
     SET_OVERFLOW_MENU_VISIBLE,
     SET_TOOLBAR_HOVERED,
     SET_TOOLBOX_TIMEOUT
 } from './actionTypes';
 import { setToolboxVisible } from './actions.web';
+import { COMPASS_THRESHOLDS, COMPASS_THRESHOLDS_MOBILE, THRESHOLDS } from './constants';
 import { getToolbarTimeout } from './functions.web';
+import { IMainToolbarButtonThresholds } from './types';
 
 export * from './actions.any';
 
@@ -76,7 +79,6 @@ export function hideToolbox(force = false) {
         const { toolbarConfig } = state['features/base/config'];
         const alwaysVisible = toolbarConfig?.alwaysVisible;
         const autoHideWhileChatIsOpen = toolbarConfig?.autoHideWhileChatIsOpen;
-        const { hovered } = state['features/toolbox'];
         const toolbarTimeout = getToolbarTimeout(state);
 
         if (alwaysVisible) {
@@ -85,16 +87,9 @@ export function hideToolbox(force = false) {
 
         dispatch(clearToolboxTimeout());
 
-        const hoverSelector = isLayoutTileView(state)
-            ? '.remotevideomenu:hover'
-            : '.filmstrip:hover,.remotevideomenu:hover';
-        const hoveredElem = document.querySelector(hoverSelector);
-
         if (!force
-                && (hovered
-                    || state['features/invite'].calleeInfoVisible
-                    || (state['features/chat'].isOpen && !autoHideWhileChatIsOpen)
-                    || hoveredElem)) {
+            && (state['features/invite'].calleeInfoVisible
+                || (state['features/chat'].isOpen && !autoHideWhileChatIsOpen))) {
             dispatch(
                 setToolboxTimeout(
                     () => dispatch(hideToolbox()),
@@ -118,6 +113,110 @@ export function setFullScreen(fullScreen: boolean) {
     return {
         type: SET_FULL_SCREEN,
         fullScreen
+    };
+}
+
+/**
+ * Sets the mainToolbarButtonsThresholds.
+ *
+ * @returns {Function}
+ */
+export function setMainToolbarThresholds() {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        const { mainToolbarButtons } = getState()['features/base/config'];
+
+        if (!mainToolbarButtons || !Array.isArray(mainToolbarButtons) || mainToolbarButtons.length === 0) {
+            return;
+        }
+
+        const mainToolbarButtonsThresholds: IMainToolbarButtonThresholds = [];
+
+        const mainToolbarButtonsLenghtMap = new Map();
+        let orderIsChanged = false;
+
+        mainToolbarButtons.forEach(buttons => {
+            if (!Array.isArray(buttons) || buttons.length === 0) {
+                return;
+            }
+
+            mainToolbarButtonsLenghtMap.set(buttons.length, buttons);
+        });
+
+        THRESHOLDS.forEach(({ width, order }) => {
+            let finalOrder = mainToolbarButtonsLenghtMap.get(order.length);
+
+            if (finalOrder) {
+                orderIsChanged = true;
+            } else {
+                finalOrder = order;
+            }
+
+            mainToolbarButtonsThresholds.push({
+                order: finalOrder,
+                width
+            });
+        });
+
+        if (orderIsChanged) {
+            dispatch({
+                type: SET_MAIN_TOOLBAR_BUTTONS_THRESHOLDS,
+                mainToolbarButtonsThresholds
+            });
+        }
+    };
+}
+
+/**
+ * Sets the compassMainToolbarButtonsThresholds.
+ *
+ * @returns {Function}
+ */
+export function setCompassMainToolbarThresholds() {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        const { mainToolbarButtons } = getState()['features/base/config'];
+
+        if (!mainToolbarButtons || !Array.isArray(mainToolbarButtons) || mainToolbarButtons.length === 0) {
+            return;
+        }
+
+        const compassMainToolbarButtonsThresholds: IMainToolbarButtonThresholds = [];
+
+        const mainToolbarButtonsLenghtMap = new Map();
+        let orderIsChanged = false;
+
+        mainToolbarButtons.forEach(buttons => {
+            if (!Array.isArray(buttons) || buttons.length === 0) {
+                return;
+            }
+
+            mainToolbarButtonsLenghtMap.set(buttons.length, buttons);
+        });
+
+        let compassThresholds = COMPASS_THRESHOLDS;
+        if (isMobileBrowser()) {
+            compassThresholds = COMPASS_THRESHOLDS_MOBILE;
+        }
+        compassThresholds.forEach(({ width, order }) => {
+            let finalOrder = mainToolbarButtonsLenghtMap.get(order.length);
+
+            if (finalOrder) {
+                orderIsChanged = true;
+            } else {
+                finalOrder = order;
+            }
+
+            compassMainToolbarButtonsThresholds.push({
+                order: finalOrder,
+                width
+            });
+        });
+
+        if (orderIsChanged) {
+            dispatch({
+                type: SET_COMPASS_MAIN_TOOLBAR_BUTTONS_THRESHOLDS,
+                compassMainToolbarButtonsThresholds
+            });
+        }
     };
 }
 
@@ -148,10 +247,12 @@ export function showToolbox(timeout = 0) {
             if (!alwaysVisible) {
                 if (typeof initialTimeout === 'number') {
                     // reset `initialTimeout` once it is consumed once
-                    dispatch(overwriteConfig({ toolbarConfig: {
-                        ...toolbarConfig,
-                        initialTimeout: null
-                    } }));
+                    dispatch(overwriteConfig({
+                        toolbarConfig: {
+                            ...toolbarConfig,
+                            initialTimeout: null
+                        }
+                    }));
                 }
                 dispatch(
                     setToolboxTimeout(
@@ -252,7 +353,7 @@ export function setToolbarHovered(hovered: boolean) {
  * }}
  */
 export function setToolboxTimeout(handler: Function, timeoutMS: number) {
-    return function(dispatch: IStore['dispatch']) {
+    return function (dispatch: IStore['dispatch']) {
         if (isMobileBrowser()) {
             return;
         }
@@ -266,11 +367,11 @@ export function setToolboxTimeout(handler: Function, timeoutMS: number) {
 }
 
 /**
-     * Closes the overflow menu if opened.
-     *
-     * @private
-     * @returns {void}
-     */
+ * Closes the overflow menu if opened.
+ *
+ * @private
+ * @returns {void}
+ */
 export function closeOverflowMenuIfOpen() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const { overflowMenuVisible } = getState()['features/toolbox'];

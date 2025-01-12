@@ -16,6 +16,11 @@ export const FILMSTRIP_SIZE = SMALL_THUMBNAIL_SIZE + BoxModel.margin;
 export const TILE_ASPECT_RATIO = 16 / 9;
 
 /**
+ * The aspect ratio of a tile in tile view in mobile.
+ */
+export const TILE_ASPECT_RATIO_MOBILE = 1; // 1:1
+
+/**
  * The aspect ratio of a square tile in tile view.
  */
 export const SQUARE_TILE_ASPECT_RATIO = 1;
@@ -41,7 +46,12 @@ export const TILE_MIN_HEIGHT_SMALL = 80;
 /**
  * Minimum height of tile for large screens.
  */
-export const TILE_MIN_HEIGHT_LARGE = 200;
+export const TILE_MIN_HEIGHT_LARGE = 111;
+
+/**
+ * Minimum height of tile for mobile.
+ */
+export const TILE_MIN_HEIGHT_MOBILE = 197;
 
 /**
  * Aspect ratio for portrait tiles.
@@ -138,6 +148,16 @@ export const TOOLBAR_HEIGHT = 72;
 export const TOOLBAR_HEIGHT_MOBILE = 60;
 
 /**
+ * The height of the whole toolbar.
+ */
+export const COMPASS_TOOLBAR_HEIGHT = 66; // height + padding
+
+/**
+ * The height of the whole horizontal filmstrip.
+ */
+export const COMPASS_HORIZONTAL_FILMSTRIP_HEIGHT = 106; // height + padding
+
+/**
  * The size of the horizontal border of a thumbnail.
  *
  * @type {number}
@@ -181,7 +201,30 @@ export const VERTICAL_FILMSTRIP_MIN_HORIZONTAL_MARGIN = 10;
  *
  * @type {number}
  */
-export const HORIZONTAL_FILMSTRIP_MARGIN = 39;
+export const HORIZONTAL_FILMSTRIP_MARGIN = 48;
+
+/**
+ * Max horizontal filmstrip participant count per page.
+ *
+ * @type {number}
+ */
+export const HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE = 6;
+
+/**
+ * Max horizontal filmstrip participant count per page.
+ *
+ * @type {number}
+ */
+export const TILE_VIEW_MAX_COLUMNS_COUNT = 4;
+export const TILE_VIEW_MAX_ROWS_COUNT = 4;
+
+/**
+ * Max horizontal filmstrip participant count per page for mobile.
+ *
+ * @type {number}
+ */
+export const TILE_VIEW_MAX_COLUMNS_COUNT_MOBILE = 2;
+export const TILE_VIEW_MAX_ROWS_COUNT_MOBILE = 2;
 
 /**
  * Sets after how many ms to show the thumbnail context menu on long touch on mobile.

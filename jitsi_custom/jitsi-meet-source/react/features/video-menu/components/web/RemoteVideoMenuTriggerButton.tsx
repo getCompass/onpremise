@@ -12,14 +12,14 @@ import Popover from '../../../base/popover/components/Popover.web';
 import { setParticipantContextMenuOpen } from '../../../base/responsive-ui/actions';
 import Button from '../../../base/ui/components/web/Button';
 import ConnectionIndicatorContent from
-    '../../../connection-indicator/components/web/ConnectionIndicatorContent';
+        '../../../connection-indicator/components/web/ConnectionIndicatorContent';
 import { THUMBNAIL_TYPE } from '../../../filmstrip/constants';
 import { renderConnectionStatus } from '../../actions.web';
 
 import FakeParticipantContextMenu from './FakeParticipantContextMenu';
 import ParticipantContextMenu from './ParticipantContextMenu';
 import { REMOTE_CONTROL_MENU_STATES } from './RemoteControlButton';
-import {BUTTON_TYPES} from "../../../base/ui/constants.any";
+import { BUTTON_TYPES } from "../../../base/ui/constants.any";
 
 /**
  * The type of the React {@code Component} props of
@@ -165,22 +165,22 @@ const RemoteVideoMenuTriggerButton = ({
         if (_participant?.fakeParticipant) {
             return (
                 <FakeParticipantContextMenu
-                    { ...props }
-                    localVideoOwner = { _localVideoOwner } />
+                    {...props}
+                    localVideoOwner = {_localVideoOwner} />
             );
         }
 
         return (
             <ParticipantContextMenu
-                { ...props }
-                remoteControlState = { _remoteControlState } />
+                {...props}
+                remoteControlState = {_remoteControlState} />
         );
     };
 
     let content;
 
     if (_showConnectionInfo) {
-        content = <ConnectionIndicatorContent participantId = { participantID } />;
+        content = <ConnectionIndicatorContent participantId = {participantID} />;
     } else if (!_disabled) {
         content = _renderRemoteVideoMenu();
     }
@@ -193,19 +193,20 @@ const RemoteVideoMenuTriggerButton = ({
 
     return (
         <Popover
-            content = { content }
-            headingLabel = { t('dialog.remoteUserControls', { username }) }
+            content = {content}
+            headingLabel = {t('dialog.remoteUserControls', { username })}
             id = 'remote-video-menu-trigger'
-            onPopoverClose = { _onPopoverClose }
-            onPopoverOpen = { _onPopoverOpen }
-            position = { _menuPosition }
-            visible = { Boolean(popoverVisible) }>
+            onPopoverClose = {_onPopoverClose}
+            onPopoverOpen = {_onPopoverOpen}
+            position = {_menuPosition}
+            trigger = { 'click' }
+            visible = {Boolean(popoverVisible)}>
             {buttonVisible && !_disabled && (
                 !isMobileBrowser() && <Button
-                    accessibilityLabel = { t('dialog.remoteUserControls', { username }) }
-                    className = { classes.triggerButton }
-                    type = { BUTTON_TYPES.TRIGGER }
-                    icon = { IconDotsHorizontal }
+                    accessibilityLabel = {t('dialog.remoteUserControls', { username })}
+                    className = {classes.triggerButton}
+                    type = {BUTTON_TYPES.TRIGGER}
+                    icon = {IconDotsHorizontal}
                     size = 'small' />
             )}
         </Popover>
@@ -236,7 +237,7 @@ function _mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
     const { ownerId } = state['features/shared-video'];
 
     if (_supportsRemoteControl
-            && ((!active && !_isRemoteControlSessionActive) || activeParticipant === participantID)) {
+        && ((!active && !_isRemoteControlSessionActive) || activeParticipant === participantID)) {
         if (requestedParticipant === participantID) {
             _remoteControlState = REMOTE_CONTROL_MENU_STATES.REQUESTING;
         } else if (controlled) {
@@ -256,7 +257,7 @@ function _mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
         _menuPosition = 'left-end';
         break;
     case THUMBNAIL_TYPE.HORIZONTAL:
-        _menuPosition = 'top';
+        _menuPosition = 'left-end';
         break;
     default:
         _menuPosition = 'auto';

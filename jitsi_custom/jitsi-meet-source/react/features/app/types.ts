@@ -47,6 +47,7 @@ import { IJaaSState } from '../jaas/reducer';
 import { IKeyboardShortcutsState } from '../keyboard-shortcuts/types';
 import { ILargeVideoState } from '../large-video/reducer';
 import { ILobbyState } from '../lobby/reducer';
+import { IMinimizedVideoState } from '../minimized-video/reducer';
 import { IMobileAudioModeState } from '../mobile/audio-mode/reducer';
 import { IBackgroundState } from '../mobile/background/reducer';
 import { ICallIntegrationState } from '../mobile/call-integration/reducer';
@@ -60,6 +61,7 @@ import { INotificationsState } from '../notifications/reducer';
 import { IOverlayState } from '../overlay/reducer';
 import { IParticipantsPaneState } from '../participants-pane/reducer';
 import { IPollsState } from '../polls/reducer';
+import { IPollsHistoryState } from '../polls-history/reducer';
 import { IPowerMonitorState } from '../power-monitor/reducer';
 import { IPrejoinState } from '../prejoin/reducer';
 import { IReactionsState } from '../reactions/reducer';
@@ -83,6 +85,7 @@ import { IVisitorsState } from '../visitors/reducer';
 import { IWebHid } from '../web-hid/reducer';
 import { IWhiteboardState } from '../whiteboard/reducer';
 import {IPictureInPictureState} from "../picture-in-picture/reducer";
+import { IQualityControlState } from "../quality-control/reducer";
 
 export interface IStore {
     dispatch: ThunkDispatch<IReduxState, void, AnyAction>;
@@ -140,6 +143,7 @@ export interface IReduxState {
     'features/keyboard-shortcuts': IKeyboardShortcutsState;
     'features/large-video': ILargeVideoState;
     'features/lobby': ILobbyState;
+    'features/minimized-video': IMinimizedVideoState;
     'features/mobile/audio-mode': IMobileAudioModeState;
     'features/mobile/external-api': IMobileExternalApiState;
     'features/mobile/watchos': IMobileWatchOSState;
@@ -151,8 +155,10 @@ export interface IReduxState {
     'features/participants-pane': IParticipantsPaneState;
     'features/picture-in-picture': IPictureInPictureState;
     'features/polls': IPollsState;
+    'features/polls-history': IPollsHistoryState;
     'features/power-monitor': IPowerMonitorState;
     'features/prejoin': IPrejoinState;
+    'features/quality-control': IQualityControlState;
     'features/reactions': IReactionsState;
     'features/recent-list': IRecentListState;
     'features/recording': IRecordingState;

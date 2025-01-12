@@ -1,16 +1,16 @@
-import _ from 'lodash';
+import { throttle } from 'lodash-es';
 import React from 'react';
-import {WithTranslation} from 'react-i18next';
-import {batch, connect as reactReduxConnect} from 'react-redux';
+import { WithTranslation } from 'react-i18next';
+import { batch, connect as reactReduxConnect } from 'react-redux';
 
 // @ts-expect-error
 import VideoLayout from '../../../../../modules/UI/videolayout/VideoLayout';
-import {IReduxState, IStore} from '../../../app/types';
-import {getConferenceNameForTitle} from '../../../base/conference/functions';
-import {hangup} from '../../../base/connection/actions.web';
-import {isMobileBrowser} from '../../../base/environment/utils';
-import {translate} from '../../../base/i18n/functions';
-import {setColorAlpha} from '../../../base/util/helpers';
+import { IReduxState, IStore } from '../../../app/types';
+import { getConferenceNameForTitle } from '../../../base/conference/functions';
+import { hangup } from '../../../base/connection/actions.web';
+import { isMobileBrowser } from '../../../base/environment/utils';
+import { translate } from '../../../base/i18n/functions';
+import { setColorAlpha } from '../../../base/util/helpers';
 import Chat from '../../../chat/components/web/Chat';
 import MainFilmstrip from '../../../filmstrip/components/web/MainFilmstrip';
 import ScreenshareFilmstrip from '../../../filmstrip/components/web/ScreenshareFilmstrip';
@@ -18,28 +18,31 @@ import StageFilmstrip from '../../../filmstrip/components/web/StageFilmstrip';
 import CalleeInfoContainer from '../../../invite/components/callee-info/CalleeInfoContainer';
 import LargeVideo from '../../../large-video/components/LargeVideo.web';
 import LobbyScreen from '../../../lobby/components/web/LobbyScreen';
-import {getIsLobbyVisible} from '../../../lobby/functions';
-import {getOverlayToRender} from '../../../overlay/functions.web';
+import { getIsLobbyVisible } from '../../../lobby/functions';
+import { getOverlayToRender } from '../../../overlay/functions.web';
 import ParticipantsPane from '../../../participants-pane/components/web/ParticipantsPane';
 import Prejoin from '../../../prejoin/components/web/Prejoin';
-import {isPrejoinPageVisible} from '../../../prejoin/functions';
+import { isPrejoinPageVisible } from '../../../prejoin/functions';
 import ReactionAnimations from '../../../reactions/components/web/ReactionsAnimations';
-import {toggleToolboxVisible} from '../../../toolbox/actions.any';
-import {fullScreenChanged, hideToolbox, setOverflowMenuVisible, showToolbox} from '../../../toolbox/actions.web';
+import { toggleToolboxVisible } from '../../../toolbox/actions.any';
+import { fullScreenChanged, hideToolbox, setOverflowMenuVisible, showToolbox } from '../../../toolbox/actions.web';
 import JitsiPortal from '../../../toolbox/components/web/JitsiPortal';
-import Toolbox from '../../../toolbox/components/web/Toolbox';
-import {LAYOUT_CLASSNAMES} from '../../../video-layout/constants';
-import {getCurrentLayout} from '../../../video-layout/functions.any';
-import {init} from '../../actions.web';
-import {maybeShowSuboptimalExperienceNotification} from '../../functions.web';
-import type {AbstractProps} from '../AbstractConference';
-import {AbstractConference, abstractMapStateToProps} from '../AbstractConference';
+import { LAYOUT_CLASSNAMES } from '../../../video-layout/constants';
+import { getCurrentLayout } from '../../../video-layout/functions.any';
+import VisitorsQueue from '../../../visitors/components/web/VisitorsQueue';
+import { showVisitorsQueue } from '../../../visitors/functions';
+import { init } from '../../actions.web';
+import { maybeShowSuboptimalExperienceNotification } from '../../functions.web';
+import type { AbstractProps } from '../AbstractConference';
+import { AbstractConference, abstractMapStateToProps } from '../AbstractConference';
 
 import ConferenceInfo from './ConferenceInfo';
-import {default as Notice} from './Notice';
-import {setIsInPictureInPictureMode} from "../../../picture-in-picture/actions.web";
-import {setFilmstripVisible, setTopPanelVisible} from "../../../filmstrip/actions.web";
-import {setTileView} from "../../../video-layout/actions.any";
+import { default as Notice } from './Notice';
+import { setIsInPictureInPictureMode } from "../../../picture-in-picture/actions.web";
+import { setFilmstripVisible, setTopPanelVisible } from "../../../filmstrip/actions.web";
+import { setTileView } from "../../../video-layout/actions.any";
+import CompassToolbox from "../../../toolbox/components/web/CompassToolbox";
+import Toolbox from "../../../toolbox/components/web/Toolbox";
 
 /**
  * DOM events for when full screen mode has changed. Different browsers need
@@ -101,6 +104,11 @@ interface IProps extends AbstractProps, WithTranslation {
     _showPrejoin: boolean;
 
     /**
+     * If visitors queue page is visible or not.
+     */
+    _showVisitorsQueue: boolean;
+
+    /**
      * If pip mode enabled or not.
      */
     _isInPictureInPictureMode: boolean;
@@ -126,14 +134,14 @@ class Conference extends AbstractConference<IProps, any> {
     constructor(props: IProps) {
         super(props);
 
-        const {_mouseMoveCallbackInterval} = props;
+        const { _mouseMoveCallbackInterval } = props;
 
         // Throttle and bind this component's mousemove handler to prevent it
         // from firing too often.
         this._originalOnShowToolbar = this._onShowToolbar;
         this._originalOnMouseMove = this._onMouseMove;
 
-        this._onShowToolbar = _.throttle(
+        this._onShowToolbar = throttle(
             () => this._originalOnShowToolbar(),
             100,
             {
@@ -141,7 +149,7 @@ class Conference extends AbstractConference<IProps, any> {
                 trailing: false
             });
 
-        this._onMouseMove = _.throttle(
+        this._onMouseMove = throttle(
             event => this._originalOnMouseMove(event),
             _mouseMoveCallbackInterval,
             {
@@ -213,6 +221,7 @@ class Conference extends AbstractConference<IProps, any> {
             _overflowDrawer,
             _showLobby,
             _showPrejoin,
+            _showVisitorsQueue,
             _isInPictureInPictureMode,
             _lobbyKnocking,
             t
@@ -236,68 +245,69 @@ class Conference extends AbstractConference<IProps, any> {
 
         return (
             <div
-                id='layout_wrapper'
-                onMouseEnter={this._onMouseEnter}
-                onMouseLeave={this._onMouseLeave}
-                onMouseMove={this._onMouseMove}
-                ref={this._setBackground}>
-                <Chat/>
+                id = 'layout_wrapper'
+                onMouseEnter = {this._onMouseEnter}
+                onMouseLeave = {this._onMouseLeave}
+                onMouseMove = {this._onMouseMove}
+                ref = {this._setBackground}>
                 <div
-                    className={_layoutClassName}
-                    id='videoconference_page'
-                    onMouseMove={isMobileBrowser() ? undefined : this._onShowToolbar}>
-                    <ConferenceInfo/>
+                    className = {_layoutClassName}
+                    id = 'videoconference_page'
+                    onMouseMove = {this._onShowToolbar}>
+                    <ConferenceInfo />
                     {!_isInPictureInPictureMode && (
-                        <Notice/>
+                        <Notice />
                     )}
                     <div
-                        id='videospace'
-                        onTouchStart={this._onVidespaceTouchStart}>
-                        <LargeVideo/>
-                        {(!_isInPictureInPictureMode || isMobileBrowser()) && (
+                        id = 'videospace'
+                        onTouchStart = {this._onVidespaceTouchStart}>
+                        <LargeVideo />
+                        {(!_isInPictureInPictureMode) && (
                             _showPrejoin || _showLobby || (<>
-                                <StageFilmstrip/>
-                                <ScreenshareFilmstrip/>
-                                <MainFilmstrip/>
+                                <StageFilmstrip />
+                                <ScreenshareFilmstrip />
+                                <MainFilmstrip />
                             </>)
                         )}
                     </div>
 
                     {_lobbyKnocking ? <>
                             <span
-                                aria-level={1}
-                                className='sr-only'
-                                role='heading'>
+                                aria-level = {1}
+                                className = 'sr-only'
+                                role = 'heading'>
                                 {t('toolbar.accessibilityLabel.heading')}
                             </span>
-                            <Toolbox isLobby={true}/>
+                            <CompassToolbox isLobby = {true} />
                         </> :
                         (_showPrejoin || _showLobby || (
                             <>
                             <span
-                                aria-level={1}
-                                className='sr-only'
-                                role='heading'>
+                                aria-level = {1}
+                                className = 'sr-only'
+                                role = 'heading'>
                                 {t('toolbar.accessibilityLabel.heading')}
                             </span>
-                                <Toolbox/>
+                                <CompassToolbox />
                             </>
                         ))}
 
                     {!_isInPictureInPictureMode && _notificationsVisible && !_isAnyOverlayVisible && (_overflowDrawer
-                        ? <JitsiPortal className={`notification-portal${isMobileBrowser() ? ' is-mobile' : ''}`}>
-                            {this.renderNotificationsContainer({portal: true})}
+                        ? <JitsiPortal className = 'notification-portal'>
+                            {this.renderNotificationsContainer({ portal: true })}
                         </JitsiPortal>
                         : this.renderNotificationsContainer())
                     }
 
-                    <CalleeInfoContainer/>
+                    <CalleeInfoContainer />
 
-                    {_showPrejoin && <Prejoin/>}
-                    {_showLobby && <LobbyScreen/>}
+                    {(_showPrejoin && !_showVisitorsQueue) && <Prejoin />}
+                    {(_showLobby && !_showVisitorsQueue) && <LobbyScreen />}
+                    {_showVisitorsQueue && <VisitorsQueue />}
                 </div>
-                <ParticipantsPane/>
-                <ReactionAnimations/>
+                <Chat />
+                <ParticipantsPane />
+                <ReactionAnimations />
             </div>
         );
     }
@@ -404,14 +414,12 @@ class Conference extends AbstractConference<IProps, any> {
      */
     _start() {
         APP.UI.start();
-
-        APP.UI.registerListeners();
         APP.UI.bindEvents();
 
         FULL_SCREEN_EVENTS.forEach(name =>
             document.addEventListener(name, this._onFullScreenChange));
 
-        const {dispatch, t} = this.props;
+        const { dispatch, t } = this.props;
 
         dispatch(init());
 
@@ -428,10 +436,10 @@ class Conference extends AbstractConference<IProps, any> {
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState) {
-    const {backgroundAlpha, mouseMoveCallbackInterval} = state['features/base/config'];
-    const {overflowDrawer} = state['features/toolbox'];
-    const {is_in_picture_in_picture_mode} = state['features/picture-in-picture'];
-    const {knocking} = state['features/lobby'];
+    const { backgroundAlpha, mouseMoveCallbackInterval } = state['features/base/config'];
+    const { overflowDrawer } = state['features/toolbox'];
+    const { is_in_picture_in_picture_mode } = state['features/picture-in-picture'];
+    const { knocking } = state['features/lobby'];
 
     return {
         ...abstractMapStateToProps(state),
@@ -443,8 +451,9 @@ function _mapStateToProps(state: IReduxState) {
         _roomName: getConferenceNameForTitle(state),
         _showLobby: getIsLobbyVisible(state),
         _showPrejoin: isPrejoinPageVisible(state),
+        _showVisitorsQueue: showVisitorsQueue(state),
         _isInPictureInPictureMode: is_in_picture_in_picture_mode,
-        _lobbyKnocking: knocking,
+        _lobbyKnocking: knocking
     };
 }
 

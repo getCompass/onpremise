@@ -5,6 +5,8 @@ import { getConferenceTimestamp } from '../../base/conference/functions';
 import { getLocalizedDurationFormatter } from '../../base/i18n/dateUtil';
 
 import { ConferenceTimerDisplay } from './index';
+import { isMobileBrowser } from "../../base/environment/utils";
+import ConferenceTimerDisplayMobile from "./web/ConferenceTimerDisplayMobile";
 
 /**
  * The type of the React {@code Component} props of {@link ConferenceTimer}.
@@ -99,9 +101,20 @@ const ConferenceTimer = ({ textStyle }: IProps) => {
         return null;
     }
 
-    return (<ConferenceTimerDisplay
-        textStyle = { textStyle }
-        timerValue = { timerValue } />);
+    if (isMobileBrowser()) {
+
+        return (
+            <ConferenceTimerDisplayMobile
+                textStyle = {textStyle}
+                timerValue = {timerValue} />
+        );
+    }
+
+    return (
+        <ConferenceTimerDisplay
+            textStyle = {textStyle}
+            timerValue = {timerValue} />
+    );
 };
 
 export default ConferenceTimer;

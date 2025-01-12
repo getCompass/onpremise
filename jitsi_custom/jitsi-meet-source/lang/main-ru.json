@@ -116,7 +116,7 @@
         "message": "Сообщение",
         "messageAccessibleTitle": "{{user}} говорит:",
         "messageAccessibleTitleMe": "я говорю:",
-        "messageTo": "Сообщение → {{recipient}}",
+        "messageTo": "Вы → {{recipient}}",
         "messagebox": "Написать сообщение...",
         "newMessages": "Новое сообщение",
         "nickname": {
@@ -125,7 +125,7 @@
             "titleWithPolls": "Введите имя для использования чата"
         },
         "noMessagesMessage": "В конференции пока нет никаких сообщений. Начните разговор!",
-        "privateNotice": "Сообщение → {{recipient}}",
+        "privateNotice": "Вы → {{recipient}}",
         "sendButton": "Отправить",
         "smileysPanel": "Emoji панель",
         "tabs": {
@@ -142,6 +142,12 @@
         "close": "Закрыть",
         "dontShowAgain": "Не показывай мне это снова",
         "installExtensionText": "Установите расширение для интеграции с Google Календарь и Office 365"
+    },
+    "conference": {
+        "title": "Конференция",
+        "one_member": "участник",
+        "two_members": "участника",
+        "five_members": "участников"
     },
     "connectingOverlay": {
         "joiningRoom": "Пытаемся присоединиться к вашей конференции..."
@@ -186,7 +192,9 @@
             "inactive": "Не активна",
             "lost": "Потеряна",
             "nonoptimal": "Не оптимальная",
-            "poor": "Плохая"
+            "poor": "Плохая",
+            "medium": "Средняя связь",
+            "low": "Плохая связь"
         },
         "remoteaddress": "Удаленный адрес",
         "remoteaddress_plural": "Удаленные адреса",
@@ -232,9 +240,9 @@
     "defaultNickname": "напр. Яна Цветкова",
     "deviceError": {
         "cameraError": "Ошибка доступа к камере",
-        "cameraPermission": "Ошибка доступа к микрофону",
+        "cameraPermission": "Ошибка доступа к камере",
         "microphoneError": "Ошибка доступа к микрофону",
-        "microphonePermission": "Нет разрешения на доступ к микрофону"
+        "microphonePermission": "Ошибка доступа к микрофону"
     },
     "deviceSelection": {
         "hid": {
@@ -410,7 +418,9 @@
         "reservationError": "Ошибка системы резервирования",
         "reservationErrorMsg": "Код ошибки: {{code}}, сообщение: {{msg}}",
         "retry": "Повторить",
-        "screenSharingAudio": "Поделиться аудио",
+        "screenSharingAudio": "Транслировать звук с экрана",
+        "screenSharingAudioNotAvailable": "Ваша ОС не поддерживает трансляцию звука",
+        "screenSharingAudioNotAvailableOS": "Трансляция звука доступна с версии ОС {{os}}",
         "screenSharingFailed": "Ой! Кажется что-то пошло не так, мы не можем начать показ экрана!",
         "screenSharingFailedTitle": "Сбой показа экрана!",
         "screenSharingPermissionDeniedError": "Ошибка доступа к вашему расширению для показа экрана. Пожалуйста, перезапустите браузер и попробуйте снова.",
@@ -609,7 +619,7 @@
         "toggleScreensharing": "Начать/остановить демонстрацию экрана",
         "toggleShortcuts": "Показать список горячих клавиш",
         "videoMute": "Включить/выключить видео",
-        "tileViewToggle": "Включить/выключить режим плитки"
+        "tileViewToggle": "Включить/выключить режим галереи"
     },
     "largeVideo": {
         "screenIsShared": "Вы демонстрируете свой экран",
@@ -866,7 +876,7 @@
     },
     "passwordDigitsOnly": "До {{number}} цифр",
     "passwordSetRemotely": "Установлен другим участником",
-    "pinParticipant": "{{participantName}} - Закрепить",
+    "pinParticipant": "Закрепить",
     "pinnedParticipant": "Участник закреплен",
     "polls": {
         "answer": {
@@ -880,7 +890,7 @@
             "anotherAnswerPlaceholder": "Дополнительный ответ",
             "cancel": "Удалить",
             "create": "Новый опрос",
-            "pollOptions": "Варианты ответа",
+            "pollOption": "Варианты ответа",
             "pollQuestion": "Вопрос",
             "questionPlaceholder": "Задайте вопрос",
             "removeOption": "Удалить",
@@ -941,7 +951,8 @@
         "errorDialOutFailed": "Не удалось дозвониться. Сбой вызова",
         "errorDialOutStatus": "Ошибка получения статуса вызова",
         "errorMissingName": "Пожалуйста, введите свое имя, чтобы присоединиться к встрече",
-        "errorNoPermissions": "Вам необходимо включить доступ к микрофону и камере",
+        "errorNoPermissionsTitle": "Нет доступа к микрофону или камере",
+        "errorNoPermissions": "Пожалуйста, проверьте разрешение на использование микрофона и камеры.",
         "errorStatusCode": "Ошибка вызова, код статуса: {{status}}",
         "errorValidation": "Проверка номера не удалась",
         "iWantToDialIn": "Я хочу дозвониться",
@@ -1074,6 +1085,7 @@
     },
     "settings": {
         "audio": "Звук",
+        "audioNoPermissions": "Нет доступа к звуку",
         "buttonLabel": "Настройки",
         "calendar": {
             "about": "Интеграция с календарем {{appName}} используется для безопасного доступа к вашему календарю и синхронизации запланированных мероприятий.",
@@ -1117,7 +1129,27 @@
         "talkWhileMuted": "Говорите без звука",
         "title": "Настройки",
         "video": "Видео",
+        "videoNoPermissions": "Нет доступа к видео",
         "virtualBackgroundsTitle": "Фон"
+    },
+    "moderatorSettings": {
+        "conferenceQualityTitle": "Качество видео в конференции для всех",
+        "highQuality": "Высокое",
+        "mediumQuality": "Среднее",
+        "lowQuality": "Низкое",
+        "startRecording": "Начать запись конференции",
+        "stopRecording": "Остановить запись конференции",
+        "muteAllAudio": "Выключить микрофоны участников",
+        "muteAllVideo": "Выключить видео участников",
+        "participantsCanUnmuteAudio": "Участники могут включать микрофоны",
+        "participantsCanUnmuteVideo": "Участники могут включать видео",
+        "participantsCanScreenshare": "Участники могут включать демонстрацию"
+    },
+    "screenshare": {
+        "no_permissions_notification": {
+            "description": "Поднимите руку, если хотите высказаться.",
+            "title": "Возможность демонстрации отключена модератором"
+        }
     },
     "settingsView": {
         "advanced": "Дополнительные",
@@ -1213,7 +1245,7 @@
             "embedMeeting": "Встроить встречу",
             "endConference": "Завершить встречу для всех",
             "enterFullScreen": "Перейти в полноэкранный режим",
-            "enterTileView": "Включить режим плитки",
+            "enterTileView": "Включить режим галереи",
             "exitFullScreen": "Выйти из полноэкранного режима",
             "exitTileView": "Выйти из режима плитки",
             "expand": "Расширять",
@@ -1245,7 +1277,7 @@
             "muteEveryonesVideoStream": "Остановить видео для всех",
             "muteGUMPending": "Подключение вашего микрофона",
             "noiseSuppression": "Шумоподавление",
-            "openChat": "Открыть чат",
+            "openChat": "Чат конференции",
             "participants": "Участники",
             "pip": "Вкл/Выкл режим Картинка-в-картинке",
             "privateMessage": "Отправить сообщение",
@@ -1303,7 +1335,7 @@
         "enableNoiseSuppression": "Включить шумоподавление",
         "endConference": "Завершить встречу для всех",
         "enterFullScreen": "Полноэкранный режим",
-        "enterTileView": "Общий план",
+        "enterTileView": "Включить режим галереи",
         "exitFullScreen": "Оконный режим",
         "exitTileView": "Крупный план",
         "feedback": "Оставить отзыв",
@@ -1323,6 +1355,7 @@
         "login": "Войти",
         "logout": "Завершить сеанс",
         "lowerYourHand": "Опустить руку",
+        "moderatorSettings": "Настройки модератора",
         "moreActions": "Действия",
         "moreOptions": "Больше настроек",
         "mute": "Выключить микрофон",
@@ -1337,7 +1370,7 @@
         "noiseSuppression": "Шумоподавление",
         "noisyAudioInputDesc": "Возможно, ваш микрофон создает шум. Вы можете выключить его или смените устройство.",
         "noisyAudioInputTitle": "Похоже, ваш микрофон создает шум!",
-        "openChat": "Чат",
+        "openChat": "Чат конференции",
         "openParticipantsPane": "Открыть панель участников",
         "openReactionsMenu": "Открыть меню реакций",
         "participants": "Участники",
@@ -1370,8 +1403,8 @@
         "stopSubtitles": "Отключить субтитры",
         "surprised": "Удивиться",
         "talkWhileMutedPopup": "Пытаетесь говорить? У вас отключен звук.",
-        "tileViewToggle": "Включить режим плитки",
-        "tileViewToggled": "Выключить режим плитки",
+        "tileViewToggle": "Включить режим галереи",
+        "tileViewToggled": "Выключить режим галереи",
         "toggleCamera": "Переключить камеру",
         "unmute": "Включить микрофон",
         "videoSettings": "Настройки видео",
@@ -1431,7 +1464,7 @@
         "ldTooltip": "Видео низкого качества",
         "lowDefinition": "Низкое качество",
         "performanceSettings": "Параметры производительности",
-        "recording": "Идет запись",
+        "recording": "Запись...",
         "sd": "SD",
         "sdTooltip": "Видео стандартного качества",
         "standardDefinition": "Стандартное качество (SD)",
@@ -1453,7 +1486,7 @@
         "moderator": "Модератор",
         "mute": "Без звука",
         "muted": "Звук выключен",
-        "pinToStage": "Прикрепить к сцене",
+        "pinToStage": "Закрепить",
         "remoteControl": "Начать / Остановить дистанционный контроль",
         "screenSharing": "Участник показывает свой экран",
         "show": "Показать крупным планом",

@@ -24,7 +24,7 @@ import LocalRecordingManager from '../../recording/components/Recording/LocalRec
 import { iAmVisitor } from '../../visitors/functions';
 import { overwriteConfig } from '../config/actions';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../connection/actionTypes';
-import { connect, connectionDisconnected, disconnect } from '../connection/actions';
+import { connectionDisconnected, disconnect } from '../connection/actions';
 import { validateJwt } from '../jwt/functions';
 import { JitsiConferenceErrors, JitsiConferenceEvents, JitsiConnectionErrors } from '../lib-jitsi-meet';
 import { PARTICIPANT_UPDATED, PIN_PARTICIPANT } from '../participants/actionTypes';
@@ -37,7 +37,6 @@ import {
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 import StateListenerRegistry from '../redux/StateListenerRegistry';
 import { TRACK_ADDED, TRACK_REMOVED } from '../tracks/actionTypes';
-import { getLocalTracks } from '../tracks/functions.any';
 
 import {
     CONFERENCE_FAILED,
@@ -165,6 +164,10 @@ function _conferenceFailed({ dispatch, getState }: IStore, next: Function, actio
     const result = next(action);
     const { enableForcedReload } = getState()['features/base/config'];
 
+    if (LocalRecordingManager.isRecordingLocally()) {
+        dispatch(stopLocalVideoRecording());
+    }
+
     // Handle specific failure reasons.
     switch (error.name) {
     case JitsiConferenceErrors.CONFERENCE_RESTARTED: {
@@ -201,28 +204,40 @@ function _conferenceFailed({ dispatch, getState }: IStore, next: Function, actio
         const newConfig = restoreConferenceOptions(getState);
 
         if (newConfig) {
-            dispatch(overwriteConfig(newConfig)) // @ts-ignore
-                .then(() => dispatch(conferenceWillLeave(conference)))
-                .then(() => conference.leave())
-                .then(() => dispatch(disconnect()))
-                .then(() => dispatch(connect()))
-                .then(() => {
-                    // FIXME: Workaround for the web version. To be removed once we get rid of conference.js
-                    if (typeof APP !== 'undefined') {
-                        const localTracks = getLocalTracks(getState()['features/base/tracks']);
-                        const jitsiTracks = localTracks.map((t: any) => t.jitsiTrack);
+            dispatch(overwriteConfig(newConfig));
+            dispatch(conferenceWillLeave(conference));
 
-                        APP.conference.startConference(jitsiTracks).catch(logger.error);
-                    }
-                });
+            conference.leave()
+                .then(() => dispatch(disconnect()));
         }
 
         break;
     }
     case JitsiConferenceErrors.NOT_ALLOWED_ERROR: {
-        const [ msg ] = error.params;
+        const [ type, msg ] = error.params;
 
-        sendAnalytics(createNotAllowedErrorEvent(msg));
+        let descriptionKey;
+        let titleKey = 'dialog.tokenAuthFailed';
+
+        if (type === JitsiConferenceErrors.AUTH_ERROR_TYPES.NO_MAIN_PARTICIPANTS) {
+            descriptionKey = 'visitors.notification.noMainParticipantsDescription';
+            titleKey = 'visitors.notification.noMainParticipantsTitle';
+        } else if (type === JitsiConferenceErrors.AUTH_ERROR_TYPES.NO_VISITORS_LOBBY) {
+            descriptionKey = 'visitors.notification.noVisitorLobby';
+        } else if (type === JitsiConferenceErrors.AUTH_ERROR_TYPES.PROMOTION_NOT_ALLOWED) {
+            descriptionKey = 'visitors.notification.notAllowedPromotion';
+        } else if (type === JitsiConferenceErrors.AUTH_ERROR_TYPES.ROOM_CREATION_RESTRICTION) {
+            descriptionKey = 'dialog.errorRoomCreationRestriction';
+        }
+
+        dispatch(showErrorNotification({
+            descriptionKey,
+            hideErrorSupportLink: true,
+            titleKey
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+
+        sendAnalytics(createNotAllowedErrorEvent(type, msg));
+
         break;
     }
     case JitsiConferenceErrors.OFFER_ANSWER_FAILED:
@@ -679,6 +694,10 @@ function _updateLocalParticipantInConference({ dispatch, getState }: IStore, nex
     if (conference && participant.id === localParticipant?.id) {
         if ('name' in participant) {
             conference.setDisplayName(participant.name);
+        }
+
+        if ('isSilent' in participant) {
+            conference.setIsSilent(participant.isSilent);
         }
 
         if ('role' in participant && participant.role === PARTICIPANT_ROLE.MODERATOR) {

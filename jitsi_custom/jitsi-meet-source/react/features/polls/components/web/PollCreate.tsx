@@ -1,15 +1,16 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {withPixelLineHeight} from '../../../base/styles/functions.web';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import Button from '../../../base/ui/components/web/Button';
 import Input from '../../../base/ui/components/web/Input';
-import {BUTTON_TYPES} from '../../../base/ui/constants.web';
-import {ANSWERS_LIMIT, CHAR_LIMIT} from '../../constants';
-import AbstractPollCreate, {AbstractProps} from '../AbstractPollCreate';
+import { BUTTON_TYPES } from '../../../base/ui/constants.web';
+import { ANSWERS_LIMIT, CHAR_LIMIT } from '../../constants';
+import AbstractPollCreate, { AbstractProps } from '../AbstractPollCreate';
 import Icon from "../../../base/icons/components/Icon";
-import {IconPlus} from "../../../base/icons/svg";
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { IconPlus } from "../../../base/icons/svg";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -98,6 +99,7 @@ const useStyles = makeStyles()(theme => {
             backgroundColor: 'rgba(255, 255, 255, 0.03)',
             border: 'none',
             fontFamily: 'Lato Regular',
+            fontWeight: 'normal' as const,
             fontSize: '14px',
             lineHeight: '20px',
             letterSpacing: '-0.15px',
@@ -203,6 +205,7 @@ const useStyles = makeStyles()(theme => {
             backgroundColor: 'transparent',
             padding: 0,
             fontFamily: 'Lato Regular',
+            fontWeight: 'normal' as const,
             fontSize: '14px',
             lineHeight: '20px',
             letterSpacing: '-0.15px',
@@ -248,18 +251,19 @@ const useStyles = makeStyles()(theme => {
 });
 
 const PollCreate = ({
-                        addAnswer,
-                        answers,
-                        isSubmitDisabled,
-                        onSubmit,
-                        question,
-                        removeAnswer,
-                        setAnswer,
-                        setCreateMode,
-                        setQuestion,
-                        t
-                    }: AbstractProps) => {
-    const {classes, cx} = useStyles();
+    addAnswer,
+    answers,
+    isSubmitDisabled,
+    onSubmit,
+    question,
+    removeAnswer,
+    setAnswer,
+    setCreateMode,
+    setQuestion,
+    t
+}: AbstractProps) => {
+    const { classes, cx } = useStyles();
+    const dispatch = useDispatch();
     const isMobile = isMobileBrowser();
 
     /*
@@ -272,17 +276,17 @@ const PollCreate = ({
             return;
         }
         answerInputs.current[i] = r;
-    }, [answerInputs]);
+    }, [ answerInputs ]);
 
     useEffect(() => {
         answerInputs.current = answerInputs.current.slice(0, answers.length);
-    }, [answers]);
+    }, [ answers ]);
 
     /*
      * This state allows us to requestFocus asynchronously, without having to worry
      * about whether a newly created input field has been rendered yet or not.
      */
-    const [lastFocus, requestFocus] = useState<number | null>(null);
+    const [ lastFocus, requestFocus ] = useState<number | null>(null);
 
     useEffect(() => {
         if (lastFocus === null) {
@@ -294,7 +298,7 @@ const PollCreate = ({
             return;
         }
         input.focus();
-    }, [lastFocus]);
+    }, [ lastFocus ]);
 
     const checkModifiers = useCallback(ev => {
         // Composition events used to add accents to characters
@@ -365,93 +369,96 @@ const PollCreate = ({
             }
             ev.preventDefault();
         }
-    }, [answers, addAnswer, removeAnswer, requestFocus]);
+    }, [ answers, addAnswer, removeAnswer, requestFocus ]);
 
     /* eslint-disable react/jsx-no-bind */
     return (<form
-        className={classes.container}
-        onSubmit={onSubmit}>
-        <div className={cx(classes.createContainer, isMobile && 'is-mobile')}>
-            <div className={classes.questionContainer}>
-                <div className={cx(classes.questionLabelContainer, isMobile && 'is-mobile')}>
-                    <div className={classes.questionLabel}>{t('polls.create.pollQuestion')}</div>
+        className = {classes.container}
+        onSubmit = {onSubmit}>
+        <div className = {cx(classes.createContainer, isMobile && 'is-mobile')}>
+            <div className = {classes.questionContainer}>
+                <div className = {cx(classes.questionLabelContainer, isMobile && 'is-mobile')}>
+                    <div className = {classes.questionLabel}>{t('polls.create.pollQuestion')}</div>
                     <Button
-                        accessibilityLabel={t('polls.create.cancel')}
-                        labelKey={'polls.create.cancel'}
-                        className={cx(classes.removeLabelButton, isMobile && 'is-mobile')}
-                        onClick={() => setCreateMode(false)}
-                        type={BUTTON_TYPES.DESTRUCTIVE}/>
+                        accessibilityLabel = {t('polls.create.cancel')}
+                        labelKey = {'polls.create.cancel'}
+                        className = {cx(classes.removeLabelButton, isMobile && 'is-mobile')}
+                        onClick = {() => setCreateMode(false)}
+                        type = {BUTTON_TYPES.DESTRUCTIVE} />
                 </div>
                 <Input
-                    inputClassName={classes.questionInput}
-                    autoFocus={true}
-                    id='polls-create-input'
-                    maxLength={CHAR_LIMIT}
-                    onChange={setQuestion}
-                    onKeyPress={onQuestionKeyDown}
-                    placeholder={t('polls.create.questionPlaceholder')}
-                    textarea={true}
-                    value={question}/>
+                    inputClassName = {classes.questionInput}
+                    autoFocus = {true}
+                    id = 'polls-create-input'
+                    maxLength = {CHAR_LIMIT}
+                    onChange = {setQuestion}
+                    onKeyPress = {onQuestionKeyDown}
+                    placeholder = {t('polls.create.questionPlaceholder')}
+                    textarea = {true}
+                    value = {question} />
             </div>
-            <div className={classes.answerListContainer}>
-                <div className={cx(classes.pollLabel, isMobile && 'is-mobile')}>{t('polls.create.pollOptions')}</div>
-                <ol className={classes.answerList}>
-                    {answers.map((answer: any, i: number) => {
+            <div className = {classes.answerListContainer}>
+                <div className = {cx(classes.pollLabel, isMobile && 'is-mobile')}>{t('polls.create.pollOption')}</div>
+                <ol className = {classes.answerList}>
+                    {answers.map((answer, i: number) => {
 
                             // не проверяем дубликаты ответов
                             const isIdenticalAnswer = false;
 
                             return (<li
-                                className={cx(classes.answer, isMobile && 'is-mobile')}
-                                key={i}>
+                                className = {cx(classes.answer, isMobile && 'is-mobile')}
+                                key = {i}>
                                 <Input
-                                    inputClassName={classes.answerInput}
-                                    bottomLabel={(isIdenticalAnswer ? t('polls.errors.notUniqueOption',
-                                        {index: i + 1}) : '')}
-                                    error={isIdenticalAnswer}
-                                    id={`polls-answer-input-${i}`}
-                                    maxLength={CHAR_LIMIT}
-                                    onChange={val => setAnswer(i, val)}
-                                    onKeyPress={ev => onAnswerKeyDown(i, ev)}
-                                    placeholder={i === 0 ? t('polls.create.answerPlaceholder', {index: i + 1}) : t('polls.create.anotherAnswerPlaceholder', {index: i + 1})}
-                                    ref={r => registerFieldRef(i, r)}
-                                    textarea={true}
-                                    value={answer}/>
+                                    inputClassName = {classes.answerInput}
+                                    bottomLabel = {(isIdenticalAnswer ? t('polls.errors.notUniqueOption',
+                                        { index: i + 1 }) : '')}
+                                    error = {isIdenticalAnswer}
+                                    id = {`polls-answer-input-${i}`}
+                                    maxLength = {CHAR_LIMIT}
+                                    onChange = { name => setAnswer(i, {
+                                        name,
+                                        voters: []
+                                    }) }
+                                    onKeyPress = {ev => onAnswerKeyDown(i, ev)}
+                                    placeholder = {i === 0 ? t('polls.create.answerPlaceholder', { index: i + 1 }) : t('polls.create.anotherAnswerPlaceholder', { index: i + 1 })}
+                                    ref = {r => registerFieldRef(i, r)}
+                                    textarea = {true}
+                                    value = { answer.name } />
                             </li>);
                         }
                     )}
                 </ol>
             </div>
-            <div className={cx(classes.addButtonContainer, isMobile && 'is-mobile')} onClick={() => {
+            <div className = {cx(classes.addButtonContainer, isMobile && 'is-mobile')} onClick = {() => {
                 addAnswer();
                 requestFocus(answers.length);
             }}>
                 <Icon
-                    size={16}
-                    src={IconPlus}
-                    className={'poll-create-add-button-plus'}
-                    color={'rgba(0, 122, 255, 1)'}/>
+                    size = {16}
+                    src = {IconPlus}
+                    className = {'poll-create-add-button-plus'}
+                    color = {'rgba(0, 122, 255, 1)'} />
                 <Button
-                    className={cx(classes.addButton, 'poll-create-add-button-button', isMobile && 'is-mobile')}
-                    accessibilityLabel={t('polls.create.addOption')}
-                    disabled={answers.length >= ANSWERS_LIMIT}
-                    labelKey={'polls.create.addOption'}
-                    onClick={() => {
+                    className = {cx(classes.addButton, 'poll-create-add-button-button', isMobile && 'is-mobile')}
+                    accessibilityLabel = {t('polls.create.addOption')}
+                    disabled = {answers.length >= ANSWERS_LIMIT}
+                    labelKey = {'polls.create.addOption'}
+                    onClick = {() => {
                         addAnswer();
                         requestFocus(answers.length);
                     }}
-                    type={BUTTON_TYPES.SECONDARY}/>
+                    type = {BUTTON_TYPES.SECONDARY} />
             </div>
         </div>
-        <div className={classes.footer}>
+        <div className = {classes.footer}>
             <Button
-                accessibilityLabel={t('polls.create.send')}
-                className={classes.createButton}
-                disabled={isSubmitDisabled}
-                fullWidth={true}
-                isSubmit={true}
-                labelKey={'polls.create.send'}
-                type={BUTTON_TYPES.PRIMARY}/>
+                accessibilityLabel = {t('polls.create.send')}
+                className = {classes.createButton}
+                disabled = {isSubmitDisabled}
+                fullWidth = {true}
+                isSubmit = {true}
+                labelKey = {'polls.create.send'}
+                type = {BUTTON_TYPES.PRIMARY} />
         </div>
     </form>);
 };

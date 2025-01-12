@@ -416,6 +416,16 @@ function exist_occupants_in_rooms(main_room)
     return false;
 end
 
+function on_occupant_pre_leave(event)
+    local room, occupant, session, stanza = event.room, event.occupant, event.origin, event.stanza;
+
+    local main_room = get_main_room(room.jid);
+
+    prosody.events.fire_event('jitsi-breakout-occupant-leaving', {
+        room = room; main_room = main_room; occupant = occupant; stanza = stanza; session = session;
+    });
+end
+
 function on_occupant_left(event)
     local room_jid = event.room.jid;
 
@@ -510,6 +520,7 @@ function process_breakout_rooms_muc_loaded(breakout_rooms_muc, host_module)
     host_module:hook('muc-occupant-joined', on_occupant_joined);
     host_module:hook('muc-occupant-left', on_occupant_left);
     host_module:hook('muc-room-pre-create', on_breakout_room_pre_create);
+    host_module:hook('muc-occupant-pre-leave', on_occupant_pre_leave);
 
     host_module:hook('muc-disco#info', function (event)
         local room = event.room;
@@ -526,7 +537,7 @@ function process_breakout_rooms_muc_loaded(breakout_rooms_muc, host_module)
             name = 'muc#roominfo_breakout_main_room';
             label = 'The main room associated with this breakout room';
         });
-        event.formdata['muc#roominfo_breakout_main_room'] = main_room_jid;
+        event.formdata['muc#roominfo_breakout_main_room'] = internal_room_jid_match_rewrite(main_room_jid);
 
         -- If the main room has a lobby, make it so this breakout room also uses it.
         if (main_room and main_room._data.lobbyroom and main_room:get_members_only()) then
@@ -553,7 +564,7 @@ function process_breakout_rooms_muc_loaded(breakout_rooms_muc, host_module)
         table.insert(event.form, {
             name = 'muc#roominfo_breakout_main_room';
             label = 'The main room associated with this breakout room';
-            value = main_room_jid;
+            value = internal_room_jid_match_rewrite(main_room_jid);
         });
     end);
 

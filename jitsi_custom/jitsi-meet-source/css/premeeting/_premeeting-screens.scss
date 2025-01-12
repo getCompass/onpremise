@@ -80,7 +80,7 @@
             box-shadow: none;
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 0;
         }
 
         .toolbox-content,
@@ -114,6 +114,10 @@
     width: 100%;
     position: relative;
 
+    &.is-mobile {
+        background: rgba(23, 23, 23, 1);
+    }
+
     .avatar {
         text {
             fill: white;
@@ -125,6 +129,11 @@
         object-fit: cover;
         width: 100%;
         position: absolute;
+        border-radius: 8px;
+
+        &.is-mobile {
+            border-radius: 0;
+        }
     }
 }
 
@@ -132,4 +141,10 @@
     align-items: center;
     display: flex;
     justify-content: center;
+}
+
+.premeeting-screen-avatar {
+    &.is-mobile {
+        margin-bottom: 196px;
+    }
 }

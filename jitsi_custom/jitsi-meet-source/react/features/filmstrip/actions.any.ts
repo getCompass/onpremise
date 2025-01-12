@@ -64,6 +64,7 @@ export function setFilmstripHovered(hovered: boolean) {
     }}
  */
 export function setRemoteParticipants(participants: Array<string>) {
+
     return {
         type: SET_REMOTE_PARTICIPANTS,
         participants

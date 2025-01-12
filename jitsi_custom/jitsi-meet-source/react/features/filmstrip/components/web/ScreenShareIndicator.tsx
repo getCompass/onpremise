@@ -10,6 +10,11 @@ interface IProps {
      * From which side of the indicator the tooltip should appear from.
      */
     tooltipPosition: TOOLTIP_POSITION;
+
+    /**
+     * The color of the icon.
+     */
+    iconColor?: string;
 }
 
 /**
@@ -21,10 +26,11 @@ interface IProps {
 export default function ScreenShareIndicator(props: IProps) {
     return (
         <BaseIndicator
-            icon = { IconScreenshare }
+            icon = {IconScreenshare}
+            iconColor = {props.iconColor}
             iconId = 'share-desktop'
-            iconSize = { 16 }
+            iconSize = {16}
             tooltipKey = 'videothumbnail.screenSharing'
-            tooltipPosition = { props.tooltipPosition } />
+            tooltipPosition = {props.tooltipPosition} />
     );
 }

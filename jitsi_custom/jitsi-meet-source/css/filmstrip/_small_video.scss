@@ -2,9 +2,7 @@
     display: inline-block;
     position: relative;
     background-size: contain;
-    border: 2px solid transparent;
     border-radius: $borderRadius;
-    margin: 0 2px;
 
     &:hover {
         cursor: hand;

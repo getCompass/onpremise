@@ -32,6 +32,7 @@ const NotificationsTransition = ({ children }: { children: ReactElement[]; }) =>
         if (toUnmount.length > 0) {
             const ids = new Map(timeoutIds);
 
+            // compass changes
             toUnmount.reverse().forEach(child => {
                 const timeoutId = setTimeout(() => {
                     timeoutIds.set(child.props.uid, null);

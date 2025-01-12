@@ -15,9 +15,9 @@ import {
     PARTICIPANT_APPROVED,
     PARTICIPANT_PENDING_AUDIO,
     PARTICIPANT_REJECTED,
-    REQUEST_DISABLE_AUDIO_MODERATION,
+    REQUEST_DISABLE_AUDIO_MODERATION, REQUEST_DISABLE_SCREENSHARE_MODERATION,
     REQUEST_DISABLE_VIDEO_MODERATION,
-    REQUEST_ENABLE_AUDIO_MODERATION,
+    REQUEST_ENABLE_AUDIO_MODERATION, REQUEST_ENABLE_SCREENSHARE_MODERATION,
     REQUEST_ENABLE_VIDEO_MODERATION
 } from './actionTypes';
 import { isEnabledFromState } from './functions';
@@ -199,6 +199,19 @@ export const requestDisableVideoModeration = () => {
 };
 
 /**
+ * Requests disable of screenshare moderation.
+ *
+ * @returns {{
+ *     type: REQUEST_DISABLE_SCREENSHARE_MODERATION
+ * }}
+ */
+export const requestDisableScreenshareModeration = () => {
+    return {
+        type: REQUEST_DISABLE_SCREENSHARE_MODERATION
+    };
+};
+
+/**
  * Requests enable of audio moderation.
  *
  * @returns {{
@@ -221,6 +234,19 @@ export const requestEnableAudioModeration = () => {
 export const requestEnableVideoModeration = () => {
     return {
         type: REQUEST_ENABLE_VIDEO_MODERATION
+    };
+};
+
+/**
+ * Requests enable of screenshare moderation.
+ *
+ * @returns {{
+ *     type: REQUEST_ENABLE_SCREENSHARE_MODERATION
+ * }}
+ */
+export const requestEnableScreenshareModeration = () => {
+    return {
+        type: REQUEST_ENABLE_SCREENSHARE_MODERATION
     };
 };
 

@@ -1,12 +1,12 @@
-import React, {Fragment} from 'react';
+import React, { Fragment } from 'react';
 
 import Icon from '../../icons/components/Icon';
 import Tooltip from '../../tooltip/components/Tooltip';
 import ContextMenuItem from '../../ui/components/web/ContextMenuItem';
 
 import AbstractToolboxItem from './AbstractToolboxItem';
-import type {IProps as AbstractToolboxItemProps} from './AbstractToolboxItem';
-import {isMobileBrowser} from "../../environment/utils";
+import type { IProps as AbstractToolboxItemProps } from './AbstractToolboxItem';
+import { isMobileBrowser } from "../../environment/utils";
 
 interface IProps extends AbstractToolboxItemProps {
 
@@ -103,14 +103,14 @@ export default class ToolboxItem extends AbstractToolboxItem<IProps> {
         if (contextMenu) {
             return (
                 <ContextMenuItem
-                    accessibilityLabel={this.accessibilityLabel}
-                    backgroundColor={backgroundColor}
-                    disabled={disabled}
-                    icon={icon}
-                    onClick={onClick}
-                    onKeyDown={onKeyDown}
-                    onKeyPress={this._onKeyPress}
-                    text={this.label}/>
+                    accessibilityLabel = {this.accessibilityLabel}
+                    backgroundColor = {backgroundColor}
+                    disabled = {disabled}
+                    icon = {icon}
+                    onClick = {onClick}
+                    onKeyDown = {onKeyDown}
+                    onKeyPress = {this._onKeyPress}
+                    text = {this.label} />
             );
         }
         let children = (
@@ -126,8 +126,8 @@ export default class ToolboxItem extends AbstractToolboxItem<IProps> {
         if (useTooltip) {
             children = (
                 <Tooltip
-                    content={this.tooltip ?? ''}
-                    position={tooltipPosition}>
+                    content = {this.tooltip ?? ''}
+                    position = {tooltipPosition}>
                     {children}
                 </Tooltip>
             );
@@ -143,16 +143,16 @@ export default class ToolboxItem extends AbstractToolboxItem<IProps> {
      * @returns {ReactElement}
      */
     _renderIcon() {
-        const {backgroundColor, customClass, disabled, icon, showLabel, toggled, buttonKey} = this.props;
+        const { backgroundColor, customClass, disabled, icon, showLabel, toggled, buttonKey } = this.props;
         const iconComponent = (<Icon
-            size={showLabel ? undefined : 24}
-            src={icon}/>);
+            size = {showLabel ? undefined : customClass === 'hangup-menu-button' ? 32 : 24}
+            src = {icon} />);
         const elementType = showLabel ? 'span' : 'div';
         const isMobile = isMobileBrowser();
         const className = `${showLabel ? 'overflow-menu-item-icon' : 'toolbox-icon'} ${
             toggled ? 'toggled' : ''} ${disabled ? 'disabled' : ''} ${customClass ?? ''} ${isMobile ? 'is-mobile' : ''} ${
             isMobile && buttonKey !== undefined && buttonKey == 'microphone' ? 'microphone-button' : ''}`;
-        const style = backgroundColor && !showLabel ? {backgroundColor} : {};
+        const style = backgroundColor && !showLabel ? { backgroundColor } : {};
 
         return React.createElement(elementType, {
             className,

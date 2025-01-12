@@ -2,8 +2,6 @@ import i18n from 'i18next';
 import { batch } from 'react-redux';
 import { AnyAction } from 'redux';
 
-// @ts-expect-error
-import UIEvents from '../../../../service/UI/UIEvents';
 import { IStore } from '../../app/types';
 import { approveParticipant } from '../../av-moderation/actions';
 import { UPDATE_BREAKOUT_ROOMS } from '../../breakout-rooms/actionTypes';
@@ -16,12 +14,13 @@ import {
     NOTIFICATION_TIMEOUT_TYPE,
     RAISE_HAND_NOTIFICATION_ID
 } from '../../notifications/constants';
+import { open as openParticipantsPane } from '../../participants-pane/actions';
 import { isForceMuted } from '../../participants-pane/functions';
 import { CALLING, INVITED } from '../../presence-status/constants';
 import { RAISE_HAND_SOUND_ID } from '../../reactions/constants';
 import { RECORDING_OFF_SOUND_ID, RECORDING_ON_SOUND_ID } from '../../recording/constants';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app/actionTypes';
-import { CONFERENCE_WILL_JOIN } from '../conference/actionTypes';
+import { CONFERENCE_JOINED, CONFERENCE_WILL_JOIN } from '../conference/actionTypes';
 import { forEachConference, getCurrentConference } from '../conference/functions';
 import { IJitsiConference } from '../conference/reducer';
 import { SET_CONFIG } from '../config/actionTypes';
@@ -39,9 +38,8 @@ import {
     LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED,
     LOCAL_PARTICIPANT_RAISE_HAND,
     MUTE_REMOTE_PARTICIPANT,
-    OVERWRITE_PARTICIPANTS_NAMES,
     OVERWRITE_PARTICIPANT_NAME,
-    PARTICIPANT_DISPLAY_NAME_CHANGED,
+    OVERWRITE_PARTICIPANTS_NAMES,
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
@@ -84,6 +82,14 @@ import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 import { IJitsiParticipant } from './types';
 
 import './subscriber';
+import { getNumberOfPartipantsForTileView, updateRemoteParticipants } from "../../filmstrip/functions.web";
+import { setNewReceiverQuality } from "../../quality-control/actions";
+import { isLocalTrackMuted } from "../tracks/functions.any";
+import { setHorizontalViewDimensions } from "../../filmstrip/actions.web";
+import { HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE } from "../../filmstrip/constants";
+import { setTileView } from "../../video-layout/actions.any";
+import { isScreenSharePlaying } from "../../screen-share/functions";
+import { isMobileBrowser } from "../environment/utils";
 
 /**
  * Middleware that captures CONFERENCE_JOINED and CONFERENCE_LEFT actions and
@@ -117,8 +123,8 @@ MiddlewareRegistry.register(store => next => action => {
         const isLocal = participant && participant.id === id;
 
         if (isLocal && dominantSpeaker?.id !== id
-                && hasRaisedHand(participant)
-                && !getDisableRemoveRaisedHandOnFocus(state)) {
+            && hasRaisedHand(participant)
+            && !getDisableRemoveRaisedHandOnFocus(state)) {
             store.dispatch(raiseHand(false));
         }
 
@@ -204,6 +210,28 @@ MiddlewareRegistry.register(store => next => action => {
         return result;
     }
 
+    case CONFERENCE_JOINED: {
+        const result = next(action);
+
+        const state = store.getState();
+        const { startSilent } = state['features/base/config'];
+
+        if (startSilent) {
+            const localId = getLocalParticipant(store.getState())?.id;
+
+            if (localId) {
+                store.dispatch(participantUpdated({
+                    id: localId,
+                    local: true,
+                    isSilent: startSilent
+                }));
+            }
+        }
+
+        return result;
+    }
+
+
     case SET_LOCAL_PARTICIPANT_RECORDING_STATUS: {
         const state = store.getState();
         const { recording, onlySelf } = action;
@@ -234,29 +262,15 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
-    // TODO Remove this middleware when the local display name update flow is
-    // fully brought into redux.
-    case PARTICIPANT_DISPLAY_NAME_CHANGED: {
-        if (typeof APP !== 'undefined') {
-            const participant = getLocalParticipant(store.getState());
-
-            if (participant && participant.id === action.id) {
-                APP.UI.emitEvent(UIEvents.NICKNAME_CHANGED, action.name);
-            }
-        }
-
-        break;
-    }
-
     case RAISE_HAND_UPDATED: {
         const { participant } = action;
         let queue = getRaiseHandsQueue(store.getState());
 
         if (participant.raisedHandTimestamp) {
-            queue.push({
+            queue = [ ...queue, {
                 id: participant.id,
                 raisedHandTimestamp: participant.raisedHandTimestamp
-            });
+            } ];
 
             // sort the queue before adding to store.
             queue = queue.sort(({ raisedHandTimestamp: a }, { raisedHandTimestamp: b }) => a - b);
@@ -266,6 +280,9 @@ MiddlewareRegistry.register(store => next => action => {
         }
 
         action.queue = queue;
+
+        // пересортировываем пользователей
+        updateRemoteParticipants(store, true, queue);
         break;
     }
 
@@ -275,7 +292,20 @@ MiddlewareRegistry.register(store => next => action => {
             && !isWhiteboardParticipant(action.participant)
         ) && _maybePlaySounds(store, action);
 
-        return _participantJoinedOrUpdated(store, next, action);
+        const result = _participantJoinedOrUpdated(store, next, action);
+        const { qualityLevel } = store.getState()['features/quality-control'];
+
+        const numberOfParticipants = getNumberOfPartipantsForTileView(store.getState());
+        setNewReceiverQuality(numberOfParticipants, getCurrentConference(store.getState())?.getParticipants(), isLocalTrackMuted(store.getState()['features/base/tracks'], MEDIA_TYPE.VIDEO), store.dispatch, qualityLevel);
+
+        const { remoteParticipants } = store.getState()['features/filmstrip'];
+        store.dispatch(setHorizontalViewDimensions(Math.min((remoteParticipants?.length ?? 0), HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE)));
+
+        // если кто-то шейрит экран, то при подключении ставим режим плитки
+        if (isScreenSharePlaying(store.getState())) {
+            store.dispatch(setTileView(true));
+        }
+        return result;
     }
 
     case PARTICIPANT_LEFT: {
@@ -284,6 +314,15 @@ MiddlewareRegistry.register(store => next => action => {
             && !isWhiteboardParticipant(action.participant)
         ) && _maybePlaySounds(store, action);
 
+        const { qualityLevel } = store.getState()['features/quality-control'];
+        const numberOfParticipants = getNumberOfPartipantsForTileView(store.getState());
+        setNewReceiverQuality(numberOfParticipants, getCurrentConference(store.getState())?.getParticipants(), isLocalTrackMuted(store.getState()['features/base/tracks'], MEDIA_TYPE.VIDEO), store.dispatch, qualityLevel);
+
+        const { remoteParticipants } = store.getState()['features/filmstrip'];
+        const remoteParticipantsLength = Math.max(((remoteParticipants?.length ?? 0) - 1), 0);
+
+        // специально делаем -1, т.к при получении этого ивента ливнувший пользователь все еще числится в списке
+        store.dispatch(setHorizontalViewDimensions(Math.min(remoteParticipantsLength, HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE)));
         break;
     }
 
@@ -375,9 +414,9 @@ StateListenerRegistry.register(
         batch(() => {
             for (const [ id, p ] of getRemoteParticipants(getState())) {
                 (!conference || p.conference !== conference)
-                    && dispatch(participantLeft(id, p.conference, {
-                        isReplaced: p.isReplaced
-                    }));
+                && dispatch(participantLeft(id, p.conference, {
+                    isReplaced: p.isReplaced
+                }));
             }
         });
     });
@@ -399,8 +438,8 @@ StateListenerRegistry.register(
         let id: string;
 
         if (!localParticipant
-                || (id = localParticipant.id)
-                    === LOCAL_PARTICIPANT_DEFAULT_ID) {
+            || (id = localParticipant.id)
+            === LOCAL_PARTICIPANT_DEFAULT_ID) {
             // The ID of the local participant has been reset already.
             return;
         }
@@ -408,13 +447,13 @@ StateListenerRegistry.register(
         // The ID of the local may be reset only if it is not in use.
         const dispatchLocalParticipantIdChanged
             = forEachConference(
-                state,
-                conference =>
-                    conference === leaving || conference.myUserId() !== id);
+            state,
+            conference =>
+                conference === leaving || conference.myUserId() !== id);
 
         dispatchLocalParticipantIdChanged
-            && dispatch(
-                localParticipantIdChanged(LOCAL_PARTICIPANT_DEFAULT_ID));
+        && dispatch(
+            localParticipantIdChanged(LOCAL_PARTICIPANT_DEFAULT_ID));
     });
 
 /**
@@ -431,11 +470,11 @@ StateListenerRegistry.register(
                     _e2eeUpdated(store, conference, participant.getId(), value),
                 'features_e2ee': (participant: IJitsiParticipant, value: boolean) =>
                     getParticipantById(store.getState(), participant.getId())?.e2eeSupported !== value
-                        && store.dispatch(participantUpdated({
-                            conference,
-                            id: participant.getId(),
-                            e2eeSupported: value
-                        })),
+                    && store.dispatch(participantUpdated({
+                        conference,
+                        id: participant.getId(),
+                        e2eeSupported: value
+                    })),
                 'features_jigasi': (participant: IJitsiParticipant, value: boolean) =>
                     store.dispatch(participantUpdated({
                         conference,
@@ -506,7 +545,7 @@ StateListenerRegistry.register(
  * @returns {void}
  */
 function _e2eeUpdated({ getState, dispatch }: IStore, conference: IJitsiConference,
-        participantId: string, newValue: string | boolean) {
+    participantId: string, newValue: string | boolean) {
     const e2eeEnabled = newValue === 'true';
     const state = getState();
     const { e2ee = {} } = state['features/base/config'];
@@ -597,8 +636,8 @@ function _maybePlaySounds({ getState, dispatch }: IStore, action: AnyAction) {
     // The intention there was to not play user joined notification in big
     // conferences where 100th person is joining.
     if (!action.participant.local
-            && (!startAudioMuted
-                || getParticipantCount(state) < startAudioMuted)) {
+        && (!startAudioMuted
+            || getParticipantCount(state) < startAudioMuted)) {
         const { isReplacing, isReplaced } = action.participant;
 
         if (action.type === PARTICIPANT_JOINED) {
@@ -635,15 +674,17 @@ function _maybePlaySounds({ getState, dispatch }: IStore, action: AnyAction) {
 function _participantJoinedOrUpdated(store: IStore, next: Function, action: AnyAction) {
     const { dispatch, getState } = store;
     const { overwrittenNameList } = store.getState()['features/base/participants'];
-    const { participant: {
-        avatarURL,
-        email,
-        id,
-        local,
-        localRecording,
-        name,
-        raisedHandTimestamp
-    } } = action;
+    const {
+        participant: {
+            avatarURL,
+            email,
+            id,
+            local,
+            localRecording,
+            name,
+            raisedHandTimestamp
+        }
+    } = action;
 
     // Send an external update of the local participant's raised hand state
     // if a new raised hand state is defined in the action.
@@ -710,7 +751,7 @@ function _participantJoinedOrUpdated(store: IStore, next: Function, action: AnyA
  * @returns {void}
  */
 function _localRecordingUpdated({ dispatch, getState }: IStore, conference: IJitsiConference,
-        participantId: string, newValue: string) {
+    participantId: string, newValue: string) {
     const state = getState();
 
     dispatch(participantUpdated({
@@ -740,7 +781,7 @@ function _localRecordingUpdated({ dispatch, getState }: IStore, conference: IJit
  * @returns {void}
  */
 function _raiseHandUpdated({ dispatch, getState }: IStore, conference: IJitsiConference,
-        participantId: string, newValue: string | number) {
+    participantId: string, newValue: string | number) {
     let raisedHandTimestamp;
 
     switch (newValue) {
@@ -780,10 +821,16 @@ function _raiseHandUpdated({ dispatch, getState }: IStore, conference: IJitsiCon
             || isForceMuted(participant, MEDIA_TYPE.VIDEO, state);
     }
 
-    const action = shouldDisplayAllowAction ? {
-        customActionNameKey: [ 'notify.allowAction' ],
-        customActionHandler: [ () => dispatch(approveParticipant(participantId)) ]
-    } : {};
+    let action;
+
+    if (shouldDisplayAllowAction) {
+        action = {
+            customActionNameKey: [ 'notify.allowAction' ],
+            customActionHandler: [ () => dispatch(approveParticipant(participantId)) ]
+        };
+    } else {
+        action = {};
+    }
 
     if (raisedHandTimestamp) {
         let notificationTitle;
@@ -800,15 +847,17 @@ function _raiseHandUpdated({ dispatch, getState }: IStore, conference: IJitsiCon
         } else {
             notificationTitle = participantName;
         }
-        dispatch(showNotification({
-            titleKey: 'notify.somebody',
-            title: notificationTitle,
-            descriptionKey: 'notify.raisedHand',
-            concatText: true,
-            uid: RAISE_HAND_NOTIFICATION_ID,
-            ...action
-        }, shouldDisplayAllowAction ? NOTIFICATION_TIMEOUT_TYPE.MEDIUM : NOTIFICATION_TIMEOUT_TYPE.SHORT));
-        dispatch(playSound(RAISE_HAND_SOUND_ID));
+        if (!isMobileBrowser()) {
+            dispatch(showNotification({
+                titleKey: 'notify.somebody',
+                title: notificationTitle,
+                descriptionKey: 'notify.raisedHand',
+                concatText: true,
+                uid: RAISE_HAND_NOTIFICATION_ID,
+                ...action
+            }, shouldDisplayAllowAction ? NOTIFICATION_TIMEOUT_TYPE.MEDIUM : NOTIFICATION_TIMEOUT_TYPE.SHORT));
+            dispatch(playSound(RAISE_HAND_SOUND_ID));
+        }
     }
 }
 

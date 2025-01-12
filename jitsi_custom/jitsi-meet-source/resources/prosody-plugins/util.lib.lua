@@ -1,7 +1,9 @@
 local jid = require "util.jid";
+local st = require 'util.stanza';
 local timer = require "util.timer";
 local http = require "net.http";
 local cache = require "util.cache";
+local array = require "util.array";
 
 local http_timeout = 30;
 local have_async, async = pcall(require, "util.async");
@@ -250,13 +252,15 @@ end
 -- Utility function to check whether feature is present and enabled. Allow
 -- a feature if there are features present in the session(coming from
 -- the token) and the value of the feature is true.
--- If features is not present in the token we skip feature detection and allow
--- everything.
-function is_feature_allowed(features, ft)
-    if (features == nil or features[ft] == "true" or features[ft] == true) then
-        return true;
+-- If features are missing but we have granted_features check that
+-- if features are missing from the token we check whether it is moderator
+function is_feature_allowed(ft, features, granted_features, is_moderator)
+    if features then
+        return features[ft] == "true" or features[ft] == true;
+    elseif granted_features then
+        return granted_features[ft] == "true" or granted_features[ft] == true;
     else
-        return false;
+        return is_moderator;
     end
 end
 
@@ -466,6 +470,28 @@ function is_vpaas(room)
     return true;
 end
 
+-- Returns the initiator extension if the stanza is coming from a sip jigasi
+function is_sip_jigasi(stanza)
+    return stanza:get_child('initiator', 'http://jitsi.org/protocol/jigasi');
+end
+
+function is_transcriber_jigasi(stanza)
+    local features = stanza:get_child('features');
+    if not features  then
+        return false;
+    end
+
+    for i = 1, #features do
+        local feature = features[i];
+        if feature.attr and feature.attr.var and feature.attr.var == 'http://jitsi.org/protocol/transcriber' then
+            return true;
+        end
+    end
+
+    return false;
+end
+
+
 function get_sip_jibri_email_prefix(email)
     if not email then
         return nil;
@@ -530,6 +556,28 @@ function table_shallow_copy(t)
     return t2
 end
 
+-- Splits a string using delimiter
+function split_string(str, delimiter)
+    str = str .. delimiter;
+    local result = array();
+    for w in str:gmatch("(.-)" .. delimiter) do
+        result:push(w);
+    end
+
+    return result;
+end
+
+-- send iq result that the iq was received and will be processed
+function respond_iq_result(origin, stanza)
+    -- respond with successful receiving the iq
+    origin.send(st.iq({
+        type = 'result';
+        from = stanza.attr.to;
+        to = stanza.attr.from;
+        id = stanza.attr.id
+    }));
+end
+
 return {
     OUTBOUND_SIP_JIBRI_PREFIXES = OUTBOUND_SIP_JIBRI_PREFIXES;
     INBOUND_SIP_JIBRI_PREFIXES = INBOUND_SIP_JIBRI_PREFIXES;
@@ -538,6 +586,8 @@ return {
     is_healthcheck_room = is_healthcheck_room;
     is_moderated = is_moderated;
     is_sip_jibri_join = is_sip_jibri_join;
+    is_sip_jigasi = is_sip_jigasi;
+    is_transcriber_jigasi = is_transcriber_jigasi;
     is_vpaas = is_vpaas;
     get_focus_occupant = get_focus_occupant;
     get_room_from_jid = get_room_from_jid;
@@ -546,12 +596,14 @@ return {
     async_handler_wrapper = async_handler_wrapper;
     presence_check_status = presence_check_status;
     process_host_module = process_host_module;
+    respond_iq_result = respond_iq_result;
     room_jid_match_rewrite = room_jid_match_rewrite;
     room_jid_split_subdomain = room_jid_split_subdomain;
     internal_room_jid_match_rewrite = internal_room_jid_match_rewrite;
     update_presence_identity = update_presence_identity;
     http_get_with_retry = http_get_with_retry;
     ends_with = ends_with;
+    split_string = split_string;
     starts_with = starts_with;
     starts_with_one_of = starts_with_one_of;
     table_shallow_copy = table_shallow_copy;

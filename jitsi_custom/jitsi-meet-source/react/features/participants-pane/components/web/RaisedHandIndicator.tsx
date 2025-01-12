@@ -3,6 +3,7 @@ import { makeStyles } from 'tss-react/mui';
 
 import Icon from '../../../base/icons/components/Icon';
 import { IconRaiseHand } from '../../../base/icons/svg';
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -19,11 +20,11 @@ export const RaisedHandIndicator = () => {
     const { classes: styles, theme } = useStyles();
 
     return (
-        <div className = { styles.indicator }>
+        <div className = {styles.indicator}>
             <Icon
-                color = { theme.palette.icon04 }
-                size = { 24 }
-                src = { IconRaiseHand } />
+                color = {theme.palette.icon04}
+                size = {isMobileBrowser() ? 28 : 24}
+                src = {IconRaiseHand} />
         </div>
     );
 };

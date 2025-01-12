@@ -1,15 +1,15 @@
 import React from 'react';
-import {useTranslation} from 'react-i18next';
-import {makeStyles} from 'tss-react/mui';
-import {hasRaisedHand} from '../../../base/participants/functions';
-import {IParticipant} from '../../../base/participants/types';
+import { useTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
+import { hasRaisedHand } from '../../../base/participants/functions';
+import { IParticipant } from '../../../base/participants/types';
 import Button from '../../../base/ui/components/web/Button';
-import {BUTTON_TYPES} from '../../../base/ui/constants.web';
-import {ACTION_TRIGGER, MEDIA_STATE} from '../../constants';
-import {useLobbyActions} from '../../hooks';
+import { BUTTON_TYPES } from '../../../base/ui/constants.web';
+import { ACTION_TRIGGER, MEDIA_STATE } from '../../constants';
+import { useLobbyActions } from '../../hooks';
 
 import ParticipantItem from './ParticipantItem';
-import {IconCloseMedium} from "../../../base/icons/svg";
+import { IconCloseMedium } from "../../../base/icons/svg";
 
 interface IProps {
 
@@ -72,48 +72,48 @@ const useStyles = makeStyles()(theme => {
 });
 
 export const LobbyParticipantItem = ({
-                                         overflowDrawer,
-                                         participant: p,
-                                         openDrawerForParticipant
-                                     }: IProps) => {
-    const {id} = p;
-    const [admit, reject, chat] = useLobbyActions({participantID: id});
-    const {t} = useTranslation();
-    const {classes: styles} = useStyles();
+    overflowDrawer,
+    participant: p,
+    openDrawerForParticipant
+}: IProps) => {
+    const { id } = p;
+    const [ admit, reject, chat ] = useLobbyActions({ participantID: id });
+    const { t } = useTranslation();
+    const { classes: styles } = useStyles();
 
     const renderAdmitButton = () => (
         <Button
-            accessibilityLabel={`${t('participantsPane.actions.admit')} ${p.name}`}
-            className={styles.acceptButton}
-            labelKey={'participantsPane.actions.admit'}
-            onClick={admit}
-            size='small'
-            testId={`admit-${id}`}/>);
+            accessibilityLabel = {`${t('participantsPane.actions.admit')} ${p.name}`}
+            className = {styles.acceptButton}
+            labelKey = {'participantsPane.actions.admit'}
+            onClick = {admit}
+            size = 'small'
+            testId = {`admit-${id}`} />);
 
     return (
         <ParticipantItem
-            actionsTrigger={ACTION_TRIGGER.PERMANENT}
-            audioMediaState={MEDIA_STATE.NONE}
-            displayName={p.name}
-            local={p.local}
-            openDrawerForParticipant={openDrawerForParticipant}
-            overflowDrawer={overflowDrawer}
-            participantID={id}
-            raisedHand={hasRaisedHand(p)}
-            videoMediaState={MEDIA_STATE.NONE}
-            youText={t('chat.you')}
-            isLobbyParticipantRequest={true}>
+            actionsTrigger = {ACTION_TRIGGER.PERMANENT}
+            audioMediaState = {MEDIA_STATE.NONE}
+            displayName = {p.name}
+            local = {p.local}
+            openDrawerForParticipant = {openDrawerForParticipant}
+            overflowDrawer = {overflowDrawer}
+            participantID = {id}
+            raisedHand = {hasRaisedHand(p)}
+            videoMediaState = {MEDIA_STATE.NONE}
+            youText = {t('chat.you')}
+            isLobbyParticipantRequest = {true}>
 
             <>
                 {renderAdmitButton()}
                 <Button
-                    accessibilityLabel={`${t('participantsPane.actions.reject')} ${p.name}`}
-                    className={styles.rejectButton}
-                    icon={IconCloseMedium}
-                    onClick={reject}
-                    size='medium'
-                    testId={`reject-${id}`}
-                    type={BUTTON_TYPES.DESTRUCTIVE}/>
+                    accessibilityLabel = {`${t('participantsPane.actions.reject')} ${p.name}`}
+                    className = {styles.rejectButton}
+                    icon = {IconCloseMedium}
+                    onClick = {reject}
+                    size = 'medium'
+                    testId = {`reject-${id}`}
+                    type = {BUTTON_TYPES.DESTRUCTIVE} />
             </>
         </ParticipantItem>
     );

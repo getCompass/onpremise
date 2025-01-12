@@ -61,7 +61,6 @@ class AudioMuteButton extends AbstractAudioMuteButton<IProps> {
 
         // Bind event handlers so they are only bound once per instance.
         this._onKeyboardShortcut = this._onKeyboardShortcut.bind(this);
-        this._getTooltip = this._getLabel;
     }
 
     /**
@@ -155,25 +154,6 @@ class AudioMuteButton extends AbstractAudioMuteButton<IProps> {
                 { enable: !this._isAudioMuted() }));
 
         AbstractButton.prototype._onClick.call(this);
-    }
-
-    /**
-     * Returns a spinner if there is pending GUM.
-     *
-     * @returns {ReactElement | null}
-     */
-    _getElementAfter(): ReactElement | null {
-        const { _gumPending } = this.props;
-        const classes = withStyles.getClasses(this.props);
-
-        return _gumPending === IGUMPendingState.NONE ? null
-            : (
-                <div className = { classes.pendingContainer }>
-                    <Spinner
-                        color = { SPINNER_COLOR }
-                        size = 'small' />
-                </div>
-            );
     }
 }
 

@@ -6,37 +6,142 @@ import { ToolbarButton } from './types';
 export const THRESHOLDS = [
     {
         width: 565,
-        order: [ 'microphone', 'camera', 'desktop', 'chat', 'raisehand', 'reactions', 'participants', 'tileview' ]
+        order: [ 'microphone', 'camera', 'desktop', 'chat', 'raisehand', 'reactions', 'participants-pane', 'tileview' ]
     },
     {
         width: 520,
-        order: [ 'microphone', 'camera', 'desktop', 'chat', 'raisehand', 'participants', 'tileview' ]
+        order: [ 'microphone', 'camera', 'desktop', 'chat', 'raisehand', 'participants-pane', 'tileview' ]
     },
     {
         width: 470,
-        order: [ 'microphone', 'camera', 'desktop', 'raisehand', 'participants', 'tileview' ]
+        order: [ 'microphone', 'camera', 'desktop', 'raisehand', 'participants-pane', 'tileview' ]
     },
     {
         width: 420,
-        order: [ 'microphone', 'camera', 'desktop', 'participants', 'tileview' ]
+        order: [ 'microphone', 'camera', 'desktop', 'participants-pane', 'tileview' ]
     },
     {
         width: 370,
-        order: [ 'microphone', 'camera', 'participants', 'tileview' ]
+        order: [ 'microphone', 'camera', 'participants-pane', 'tileview' ]
     },
     {
         width: 225,
-        order: [ 'microphone', 'camera', 'participants' ]
+        order: [ 'microphone', 'camera', 'participants-pane' ]
     },
     {
         width: 200,
-        order: [ 'microphone', 'camera' ]
+        order: [ 'camera', 'microphone' ]
     }
 ];
 
-export const NOT_APPLICABLE = 'N/A';
+/**
+ * Thresholds for displaying compass toolbox buttons.
+ */
+export const COMPASS_THRESHOLDS = [
+    {
+        width: 565,
+        order: [ 'chat', 'raisehand', 'desktop', 'tileview', 'fullscreen' ]
+    },
+    {
+        width: 520,
+        order: [ 'chat', 'raisehand', 'desktop', 'tileview', 'fullscreen' ]
+    },
+    {
+        width: 470,
+        order: [ 'chat', 'raisehand', 'desktop', 'tileview', 'fullscreen' ]
+    },
+    {
+        width: 420,
+        order: [ 'chat', 'raisehand', 'desktop', 'tileview', 'fullscreen' ]
+    },
+    {
+        width: 370,
+        order: [ 'chat', 'desktop', 'tileview', 'fullscreen' ]
+    },
+    {
+        width: 225,
+        order: [ 'desktop', 'tileview', 'fullscreen' ]
+    },
+    {
+        width: 200,
+        order: [ 'tileview', 'fullscreen' ]
+    }
+];
 
-export const TOOLBAR_TIMEOUT = 4000;
+/**
+ * Thresholds for displaying compass toolbox buttons.
+ */
+export const COMPASS_THRESHOLDS_MOBILE = [
+    {
+        width: 565,
+        order: [ 'camera', 'microphone' ]
+    },
+    {
+        width: 520,
+        order: [ 'camera', 'microphone' ]
+    },
+    {
+        width: 470,
+        order: [ 'camera', 'microphone' ]
+    },
+    {
+        width: 420,
+        order: [ 'camera', 'microphone' ]
+    },
+    {
+        width: 370,
+        order: [ 'camera', 'microphone' ]
+    },
+    {
+        width: 225,
+        order: [ 'camera', 'microphone' ]
+    },
+    {
+        width: 200,
+        order: [ 'camera', 'microphone' ]
+    }
+];
+
+/**
+ * Main toolbar buttons priority used to determine which button should be picked to fill empty spaces for disabled
+ * buttons.
+ */
+export const MAIN_TOOLBAR_BUTTONS_PRIORITY = [
+    'microphone',
+    'camera',
+    'chat',
+    'chat-mobile',
+    'desktop',
+    'raisehand',
+    'reactions',
+    'participants-pane',
+    'tileview',
+    'fullscreen',
+    'recording',
+    'recording_electron',
+    'stats',
+    'select-background',
+    'settings'
+];
+
+/**
+ * Main toolbar buttons priority used to determine which button should be picked to fill empty spaces for disabled
+ * buttons.
+ */
+export const MAIN_COMPASS_TOOLBAR_BUTTONS_PRIORITY = [
+    'microphone',
+    'camera',
+    'participants-pane',
+    'chat',
+    'chat-mobile',
+    'raisehand',
+    'desktop',
+    'tileview',
+    'moderatorSettings',
+    'fullscreen',
+];
+
+export const TOOLBAR_TIMEOUT = 3000;
 
 export const DRAWER_MAX_HEIGHT = '80dvh - 64px';
 
@@ -46,8 +151,7 @@ export const ZINDEX_DIALOG_PORTAL = 302;
 /**
  * Color for spinner displayed in the toolbar.
  */
-export const SPINNER_COLOR = '#929292';
-
+export const SPINNER_COLOR = 'rgba(255, 255, 255, 0.6)';
 
 /**
  * The list of all possible UI buttons.
@@ -58,6 +162,7 @@ export const SPINNER_COLOR = '#929292';
 export const TOOLBAR_BUTTONS: ToolbarButton[] = [
     'camera',
     'chat',
+    'chat-mobile',
     'closedcaptions',
     'desktop',
     'download',
@@ -73,6 +178,7 @@ export const TOOLBAR_BUTTONS: ToolbarButton[] = [
     'linktosalesforce',
     'livestreaming',
     'microphone',
+    'moderatorSettings',
     'mute-everyone',
     'mute-video-everyone',
     'participants-pane',
@@ -91,7 +197,10 @@ export const TOOLBAR_BUTTONS: ToolbarButton[] = [
     'tileview',
     'toggle-camera',
     'videoquality',
-    'whiteboard'
+    'whiteboard',
+    'premeeting-microphone',
+    'premeeting-camera',
+    'premeeting-select-background'
 ];
 
 /**
@@ -99,6 +208,8 @@ export const TOOLBAR_BUTTONS: ToolbarButton[] = [
  */
 export const VISITORS_MODE_BUTTONS: ToolbarButton[] = [
     'chat',
+    'chat-mobile',
+    'closedcaptions',
     'hangup',
     'raisehand',
     'settings',

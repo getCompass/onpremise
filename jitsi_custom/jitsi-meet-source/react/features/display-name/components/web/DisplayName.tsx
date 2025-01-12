@@ -4,14 +4,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
-import {
-    getParticipantById,
-    getParticipantDisplayName
-} from '../../../base/participants/functions';
+import { getParticipantById, getParticipantDisplayName } from '../../../base/participants/functions';
 import { updateSettings } from '../../../base/settings/actions';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
-import Tooltip from '../../../base/tooltip/components/Tooltip';
-import { getIndicatorsTooltipPosition } from '../../../filmstrip/functions.web';
 import { appendSuffix } from '../../functions';
 
 /**
@@ -126,32 +121,28 @@ const DisplayName = ({
     if (allowEditing && isEditing) {
         return (
             <input
-                autoFocus = { true }
-                className = { classes.editDisplayName }
+                autoFocus = {true}
+                className = {classes.editDisplayName}
                 id = 'editDisplayName'
-                onBlur = { onSubmit }
-                onChange = { onChange }
-                onClick = { onClick }
-                onKeyDown = { onKeyDown }
-                placeholder = { t('defaultNickname') }
-                ref = { nameInputRef }
-                spellCheck = { 'false' }
+                onBlur = {onSubmit}
+                onChange = {onChange}
+                onClick = {onClick}
+                onKeyDown = {onKeyDown}
+                placeholder = {t('defaultNickname')}
+                ref = {nameInputRef}
+                spellCheck = {'false'}
                 type = 'text'
-                value = { editDisplayNameValue } />
+                value = {editDisplayNameValue} />
         );
     }
 
     return (
-        <Tooltip
-            content = { appendSuffix(nameToDisplay, displayNameSuffix) }
-            position = { getIndicatorsTooltipPosition(thumbnailType) }>
-            <span
-                className = { `displayname ${classes.displayName}` }
-                id = { elementID }
-                onClick = { onStartEditing }>
+        <span
+            className = {`displayname ${classes.displayName}`}
+            id = {elementID}
+            onClick = {onStartEditing}>
                 {appendSuffix(nameToDisplay, displayNameSuffix)}
             </span>
-        </Tooltip>
     );
 };
 

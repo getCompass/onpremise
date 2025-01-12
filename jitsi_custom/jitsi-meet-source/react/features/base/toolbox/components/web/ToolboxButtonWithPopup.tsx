@@ -54,6 +54,11 @@ interface IProps {
      * Whether or not the popover is visible.
      */
     visible: boolean;
+
+    /**
+     * Whether or not the button is hovered.
+     */
+    hovered?: boolean;
 }
 
 /**
@@ -73,7 +78,8 @@ export default function ToolboxButtonWithPopup(props: IProps) {
         popoverContent,
         styles,
         trigger,
-        visible
+        visible,
+        hovered
     } = props;
 
     if (!icon) {
@@ -100,20 +106,21 @@ export default function ToolboxButtonWithPopup(props: IProps) {
             className = 'settings-button-container'
             style = { styles }>
             {children}
-            <div className = 'settings-button-small-icon-container'>
+            <div className = {`settings-button-small-icon-container${hovered ? ' visible' : ''}`}>
                 <Popover
                     content = { popoverContent }
                     headingLabel = { ariaLabel }
                     onPopoverClose = { onPopoverClose }
                     onPopoverOpen = { onPopoverOpen }
                     position = 'top'
+                    trigger = { trigger }
                     visible = { visible }>
                     <Icon
                         alt = { ariaLabel }
                         className = { `settings-button-small-icon ${iconDisabled
                             ? 'settings-button-small-icon--disabled'
                             : ''}` }
-                        size = { 16 }
+                        size = { 10 }
                         src = { icon } />
                 </Popover>
             </div>

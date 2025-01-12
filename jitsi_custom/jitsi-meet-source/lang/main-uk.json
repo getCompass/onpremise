@@ -794,7 +794,7 @@
             "answerPlaceholder": "Варіант {{index}}",
             "cancel": "Скасувати",
             "create": "Створити опитування",
-            "pollOptions": "Варіант відповіді {{index}}",
+            "pollOption": "Варіант відповіді {{index}}",
             "pollQuestion": "Питання",
             "questionPlaceholder": "Поставте запитання",
             "removeOption": "Вилучити",

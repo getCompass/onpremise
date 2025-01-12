@@ -1,14 +1,7 @@
 import { IReduxState } from '../app/types';
-import {
-    ABSOLUTE_MAX_COLUMNS,
-    DEFAULT_MAX_COLUMNS,
-    TILE_PORTRAIT_ASPECT_RATIO
-} from '../filmstrip/constants';
-import {
-    getNumberOfPartipantsForTileView,
-    getThumbnailMinHeight,
-    getTileDefaultAspectRatio
-} from '../filmstrip/functions.web';
+import { TILE_VIEW_MAX_COLUMNS_COUNT, TILE_VIEW_MAX_COLUMNS_COUNT_MOBILE } from '../filmstrip/constants';
+import { getNumberOfPartipantsForTileView } from '../filmstrip/functions.web';
+import { isMobileBrowser } from "../base/environment/utils";
 
 export * from './functions.any';
 
@@ -24,39 +17,9 @@ export * from './functions.any';
  * @returns {number}
  */
 export function getMaxColumnCount(state: IReduxState, options: {
-    disableResponsiveTiles?: boolean; disableTileEnlargement?: boolean; width?: number | null; } = {}) {
-    if (typeof interfaceConfig === 'undefined') {
-        return DEFAULT_MAX_COLUMNS;
-    }
-
-    const {
-        disableResponsiveTiles: configDisableResponsiveTiles,
-        disableTileEnlargement: configDisableTileEnlargement
-    } = state['features/base/config'];
-    const {
-        width,
-        disableResponsiveTiles = configDisableResponsiveTiles,
-        disableTileEnlargement = configDisableTileEnlargement
-    } = options;
-    const { clientWidth } = state['features/base/responsive-ui'];
-    const widthToUse = width || clientWidth;
-    const configuredMax = interfaceConfig.TILE_VIEW_MAX_COLUMNS;
-
-    if (disableResponsiveTiles) {
-        return Math.min(Math.max(configuredMax || DEFAULT_MAX_COLUMNS, 1), ABSOLUTE_MAX_COLUMNS);
-    }
-
-    if (typeof interfaceConfig.TILE_VIEW_MAX_COLUMNS !== 'undefined' && interfaceConfig.TILE_VIEW_MAX_COLUMNS > 0) {
-        return Math.max(configuredMax, 1);
-    }
-
-    const aspectRatio = disableTileEnlargement
-        ? getTileDefaultAspectRatio(true, disableTileEnlargement, widthToUse)
-        : TILE_PORTRAIT_ASPECT_RATIO;
-    const minHeight = getThumbnailMinHeight(widthToUse);
-    const minWidth = aspectRatio * minHeight;
-
-    return Math.floor(widthToUse / minWidth);
+    disableResponsiveTiles?: boolean; disableTileEnlargement?: boolean; width?: number | null;
+} = {}) {
+    return isMobileBrowser() ? TILE_VIEW_MAX_COLUMNS_COUNT_MOBILE : TILE_VIEW_MAX_COLUMNS_COUNT;
 }
 
 /**
@@ -73,8 +36,8 @@ export function getNotResponsiveTileViewGridDimensions(state: IReduxState, stage
     const maxColumns = getMaxColumnCount(state);
     const { activeParticipants } = state['features/filmstrip'];
     const numberOfParticipants = stageFilmstrip ? activeParticipants.length : getNumberOfPartipantsForTileView(state);
-    const columnsToMaintainASquare = Math.ceil(Math.sqrt(numberOfParticipants));
-    const columns = Math.min(columnsToMaintainASquare, maxColumns);
+    const rowsToMaintainASquare = Math.ceil(Math.sqrt(numberOfParticipants));
+    const columns = Math.min(rowsToMaintainASquare, maxColumns);
     const rows = Math.ceil(numberOfParticipants / columns);
     const minVisibleRows = Math.min(maxColumns, rows);
 

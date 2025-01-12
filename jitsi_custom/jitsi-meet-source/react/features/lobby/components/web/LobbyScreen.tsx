@@ -14,6 +14,8 @@ import AbstractLobbyScreen, {
     IProps,
     _mapStateToProps
 } from '../AbstractLobbyScreen';
+import { isMobileBrowser } from "../../../base/environment/utils";
+import PreMeetingScreenMobile from "../../../base/premeeting/components/web/PreMeetingScreenMobile";
 
 /**
  * Implements a waiting screen that represents the participant being in the lobby.
@@ -26,11 +28,11 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
     _messageContainerRef: React.RefObject<MessageContainer>;
 
     /**
-       * Initializes a new {@code LobbyScreen} instance.
-       *
-       * @param {Object} props - The read-only properties with which the new
-       * instance is to be initialized.
-       */
+     * Initializes a new {@code LobbyScreen} instance.
+     *
+     * @param {Object} props - The read-only properties with which the new
+     * instance is to be initialized.
+     */
     constructor(props: IProps) {
         super(props);
 
@@ -38,19 +40,19 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
     }
 
     /**
-       * Implements {@code Component#componentDidMount}.
-       *
-       * @inheritdoc
-       */
+     * Implements {@code Component#componentDidMount}.
+     *
+     * @inheritdoc
+     */
     componentDidMount() {
         this._scrollMessageContainerToBottom(true);
     }
 
     /**
-       * Implements {@code Component#componentDidUpdate}.
-       *
-       * @inheritdoc
-       */
+     * Implements {@code Component#componentDidUpdate}.
+     *
+     * @inheritdoc
+     */
     componentDidUpdate(prevProps: IProps) {
         if (this.props._lobbyChatMessages !== prevProps._lobbyChatMessages) {
             this._scrollMessageContainerToBottom(true);
@@ -67,14 +69,27 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
     render() {
         const { _deviceStatusVisible, showCopyUrlButton, t } = this.props;
 
+        if (isMobileBrowser()) {
+            return (
+                <PreMeetingScreenMobile
+                    className = 'lobby-screen'
+                    showCopyUrlButton = {showCopyUrlButton}
+                    showDeviceStatus = {_deviceStatusVisible}
+                    isLobby = {true}
+                    title = {t(this._getScreenTitleKey(), { moderator: this.props._lobbyMessageRecipient })}>
+                    {this._renderContent()}
+                </PreMeetingScreenMobile>
+            );
+        }
+
         return (
             <PreMeetingScreen
                 className = 'lobby-screen'
-                showCopyUrlButton = { showCopyUrlButton }
-                showDeviceStatus = { _deviceStatusVisible }
-                isLobby={true}
-                title = { t(this._getScreenTitleKey(), { moderator: this.props._lobbyMessageRecipient }) }>
-                { this._renderContent() }
+                showCopyUrlButton = {showCopyUrlButton}
+                showDeviceStatus = {_deviceStatusVisible}
+                isLobby = {true}
+                title = {t(this._getScreenTitleKey(), { moderator: this.props._lobbyMessageRecipient })}>
+                {this._renderContent()}
             </PreMeetingScreen>
         );
     }
@@ -96,7 +111,7 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
 
         return (
             <div className = 'lobby-screen-content'>
-                { this._renderStandardButtons() }
+                {this._renderStandardButtons()}
             </div>
         );
     }
@@ -111,22 +126,22 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
         const { isChatOpen } = this.state;
 
         return (
-            <div className = { `lobby-chat-container ${isChatOpen ? 'hidden' : ''}` }>
+            <div className = {`lobby-chat-container ${isChatOpen ? 'hidden' : ''}`}>
                 <div className = 'lobby-chat-header'>
                     <h1 className = 'title'>
-                        { t(this._getScreenTitleKey(), { moderator: this.props._lobbyMessageRecipient }) }
+                        {t(this._getScreenTitleKey(), { moderator: this.props._lobbyMessageRecipient })}
                     </h1>
                     <Icon
-                        ariaLabel = { t('toolbar.closeChat') }
-                        onClick = { this._onToggleChat }
+                        ariaLabel = {t('toolbar.closeChat')}
+                        onClick = {this._onToggleChat}
                         role = 'button'
-                        className={ 'close-icon-button' }
-                        src = { IconCloseLarge } />
+                        className = {'close-icon-button'}
+                        src = {IconCloseLarge} />
                 </div>
                 <MessageContainer
-                    messages = { _lobbyChatMessages }
-                    ref = { this._messageContainerRef } />
-                <ChatInput onSend = { this._onSendMessage } />
+                    messages = {_lobbyChatMessages}
+                    ref = {this._messageContainerRef} />
+                <ChatInput onSend = {this._onSendMessage} />
             </div>
         );
     }
@@ -156,16 +171,16 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
         return (
             <>
                 <Input
-                    autoFocus = { true }
+                    autoFocus = {true}
                     className = 'lobby-prejoin-input'
-                    error = { showError }
+                    error = {showError}
                     id = 'lobby-name-field'
-                    onChange = { this._onChangeDisplayName }
-                    placeholder = { t('lobby.nameField') }
+                    onChange = {this._onChangeDisplayName}
+                    placeholder = {t('lobby.nameField')}
                     testId = 'lobby.nameField'
-                    value = { displayName } />
+                    value = {displayName} />
 
-                { showError && <div
+                {showError && <div
                     className = 'lobby-prejoin-error'
                     data-testid = 'lobby.errorMessage'>{t('prejoin.errorMissingName')}</div>}
             </>
@@ -183,13 +198,13 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
         return (
             <>
                 <Input
-                    className = { `lobby-prejoin-input ${_passwordJoinFailed ? 'error' : ''}` }
+                    className = {`lobby-prejoin-input ${_passwordJoinFailed ? 'error' : ''}`}
                     id = 'lobby-password-input'
-                    onChange = { this._onChangePassword }
-                    placeholder = { t('lobby.enterPasswordButton') }
+                    onChange = {this._onChangePassword}
+                    placeholder = {t('lobby.enterPasswordButton')}
                     testId = 'lobby.password'
                     type = 'password'
-                    value = { this.state.password } />
+                    value = {this.state.password} />
 
                 {_passwordJoinFailed && <div
                     className = 'lobby-prejoin-error'
@@ -208,16 +223,16 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
             <>
                 <Button
                     className = 'lobby-button-margin'
-                    fullWidth = { true }
+                    fullWidth = {true}
                     labelKey = 'prejoin.joinMeeting'
-                    onClick = { this._onJoinWithPassword }
+                    onClick = {this._onJoinWithPassword}
                     testId = 'lobby.passwordJoinButton'
                     type = 'primary' />
                 <Button
                     className = 'lobby-button-margin'
-                    fullWidth = { true }
+                    fullWidth = {true}
                     labelKey = 'lobby.backToKnockModeButton'
-                    onClick = { this._onSwitchToKnockMode }
+                    onClick = {this._onSwitchToKnockMode}
                     testId = 'lobby.backToKnockModeButton'
                     type = 'secondary' />
             </>
@@ -236,10 +251,10 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
             <>
                 {_knocking || <Button
                     className = 'lobby-button-margin'
-                    disabled = { !this.state.displayName }
-                    fullWidth = { true }
+                    disabled = {!this.state.displayName}
+                    fullWidth = {true}
                     labelKey = 'lobby.knockButton'
-                    onClick = { this._onAskToJoin }
+                    onClick = {this._onAskToJoin}
                     testId = 'lobby.knockButton'
                     type = 'primary' />
                 }

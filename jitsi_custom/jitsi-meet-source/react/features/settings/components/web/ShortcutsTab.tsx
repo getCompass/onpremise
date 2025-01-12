@@ -1,12 +1,12 @@
-import {Theme} from '@mui/material';
+import { Theme } from '@mui/material';
 import React from 'react';
-import {WithTranslation} from 'react-i18next';
-import {withStyles} from 'tss-react/mui';
+import { WithTranslation } from 'react-i18next';
+import { withStyles } from 'tss-react/mui';
 
 import AbstractDialogTab, {
     IProps as AbstractDialogTabProps
 } from '../../../base/dialog/components/web/AbstractDialogTab';
-import {translate} from '../../../base/i18n/functions';
+import { translate } from '../../../base/i18n/functions';
 import Checkbox from '../../../base/ui/components/web/Checkbox';
 
 /**
@@ -128,8 +128,8 @@ class ShortcutsTab extends AbstractDialogTab<IProps, any> {
      *
      * @returns {void}
      */
-    _onKeyboardShortcutEnableChanged({target: {checked}}: React.ChangeEvent<HTMLInputElement>) {
-        super._onChange({keyboardShortcutsEnabled: checked});
+    _onKeyboardShortcutEnableChanged({ target: { checked } }: React.ChangeEvent<HTMLInputElement>) {
+        super._onChange({ keyboardShortcutsEnabled: checked });
     }
 
     /**
@@ -140,7 +140,7 @@ class ShortcutsTab extends AbstractDialogTab<IProps, any> {
      * @returns {JSX}
      */
     _renderShortcutsListItem(keyboardKey: string, translationKey: string) {
-        const {t} = this.props;
+        const { t } = this.props;
         const classes = withStyles.getClasses(this.props);
         let modifierKey = 'Alt';
 
@@ -151,21 +151,21 @@ class ShortcutsTab extends AbstractDialogTab<IProps, any> {
         }
 
         // не отображаем кириллические буквы
-        if (['А', 'Ь', 'М', 'С', 'В', 'З', 'К', 'Ы', 'Ц', 'Е'].includes(keyboardKey)) {
+        if ([ 'А', 'Ь', 'М', 'С', 'В', 'З', 'К', 'Ы', 'Ц', 'Е' ].includes(keyboardKey)) {
             return <></>;
         }
 
         return (
             <li
-                className={classes.listItem}
-                key={keyboardKey}>
-                <span className={classes.listItemKey}>
+                className = {classes.listItem}
+                key = {keyboardKey}>
+                <span className = {classes.listItemKey}>
                     {keyboardKey.startsWith(':')
                         ? `${modifierKey} + ${keyboardKey.slice(1)}`
                         : keyboardKey}
                 </span>
                 <span
-                    aria-label={t(translationKey)}>
+                    aria-label = {t(translationKey)}>
                     {t(translationKey)}
                 </span>
             </li>
@@ -188,10 +188,10 @@ class ShortcutsTab extends AbstractDialogTab<IProps, any> {
         const classes = withStyles.getClasses(this.props);
 
         // порядок ключей
-        const order = ['m', 'v', 'c', 'd', 'f', 'p', 'r', 's', 'w', 't', '?', '0', '1-9', 'space'];
+        const order = [ 'm', 'v', 'c', 'd', 'p', 'r', 's', 'w', 't', '0', '1-9', 'space' ];
 
         // сортировка
-        const compareFunction = (a: [string, string], b: [string, string]) => {
+        const compareFunction = (a: [ string, string ], b: [ string, string ]) => {
             const keyA = a[0].toLowerCase(); // keyboardKey
             const keyB = b[0].toLowerCase(); // translationKey
 
@@ -211,23 +211,23 @@ class ShortcutsTab extends AbstractDialogTab<IProps, any> {
 
         return (
             <>
-                <div className={classes.container}>
+                <div className = {classes.container}>
                     {displayShortcuts && (
-                        <ul className={classes.listContainer}>
+                        <ul className = {classes.listContainer}>
                             {Array.from(shortcutDescriptions)
                                 .sort(compareFunction)
                                 .map(description => this._renderShortcutsListItem(...description))}
                         </ul>
                     )}
                 </div>
-                <div className={classes.checkboxContainer}>
+                <div className = {classes.checkboxContainer}>
                     <Checkbox
-                        checked={keyboardShortcutsEnabled}
-                        className={classes.checkbox}
-                        classNameText={classes.checkboxText}
-                        label={t('prejoin.keyboardShortcuts')}
-                        name='enable-keyboard-shortcuts'
-                        onChange={this._onKeyboardShortcutEnableChanged}/>
+                        checked = {keyboardShortcutsEnabled}
+                        className = {classes.checkbox}
+                        classNameText = {classes.checkboxText}
+                        label = {t('prejoin.keyboardShortcuts')}
+                        name = 'enable-keyboard-shortcuts'
+                        onChange = {this._onKeyboardShortcutEnableChanged} />
                 </div>
             </>
         );

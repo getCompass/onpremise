@@ -1,13 +1,13 @@
-import throttle from 'lodash/throttle';
-import React, {RefObject} from 'react';
-import {scrollIntoView} from 'seamless-scroll-polyfill';
+import { throttle } from 'lodash-es';
+import React, { RefObject } from 'react';
+import { scrollIntoView } from 'seamless-scroll-polyfill';
 
-import {MESSAGE_TYPE_REMOTE} from '../../constants';
-import AbstractMessageContainer, {IProps} from '../AbstractMessageContainer';
+import { MESSAGE_TYPE_REMOTE } from '../../constants';
+import AbstractMessageContainer, { IProps } from '../AbstractMessageContainer';
 
 import ChatMessageGroup from './ChatMessageGroup';
 import NewMessagesButton from './NewMessagesButton';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 interface IState {
 
@@ -76,7 +76,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
         this._handleIntersectBottomList = this._handleIntersectBottomList.bind(this);
         this._findFirstUnreadMessage = this._findFirstUnreadMessage.bind(this);
         this._isMessageVisible = this._isMessageVisible.bind(this);
-        this._onChatScroll = throttle(this._onChatScroll.bind(this), 300, {leading: true});
+        this._onChatScroll = throttle(this._onChatScroll.bind(this), 300, { leading: true });
         this._onGoToFirstUnreadMessage = this._onGoToFirstUnreadMessage.bind(this);
     }
 
@@ -92,64 +92,73 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
 
             return (
                 <ChatMessageGroup
-                    className={messageType || MESSAGE_TYPE_REMOTE}
-                    key={index}
-                    messages={group}/>
+                    className = {messageType || MESSAGE_TYPE_REMOTE}
+                    key = {index}
+                    messages = {group} />
             );
         });
         const isMobile = isMobileBrowser();
 
         return (
-            <div id='chat-conversation-container' className={isMobile ? 'is-mobile' : ''}>
+            <div id = 'chat-conversation-container' className = {isMobile ? 'is-mobile' : ''}>
                 {isMobile ? (
-                    <div id='chatHeaderShadowMobile'>
-                        <svg width="414" height="88" viewBox="0 0 414 88" fill="none"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <rect width="414" height="88" fill="url(#paint0_linear_695_48927)"/>
+                    <div id = 'chatHeaderShadowMobile'>
+                        <svg width = "414" height = "88" viewBox = "0 0 414 88" fill = "none"
+                             xmlns = "http://www.w3.org/2000/svg">
+                            <rect width = "414" height = "88" fill = "url(#paint0_linear_695_48927)" />
                             <defs>
-                                <linearGradient id="paint0_linear_695_48927" x1="196.369" y1="1.47197e-06" x2="195.569"
-                                                y2="88.0041" gradientUnits="userSpaceOnUse">
-                                    <stop stopColor="#1C1C1C"/>
-                                    <stop offset="0.155077" stopColor="#1C1C1C" stopOpacity="0.95"/>
-                                    <stop offset="0.216631" stopColor="#1C1C1C" stopOpacity="0.932765"/>
-                                    <stop offset="1" stopColor="#1C1C1C" stopOpacity="0"/>
+                                <linearGradient id = "paint0_linear_695_48927" x1 = "196.369" y1 = "1.47197e-06"
+                                                x2 = "195.569"
+                                                y2 = "88.0041" gradientUnits = "userSpaceOnUse">
+                                    <stop stopColor = "#1C1C1C" />
+                                    <stop offset = "0.155077" stopColor = "#1C1C1C" stopOpacity = "0.95" />
+                                    <stop offset = "0.216631" stopColor = "#1C1C1C" stopOpacity = "0.932765" />
+                                    <stop offset = "1" stopColor = "#1C1C1C" stopOpacity = "0" />
                                 </linearGradient>
                             </defs>
                         </svg>
                     </div>
                 ) : (
-                    <div id='chatHeaderShadow'>
-                        <svg width="316" height="88" viewBox="0 0 316 88" fill="none"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <rect width="316" height="88" fill="url(#paint0_linear_880_29950)"/>
+                    <div id = 'chatHeaderShadow'>
+                        <svg width = "316" height = "12" viewBox = "0 0 316 12" fill = "none"
+                             xmlns = "http://www.w3.org/2000/svg">
+                            <rect width = "316" height = "12" transform = "matrix(-1 -8.74228e-08 -8.74228e-08 1 316 0)"
+                                  fill = "url(#paint0_linear_9773_15402)" />
                             <defs>
-                                <linearGradient id="paint0_linear_880_29950" x1="149.885" y1="1.47197e-06" x2="148.838"
-                                                y2="87.9989" gradientUnits="userSpaceOnUse">
-                                    <stop stopColor="#212121"/>
-                                    <stop offset="0.155077" stopColor="#212121" stopOpacity="0.95"/>
-                                    <stop offset="0.216631" stopColor="#212121" stopOpacity="0.932765"/>
-                                    <stop offset="1" stopColor="#212121" stopOpacity="0"/>
+                                <linearGradient id = "paint0_linear_9773_15402" x1 = "149.885" y1 = "2.00723e-07"
+                                                x2 = "149.866" y2 = "12.0015" gradientUnits = "userSpaceOnUse">
+                                    <stop stop-color = "#212121" />
+                                    <stop offset = "0.155077" stop-color = "#212121" stop-opacity = "0.95" />
+                                    <stop offset = "0.216631" stop-color = "#212121" stop-opacity = "0.932765" />
+                                    <stop offset = "1" stop-color = "#212121" stop-opacity = "0" />
                                 </linearGradient>
                             </defs>
                         </svg>
                     </div>
                 )}
                 <div
-                    aria-labelledby='chat-header'
-                    id={isMobile ? 'chatconversationmobile' : 'chatconversation'}
-                    onScroll={this._onChatScroll}
-                    ref={this._messageListRef}
-                    role='log'
-                    tabIndex={0}>
+                    aria-labelledby = 'chat-header'
+                    id = {isMobile ? 'chatconversationmobile' : 'chatconversation'}
+                    className = {isMobile ? '' : 'invisible-scrollbar'}
+                    onScroll = {this._onChatScroll}
+                    ref = {this._messageListRef}
+                    role = 'log'
+                    tabIndex = {0}>
+                    <div id = 'messagesListStart' />
+
                     {messages}
 
-                    {!this.state.isScrolledToBottom && this.state.hasNewMessages
-                        && <NewMessagesButton
-                            onGoToFirstUnreadMessage={this._onGoToFirstUnreadMessage}/>}
+                    {!this.state.isScrolledToBottom && this.state.hasNewMessages && (
+                        <NewMessagesButton onGoToFirstUnreadMessage = {this._onGoToFirstUnreadMessage} />
+                    )}
+
                     <div
-                        id='messagesListEnd'
-                        ref={this._messagesListEndRef}/>
+                        id = 'messagesListEnd'
+                        ref = {this._messagesListEndRef} />
                 </div>
+                {!isMobile && (
+                    <div id = 'chatFooterShadow' />
+                )}
             </div>
         );
     }
@@ -195,7 +204,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
                 // если кто-то кроме нас написал сообщение - отображаем плашку "новое сообщение"
                 if (hasRemoteMessage) {
                     // eslint-disable-next-line react/no-did-update-set-state
-                    this.setState({hasNewMessages: true});
+                    this.setState({ hasNewMessages: true });
                 } else {
                     // иначе просто скроллим вниз, если писали мы сами
                     this.scrollToElement(false, null);
@@ -246,7 +255,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
         const firstUnreadMessage = this._findFirstUnreadMessage();
 
         if (firstUnreadMessage && firstUnreadMessage.id !== this.state.lastReadMessageId) {
-            this.setState({lastReadMessageId: firstUnreadMessage?.id});
+            this.setState({ lastReadMessageId: firstUnreadMessage?.id });
         }
     }
 
@@ -260,7 +269,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
     _onGoToFirstUnreadMessage() {
         const firstUnreadMessage = this._findFirstUnreadMessage();
 
-        this.setState({lastReadMessageId: firstUnreadMessage?.id || null});
+        this.setState({ lastReadMessageId: firstUnreadMessage?.id || null });
         this.scrollToElement(true, firstUnreadMessage as Element);
     }
 
@@ -329,7 +338,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
         const messagesNodeList = document.querySelectorAll('.chatmessage-wrapper');
 
         // @ts-ignore
-        const messagesToArray = [...messagesNodeList];
+        const messagesToArray = [ ...messagesNodeList ];
 
         const previousIndex = messagesToArray.findIndex((message: Element) =>
             message.id === this.state.lastReadMessageId);
@@ -351,7 +360,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
      * @returns {boolean}
      */
     _isMessageVisible(message: Element): boolean {
-        const {bottom, height, top} = message.getBoundingClientRect();
+        const { bottom, height, top } = message.getBoundingClientRect();
 
         if (this._messageListRef.current) {
             const containerRect = this._messageListRef.current.getBoundingClientRect();

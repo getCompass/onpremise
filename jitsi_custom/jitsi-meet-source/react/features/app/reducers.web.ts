@@ -11,6 +11,7 @@ import '../participants-pane/reducer';
 import '../picture-in-picture/reducer';
 import '../power-monitor/reducer';
 import '../prejoin/reducer';
+import '../quality-control/reducer';
 import '../remote-control/reducer';
 import '../screen-share/reducer';
 import '../noise-suppression/reducer';

@@ -1,7 +1,7 @@
 import React from 'react';
-import {makeStyles} from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui';
 
-import {Video} from '../../base/media/components/index';
+import { Video } from '../../base/media/components/index';
 
 /**
  * The type of the React {@code Component} props of {@link VideoInputPreview}.
@@ -52,17 +52,17 @@ const useStyles = makeStyles()(theme => {
     };
 });
 
-const VideoInputPreview = ({error, localFlipX, track}: IProps) => {
-    const {classes, cx} = useStyles();
+const VideoInputPreview = ({ error, localFlipX, track }: IProps) => {
+    const { classes, cx } = useStyles();
 
     return (
-        <div className={classes.container}>
+        <div className = {classes.container}>
             <Video
-                className={cx(classes.video, localFlipX && 'flipVideoX')}
-                playsinline={true}
-                videoTrack={{jitsiTrack: track}}/>
+                className = {cx(classes.video, localFlipX && 'flipVideoX')}
+                playsinline = {true}
+                videoTrack = {{ jitsiTrack: track }} />
             {error && (
-                <div className={classes.errorText}>
+                <div className = {classes.errorText}>
                     {error}
                 </div>
             )}

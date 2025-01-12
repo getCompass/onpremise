@@ -858,7 +858,7 @@
             "answerPlaceholder": "Opção {{index}}",
             "cancel": "Cancelar",
             "create": "Iniciar uma votação",
-            "pollOptions": "Opção {{index}}",
+            "pollOption": "Opção {{index}}",
             "pollQuestion": "Pergunta",
             "questionPlaceholder": "Faça uma pergunta",
             "removeOption": "Remover opção",

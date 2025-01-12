@@ -1,13 +1,30 @@
 import { useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { handleLobbyChatInitialized } from '../chat/actions.web';
 import { approveKnockingParticipant, rejectKnockingParticipant } from '../lobby/actions.web';
+
+import ParticipantsPaneButton from './components/web/ParticipantsPaneButton';
+import { isParticipantsPaneEnabled } from './functions';
+import ParticipantsPaneButtonMobile from "./components/web/ParticipantsPaneButtonMobile";
+import { isMobileBrowser } from "../base/environment/utils";
 
 interface IDrawerParticipant {
     displayName?: string;
     participantID: string;
 }
+
+const participants = {
+    key: 'participants-pane',
+    Content: ParticipantsPaneButton,
+    group: 2
+};
+
+const participantsMobile = {
+    key: 'participants-pane',
+    Content: ParticipantsPaneButtonMobile,
+    group: 2
+};
 
 /**
  * Hook used to create admit/reject lobby actions.
@@ -43,7 +60,7 @@ export function useLobbyActions(participant?: IDrawerParticipant | null, closeDr
  * @returns {Array<any>}
  */
 export function useParticipantDrawer(): [
-    IDrawerParticipant | null,
+        IDrawerParticipant | null,
     () => void,
     (p: IDrawerParticipant | null) => void ] {
     const [ drawerParticipant, openDrawerForParticipant ] = useState<IDrawerParticipant | null>(null);
@@ -56,4 +73,25 @@ export function useParticipantDrawer(): [
         closeDrawer,
         openDrawerForParticipant
     ];
+}
+
+/**
+ * A hook that returns the participants pane button if it is enabled and undefined otherwise.
+ *
+ *  @returns {Object | undefined}
+ */
+export function useParticipantPaneButton() {
+    const participantsPaneEnabled = useSelector(isParticipantsPaneEnabled);
+
+    if (participantsPaneEnabled) {
+        return participants;
+    }
+}
+
+export function getParticipantPaneButton() {
+    if (isMobileBrowser()) {
+        return participantsMobile;
+    }
+
+    return participants;
 }

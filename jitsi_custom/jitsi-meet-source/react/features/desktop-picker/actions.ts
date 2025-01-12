@@ -13,7 +13,6 @@ import DesktopPicker from './components/DesktopPicker';
  */
 export function showDesktopPicker(options: { desktopSharingSources?: any; } = {}, onSourceChoose: Function) {
     const { desktopSharingSources } = options;
-
     return openDialog(DesktopPicker, {
         desktopSharingSources,
         onSourceChoose

@@ -32,7 +32,7 @@
     .filmstrip {
         align-items: center;
         display: flex;
-        height: 100%;
+        height: calc(100% - #{$compassToolbarHeight});
         justify-content: center;
         left: 0;
         position: absolute;

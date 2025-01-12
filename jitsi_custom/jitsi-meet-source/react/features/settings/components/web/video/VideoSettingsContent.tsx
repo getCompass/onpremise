@@ -1,22 +1,25 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState, IStore} from '../../../../app/types';
-import {IconImage} from '../../../../base/icons/svg';
-import {Video} from '../../../../base/media/components/index';
-import {equals} from '../../../../base/redux/functions';
-import {updateSettings} from '../../../../base/settings/actions';
-import {withPixelLineHeight} from '../../../../base/styles/functions.web';
+import { IReduxState, IStore } from '../../../../app/types';
+import { IconImage } from '../../../../base/icons/svg';
+import { Video } from '../../../../base/media/components/index';
+import { equals } from '../../../../base/redux/functions';
+import { updateSettings } from '../../../../base/settings/actions';
+import { withPixelLineHeight } from '../../../../base/styles/functions.web';
 import Checkbox from '../../../../base/ui/components/web/Checkbox';
 import ContextMenu from '../../../../base/ui/components/web/ContextMenu';
-import ContextMenuItem from '../../../../base/ui/components/web/ContextMenuItem';
 import ContextMenuItemGroup from '../../../../base/ui/components/web/ContextMenuItemGroup';
-import {checkBlurSupport, checkVirtualBackgroundEnabled} from '../../../../virtual-background/functions';
-import {openSettingsDialog} from '../../../actions';
-import {SETTINGS_TABS} from '../../../constants';
-import {createLocalVideoTracks} from '../../../functions.web';
+import { checkBlurSupport, checkVirtualBackgroundEnabled } from '../../../../virtual-background/functions';
+import { createLocalVideoTracks } from '../../../functions.web';
+import { BUTTON_TYPES } from "../../../../base/ui/constants.any";
+import Button from "../../../../base/ui/components/web/Button";
+import Icon from "../../../../base/icons/components/Icon";
+import { openDialog } from "../../../../base/dialog/actions";
+import CompassVirtualBackgroundDialog
+    from "../../../../virtual-background/components/web/CompassVirtualBackgroundDialog";
 
 /**
  * The type of the React {@code Component} props of {@link VideoSettingsContent}.
@@ -32,6 +35,11 @@ export interface IProps {
      * The deviceId of the camera device currently being used.
      */
     currentCameraDeviceId: string;
+
+    /**
+     * Whether the local video flip is disabled.
+     */
+    disableLocalVideoFlip: boolean | undefined;
 
     /**
      * Whether or not the local video is flipped.
@@ -67,30 +75,26 @@ export interface IProps {
 const useStyles = makeStyles()(theme => {
     return {
         container: {
-            padding: '16px 0 12px 0',
+            padding: '16px 0',
             maxHeight: 'calc(100dvh - 100px)',
             overflow: 'auto',
             margin: 0,
-            minWidth: '270px',
-            marginBottom: '10px',
+            minWidth: '272px',
+            marginBottom: '12px',
             position: 'relative',
             right: 'auto'
         },
 
         previewEntry: {
             cursor: 'pointer',
-            height: '140px',
+            height: '134px',
             width: '240px',
             position: 'relative',
-            margin: '0 15px',
-            marginBottom: theme.spacing(1),
+            margin: '0 16px',
+            marginBottom: '4px',
             borderRadius: theme.shape.borderRadius,
             boxSizing: 'border-box',
-            overflow: 'hidden',
-
-            '&:last-child': {
-                marginBottom: '8px'
-            }
+            overflow: 'hidden'
         },
 
         selectedEntry: {
@@ -139,16 +143,23 @@ const useStyles = makeStyles()(theme => {
             padding: '0 12px'
         },
 
-        separateLineContainer: {
-            paddingTop: '6px',
-            paddingBottom: '7px',
-            paddingLeft: '24px',
-            paddingRight: '24px'
+        checkbox: {
+            paddingLeft: '4px',
+            paddingRight: '0px',
+            width: '100%',
+
+            '&:hover': {
+                borderRadius: '0 !important',
+
+                '.checkbox-text': {
+                    color: 'rgba(255, 255, 255, 1)',
+                },
+            }
         },
 
-        separateLine: {
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            height: '1px'
+        buttonContainer: {
+            padding: '0 16px',
+            marginTop: '8px'
         },
     };
 });
@@ -158,23 +169,24 @@ const stopPropagation = (e: React.MouseEvent) => {
 };
 
 const VideoSettingsContent = ({
-                                  changeFlip,
-                                  currentCameraDeviceId,
-                                  localFlipX,
-                                  selectBackground,
-                                  setVideoInputDevice,
-                                  toggleVideoSettings,
-                                  videoDeviceIds,
-                                  visibleVirtualBackground
-                              }: IProps) => {
+    changeFlip,
+    currentCameraDeviceId,
+    disableLocalVideoFlip,
+    localFlipX,
+    selectBackground,
+    setVideoInputDevice,
+    toggleVideoSettings,
+    videoDeviceIds,
+    visibleVirtualBackground
+}: IProps) => {
     const _componentWasUnmounted = useRef(false);
-    const [trackData, setTrackData] = useState(new Array(videoDeviceIds.length).fill({
+    const [ trackData, setTrackData ] = useState(new Array(videoDeviceIds.length).fill({
         jitsiTrack: null
     }));
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const videoDevicesRef = useRef(videoDeviceIds);
     const trackDataRef = useRef(trackData);
-    const {classes, cx} = useStyles();
+    const { classes, cx } = useStyles();
 
     /**
      * Toggles local video flip state.
@@ -183,7 +195,7 @@ const VideoSettingsContent = ({
      */
     const _onToggleFlip = useCallback(() => {
         changeFlip(!localFlipX);
-    }, [localFlipX, changeFlip]);
+    }, [ localFlipX, changeFlip ]);
 
     /**
      * Destroys all the tracks from trackData object.
@@ -192,7 +204,7 @@ const VideoSettingsContent = ({
      * @returns {Promise<void>}
      */
     const _disposeTracks = (tracks: { jitsiTrack: any; }[]) => {
-        tracks.forEach(({jitsiTrack}) => {
+        tracks.forEach(({ jitsiTrack }) => {
             jitsiTrack?.dispose();
         });
     };
@@ -244,8 +256,8 @@ const VideoSettingsContent = ({
      */
         // eslint-disable-next-line react/no-multi-comp
     const _renderPreviewEntry = (data: { deviceId: string; error?: string; jitsiTrack: any | null; },
-                                 index: number) => {
-            const {error, jitsiTrack, deviceId} = data;
+            index: number) => {
+            const { error, jitsiTrack, deviceId } = data;
             const isSelected = deviceId === currentCameraDeviceId;
             const key = `vp-${index}`;
             const tabIndex = '0';
@@ -253,10 +265,10 @@ const VideoSettingsContent = ({
             if (error) {
                 return (
                     <div
-                        className={classes.previewEntry}
-                        key={key}
-                        tabIndex={-1}>
-                        <div className={classes.error}>{t(error)}</div>
+                        className = {classes.previewEntry}
+                        key = {key}
+                        tabIndex = {-1}>
+                        <div className = {classes.error}>{t(error)}</div>
                     </div>
                 );
             }
@@ -284,16 +296,16 @@ const VideoSettingsContent = ({
             return (
                 <div
                     {...previewProps}
-                    role='radio'>
-                    <div className={classes.labelContainer}>
-                        {label && <div className={classes.label}>
+                    role = 'radio'>
+                    <div className = {classes.labelContainer}>
+                        {label && <div className = {classes.label}>
                             <span>{label}</span>
                         </div>}
                     </div>
                     <Video
-                        className={cx(classes.previewVideo, localFlipX && 'flipVideoX')}
-                        playsinline={true}
-                        videoTrack={{jitsiTrack}}/>
+                        className = {cx(classes.previewVideo, localFlipX && 'flipVideoX')}
+                        playsinline = {true}
+                        videoTrack = {{ jitsiTrack }} />
                 </div>
             );
         };
@@ -312,45 +324,58 @@ const VideoSettingsContent = ({
             _setTracks();
             videoDevicesRef.current = videoDeviceIds;
         }
-    }, [videoDeviceIds]);
+    }, [ videoDeviceIds ]);
 
     return (
         <ContextMenu
-            aria-labelledby='video-settings-button'
-            className={classes.container}
-            hidden={false}
-            id='video-settings-dialog'
-            role='radiogroup'
-            tabIndex={-1}>
+            activateFocusTrap = {true}
+            aria-labelledby = 'video-settings-button'
+            className = {classes.container}
+            hidden = {false}
+            id = 'video-settings-dialog'
+            role = 'radiogroup'
+            tabIndex = {-1}>
             <ContextMenuItemGroup>
                 {trackData.map((data, i) => _renderPreviewEntry(data, i))}
             </ContextMenuItemGroup>
-            <div className={classes.separateLineContainer}>
-                <div className={classes.separateLine}/>
-            </div>
             <ContextMenuItemGroup>
-                {visibleVirtualBackground && <ContextMenuItem
-                    accessibilityLabel={t('virtualBackground.title')}
-                    icon={IconImage}
-                    onClick={selectBackground}
-                    text={t('virtualBackground.title')}/>}
-                <div
-                    className={classes.checkboxContainer}
-                    onClick={stopPropagation}>
-                    <Checkbox
-                        checked={localFlipX}
-                        label={t('videothumbnail.mirrorVideo')}
-                        onChange={_onToggleFlip}/>
-                </div>
+                {!disableLocalVideoFlip && (
+                    <div
+                        className = {classes.checkboxContainer}
+                        onClick = {stopPropagation}>
+                        <Checkbox
+                            className = {classes.checkbox}
+                            classNameText='checkbox-text'
+                            checked = {localFlipX}
+                            label = {t('videothumbnail.mirrorVideo')}
+                            onChange = {_onToggleFlip} />
+                    </div>
+                )}
+                {visibleVirtualBackground &&
+                    <div className = {classes.buttonContainer}>
+                        <Button
+                            accessibilityLabel = {t('virtualBackground.title')}
+                            fullWidth = {true}
+                            labelKey = {'virtualBackground.title'}
+                            onClick = {selectBackground}
+                            type = {BUTTON_TYPES.PRIMARY}
+                            customIcon = {
+                                <Icon
+                                    size = {20}
+                                    src = {IconImage} />
+                            } />
+                    </div>}
             </ContextMenuItemGroup>
         </ContextMenu>
     );
 };
 
 const mapStateToProps = (state: IReduxState) => {
-    const {localFlipX} = state['features/base/settings'];
+    const { disableLocalVideoFlip } = state['features/base/config'];
+    const { localFlipX } = state['features/base/settings'];
 
     return {
+        disableLocalVideoFlip,
         localFlipX: Boolean(localFlipX),
         visibleVirtualBackground: checkBlurSupport()
             && checkVirtualBackgroundEnabled(state)
@@ -359,7 +384,7 @@ const mapStateToProps = (state: IReduxState) => {
 
 const mapDispatchToProps = (dispatch: IStore['dispatch']) => {
     return {
-        selectBackground: () => dispatch(openSettingsDialog(SETTINGS_TABS.VIRTUAL_BACKGROUND)),
+        selectBackground: () => dispatch(openDialog(CompassVirtualBackgroundDialog)),
         changeFlip: (flip: boolean) => {
             dispatch(updateSettings({
                 localFlipX: flip

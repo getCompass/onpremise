@@ -36,6 +36,8 @@ import {
     setTrackMuted
 } from './functions';
 import './subscriber';
+import { getNumberOfPartipantsForTileView } from "../../filmstrip/functions.web";
+import { setNewReceiverQuality } from "../../quality-control/actions";
 
 /**
  * Middleware that captures LIB_DID_DISPOSE and LIB_DID_INIT actions and,
@@ -49,7 +51,7 @@ MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
     case SET_AUDIO_MUTED:
         if (!action.muted
-                && isUserInteractionRequiredForUnmute(store.getState())) {
+            && isUserInteractionRequiredForUnmute(store.getState())) {
             return;
         }
 
@@ -68,9 +70,9 @@ MiddlewareRegistry.register(store => next => action => {
         let jitsiTrack;
 
         if (localTrack
-                && (jitsiTrack = localTrack.jitsiTrack)
-                && jitsiTrack.getCameraFacingMode()
-                    !== action.cameraFacingMode) {
+            && (jitsiTrack = localTrack.jitsiTrack)
+            && jitsiTrack.getCameraFacingMode()
+            !== action.cameraFacingMode) {
             store.dispatch(toggleCameraFacingMode());
         }
         break;
@@ -82,7 +84,7 @@ MiddlewareRegistry.register(store => next => action => {
 
     case SET_VIDEO_MUTED:
         if (!action.muted
-                && isUserInteractionRequiredForUnmute(store.getState())) {
+            && isUserInteractionRequiredForUnmute(store.getState())) {
             return;
         }
 
@@ -162,9 +164,9 @@ StateListenerRegistry.register(
  * {@code mediaType} in the specified {@code store}.
  */
 function _getLocalTrack(
-        { getState }: { getState: IStore['getState']; },
-        mediaType: MediaType,
-        includePending = false) {
+    { getState }: { getState: IStore['getState']; },
+    mediaType: MediaType,
+    includePending = false) {
     return (
         getLocalTrack(
             getState()['features/base/tracks'],
@@ -183,11 +185,14 @@ function _getLocalTrack(
  * @private
  * @returns {void}
  */
-async function _setMuted(store: IStore, { ensureTrack, muted }: {
-    ensureTrack: boolean; muted: boolean; }, mediaType: MediaType) {
+function _setMuted(store: IStore, { ensureTrack, muted }: {
+    ensureTrack: boolean; muted: boolean;
+}, mediaType: MediaType) {
     const { dispatch, getState } = store;
     const localTrack = _getLocalTrack(store, mediaType, /* includePending */ true);
     const state = getState();
+    const { qualityLevel } = state['features/quality-control'];
+    const numberOfParticipants = getNumberOfPartipantsForTileView(state);
 
     if (mediaType === MEDIA_TYPE.SCREENSHARE && !muted) {
         return;
@@ -202,6 +207,8 @@ async function _setMuted(store: IStore, { ensureTrack, muted }: {
         if (jitsiTrack) {
             setTrackMuted(jitsiTrack, muted, state, dispatch)
                 .catch(() => dispatch(trackMuteUnmuteFailed(localTrack, muted)));
+
+            setNewReceiverQuality(numberOfParticipants, getCurrentConference(store.getState())?.getParticipants(), muted, store.dispatch, qualityLevel);
         }
     } else if (!muted && ensureTrack && (typeof APP === 'undefined' || isPrejoinPageVisible(state))) {
         typeof APP !== 'undefined' && dispatch(gumPending([ mediaType ], IGUMPendingState.PENDING_UNMUTE));

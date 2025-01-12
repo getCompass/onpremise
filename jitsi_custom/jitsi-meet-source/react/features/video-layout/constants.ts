@@ -22,3 +22,15 @@ export const LAYOUT_CLASSNAMES = {
     [LAYOUTS.VERTICAL_FILMSTRIP_VIEW]: 'vertical-filmstrip',
     [LAYOUTS.STAGE_FILMSTRIP_VIEW]: 'stage-filmstrip'
 };
+
+/**
+ * The CSS class to apply so CSS can modify the app layout.
+ *
+ * @private
+ */
+export const LAYOUT_CLASSNAMES_MOBILE = {
+    [LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW]: 'horizontal-filmstrip',
+    [LAYOUTS.TILE_VIEW]: 'tile-view-mobile',
+    [LAYOUTS.VERTICAL_FILMSTRIP_VIEW]: 'vertical-filmstrip',
+    [LAYOUTS.STAGE_FILMSTRIP_VIEW]: 'stage-filmstrip'
+};

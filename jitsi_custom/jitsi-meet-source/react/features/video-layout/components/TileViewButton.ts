@@ -6,7 +6,7 @@ import { IReduxState } from '../../app/types';
 import { TILE_VIEW_ENABLED } from '../../base/flags/constants';
 import { getFeatureFlag } from '../../base/flags/functions';
 import { translate } from '../../base/i18n/functions';
-import { IconTileView } from '../../base/icons/svg';
+import { IconSpeakerView, IconTileView } from '../../base/icons/svg';
 import AbstractButton, { IProps as AbstractButtonProps } from '../../base/toolbox/components/AbstractButton';
 import { setOverflowMenuVisible } from '../../toolbox/actions';
 import { setTileView } from '../actions';
@@ -37,11 +37,10 @@ interface IProps extends AbstractButtonProps {
 class TileViewButton<P extends IProps> extends AbstractButton<P> {
     accessibilityLabel = 'toolbar.accessibilityLabel.enterTileView';
     toggledAccessibilityLabel = 'toolbar.accessibilityLabel.exitTileView';
-    icon = IconTileView;
     label = 'toolbar.enterTileView';
     toggledLabel = 'toolbar.exitTileView';
-    tooltip = 'toolbar.tileViewToggle';
-    toggledTooltip = 'toolbar.tileViewToggled';
+    toggledIcon = IconSpeakerView;
+    icon = IconTileView;
 
     /**
      * Handles clicking / pressing the button.

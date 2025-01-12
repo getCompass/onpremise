@@ -1,5 +1,15 @@
-import { IStore } from '../app/types';
+import { IReduxState, IStore } from '../app/types';
+import { isDisplayNameVisible } from '../base/config/functions.any';
+import {
+    getLocalParticipant,
+    getParticipantDisplayName,
+    isScreenShareParticipant,
+    isWhiteboardParticipant
+} from '../base/participants/functions';
 import { updateSettings } from '../base/settings/actions';
+import { getLargeVideoParticipant } from '../large-video/functions';
+import { isToolboxVisible } from '../toolbox/functions.web';
+import { isLayoutTileView } from '../video-layout/functions.any';
 
 /**
  * Appends a suffix to the display name.
@@ -41,4 +51,26 @@ export function onSetDisplayName(dispatch: IStore['dispatch'], onPostSubmit?: Fu
 
         return true;
     };
+}
+
+/**
+ * Returns true if the stage participant badge should be displayed and false otherwise.
+ *
+ * @param {IReduxState} state - The redux state.
+ * @returns {boolean} - True if the stage participant badge should be displayed and false otherwise.
+ */
+export function shouldDisplayStageParticipantBadge(state: IReduxState) {
+    const largeVideoParticipant = getLargeVideoParticipant(state);
+    const selectedId = largeVideoParticipant?.id;
+    const nameToDisplay = getParticipantDisplayName(state, selectedId ?? '');
+    const isTileView = isLayoutTileView(state);
+    const toolboxVisible: boolean = isToolboxVisible(state);
+    const showDisplayName = isDisplayNameVisible(state);
+
+    return Boolean(showDisplayName
+        && nameToDisplay
+        && !isTileView
+        && !isWhiteboardParticipant(largeVideoParticipant)
+        && (!isScreenShareParticipant(largeVideoParticipant) || toolboxVisible)
+    );
 }

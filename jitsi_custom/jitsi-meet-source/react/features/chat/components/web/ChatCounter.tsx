@@ -1,10 +1,10 @@
-import React, {Component} from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import {IReduxState} from '../../../app/types';
-import {getUnreadPollCount} from '../../../polls/functions';
-import {getUnreadCount} from '../../functions';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { IReduxState } from '../../../app/types';
+import { getUnreadPollCount } from '../../../polls/functions';
+import { getUnreadCount } from '../../functions';
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link ChatCounter}.
@@ -37,15 +37,13 @@ class ChatCounter extends Component<IProps> {
      * @returns {ReactElement}
      */
     render() {
-        return (
-            <span className={`badge-round${!this.props._isOpen && this.props._count > 0 ? ' not-empty' : ''}${isMobileBrowser() ? ' is-mobile' : ''}`}>
+        const { _isOpen, _count } = this.props;
 
-                <span>
-                    {
-                        !this.props._isOpen
-                        && (this.props._count || null)
-                    }
-                </span>
+        return (
+            <span
+                className = {`badge-round${!_isOpen && _count > 0 ? ' not-empty' : ''}${isMobileBrowser() ? ' is-mobile' : ''}`}>
+
+                <span>{!_isOpen && (_count || null)}</span>
             </span>
         );
     }
@@ -62,13 +60,11 @@ class ChatCounter extends Component<IProps> {
  * }}
  */
 function _mapStateToProps(state: IReduxState) {
-    const {isOpen} = state['features/chat'];
+    const { isOpen } = state['features/chat'];
 
     return {
-
         _count: getUnreadCount(state) + getUnreadPollCount(state),
         _isOpen: isOpen
-
     };
 }
 

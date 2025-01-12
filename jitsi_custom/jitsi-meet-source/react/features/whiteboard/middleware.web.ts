@@ -58,7 +58,7 @@ const focusWhiteboard = (store: IStore) => {
  * @param {Store} store - The redux store.
  * @returns {Function}
  */
-MiddlewareRegistry.register((store: IStore) => (next: Function) => async (action: AnyAction) => {
+MiddlewareRegistry.register((store: IStore) => (next: Function) => (action: AnyAction) => {
     const { dispatch, getState } = store;
     const state = getState();
     const conference = getCurrentConference(state);
@@ -68,29 +68,18 @@ MiddlewareRegistry.register((store: IStore) => (next: Function) => async (action
         const existingCollabDetails = getCollabDetails(state);
         const enforceUserLimit = shouldEnforceUserLimit(state);
         const notifyUserLimit = shouldNotifyUserLimit(state);
+        const iAmRecorder = Boolean(state['features/base/config'].iAmRecorder);
 
         if (enforceUserLimit) {
             dispatch(restrictWhiteboard(false));
             dispatch(openDialog(WhiteboardLimitDialog));
+            iAmRecorder && setTimeout(() => dispatch(hideDialog(WhiteboardLimitDialog)), 3000);
 
             return next(action);
         }
 
         if (!existingCollabDetails) {
-            const collabServerUrl = generateCollabServerUrl(state);
-            const roomId = getCurrentRoomId(state);
-            const collabData = {
-                collabDetails: {
-                    roomId,
-                    roomKey: ''
-                },
-                collabServerUrl
-            };
-
-            focusWhiteboard(store);
-            dispatch(setupWhiteboard(collabData));
-            conference?.getMetadataHandler().setMetadata(WHITEBOARD_ID, collabData);
-            raiseWhiteboardNotification(WhiteboardStatus.INSTANTIATED);
+            setNewWhiteboardOpen(store);
 
             return next(action);
         }
@@ -144,3 +133,28 @@ function raiseWhiteboardNotification(status: WhiteboardStatus) {
     }
 }
 
+/**
+ * Sets a new whiteboard open.
+ *
+ * @param {IStore} store - The redux store.
+ * @returns {Promise}
+ */
+async function setNewWhiteboardOpen(store: IStore) {
+    const { dispatch, getState } = store;
+    const state = getState();
+    const conference = getCurrentConference(state);
+    const collabServerUrl = generateCollabServerUrl(state);
+    const roomId = getCurrentRoomId(state);
+    const collabData = {
+        collabDetails: {
+            roomId,
+            roomKey: ''
+        },
+        collabServerUrl
+    };
+
+    focusWhiteboard(store);
+    dispatch(setupWhiteboard(collabData));
+    conference?.getMetadataHandler().setMetadata(WHITEBOARD_ID, collabData);
+    raiseWhiteboardNotification(WhiteboardStatus.INSTANTIATED);
+}

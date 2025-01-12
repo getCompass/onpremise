@@ -1,37 +1,37 @@
-import i18next from "i18next";
+import i18next from 'i18next';
 
-import { IReduxState, IStore } from "../app/types";
-import { isMobileBrowser } from "../base/environment/utils";
-import { isJwtFeatureEnabled } from "../base/jwt/functions";
-import { JitsiRecordingConstants, browser } from "../base/lib-jitsi-meet";
-import { getSoundFileSrc } from "../base/media/functions";
+import { IReduxState, IStore } from '../app/types';
+import { isMobileBrowser } from '../base/environment/utils';
+import { isJwtFeatureEnabled } from '../base/jwt/functions';
+import { JitsiRecordingConstants, browser } from '../base/lib-jitsi-meet';
+import { getSoundFileSrc } from '../base/media/functions';
 import {
     getLocalParticipant,
     getRemoteParticipants,
-    isLocalParticipantModerator,
-} from "../base/participants/functions";
-import { registerSound, unregisterSound } from "../base/sounds/actions";
-import { isInBreakoutRoom } from "../breakout-rooms/functions";
-import { isEnabled as isDropboxEnabled } from "../dropbox/functions";
-import { extractFqnFromPath } from "../dynamic-branding/functions.any";
-import { canAddTranscriber, isRecorderTranscriptionsRunning } from "../transcribing/functions";
+    isLocalParticipantModerator
+} from '../base/participants/functions';
+import { registerSound, unregisterSound } from '../base/sounds/actions';
+import { isInBreakoutRoom as isInBreakoutRoomF } from '../breakout-rooms/functions';
+import { isEnabled as isDropboxEnabled } from '../dropbox/functions';
+import { extractFqnFromPath } from '../dynamic-branding/functions.any';
+import { canAddTranscriber, isRecorderTranscriptionsRunning } from '../transcribing/functions';
 
-import LocalRecordingManager from "./components/Recording/LocalRecordingManager";
+import LocalRecordingManager from './components/Recording/LocalRecordingManager';
 import {
     LIVE_STREAMING_OFF_SOUND_ID,
     LIVE_STREAMING_ON_SOUND_ID,
     RECORDING_OFF_SOUND_ID,
     RECORDING_ON_SOUND_ID,
     RECORDING_STATUS_PRIORITIES,
-    RECORDING_TYPES,
-} from "./constants";
-import logger from "./logger";
+    RECORDING_TYPES
+} from './constants';
+import logger from './logger';
 import {
     LIVE_STREAMING_OFF_SOUND_FILE,
     LIVE_STREAMING_ON_SOUND_FILE,
     RECORDING_OFF_SOUND_FILE,
-    RECORDING_ON_SOUND_FILE,
-} from "./sounds";
+    RECORDING_ON_SOUND_FILE
+} from './sounds';
 
 /**
  * Searches in the passed in redux state for an active recording session of the
@@ -42,14 +42,12 @@ import {
  * @returns {Object|undefined}
  */
 export function getActiveSession(state: IReduxState, mode: string) {
-    const { sessionDatas } = state["features/recording"];
+    const { sessionDatas } = state['features/recording'];
     const { status: statusConstants } = JitsiRecordingConstants;
 
-    return sessionDatas.find(
-        (sessionData) =>
-            sessionData.mode === mode &&
-            (sessionData.status === statusConstants.ON || sessionData.status === statusConstants.PENDING)
-    );
+    return sessionDatas.find(sessionData => sessionData.mode === mode
+        && (sessionData.status === statusConstants.ON
+            || sessionData.status === statusConstants.PENDING));
 }
 
 /**
@@ -73,7 +71,8 @@ export function getRecordingDurationEstimation(size?: number | null) {
  * @returns {Object|undefined}
  */
 export function getSessionById(state: IReduxState, id: string) {
-    return state["features/recording"].sessionDatas.find((sessionData) => sessionData.id === id);
+    return state['features/recording'].sessionDatas.find(
+        sessionData => sessionData.id === id);
 }
 
 /**
@@ -89,8 +88,8 @@ export async function getRecordingLink(url: string, recordingSessionId: string, 
     const fullUrl = `${url}?recordingSessionId=${recordingSessionId}&region=${region}&tenant=${tenant}`;
     const res = await fetch(fullUrl, {
         headers: {
-            "Content-Type": "application/json",
-        },
+            'Content-Type': 'application/json'
+        }
     });
     const json = await res.json();
 
@@ -104,7 +103,8 @@ export async function getRecordingLink(url: string, recordingSessionId: string, 
  * @returns {string}
  */
 export function isSavingRecordingOnDropbox(state: IReduxState) {
-    return isDropboxEnabled(state) && state["features/recording"].selectedRecordingService === RECORDING_TYPES.DROPBOX;
+    return isDropboxEnabled(state)
+        && state['features/recording'].selectedRecordingService === RECORDING_TYPES.DROPBOX;
 }
 
 /**
@@ -114,7 +114,7 @@ export function isSavingRecordingOnDropbox(state: IReduxState) {
  * @returns {string}
  */
 export function isHighlightMeetingMomentDisabled(state: IReduxState) {
-    return state["features/recording"].disableHighlightMeetingMoment;
+    return state['features/recording'].disableHighlightMeetingMoment;
 }
 
 /**
@@ -127,8 +127,8 @@ export function isHighlightMeetingMomentDisabled(state: IReduxState) {
  * @returns {string|undefined}
  */
 export function getSessionStatusToShow(state: IReduxState, mode: string): string | undefined {
-    const recordingSessions = state["features/recording"].sessionDatas;
-    const isElectronRecording = state["features/recording"].isStartRecording;
+    const recordingSessions = state['features/recording'].sessionDatas;
+    const isElectronRecording = state['features/recording'].isStartRecording;
     let status;
 
     if (Array.isArray(recordingSessions)) {
@@ -162,7 +162,7 @@ export function getSessionStatusToShow(state: IReduxState, mode: string): string
  * @returns {boolean} - Whether local recording is supported or not.
  */
 export function supportsLocalRecording() {
-    return browser.isChromiumBased() && !isMobileBrowser() && navigator.product !== "ReactNative";
+    return browser.isChromiumBased() && !isMobileBrowser() && navigator.product !== 'ReactNative';
 }
 
 /**
@@ -176,20 +176,30 @@ export function isCloudRecordingRunning(state: IReduxState) {
 }
 
 /**
+ * Returns true if there is a live streaming running.
+ *
+ * @param {IReduxState} state - The redux state to search in.
+ * @returns {boolean}
+ */
+export function isLiveStreamingRunning(state: IReduxState) {
+    return Boolean(getActiveSession(state, JitsiRecordingConstants.mode.STREAM));
+}
+
+/**
  * Returns true if there is a recording session running.
  *
  * @param {Object} state - The redux state to search in.
  * @returns {boolean}
  */
 export function isRecordingRunning(state: IReduxState) {
-    const isElectronRecording = state["features/recording"].isStartRecording;
+    const isElectronRecording = state['features/recording'].isStartRecording;
 
     let status = false;
 
     if (browser.isElectron()) {
         status = isElectronRecording;
     } else {
-        isCloudRecordingRunning(state) || LocalRecordingManager.isRecordingLocally();
+        status = isCloudRecordingRunning(state) || LocalRecordingManager.isRecordingLocally();
     }
 
     return status;
@@ -207,7 +217,7 @@ export function canStopRecording(state: IReduxState) {
     }
 
     if (isCloudRecordingRunning(state) || isRecorderTranscriptionsRunning(state)) {
-        return isLocalParticipantModerator(state) && isJwtFeatureEnabled(state, "recording", true);
+        return isLocalParticipantModerator(state) && isJwtFeatureEnabled(state, 'recording', true);
     }
 
     return false;
@@ -220,7 +230,7 @@ export function canStopRecording(state: IReduxState) {
  * @returns {boolean}
  */
 export function isRecordingRunningElectron(state: IReduxState): boolean {
-    return state["features/recording"].isStartRecording;
+    return state['features/recording'].isStartRecording;
 }
 
 /**
@@ -230,7 +240,7 @@ export function isRecordingRunningElectron(state: IReduxState): boolean {
  * @returns {boolean}
  */
 export function shouldAutoTranscribeOnRecord(state: IReduxState) {
-    const { transcription } = state["features/base/config"];
+    const { transcription } = state['features/base/config'];
 
     return (transcription?.autoTranscribeOnRecord ?? true) && canAddTranscriber(state);
 }
@@ -242,7 +252,7 @@ export function shouldAutoTranscribeOnRecord(state: IReduxState) {
  * @returns {boolean}
  */
 export function isRecordingSharingEnabled(state: IReduxState) {
-    const { recordingService } = state["features/base/config"];
+    const { recordingService } = state['features/base/config'];
 
     return recordingService?.sharingEnabled ?? false;
 }
@@ -264,13 +274,16 @@ export function getRecordButtonProps(state: IReduxState) {
     // a button can be disabled/enabled if enableFeaturesBasedOnToken
     // is on or if the livestreaming is running.
     let disabled = false;
-    let tooltip = "";
+    let tooltip = '';
 
     // If the containing component provides the visible prop, that is one
     // above all, but if not, the button should be autonomus and decide on
     // its own to be visible or not.
     const isModerator = isLocalParticipantModerator(state);
-    const { recordingService, localRecording } = state["features/base/config"];
+    const {
+        recordingService,
+        localRecording
+    } = state['features/base/config'];
     const localRecordingEnabled = !localRecording?.disable && supportsLocalRecording();
 
     const dropboxEnabled = isDropboxEnabled(state);
@@ -278,18 +291,18 @@ export function getRecordButtonProps(state: IReduxState) {
 
     if (localRecordingEnabled) {
         visible = true;
-    } else if (isModerator) {
-        visible = recordingEnabled ? isJwtFeatureEnabled(state, "recording", true) : false;
+    } else if (isJwtFeatureEnabled(state, 'recording', isModerator, isModerator)) {
+        visible = recordingEnabled;
     }
 
     // disable the button if the livestreaming is running.
-    if (visible && getActiveSession(state, JitsiRecordingConstants.mode.STREAM)) {
+    if (visible && isLiveStreamingRunning(state)) {
         disabled = true;
-        tooltip = "dialog.recordingDisabledBecauseOfActiveLiveStreamingTooltip";
+        tooltip = 'dialog.recordingDisabledBecauseOfActiveLiveStreamingTooltip';
     }
 
     // disable the button if we are in a breakout room.
-    if (isInBreakoutRoom(state)) {
+    if (isInBreakoutRoomF(state)) {
         disabled = true;
         visible = false;
     }
@@ -297,7 +310,7 @@ export function getRecordButtonProps(state: IReduxState) {
     return {
         disabled,
         tooltip,
-        visible,
+        visible
     };
 }
 
@@ -307,9 +320,11 @@ export function getRecordButtonProps(state: IReduxState) {
  * @param {Object | string} recorder - A participant or it's resource.
  * @returns {string|undefined}
  */
-export function getResourceId(recorder: string | { getId: Function }) {
+export function getResourceId(recorder: string | { getId: Function; }) {
     if (recorder) {
-        return typeof recorder === "string" ? recorder : recorder.getId();
+        return typeof recorder === 'string'
+            ? recorder
+            : recorder.getId();
     }
 }
 
@@ -320,16 +335,16 @@ export function getResourceId(recorder: string | { getId: Function }) {
  * @returns {boolean} - True if sent, false otherwise.
  */
 export async function sendMeetingHighlight(state: IReduxState) {
-    const { webhookProxyUrl: url } = state["features/base/config"];
-    const { conference } = state["features/base/conference"];
-    const { jwt } = state["features/base/jwt"];
-    const { connection } = state["features/base/connection"];
+    const { webhookProxyUrl: url } = state['features/base/config'];
+    const { conference } = state['features/base/conference'];
+    const { jwt } = state['features/base/jwt'];
+    const { connection } = state['features/base/connection'];
     const jid = connection?.getJid();
     const localParticipant = getLocalParticipant(state);
 
     const headers = {
-        ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
-        "Content-Type": "application/json",
+        ...jwt ? { 'Authorization': `Bearer ${jwt}` } : {},
+        'Content-Type': 'application/json'
     };
 
     const reqBody = {
@@ -338,23 +353,23 @@ export async function sendMeetingHighlight(state: IReduxState) {
         submitted: Date.now(),
         participantId: localParticipant?.jwtId,
         participantName: localParticipant?.name,
-        participantJid: jid,
+        participantJid: jid
     };
 
     if (url) {
         try {
             const res = await fetch(`${url}/v2/highlights`, {
-                method: "POST",
+                method: 'POST',
                 headers,
-                body: JSON.stringify(reqBody),
+                body: JSON.stringify(reqBody)
             });
 
             if (res.ok) {
                 return true;
             }
-            logger.error("Status error:", res.status);
+            logger.error('Status error:', res.status);
         } catch (err) {
-            logger.error("Could not send request", err);
+            logger.error('Could not send request', err);
         }
     }
 
@@ -386,7 +401,7 @@ export function isRemoteParticipantRecordingLocally(state: IReduxState) {
  * @param {Dispatch<any>} dispatch - The redux dispatch function.
  * @returns {void}
  */
-export function unregisterRecordingAudioFiles(dispatch: IStore["dispatch"]) {
+export function unregisterRecordingAudioFiles(dispatch: IStore['dispatch']) {
     dispatch(unregisterSound(LIVE_STREAMING_OFF_SOUND_FILE));
     dispatch(unregisterSound(LIVE_STREAMING_ON_SOUND_FILE));
     dispatch(unregisterSound(RECORDING_OFF_SOUND_FILE));
@@ -400,18 +415,47 @@ export function unregisterRecordingAudioFiles(dispatch: IStore["dispatch"]) {
  * @param {boolean|undefined} shouldUnregister - Whether the sounds should be unregistered.
  * @returns {void}
  */
-export function registerRecordingAudioFiles(dispatch: IStore["dispatch"], shouldUnregister?: boolean) {
+export function registerRecordingAudioFiles(dispatch: IStore['dispatch'], shouldUnregister?: boolean) {
     const language = i18next.language;
 
     if (shouldUnregister) {
         unregisterRecordingAudioFiles(dispatch);
     }
 
-    dispatch(registerSound(LIVE_STREAMING_OFF_SOUND_ID, getSoundFileSrc(LIVE_STREAMING_OFF_SOUND_FILE, language)));
+    dispatch(registerSound(
+        LIVE_STREAMING_OFF_SOUND_ID,
+        getSoundFileSrc(LIVE_STREAMING_OFF_SOUND_FILE, language)));
 
-    dispatch(registerSound(LIVE_STREAMING_ON_SOUND_ID, getSoundFileSrc(LIVE_STREAMING_ON_SOUND_FILE, language)));
+    dispatch(registerSound(
+        LIVE_STREAMING_ON_SOUND_ID,
+        getSoundFileSrc(LIVE_STREAMING_ON_SOUND_FILE, language)));
 
-    dispatch(registerSound(RECORDING_OFF_SOUND_ID, getSoundFileSrc(RECORDING_OFF_SOUND_FILE, language)));
+    dispatch(registerSound(
+        RECORDING_OFF_SOUND_ID,
+        getSoundFileSrc(RECORDING_OFF_SOUND_FILE, language)));
 
-    dispatch(registerSound(RECORDING_ON_SOUND_ID, getSoundFileSrc(RECORDING_ON_SOUND_FILE, language)));
+    dispatch(registerSound(
+        RECORDING_ON_SOUND_ID,
+        getSoundFileSrc(RECORDING_ON_SOUND_FILE, language)));
+}
+
+/**
+ * Returns true if the live-streaming button should be visible.
+ *
+ * @param {boolean} liveStreamingEnabled - True if the live-streaming is enabled.
+ * @param {boolean} liveStreamingAllowed - True if the live-streaming feature is enabled in JWT
+ *                                         or is a moderator if JWT is missing or features are missing in JWT.
+ * @param {boolean} isInBreakoutRoom - True if in breakout room.
+ * @returns {boolean}
+ */
+export function isLiveStreamingButtonVisible({
+    liveStreamingAllowed,
+    liveStreamingEnabled,
+    isInBreakoutRoom
+}: {
+    isInBreakoutRoom: boolean;
+    liveStreamingAllowed: boolean;
+    liveStreamingEnabled: boolean;
+}) {
+    return !isInBreakoutRoom && liveStreamingEnabled && liveStreamingAllowed;
 }

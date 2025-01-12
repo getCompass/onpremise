@@ -41,12 +41,12 @@ interface IProps {
     /**
      * The participants in the call.
      */
-    _remoteParticipants: Array<Object>;
+    _filteredRemoteParticipants: Array<Object>;
 
     /**
      * The length of the remote participants array.
      */
-    _remoteParticipantsLength: number;
+    _filteredRemoteParticipantsLength: number;
 
     /**
      * Whether or not the filmstrip should be user-resizable.
@@ -87,7 +87,7 @@ interface IProps {
 // eslint-disable-next-line no-confusing-arrow
 const ScreenshareFilmstrip = (props: IProps) =>
     props._currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW
-        && props._remoteParticipants.length === 1 ? (
+        && props._filteredRemoteParticipants.length === 1 ? (
             <span className = { LAYOUT_CLASSNAMES[LAYOUTS.TILE_VIEW] }>
                 <Filmstrip
                     { ...props }
@@ -119,7 +119,7 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
         _currentLayout: getCurrentLayout(state),
         _filmstripHeight: filmstripHeight,
         _filmstripWidth: filmstripWidth,
-        _remoteParticipants: id ? [ id ] : [],
+        _filteredRemoteParticipants: id ? [ id ] : [],
         _resizableFilmstrip: false,
         _rows: 1,
         _thumbnailWidth: thumbnailSize?.width,

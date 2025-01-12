@@ -44,12 +44,12 @@ interface IProps {
     /**
      * The participants in the call.
      */
-    _remoteParticipants: Array<Object>;
+    _filteredRemoteParticipants: Array<Object>;
 
     /**
      * The length of the remote participants array.
      */
-    _remoteParticipantsLength: number;
+    _filteredRemoteParticipantsLength: number;
 
     /**
      * Whether or not the filmstrip should be user-resizable.
@@ -146,7 +146,7 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
         _currentLayout: getCurrentLayout(state),
         _filmstripHeight: remoteFilmstripHeight,
         _filmstripWidth: filmstripWidth,
-        _remoteParticipants: activeParticipants,
+        _filteredRemoteParticipants: activeParticipants,
         _resizableFilmstrip: isFilmstripResizable(state) && _topPanelFilmstrip,
         _rows: gridDimensions.rows ?? 1,
         _thumbnailWidth: thumbnailSize?.width,

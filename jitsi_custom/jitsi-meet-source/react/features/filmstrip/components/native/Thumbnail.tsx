@@ -20,10 +20,7 @@ import { FakeParticipant } from '../../../base/participants/types';
 import Container from '../../../base/react/components/native/Container';
 import { StyleType } from '../../../base/styles/functions.any';
 import { trackStreamingStatusChanged } from '../../../base/tracks/actions.native';
-import {
-    getTrackByMediaTypeAndParticipant,
-    getVideoTrackByParticipant
-} from '../../../base/tracks/functions.native';
+import { getTrackByMediaTypeAndParticipant, getVideoTrackByParticipant } from '../../../base/tracks/functions.native';
 import { ITrack } from '../../../base/tracks/types';
 import ConnectionIndicator from '../../../connection-indicator/components/native/ConnectionIndicator';
 import DisplayNameLabel from '../../../display-name/components/native/DisplayNameLabel';
@@ -35,7 +32,7 @@ import {
 } from '../../../participants-pane/actions.native';
 import { toggleToolboxVisible } from '../../../toolbox/actions.native';
 import { shouldDisplayTileView } from '../../../video-layout/functions.native';
-import { SQUARE_TILE_ASPECT_RATIO } from '../../constants';
+import { TILE_ASPECT_RATIO } from '../../constants';
 
 import AudioMutedIndicator from './AudioMutedIndicator';
 import ModeratorIndicator from './ModeratorIndicator';
@@ -360,7 +357,7 @@ class Thumbnail extends PureComponent<IProps> {
             tileView
         } = this.props;
         const styleOverrides = tileView ? {
-            aspectRatio: SQUARE_TILE_ASPECT_RATIO,
+            aspectRatio: TILE_ASPECT_RATIO,
             flex: 0,
             height,
             maxHeight: null,

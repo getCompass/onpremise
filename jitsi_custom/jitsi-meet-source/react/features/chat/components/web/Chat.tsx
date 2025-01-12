@@ -1,17 +1,16 @@
-import React, {useCallback} from 'react';
-import {connect} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../app/types';
-import {translate} from '../../../base/i18n/functions';
-import {getLocalParticipant} from '../../../base/participants/functions';
-import {withPixelLineHeight} from '../../../base/styles/functions.web';
+import { IReduxState } from '../../../app/types';
+import { translate } from '../../../base/i18n/functions';
+import { getLocalParticipant } from '../../../base/participants/functions';
 import Tabs from '../../../base/ui/components/web/Tabs';
-import {arePollsDisabled} from '../../../conference/functions.any';
+import { arePollsDisabled } from '../../../conference/functions.any';
 import PollsPane from '../../../polls/components/web/PollsPane';
-import {sendMessage, setIsPollsTabFocused, toggleChat} from '../../actions.web';
-import {CHAT_SIZE, CHAT_TABS, SMALL_WIDTH_THRESHOLD} from '../../constants';
-import {IChatProps as AbstractProps} from '../../types';
+import { sendMessage, setIsPollsTabFocused, toggleChat } from '../../actions.web';
+import { CHAT_SIZE, CHAT_TABS, SMALL_WIDTH_THRESHOLD } from '../../constants';
+import { IChatProps as AbstractProps } from '../../types';
 
 import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
@@ -19,7 +18,7 @@ import DisplayNameForm from './DisplayNameForm';
 import KeyboardAvoider from './KeyboardAvoider';
 import MessageContainer from './MessageContainer';
 import MessageRecipient from './MessageRecipient';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 interface IProps extends AbstractProps {
 
@@ -154,9 +153,15 @@ const useStyles = makeStyles()(theme => {
         chatPanel: {
             display: 'flex',
             flexDirection: 'column',
+            paddingTop: '2px',
 
-            // extract header + tabs height
-            height: 'calc(100% - 98px)'
+            // extract header + tabs height + padding-top
+            height: 'calc(100% - 90px)',
+
+            '&.is-mobile': {
+                // extract header + tabs height + padding-top
+                height: 'calc(100% - 98px)',
+            },
         },
 
         chatPanelNoTabs: {
@@ -165,48 +170,55 @@ const useStyles = makeStyles()(theme => {
         },
 
         pollsPanel: {
-            // extract header + tabs height
-            height: 'calc(100% - 98px)'
+            paddingTop: '2px',
+
+            // extract header + tabs height + padding-top
+            height: 'calc(100% - 90px)',
+
+            '&.is-mobile': {
+                // extract header + tabs height + padding-top
+                height: 'calc(100% - 98px)',
+            },
         }
     };
 });
 
 const Chat = ({
-                  _isModal,
-                  _isOpen,
-                  _isPollsEnabled,
-                  _isPollsTabFocused,
-                  _messages,
-                  _nbUnreadMessages,
-                  _nbUnreadPolls,
-                  _onSendMessage,
-                  _onToggleChat,
-                  _onToggleChatTab,
-                  _onTogglePollsTab,
-                  _showNamePrompt,
-                  dispatch,
-                  t
-              }: IProps) => {
-    const {classes, cx} = useStyles();
+    _isModal,
+    _isOpen,
+    _isPollsEnabled,
+    _isPollsTabFocused,
+    _messages,
+    _nbUnreadMessages,
+    _nbUnreadPolls,
+    _onSendMessage,
+    _onToggleChat,
+    _onToggleChatTab,
+    _onTogglePollsTab,
+    _showNamePrompt,
+    dispatch,
+    t
+}: IProps) => {
+    const { classes, cx } = useStyles();
     const isMobile = isMobileBrowser();
 
     /**
-     * Sends a text message.
-     *
-     * @private
-     * @param {string} text - The text message to be sent.
-     * @returns {void}
-     * @type {Function}
-     */
+    * Sends a text message.
+    *
+    * @private
+    * @param {string} text - The text message to be sent.
+    * @returns {void}
+    * @type {Function}
+    */
     const onSendMessage = useCallback((text: string) => {
         dispatch(sendMessage(text));
     }, []);
 
     /**
-     * Toggles the chat window.
-     *
-     * @returns {Function}
-     */
+    * Toggles the chat window.
+    *
+    * @returns {Function}
+    */
     const onToggleChat = useCallback(() => {
         dispatch(toggleChat());
     }, []);
@@ -223,7 +235,7 @@ const Chat = ({
             event.stopPropagation();
             onToggleChat();
         }
-    }, [_isOpen]);
+    }, [ _isOpen ]);
 
     /**
      * Change selected tab.
@@ -247,32 +259,33 @@ const Chat = ({
             <>
                 {_isPollsEnabled && renderTabs()}
                 <div
-                    aria-labelledby={CHAT_TABS.CHAT}
-                    className={cx(
+                    aria-labelledby = {CHAT_TABS.CHAT}
+                    className = {cx(
                         classes.chatPanel,
                         !_isPollsEnabled && classes.chatPanelNoTabs,
-                        _isPollsTabFocused && 'hide'
+                        _isPollsTabFocused && 'hide',
+                        isMobileBrowser() && 'is-mobile'
                     )}
-                    id={`${CHAT_TABS.CHAT}-panel`}
-                    role='tabpanel'
-                    tabIndex={0}>
+                    id = {`${CHAT_TABS.CHAT}-panel`}
+                    role = 'tabpanel'
+                    tabIndex = {0}>
                     <MessageContainer
-                        messages={_messages}/>
-                    <MessageRecipient/>
+                        messages = {_messages} />
+                    <MessageRecipient />
                     <ChatInput
-                        onSend={onSendMessage}/>
+                        onSend = {onSendMessage} />
                 </div>
                 {_isPollsEnabled && (
                     <>
                         <div
-                            aria-labelledby={CHAT_TABS.POLLS}
-                            className={cx(classes.pollsPanel, !_isPollsTabFocused && 'hide')}
-                            id={`${CHAT_TABS.POLLS}-panel`}
-                            role='tabpanel'
-                            tabIndex={0}>
-                            <PollsPane/>
+                            aria-labelledby = {CHAT_TABS.POLLS}
+                            className = {cx(classes.pollsPanel, !_isPollsTabFocused && 'hide', isMobileBrowser() && 'is-mobile')}
+                            id = {`${CHAT_TABS.POLLS}-panel`}
+                            role = 'tabpanel'
+                            tabIndex = {0}>
+                            <PollsPane />
                         </div>
-                        <KeyboardAvoider/>
+                        <KeyboardAvoider />
                     </>
                 )}
             </>
@@ -288,10 +301,10 @@ const Chat = ({
     function renderTabs() {
         return (
             <Tabs
-                accessibilityLabel={t(_isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title')}
-                onChange={onChangeTab}
-                selected={_isPollsTabFocused ? CHAT_TABS.POLLS : CHAT_TABS.CHAT}
-                tabs={[{
+                accessibilityLabel = {t(_isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title')}
+                onChange = {onChangeTab}
+                selected = {_isPollsTabFocused ? CHAT_TABS.POLLS : CHAT_TABS.CHAT}
+                tabs = {[ {
                     accessibilityLabel: t('chat.tabs.chat'),
                     countBadge: _isPollsTabFocused && _nbUnreadMessages > 0 ? _nbUnreadMessages : undefined,
                     id: CHAT_TABS.CHAT,
@@ -304,23 +317,23 @@ const Chat = ({
                     controlsId: `${CHAT_TABS.POLLS}-panel`,
                     label: t('chat.tabs.polls')
                 }
-                ]}/>
+                ]} />
         );
     }
 
     return (
         _isOpen ? <>
-            {isMobile && (<div className={cx(classes.backdrop, isMobile && 'is-mobile')}/>)}
+            {isMobile && (<div className = {cx(classes.backdrop, isMobile && 'is-mobile')} />)}
             <div
-                className={classes.container}
-                id='sideToolbarContainer'
-                onKeyDown={onEscClick}>
+                className = {classes.container}
+                id = 'sideToolbarContainer'
+                onKeyDown = {onEscClick}>
                 <ChatHeader
-                    className={cx('chat-header', classes.chatHeader, isMobile && 'is-mobile')}
-                    isPollsEnabled={_isPollsEnabled}
-                    onCancel={onToggleChat}/>
+                    className = {cx('chat-header', classes.chatHeader, isMobile && 'is-mobile')}
+                    isPollsEnabled = {_isPollsEnabled}
+                    onCancel = {onToggleChat} />
                 {_showNamePrompt
-                    ? <DisplayNameForm isPollsEnabled={_isPollsEnabled}/>
+                    ? <DisplayNameForm isPollsEnabled = {_isPollsEnabled} />
                     : renderChat()}
             </div>
         </> : null
@@ -346,8 +359,8 @@ const Chat = ({
  * }}
  */
 function _mapStateToProps(state: IReduxState, _ownProps: any) {
-    const {isOpen, isPollsTabFocused, messages, nbUnreadMessages} = state['features/chat'];
-    const {nbUnreadPolls} = state['features/polls'];
+    const { isOpen, isPollsTabFocused, messages, nbUnreadMessages } = state['features/chat'];
+    const { nbUnreadPolls } = state['features/polls'];
     const _localParticipant = getLocalParticipant(state);
 
     return {

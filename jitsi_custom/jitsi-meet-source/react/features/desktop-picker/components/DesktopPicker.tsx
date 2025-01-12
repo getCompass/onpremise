@@ -1,17 +1,20 @@
 import React, { PureComponent } from 'react';
 import { WithTranslation } from 'react-i18next';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 
-import { IStore } from '../../app/types';
+import {IReduxState, IStore} from '../../app/types';
 import { hideDialog } from '../../base/dialog/actions';
 import { translate } from '../../base/i18n/functions';
 import Dialog from '../../base/ui/components/web/Dialog';
-import Tabs from '../../base/ui/components/web/Tabs';
 import { THUMBNAIL_SIZE } from '../constants';
-import { obtainDesktopSources } from '../functions';
+import { obtainDesktopSources, stopObtainDesktopSources, isAudioScreenSharingSupported } from '../functions';
 import logger from '../logger';
 
 import DesktopPickerPane from './DesktopPickerPane';
+import Checkbox from "../../base/ui/components/web/Checkbox";
+import DesktopPickerUnsupportedSound from './DesktopPickerUnsupportedSound'
+import { updateSettings } from '../../base/settings/actions';
+import {isAudioSharingEnabled} from "../../base/settings/functions.any";
 
 /**
  * The sources polling interval in ms.
@@ -19,13 +22,6 @@ import DesktopPickerPane from './DesktopPickerPane';
  * @type {int}
  */
 const UPDATE_INTERVAL = 2000;
-
-/**
- * The default selected tab.
- *
- * @type {string}
- */
-const DEFAULT_TAB_TYPE = 'screen';
 
 const TAB_LABELS = {
     screen: 'dialog.yourEntireScreen',
@@ -38,6 +34,7 @@ const VALID_TYPES = Object.keys(TAB_LABELS);
  * The type of the React {@code Component} props of {@link DesktopPicker}.
  */
 interface IProps extends WithTranslation {
+    _isAudioSharingEnabled: boolean;
 
     /**
      * An array with desktop sharing sources to be displayed.
@@ -62,19 +59,9 @@ interface IProps extends WithTranslation {
 interface IState {
 
     /**
-     * The state of the audio screen share checkbox.
-     */
-    screenShareAudio: boolean;
-
-    /**
      * The currently highlighted DesktopCapturerSource.
      */
     selectedSource: any;
-
-    /**
-     * The desktop source type currently being displayed.
-     */
-    selectedTab: string;
 
     /**
      * An object containing all the DesktopCapturerSources.
@@ -117,12 +104,12 @@ class DesktopPicker extends PureComponent<IProps, IState> {
             type => VALID_TYPES.includes(type));
     }
 
+
+
     _poller: any = null;
 
     state: IState = {
-        screenShareAudio: false,
         selectedSource: {},
-        selectedTab: DEFAULT_TAB_TYPE,
         sources: {},
         types: []
     };
@@ -141,7 +128,6 @@ class DesktopPicker extends PureComponent<IProps, IState> {
         this._onPreviewClick = this._onPreviewClick.bind(this);
         this._onShareAudioChecked = this._onShareAudioChecked.bind(this);
         this._onSubmit = this._onSubmit.bind(this);
-        this._onTabSelected = this._onTabSelected.bind(this);
         this._updateSources = this._updateSources.bind(this);
 
         this.state.types
@@ -167,46 +153,67 @@ class DesktopPicker extends PureComponent<IProps, IState> {
         this._stopPolling();
     }
 
-
     /**
      * Implements React's {@link Component#render()}.
      *
      * @inheritdoc
      */
     render() {
-        const { selectedTab, selectedSource, sources, types } = this.state;
+        const { selectedSource, sources } = this.state;
+        const { t, _isAudioSharingEnabled } = this.props;
+        const isCheckboxDisabled = !isAudioScreenSharingSupported();
+
+        const getButton = () => {
+            if (isCheckboxDisabled) {
+                const is_enabled = this.props._isAudioSharingEnabled;
+                is_enabled && this.props.dispatch(updateSettings({
+                    isAudioSharingEnabled: false,
+                }))
+                return  <DesktopPickerUnsupportedSound { ...this.props } />
+            }
+
+            return <Checkbox
+                checked = {_isAudioSharingEnabled}
+                className = 'desktop-picker-audio-checkbox'
+                label = {t('dialog.screenSharingAudio')}
+                name = 'share-system-audio'
+                disabled={isCheckboxDisabled}
+                onChange = {this._onShareAudioChecked} />
+        }
 
         return (
             <Dialog
+                classNameHeader = 'desktop-picker-dialog-header'
+                classNameContent = 'desktop-picker-dialog-content'
+                classNameFooter = 'desktop-picker-dialog-footer'
                 ok = {{
                     disabled: Boolean(!this.state.selectedSource.id),
                     translationKey: 'dialog.Share'
                 }}
-                onCancel = { this._onCloseModal }
-                onSubmit = { this._onSubmit }
-                size = 'large'
+                cancel = {{
+                    hidden: true,
+                }}
+                customButton = {
+                    getButton()
+                }
+                onCancel = {this._onCloseModal}
+                onSubmit = {this._onSubmit}
+                size = 'xxl'
                 titleKey = 'dialog.shareYourScreen'>
-                { this._renderTabs() }
-                {types.map(type => (
-                    <div
-                        aria-labelledby = { `${type}-button` }
-                        className = { selectedTab === type ? undefined : 'hide' }
-                        id = { `${type}-panel` }
-                        key = { type }
-                        role = 'tabpanel'
-                        tabIndex = { 0 }>
-                        {selectedTab === type && (
-                            <DesktopPickerPane
-                                key = { selectedTab }
-                                onClick = { this._onPreviewClick }
-                                onDoubleClick = { this._onSubmit }
-                                onShareAudioChecked = { this._onShareAudioChecked }
-                                selectedSourceId = { selectedSource.id }
-                                sources = { sources[selectedTab as keyof typeof sources] }
-                                type = { selectedTab } />
-                        )}
-                    </div>
-                ))}
+                <div
+                    aria-labelledby = 'all-windows-button'
+                    id = 'all-windows-panel'
+                    key = 'all-windows'
+                    role = 'windowspanel'
+                    tabIndex = {0}>
+                    <DesktopPickerPane
+                        key = 'all-windows-picker'
+                        // @ts-ignore
+                        onClick = {this._onPreviewClick}
+                        onDoubleClick = {this._onSubmit}
+                        selectedSourceId = {selectedSource.id}
+                        sources = {sources} />
+                </div>
 
             </Dialog>
         );
@@ -216,20 +223,17 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * Computes the selected source.
      *
      * @param {Object} sources - The available sources.
-     * @param {string} selectedTab - The selected tab.
      * @returns {Object} The selectedSource value.
      */
-    _getSelectedSource(sources: any = {}, selectedTab?: string) {
+    _getSelectedSource(sources: any = {}) {
         const { selectedSource } = this.state;
-
-        const currentSelectedTab = selectedTab ?? this.state.selectedTab;
 
         /**
          * If there are no sources for this type (or no sources for any type)
          * we can't select anything.
          */
-        if (!Array.isArray(sources[currentSelectedTab as keyof typeof sources])
-            || sources[currentSelectedTab as keyof typeof sources].length <= 0) {
+        if (!Array.isArray(sources)
+            || sources.length <= 0) {
             return {};
         }
 
@@ -237,18 +241,21 @@ class DesktopPicker extends PureComponent<IProps, IState> {
          * Select the first available source for this type in the following
          * scenarios:
          * 1) Nothing is yet selected.
-         * 2) Tab change.
-         * 3) The selected source is no longer available.
+         * 2) The selected source is no longer available.
          */
         if (!selectedSource // scenario 1)
-                || selectedSource.type !== currentSelectedTab // scenario 2)
-                || !sources[currentSelectedTab].some( // scenario 3)
-                        (source: any) => source.id === selectedSource.id)) {
+            || !sources.some( // scenario 2)
+                (source: any) => source.id === selectedSource.id)) {
+
+            this._saveScreenParams(sources[0].type, sources[0].id);
+
             return {
-                id: sources[currentSelectedTab][0].id,
-                type: currentSelectedTab
+                id: sources[0].id,
+                type: sources[0].type
             };
         }
+
+        this._saveScreenParams(selectedSource.type, selectedSource.id);
 
         /**
          * For all other scenarios don't change the selection.
@@ -268,7 +275,7 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * screen sharing session.
      * @returns {void}
      */
-    _onCloseModal(id = '', type?: string, screenShareAudio = false) {
+    _onCloseModal(id = '', type?: string, screenShareAudio = this.props._isAudioSharingEnabled) {
         this.props.onSourceChoose(id, type, screenShareAudio);
         this.props.dispatch(hideDialog());
     }
@@ -281,12 +288,14 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * @returns {void}
      */
     _onPreviewClick(id: string, type: string) {
+
         this.setState({
             selectedSource: {
                 id,
                 type
             }
         });
+        this._saveScreenParams(type, id);
     }
 
     /**
@@ -296,71 +305,21 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * @returns {void}
      */
     _onSubmit() {
-        const { selectedSource: { id, type }, screenShareAudio } = this.state;
-
-        this._onCloseModal(id, type, screenShareAudio);
-    }
-
-    /**
-     * Stores the selected tab and updates the selected source via
-     * {@code _getSelectedSource}.
-     *
-     * @param {string} id - The id of the newly selected tab.
-     * @returns {void}
-     */
-    _onTabSelected(id: string) {
-        const { sources } = this.state;
-
-        // When we change tabs also reset the screenShareAudio state so we don't
-        // use the option from one tab when sharing from another.
-        this.setState({
-            screenShareAudio: false,
-            selectedSource: this._getSelectedSource(sources, id),
-
-            // select type `window` or `screen` from id
-            selectedTab: id
-        });
+        const { selectedSource: { id, type } } = this.state;
+        this._onCloseModal(id, type, this.props._isAudioSharingEnabled);
     }
 
     /**
      * Set the screenSharingAudio state indicating whether or not to also share
      * system audio.
      *
-     * @param {boolean} checked - Share audio or not.
      * @returns {void}
+     * @param event
      */
-    _onShareAudioChecked(checked: boolean) {
-        this.setState({ screenShareAudio: checked });
-    }
-
-    /**
-     * Configures and renders the tabs for display.
-     *
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderTabs() {
-        const { types } = this.state;
-        const { t } = this.props;
-        const tabs
-            = types.map(
-                type => {
-                    return {
-                        accessibilityLabel: t(TAB_LABELS[type as keyof typeof TAB_LABELS]),
-                        id: `${type}`,
-                        controlsId: `${type}-panel`,
-                        label: t(TAB_LABELS[type as keyof typeof TAB_LABELS])
-                    };
-                });
-
-        return (
-            <Tabs
-                accessibilityLabel = { t('dialog.sharingTabs') }
-                className = 'desktop-picker-tabs-container'
-                onChange = { this._onTabSelected }
-                selected = { `${this.state.selectedTab}` }
-                tabs = { tabs } />
-        );
+    _onShareAudioChecked(event: React.ChangeEvent<HTMLInputElement>) {
+        this.props.dispatch(updateSettings({
+            isAudioSharingEnabled: event.target.checked,
+        }));
     }
 
     /**
@@ -384,6 +343,7 @@ class DesktopPicker extends PureComponent<IProps, IState> {
     _stopPolling() {
         window.clearInterval(this._poller);
         this._poller = null;
+        stopObtainDesktopSources();
     }
 
     /**
@@ -399,20 +359,52 @@ class DesktopPicker extends PureComponent<IProps, IState> {
             thumbnailSize: THUMBNAIL_SIZE
         };
 
-
         if (types.length > 0) {
             obtainDesktopSources(options)
                 .then((sources: any) => {
-                    const selectedSource = this._getSelectedSource(sources);
+
+                    // формируем единый список и добавляем внутрь type
+                    const allSources = Object.entries(sources).flatMap(([ type, items ]) =>
+                        // @ts-ignore
+                        items.map(item => ({
+                            ...item,
+                            type: type
+                        }))
+                    );
+
+                    const selectedSource = this._getSelectedSource(allSources);
 
                     this.setState({
                         selectedSource,
-                        sources
+                        sources: allSources
                     });
                 })
                 .catch((error: any) => logger.log(error));
         }
     }
+
+    _saveScreenParams(type: string, stream_id: string) {
+        window.parent.postMessage({
+            type: 'save_screen_share_params',
+            data: {
+                type,
+                stream_id,
+            }
+        }, "*");
+    }
 }
 
-export default translate(connect()(DesktopPicker));
+/**
+ * Maps part of the Redux state to the props of this component.
+ *
+ * @param {IReduxState} state - The Redux state.
+ * @private
+ * @returns {IProps}
+ */
+function _mapStateToProps(state: IReduxState) {
+    return {
+        _isAudioSharingEnabled: Boolean(isAudioSharingEnabled(state))
+    };
+}
+
+export default translate(connect(_mapStateToProps)(DesktopPicker));

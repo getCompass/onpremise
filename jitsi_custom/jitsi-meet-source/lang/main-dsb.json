@@ -769,7 +769,7 @@
             "answerPlaceholder": "wótegrono {{index}}",
             "cancel": "anulěrowaś",
             "create": "wopšašowanje pśigótowaś",
-            "pollOptions": "wótegrono {{index}}",
+            "pollOption": "wótegrono {{index}}",
             "pollQuestion": "pšašanje",
             "questionPlaceholder": "pšašanje stajiś",
             "removeOption": "wótegrono wulašowaś",

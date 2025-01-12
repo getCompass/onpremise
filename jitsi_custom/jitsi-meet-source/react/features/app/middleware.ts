@@ -1,27 +1,27 @@
-import {AnyAction} from 'redux';
+import { AnyAction } from 'redux';
 
-import {createConnectionEvent} from '../analytics/AnalyticsEvents';
-import {sendAnalytics} from '../analytics/functions';
-import {appWillNavigate} from '../base/app/actions';
-import {SET_ROOM} from '../base/conference/actionTypes';
-import {CONNECTION_ESTABLISHED, CONNECTION_FAILED} from '../base/connection/actionTypes';
-import {getURLWithoutParams} from '../base/connection/utils';
+import { createConnectionEvent } from '../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../analytics/functions';
+import { appWillNavigate } from '../base/app/actions';
+import { SET_ROOM } from '../base/conference/actionTypes';
+import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../base/connection/actionTypes';
+import { getURLWithoutParams } from '../base/connection/utils';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
-import {inIframe} from '../base/util/iframeUtils';
+import { inIframe } from '../base/util/iframeUtils';
 
-import {reloadNow} from './actions';
-import {_getRouteToRender} from './getRouteToRender';
-import {IStore} from './types';
+import { reloadNow } from './actions';
+import { _getRouteToRender } from './getRouteToRender';
+import { IStore } from './types';
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-        case CONNECTION_ESTABLISHED:
-            return _connectionEstablished(store, next, action);
-        case CONNECTION_FAILED:
-            return _connectionFailed(store, next, action);
+    case CONNECTION_ESTABLISHED:
+        return _connectionEstablished(store, next, action);
+    case CONNECTION_FAILED:
+        return _connectionFailed(store, next, action);
 
-        case SET_ROOM:
-            return _setRoom(store, next, action);
+    case SET_ROOM:
+        return _setRoom(store, next, action);
     }
 
     return next(action);
@@ -50,7 +50,7 @@ function _connectionEstablished(store: IStore, next: Function, action: AnyAction
     // lib-jitsi-meet. Consequently, the time to remove the params is
     // determined by when no one needs them anymore.
     // @ts-ignore
-    const {history, location} = window;
+    const { history, location } = window;
 
     if (inIframe()) {
         return;
@@ -60,6 +60,7 @@ function _connectionEstablished(store: IStore, next: Function, action: AnyAction
         && location
         && history.length
         && typeof history.replaceState === 'function') {
+        // compass changes
         // @ts-ignore
         let replacement = getURLWithoutParams(location);
 
@@ -72,7 +73,7 @@ function _connectionEstablished(store: IStore, next: Function, action: AnyAction
         }
 
         // @ts-ignore
-        if (location !== replacement) {
+        if (location.hostname !== "127.0.0.1" && !location.hostname.includes("192.168") && location !== replacement) {
             history.replaceState(
                 history.state,
                 document?.title || '',
@@ -94,7 +95,7 @@ function _connectionEstablished(store: IStore, next: Function, action: AnyAction
  * @returns {Object}
  * @private
  */
-function _connectionFailed({dispatch, getState}: IStore, next: Function, action: AnyAction) {
+function _connectionFailed({ dispatch, getState }: IStore, next: Function, action: AnyAction) {
     // In the case of a split-brain error, reload early and prevent further
     // handling of the action.
     if (_isMaybeSplitBrainError(getState, action)) {
@@ -118,7 +119,7 @@ function _connectionFailed({dispatch, getState}: IStore, next: Function, action:
  * @returns {boolean}
  */
 function _isMaybeSplitBrainError(getState: IStore['getState'], action: AnyAction) {
-    const {error} = action;
+    const { error } = action;
     const isShardChangedError = error
         && error.message === 'item-not-found'
         && error.details
@@ -126,8 +127,8 @@ function _isMaybeSplitBrainError(getState: IStore['getState'], action: AnyAction
 
     if (isShardChangedError) {
         const state = getState();
-        const {timeEstablished} = state['features/base/connection'];
-        const {_immediateReloadThreshold} = state['features/base/config'];
+        const { timeEstablished } = state['features/base/connection'];
+        const { _immediateReloadThreshold } = state['features/base/config'];
 
         const timeSinceConnectionEstablished = Number(timeEstablished && Date.now() - timeEstablished);
         const reloadThreshold = typeof _immediateReloadThreshold === 'number' ? _immediateReloadThreshold : 1500;
@@ -155,9 +156,9 @@ function _isMaybeSplitBrainError(getState: IStore['getState'], action: AnyAction
  * @private
  * @returns {void}
  */
-function _navigate({dispatch, getState}: IStore) {
+function _navigate({ dispatch, getState }: IStore) {
     const state = getState();
-    const {app} = state['features/base/app'];
+    const { app } = state['features/base/app'];
 
     _getRouteToRender(state).then((route: Object) => {
         dispatch(appWillNavigate(app, route));

@@ -119,6 +119,27 @@ export function getVirtualBackgroundTabProps(stateful: IStateful, isDisplayedOnW
 }
 
 /**
+ * Returns the properties for the "Virtual Background" tab from settings dialog from Redux
+ * state.
+ *
+ * @param {(Function|Object)} stateful -The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state.
+ * welcome page or not.
+ * @returns {Object} - The properties for the "Shortcuts" tab from settings
+ * dialog.
+ */
+export function getCompassVirtualBackgroundProps(stateful: IStateful) {
+    const state = toState(stateful);
+    const settings = state['features/base/settings'];
+    let selectedVideoInputId = settings.cameraDeviceId;
+
+    return {
+        options: state['features/virtual-background'],
+        selectedVideoInputId
+    };
+}
+
+/**
  * Used for web. Indicates if the setting section is enabled.
  *
  * @param {string} settingName - The name of the setting section as defined in

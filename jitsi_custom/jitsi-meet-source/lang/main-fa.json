@@ -817,7 +817,7 @@
             "answerPlaceholder": "گزینه {{index}}",
             "cancel": "لغو",
             "create": "یک نظرسنجی ایجاد کنید",
-            "pollOptions": "گزینهٔ نظرسنجی {{index}}",
+            "pollOption": "گزینهٔ نظرسنجی {{index}}",
             "pollQuestion": "پرسش نظرسنجی",
             "questionPlaceholder": "یک سوال بپرسید",
             "removeOption": "حذف گزینه",

@@ -1,10 +1,10 @@
-import React, {ChangeEvent} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { ChangeEvent } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
-import {isMobileBrowser} from '../../../environment/utils';
+import { isMobileBrowser } from '../../../environment/utils';
 import Icon from '../../../icons/components/Icon';
-import {IconArrowDown} from '../../../icons/svg';
-import {withPixelLineHeight} from '../../../styles/functions.web';
+import { IconArrowDown } from '../../../icons/svg';
+import { withPixelLineHeight } from '../../../styles/functions.web';
 
 interface ISelectProps {
 
@@ -169,57 +169,57 @@ const useStyles = makeStyles()(theme => {
 });
 
 const Select = ({
-                    bottomLabel,
-                    className,
-                    disabled,
-                    error,
-                    id,
-                    label,
-                    icon,
-                    onChange,
-                    options,
-                    value
-                }: ISelectProps) => {
-    const {classes, cx, theme} = useStyles();
+    bottomLabel,
+    className,
+    disabled,
+    error,
+    id,
+    label,
+    icon,
+    onChange,
+    options,
+    value
+}: ISelectProps) => {
+    const { classes, cx, theme } = useStyles();
     const isMobile = isMobileBrowser();
 
     return (
-        <div className={classes.container}>
+        <div className = {classes.container}>
             {label && <label
-                className={cx(classes.label, isMobile && 'is-mobile')}
-                htmlFor={id}>
+                className = {cx(classes.label, isMobile && 'is-mobile')}
+                htmlFor = {id}>
                 {label}
             </label>}
-            <div className={classes.selectContainer}>
+            <div className = {classes.selectContainer}>
                 {icon && (
                     <Icon
-                        className={cx(classes.leftIcon, isMobile && 'is-mobile')}
-                        color={disabled ? theme.palette.icon03 : 'rgba(255, 255, 255, 0.75)'}
-                        size={18}
-                        src={icon}/>
+                        className = {cx(classes.leftIcon, isMobile && 'is-mobile')}
+                        color = {disabled ? theme.palette.icon03 : 'rgba(255, 255, 255, 0.75)'}
+                        size = {18}
+                        src = {icon} />
                 )}
                 <select
-                    aria-describedby={bottomLabel ? `${id}-description` : undefined}
-                    className={cx(classes.select, isMobile && 'is-mobile', className, error && 'error', icon && 'is-left-icon')}
-                    disabled={disabled}
-                    id={id}
-                    onChange={onChange}
-                    value={value}>
+                    aria-describedby = {bottomLabel ? `${id}-description` : undefined}
+                    className = {cx(classes.select, isMobile && 'is-mobile', className, error && 'error', icon && 'is-left-icon')}
+                    disabled = {disabled}
+                    id = {id}
+                    onChange = {onChange}
+                    value = {value}>
                     {options.map(option => (<option
-                        key={option.value}
-                        value={option.value}
-                        className={classes.option}>{option.label}</option>))}
+                        key = {option.value}
+                        value = {option.value}
+                        className = {classes.option}>{option.label}</option>))}
                 </select>
                 <Icon
-                    className={cx(classes.icon, isMobile && 'is-mobile')}
-                    color={disabled ? theme.palette.icon03 : 'rgba(255, 255, 255, 0.75)'}
-                    size={18}
-                    src={IconArrowDown}/>
+                    className = {cx(classes.icon, isMobile && 'is-mobile')}
+                    color = {disabled ? theme.palette.icon03 : 'rgba(255, 255, 255, 0.75)'}
+                    size = {18}
+                    src = {IconArrowDown} />
             </div>
             {bottomLabel && (
                 <span
-                    className={cx(classes.bottomLabel, isMobile && 'is-mobile', error && 'error')}
-                    id={`${id}-description`}>
+                    className = {cx(classes.bottomLabel, isMobile && 'is-mobile', error && 'error')}
+                    id = {`${id}-description`}>
                     {bottomLabel}
                 </span>
             )}

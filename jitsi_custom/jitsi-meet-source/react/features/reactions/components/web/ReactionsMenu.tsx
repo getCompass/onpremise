@@ -1,29 +1,29 @@
-import React, {useCallback, useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {createReactionMenuEvent, createToolbarEvent} from '../../../analytics/AnalyticsEvents';
-import {sendAnalytics} from '../../../analytics/functions';
-import {IReduxState, IStore} from '../../../app/types';
-import {raiseHand} from '../../../base/participants/actions';
-import {getLocalParticipant, hasRaisedHand} from '../../../base/participants/functions';
+import { createReactionMenuEvent, createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { IReduxState, IStore } from '../../../app/types';
+import { raiseHand } from '../../../base/participants/actions';
+import { getLocalParticipant, hasRaisedHand } from '../../../base/participants/functions';
 import GifsMenu from '../../../gifs/components/web/GifsMenu';
 import GifsMenuButton from '../../../gifs/components/web/GifsMenuButton';
-import {isGifEnabled, isGifsMenuOpen} from '../../../gifs/functions';
-import {dockToolbox} from '../../../toolbox/actions.web';
-import {addReactionToBuffer} from '../../actions.any';
-import {toggleReactionsMenuVisibility} from '../../actions.web';
+import { isGifEnabled, isGifsMenuOpen } from '../../../gifs/functions';
+import { dockToolbox } from '../../../toolbox/actions.web';
+import { addReactionToBuffer } from '../../actions.any';
+import { toggleReactionsMenuVisibility } from '../../actions.web';
 import {
     GIFS_MENU_HEIGHT_IN_OVERFLOW_MENU,
     RAISE_HAND_ROW_HEIGHT, REACTIONS,
     REACTIONS_MENU_HEIGHT_DRAWER,
     REACTIONS_MENU_HEIGHT_IN_OVERFLOW_MENU
 } from '../../constants';
-import {IReactionsMenuParent} from '../../types';
+import { IReactionsMenuParent } from '../../types';
 
 import ReactionButton from './ReactionButton';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 interface IProps {
 
@@ -69,7 +69,7 @@ interface IProps {
 }
 
 const useStyles = makeStyles<IProps>()((theme, props: IProps) => {
-    const {parent, showRaisedHand, _isGifMenuVisible} = props;
+    const { parent, showRaisedHand, _isGifMenuVisible } = props;
     let reactionsMenuHeight = REACTIONS_MENU_HEIGHT_DRAWER;
 
     if (parent === IReactionsMenuParent.OverflowDrawer || parent === IReactionsMenuParent.OverflowMenu) {
@@ -145,15 +145,15 @@ const _getReactionButtons = (dispatch: IStore['dispatch'], t: Function) => {
         }
 
         return (<ReactionButton
-            accessibilityLabel={t(`toolbar.accessibilityLabel.${key}`)}
-            icon={REACTIONS[key].emoji}
-            key={key}
+            accessibilityLabel = {t(`toolbar.accessibilityLabel.${key}`)}
+            icon = {REACTIONS[key].emoji}
+            key = {key}
             // eslint-disable-next-line react/jsx-no-bind
-            onClick={doSendReaction}
-            toggled={false}
-            tooltip={`${t(`toolbar.${key}`)} (${modifierKey} + ${REACTIONS[key].shortcutChar})`}
-            className='emoji-reactions-menu'
-            classNameIcon='emoji-reactions-menu'/>);
+            onClick = {doSendReaction}
+            toggled = {false}
+            tooltip = {`${t(`toolbar.${key}`)} (${modifierKey} + ${REACTIONS[key].shortcutChar})`}
+            className = 'emoji-reactions-menu'
+            classNameIcon = 'emoji-reactions-menu' />);
     });
 };
 
@@ -169,8 +169,8 @@ const ReactionsMenu = (props: IProps) => {
     } = props;
     const isInOverflowMenu
         = parent === IReactionsMenuParent.OverflowDrawer || parent === IReactionsMenuParent.OverflowMenu;
-    const {classes, cx} = useStyles(props);
-    const {t} = useTranslation();
+    const { classes, cx } = useStyles(props);
+    const { t } = useTranslation();
     const isMobile = isMobileBrowser();
 
     useEffect(() => {
@@ -183,50 +183,50 @@ const ReactionsMenu = (props: IProps) => {
 
     const _doToggleRaiseHand = useCallback(() => {
         dispatch(raiseHand(!_raisedHand));
-    }, [_raisedHand]);
+    }, [ _raisedHand ]);
 
     const _onToolbarToggleRaiseHand = useCallback(() => {
         sendAnalytics(createToolbarEvent(
             'raise.hand',
-            {enable: !_raisedHand}));
+            { enable: !_raisedHand }));
         _doToggleRaiseHand();
         dispatch(toggleReactionsMenuVisibility());
-    }, [_raisedHand]);
+    }, [ _raisedHand ]);
 
     const buttons = _getReactionButtons(dispatch, t);
 
     if (_isGifEnabled) {
-        buttons.push(<GifsMenuButton parent={parent}/>);
+        buttons.push(<GifsMenuButton parent = {parent} />);
     }
 
     return (
         <div
-            className={cx('reactions-menu',
+            className = {cx('reactions-menu',
                 parent === IReactionsMenuParent.OverflowMenu && classes.reactionsMenuInOverflowMenu,
                 _isGifEnabled && 'with-gif',
                 isInOverflowMenu && `overflow ${classes.overflow}`,
                 isMobile && 'is-mobile')}>
             {_isGifEnabled && _isGifMenuVisible
                 && <GifsMenu
-                    columns={parent === IReactionsMenuParent.OverflowMenu ? 1 : undefined}
-                    parent={parent}/>}
-            <div className={`reactions-row ${isMobile ? 'is-mobile' : 'is-mobile'}`}>
+                    columns = {parent === IReactionsMenuParent.OverflowMenu ? 1 : undefined}
+                    parent = {parent} />}
+            <div className = {`reactions-row ${isMobile ? 'is-mobile' : 'is-mobile'}`}>
                 {buttons}
             </div>
             {showRaisedHand && (
-                <div className='raise-hand-row'>
+                <div className = 'raise-hand-row'>
                     <ReactionButton
-                        accessibilityLabel={t('toolbar.accessibilityLabel.raiseHand')}
-                        icon='✋'
-                        key='raisehand'
-                        label={
+                        accessibilityLabel = {t('toolbar.accessibilityLabel.raiseHand')}
+                        icon = '✋'
+                        key = 'raisehand'
+                        label = {
                             `${t(`toolbar.${_raisedHand ? 'lowerYourHand' : 'raiseYourHand'}`)}
                                 ${isInOverflowMenu ? '' : ' (R)'}`
                         }
-                        onClick={_onToolbarToggleRaiseHand}
-                        toggled={true}
-                        className='emoji-raise-hand-button'
-                        classNameIcon='emoji-raise-hand-button'/>
+                        onClick = {_onToolbarToggleRaiseHand}
+                        toggled = {true}
+                        className = 'emoji-raise-hand-button'
+                        classNameIcon = 'emoji-raise-hand-button' />
                 </div>
             )}
         </div>

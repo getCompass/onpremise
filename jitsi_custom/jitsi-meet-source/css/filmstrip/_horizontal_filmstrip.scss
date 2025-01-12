@@ -6,12 +6,16 @@
 }
 
 .horizontal-filmstrip .filmstrip {
-    padding: 10px 5px;
+    padding: 8px;
     @extend %align-right;
     z-index: $filmstripVideosZ;
     box-sizing: border-box;
     width: 100%;
-    position: fixed;
+    position: absolute;
+
+    &.display-none {
+        display: none;
+    }
 
     /*
      * Firefox sets flex items to min-height: auto and min-width: auto,
@@ -37,11 +41,11 @@
         width:auto;
 
         &#remoteVideos {
-            border: $thumbnailsBorder solid transparent;
-            transition: bottom 2s;
             flex-grow: 1;
+            align-items: center;
+            justify-content: center;
             display: flex;
-            flex-direction: row-reverse;
+            flex-direction: row;
             @include minHWAutoFix()
         }
 
@@ -52,7 +56,7 @@
         &#filmstripLocalScreenShare {
             align-self: flex-end;
             display: block;
-            margin-bottom: 8px;
+            margin-right: 4px;
         }
 
         &.hidden {
@@ -62,6 +66,10 @@
 
     .remote-videos {
         overscroll-behavior: contain;
+
+        &.display-none {
+            display: none;
+        }
 
         & > div {
             transition: opacity 1s;
@@ -80,10 +88,6 @@
                 pointer-events: none;
             }
         }
-    }
-
-    .videocontainer {
-        margin-bottom: 10px;
     }
 }
 

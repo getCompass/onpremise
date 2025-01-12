@@ -8,6 +8,8 @@ import { isScreenVideoShared } from '../../screen-share/functions';
 import { openSettingsDialog } from '../../settings/actions';
 import { SETTINGS_TABS } from '../../settings/constants';
 import { checkBlurSupport, checkVirtualBackgroundEnabled } from '../functions';
+import { openDialog } from "../../base/dialog/actions";
+import CompassVirtualBackgroundDialog from "./web/CompassVirtualBackgroundDialog";
 
 /**
  * The type of the React {@code Component} props of {@link VideoBackgroundButton}.
@@ -27,7 +29,6 @@ class VideoBackgroundButton extends AbstractButton<IProps> {
     accessibilityLabel = 'toolbar.accessibilityLabel.selectBackground';
     icon = IconImage;
     label = 'toolbar.selectBackground';
-    tooltip = 'toolbar.selectBackground';
 
     /**
      * Handles clicking / pressing the button, and toggles the virtual background dialog
@@ -39,7 +40,7 @@ class VideoBackgroundButton extends AbstractButton<IProps> {
     _handleClick() {
         const { dispatch } = this.props;
 
-        dispatch(openSettingsDialog(SETTINGS_TABS.VIRTUAL_BACKGROUND));
+        dispatch(openDialog(CompassVirtualBackgroundDialog));
     }
 
     /**
@@ -50,7 +51,7 @@ class VideoBackgroundButton extends AbstractButton<IProps> {
      * @returns {boolean}
      */
     _isToggled() {
-        return this.props._isBackgroundEnabled;
+        return false;
     }
 }
 

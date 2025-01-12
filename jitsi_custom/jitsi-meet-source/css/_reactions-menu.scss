@@ -10,6 +10,14 @@
     }
 }
 
+.reactions-menu-container {
+    margin-bottom: 12px;
+
+    &.is-mobile {
+        margin-bottom: 0;
+    }
+}
+
 .reactions-menu {
     width: 281px;
     background: rgba(33, 33, 33, 1);
@@ -27,6 +35,10 @@
     }
 
     .toolbox-icon {
+        &.emoji-reactions-menu {
+            opacity: 100%;
+        }
+
         &:hover {
             background-color: rgba(255, 255, 255, 0.05);
         }

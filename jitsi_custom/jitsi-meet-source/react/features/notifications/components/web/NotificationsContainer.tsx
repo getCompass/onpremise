@@ -1,15 +1,15 @@
-import React, {useCallback} from 'react';
-import {connect} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState, IStore} from '../../../app/types';
-import {hideNotification} from '../../actions';
-import {areThereNotifications} from '../../functions';
-import {INotificationProps} from '../../types';
+import { IReduxState, IStore } from '../../../app/types';
+import { hideNotification } from '../../actions';
+import { areThereNotifications } from '../../functions';
+import { INotificationProps } from '../../types';
 import NotificationsTransition from '../NotificationsTransition';
 
 import Notification from './Notification';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 interface IProps {
 
@@ -103,12 +103,12 @@ const useStyles = makeStyles()(() => {
 });
 
 const NotificationsContainer = ({
-                                    _iAmSipGateway,
-                                    _notifications,
-                                    dispatch,
-                                    portal
-                                }: IProps) => {
-    const {classes, cx} = useStyles();
+    _iAmSipGateway,
+    _notifications,
+    dispatch,
+    portal
+}: IProps) => {
+    const { classes, cx } = useStyles();
     const isMobile = isMobileBrowser();
 
     const _onDismissed = useCallback((uid: string) => {
@@ -122,25 +122,25 @@ const NotificationsContainer = ({
     return (
         <>
             {(isMobile && _notifications.length > 0) && (
-                <div className={cx(classes.backgroundContainer, isMobile && 'is-mobile')}>
-                    <div className={cx(classes.background1, isMobile && 'is-mobile')}/>
-                    <div className={cx(classes.background2, isMobile && 'is-mobile')}/>
-                    <div className={cx(classes.background3, isMobile && 'is-mobile')}/>
-                    <div className={cx(classes.background4, isMobile && 'is-mobile')}/>
+                <div className = {cx(classes.backgroundContainer, isMobile && 'is-mobile')}>
+                    <div className = {cx(classes.background1, isMobile && 'is-mobile')} />
+                    <div className = {cx(classes.background2, isMobile && 'is-mobile')} />
+                    <div className = {cx(classes.background3, isMobile && 'is-mobile')} />
+                    <div className = {cx(classes.background4, isMobile && 'is-mobile')} />
                 </div>
             )}
             <div
-                className={cx(classes.container, isMobile && 'is-mobile', {
+                className = {cx(classes.container, isMobile && 'is-mobile', {
                     [classes.containerPortal]: portal
                 })}
-                id='notifications-container'>
+                id = 'notifications-container'>
                 <NotificationsTransition>
-                    {_notifications.map(({props, uid}) => (
+                    {_notifications.map(({ props, uid }) => (
                         <Notification
                             {...props}
-                            key={uid}
-                            onDismissed={_onDismissed}
-                            uid={uid}/>
+                            key = {uid}
+                            onDismissed = {_onDismissed}
+                            uid = {uid} />
                     )) || null}
                 </NotificationsTransition>
             </div>
@@ -156,9 +156,9 @@ const NotificationsContainer = ({
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState) {
-    const {notifications} = state['features/notifications'];
-    const {iAmSipGateway} = state['features/base/config'];
-    const {isOpen: isChatOpen} = state['features/chat'];
+    const { notifications } = state['features/notifications'];
+    const { iAmSipGateway } = state['features/base/config'];
+    const { isOpen: isChatOpen } = state['features/chat'];
     const _visible = areThereNotifications(state);
 
     return {

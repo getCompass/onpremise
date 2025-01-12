@@ -52,6 +52,7 @@ import { default as IconFaceSmile } from './face-smile.svg';
 import { default as IconFavoriteSolid } from './favorite-solid.svg';
 import { default as IconFavorite } from './favorite.svg';
 import { default as IconFeedback } from './feedback.svg';
+import { default as IconFilledSquare } from './filled-square.svg';
 import { default as IconFlagDe } from './flag-de.svg';
 import { default as IconFlagEn } from './flag-en.svg';
 import { default as IconFlagEs } from './flag-es.svg';
@@ -63,6 +64,8 @@ import { default as IconGear } from './gear.svg';
 import { default as IconGearSmall } from './gear-small.svg';
 import { default as IconGoogle } from './google.svg';
 import { default as IconHangup } from './hangup.svg';
+import { default as IconHangupMobile } from './hangup-mobile.svg';
+import { default as IconHangupToggled } from './hangup-toggled.svg';
 import { default as IconDeviceHeadphone } from './headset.svg';
 import { default as IconHelp } from './help.svg';
 import { default as IconHighlight } from './highlight.svg';
@@ -75,10 +78,13 @@ import { default as IconMessage } from './message.svg';
 import { default as IconMeter } from './meter.svg';
 import { default as IconMicSlashThin } from './mic-slash-thin.svg';
 import { default as IconMicSlash } from './mic-slash.svg';
+import { default as IconMicSlashMobile } from './mic-slash-mobile.svg';
 import { default as IconMicThin } from './mic-thin.svg';
 import { default as IconMic } from './mic.svg';
+import { default as IconMicMobile } from './mic-mobile.svg';
 import { default as IconMicFilled } from './mic-filled.svg';
 import { default as IconModerator } from './moderator.svg';
+import { default as IconModeratorSettings } from './moderator-settings.svg';
 import { default as IconConnectionInactive } from './ninja.svg';
 import { default as IconNoiseSuppressionOff } from './noise-suppression-off.svg';
 import { default as IconNoiseSuppressionOn } from './noise-suppression-on.svg';
@@ -88,15 +94,19 @@ import { default as IconPerformance } from './performance.svg';
 import { default as IconPhoneRinging } from './phone-ringing.svg';
 import { default as IconPin } from './pin.svg';
 import { default as IconPinned } from './pinned.svg';
+import { default as IconPinMobile } from './pin-mobile.svg';
 import { default as IconPoll } from './poll.svg';
 import { default as IconPlanet } from './planet.svg';
 import { default as IconPlay } from './play.svg';
 import { default as IconPlus } from './plus.svg';
 import { default as IconRaiseHand } from './raise-hand.svg';
 import { default as IconRecord } from './record.svg';
+import { default as IconRecordInProcess } from './record-in-process.svg';
 import { default as IconReply } from './reply.svg';
 import { default as IconRestore } from './restore.svg';
 import { default as IconScreenshare } from './screenshare.svg';
+import { default as IconScreenshareNotification } from './screenshare-notification.svg';
+import { default as IconScreenshareToggled } from './screenshare-toggled.svg';
 import { default as IconSearch } from './search.svg';
 import { default as IconSecurityOff } from './security-off.svg';
 import { default as IconSecurityOn } from './security-on.svg';
@@ -106,20 +116,24 @@ import { default as IconShare } from './share.svg';
 import { default as IconShortcuts } from './shortcuts.svg';
 import { default as IconSip } from './sip.svg';
 import { default as IconSites } from './sites.svg';
+import { default as IconSpeakerView } from './speaker-view.svg';
 import { default as IconRemoteControlStart } from './start-remote-control.svg';
 import { default as IconRemoteControlStop } from './stop-remote-control.svg';
 import { default as IconStop } from './stop.svg';
 import { default as IconSubtitles } from './subtitles.svg';
 import { default as IconTileView } from './tile-view.svg';
+import { default as IconTileViewMobile } from './tile-view-mobile.svg';
 import { default as IconTrash } from './trash.svg';
 import { default as IconUserDeleted } from './user-deleted.svg';
 import { default as IconUser } from './user.svg';
 import { default as IconUsers } from './users.svg';
 import { default as IconVideoOffThin } from './video-off-thin.svg';
 import { default as IconVideoOff } from './video-off.svg';
+import { default as IconVideoOffMobile } from './video-off-mobile.svg';
 import { default as IconVideoThin } from './video-thin.svg';
 import { default as IconVirtualBackgroundDelete } from './virtual-background-delete.svg';
 import { default as IconVideo } from './video.svg';
+import { default as IconVideoMobile } from './video-mobile.svg';
 import { default as IconAudioOnlyOff } from './visibility-off.svg';
 import { default as IconAudioOnly } from './visibility.svg';
 import { default as IconVolumeEmpty } from './volume-empty.svg';
@@ -137,6 +151,8 @@ import { default as IconWifi2Bars } from './wifi-2.svg';
 import { default as IconWifi3Bars } from './wifi-3.svg';
 import { default as IconYahoo } from './yahoo.svg';
 import { default as IconErrorLoadImg } from './error-load-image.svg';
+import { default as IconCircleWarning } from './circle-warning.svg';
+import { default as IconQuestionCircle } from './questions.svg';
 /**
  * Map containing the default icons.
  */
@@ -196,6 +212,7 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconFavorite,
     IconFavoriteSolid,
     IconFeedback,
+    IconFilledSquare,
     IconFlagDe,
     IconFlagEn,
     IconFlagEs,
@@ -207,6 +224,8 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconGearSmall,
     IconGoogle,
     IconHangup,
+    IconHangupMobile,
+    IconHangupToggled,
     IconHelp,
     IconHighlight,
     IconImage,
@@ -215,11 +234,14 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconMessage,
     IconMeter,
     IconMic,
+    IconMicMobile,
     IconMicThin,
     IconMicSlash,
+    IconMicSlashMobile,
     IconMicSlashThin,
     IconMicFilled,
     IconModerator,
+    IconModeratorSettings,
     IconNoiseSuppressionOff,
     IconNoiseSuppressionOn,
     IconArrowRight,
@@ -228,12 +250,14 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconPhoneRinging,
     IconPin,
     IconPinned,
+    IconPinMobile,
     IconPoll,
     IconPlanet,
     IconPlay,
     IconPlus,
     IconRaiseHand,
     IconRecord,
+    IconRecordInProcess,
     IconRecordAccount,
     IconRecordContact,
     IconRecordLead,
@@ -244,6 +268,8 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconRestore,
     IconRingGroup,
     IconScreenshare,
+    IconScreenshareNotification,
+    IconScreenshareToggled,
     IconSearch,
     IconSecurityOff,
     IconSecurityOn,
@@ -253,17 +279,21 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconShortcuts,
     IconSip,
     IconSites,
+    IconSpeakerView,
     IconStop,
     IconSubtitles,
     IconTileView,
+    IconTileViewMobile,
     IconTrash,
     IconUserDeleted,
     IconUsers,
     IconUser,
     IconVideo,
+    IconVideoMobile,
     IconVideoThin,
     IconVirtualBackgroundDelete,
     IconVideoOff,
+    IconVideoOffMobile,
     IconVideoOffThin,
     IconVolumeEmpty,
     IconVolumeOff,
@@ -279,5 +309,7 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconWifi2Bars,
     IconWifi3Bars,
     IconYahoo,
-    IconErrorLoadImg
+    IconErrorLoadImg,
+    IconCircleWarning,
+    IconQuestionCircle
 };

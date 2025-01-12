@@ -1,29 +1,15 @@
-import {IReduxState} from '../app/types';
-import {hasAvailableDevices} from '../base/devices/functions';
-import {MEET_FEATURES} from '../base/jwt/constants';
-import {isJwtFeatureEnabled} from '../base/jwt/functions';
-import {IGUMPendingState} from '../base/media/types';
-import ChatButton from '../chat/components/web/ChatButton';
-import ParticipantsPaneButton from '../participants-pane/components/web/ParticipantsPaneButton';
-import RaiseHandContainerButton from '../reactions/components/web/RaiseHandContainerButtons';
-import ReactionsMenuButton from '../reactions/components/web/ReactionsMenuButton';
-import RecordButton from '../recording/components/Recording/web/RecordButton';
-import RecordButtonElectron from '../recording/components/Recording/web/RecordButtonElectron';
-import {isScreenMediaShared} from '../screen-share/functions';
-import SettingsButton from '../settings/components/web/SettingsButton';
-import TileViewButton from '../video-layout/components/TileViewButton';
-import VideoBackgroundButton from '../virtual-background/components/VideoBackgroundButton';
-import {isWhiteboardVisible} from '../whiteboard/functions';
-import AudioSettingsButton from './components/web/AudioSettingsButton';
-import CustomOptionButton from './components/web/CustomOptionButton';
-import FullscreenButton from './components/web/FullscreenButton';
-import ShareDesktopButton from './components/web/ShareDesktopButton';
-import VideoSettingsButton from './components/web/VideoSettingsButton';
-import {TOOLBAR_TIMEOUT} from './constants';
-import {IToolboxButton, NOTIFY_CLICK_MODE} from './types';
-import SpeakerStatsButton from '../speaker-stats/components/web/SpeakerStatsButton';
-import {isMobileBrowser} from "../base/environment/utils";
-import ToggleCameraButton from "./components/web/ToggleCameraButton";
+import { IReduxState } from '../app/types';
+import { hasAvailableDevices } from '../base/devices/functions';
+import { MEET_FEATURES } from '../base/jwt/constants';
+import { isJwtFeatureEnabled } from '../base/jwt/functions';
+import { IGUMPendingState } from '../base/media/types';
+import { isScreenMediaShared } from '../screen-share/functions';
+import { isWhiteboardVisible } from '../whiteboard/functions';
+
+import { MAIN_COMPASS_TOOLBAR_BUTTONS_PRIORITY, MAIN_TOOLBAR_BUTTONS_PRIORITY, TOOLBAR_TIMEOUT } from './constants';
+import { IMainToolbarButtonThresholds, IToolboxButton, NOTIFY_CLICK_MODE } from './types';
+import { isMobileBrowser } from "../base/environment/utils";
+import { browser } from "../base/lib-jitsi-meet";
 
 export * from './functions.any';
 
@@ -59,13 +45,13 @@ export function isButtonEnabled(buttonName: string, state: IReduxState | Array<s
  * otherwise.
  */
 export function isToolboxVisible(state: IReduxState) {
-    const {iAmRecorder, iAmSipGateway, toolbarConfig} = state['features/base/config'];
-    const {alwaysVisible} = toolbarConfig || {};
+    const { iAmRecorder, iAmSipGateway, toolbarConfig } = state['features/base/config'];
+    const { alwaysVisible } = toolbarConfig || {};
     const {
         timeoutID,
         visible
     } = state['features/toolbox'];
-    const {audioSettingsVisible, videoSettingsVisible} = state['features/settings'];
+    const { audioSettingsVisible, videoSettingsVisible } = state['features/settings'];
     const whiteboardVisible = isWhiteboardVisible(state);
 
     return Boolean(!iAmRecorder && !iAmSipGateway
@@ -99,7 +85,7 @@ export function isAudioSettingsButtonDisabled(state: IReduxState) {
  * @returns {boolean}
  */
 export function isDesktopShareButtonDisabled(state: IReduxState) {
-    const {muted, unmuteBlocked} = state['features/base/media'].video;
+    const { muted, unmuteBlocked } = state['features/base/media'].video;
     const videoOrShareInProgress = !muted || isScreenMediaShared(state);
     const enabledInJwt = isJwtFeatureEnabled(state, MEET_FEATURES.SCREEN_SHARING, true, true);
 
@@ -123,7 +109,7 @@ export function isVideoSettingsButtonDisabled(state: IReduxState) {
  * @returns {boolean}
  */
 export function isVideoMuteButtonDisabled(state: IReduxState) {
-    const {muted, unmuteBlocked, gumPending} = state['features/base/media'].video;
+    const { muted, unmuteBlocked, gumPending } = state['features/base/media'].video;
 
     return !hasAvailableDevices(state, 'videoInput')
         || (unmuteBlocked && Boolean(muted))
@@ -168,148 +154,234 @@ export function isToolboxEnabled(state: IReduxState) {
  * @returns {number} - Toolbar timeout in milliseconds.
  */
 export function getToolbarTimeout(state: IReduxState) {
-    const {toolbarConfig} = state['features/base/config'];
+    const { toolbarConfig } = state['features/base/config'];
 
     return toolbarConfig?.timeout || TOOLBAR_TIMEOUT;
 }
 
 /**
- * Returns all buttons that could be rendered.
+ * Sets the notify click mode for the buttons.
  *
- * @param {Object} _customToolbarButtons - An array containing custom buttons objects.
- * @returns {Object} The button maps mainMenuButtons and overflowMenuButtons.
+ * @param {Object} buttons - The list of toolbar buttons.
+ * @param {Map} buttonsWithNotifyClick - The buttons notify click configuration.
+ * @returns {void}
  */
-export function getAllToolboxButtons(_customToolbarButtons?: {
-    backgroundColor?: string;
-    icon: string;
-    id: string;
-    text: string;
-}[]): { [key: string]: IToolboxButton; } {
+function setButtonsNotifyClickMode(buttons: Object, buttonsWithNotifyClick: Map<string, NOTIFY_CLICK_MODE>) {
+    if (typeof APP === 'undefined' || (buttonsWithNotifyClick?.size ?? 0) <= 0) {
+        return;
+    }
 
-    const microphone = {
-        key: 'microphone',
-        Content: AudioSettingsButton,
-        group: 0
-    };
+    Object.values(buttons).forEach((button: any) => {
+        if (typeof button === 'object') {
+            button.notifyMode = buttonsWithNotifyClick.get(button.key);
+        }
+    });
+}
 
-    const camera = {
-        key: 'camera',
-        Content: VideoSettingsButton,
-        group: 0
-    };
+interface IGetVisibleButtonsParams {
+    allButtons: { [key: string]: IToolboxButton; };
+    buttonsWithNotifyClick: Map<string, NOTIFY_CLICK_MODE>;
+    clientWidth: number;
+    jwtDisabledButtons: string[];
+    mainToolbarButtonsThresholds: IMainToolbarButtonThresholds;
+    toolbarButtons: string[];
+}
 
-    const chat = {
-        key: 'chat',
-        Content: ChatButton,
-        group: 0
-    };
+interface IGetLeftSideVisibleButtonsParams {
+    allButtons: { [key: string]: IToolboxButton; };
+    jwtDisabledButtons: string[];
+    toolbarButtons: string[];
+}
 
-    const desktop = {
-        key: 'desktop',
-        Content: ShareDesktopButton,
-        group: 0
-    };
+interface IGetRightSideVisibleButtonsParams {
+    allButtons: { [key: string]: IToolboxButton; };
+    jwtDisabledButtons: string[];
+    toolbarButtons: string[];
+}
 
-    // In Narrow layout and mobile web we are using drawer for popups and that is why it is better to include
-    // all forms of reactions in the overflow menu. Otherwise the toolbox will be hidden and the reactions popup
-    // misaligned.
-    const raisehand = {
-        key: 'raisehand',
-        Content: RaiseHandContainerButton,
-        group: 0
-    };
+/**
+ * Returns all buttons that need to be rendered on the left side.
+ *
+ * @param {IGetVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
+ * @returns {Object} - The visible buttons arrays .
+ */
+export function getCompassLeftSideButtons({
+    allButtons,
+    toolbarButtons,
+    jwtDisabledButtons,
+}: IGetLeftSideVisibleButtonsParams) {
+    let filteredButtons= Object.keys(allButtons).filter(key =>
+        typeof key !== 'undefined' // filter invalid buttons that may be coming from config.mainToolbarButtons
+        // override
+        && !jwtDisabledButtons.includes(key)
+        && isButtonEnabled(key, toolbarButtons)
+        && (key === 'microphone' || key === 'camera') // оставляем только кнопки microphone и camera
+    );
 
-    const reactions = {
-        key: 'reactions',
-        Content: ReactionsMenuButton,
-        group: 0
-    };
+    return filteredButtons.map(key => allButtons[key]);
+}
 
-    const participants = {
-        key: 'participants-pane',
-        Content: ParticipantsPaneButton,
-        group: 0
-    };
+/**
+ * Returns all buttons that need to be rendered on the left side.
+ *
+ * @param {IGetVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
+ * @returns {Object} - The visible buttons arrays .
+ */
+export function getCompassRightSideButtons({
+    allButtons,
+    toolbarButtons,
+    jwtDisabledButtons,
+}: IGetLeftSideVisibleButtonsParams) {
+    let filteredButtons= Object.keys(allButtons).filter(key =>
+        typeof key !== 'undefined' // filter invalid buttons that may be coming from config.mainToolbarButtons
+        // override
+        && !jwtDisabledButtons.includes(key)
+        && isButtonEnabled(key, toolbarButtons)
+        && (key === 'participants-pane' || key === 'moderatorSettings') // оставляем только кнопки participants-pane и moderatorSettings
+    );
 
-    const tileview = {
-        key: 'tileview',
-        Content: TileViewButton,
-        group: 0
-    };
+    return filteredButtons.map(key => allButtons[key]);
+}
 
-    const toggleCamera = {
-        key: 'toggle-camera',
-        Content: ToggleCameraButton,
-        group: 0
-    };
+/**
+ * Returns all buttons that need to be rendered.
+ *
+ * @param {IGetVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
+ * @returns {Object} - The visible buttons arrays .
+ */
+export function getCompassVisibleButtons({
+    allButtons,
+    buttonsWithNotifyClick,
+    toolbarButtons,
+    clientWidth,
+    jwtDisabledButtons,
+    mainToolbarButtonsThresholds
+}: IGetVisibleButtonsParams) {
+    setButtonsNotifyClickMode(allButtons, buttonsWithNotifyClick);
 
-    const fullscreen = {
-        key: 'fullscreen',
-        Content: FullscreenButton,
-        group: 1
-    };
+    let filteredButtons: string[];
 
-    const recording = {
-        key: 'recording',
-        Content: RecordButton,
-        group: 1
-    };
+    if (isMobileBrowser()) {
+        filteredButtons = Object.keys(allButtons).filter(key =>
+            typeof key !== 'undefined' // filter invalid buttons that may be coming from config.mainToolbarButtons
+            // на мобилке оставляем только кнопки camera и microphone
+            && (key === 'camera' || key === 'microphone')
+            && !jwtDisabledButtons.includes(key)
+            && isButtonEnabled(key, toolbarButtons));
 
-    const recording_electron = {
-        key: 'recording_electron',
-        Content: RecordButtonElectron,
-        group: 1
-    };
+    }else{
+        filteredButtons = Object.keys(allButtons).filter(key =>
+            typeof key !== 'undefined' // filter invalid buttons that may be comming from config.mainToolbarButtons
+            // override
+            && (key !== 'fullscreen' || !isMobileBrowser()) // убираем кнопку fullscreen на мобилках
+            && key !== 'microphone' // убираем кнопку microphone
+            && key !== 'camera' // убираем кнопку camera
+            && key !== 'participants-pane' // убираем кнопку participants-pane
+            && key !== 'moderatorSettings' // убираем кнопку moderatorSettings
+            && !jwtDisabledButtons.includes(key)
+            && isButtonEnabled(key, toolbarButtons));
 
-    const speakerStats = {
-        key: 'stats',
-        Content: SpeakerStatsButton,
-        group: 1
-    };
+    }
 
-    const virtualBackground = {
-        key: 'select-background',
-        Content: VideoBackgroundButton,
-        group: 1
-    };
+    if (!browser.isElectron()) {
+        filteredButtons = filteredButtons.filter(key => key !== 'recording_electron');
+    } else {
+        filteredButtons = filteredButtons.filter(key => key !== 'recording');
+    }
 
-    const settings = {
-        key: 'settings',
-        Content: SettingsButton,
-        group: 2
-    };
+    const { order } = mainToolbarButtonsThresholds.find(({ width }) => clientWidth > width)
+    || mainToolbarButtonsThresholds[mainToolbarButtonsThresholds.length - 1];
 
-    const customButtons = _customToolbarButtons?.reduce((prev, {backgroundColor, icon, id, text}) => {
-        return {
-            ...prev,
-            [id]: {
-                backgroundColor,
-                key: id,
-                Content: CustomOptionButton,
-                group: 4,
-                icon,
-                text
-            }
-        };
-    }, {});
+    const mainToolbarButtonKeysOrder = [
+        ...order.filter(key => filteredButtons.includes(key)),
+        ...MAIN_COMPASS_TOOLBAR_BUTTONS_PRIORITY.filter(key => !order.includes(key) && filteredButtons.includes(key)),
+        ...filteredButtons.filter(key => !order.includes(key) && !MAIN_COMPASS_TOOLBAR_BUTTONS_PRIORITY.includes(key))
+    ];
+
+    const mainButtonsKeys = mainToolbarButtonKeysOrder.slice(0, 8);
+    const overflowMenuButtons = filteredButtons.reduce((acc, key) => {
+        if (!mainButtonsKeys.includes(key)) {
+            acc.push(allButtons[key]);
+        }
+
+        return acc;
+    }, [] as IToolboxButton[]);
+
+    // if we have 1 button in the overflow menu it is better to directly display it in the main toolbar by replacing
+    // the "More" menu button with it.
+    if (overflowMenuButtons.length === 1) {
+        const button = overflowMenuButtons.shift()?.key;
+
+        button && mainButtonsKeys.push(button);
+    }
 
     return {
-        microphone,
-        camera,
-        desktop,
-        chat,
-        raisehand,
-        reactions,
-        participants,
-        tileview,
-        toggleCamera,
-        fullscreen,
-        recording,
-        recording_electron,
-        speakerStats,
-        virtualBackground,
-        settings,
-        ...customButtons
+        mainMenuButtons: mainButtonsKeys.map(key => allButtons[key]),
+        overflowMenuButtons
+    };
+}
+
+/**
+ * Returns all buttons that need to be rendered.
+ *
+ * @param {IGetVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
+ * @returns {Object} - The visible buttons arrays .
+ */
+export function getVisibleButtons({
+    allButtons,
+    buttonsWithNotifyClick,
+    toolbarButtons,
+    clientWidth,
+    jwtDisabledButtons,
+    mainToolbarButtonsThresholds
+}: IGetVisibleButtonsParams) {
+    setButtonsNotifyClickMode(allButtons, buttonsWithNotifyClick);
+
+    let filteredButtons = Object.keys(allButtons).filter(key =>
+        typeof key !== 'undefined' // filter invalid buttons that may be comming from config.mainToolbarButtons
+        // override
+        && (key !== 'fullscreen' || !isMobileBrowser()) // убираем кнопку fullscreen на мобилках
+        && (key !== 'premeeting-microphone' || !isMobileBrowser()) // убираем кнопку premeeting-microphone на мобилках
+        && (key !== 'premeeting-camera' || !isMobileBrowser()) // убираем кнопку premeeting-camera на мобилках
+        && (key !== 'premeeting-select-background' || !isMobileBrowser()) // убираем кнопку premeeting-select-background на мобилках
+        && !jwtDisabledButtons.includes(key)
+        && isButtonEnabled(key, toolbarButtons));
+
+    if (!browser.isElectron()) {
+        filteredButtons = filteredButtons.filter(key => key !== 'recording_electron');
+    } else {
+        filteredButtons = filteredButtons.filter(key => key !== 'recording');
+    }
+
+    const { order } = mainToolbarButtonsThresholds.find(({ width }) => clientWidth > width)
+    || mainToolbarButtonsThresholds[mainToolbarButtonsThresholds.length - 1];
+
+    const mainToolbarButtonKeysOrder = [
+        ...order.filter(key => filteredButtons.includes(key)),
+        ...MAIN_TOOLBAR_BUTTONS_PRIORITY.filter(key => !order.includes(key) && filteredButtons.includes(key)),
+        ...filteredButtons.filter(key => !order.includes(key) && !MAIN_TOOLBAR_BUTTONS_PRIORITY.includes(key))
+    ];
+
+    const mainButtonsKeys = mainToolbarButtonKeysOrder.slice(0, order.length);
+    const overflowMenuButtons = filteredButtons.reduce((acc, key) => {
+        if (!mainButtonsKeys.includes(key)) {
+            acc.push(allButtons[key]);
+        }
+
+        return acc;
+    }, [] as IToolboxButton[]);
+
+    // if we have 1 button in the overflow menu it is better to directly display it in the main toolbar by replacing
+    // the "More" menu button with it.
+    if (overflowMenuButtons.length === 1) {
+        const button = overflowMenuButtons.shift()?.key;
+
+        button && mainButtonsKeys.push(button);
+    }
+
+    return {
+        mainMenuButtons: mainButtonsKeys.map(key => allButtons[key]),
+        overflowMenuButtons
     };
 }
 
@@ -321,4 +393,43 @@ export function getAllToolboxButtons(_customToolbarButtons?: {
  */
 export function getParticipantMenuButtonsWithNotifyClick(state: IReduxState): Map<string, NOTIFY_CLICK_MODE> {
     return state['features/toolbox'].participantMenuButtonsWithNotifyClick;
+}
+
+interface ICSSTransitionObject {
+    delay: number;
+    duration: number;
+    easingFunction: string;
+}
+
+/**
+ * Returns the time, timing function and delay for elements that are position above the toolbar and need to move along
+ * with the toolbar.
+ *
+ * @param {boolean} isToolbarVisible - Whether the toolbar is visible or not.
+ * @returns {ICSSTransitionObject}
+ */
+export function getTransitionParamsForElementsAboveToolbox(isToolbarVisible: boolean): ICSSTransitionObject {
+    // The transistion time and delay is different to account for the time when the toolbar is about to hide/show but
+    // the elements don't have to move.
+    return isToolbarVisible ? {
+        duration: 0.15,
+        easingFunction: 'ease-in',
+        delay: 0.15
+    } : {
+        duration: 0.24,
+        easingFunction: 'ease-in',
+        delay: 0
+    };
+}
+
+/**
+ * Converts a given object to a css transition value string.
+ *
+ * @param {ICSSTransitionObject} object - The object.
+ * @returns {string}
+ */
+export function toCSSTransitionValue(object: ICSSTransitionObject) {
+    const { delay, duration, easingFunction } = object;
+
+    return `${duration}s ${easingFunction} ${delay}s`;
 }

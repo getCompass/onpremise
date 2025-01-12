@@ -45,25 +45,33 @@
     position: absolute;
     top: 0;
     height: 48px;
+}
 
-    &.is-mobile {
-        height: 54px;
-        background: rgba(28, 28, 28, 1);
-        z-index: 1;
-        justify-content: space-between;
-        transition: opacity .6s ease-in-out;
-        opacity: 0;
+.details-container-mobile {
+    padding-top: 16px;
+    padding-bottom: 8px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    top: 0;
+    background: transparent;
+    z-index: 1;
+    transition: opacity .6s ease-in-out;
+    opacity: 0;
 
-        &.visible {
-            opacity: 1;
-        }
+    &.prejoin-page {
+        z-index: 253;
+    }
+
+    &.visible {
+        opacity: 1;
     }
 }
 
 .header-buttons-mobile-container {
     display: flex;
-    gap: 26px;
-    padding-right: 22px;
+    gap: 12px;
     transition: opacity .6s ease-in-out;
     opacity: 0;
     justify-content: center;
@@ -72,6 +80,14 @@
     &.visible {
         opacity: 1;
     }
+}
+
+.header-buttons-mobile-container-right {
+    padding-right: 16px;
+}
+
+.header-buttons-mobile-container-left {
+    padding-left: 16px;
 }
 
 .conference-android-webview-pip-button {

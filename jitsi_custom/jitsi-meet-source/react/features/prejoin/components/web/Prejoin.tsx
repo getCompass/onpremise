@@ -33,7 +33,7 @@ import {
 import { hasDisplayName } from '../../utils';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
-import {BUTTON_TYPES} from "../../../base/ui/constants.any";
+import { BUTTON_TYPES } from "../../../base/ui/constants.any";
 
 interface IProps {
 
@@ -304,54 +304,54 @@ const Prejoin = ({
 
     return (
         <PreMeetingScreen
-            showDeviceStatus = { deviceStatusVisible }
-            showRecordingWarning = { showRecordingWarning }
-            showUnsafeRoomWarning = { showUnsafeRoomWarning }
-            title = { t('prejoin.joinMeetingAsGuest') }
-            videoMuted = { !showCameraPreview }
-            videoTrack = { videoTrack }
-            name = { name }
-            participantId = { participantId }
-            type = { type }
-            isLobby = { false }>
+            showDeviceStatus = {deviceStatusVisible}
+            showRecordingWarning = {showRecordingWarning}
+            showUnsafeRoomWarning = {showUnsafeRoomWarning}
+            title = {t('prejoin.joinMeetingAsGuest')}
+            videoMuted = {!showCameraPreview}
+            videoTrack = {videoTrack}
+            name = {name}
+            participantId = {participantId}
+            type = {type}
+            isLobby = {false}>
             <div
-                className = { classes.inputContainer }
+                className = {classes.inputContainer}
                 data-testid = 'prejoin.screen'>
                 <Input
-                    accessibilityLabel = { t('dialog.enterDisplayName') }
-                    autoComplete = { 'name' }
-                    disabled = { readOnlyName }
-                    autoFocus = { true }
-                    className = { classes.inputBlock }
-                    inputClassName = { classes.input}
-                    error = { showErrorOnField }
+                    accessibilityLabel = {t('dialog.enterDisplayName')}
+                    autoComplete = {'name'}
+                    disabled = {readOnlyName}
+                    autoFocus = {true}
+                    className = {classes.inputBlock}
+                    inputClassName = {classes.input}
+                    error = {showErrorOnField}
                     id = 'premeeting-name-input'
-                    onChange = { setName }
-                    onKeyPress = { showUnsafeRoomWarning && !unsafeRoomConsent ? undefined : onInputKeyPress }
-                    placeholder = { t('dialog.enterDisplayName') }
-                    readOnly = { readOnlyName }
-                    value = { name } />
+                    onChange = {setName}
+                    onKeyPress = {showUnsafeRoomWarning && !unsafeRoomConsent ? undefined : onInputKeyPress}
+                    placeholder = {t('dialog.enterDisplayName')}
+                    readOnly = {readOnlyName}
+                    value = {name} />
 
                 {showErrorOnField && <div
-                    className = { classes.error }
+                    className = {classes.error}
                     data-testid = 'prejoin.errorMessage'>{t('prejoin.errorMissingName')}</div>}
-                    <Button
-                        className={classes.buttonJoin}
-                        accessibilityLabel = { t('prejoin.joinMeeting') }
-                        labelKey = { t('prejoin.joinMeeting') }
-                        disabled = { joiningInProgress
-                            || (showUnsafeRoomWarning && !unsafeRoomConsent)
-                            || showErrorOnField }
-                        onClick = { onJoinButtonClick }
-                        role = 'button'
-                        tabIndex = { 0 }
-                        testId = 'prejoin.joinMeeting'
-                        type = { BUTTON_TYPES.PRIMARY } />
+                <Button
+                    className = {classes.buttonJoin}
+                    accessibilityLabel = {t('prejoin.joinMeeting')}
+                    labelKey = {t('prejoin.joinMeeting')}
+                    disabled = {joiningInProgress
+                        || (showUnsafeRoomWarning && !unsafeRoomConsent)
+                        || showErrorOnField}
+                    onClick = {onJoinButtonClick}
+                    role = 'button'
+                    tabIndex = {0}
+                    testId = 'prejoin.joinMeeting'
+                    type = {BUTTON_TYPES.PRIMARY} />
             </div>
             {showDialog && (
                 <JoinByPhoneDialog
-                    joinConferenceWithoutAudio = { joinConferenceWithoutAudio }
-                    onClose = { closeDialog } />
+                    joinConferenceWithoutAudio = {joinConferenceWithoutAudio}
+                    onClose = {closeDialog} />
             )}
         </PreMeetingScreen>
     );

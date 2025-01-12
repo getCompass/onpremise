@@ -1,15 +1,20 @@
-import React, {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../app/types';
-import {withPixelLineHeight} from '../../../base/styles/functions.web';
-import {admitMultiple} from '../../../visitors/actions';
-import {getPromotionRequests} from '../../../visitors/functions';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
+import { admitMultiple, goLive } from '../../../visitors/actions';
+import {
+    getPromotionRequests,
+    getVisitorsCount,
+    getVisitorsInQueueCount,
+    isVisitorsLive
+} from '../../../visitors/functions';
 
-import {VisitorsItem} from './VisitorsItem';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { VisitorsItem } from './VisitorsItem';
+import { isMobileBrowser } from "../../../base/environment/utils";
+import { isNeedShowElectronOnlyElements } from "../../../base/environment/utils_web";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -99,47 +104,64 @@ const useStyles = makeStyles()(theme => {
  */
 export default function VisitorsList() {
     const requests = useSelector(getPromotionRequests);
-    const visitorsCount = useSelector((state: IReduxState) => state['features/visitors'].count || 0);
+    const visitorsCount = useSelector(getVisitorsCount);
+    const visitorsInQueueCount = useSelector(getVisitorsInQueueCount);
+    const isLive = useSelector(isVisitorsLive);
+    const showVisitorsInQueue = visitorsInQueueCount > 0 && isLive === false;
 
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const isMobile = isMobileBrowser();
-    const {classes, cx} = useStyles();
+    const { classes, cx } = useStyles();
     const dispatch = useDispatch();
 
     const admitAll = useCallback(() => {
         dispatch(admitMultiple(requests));
-    }, [dispatch, requests]);
+    }, [ dispatch, requests ]);
 
-    if (visitorsCount <= 0) {
+    const goLiveCb = useCallback(() => {
+        dispatch(goLive());
+    }, [ dispatch ]);
+
+    if (visitorsCount <= 0 && !showVisitorsInQueue) {
         return null;
     }
 
     return (
         <>
-            {!isMobileBrowser() && <div className={classes.separateLineContainer}>
-                <div className={cx('dotted-separate-line')}/>
-            </div>}
-            <div className={cx(classes.headingContainer, isMobile && 'is-mobile')}>
-                <div className={cx(classes.heading, classes.headingW, isMobile && 'is-mobile')}>
-                    {isMobile ? t('participantsPane.headings.visitorsMobile') : t('participantsPane.headings.visitors', {count: visitorsCount})}
+            {isNeedShowElectronOnlyElements() && (
+                <div className = {classes.separateLineContainer}>
+                    <div className = {cx('dotted-separate-line')} />
+                </div>
+            )}
+            <div className = {cx(classes.headingContainer, isMobile && 'is-mobile')}>
+                <div className = {cx(classes.heading, classes.headingW, isMobile && 'is-mobile')}>
+                    {isMobile ? t('participantsPane.headings.visitorsMobile') : t('participantsPane.headings.visitors', { count: visitorsCount })}
                     {requests.length > 0
-                        && t('participantsPane.headings.visitorRequests', {count: requests.length})}
+                        && t('participantsPane.headings.visitorRequests', { count: requests.length })}
+                    {showVisitorsInQueue
+                        && t('participantsPane.headings.visitorInQueue', { count: visitorsInQueueCount })}
                 </div>
                 {
-                    requests.length > 1
+                    requests.length > 1 && !showVisitorsInQueue // Go live button is with higher priority
                     && <div
-                        className={classes.link}
-                        onClick={admitAll}>{t('participantsPane.actions.admitAll')}</div>
+                        className = {classes.link}
+                        onClick = {admitAll}>{t('participantsPane.actions.admitAll')}</div>
+                }
+                {
+                    showVisitorsInQueue
+                    && <div
+                        className = {classes.link}
+                        onClick = {goLiveCb}>{t('participantsPane.actions.goLive')}</div>
                 }
             </div>
             <div
-                className={classes.container}
-                id='visitor-list'>
+                className = {classes.container}
+                id = 'visitor-list'>
                 {
                     requests.map(r => (
                         <VisitorsItem
-                            key={r.from}
-                            request={r}/>)
+                            key = {r.from}
+                            request = {r} />)
                     )
                 }
             </div>

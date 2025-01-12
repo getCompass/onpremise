@@ -36,8 +36,6 @@ export default class AbstractAudioMuteButton<P extends IProps> extends BaseAudio
     toggledAccessibilityLabel = 'toolbar.accessibilityLabel.unmute';
     label = 'toolbar.mute';
     toggledLabel = 'toolbar.unmute';
-    tooltip = 'toolbar.mute';
-    toggledTooltip = 'toolbar.unmute';
 
     /**
      * Indicates if audio is currently muted or not.

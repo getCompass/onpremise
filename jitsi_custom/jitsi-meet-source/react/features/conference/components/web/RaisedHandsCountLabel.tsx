@@ -8,6 +8,7 @@ import { IconRaiseHand } from '../../../base/icons/svg';
 import Label from '../../../base/label/components/web/Label';
 import Tooltip from '../../../base/tooltip/components/Tooltip';
 import { open as openParticipantsPane } from '../../../participants-pane/actions.web';
+import { closeChat } from "../../../chat/actions.any";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -23,8 +24,13 @@ const RaisedHandsCountLabel = () => {
     const dispatch = useDispatch();
     const raisedHandsCount = useSelector((state: IReduxState) =>
         (state['features/base/participants'].raisedHandsQueue || []).length);
+    const _isChatOpen = useSelector((state: IReduxState) =>state['features/chat'].isOpen);
     const { t } = useTranslation();
     const onClick = useCallback(() => {
+
+        if (_isChatOpen) {
+            dispatch(closeChat());
+        }
         dispatch(openParticipantsPane());
     }, []);
 

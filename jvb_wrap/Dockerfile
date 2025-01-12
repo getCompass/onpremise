@@ -1,3 +1,3 @@
-FROM docker.getcompass.ru/service/jvb:stable-9364-1
+FROM docker.getcompass.ru/service/jvb:stable-9753
 
 COPY defaults/jvb.conf /defaults/jvb.conf

@@ -39,24 +39,24 @@ function transformDefaultDeviceLabel(deviceId: string, label: string, t: Functio
 export interface IProps {
 
     /**
-    * The deviceId of the microphone in use.
-    */
+     * The deviceId of the microphone in use.
+     */
     currentMicDeviceId: string;
 
     /**
-    * The deviceId of the output device in use.
-    */
+     * The deviceId of the output device in use.
+     */
     currentOutputDeviceId?: string;
 
     /**
-    * Used to decide whether to measure audio levels for microphone devices.
-    */
+     * Used to decide whether to measure audio levels for microphone devices.
+     */
     measureAudioLevels: boolean;
 
     /**
-    * A list with objects containing the labels and deviceIds
-    * of all the input devices.
-    */
+     * A list with objects containing the labels and deviceIds
+     * of all the input devices.
+     */
     microphoneDevices: Array<{ deviceId: string; label: string; }>;
 
     /**
@@ -65,9 +65,9 @@ export interface IProps {
     noiseSuppressionEnabled: boolean;
 
     /**
-    * A list of objects containing the labels and deviceIds
-    * of all the output devices.
-    */
+     * A list of objects containing the labels and deviceIds
+     * of all the output devices.
+     */
     outputDevices: Array<{ deviceId: string; label: string; }>;
 
     /**
@@ -76,13 +76,13 @@ export interface IProps {
     prejoinVisible: boolean;
 
     /**
-    * Used to set a new microphone as the current one.
-    */
+     * Used to set a new microphone as the current one.
+     */
     setAudioInputDevice: Function;
 
     /**
-    * Used to set a new output device as the current one.
-    */
+     * Used to set a new output device as the current one.
+     */
     setAudioOutputDevice: Function;
 
     /**
@@ -104,9 +104,18 @@ const useStyles = makeStyles()(theme => {
         },
 
         header: {
+            '& .context-text-item': {
+                fontFamily: 'Lato Bold',
+                fontWeight: 'normal' as const,
+            },
+
             '&:hover': {
                 backgroundColor: 'initial',
-                cursor: 'initial'
+                cursor: 'initial',
+
+                '& .context-text-item': {
+                    color: 'rgba(255, 255, 255, 0.75)',
+                }
             }
         },
 
@@ -190,22 +199,22 @@ const AudioSettingsContent = ({
      * @returns {React$Node}
      */
     const _renderMicrophoneEntry = (data: { deviceId: string; hasError: boolean; jitsiTrack: any; label: string; },
-            index: number, length: number) => {
+        index: number, length: number) => {
         const { deviceId, jitsiTrack, hasError } = data;
         const label = transformDefaultDeviceLabel(deviceId, data.label, t);
         const isSelected = deviceId === currentMicDeviceId;
 
         return (
             <MicrophoneEntry
-                deviceId = { deviceId }
-                hasError = { hasError }
-                index = { index }
-                isSelected = { isSelected }
-                jitsiTrack = { jitsiTrack }
-                key = { `me-${index}` }
-                length = { length }
-                measureAudioLevels = { measureAudioLevels }
-                onClick = { _onMicrophoneEntryClick }>
+                deviceId = {deviceId}
+                hasError = {hasError}
+                index = {index}
+                isSelected = {isSelected}
+                jitsiTrack = {jitsiTrack}
+                key = {`me-${index}`}
+                length = {length}
+                measureAudioLevels = {measureAudioLevels}
+                onClick = {_onMicrophoneEntryClick}>
                 {label}
             </MicrophoneEntry>
         );
@@ -227,12 +236,12 @@ const AudioSettingsContent = ({
 
         return (
             <SpeakerEntry
-                deviceId = { deviceId }
-                index = { index }
-                isSelected = { isSelected }
-                key = { key }
-                length = { length }
-                onClick = { _onSpeakerEntryClick }>
+                deviceId = {deviceId}
+                index = {index}
+                isSelected = {isSelected}
+                key = {key}
+                length = {length}
+                onClick = {_onSpeakerEntryClick}>
                 {label}
             </SpeakerEntry>
         );
@@ -293,23 +302,24 @@ const AudioSettingsContent = ({
 
     return (
         <ContextMenu
+            activateFocusTrap = {true}
             aria-labelledby = 'audio-settings-button'
-            className = { classes.contextMenu }
-            hidden = { false }
+            className = {classes.contextMenu}
+            hidden = {false}
             id = 'audio-settings-dialog'
-            tabIndex = { -1 }>
+            tabIndex = {-1}>
             <ContextMenuItemGroup>
                 <ContextMenuItem
-                    accessibilityLabel = { t('settings.microphones') }
-                    className = { classes.header }
-                    icon = { IconMic }
-                    id = { microphoneHeaderId }
-                    text = { t('settings.microphones') } />
+                    accessibilityLabel = {t('settings.microphones')}
+                    className = {classes.header}
+                    icon = {IconMic}
+                    id = {microphoneHeaderId}
+                    text = {t('settings.microphones')} />
                 <ul
-                    aria-labelledby = { microphoneHeaderId }
-                    className = { classes.list }
+                    aria-labelledby = {microphoneHeaderId}
+                    className = {classes.list}
                     role = 'radiogroup'
-                    tabIndex = { -1 }>
+                    tabIndex = {-1}>
                     {audioTracks.map((data, i) =>
                         _renderMicrophoneEntry(data, i, audioTracks.length)
                     )}
@@ -317,21 +327,21 @@ const AudioSettingsContent = ({
             </ContextMenuItemGroup>
             {outputDevices.length > 0 && (
                 <>
-                    <div className={classes.separateLineContainer}>
-                        <div className={classes.separateLine}/>
+                    <div className = {classes.separateLineContainer}>
+                        <div className = {classes.separateLine} />
                     </div>
                     <ContextMenuItemGroup>
                         <ContextMenuItem
-                            accessibilityLabel={t('settings.speakers')}
-                            className={classes.header}
-                            icon={IconVolumeUp}
-                            id={speakerHeaderId}
-                            text={t('settings.speakers')}/>
+                            accessibilityLabel = {t('settings.speakers')}
+                            className = {classes.header}
+                            icon = {IconVolumeUp}
+                            id = {speakerHeaderId}
+                            text = {t('settings.speakers')} />
                         <ul
-                            aria-labelledby={speakerHeaderId}
-                            className={classes.list}
-                            role='radiogroup'
-                            tabIndex={-1}>
+                            aria-labelledby = {speakerHeaderId}
+                            className = {classes.list}
+                            role = 'radiogroup'
+                            tabIndex = {-1}>
                             {outputDevices.map((data: any, i: number) =>
                                 _renderSpeakerEntry(data, i, outputDevices.length)
                             )}

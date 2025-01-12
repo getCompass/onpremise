@@ -1,6 +1,6 @@
-import {Component} from 'react';
+import { Component } from 'react';
 
-import {IMessage} from '../types';
+import { IMessage } from '../types';
 
 export interface IProps {
 
@@ -37,13 +37,13 @@ export default class AbstractMessageContainer<P extends IProps, S> extends Compo
         for (let i = 0; i < messagesCount; i++) {
             const message = this.props.messages[i];
 
-            if (message.id === currentGroupParticipantId && message.privateMessage === currentPrivateMessage) {
+            if (message.participantId === currentGroupParticipantId && message.privateMessage === currentPrivateMessage) {
                 currentGrouping.push(message);
             } else {
                 currentGrouping.length && groups.push(currentGrouping);
 
-                currentGrouping = [message];
-                currentGroupParticipantId = message.id;
+                currentGrouping = [ message ];
+                currentGroupParticipantId = message.participantId;
                 currentPrivateMessage = message.privateMessage;
             }
         }

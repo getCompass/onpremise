@@ -74,7 +74,7 @@ export default class AbstractRecordButton<P extends IProps> extends AbstractButt
      * @protected
      * @returns {void}
      */
-    async _handleClick() {
+    _handleClick() {
         const { _isRecordingRunning, dispatch } = this.props;
 
         sendAnalytics(createToolbarEvent(
@@ -83,7 +83,7 @@ export default class AbstractRecordButton<P extends IProps> extends AbstractButt
                 'is_recording': _isRecordingRunning,
                 type: JitsiRecordingConstants.mode.FILE
             }));
-        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
+        const dialogShown = dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
 
         if (!dialogShown) {
             this._onHandleClick();

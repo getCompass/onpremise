@@ -4,8 +4,9 @@ import { set } from '../base/redux/functions';
 import {
     CLEAR_TOOLBOX_TIMEOUT,
     FULL_SCREEN_CHANGED,
-    SET_BUTTONS_WITH_NOTIFY_CLICK,
+    SET_BUTTONS_WITH_NOTIFY_CLICK, SET_COMPASS_MAIN_TOOLBAR_BUTTONS_THRESHOLDS,
     SET_HANGUP_MENU_VISIBLE,
+    SET_MAIN_TOOLBAR_BUTTONS_THRESHOLDS,
     SET_OVERFLOW_DRAWER,
     SET_OVERFLOW_MENU_VISIBLE,
     SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK,
@@ -17,7 +18,9 @@ import {
     SET_TOOLBOX_VISIBLE,
     TOGGLE_TOOLBOX_VISIBLE
 } from './actionTypes';
-import { NOTIFY_CLICK_MODE } from './types';
+import { COMPASS_THRESHOLDS, COMPASS_THRESHOLDS_MOBILE, THRESHOLDS } from './constants';
+import { IMainToolbarButtonThresholds, NOTIFY_CLICK_MODE } from './types';
+import { isMobileBrowser } from "../base/environment/utils";
 
 /**
  * Initial state of toolbox's part of Redux store.
@@ -46,6 +49,13 @@ const INITIAL_STATE = {
      * @type {boolean}
      */
     hovered: false,
+
+    /**
+     * The thresholds for screen size and visible main toolbar buttons.
+     */
+    mainToolbarButtonsThresholds: THRESHOLDS,
+
+    compassMainToolbarButtonsThresholds: isMobileBrowser() ? COMPASS_THRESHOLDS_MOBILE : COMPASS_THRESHOLDS,
 
     participantMenuButtonsWithNotifyClick: new Map(),
 
@@ -98,6 +108,8 @@ export interface IToolboxState {
     fullScreen?: boolean;
     hangupMenuVisible: boolean;
     hovered: boolean;
+    mainToolbarButtonsThresholds: IMainToolbarButtonThresholds;
+    compassMainToolbarButtonsThresholds: IMainToolbarButtonThresholds;
     overflowDrawer: boolean;
     overflowMenuVisible: boolean;
     participantMenuButtonsWithNotifyClick: Map<string, NOTIFY_CLICK_MODE>;
@@ -150,6 +162,18 @@ ReducerRegistry.register<IToolboxState>(
             return {
                 ...state,
                 buttonsWithNotifyClick: action.buttonsWithNotifyClick
+            };
+
+        case SET_MAIN_TOOLBAR_BUTTONS_THRESHOLDS:
+            return {
+                ...state,
+                mainToolbarButtonsThresholds: action.mainToolbarButtonsThresholds
+            };
+
+        case SET_COMPASS_MAIN_TOOLBAR_BUTTONS_THRESHOLDS:
+            return {
+                ...state,
+                compassMainToolbarButtonsThresholds: action.compassMainToolbarButtonsThresholds
             };
         case SET_TOOLBAR_HOVERED:
             return {

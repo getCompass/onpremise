@@ -1,14 +1,13 @@
-import React, {ReactElement, useCallback, useEffect, useRef, useState} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import {keyframes} from 'tss-react';
-import {makeStyles} from 'tss-react/mui';
+import React, { ReactElement, useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { keyframes } from 'tss-react';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../app/types';
-import {isMobileBrowser} from '../../environment/utils';
+import { IReduxState } from '../../../app/types';
+import { isMobileBrowser } from '../../environment/utils';
 import Popover from '../../popover/components/Popover.web';
-import {withPixelLineHeight} from '../../styles/functions.web';
-import {TOOLTIP_POSITION} from '../../ui/constants.any';
-import {hideTooltip, showTooltip} from '../actions';
+import { TOOLTIP_POSITION } from '../../ui/constants.any';
+import { hideTooltip, showTooltip } from '../actions';
 
 const TOOLTIP_DELAY = 300;
 const ANIMATION_DURATION = 0.2;
@@ -64,12 +63,12 @@ const useStyles = makeStyles()(theme => {
     };
 });
 
-const Tooltip = ({containerClassName, content, children, position = 'top'}: IProps) => {
+const Tooltip = ({ containerClassName, content, children, position = 'top' }: IProps) => {
     const dispatch = useDispatch();
-    const [visible, setVisible] = useState(false);
-    const [isUnmounting, setIsUnmounting] = useState(false);
+    const [ visible, setVisible ] = useState(false);
+    const [ isUnmounting, setIsUnmounting ] = useState(false);
     const overflowDrawer = useSelector((state: IReduxState) => state['features/toolbox'].overflowDrawer) && isMobileBrowser();
-    const {classes, cx} = useStyles();
+    const { classes, cx } = useStyles();
     const timeoutID = useRef({
         open: 0,
         close: 0
@@ -81,15 +80,15 @@ const Tooltip = ({containerClassName, content, children, position = 'top'}: IPro
     } = useSelector((state: IReduxState) => state['features/base/tooltip']);
 
     const contentComponent = (
-        <div className={cx(classes.container, previousContent === '' && 'mounting-animation',
+        <div className = {cx(classes.container, previousContent === '' && 'mounting-animation',
             isUnmounting && 'unmounting')}>
             <div
-                className={classes.content}>
+                className = {classes.content}>
                 {content}
             </div>
-            <div className={classes.tail}>
-                <svg width="9" height="5" viewBox="0 0 9 5" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0.5 0L4.5 5L8.5 0H0.5Z" fill="#212121" fillOpacity="0.9"/>
+            <div className = {classes.tail}>
+                <svg width = "9" height = "5" viewBox = "0 0 9 5" fill = "none" xmlns = "http://www.w3.org/2000/svg">
+                    <path d = "M0.5 0L4.5 5L8.5 0H0.5Z" fill = "#212121" fillOpacity = "0.9" />
                 </svg>
             </div>
         </div>
@@ -122,7 +121,7 @@ const Tooltip = ({containerClassName, content, children, position = 'top'}: IPro
                 }, TOOLTIP_DELAY);
             }
         }
-    }, [visible, isVisible, isUnmounting]);
+    }, [ visible, isVisible, isUnmounting ]);
 
     const onPopoverClose = useCallback(() => {
         clearTimeout(timeoutID.current.open);
@@ -131,7 +130,7 @@ const Tooltip = ({containerClassName, content, children, position = 'top'}: IPro
                 setIsUnmounting(true);
             }, TOOLTIP_DELAY);
         }
-    }, [visible]);
+    }, [ visible ]);
 
     useEffect(() => {
         if (isUnmounting) {
@@ -141,7 +140,7 @@ const Tooltip = ({containerClassName, content, children, position = 'top'}: IPro
                 }
             }, (ANIMATION_DURATION * 1000) + 10);
         }
-    }, [isUnmounting]);
+    }, [ isUnmounting ]);
 
     useEffect(() => {
         if (storeContent !== content) {
@@ -149,7 +148,7 @@ const Tooltip = ({containerClassName, content, children, position = 'top'}: IPro
             clearTimeout(timeoutID.current.close);
             timeoutID.current.close = 0;
         }
-    }, [storeContent]);
+    }, [ storeContent ]);
 
 
     if (isMobileBrowser() || overflowDrawer) {
@@ -158,14 +157,14 @@ const Tooltip = ({containerClassName, content, children, position = 'top'}: IPro
 
     return (
         <Popover
-            allowClick={true}
-            className={containerClassName}
-            content={contentComponent}
-            focusable={false}
-            onPopoverClose={onPopoverClose}
-            onPopoverOpen={onPopoverOpen}
-            position={position}
-            visible={visible}>
+            allowClick = {true}
+            className = {containerClassName}
+            content = {contentComponent}
+            focusable = {false}
+            onPopoverClose = {onPopoverClose}
+            onPopoverOpen = {onPopoverOpen}
+            position = {position}
+            visible = {visible}>
             {children}
         </Popover>
     );

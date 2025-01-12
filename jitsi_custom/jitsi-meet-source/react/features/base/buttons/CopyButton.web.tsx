@@ -1,8 +1,8 @@
 /* eslint-disable react/jsx-no-bind */
-import React, {useEffect, useState} from 'react';
-import {makeStyles} from 'tss-react/mui';
-import {copyText} from '../util/copyText.web';
-import {isMobileBrowser} from "../environment/utils";
+import React, { useEffect, useState } from 'react';
+import { makeStyles } from 'tss-react/mui';
+import { copyText } from '../util/copyText.web';
+import { isMobileBrowser } from "../environment/utils";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -110,9 +110,9 @@ function CopyButton({
                         textOnCopySuccess,
                         id
                     }: IProps) {
-    const {classes, cx} = useStyles();
-    const [isClicked, setIsClicked] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
+    const { classes, cx } = useStyles();
+    const [ isClicked, setIsClicked ] = useState(false);
+    const [ isHovered, setIsHovered ] = useState(false);
 
     useEffect(() => {
         mounted = true;
@@ -186,14 +186,14 @@ function CopyButton({
     function renderContent() {
         if (isClicked) {
             return (
-                <div className={cx(classes.content, 'selected')}>
-                    <span role={'alert'}>{textOnCopySuccess}</span>
+                <div className = {cx(classes.content, 'selected')}>
+                    <span role = {'alert'}>{textOnCopySuccess}</span>
                 </div>
             );
         }
 
         return (
-            <div className={classes.content}>
+            <div className = {classes.content}>
                 <span> {isHovered ? textOnHover : displayedText} </span>
             </div>
         );
@@ -202,27 +202,27 @@ function CopyButton({
     return (
         <>
             <div
-                aria-describedby={displayedText === textOnHover
+                aria-describedby = {displayedText === textOnHover
                     ? undefined
                     : `${id}-sr-text`}
-                aria-label={displayedText === textOnHover ? accessibilityText : textOnHover}
-                className={cx(className, classes.copyButton, isClicked ? ' clicked' : '', isMobileBrowser() ? 'is-mobile' : '')}
-                id={id}
-                onBlur={onHoverOut}
-                onClick={onClick}
-                onFocus={onHoverIn}
-                onKeyPress={onKeyPress}
-                onMouseOut={onHoverOut}
-                onMouseOver={onHoverIn}
-                role='button'
-                tabIndex={0}>
+                aria-label = {displayedText === textOnHover ? accessibilityText : textOnHover}
+                className = {cx(className, classes.copyButton, isClicked ? ' clicked' : '', isMobileBrowser() ? 'is-mobile' : '')}
+                id = {id}
+                onBlur = {onHoverOut}
+                onClick = {onClick}
+                onFocus = {onHoverIn}
+                onKeyPress = {onKeyPress}
+                onMouseOut = {onHoverOut}
+                onMouseOver = {onHoverIn}
+                role = 'button'
+                tabIndex = {0}>
                 {renderContent()}
             </div>
 
             {displayedText !== textOnHover && (
                 <span
-                    className='sr-only'
-                    id={`${id}-sr-text`}>
+                    className = 'sr-only'
+                    id = {`${id}-sr-text`}>
                     {accessibilityText}
                 </span>
             )}

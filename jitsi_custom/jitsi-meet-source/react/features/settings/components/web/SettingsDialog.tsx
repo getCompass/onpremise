@@ -1,22 +1,22 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState, IStore} from '../../../app/types';
-import {IconBell, IconImage, IconPlanet, IconShortcuts, IconVideo, IconVolumeUp} from '../../../base/icons/svg';
-import DialogWithTabs, {IDialogTab} from '../../../base/ui/components/web/DialogWithTabs';
-import {isCalendarEnabled} from '../../../calendar-sync/functions.web';
-import {submitAudioDeviceSelectionTab, submitVideoDeviceSelectionTab} from '../../../device-selection/actions.web';
+import { IReduxState, IStore } from '../../../app/types';
+import { IconBell, IconImage, IconPlanet, IconShortcuts, IconVideo, IconVolumeUp } from '../../../base/icons/svg';
+import DialogWithTabs, { IDialogTab } from '../../../base/ui/components/web/DialogWithTabs';
+import { isCalendarEnabled } from '../../../calendar-sync/functions.web';
+import { submitAudioDeviceSelectionTab, submitVideoDeviceSelectionTab } from '../../../device-selection/actions.web';
 import AudioDevicesSelection from '../../../device-selection/components/AudioDevicesSelection';
 import VideoDeviceSelection from '../../../device-selection/components/VideoDeviceSelection';
 import {
     getAudioDeviceSelectionDialogProps,
     getVideoDeviceSelectionDialogProps
 } from '../../../device-selection/functions.web';
-import {checkBlurSupport, checkVirtualBackgroundEnabled} from '../../../virtual-background/functions';
-import {iAmVisitor} from '../../../visitors/functions';
-import {submitNotificationsTab, submitShortcutsTab, submitVirtualBackgroundTab} from '../../actions';
-import {SETTINGS_TABS} from '../../constants';
+import { checkBlurSupport, checkVirtualBackgroundEnabled } from '../../../virtual-background/functions';
+import { iAmVisitor } from '../../../visitors/functions';
+import { submitNotificationsTab, submitShortcutsTab, submitVirtualBackgroundTab } from '../../actions';
+import { SETTINGS_TABS } from '../../constants';
 import {
     getModeratorTabProps,
     getNotificationsMap,
@@ -28,10 +28,10 @@ import NotificationsTab from './NotificationsTab';
 import ShortcutsTab from './ShortcutsTab';
 import VirtualBackgroundTab from './VirtualBackgroundTab';
 import LanguageTab from "./LanguageTab";
-import {getLanguageTabProps} from "../../functions.any";
-import {submitLanguageTab} from "../../actions.web";
-import {isMobileBrowser} from "../../../base/environment/utils";
-import {getParticipantsPaneOpen} from "../../../participants-pane/functions";
+import { getLanguageTabProps } from "../../functions.any";
+import { submitLanguageTab } from "../../actions.web";
+import { isMobileBrowser } from "../../../base/environment/utils";
+import { getParticipantsPaneOpen } from "../../../participants-pane/functions";
 
 /**
  * The type of the React {@code Component} props of
@@ -75,8 +75,8 @@ const useStyles = makeStyles()(() => {
     };
 });
 
-const SettingsDialog = ({_tabs, _isChatOpen, _isParticipantsPaneOpen, defaultTab, dispatch}: IProps) => {
-    const {classes} = useStyles();
+const SettingsDialog = ({ _tabs, _isChatOpen, _isParticipantsPaneOpen, defaultTab, dispatch }: IProps) => {
+    const { classes } = useStyles();
 
     const correctDefaultTab = _tabs.find(tab => tab.name === defaultTab)?.name;
     const tabs = _tabs.map(tab => {
@@ -90,12 +90,12 @@ const SettingsDialog = ({_tabs, _isChatOpen, _isParticipantsPaneOpen, defaultTab
 
     return (
         <DialogWithTabs
-            className='settings-dialog'
-            defaultTab={correctDefaultTab}
-            tabs={tabs}
-            isChatOpen={_isChatOpen}
-            isParticipantsPaneOpen={_isParticipantsPaneOpen}
-            titleKey='settings.title'/>
+            className = 'settings-dialog'
+            defaultTab = {correctDefaultTab}
+            tabs = {tabs}
+            isChatOpen = {_isChatOpen}
+            isParticipantsPaneOpen = {_isParticipantsPaneOpen}
+            titleKey = 'settings.title' />
     );
 };
 
@@ -111,14 +111,14 @@ const SettingsDialog = ({_tabs, _isChatOpen, _isParticipantsPaneOpen, defaultTab
  * }}
  */
 function _mapStateToProps(state: IReduxState, ownProps: any) {
-    const {isDisplayedOnWelcomePage} = ownProps;
+    const { isDisplayedOnWelcomePage } = ownProps;
     const configuredTabs = interfaceConfig.SETTINGS_SECTIONS || [];
 
     // The settings sections to display.
     const showDeviceSettings = configuredTabs.includes('devices');
     const languageTabProps = getLanguageTabProps(state);
     const moderatorTabProps = getModeratorTabProps(state);
-    const {showModeratorSettings} = moderatorTabProps;
+    const { showModeratorSettings } = moderatorTabProps;
     const showLanguageTab = configuredTabs.includes('language');
     const showCalendarSettings
         = configuredTabs.includes('calendar') && isCalendarEnabled(state);
@@ -130,7 +130,7 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
     const tabs: IDialogTab<any>[] = [];
     const _iAmVisitor = iAmVisitor(state);
     const isMobile = isMobileBrowser();
-    const {isOpen: isChatOpen} = state['features/chat'];
+    const { isOpen: isChatOpen } = state['features/chat'];
     const isParticipantsPaneOpen = getParticipantsPaneOpen(state);
 
     if (showDeviceSettings) {
@@ -190,7 +190,7 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
             headerTitleKey: 'settings.virtualBackgroundsTitle',
             props: getVirtualBackgroundTabProps(state, isDisplayedOnWelcomePage),
             propsUpdateFunction: (tabState: any, newProps: ReturnType<typeof getVirtualBackgroundTabProps>,
-                                  tabStates: any) => {
+                tabStates: any) => {
                 const videoTabState = tabStates[tabs.findIndex(tab => tab.name === SETTINGS_TABS.VIDEO)];
 
                 return {
@@ -201,9 +201,9 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
             },
             submit: (newState: any) => submitVirtualBackgroundTab(newState),
             cancel: () => {
-                const {options} = getVirtualBackgroundTabProps(state, isDisplayedOnWelcomePage);
+                const { options } = getVirtualBackgroundTabProps(state, isDisplayedOnWelcomePage);
 
-                return submitVirtualBackgroundTab({options}, true);
+                return submitVirtualBackgroundTab({ options }, true);
             },
             icon: IconImage
         });

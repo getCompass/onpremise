@@ -1,8 +1,8 @@
-import React, {Component} from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import {IReduxState} from '../../app/types';
-import {shouldDisplayTileView} from '../../video-layout/functions.web';
+import { IReduxState } from '../../app/types';
+import { shouldDisplayTileView } from '../../video-layout/functions.web';
 
 /**
  * Constants to describe the dimensions of the video. Landscape videos
@@ -93,7 +93,7 @@ export class LargeVideoBackground extends Component<IProps> {
      * @returns {void}
      */
     componentDidMount() {
-        const {_shouldDisplayTileView, hidden, videoElement} = this.props;
+        const { _shouldDisplayTileView, hidden, videoElement } = this.props;
 
         if (videoElement && !hidden && !_shouldDisplayTileView) {
             this._updateCanvas();
@@ -141,7 +141,7 @@ export class LargeVideoBackground extends Component<IProps> {
         const classNames = "large-video-background invisible";
 
         return (
-            <div className={classNames}/>
+            <div className = {classNames} />
         );
     }
 
@@ -211,8 +211,8 @@ export class LargeVideoBackground extends Component<IProps> {
             return;
         }
 
-        const {videoElement} = this.props;
-        const {videoWidth, videoHeight} = videoElement;
+        const { videoElement } = this.props;
+        const { videoWidth, videoHeight } = videoElement;
         const {
             height: canvasHeight,
             width: canvasWidth

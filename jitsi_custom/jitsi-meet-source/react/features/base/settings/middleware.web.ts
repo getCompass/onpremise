@@ -1,19 +1,19 @@
-import {IStore} from '../../app/types';
-import {PREJOIN_INITIALIZED} from '../../prejoin/actionTypes';
-import {setPrejoinPageVisibility} from '../../prejoin/actions';
-import {APP_WILL_MOUNT} from '../app/actionTypes';
-import {getJwtName, publicJwtDecode, parseJWTFromURLParams} from '../jwt/functions';
-import {MEDIA_TYPE} from '../media/constants';
+import { IStore } from '../../app/types';
+import { PREJOIN_INITIALIZED } from '../../prejoin/actionTypes';
+import { setPrejoinPageVisibility } from '../../prejoin/actions';
+import { APP_WILL_MOUNT } from '../app/actionTypes';
+import { getJwtName, publicJwtDecode, parseJWTFromURLParams } from '../jwt/functions';
+import { MEDIA_TYPE } from '../media/constants';
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
-import {TRACK_ADDED} from '../tracks/actionTypes';
-import {ITrack} from '../tracks/types';
+import { TRACK_ADDED } from '../tracks/actionTypes';
+import { ITrack } from '../tracks/types';
 
-import {updateSettings} from './actions';
+import { updateSettings } from './actions';
 import logger from './logger';
 
 
 import './middleware.any';
-import {user2participant} from "../jwt/middleware";
+import { user2participant } from "../jwt/middleware";
 
 /**
  * The middleware of the feature base/settings. Distributes changes to the state
@@ -27,15 +27,15 @@ MiddlewareRegistry.register(store => next => action => {
     const result = next(action);
 
     switch (action.type) {
-        case APP_WILL_MOUNT:
-            _initializeShowPrejoin(store);
-            break;
-        case PREJOIN_INITIALIZED:
-            _maybeUpdateDisplayName(store);
-            break;
-        case TRACK_ADDED:
-            _maybeUpdateDeviceId(store, action.track);
-            break;
+    case APP_WILL_MOUNT:
+        _initializeShowPrejoin(store);
+        break;
+    case PREJOIN_INITIALIZED:
+        _maybeUpdateDisplayName(store);
+        break;
+    case TRACK_ADDED:
+        _maybeUpdateDeviceId(store, action.track);
+        break;
     }
 
     return result;
@@ -48,10 +48,11 @@ MiddlewareRegistry.register(store => next => action => {
  * @private
  * @returns {void}
  */
-function _initializeShowPrejoin({dispatch, getState}: IStore) {
+function _initializeShowPrejoin({ dispatch, getState }: IStore) {
+    // compass changes
     // получаем jwt из url
     // сори в этот момент он еще не инициализирован в сторе, поэтому так
-    const {locationURL} = getState()['features/base/connection'];
+    const { locationURL } = getState()['features/base/connection'];
     const jwt = parseJWTFromURLParams(locationURL);
     let isCompassUser = false; // является ли пользователем compass
     let isCreator = false; // является ли создателем конференции
@@ -69,7 +70,7 @@ function _initializeShowPrejoin({dispatch, getState}: IStore) {
             if (jwtPayload) {
 
                 // получаем контекст, если удалось - супер
-                const {context} = jwtPayload;
+                const { context } = jwtPayload;
                 if (context) {
 
                     const user = user2participant(context.user || {});
@@ -94,7 +95,7 @@ function _initializeShowPrejoin({dispatch, getState}: IStore) {
  * @private
  * @returns {void}
  */
-function _maybeUpdateDisplayName({dispatch, getState}: IStore) {
+function _maybeUpdateDisplayName({ dispatch, getState }: IStore) {
     const state = getState();
     const hasJwt = Boolean(state['features/base/jwt'].jwt);
 
@@ -117,9 +118,9 @@ function _maybeUpdateDisplayName({dispatch, getState}: IStore) {
  * @private
  * @returns {void}
  */
-function _maybeUpdateDeviceId({dispatch, getState}: IStore, track: ITrack) {
+function _maybeUpdateDeviceId({ dispatch, getState }: IStore, track: ITrack) {
     if (track.local) {
-        const {cameraDeviceId, micDeviceId} = getState()['features/base/settings'];
+        const { cameraDeviceId, micDeviceId } = getState()['features/base/settings'];
         const deviceId = track.jitsiTrack.getDeviceId();
 
         if (track.mediaType === MEDIA_TYPE.VIDEO && track.videoType === 'camera' && cameraDeviceId !== deviceId) {

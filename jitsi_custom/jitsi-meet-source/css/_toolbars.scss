@@ -20,6 +20,44 @@
 }
 
 /**
+ * Round badge.
+ */
+.badge-round-mobile {
+    background-color: rgba(255, 79, 71, 1);
+    border-radius: 12px;
+    box-sizing: border-box;
+    color: rgba(255, 255, 255, 1);
+    font-family: "Lato Bold";
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 16px;
+    min-width: 22px;
+    min-height: 22px;
+    overflow: hidden;
+    text-align: center;
+    padding: 3px 7px;
+    z-index: 4;
+
+    &.overflow-button {
+        border-radius: 20px;
+        position: absolute;
+        top: -4px;
+        right: -10px;
+        font-size: 10px;
+        line-height: 12px;
+        min-width: 18px;
+        min-height: 18px;
+        padding: 3px 6px;
+
+        &.more-than-9 {
+            min-width: 24px;
+            top: -4px;
+            right: -16px;
+        }
+    }
+}
+
+/**
  * TODO: when the old filmstrip has been removed, remove the "new-" prefix.
  */
 .new-toolbox {
@@ -57,6 +95,83 @@
     }
 }
 
+.compass-new-toolbox {
+    opacity: 0;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    transition: opacity .2s ease-in-out;
+    width: 100%;
+    pointer-events: none;
+    z-index: $toolbarZ + 2;
+
+    &.shift-up {
+        opacity: 0;
+        bottom: 0;
+
+        .toolbox-content {
+            margin-bottom: 48px;
+
+            &.toolbox-content-mobile {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &.lobby {
+        z-index: $toolbarZ + 3;
+    }
+
+    &.visible {
+        bottom: 0;
+        opacity: 1;
+    }
+
+    &.no-buttons {
+        display: none;
+    }
+}
+
+.compass-new-toolbox-mobile {
+    opacity: 0;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    transition: opacity .2s ease-in-out;
+    width: 100%;
+    pointer-events: none;
+    z-index: $toolbarZ + 2;
+    padding-bottom: 24px;
+
+    &.shift-up {
+        opacity: 0;
+        bottom: 0;
+
+        .toolbox-content {
+            margin-bottom: 48px;
+
+            &.toolbox-content-mobile {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &.lobby {
+        z-index: $toolbarZ + 3;
+    }
+
+    &.visible {
+        bottom: 0;
+        opacity: 1;
+    }
+
+    &.no-buttons {
+        display: none;
+    }
+}
+
 .toolbox-content {
     align-items: center;
     box-sizing: border-box;
@@ -68,6 +183,24 @@
 
     .toolbox-button-wth-dialog {
         display: inline-block;
+    }
+}
+
+.compass-toolbox-content {
+    padding-top: 2px;
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    position: relative;
+    z-index: $toolbarZ;
+    pointer-events: none;
+
+    .toolbox-button-wth-dialog {
+        display: inline-block;
+    }
+
+    &.toolbox-content-mobile {
+        padding-top: 0px;
     }
 }
 
@@ -119,6 +252,19 @@
     }
 }
 
+.compass-toolbox-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    pointer-events: all;
+    border-radius: 6px;
+
+    .toolbox-content-items {
+        @include ltr;
+    }
+}
+
 .toolbox-content-wrapper::after {
     content: '';
     background: $newToolbarBackgroundColor;
@@ -132,61 +278,70 @@
 }
 
 div.hangup-button {
-    background-color: #FF4F47;
-
     @media (hover: hover) and (pointer: fine) {
         &:hover {
-            background-color: #FF271F;
+            opacity: 100%;
+
+            .jitsi-icon-default svg {
+                fill: rgba(255, 79, 71, 1);
+            }
         }
 
         &:active {
-            background-color: #FF271F;
+            opacity: 100%;
+
+            .jitsi-icon-default svg {
+                fill: rgba(255, 79, 71, 1);
+            }
         }
     }
 
-    svg {
-        fill: #fff;
+    .jitsi-icon-default svg {
+        fill: rgba(255, 79, 71, 1);
+    }
+}
+
+div.hangup-button-mobile {
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            opacity: 100%;
+        }
+
+        &:active {
+            opacity: 100%;
+        }
     }
 }
 
 div.hangup-menu-button {
-    background-color: #FF4F47;
-
     @media (hover: hover) and (pointer: fine) {
         &:hover {
-            background-color: #FF271F;
+            opacity: 100%;
+
+            .jitsi-icon-default svg {
+                fill: rgba(255, 79, 71, 1);
+            }
         }
 
         &:active {
-            background-color: #FF271F;
+            opacity: 100%;
+
+            .jitsi-icon-default svg {
+                fill: rgba(255, 79, 71, 1);
+            }
         }
     }
 
-    svg {
-        fill: #fff;
+    .jitsi-icon-default svg {
+        fill: rgba(255, 79, 71, 1);
     }
 }
 
-/**
- * Hangup button have separate toggled state.
- */
-.hangup-toolbar-button {
-    .toolbox-icon.toggled {
-        background-color: #FF4F47;
+div.hangup-menu-button.toggled {
+    opacity: 100%;
 
-        @media (hover: hover) and (pointer: fine) {
-            &:hover {
-                background-color: #FF271F;
-            }
-
-            &:active {
-                background-color: #FF271F;
-            }
-        }
-
-        svg {
-            fill: #fff;
-        }
+    .jitsi-icon-default svg {
+        fill: rgba(255, 79, 71, 1);
     }
 }
 
@@ -200,13 +355,13 @@ div.hangup-menu-button {
 .fadeIn {
     opacity: 1;
 
-    @include transition(all .3s ease-in);
+    @include transition(all .2s ease-in);
 }
 
 .fadeOut {
     opacity: 0;
 
-    @include transition(all .3s ease-out);
+    @include transition(all .2s ease-out);
 }
 
 /**
@@ -214,8 +369,8 @@ div.hangup-menu-button {
  */
 .audio-preview {
     .toolbox-icon.toggled {
+        opacity: 100%;
         background: rgba(255, 255, 255, 1);
-        opacity: 80%;
 
         .settings-button-small-icon svg {
             fill: #fff !important;
@@ -226,7 +381,31 @@ div.hangup-menu-button {
         }
 
         &:hover {
-            background: white;
+            background: rgba(255, 255, 255, 1);
+        }
+    }
+
+    &.premeeting {
+        .toolbox-icon {
+            opacity: 60%;
+            background: transparent;
+
+            &:hover {
+                opacity: 100%;
+            }
+        }
+
+        .toolbox-icon.toggled {
+            opacity: 60%;
+            background: transparent;
+
+            &:hover {
+                opacity: 100%;
+            }
+
+            .jitsi-icon-default svg {
+                fill: #fff !important;
+            }
         }
     }
 }
@@ -237,12 +416,82 @@ div.hangup-menu-button {
 .video-preview {
     .toolbox-icon.toggled {
         background: none;
+        opacity: 60%;
 
         &:hover {
-            background: rgba(255, 255, 255, 0.2);
+            opacity: 100%;
         }
     }
 
+    &.premeeting {
+        .toolbox-icon.toggled {
+            background: transparent;
+
+            .jitsi-icon-default svg {
+                fill: #fff !important;
+            }
+        }
+    }
+}
+
+.toolbox-icon.screen-share-button {
+
+    opacity: 100%;
+
+    .jitsi-icon-default svg {
+        fill: rgba(4, 164, 90, 1);
+    }
+
+    &:hover {
+        background: transparent;
+
+        .jitsi-icon-default svg {
+            fill: rgba(5, 196, 107, 1);
+        }
+    }
+}
+
+.toolbox-icon.screen-share-button.disabled {
+    opacity: 30%;
+
+    .jitsi-icon-default svg {
+        fill: rgba(4, 164, 90, 1);
+    }
+
+    &:hover {
+        background: transparent;
+
+        .jitsi-icon-default svg {
+            fill: rgba(4, 164, 90, 1);
+        }
+    }
+}
+
+.toolbox-icon.screen-share-button.toggled {
+
+    opacity: 100%;
+    background: rgba(5, 196, 107, 1);
+
+    .jitsi-icon-default svg {
+        fill: rgba(255, 255, 255, 1);
+    }
+
+    &:hover {
+        background: rgba(5, 196, 107, 1);
+    }
+}
+
+.toolbox-icon.raise-hand-button.toggled {
+    opacity: 100%;
+    background: rgba(255, 206, 15, 1);
+
+    .jitsi-icon-default svg {
+        fill: rgba(23, 23, 23, 1);
+    }
+
+    &:hover {
+        background: rgba(255, 206, 15, 1);
+    }
 }
 
 /**
@@ -274,4 +523,33 @@ div.hangup-menu-button {
             margin-bottom: 52px;
         }
     }
+}
+
+.raise-hand-row-button-mobile {
+    padding: 16px;
+
+    .toolbox-button {
+        width: 100%;
+
+        .toolbox-icon {
+            width: 100%;
+            border-radius: 8px !important;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Lato SemiBold';
+            font-weight: normal;
+            font-size: 15px;
+            line-height: 23px;
+            color: rgba(180, 180, 180, 1);
+            height: initial;
+            padding: 10.5px 0;
+        }
+    }
+}
+
+.emoji-raise-hand-button-mobile {
+
 }

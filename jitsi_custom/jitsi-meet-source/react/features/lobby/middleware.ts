@@ -1,15 +1,15 @@
 import i18n from 'i18next';
-import {batch} from 'react-redux';
-import {AnyAction} from 'redux';
+import { batch } from 'react-redux';
+import { AnyAction } from 'redux';
 
-import {IStore} from '../app/types';
-import {APP_WILL_MOUNT, APP_WILL_UNMOUNT} from '../base/app/actionTypes';
+import { IStore } from '../app/types';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
 import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     ENDPOINT_MESSAGE_RECEIVED
 } from '../base/conference/actionTypes';
-import {conferenceWillJoin} from '../base/conference/actions';
+import { conferenceWillJoin } from '../base/conference/actions';
 import {
     JitsiConferenceErrors,
     JitsiConferenceEvents
@@ -25,24 +25,24 @@ import {
     registerSound,
     unregisterSound
 } from '../base/sounds/actions';
-import {isTestModeEnabled} from '../base/testing/functions';
-import {BUTTON_TYPES} from '../base/ui/constants.any';
-import {openChat} from '../chat/actions';
+import { isTestModeEnabled } from '../base/testing/functions';
+import { BUTTON_TYPES } from '../base/ui/constants.any';
+import { openChat } from '../chat/actions';
 import {
     handleLobbyChatInitialized,
     removeLobbyChatParticipant
 } from '../chat/actions.any';
-import {arePollsDisabled} from '../conference/functions.any';
-import {hideNotification, showNotification} from '../notifications/actions';
+import { arePollsDisabled } from '../conference/functions.any';
+import { hideNotification, showNotification } from '../notifications/actions';
 import {
     LOBBY_NOTIFICATION_ID,
     NOTIFICATION_ICON,
     NOTIFICATION_TIMEOUT_TYPE,
     NOTIFICATION_TYPE
 } from '../notifications/constants';
-import {INotificationProps} from '../notifications/types';
-import {open as openParticipantsPane} from '../participants-pane/actions';
-import {getParticipantsPaneOpen} from '../participants-pane/functions';
+import { INotificationProps } from '../notifications/types';
+import { open as openParticipantsPane } from '../participants-pane/actions';
+import { getParticipantsPaneOpen } from '../participants-pane/functions';
 import {
     isPrejoinEnabledInConfig,
     isPrejoinPageVisible,
@@ -65,49 +65,50 @@ import {
     setPasswordJoinFailed,
     startKnocking
 } from './actions';
-import {updateLobbyParticipantOnLeave} from './actions.any';
-import {KNOCKING_PARTICIPANT_SOUND_ID} from './constants';
-import {getKnockingParticipants, showLobbyChatButton} from './functions';
-import {KNOCKING_PARTICIPANT_FILE} from './sounds';
-import {IKnockingParticipant} from './types';
+import { updateLobbyParticipantOnLeave } from './actions.any';
+import { KNOCKING_PARTICIPANT_SOUND_ID } from './constants';
+import { getKnockingParticipants, showLobbyChatButton } from './functions';
+import { KNOCKING_PARTICIPANT_FILE } from './sounds';
+import { IKnockingParticipant } from './types';
+import { isMobileBrowser } from "../base/environment/utils";
 
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-        case APP_WILL_MOUNT:
-            store.dispatch(registerSound(KNOCKING_PARTICIPANT_SOUND_ID, KNOCKING_PARTICIPANT_FILE));
-            break;
-        case APP_WILL_UNMOUNT:
-            store.dispatch(unregisterSound(KNOCKING_PARTICIPANT_SOUND_ID));
-            break;
-        case CONFERENCE_FAILED:
-            return _conferenceFailed(store, next, action);
-        case CONFERENCE_JOINED:
-            return _conferenceJoined(store, next, action);
-        case ENDPOINT_MESSAGE_RECEIVED: {
-            const {participant, data} = action;
+    case APP_WILL_MOUNT:
+        store.dispatch(registerSound(KNOCKING_PARTICIPANT_SOUND_ID, KNOCKING_PARTICIPANT_FILE));
+        break;
+    case APP_WILL_UNMOUNT:
+        store.dispatch(unregisterSound(KNOCKING_PARTICIPANT_SOUND_ID));
+        break;
+    case CONFERENCE_FAILED:
+        return _conferenceFailed(store, next, action);
+    case CONFERENCE_JOINED:
+        return _conferenceJoined(store, next, action);
+    case ENDPOINT_MESSAGE_RECEIVED: {
+        const { participant, data } = action;
 
-            _maybeSendLobbyNotification(participant, data, store);
+        _maybeSendLobbyNotification(participant, data, store);
 
-            break;
-        }
-        case KNOCKING_PARTICIPANT_ARRIVED_OR_UPDATED: {
-            // We need the full update result to be in the store already
-            const result = next(action);
+        break;
+    }
+    case KNOCKING_PARTICIPANT_ARRIVED_OR_UPDATED: {
+        // We need the full update result to be in the store already
+        const result = next(action);
 
-            _findLoadableAvatarForKnockingParticipant(store, action.participant);
-            _handleLobbyNotification(store);
+        _findLoadableAvatarForKnockingParticipant(store, action.participant);
+        _handleLobbyNotification(store);
 
-            return result;
-        }
-        case KNOCKING_PARTICIPANT_LEFT: {
-            // We need the full update result to be in the store already
-            const result = next(action);
+        return result;
+    }
+    case KNOCKING_PARTICIPANT_LEFT: {
+        // We need the full update result to be in the store already
+        const result = next(action);
 
-            _handleLobbyNotification(store);
+        _handleLobbyNotification(store);
 
-            return result;
-        }
+        return result;
+    }
     }
 
     return next(action);
@@ -119,7 +120,7 @@ MiddlewareRegistry.register(store => next => action => {
  */
 StateListenerRegistry.register(
     state => state['features/base/conference'].conference,
-    (conference, {dispatch, getState}, previousConference) => {
+    (conference, { dispatch, getState }, previousConference) => {
         if (conference && !previousConference) {
             conference.on(JitsiConferenceEvents.MEMBERS_ONLY_CHANGED, (enabled: boolean) => {
                 dispatch(setLobbyModeEnabled(enabled));
@@ -129,7 +130,7 @@ StateListenerRegistry.register(
             });
 
             conference.on(JitsiConferenceEvents.LOBBY_USER_JOINED, (id: string, name: string) => {
-                const {soundsParticipantKnocking} = getState()['features/base/settings'];
+                const { soundsParticipantKnocking } = getState()['features/base/settings'];
 
                 batch(() => {
                     dispatch(
@@ -189,7 +190,7 @@ StateListenerRegistry.register(
  * @returns {void}
  */
 function _handleLobbyNotification(store: IStore) {
-    const {dispatch, getState} = store;
+    const { dispatch, getState } = store;
     const knockingParticipants = getKnockingParticipants(getState());
 
     if (knockingParticipants.length === 0) {
@@ -212,40 +213,42 @@ function _handleLobbyNotification(store: IStore) {
         descriptionKey = 'notify.participantWantsToJoin';
         notificationTitle = firstParticipant.name;
         icon = NOTIFICATION_ICON.PARTICIPANT;
-        customActionNameKey = ['participantsPane.actions.admit', 'participantsPane.actions.reject'];
-        customActionType = [BUTTON_TYPES.PRIMARY, BUTTON_TYPES.DESTRUCTIVE];
-        customActionHandler = [() => batch(() => {
+        customActionNameKey = [ 'participantsPane.actions.admit', 'participantsPane.actions.reject' ];
+        customActionType = [ BUTTON_TYPES.PRIMARY, BUTTON_TYPES.DESTRUCTIVE ];
+        customActionHandler = [ () => batch(() => {
             dispatch(hideNotification(LOBBY_NOTIFICATION_ID));
             dispatch(approveKnockingParticipant(firstParticipant.id));
         }),
             () => batch(() => {
                 dispatch(hideNotification(LOBBY_NOTIFICATION_ID));
                 dispatch(rejectKnockingParticipant(firstParticipant.id));
-            })];
+            }) ];
     } else {
         descriptionKey = 'notify.participantsWantToJoin';
         notificationTitle = i18n.t('notify.waitingParticipants', {
             waitingParticipants: knockingParticipants.length
         });
         icon = NOTIFICATION_ICON.PARTICIPANTS;
-        customActionNameKey = ['notify.viewLobby'];
-        customActionType = [BUTTON_TYPES.PRIMARY];
-        customActionHandler = [() => batch(() => {
+        customActionNameKey = [ 'notify.viewLobby' ];
+        customActionType = [ BUTTON_TYPES.PRIMARY ];
+        customActionHandler = [ () => batch(() => {
             dispatch(hideNotification(LOBBY_NOTIFICATION_ID));
             dispatch(openParticipantsPane());
-        })];
+        }) ];
     }
 
-    dispatch(showNotification({
-        title: notificationTitle,
-        descriptionKey,
-        uid: LOBBY_NOTIFICATION_ID,
-        customActionNameKey,
-        customActionType,
-        customActionHandler,
-        icon,
-        participantId: knockingParticipants.length === 1 ? knockingParticipants[0].id : "0",
-    }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+    if (!isMobileBrowser()) {
+        dispatch(showNotification({
+            title: notificationTitle,
+            descriptionKey,
+            uid: LOBBY_NOTIFICATION_ID,
+            customActionNameKey,
+            customActionType,
+            customActionHandler,
+            icon,
+            participantId: knockingParticipants.length === 1 ? knockingParticipants[0].id : "0",
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+    }
 }
 
 /**
@@ -257,12 +260,12 @@ function _handleLobbyNotification(store: IStore) {
  * @param {Object} action - The Redux action.
  * @returns {Object}
  */
-function _conferenceFailed({dispatch, getState}: IStore, next: Function, action: AnyAction) {
-    const {error} = action;
+function _conferenceFailed({ dispatch, getState }: IStore, next: Function, action: AnyAction) {
+    const { error } = action;
     const state = getState();
-    const {membersOnly} = state['features/base/conference'];
+    const { membersOnly } = state['features/base/conference'];
     const nonFirstFailure = Boolean(membersOnly);
-    const {isDisplayNameRequiredError} = state['features/lobby'];
+    const { isDisplayNameRequiredError } = state['features/lobby'];
 
     if (error.name === JitsiConferenceErrors.MEMBERS_ONLY_ERROR) {
         if (typeof error.recoverable === 'undefined') {
@@ -270,7 +273,7 @@ function _conferenceFailed({dispatch, getState}: IStore, next: Function, action:
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [_lobbyJid, lobbyWaitingForHost] = error.params;
+        const [ _lobbyJid, lobbyWaitingForHost ] = error.params;
 
         const result = next(action);
 
@@ -292,7 +295,7 @@ function _conferenceFailed({dispatch, getState}: IStore, next: Function, action:
 
         return result;
     } else if (error.name === JitsiConferenceErrors.DISPLAY_NAME_REQUIRED) {
-        const [isLobbyEnabled] = error.params;
+        const [ isLobbyEnabled ] = error.params;
 
         const result = next(action);
 
@@ -329,7 +332,7 @@ function _conferenceFailed({dispatch, getState}: IStore, next: Function, action:
  * @param {Object} action - The Redux action.
  * @returns {Object}
  */
-function _conferenceJoined({dispatch}: IStore, next: Function, action: AnyAction) {
+function _conferenceJoined({ dispatch }: IStore, next: Function, action: AnyAction) {
     dispatch(hideLobbyScreen());
 
     return next(action);
@@ -342,15 +345,15 @@ function _conferenceJoined({dispatch}: IStore, next: Function, action: AnyAction
  * @param {Object} participant - The knocking participant.
  * @returns {void}
  */
-function _findLoadableAvatarForKnockingParticipant(store: IStore, {id}: { id: string; }) {
-    const {dispatch, getState} = store;
+function _findLoadableAvatarForKnockingParticipant(store: IStore, { id }: { id: string; }) {
+    const { dispatch, getState } = store;
     const updatedParticipant = getState()['features/lobby'].knockingParticipants.find(p => p.id === id);
-    const {disableThirdPartyRequests} = getState()['features/base/config'];
+    const { disableThirdPartyRequests } = getState()['features/base/config'];
 
     if (!disableThirdPartyRequests && updatedParticipant && !updatedParticipant.loadableAvatarUrl) {
         getFirstLoadableAvatarUrl(updatedParticipant, store).then((result: { isUsingCORS: boolean; src: string; }) => {
             if (result) {
-                const {isUsingCORS, src} = result;
+                const { isUsingCORS, src } = result;
 
                 dispatch(
                     participantIsKnockingOrUpdated({
@@ -373,7 +376,7 @@ function _findLoadableAvatarForKnockingParticipant(store: IStore, {id}: { id: st
  * @param {Object} store - The Redux store.
  * @returns {void}
  */
-function _maybeSendLobbyNotification(origin: any, message: any, {dispatch, getState}: IStore) {
+function _maybeSendLobbyNotification(origin: any, message: any, { dispatch, getState }: IStore) {
     if (!origin?._id || message?.type !== 'lobby-notify') {
         return;
     }
@@ -387,15 +390,15 @@ function _maybeSendLobbyNotification(origin: any, message: any, {dispatch, getSt
     };
 
     switch (message.event) {
-        case 'LOBBY-ENABLED':
-            notificationProps.descriptionKey = `lobby.notificationLobby${message.value ? 'En' : 'Dis'}abled`;
-            break;
-        case 'LOBBY-ACCESS-GRANTED':
-            notificationProps.descriptionKey = 'lobby.notificationLobbyAccessGranted';
-            break;
-        case 'LOBBY-ACCESS-DENIED':
-            notificationProps.descriptionKey = 'lobby.notificationLobbyAccessDenied';
-            break;
+    case 'LOBBY-ENABLED':
+        notificationProps.descriptionKey = `lobby.notificationLobby${message.value ? 'En' : 'Dis'}abled`;
+        break;
+    case 'LOBBY-ACCESS-GRANTED':
+        notificationProps.descriptionKey = 'lobby.notificationLobbyAccessGranted';
+        break;
+    case 'LOBBY-ACCESS-DENIED':
+        notificationProps.descriptionKey = 'lobby.notificationLobbyAccessDenied';
+        break;
     }
 
     dispatch(

@@ -1,12 +1,13 @@
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash-es';
 
 import { IReduxState, IStore } from '../app/types';
 import { _handleParticipantError } from '../base/conference/functions';
 import { getSsrcRewritingFeatureFlag } from '../base/config/functions.any';
-import { MEDIA_TYPE } from '../base/media/constants';
+import { MEDIA_TYPE, VIDEO_TYPE } from '../base/media/constants';
 import {
-    getLocalParticipant,
-    getSourceNamesByMediaType
+    getLocalParticipant, getParticipantById,
+    getSourceNamesByMediaTypeAndParticipant,
+    getSourceNamesByVideoTypeAndParticipant, isParticipantModerator
 } from '../base/participants/functions';
 import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import { getTrackSourceNameByMediaTypeAndParticipant } from '../base/tracks/functions';
@@ -34,9 +35,9 @@ import {
     setMaxReceiverVideoQualityForVerticalFilmstrip
 } from './actions';
 import { MAX_VIDEO_QUALITY, VIDEO_QUALITY_LEVELS, VIDEO_QUALITY_UNLIMITED } from './constants';
-import { getReceiverVideoQualityLevel } from './functions';
 import logger from './logger';
-import { getMinHeightForQualityLvlMap } from './selector';
+import { getNumberOfPartipantsForTileView } from "../filmstrip/functions.web";
+import { getQualityGroupByQualityLevel } from "../quality-control/actions";
 
 /**
  * Handles changes in the visible participants in the filmstrip. The listener is debounced
@@ -122,22 +123,33 @@ StateListenerRegistry.register(
             preferredVideoQuality
         } = state['features/video-quality'];
 
+        // приходится делать такую развилку, чтобы модераторы всегда слали t1, если их кто-то откроет в полный экран
+        const localParticipantId = getLocalParticipant(state);
+        const isLocalParticipantModerator = isParticipantModerator(localParticipantId);
+        const { qualityLevel } = state['features/quality-control'];
+        const qualityGroup = getQualityGroupByQualityLevel(qualityLevel);
+        let senderVideoQuality = preferredVideoQuality;
+        if  (isLocalParticipantModerator) {
+            senderVideoQuality = qualityGroup.VIDEO_QUALITY_T1
+        }
+
         return {
             maxReceiverVideoQualityForLargeVideo,
             maxReceiverVideoQualityForScreenSharingFilmstrip,
             maxReceiverVideoQualityForStageFilmstrip,
             maxReceiverVideoQualityForTileView,
             maxReceiverVideoQualityForVerticalFilmstrip,
-            preferredVideoQuality
+            preferredVideoQuality,
+            senderVideoQuality
         };
     },
     /* listener */ (currentState, store, previousState = {}) => {
-        const { preferredVideoQuality } = currentState;
-        const changedPreferredVideoQuality = preferredVideoQuality !== previousState.preferredVideoQuality;
+        const { senderVideoQuality } = currentState;
+        const changedPreferredVideoQuality = senderVideoQuality !== previousState.senderVideoQuality;
 
         if (changedPreferredVideoQuality) {
-            _setSenderVideoConstraint(preferredVideoQuality, store);
-            typeof APP !== 'undefined' && APP.API.notifyVideoQualityChanged(preferredVideoQuality);
+            _setSenderVideoConstraint(senderVideoQuality, store);
+            typeof APP !== 'undefined' && APP.API.notifyVideoQualityChanged(senderVideoQuality);
         }
         _updateReceiverVideoConstraints(store);
     }, {
@@ -190,6 +202,7 @@ StateListenerRegistry.register(
     }, store, previousState = {}) => {
         const { dispatch, getState } = store;
         const state = getState();
+        const { qualityLevel } = state['features/quality-control'];
         const {
             maxReceiverVideoQualityForLargeVideo,
             maxReceiverVideoQualityForScreenSharingFilmstrip,
@@ -199,32 +212,17 @@ StateListenerRegistry.register(
         } = state['features/video-quality'];
         const { maxFullResolutionParticipants = 2 } = state['features/base/config'];
         let maxVideoQualityChanged = false;
-
+        const numberOfParticipants = getNumberOfPartipantsForTileView(state);
+        const qualityGroup = getQualityGroupByQualityLevel(qualityLevel);
 
         if (displayTileView) {
-            let newMaxRecvVideoQuality = VIDEO_QUALITY_LEVELS.STANDARD;
-
-            if (reducedUI) {
-                newMaxRecvVideoQuality = VIDEO_QUALITY_LEVELS.LOW;
-            } else if (typeof tileViewThumbnailHeight === 'number' && !Number.isNaN(tileViewThumbnailHeight)) {
-                newMaxRecvVideoQuality
-                    = getReceiverVideoQualityLevel(tileViewThumbnailHeight, getMinHeightForQualityLvlMap(state));
-
-                // Override HD level calculated for the thumbnail height when # of participants threshold is exceeded
-                if (maxFullResolutionParticipants !== -1) {
-                    const override
-                        = participantCount > maxFullResolutionParticipants
-                            && newMaxRecvVideoQuality > VIDEO_QUALITY_LEVELS.STANDARD;
-
-                    logger.info(`Video quality level for thumbnail height: ${tileViewThumbnailHeight}, `
-                        + `is: ${newMaxRecvVideoQuality}, `
-                        + `override: ${String(override)}, `
-                        + `max full res N: ${maxFullResolutionParticipants}`);
-
-                    if (override) {
-                        newMaxRecvVideoQuality = VIDEO_QUALITY_LEVELS.STANDARD;
-                    }
-                }
+            let newMaxRecvVideoQuality = qualityGroup.VIDEO_QUALITY_T2;
+            if (numberOfParticipants >= 10) {
+                newMaxRecvVideoQuality = qualityGroup.VIDEO_QUALITY_T4;
+            } else if (numberOfParticipants >= 7) {
+                newMaxRecvVideoQuality = qualityGroup.VIDEO_QUALITY_T3_MIN;
+            } else if (numberOfParticipants >= 5) {
+                newMaxRecvVideoQuality = qualityGroup.VIDEO_QUALITY_T3;
             }
 
             if (maxReceiverVideoQualityForTileView !== newMaxRecvVideoQuality) {
@@ -242,7 +240,7 @@ StateListenerRegistry.register(
                     = newMaxRecvVideoQualityForStageFilmstrip
                     = newMaxRecvVideoQualityForLargeVideo
                     = newMaxRecvVideoQualityForScreenSharingFilmstrip
-                    = VIDEO_QUALITY_LEVELS.LOW;
+                    = VIDEO_QUALITY_LEVELS.LOW_HD;
             } else {
                 newMaxRecvVideoQualityForStageFilmstrip
                     = getVideoQualityForStageThumbnails(stageFilmstripThumbnailHeight, state);
@@ -265,12 +263,12 @@ StateListenerRegistry.register(
                             newMaxRecvVideoQualityForVerticalFilmstrip
                                 = Math.min(VIDEO_QUALITY_LEVELS.STANDARD, newMaxRecvVideoQualityForVerticalFilmstrip);
                         } else if (newMaxRecvVideoQualityForVerticalFilmstrip > VIDEO_QUALITY_LEVELS.STANDARD
-                                && participantCount > maxFullResolutionParticipants - activeParticipantsCount) {
+                            && participantCount > maxFullResolutionParticipants - activeParticipantsCount) {
                             newMaxRecvVideoQualityForVerticalFilmstrip = VIDEO_QUALITY_LEVELS.STANDARD;
                         }
                     } else if (newMaxRecvVideoQualityForVerticalFilmstrip > VIDEO_QUALITY_LEVELS.STANDARD
-                            && participantCount > maxFullResolutionParticipants
-                                - (newMaxRecvVideoQualityForLargeVideo > VIDEO_QUALITY_LEVELS.STANDARD ? 1 : 0)) {
+                        && participantCount > maxFullResolutionParticipants
+                        - (newMaxRecvVideoQualityForLargeVideo > VIDEO_QUALITY_LEVELS.STANDARD ? 1 : 0)) {
                         newMaxRecvVideoQualityForVerticalFilmstrip = VIDEO_QUALITY_LEVELS.STANDARD;
                     }
                 }
@@ -321,10 +319,10 @@ function _getSourceNames(participantList: Array<string>, state: IReduxState): Ar
 
     participantList.forEach(participantId => {
         if (getSsrcRewritingFeatureFlag(state)) {
-            const sourceNames: string[] | undefined
-                = getSourceNamesByMediaType(state, participantId, MEDIA_TYPE.VIDEO);
+            const sourceNames: string[]
+                = getSourceNamesByMediaTypeAndParticipant(state, participantId, MEDIA_TYPE.VIDEO);
 
-            sourceNames?.length && sourceNamesList.push(...sourceNames);
+            sourceNames.length && sourceNamesList.push(...sourceNames);
         } else {
             let sourceName: string;
 
@@ -388,20 +386,21 @@ function _updateReceiverVideoConstraints({ getState }: IStore) {
         preferredVideoQuality
     } = state['features/video-quality'];
     const { participantId: largeVideoParticipantId = '' } = state['features/large-video'];
-    const maxFrameHeightForTileView = Math.min(maxReceiverVideoQualityForTileView, preferredVideoQuality);
-    const maxFrameHeightForStageFilmstrip = Math.min(maxReceiverVideoQualityForStageFilmstrip, preferredVideoQuality);
-    const maxFrameHeightForVerticalFilmstrip
-        = Math.min(maxReceiverVideoQualityForVerticalFilmstrip, preferredVideoQuality);
-    const maxFrameHeightForLargeVideo
-        = Math.min(maxReceiverVideoQualityForLargeVideo, preferredVideoQuality);
-    const maxFrameHeightForScreenSharingFilmstrip
-        = Math.min(maxReceiverVideoQualityForScreenSharingFilmstrip, preferredVideoQuality);
+    const largeVideoParticipant = getParticipantById(state, largeVideoParticipantId);
+    const maxFrameHeightForTileView = maxReceiverVideoQualityForTileView;
+    const maxFrameHeightForStageFilmstrip = maxReceiverVideoQualityForStageFilmstrip;
+    const maxFrameHeightForVerticalFilmstrip = maxReceiverVideoQualityForVerticalFilmstrip;
+    const maxFrameHeightForLargeVideo = preferredVideoQuality;
+    const maxFrameHeightForScreenSharingFilmstrip = maxReceiverVideoQualityForScreenSharingFilmstrip;
     const { remoteScreenShares } = state['features/video-layout'];
     const { visibleRemoteParticipants } = state['features/filmstrip'];
     const tracks = state['features/base/tracks'];
     const localParticipantId = getLocalParticipant(state)?.id;
     const activeParticipantsIds = getActiveParticipantsIds(state);
     const screenshareFilmstripParticipantId = isTopPanelEnabled(state) && getScreenshareFilmstripParticipantId(state);
+
+    const { qualityLevel } = state['features/quality-control'];
+    const qualityGroup = getQualityGroupByQualityLevel(qualityLevel);
 
     const receiverConstraints: any = {
         constraints: {},
@@ -428,8 +427,9 @@ function _updateReceiverVideoConstraints({ getState }: IStore) {
         if (remoteScreenShares.includes(largeVideoParticipantId)) {
             largeVideoSourceName = largeVideoParticipantId;
         } else {
-            largeVideoSourceName = getTrackSourceNameByMediaTypeAndParticipant(
-                    tracks, MEDIA_TYPE.VIDEO, largeVideoParticipantId);
+            largeVideoSourceName = getSsrcRewritingFeatureFlag(state)
+                ? getSourceNamesByVideoTypeAndParticipant(state, largeVideoParticipantId, VIDEO_TYPE.CAMERA)[0]
+                : getTrackSourceNameByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, largeVideoParticipantId);
         }
     }
 
@@ -448,7 +448,7 @@ function _updateReceiverVideoConstraints({ getState }: IStore) {
             receiverConstraints.selectedSources = remoteScreenShares;
         }
 
-    // Stage view.
+        // Stage view.
     } else {
         if (!visibleRemoteTrackSourceNames?.length && !largeVideoSourceName && !activeParticipantsSources?.length) {
             return;
@@ -477,7 +477,7 @@ function _updateReceiverVideoConstraints({ getState }: IStore) {
                 const isScreenSharing = remoteScreenShares.includes(sourceName);
                 const quality
                     = isScreenSharing && preferredVideoQuality >= MAX_VIDEO_QUALITY
-                        ? VIDEO_QUALITY_UNLIMITED : maxFrameHeightForStageFilmstrip;
+                    ? VIDEO_QUALITY_UNLIMITED : maxFrameHeightForStageFilmstrip;
 
                 receiverConstraints.constraints[sourceName] = { 'maxHeight': quality };
             });
@@ -486,10 +486,10 @@ function _updateReceiverVideoConstraints({ getState }: IStore) {
                 onStageSources.push(screenshareFilmstripParticipantId);
                 receiverConstraints.constraints[screenshareFilmstripParticipantId]
                     = {
-                        'maxHeight':
-                            preferredVideoQuality >= MAX_VIDEO_QUALITY
-                                ? VIDEO_QUALITY_UNLIMITED : maxFrameHeightForScreenSharingFilmstrip
-                    };
+                    'maxHeight':
+                        preferredVideoQuality >= MAX_VIDEO_QUALITY
+                            ? VIDEO_QUALITY_UNLIMITED : maxFrameHeightForScreenSharingFilmstrip
+                };
             }
 
             receiverConstraints.onStageSources = onStageSources;
@@ -501,6 +501,10 @@ function _updateReceiverVideoConstraints({ getState }: IStore) {
                 || !remoteScreenShares.find(id => id === largeVideoParticipantId)) {
                 quality = maxFrameHeightForLargeVideo;
             }
+            if (isParticipantModerator(largeVideoParticipant)) {
+                quality = qualityGroup.VIDEO_QUALITY_T1;
+            }
+
             receiverConstraints.constraints[largeVideoSourceName] = { 'maxHeight': quality };
             receiverConstraints.onStageSources = [ largeVideoSourceName ];
         }

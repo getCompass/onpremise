@@ -1,9 +1,9 @@
-import React, {useCallback} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import Icon from '../../../icons/components/Icon';
-import {COLORS} from '../../constants';
-import {isMobileBrowser} from "../../../environment/utils";
+import { COLORS } from '../../constants';
+import { isMobileBrowser } from "../../../environment/utils";
 
 interface IProps {
 
@@ -34,6 +34,11 @@ interface IProps {
      * Color for the icon.
      */
     iconColor?: string;
+
+    /**
+     * Size for the icon.
+     */
+    iconSize?: string;
 
     /**
      * HTML ID attribute to add to the root of {@code Label}.
@@ -70,6 +75,7 @@ const useStyles = makeStyles()(theme => {
 
             '&.is-mobile': {
                 fontFamily: 'Inter Medium',
+                fontWeight: 'normal' as const,
                 borderRadius: '6px',
                 margin: '0 2px',
                 padding: '4.5px 6px 5.5px 4px',
@@ -108,6 +114,7 @@ const Label = ({
     color,
     icon,
     iconColor,
+    iconSize,
     id,
     onClick,
     text
@@ -128,20 +135,20 @@ const Label = ({
 
     return (
         <div
-            className = { cx(classes.label, onClick && classes.clickable,
+            className = {cx(classes.label, onClick && classes.clickable,
                 color && classes[color], className, isMobile && 'is-mobile'
-            ) }
-            id = { id }
-            onClick = { onClick }
-            onKeyPress = { onKeyPress }
-            role = { onClick ? 'button' : undefined }
-            tabIndex = { onClick ? 0 : undefined }>
+            )}
+            id = {id}
+            onClick = {onClick}
+            onKeyPress = {onKeyPress}
+            role = {onClick ? 'button' : undefined}
+            tabIndex = {onClick ? 0 : undefined}>
             {icon && <Icon
-                color = { iconColor }
-                size = '16'
-                src = { icon } />}
+                color = {iconColor}
+                size = {iconSize ?? '16'}
+                src = {icon} />}
             {accessibilityText && <span className = 'sr-only'>{accessibilityText}</span>}
-            {text && <span className = { cx(icon && classes.withIcon, isMobile && 'is-mobile') }>{text}</span>}
+            {text && <span className = {cx(icon && classes.withIcon, isMobile && 'is-mobile')}>{text}</span>}
         </div>
     );
 };

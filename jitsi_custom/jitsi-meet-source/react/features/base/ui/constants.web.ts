@@ -1,4 +1,4 @@
-import {Theme} from '@mui/material';
+import { Theme } from '@mui/material';
 
 export * from './constants.any';
 
@@ -210,28 +210,81 @@ export const commonStyles = (theme: Theme) => {
 
         '.toolbox-icon': {
             display: 'flex',
-            borderRadius: 3,
+            borderRadius: '8px',
             flexDirection: 'column' as const,
             fontSize: 24,
             height: 48,
             justifyContent: 'center',
             width: 48,
+            opacity: '60%',
 
             '&.is-mobile': {
-                borderRadius: 6,
-                height: 46,
-                width: 46,
+                borderRadius: '100% !important',
+                height: 64,
+                width: 64,
+                opacity: '100%',
+                backgroundColor: 'rgba(4, 164, 90, 0.5)',
+
+                '&.mobile-header-button': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+
+                    '& .jitsi-icon': {
+                        '& svg': {
+                            fill: 'rgba(255, 255, 255, 0.85) !important'
+                        }
+                    }
+                },
+
+                '&:active': {
+                    backgroundColor: 'rgba(4, 164, 90, 0.65)',
+
+                    '&.mobile-header-button': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                },
+
+                '&.hangup-button': {
+                    backgroundColor: 'rgba(255, 59, 48, 0.5)',
+                },
+
+                '&.hangup-button-mobile': {
+                    backgroundColor: 'rgba(255, 59, 48, 0.5)',
+
+                    '&:active': {
+                        backgroundColor: 'rgba(255, 59, 48, 0.65)',
+                    },
+                },
+
+                '&.toggled': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+
+                    '&:active': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                    },
+
+                    '&.hangup-button': {
+                        backgroundColor: 'rgba(255, 59, 48, 0.5)',
+                    },
+
+                    '&.hangup-button-mobile': {
+                        backgroundColor: 'rgba(255, 59, 48, 0.5)',
+
+                        '&:active': {
+                            backgroundColor: 'rgba(255, 59, 48, 0.65)',
+                        },
+                    },
+                },
 
                 '&.microphone-button': {},
             },
 
             '@media (hover: hover) and (pointer: fine)': {
                 '&:hover': {
-                    backgroundColor: theme.palette.ui04
+                    opacity: '100%',
                 },
 
                 '&:active': {
-                    backgroundColor: theme.palette.ui03
+                    opacity: '100%',
                 }
             },
             [theme.breakpoints.down(320)]: {
@@ -240,21 +293,57 @@ export const commonStyles = (theme: Theme) => {
             },
 
             '&.mobile-header-button': {
-                opacity: 0.8,
-                width: 26,
-                height: 26,
+                opacity: 1,
+                width: '36px',
+                height: '36px',
                 marginTop: 0,
                 '-webkit-tap-highlight-color': 'transparent',
             },
 
             '&.toggled': {
-                backgroundColor: 'rgba(245, 245, 245, 0.1)',
+                backgroundColor: 'transparent',
+                opacity: '60%',
+
+                '@media (hover: hover) and (pointer: fine)': {
+                    '&:hover': {
+                        opacity: '100%',
+                    },
+                },
 
                 '&.mobile-header-button': {
                     backgroundColor: 'transparent',
+
+                    '@media (hover: hover) and (pointer: fine)': {
+                        '&:hover': {
+                            backgroundColor: 'transparent',
+                        },
+                    },
                 },
 
                 '&.is-mobile': {
+                    opacity: '100%',
+
+                    '&.mobile-header-button': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+
+                        '& .jitsi-icon': {
+                            '& svg': {
+                                fill: 'rgba(255, 255, 255, 0.85) !important'
+                            }
+                        },
+
+                        '@media (hover: hover) and (pointer: fine)': {
+                            '&:active': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            },
+                        },
+                    },
+
+                    '@media (hover: hover) and (pointer: fine)': {
+                        '&:hover': {
+                            backgroundColor: 'transparent',
+                        },
+                    },
                     '&.microphone-button': {
                         backgroundColor: 'rgba(255, 255, 255, 0.8) !important',
 
@@ -268,9 +357,12 @@ export const commonStyles = (theme: Theme) => {
             '&.disabled': {
                 cursor: 'initial !important',
                 backgroundColor: 'transparent !important',
+                opacity: '30%',
 
-                '& svg': {
-                    fill: 'rgba(255, 255, 255, 0.2) !important'
+                '@media (hover: hover) and (pointer: fine)': {
+                    '&:hover': {
+                        opacity: '30%',
+                    },
                 }
             }
         },
@@ -300,6 +392,35 @@ export const commonStyles = (theme: Theme) => {
                     marginRight: 0
                 }
             }
+        },
+
+        '.compass-toolbox-content-items': {
+            borderRadius: 6,
+            padding: 8,
+            textAlign: 'center' as const,
+            pointerEvents: 'all' as const,
+            display: 'flex',
+
+            '& > div': {
+                marginRight: theme.spacing(2),
+
+                '&:last-of-type': {
+                    marginRight: 0
+                }
+            },
+
+            '&.compass-toolbox-content-items-mobile': {
+                padding: 0,
+                justifyContent: 'center',
+
+                '& > div': {
+                    marginRight: '32px',
+
+                    '&:last-of-type': {
+                        marginRight: 0
+                    }
+                },
+            },
         }
     };
 };

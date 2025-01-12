@@ -172,7 +172,7 @@ export function getMessageText(message: IMessage) {
  */
 export function getCanReplyToMessage(state: IReduxState, message: IMessage) {
     const { knocking } = state['features/lobby'];
-    const participant = getParticipantById(state, message.id);
+    const participant = getParticipantById(state, message.participantId);
 
     return Boolean(participant)
         && (message.privateMessage || (message.lobbyChat && !knocking))
@@ -187,6 +187,7 @@ export function getCanReplyToMessage(state: IReduxState, message: IMessage) {
  */
 export function getPrivateNoticeMessage(message: IMessage) {
 
+    // compass changes
     if (message.messageType !== MESSAGE_TYPE_LOCAL) {
         return i18next.t('chat.privateNoticeForYou');
     }

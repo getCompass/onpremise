@@ -3,14 +3,14 @@ import React from 'react';
 
 import Avatar from '../../../base/avatar/components/Avatar';
 import StatelessAvatar from '../../../base/avatar/components/web/StatelessAvatar';
-import {getInitials} from '../../../base/avatar/functions';
-import {IconUser} from '../../../base/icons/svg';
+import { getInitials } from '../../../base/avatar/functions';
+import { IconUser } from '../../../base/icons/svg';
 import BaseTheme from '../../../base/ui/components/BaseTheme.web';
-import {FaceLandmarks} from '../../../face-landmarks/types';
+import { FaceLandmarks } from '../../../face-landmarks/types';
 
 import TimeElapsed from './TimeElapsed';
 import Timeline from './Timeline';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link SpeakerStatsItem}.
@@ -85,52 +85,52 @@ const SpeakerStatsItem = (props: IProps) => {
     const isMobile = isMobileBrowser();
 
     return (
-        <div key={props.participantId}>
-            <div className={rowDisplayClass}>
-                <div className='avatar'>
+        <div key = {props.participantId}>
+            <div className = {rowDisplayClass}>
+                <div className = 'avatar'>
                     {
                         props.hasLeft ? (
                             <StatelessAvatar
-                                className='userAvatar'
-                                color={BaseTheme.palette.ui04}
-                                iconUser={IconUser}
-                                initials={getInitials(props.displayName)}
-                                size={isMobile ? 44 : 40}/>
+                                className = 'userAvatar'
+                                color = {BaseTheme.palette.ui04}
+                                iconUser = {IconUser}
+                                initials = {getInitials(props.displayName)}
+                                size = {isMobile ? 44 : 40} />
                         ) : (
                             <Avatar
-                                className='userAvatar'
-                                participantId={props.participantId}
-                                size={isMobile ? 44 : 40}/>
+                                className = 'userAvatar'
+                                participantId = {props.participantId}
+                                size = {isMobile ? 44 : 40} />
                         )
                     }
                 </div>
-                <div className={nameTimeClass}>
-                    <div style={{display: 'flex', flexDirection: 'column'}}>
+                <div className = {nameTimeClass}>
+                    <div style = {{ display: 'flex', flexDirection: 'column' }}>
                         <div
-                            aria-label={props.t('speakerStats.speakerStats')}
-                            className='display-name'>
+                            aria-label = {props.t('speakerStats.speakerStats')}
+                            className = 'display-name'>
                             {props.displayName}
                         </div>
                         <div
-                            className='display-role'>
+                            className = 'display-role'>
                             {props.isModerator ? props.t('videothumbnail.moderator') : props.t('videothumbnail.member')}
                         </div>
                     </div>
                     <div
-                        aria-label={props.t('speakerStats.speakerTime')}
-                        className={timeClass}>
+                        aria-label = {props.t('speakerStats.speakerTime')}
+                        className = {timeClass}>
                         <TimeElapsed
-                            time={props.dominantSpeakerTime}/>
+                            time = {props.dominantSpeakerTime} />
                     </div>
                 </div>
                 {props.showFaceExpressions
-                    && <Timeline faceLandmarks={props.faceLandmarks}/>
+                    && <Timeline faceLandmarks = {props.faceLandmarks} />
                 }
 
             </div>
             {!props.isLastItem && (
-                <div className='dividerContainer'>
-                    <div className='divider'/>
+                <div className = 'dividerContainer'>
+                    <div className = 'divider' />
                 </div>
             )}
         </div>

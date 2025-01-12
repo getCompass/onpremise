@@ -1,6 +1,8 @@
 import React from 'react';
-import {makeStyles} from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui';
 import ScreenShareIndicator from "../../../filmstrip/components/web/ScreenShareIndicator";
+import ModeratorIndicator from "../../../filmstrip/components/web/ModeratorIndicator";
+import AudioMutedIndicator from "../../../filmstrip/components/web/AudioMutedIndicator";
 
 const useStyles = makeStyles()(theme => {
 
@@ -32,14 +34,18 @@ const useStyles = makeStyles()(theme => {
  */
 const DisplayNameBadge: React.FC<{
     name: string;
+    showAudioIndicator?: boolean;
+    showModeratorIndicator: boolean;
     isScreenSharing: boolean;
     isVirtualScreenshareParticipant: boolean
-}> = ({name, isScreenSharing, isVirtualScreenshareParticipant}) => {
-    const {classes} = useStyles();
+}> = ({ name, showAudioIndicator, showModeratorIndicator, isScreenSharing, isVirtualScreenshareParticipant }) => {
+    const { classes } = useStyles();
 
     return (
-        <div className={classes.badge}>
-            {(isScreenSharing && isVirtualScreenshareParticipant) && <ScreenShareIndicator tooltipPosition={'top'}/>}
+        <div className = {classes.badge}>
+            {showAudioIndicator && <AudioMutedIndicator tooltipPosition = 'top'/>}
+            {showModeratorIndicator && <ModeratorIndicator tooltipPosition = 'top'/>}
+            {(isScreenSharing && isVirtualScreenshareParticipant) && <ScreenShareIndicator tooltipPosition = "top" />}
             <div>{name}</div>
         </div>
     );

@@ -3,7 +3,7 @@ import conferenceStyles from '../conference/components/native/styles';
 
 import { SET_TILE_VIEW_DIMENSIONS } from './actionTypes';
 import styles from './components/native/styles';
-import { SQUARE_TILE_ASPECT_RATIO, TILE_MARGIN } from './constants';
+import {SQUARE_TILE_ASPECT_RATIO, TILE_ASPECT_RATIO, TILE_MARGIN} from './constants';
 import { getColumnCount, getTileViewParticipantCount } from './functions.native';
 
 export * from './actions.any';
@@ -41,7 +41,7 @@ export function setTileViewDimensions() {
             tileWidth = Math.min(widthToUse / columns, heightToUse);
         }
 
-        const tileHeight = Math.floor(tileWidth / SQUARE_TILE_ASPECT_RATIO);
+        const tileHeight = Math.floor(tileWidth / TILE_ASPECT_RATIO);
 
         tileWidth = Math.floor(tileWidth);
 

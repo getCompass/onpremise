@@ -13,6 +13,11 @@ interface IProps {
      * From which side of the indicator the tooltip should appear from.
      */
     tooltipPosition: TOOLTIP_POSITION;
+
+    /**
+     * The color of the icon.
+     */
+    iconColor?: string;
 }
 
 /**
@@ -20,12 +25,13 @@ interface IProps {
  *
  * @returns {JSX.Element}
  */
-const ModeratorIndicator = ({ tooltipPosition }: IProps): JSX.Element => (
+const ModeratorIndicator = ({ tooltipPosition, iconColor }: IProps): JSX.Element => (
     <BaseIndicator
-        icon = { IconModerator }
-        iconSize = { 16 }
+        icon = {IconModerator}
+        iconColor = {iconColor}
+        iconSize = {16}
         tooltipKey = 'videothumbnail.moderator'
-        tooltipPosition = { tooltipPosition } />
+        tooltipPosition = {tooltipPosition} />
 );
 
 export default ModeratorIndicator;

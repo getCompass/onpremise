@@ -22,6 +22,7 @@ import { MEDIA_TYPE_TO_PENDING_STORE_KEY } from './constants';
 const initialState = {
     audioModerationEnabled: false,
     videoModerationEnabled: false,
+    screenshareModerationEnabled: false,
     audioWhitelist: {},
     videoWhitelist: {},
     pendingAudio: [],
@@ -37,6 +38,7 @@ export interface IAVModerationState {
     videoModerationEnabled: boolean;
     videoUnmuteApproved?: boolean | undefined;
     videoWhitelist: { [id: string]: boolean; };
+    screenshareModerationEnabled: boolean;
 }
 
 /**
@@ -82,6 +84,8 @@ ReducerRegistry.register<IAVModerationState>('features/av-moderation',
             ? {
                 audioModerationEnabled: false,
                 audioUnmuteApproved: undefined
+            } : action.mediaType === MEDIA_TYPE.SCREENSHARE ? {
+                screenshareModerationEnabled: false,
             } : {
                 videoModerationEnabled: false,
                 videoUnmuteApproved: undefined
@@ -99,7 +103,8 @@ ReducerRegistry.register<IAVModerationState>('features/av-moderation',
 
     case ENABLE_MODERATION: {
         const newState = action.mediaType === MEDIA_TYPE.AUDIO
-            ? { audioModerationEnabled: true } : { videoModerationEnabled: true };
+            ? { audioModerationEnabled: true } : action.mediaType === MEDIA_TYPE.SCREENSHARE
+                ? { screenshareModerationEnabled: true } : { videoModerationEnabled: true };
 
         return {
             ...state,

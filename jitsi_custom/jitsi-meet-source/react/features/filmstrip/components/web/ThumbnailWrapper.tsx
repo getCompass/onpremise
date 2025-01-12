@@ -111,32 +111,32 @@ class ThumbnailWrapper extends Component<IProps> {
         if (_participantID === 'local') {
             return _disableSelfView ? null : (
                 <Thumbnail
-                    filmstripType = { _filmstripType }
-                    horizontalOffset = { _horizontalOffset }
+                    filmstripType = {_filmstripType}
+                    horizontalOffset = {_horizontalOffset}
                     key = 'local'
-                    style = { style }
-                    width = { _thumbnailWidth } />);
+                    style = {style}
+                    width = {_thumbnailWidth} />);
         }
 
         if (_isLocalScreenShare) {
             return _disableSelfView ? null : (
                 <Thumbnail
-                    filmstripType = { _filmstripType }
-                    horizontalOffset = { _horizontalOffset }
+                    filmstripType = {_filmstripType}
+                    horizontalOffset = {_horizontalOffset}
                     key = 'localScreenShare'
-                    participantID = { _participantID }
-                    style = { style }
-                    width = { _thumbnailWidth } />);
+                    participantID = {_participantID}
+                    style = {style}
+                    width = {_thumbnailWidth} />);
         }
 
         return (
             <Thumbnail
-                filmstripType = { _filmstripType }
-                horizontalOffset = { _horizontalOffset }
-                key = { `remote_${_participantID}` }
-                participantID = { _participantID }
-                style = { style }
-                width = { _thumbnailWidth } />
+                filmstripType = {_filmstripType}
+                horizontalOffset = {_horizontalOffset}
+                key = {`remote_${_participantID}`}
+                participantID = {_participantID}
+                style = {style}
+                width = {_thumbnailWidth} />
         );
     }
 }
@@ -149,8 +149,18 @@ class ThumbnailWrapper extends Component<IProps> {
  * @private
  * @returns {IProps}
  */
-function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
-        data: { filmstripType: string; }; index?: number; rowIndex: number; }) {
+function _mapStateToProps(state: IReduxState, ownProps: {
+    columnIndex: number;
+    data: {
+        filmstripType: string;
+        startIndex: number,
+        itemsPerPage: number,
+        totalItems: number,
+        dataRemoteParticipants?: string[]
+    };
+    index?: number;
+    rowIndex: number;
+}) {
     const _currentLayout = getCurrentLayout(state);
     const { remoteParticipants: remote } = state['features/filmstrip'];
     const activeParticipants = getActiveParticipantsIds(state);
@@ -159,9 +169,15 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
     const filmstripType = ownProps.data?.filmstripType;
     const stageFilmstrip = filmstripType === FILMSTRIP_TYPE.STAGE;
     const sortedActiveParticipants = activeParticipants.sort();
-    const remoteParticipants = stageFilmstrip ? sortedActiveParticipants : remote;
+    const remoteParticipants = ownProps.data?.dataRemoteParticipants ?? (stageFilmstrip ? sortedActiveParticipants : remote);
     const remoteParticipantsLength = remoteParticipants.length;
     const localId = getLocalParticipant(state)?.id;
+    const isNeedCustomParticipantID = ownProps.data?.startIndex !== undefined && ownProps.data?.startIndex >= 0;
+    const adjustedIndex = ownProps.data?.startIndex + (ownProps.index ?? 0);
+    let participantID = null;
+    if (adjustedIndex < ownProps.data?.totalItems) {
+        participantID = remoteParticipants[adjustedIndex];
+    }
 
     if (_currentLayout === LAYOUTS.TILE_VIEW || _verticalViewGrid || stageFilmstrip) {
         const { columnIndex, rowIndex } = ownProps;
@@ -182,7 +198,22 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
         let horizontalOffset, thumbnailWidth;
         const { iAmRecorder, disableTileEnlargement } = state['features/base/config'];
         const { localScreenShare } = state['features/base/participants'];
+        const isFirstPage = ownProps.data?.startIndex === 0;
         const localParticipantsLength = localScreenShare ? 2 : 1;
+        const adjustedIndex = ownProps.data?.startIndex + (ownProps.rowIndex * columns) + ownProps.columnIndex;
+
+        let participantID = null;
+
+        if (adjustedIndex < ownProps.data?.totalItems) {
+            if (!iAmRecorder && !disableSelfView && adjustedIndex === 0 && isFirstPage) {
+                participantID = 'local';
+            } else if (!iAmRecorder && localScreenShare && adjustedIndex === 1 && isFirstPage) {
+                participantID = localScreenShare.id;
+            } else {
+                const remoteIndex = adjustedIndex - localParticipantsLength;
+                participantID = remoteParticipants[remoteIndex];
+            }
+        }
 
         let participantsLength;
 
@@ -193,11 +224,11 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
             // We need to include the local screenshare participant in tile view.
             participantsLength = remoteParticipantsLength
 
-            // Add local camera and screen share to total participant count when self view is not disabled.
-            + (disableSelfView ? 0 : localParticipantsLength)
+                // Add local camera and screen share to total participant count when self view is not disabled.
+                + (disableSelfView ? 0 : localParticipantsLength)
 
-            // Removes iAmRecorder from the total participants count.
-            - (iAmRecorder ? 1 : 0);
+                // Removes iAmRecorder from the total participants count.
+                - (iAmRecorder ? 1 : 0);
         }
 
         if (rowIndex === rows - 1) { // center the last row
@@ -225,7 +256,7 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
             }
         }
 
-        if (index > participantsLength - 1) {
+        if (adjustedIndex > participantsLength - 1) {
             return {};
         }
 
@@ -233,7 +264,7 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
             return {
                 _disableSelfView: disableSelfView,
                 _filmstripType: filmstripType,
-                _participantID: remoteParticipants[index] === localId ? 'local' : remoteParticipants[index],
+                _participantID: isNeedCustomParticipantID && participantID !== null ? (participantID === localId ? 'local' : participantID) : (remoteParticipants[index] === localId ? 'local' : remoteParticipants[index]),
                 _horizontalOffset: horizontalOffset,
                 _thumbnailWidth: thumbnailWidth
             };
@@ -245,10 +276,11 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
         // Local screen share is inserted at index 1 after the local camera.
         const localScreenShareIndex = disableSelfView ? remoteParticipantsLength : 1;
         const remoteIndex = !iAmRecorder && !disableSelfView
-            ? index - localParticipantsLength
-            : index;
+            ? adjustedIndex - localParticipantsLength
+            : adjustedIndex;
 
-        if (!iAmRecorder && index === localIndex) {
+        if (!iAmRecorder && adjustedIndex === localIndex) {
+
             return {
                 _disableSelfView: disableSelfView,
                 _filmstripType: filmstripType,
@@ -258,7 +290,7 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
             };
         }
 
-        if (!iAmRecorder && localScreenShare && index === localScreenShareIndex) {
+        if (!iAmRecorder && localScreenShare && adjustedIndex === localScreenShareIndex) {
             return {
                 _disableSelfView: disableSelfView,
                 _filmstripType: filmstripType,
@@ -271,7 +303,7 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
 
         return {
             _filmstripType: filmstripType,
-            _participantID: remoteParticipants[remoteIndex],
+            _participantID: isNeedCustomParticipantID && participantID !== null ? participantID : remoteParticipants[remoteIndex],
             _horizontalOffset: horizontalOffset,
             _thumbnailWidth: thumbnailWidth
         };
@@ -299,7 +331,7 @@ function _mapStateToProps(state: IReduxState, ownProps: { columnIndex: number;
     }
 
     return {
-        _participantID: remoteParticipants[index]
+        _participantID: isNeedCustomParticipantID && participantID !== null ? participantID : remoteParticipants[index]
     };
 }
 

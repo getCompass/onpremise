@@ -3,6 +3,9 @@ import { makeStyles } from "tss-react/mui";
 
 import OverlayFrame from "../OverlayFrame";
 import EarthIcon from "./EarthIcon";
+import { isMobileBrowser } from "../../../../base/environment/utils";
+import OverlayFrameMobile from "../OverlayFrameMobile";
+import EarthIconMobile from "./EarthIconMobile";
 
 const useStyles = makeStyles()(() => {
     return {
@@ -46,6 +49,38 @@ const useStyles = makeStyles()(() => {
             lineHeight: "20px",
             letterSpacing: "-0.15px",
         },
+        popupMobile: {
+            position: "relative",
+            borderRadius: "8px",
+            border: "1px solid rgba(255, 255, 255, 0.05)",
+            background: "linear-gradient(122.89deg, rgba(28, 28, 28, 0.8) -31.07%, rgba(28, 28, 28, 0.8) 6.08%, rgba(28, 28, 28, 0.8) 42.1%, rgba(28, 28, 28, 0.8) 89.18%, rgba(28, 28, 28, 0.8) 122.33%)",
+            padding: "12px",
+            display: "flex",
+            flexDirection: "row",
+            gap: "8px",
+            marginBottom: "112px",
+        },
+        contentMobile: {
+            display: "flex",
+            flexDirection: "column",
+            gap: 0,
+        },
+        titleMobile: {
+            fontFamily: "Lato Bold",
+            fontWeight: "normal" as const,
+            fontSize: "14px",
+            lineHeight: "20px",
+            letterSpacing: "-0.16px",
+            color: "rgba(255, 255, 255, 0.8)",
+        },
+        descriptionMobile: {
+            fontFamily: "Lato SemiBold",
+            fontWeight: "normal" as const,
+            fontSize: "14px",
+            lineHeight: "20px",
+            letterSpacing: "-0.16px",
+            color: "rgba(255, 255, 255, 0.7)",
+        },
     };
 });
 
@@ -57,15 +92,37 @@ const NoConnectionPopup = (props: NoConnectionPopupProps) => {
     const { getLocalization: t } = props;
     const { classes } = useStyles();
 
+    if (isMobileBrowser()) {
+        return (
+            <OverlayFrameMobile contentPosition = "bottom" isLightOverlay = {true}>
+                <div className = {classes.popupMobile}>
+                    <div style={{
+                        flexShrink: 0,
+                    }}>
+                        <EarthIconMobile />
+                    </div>
+                    <div className = {classes.contentMobile}>
+                        <div
+                            className = {classes.titleMobile}>{t("dialog.conferenceNoConnection.title")}</div>
+                        <div
+                            className = {classes.descriptionMobile}>{t("dialog.conferenceNoConnection.description")}</div>
+                    </div>
+                </div>
+            </OverlayFrameMobile>
+        );
+    }
+
     return (
-        <OverlayFrame isContentCentered={true} isLightOverlay={true}>
-            <div className={classes.popup}>
-                <div className={classes.iconWrapper}>
+        <OverlayFrame isContentCentered = {true} isLightOverlay = {true}>
+            <div className = {classes.popup}>
+                <div className = {classes.iconWrapper}>
                     <EarthIcon />
                 </div>
-                <div className={classes.content}>
-                    <div className={classes.title}>{t("dialog.conferenceNoConnection.title")}</div>
-                    <div className={classes.description}>{t("dialog.conferenceNoConnection.description")}</div>
+                <div className = {classes.content}>
+                    <div
+                        className = {classes.title}>{t("dialog.conferenceNoConnection.title")}</div>
+                    <div
+                        className = {classes.description}>{t("dialog.conferenceNoConnection.description")}</div>
                 </div>
             </div>
         </OverlayFrame>

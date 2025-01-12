@@ -1,6 +1,6 @@
 // @ts-expect-error
 import { jitsiLocalStorage } from '@jitsi/js-utils';
-import _ from 'lodash';
+import { escape } from 'lodash-es';
 
 import { APP_WILL_MOUNT } from '../app/actionTypes';
 import PersistenceRegistry from '../redux/PersistenceRegistry';
@@ -48,7 +48,8 @@ const DEFAULT_STATE: ISettingsState = {
         'notify.chatMessages': true
     },
     userSelectedMicDeviceLabel: undefined,
-    userSelectedSkipPrejoin: undefined
+    userSelectedSkipPrejoin: undefined,
+    isAudioSharingEnabled: true,
 };
 
 export interface ISettingsState {
@@ -65,6 +66,7 @@ export interface ISettingsState {
     hideShareAudioHelper?: boolean;
     localFlipX?: boolean;
     maxStageParticipants?: number;
+    moderatorSettingsVisible?: boolean;
     micDeviceId?: string | boolean;
     serverURL?: string;
     soundsIncomingMessage?: boolean;
@@ -89,6 +91,7 @@ export interface ISettingsState {
     userSelectedSkipPrejoin?: boolean;
     videoSettingsVisible?: boolean;
     visible?: boolean;
+    isAudioSharingEnabled?: boolean;
 }
 
 const STORE_NAME = 'features/base/settings';
@@ -112,6 +115,7 @@ Object.keys(DEFAULT_STATE).forEach(key => {
 filterSubtree.audioOutputDeviceId = false;
 filterSubtree.cameraDeviceId = false;
 filterSubtree.micDeviceId = false;
+filterSubtree.isAudioSharingEnabled = true;
 
 PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 
@@ -154,8 +158,8 @@ function _initSettings(featureState: ISettingsState) {
     // is a defined value, it will override any value found in local storage.
     // The workaround is sidestepping _.escape when the value is not set in
     // local storage.
-    const displayName = savedDisplayName === null ? undefined : _.escape(savedDisplayName);
-    const email = savedEmail === null ? undefined : _.escape(savedEmail);
+    const displayName = savedDisplayName === null ? undefined : escape(savedDisplayName);
+    const email = savedEmail === null ? undefined : escape(savedEmail);
 
     settings = assignIfDefined({
         displayName,

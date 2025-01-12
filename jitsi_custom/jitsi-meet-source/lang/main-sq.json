@@ -866,7 +866,7 @@
             "answerPlaceholder": "Mundësia {{index}}",
             "cancel": "Anuloje",
             "create": "Krijoni një pyetësor",
-            "pollOptions": "Mundësi pyetësori {{index}}",
+            "pollOption": "Mundësi pyetësori {{index}}",
             "pollQuestion": "Pyetje Pyetësori",
             "questionPlaceholder": "Bëni një pyetje",
             "removeOption": "Hiqe mundësinë",

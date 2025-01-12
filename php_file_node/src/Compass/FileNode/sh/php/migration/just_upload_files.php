@@ -64,7 +64,7 @@ class Migration_Just_Upload_Files {
 
 			try {
 
-				$file_row = Helper_File::uploadFileByMigration($sender_user_id, $space_id, $domino_url, $file_source, $original_file_name, $tmp_file_path, $need_work);
+				[$file_row] = Helper_File::uploadFileByMigration($sender_user_id, $space_id, $domino_url, $file_source, $original_file_name, $tmp_file_path, $need_work);
 				$file_map = \CompassApp\Pack\File::tryDecrypt($file_row["file_key"]);
 				$this->_insertBoundFiles($raw_file["uniq"], $file_map, $file_row["file_name"], $file_row["file_type"], $file_row["file_hash"]);
 

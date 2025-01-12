@@ -239,6 +239,13 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"company.member.getAll",
 		],
 	],
+	"go_file_auth" => [
+		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_KEY,
+		"auth_key"      => \SOCKET_KEY_GO_FILE_AUTH,
+		"allow_methods" => [
+			"space.member.checkSession",
+		],
+	]
 ];
 
 return $CONFIG;

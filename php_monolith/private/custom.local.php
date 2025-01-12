@@ -122,6 +122,10 @@ define("ENCRYPT_IV_PIVOT_SESSION"         , "${ENCRYPT_IV_PIVOT_SESSION}");  // 
 define("ENCRYPT_KEY_DEFAULT"			, "${ENCRYPT_KEY_DEFAULT}"); // ключ
 define("ENCRYPT_IV_DEFAULT"			, "${ENCRYPT_IV_DEFAULT}");  // вектор шифрования
 
+// для токена загрузка файлов
+// вектор тут случайный, поэтому его не указываем
+define("ENCRYPT_KEY_DOWNLOAD_TOKEN", "${ENCRYPT_KEY_DOWNLOAD_TOKEN}");
+
 // -------------------------------------------------------
 // SALT ДЛЯ УПАКОВЩИКОВ ПРОЕКТА
 // -------------------------------------------------------
@@ -201,7 +205,7 @@ define("SOCKET_KEY_WWW"						, "${SOCKET_KEY_WWW}");
 define("SOCKET_KEY_GO_PUSHER"					, "${SOCKET_KEY_GO_PUSHER}");
 define("SOCKET_KEY_JITSI"		      		, "${SOCKET_KEY_JITSI}");
 define("SOCKET_KEY_FEDERATION"		      	, "${SOCKET_KEY_FEDERATION}");
-
+define("SOCKET_KEY_GO_FILE_AUTH"          		, "${SOCKET_KEY_GO_FILE_AUTH}");
 
 define("INTEGRATION_AUTHORIZATION_TOKEN"        	, "${INTEGRATION_AUTHORIZATION_TOKEN}");
 

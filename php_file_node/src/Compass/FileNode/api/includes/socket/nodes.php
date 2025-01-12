@@ -99,7 +99,7 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 		$original_file_name = Type_File_Utils::getFileName($uploaded_file_info["name"]);
 
 		// сохраняем файл
-		$file_row = Helper_File::uploadFile(0, 0, "", $file_source, $original_file_name, $uploaded_file_info["tmp_name"], "", true);
+		[$file_row] = Helper_File::uploadFile(0, 0, "", $file_source, $original_file_name, $uploaded_file_info["tmp_name"], "", true);
 
 		return $this->ok([
 			"file_key" => (string) $file_row["file_key"],
@@ -126,7 +126,7 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 		$original_file_name = Type_File_Utils::getFileName($uploaded_file_info["name"]);
 
 		// сохраняем файл
-		$file_row = Helper_File::uploadFile(0, 0, "", $file_source, $original_file_name, $uploaded_file_info["tmp_name"]);
+		[$file_row] = Helper_File::uploadFile(0, 0, "", $file_source, $original_file_name, $uploaded_file_info["tmp_name"]);
 
 		return $this->ok([
 			"file_key" => (string) $file_row["file_key"],
@@ -158,7 +158,7 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 		$original_file_name = Type_File_Utils::getFileName($uploaded_file_info["name"]);
 
 		// сохраняем файл
-		$file_row = Helper_File::uploadFile($this->user_id, 0, "", $file_source, $original_file_name, $uploaded_file_info["tmp_name"]);
+		[$file_row] = Helper_File::uploadFile($this->user_id, 0, "", $file_source, $original_file_name, $uploaded_file_info["tmp_name"]);
 
 		return $this->ok([
 			"file_key" => (string) $file_row["file_key"],
@@ -197,7 +197,7 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 
 		// загружаем файл
 		try {
-			$file_row = Helper_File::uploadFile($this->user_id, $company_id, $company_url, $file_source, $file_name, $tmp_file_path);
+			[$file_row] = Helper_File::uploadFile($this->user_id, $company_id, $company_url, $file_source, $file_name, $tmp_file_path);
 		} catch (cs_InvalidFileTypeForSource) {
 			return $this->error(10020, "file download error");
 		}

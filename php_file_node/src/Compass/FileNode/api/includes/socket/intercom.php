@@ -71,7 +71,7 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 
 		// загружаем файл
 		try {
-			$file_row = Helper_File::uploadFile($this->user_id, $company_id, $company_url, $file_source, $file_name, $tmp_file_path);
+			[$file_row] = Helper_File::uploadFile($this->user_id, $company_id, $company_url, $file_source, $file_name, $tmp_file_path);
 		} catch (cs_InvalidFileTypeForSource) {
 			return $this->error(10020, "file download error");
 		}

@@ -223,7 +223,7 @@ class Type_File_Main {
 	public static function create(int $user_id, int $file_type, int $file_source, int $size_kb, string $mime_type, string $file_name, string $file_extension, array $extra, string $part_path, string $file_hash, bool $is_cdn = false):array {
 
 		// делаем сначала сокет запрос для сохранения инфы о файле на балансере и получения map
-		$file_key = self::_saveOnBalancer($file_type, $file_source, $size_kb, $mime_type, $file_name, $file_extension, $extra, $file_hash, $is_cdn);
+		[$file_key, $download_token] = self::_saveOnBalancer($file_type, $file_source, $size_kb, $mime_type, $file_name, $file_extension, $extra, $file_hash, $is_cdn);
 
 		$file_row = [
 			"file_key"       => $file_key,
@@ -246,11 +246,13 @@ class Type_File_Main {
 		];
 		Gateway_Db_FileNode_File::insert($file_row);
 
-		return $file_row;
+		return [$file_row, $download_token];
 	}
 
-	// сохраняем файл на балансере
-	protected static function _saveOnBalancer(int $file_type, int $file_source, int $size_kb, string $mime_type, string $file_name, string $file_extension, array $extra, string $file_hash, bool $is_cdn = false):string {
+	/**
+	 * Сохраняем файл на балансере
+	 */
+	protected static function _saveOnBalancer(int $file_type, int $file_source, int $size_kb, string $mime_type, string $file_name, string $file_extension, array $extra, string $file_hash, bool $is_cdn = false):array {
 
 		// делаем сокет запрос для сохранения инфы о файле на balancer
 		[$status, $response] = Gateway_Socket_FileBalancer::doCall("files.trySaveFile", $extra["company_id"], $extra["company_url"], [
@@ -272,7 +274,7 @@ class Type_File_Main {
 		}
 
 		// отдаем file_key
-		return $response["file_row"]["file_key"];
+		return [$response["file_row"]["file_key"], $response["download_token"] ?? ""];
 	}
 
 	// обновляем данные файла

@@ -22,6 +22,7 @@ class Socket_Space_Member extends \BaseFrame\Controller\Socket {
 		"checkIsAllowedForCall",
 		"addConversationMessage",
 		"incConferenceMembershipRating",
+		"checkSession",
 	];
 
 	/**
@@ -119,6 +120,24 @@ class Socket_Space_Member extends \BaseFrame\Controller\Socket {
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
 		Domain_Member_Scenario_Socket::incConferenceMembershipRating($user_id);
+
+		return $this->ok();
+	}
+
+	/**
+	 * Метод проверки данных авторизации пользователя.
+	 * @throws \BaseFrame\Exception\Request\ControllerMethodNotFoundException
+	 */
+	public function checkSession():array {
+
+		$source = $this->post(\Formatter::TYPE_STRING, "source");
+		$value  = $this->post(\Formatter::TYPE_STRING, "value");
+
+		try {
+			Domain_Member_Scenario_Socket::checkSession($source, $value);
+		} catch (Domain_Member_Exception_SessionValidationFailed $e) {
+			return $this->error($e->getCode(), $e->getMessage());
+		}
 
 		return $this->ok();
 	}

@@ -98,7 +98,9 @@ class Helper_File {
 		}
 	}
 
-	// метод для сохранения файла на ноде
+	/**
+	 * Выполняет загрузку файла. Возвращает строку и токена загрузки.
+	 */
 	public static function uploadFile(int $user_id, int $company_id, string $company_url, int $file_source, string $original_file_name, string $tmp_file_path, string $parent_file_key = "", bool $is_cdn = false):array {
 
 		$mime_type      = Type_File_Utils::getMimeType($tmp_file_path);
@@ -134,7 +136,7 @@ class Helper_File {
 		$size_kb = Type_File_Utils::getFileSizeKb($file_path);
 
 		// сохраняем файл на файловой ноде
-		$file_row = Type_File_Main::create(
+		[$file_row, $download_token] = Type_File_Main::create(
 			$user_id, $file_type, $file_source, $size_kb, $mime_type, $original_file_name,
 			$file_extension, $extra, $part_path, $file_hash, $is_cdn
 		);
@@ -142,7 +144,7 @@ class Helper_File {
 		// оправляем на пост обработку
 		Type_File_Process::sendToPostUpload($file_row, $part_path);
 
-		return $file_row;
+		return [$file_row, $download_token];
 	}
 
 	// метод для сохранения файла на ноде
@@ -181,7 +183,7 @@ class Helper_File {
 		$size_kb = Type_File_Utils::getFileSizeKb($file_path);
 
 		// сохраняем файл на файловой ноде
-		$file_row = Type_File_Main::create(
+		[$file_row] = Type_File_Main::create(
 			$user_id, $file_type, $file_source, $size_kb, $mime_type, $original_file_name,
 			$file_extension, $extra, $part_path, $file_hash, $is_cdn
 		);

@@ -13,7 +13,7 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	const FILES_GETINFOFORUPLOAD = [
 		"key"    => "FILES_GETINFOFORUPLOAD",
-		"limit"  => 30,
+		"limit"  => 60,
 		"expire" => 60 * 5,
 	];
 

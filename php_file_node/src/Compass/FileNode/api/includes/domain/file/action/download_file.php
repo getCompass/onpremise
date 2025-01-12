@@ -29,6 +29,7 @@ class Domain_File_Action_DownloadFile {
 		Type_File_Utils::saveContentToTmp($tmp_file_path, $file_content);
 
 		// сохраняем файл
-		return Helper_File::uploadFile($user_id, $company_id, $company_url, $file_source, $original_file_name, $tmp_file_path);
+		[$file_row] = Helper_File::uploadFile($user_id, $company_id, $company_url, $file_source, $original_file_name, $tmp_file_path);
+		return $file_row;
 	}
 }

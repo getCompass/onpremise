@@ -143,7 +143,7 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 
 		$created_at = $is_migrate == 1 ? random_int(1527868800, time()) : time();
 
-		[$file_row, $node_url] = Domain_File_Action_TryUpload::run(
+		[$file_row, $node_url, $download_token] = Domain_File_Action_TryUpload::run(
 			$this->user_id, $file_type, $file_source, $node_id, $size_kb,
 			$created_at, $mime_type, $file_name, $file_extension, $extra, $file_hash, $is_cdn
 		);
@@ -151,8 +151,9 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 		$file_row["file_key"] = Type_Pack_File::doEncrypt($file_row["file_map"]);
 
 		return $this->ok([
-			"file_row" => (object) $file_row,
-			"node_url" => (string) $node_url,
+			"file_row"       => (object) $file_row,
+			"node_url"       => (string) $node_url,
+			"download_token" => (string) $download_token,
 		]);
 	}
 

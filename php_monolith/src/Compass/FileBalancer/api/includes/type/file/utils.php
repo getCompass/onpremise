@@ -2,6 +2,8 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
  * вспомогательные функции для файлов
  */
@@ -21,7 +23,7 @@ class Type_File_Utils {
 			"size_kb"        => $file_row["size_kb"],
 			"created_at"     => $file_row["created_at"],
 			"type"           => $file_row["file_type"],
-			"url"            => self::getUrlByPartPath($node_url, $file_row["extra"]["original_part_path"]),
+			"url"            => self::getDownloadUrlByPartPath($node_url, $file_row["extra"]["original_part_path"]),
 			"file_name"      => $file_row["file_name"],
 			"file_extension" => $file_row["file_extension"],
 			"file_hash"      => $file_row["file_hash"],
@@ -51,7 +53,7 @@ class Type_File_Utils {
 				$data["original_part_path"] = $file_row["extra"]["original_part_path"] ?? "";
 				$data["status"]             = $file_row["extra"]["status"] ?? 1;
 				$data["convert_part_path"]  = $file_row["extra"]["convert_part_path"] ?? "";
-				$data["url_convert_path"]   = isset($file_row["extra"]["convert_part_path"]) ? self::getUrlByPartPath($node_url, $file_row["extra"]["convert_part_path"]) : "";
+				$data["url_convert_path"]   = isset($file_row["extra"]["convert_part_path"]) ? self::getDownloadUrlByPartPath($node_url, $file_row["extra"]["convert_part_path"]) : "";
 				$data["name_convert_file"]  = $file_row["extra"]["name_convert_file"] ?? "";
 				break;
 
@@ -68,7 +70,7 @@ class Type_File_Utils {
 				$data["original_video_info"] = $file_row["extra"]["original_video_item"];
 				$data["image_version_list"]  = self::_makeImageVersionList($node_url, $file_row["extra"]["preview_size_list"]);
 				$data["duration"]            = $file_row["extra"]["duration"];
-				$data["preview"]             = self::getUrlByPartPath($node_url, $file_row["extra"]["preview_original_part_path"]);
+				$data["preview"]             = self::getDownloadUrlByPartPath($node_url, $file_row["extra"]["preview_original_part_path"]);
 				$data["video_version_list"]  = self::_makeVideoVersionList($node_url, $file_row["extra"]["video_version_list"]);
 				break;
 
@@ -84,6 +86,14 @@ class Type_File_Utils {
 	public static function getUrlByPartPath(string $node_url, string $part_path):string {
 
 		return $node_url . $part_path;
+	}
+
+	/**
+	 * Получает URL из part_path и добавляет к нему токен загрузки.
+	 */
+	public static function getDownloadUrlByPartPath(string $node_url, string $part_path):string {
+
+		return static::_attachDownloadToken(static::getUrlByPartPath($node_url, $part_path), $part_path);
 	}
 
 	// video_version_list в файлах-видео
@@ -136,7 +146,7 @@ class Type_File_Utils {
 				return [
 					"status"  => "done",
 					"format"  => $format,
-					"url"     => self::getUrlByPartPath($node_url, $video["part_path"]),
+					"url"     => self::getDownloadUrlByPartPath($node_url, $video["part_path"]),
 					"width"   => $video["width"],
 					"height"  => $video["height"],
 					"size_kb" => $video["size_kb"],
@@ -180,10 +190,44 @@ class Type_File_Utils {
 	protected static function _getImageItem(string $node_url, array $image_version_item):array {
 
 		return [
-			"url"     => self::getUrlByPartPath($node_url, $image_version_item["part_path"]),
+			"url"     => self::getDownloadUrlByPartPath($node_url, $image_version_item["part_path"]),
 			"width"   => $image_version_item["width"],
 			"height"  => $image_version_item["height"],
 			"size_kb" => $image_version_item["size_kb"],
 		];
+	}
+
+	/**
+	 * Добавляет к файлу токен загрузки при необходимости.
+	 */
+	protected static function _attachDownloadToken(string $url_path, string $part_path):string {
+
+		if (COMPANY_ID === 0 || (bool) IS_FILE_AUTH_RESTRICTION_ENABLED === false) {
+			return $url_path;
+		}
+
+		return $url_path . "?token=" . static::makeDownloadToken($part_path);
+	}
+
+	/**
+	 * Формирует токен загрузки для файла.
+	 */
+	public static function makeDownloadToken(string $part_path):string {
+
+		// проверяем ид компании и статус проверки авторизации для файлов
+		if (COMPANY_ID === 0 || (bool) IS_FILE_AUTH_RESTRICTION_ENABLED === false) {
+			return "";
+		}
+
+		// nosemgrep
+		$uniq = sha1($part_path);
+
+		$token = [
+			"u" => $uniq[3] . $uniq[7] . $uniq[11] . $uniq[15],
+			"c" => COMPANY_ID,
+			"e" => ENTRYPOINT_DOMINO . "/api/socket/company/",
+		];
+
+		return urlencode(base64_encode(CrypterProvider::get("download_token")->encrypt(toJson($token))));
 	}
 }

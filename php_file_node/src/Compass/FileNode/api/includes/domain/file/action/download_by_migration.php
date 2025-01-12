@@ -43,7 +43,8 @@ class Domain_File_Action_DownloadByMigration {
 		Type_System_Admin::log("migration-file-upload", "user_id: {$user_id} company_urk: {$company_url} file_url: {$file_url} file_source: {$file_source} original_file_name: {$original_file_name} tmp_file_path: {$tmp_file_path}");
 
 		// сохраняем файл
-		return Helper_File::uploadFile($user_id, $company_id, $company_url, $file_source, $original_file_name, $tmp_file_path);
+		[$file_row] = Helper_File::uploadFile($user_id, $company_id, $company_url, $file_source, $original_file_name, $tmp_file_path);
+		return $file_row;
 	}
 
 	/**

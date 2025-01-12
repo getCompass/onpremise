@@ -51,7 +51,7 @@ class Userbot_Files extends \BaseFrame\Controller\Api {
 		// сохраняем файл
 		try {
 
-			$file_row = Helper_File::uploadFile(
+			[$file_row] = Helper_File::uploadFile(
 				$user_id, $cache["company_id"], $cache["company_url"], $cache["file_source"], $original_file_name, $uploaded_file_info["tmp_name"]
 			);
 		} catch (cs_InvalidFileTypeForSource) {

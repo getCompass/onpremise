@@ -329,4 +329,45 @@ class Domain_Member_Scenario_Socket {
 
 		Gateway_Bus_Company_Rating::inc(Domain_Rating_Entity_Rating::CALL, $user_id);
 	}
+
+	/**
+	 * Проверяет указанные пользовательские данные авторизации.
+	 * Так себе штука, но по-другому никак не сделать.
+	 *
+	 * @throws \BaseFrame\Exception\Request\ControllerMethodNotFoundException
+	 * @throws Domain_Member_Exception_SessionValidationFailed
+	 */
+	public static function checkSession(string $source, string $value):void {
+
+		if ($source !== "header" && $source !== "cookie") {
+			throw new Domain_Member_Exception_SessionValidationFailed("passed bad source");
+		}
+
+		if ($source === "header") {
+
+			$exploded = explode(" ", $value);
+
+			if (count($exploded) !== 2) {
+				throw new Domain_Member_Exception_SessionValidationFailed("passed bad header value");
+			}
+
+			$session_key = base64_decode($exploded[1]);
+		} else {
+			$session_key = urldecode($value);
+		}
+
+		try {
+			$session_map = \CompassApp\Pack\CompanySession::doDecrypt($session_key);
+		} catch (\cs_DecryptHasFailed) {
+			throw new Domain_Member_Exception_SessionValidationFailed("value can not be decoded");
+		}
+
+		$session_uniq = \CompassApp\Pack\CompanySession::getSessionUniq($session_map);
+
+		try {
+			Gateway_Bus_CompanyCache::getSessionInfo($session_uniq);
+		} catch (\cs_SessionNotFound) {
+			throw new Domain_Member_Exception_SessionValidationFailed("session not found");
+		}
+	}
 }

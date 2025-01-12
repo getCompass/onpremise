@@ -14,7 +14,7 @@ class Type_File_Utils {
 
 	// подготавливает файл к передаче в Apiv1_Format
 	// @long --- switch ... case
-	public static function prepareFileForFormat(array $file_row, int $user_id):array {
+	public static function prepareFileForFormat(array $file_row, int $user_id, string $download_token = ""):array {
 
 		$data = [];
 
@@ -30,7 +30,7 @@ class Type_File_Utils {
 
 				// добавляем оригинальное изображение в image_size
 				$file_row["extra"]["image_size_list"][] = $file_row["extra"]["original_image_item"];
-				$data["image_version_list"]             = self::_getImageData(NODE_URL, $file_row["extra"]["image_size_list"]);
+				$data["image_version_list"]             = self::_getImageData(NODE_URL, $file_row["extra"]["image_size_list"], $download_token);
 				break;
 			case FILE_TYPE_AUDIO:
 
@@ -47,15 +47,17 @@ class Type_File_Utils {
 				break;
 			case FILE_TYPE_VIDEO:
 
-				$data = self::_getVideoData(NODE_URL, $file_row["extra"]);
+				$data = self::_getVideoData(NODE_URL, $file_row["extra"], $download_token);
 		}
+
+		$url = static::_getDownloadUrlByPartPath(NODE_URL, $file_row["extra"]["original_part_path"], $download_token);
 
 		return [
 			"file_key"       => $file_row["file_key"],
 			"size_kb"        => $file_row["size_kb"],
 			"created_at"     => $file_row["created_at"],
 			"type"           => $file_row["file_type"],
-			"url"            => NODE_URL . $file_row["extra"]["original_part_path"],
+			"url"            => $url,
 			"file_name"      => $file_row["file_name"],
 			"file_extension" => $file_row["file_extension"],
 			"file_hash"      => $file_row["file_hash"],
@@ -65,11 +67,11 @@ class Type_File_Utils {
 	}
 
 	// формируем image дату
-	protected static function _getImageData(string $node_url, array $image_version_list):array {
+	protected static function _getImageData(string $node_url, array $image_version_list, string $download_token):array {
 
 		// проходимся по всему массиву и приводим формат
 		foreach ($image_version_list as $k => $v) {
-			$image_version_list[$k] = self::_getImageItem($node_url, $v);
+			$image_version_list[$k] = self::_getImageItem($node_url, $v, $download_token);
 		}
 
 		return $image_version_list;
@@ -77,10 +79,10 @@ class Type_File_Utils {
 
 	// формируем image item
 	#[ArrayShape(["url" => "string", "width" => "mixed", "height" => "mixed", "size_kb" => "mixed"])]
-	protected static function _getImageItem(string $node_url, array $image_version_item):array {
+	protected static function _getImageItem(string $node_url, array $image_version_item, string $download_token):array {
 
 		return [
-			"url"     => self::getUrlByPartPath($node_url, $image_version_item["part_path"]),
+			"url"     => self::_getDownloadUrlByPartPath($node_url, $image_version_item["part_path"], $download_token),
 			"width"   => $image_version_item["width"],
 			"height"  => $image_version_item["height"],
 			"size_kb" => $image_version_item["size_kb"],
@@ -89,13 +91,13 @@ class Type_File_Utils {
 
 	// получаем видео дату
 	#[ArrayShape(["original_video_info" => "mixed", "image_version_list" => "array", "duration" => "mixed", "preview" => "string", "video_version_list" => "array"])]
-	protected static function _getVideoData(string $node_url, array $extra):array {
+	protected static function _getVideoData(string $node_url, array $extra, string $download_token):array {
 
 		return [
 			"original_video_info" => $extra["original_video_item"],
-			"image_version_list"  => self::_getImageData($node_url, $extra["preview_size_list"]),
+			"image_version_list"  => self::_getImageData($node_url, $extra["preview_size_list"], $download_token),
 			"duration"            => $extra["duration"],
-			"preview"             => self::getUrlByPartPath($node_url, $extra["preview_original_part_path"]),
+			"preview"             => self::_getDownloadUrlByPartPath($node_url, $extra["preview_original_part_path"], $download_token),
 			"video_version_list"  => self::_getVideoVersionList($node_url, $extra["video_version_list"]),
 		];
 	}
@@ -117,7 +119,7 @@ class Type_File_Utils {
 
 			// ключ выглядит как 720_1, нужна первая часть
 			$video_quality = (int) explode("_", $k)[0];
-			$file_url      = self::getUrlByPartPath($node_url, $v["part_path"]);
+			$file_url      = self::_getUrlByPartPath($node_url, $v["part_path"]);
 			$output[]      = self::_getVideoVersionItem($v, $file_url, $video_quality);
 		}
 
@@ -180,10 +182,21 @@ class Type_File_Utils {
 		}
 	}
 
-	// получает URL из part_path
-	public static function getUrlByPartPath(string $node_url, string $part_path):string {
+	/**
+	 * Получает URL из part_path
+	 */
+	protected static function _getUrlByPartPath(string $node_url, string $part_path):string {
 
 		return $node_url . $part_path;
+	}
+
+	/**
+	 * Получает URL из part_path и добавляет к нему токен загрузки.
+	 */
+	protected static function _getDownloadUrlByPartPath(string $node_url, string $part_path, string $download_token):string {
+
+		$token = $download_token === "" ? "" : "?token=$download_token";
+		return static::_getUrlByPartPath($node_url, $part_path) . $token;
 	}
 
 	// получить расширение

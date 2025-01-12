@@ -42,7 +42,7 @@ class Domain_File_Action_TryUpload {
 			static::_indexFileData($file_row["file_map"]);
 		}
 
-		return [$file_row, $node_url];
+		return [$file_row, $node_url, Type_File_Utils::makeDownloadToken($file_row["extra"]["original_part_path"])];
 	}
 
 	/**

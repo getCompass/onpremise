@@ -68,6 +68,17 @@ if (CURRENT_SERVER == CLOUD_SERVER) {
 	);
 }
 
+/**
+ * Экземпляр \BaseFrame\Crypt\CryptProvider для модуля.
+ */
+class CrypterProvider extends \BaseFrame\Crypt\CrypterProvider {
+
+	protected static array $_store = [];
+}
+
+// шифровальщик для токена загрузки
+CrypterProvider::add("download_token", \BaseFrame\Crypt\Crypter\OpenSSL::instance(\ENCRYPT_KEY_DOWNLOAD_TOKEN, OPENSSL_RAW_DATA));
+
 // возвращаем обработчики
 return include_once FILEBALANCER_MODULE_ROOT . "_module/route.php";
 

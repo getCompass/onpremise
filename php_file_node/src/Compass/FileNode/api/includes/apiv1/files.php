@@ -45,13 +45,16 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 
 		// сохраняем файл
 		try {
-			$file_row = Helper_File::uploadFile($user_id, $cache["company_id"], $cache["company_url"], $cache["file_source"], $file_name, $tmp_file_path);
+
+			[$file_row, $download_token] = Helper_File::uploadFile(
+				$user_id, $cache["company_id"], $cache["company_url"], $cache["file_source"], $file_name, $tmp_file_path
+			);
 		} catch (cs_InvalidFileTypeForSource $e) {
 			throw new ParamException($e->getMessage());
 		}
 
 		// подготовим сущность файл
-		$prepared_file = Type_File_Utils::prepareFileForFormat($file_row, $user_id);
+		$prepared_file = Type_File_Utils::prepareFileForFormat($file_row, $user_id, $download_token);
 
 		return $this->ok([
 			"file" => (object) Apiv1_Format::file($prepared_file),
@@ -91,12 +94,12 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 
 		// сохраняем файл
 		try {
-			$file_row = Helper_File::uploadFile($user_id, $cache["company_id"], $cache["company_url"], $cache["file_source"], $file_name, $tmp_file_path);
+			[$file_row, $download_token] = Helper_File::uploadFile($user_id, $cache["company_id"], $cache["company_url"], $cache["file_source"], $file_name, $tmp_file_path);
 		} catch (cs_InvalidFileTypeForSource $e) {
 			throw new ParamException($e->getMessage());
 		}
 
-		$prepared_file = Type_File_Utils::prepareFileForFormat($file_row, $user_id);
+		$prepared_file = Type_File_Utils::prepareFileForFormat($file_row, $user_id, $download_token);
 
 		return $this->ok([
 			"file" => (object) Apiv1_Format::file($prepared_file),
@@ -142,11 +145,11 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 		$tmp_cropped_file_path = Type_File_Utils::generateTmpPath($file_extension);
 		$tmp_file_path         = Type_File_Image_Process::doCropImage($file_content, $x_offset, $y_offset, $width, $height, $tmp_cropped_file_path);
 		try {
-			$file_row = Helper_File::uploadFile($cache["user_id"], $cache["company_id"], $cache["company_url"], FILE_SOURCE_AVATAR, $cache["file_name"], $tmp_file_path, $cache["file_key"]);
+			[$file_row, $download_token] = Helper_File::uploadFile($cache["user_id"], $cache["company_id"], $cache["company_url"], FILE_SOURCE_AVATAR, $cache["file_name"], $tmp_file_path, $cache["file_key"]);
 		} catch (cs_InvalidFileTypeForSource $e) {
 			throw new paramException($e->getMessage());
 		}
-		$prepared_file = Type_File_Utils::prepareFileForFormat($file_row, $cache["user_id"]);
+		$prepared_file = Type_File_Utils::prepareFileForFormat($file_row, $cache["user_id"], $download_token);
 
 		return $this->ok([
 			"file" => (object) Apiv1_Format::file($prepared_file),

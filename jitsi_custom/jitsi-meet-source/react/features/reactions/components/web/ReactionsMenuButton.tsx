@@ -1,4 +1,4 @@
-import React, { ReactElement, useCallback } from 'react';
+import React, { ReactElement, useCallback, useState } from 'react';
 import { WithTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
 
@@ -88,7 +88,6 @@ class ReactionsButtonImpl extends AbstractButton<AbstractButtonIProps> {
     icon = IconFaceSmile;
     label = 'toolbar.reactions';
     toggledLabel = 'toolbar.reactions';
-    tooltip = 'toolbar.reactions';
 
     /**
      * Indicates whether this button is in disabled state or not.
@@ -119,6 +118,7 @@ function ReactionsMenuButton({
     notifyMode,
     reactionsQueue,
     showRaiseHand,
+    _lobbyKnocking,
     t
 }: IProps) {
     const toggleReactionsMenu = useCallback(() => {
@@ -133,58 +133,91 @@ function ReactionsMenuButton({
         isOpen && toggleReactionsMenu();
     }, [ isOpen, toggleReactionsMenu ]);
 
+    const [ isHovered, setIsHovered ] = useState(false);
+
+    /**
+     * Dispatches an action signaling the toolbar is not being hovered.
+     *
+     * @private
+     * @returns {void}
+     */
+    const onMouseOut = useCallback(() => setIsHovered(false), []);
+
+    /**
+     * Dispatches an action signaling the toolbar is being hovered.
+     *
+     * @private
+     * @returns {void}
+     */
+    const onMouseOver = useCallback(() => setIsHovered(true), []);
+
     if (!showRaiseHand && !_reactionsButtonEnabled) {
         return null;
     }
 
-    const reactionsMenu = (<div className = 'reactions-menu-container'>
-        <ReactionsMenu parent = { IReactionsMenuParent.Button } />
+    const reactionsMenu = (<div className = {`reactions-menu-container ${_isMobile ? 'is-mobile' : ''}`}>
+        <ReactionsMenu parent = {IReactionsMenuParent.Button} />
     </div>);
 
     let content: ReactElement | null = null;
 
     if (showRaiseHand) {
-        content = isNarrow
+        content = isNarrow || _lobbyKnocking
             ? (
                 <RaiseHandButton
-                    buttonKey = { buttonKey }
-                    notifyMode = { notifyMode } />)
+                    buttonKey = {buttonKey}
+                    notifyMode = {notifyMode} />)
             : (
                 <ToolboxButtonWithPopup
-                    ariaLabel = { t('toolbar.accessibilityLabel.reactionsMenu') }
-                    icon = { IconArrowUp }
-                    iconDisabled = { false }
-                    onPopoverClose = { toggleReactionsMenu }
-                    onPopoverOpen = { openReactionsMenu }
-                    popoverContent = { reactionsMenu }
-                    visible = { isOpen }>
+                    ariaLabel = {t('toolbar.accessibilityLabel.reactionsMenu')}
+                    icon = {IconArrowUp}
+                    iconDisabled = {false}
+                    onPopoverClose = {toggleReactionsMenu}
+                    onPopoverOpen = {openReactionsMenu}
+                    popoverContent = {reactionsMenu}
+                    trigger = {'click'}
+                    visible = {isOpen}
+                    hovered = {isOpen || isHovered}>
                     <RaiseHandButton
-                        buttonKey = { buttonKey }
-                        notifyMode = { notifyMode } />
+                        buttonKey = {buttonKey}
+                        notifyMode = {notifyMode} />
                 </ToolboxButtonWithPopup>);
     } else {
         content = (
-            <ToolboxButtonWithPopup
-                ariaLabel = { t('toolbar.accessibilityLabel.reactionsMenu') }
-                onPopoverClose = { closeReactionsMenu }
-                onPopoverOpen = { openReactionsMenu }
-                popoverContent = { reactionsMenu }
-                trigger = { _isMobile ? 'click' : undefined }
-                visible = { isOpen }>
+            _lobbyKnocking ? (
                 <ReactionsButton
-                    buttonKey = { buttonKey }
-                    notifyMode = { notifyMode } />
-            </ToolboxButtonWithPopup>);
+                    buttonKey = {buttonKey}
+                    notifyMode = {notifyMode} />
+            ) : (
+                <ToolboxButtonWithPopup
+                    ariaLabel = {t('toolbar.accessibilityLabel.reactionsMenu')}
+                    onPopoverClose = {closeReactionsMenu}
+                    onPopoverOpen = {openReactionsMenu}
+                    popoverContent = {reactionsMenu}
+                    trigger = {'click'}
+                    visible = {isOpen}
+                    hovered = {isOpen || isHovered}>
+                    <ReactionsButton
+                        buttonKey = {buttonKey}
+                        notifyMode = {notifyMode} />
+                </ToolboxButtonWithPopup>
+            )
+        );
     }
 
     return (
-        <div className = 'reactions-menu-popup-container'>
-            { content }
+        <div
+            className = 'reactions-menu-popup-container'
+            {...{
+                onMouseOut,
+                onMouseOver
+            }}>
+            {content}
             {reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
-                index = { index }
-                key = { uid }
-                reaction = { reaction }
-                uid = { uid } />))}
+                index = {index}
+                key = {uid}
+                reaction = {reaction}
+                uid = {uid} />))}
         </div>
     );
 
@@ -198,7 +231,7 @@ function ReactionsMenuButton({
  */
 function mapStateToProps(state: IReduxState) {
     const { isNarrowLayout } = state['features/base/responsive-ui'];
-    const {knocking} = state['features/lobby'];
+    const { knocking } = state['features/lobby'];
 
     return {
         _reactionsButtonEnabled: isReactionsButtonEnabled(state),
@@ -217,7 +250,7 @@ function mapStateToProps(state: IReduxState) {
  * @returns {Object}
  */
 function buttonMapStateToProps(state: IReduxState) {
-    const {knocking} = state['features/lobby'];
+    const { knocking } = state['features/lobby'];
 
     return {
         _lobbyKnocking: knocking,

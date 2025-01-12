@@ -1,15 +1,15 @@
-import {Theme} from '@mui/material';
-import React, {isValidElement, useCallback, useContext} from 'react';
-import {useTranslation} from 'react-i18next';
-import {keyframes} from 'tss-react';
-import {makeStyles} from 'tss-react/mui';
-import {IconPoll} from '../../../base/icons/svg';
+import { Theme } from '@mui/material';
+import React, { isValidElement, useCallback, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
+import { keyframes } from 'tss-react';
+import { makeStyles } from 'tss-react/mui';
+import { IconPoll, IconScreenshareNotification } from '../../../base/icons/svg';
 import Message from '../../../base/react/components/web/Message';
-import {NOTIFICATION_ICON, NOTIFICATION_TYPE} from '../../constants';
-import {INotificationProps} from '../../types';
-import {NotificationsTransitionContext} from '../NotificationsTransition';
+import { NOTIFICATION_ICON, NOTIFICATION_TYPE } from '../../constants';
+import { INotificationProps } from '../../types';
+import { NotificationsTransitionContext } from '../NotificationsTransition';
 import Avatar from "../../../base/avatar/components/Avatar";
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 interface IProps extends INotificationProps {
 
@@ -35,7 +35,7 @@ const useStyles = makeStyles()((theme: Theme) => {
             display: 'flex',
             position: 'relative' as const,
             borderRadius: '8px',
-            marginBottom: '2px',
+            marginBottom: '4px',
 
             '&:last-of-type': {
                 marginBottom: 0
@@ -78,7 +78,9 @@ const useStyles = makeStyles()((theme: Theme) => {
             display: 'flex',
             alignItems: 'flex-start',
             flex: 1,
-            maxWidth: '100%'
+            maxWidth: '100%',
+            paddingTop: '2px',
+            paddingBottom: '4px',
         },
 
         avatarContainer: {
@@ -114,14 +116,13 @@ const useStyles = makeStyles()((theme: Theme) => {
         },
 
         title: {
-            fontFamily: 'Lato Bold',
+            fontFamily: 'Lato Black',
             fontWeight: 'normal' as const,
             fontSize: '15px',
             lineHeight: '22px',
             color: 'rgba(255, 255, 255, 0.75)',
 
             '&.is-mobile': {
-                paddingTop: '2px',
                 fontSize: '16px',
                 lineHeight: '20px',
                 color: 'rgba(255, 255, 255, 1)',
@@ -133,7 +134,7 @@ const useStyles = makeStyles()((theme: Theme) => {
             fontWeight: 'normal' as const,
             fontSize: '15px',
             lineHeight: '22px',
-            color: 'rgba(255, 255, 255, 0.3)',
+            color: 'rgba(255, 255, 255, 0.6)',
             overflow: 'auto',
             overflowWrap: 'break-word',
             userSelect: 'all',
@@ -193,30 +194,31 @@ const useStyles = makeStyles()((theme: Theme) => {
 });
 
 const Notification = ({
-                          appearance = NOTIFICATION_TYPE.NORMAL,
-                          customActionHandler,
-                          customActionNameKey,
-                          customActionType,
-                          description,
-                          descriptionArguments,
-                          descriptionKey,
-                          hideErrorSupportLink,
-                          icon,
-                          onDismissed,
-                          title,
-                          titleArguments,
-                          titleKey,
-                          uid,
-                          participantId
-                      }: IProps) => {
-    const {classes, cx, theme} = useStyles();
-    const {t} = useTranslation();
-    const {unmounting} = useContext(NotificationsTransitionContext);
+    appearance = NOTIFICATION_TYPE.NORMAL,
+    customActionHandler,
+    customActionNameKey,
+    customActionType,
+    description,
+    descriptionArguments,
+    descriptionKey,
+    disableClosing,
+    hideErrorSupportLink,
+    icon,
+    onDismissed,
+    title,
+    titleArguments,
+    titleKey,
+    uid,
+    participantId
+}: IProps) => {
+    const { classes, cx, theme } = useStyles();
+    const { t } = useTranslation();
+    const { unmounting } = useContext(NotificationsTransitionContext);
     const isMobile = isMobileBrowser();
 
     const onDismiss = useCallback(() => {
         onDismissed(uid);
-    }, [uid]);
+    }, [ uid ]);
 
     // eslint-disable-next-line react/no-multi-comp
     const renderDescription = useCallback(() => {
@@ -237,13 +239,13 @@ const Notification = ({
         // the id is used for testing the UI
         return (
             <div
-                className={cx(classes.description, isMobile && 'is-mobile')}
-                data-testid={descriptionKey}>
-                {shouldRenderHtml ? descriptionArray : <Message text={descriptionArray.join(' ')}/>}
+                className = {cx(classes.description, isMobile && 'is-mobile')}
+                data-testid = {descriptionKey}>
+                {shouldRenderHtml ? descriptionArray : <Message text = {descriptionArray.join(' ')} />}
                 {typeof description === 'object' && description}
             </div>
         );
-    }, [description, descriptionArguments, descriptionKey, classes]);
+    }, [ description, descriptionArguments, descriptionKey, classes ]);
 
     const _onOpenSupportLink = () => {
         window.open(interfaceConfig.SUPPORT_URL, '_blank', 'noopener');
@@ -253,66 +255,69 @@ const Notification = ({
         content: string; onClick: () => void; testId?: string; type?: string;
     }[] => {
         switch (appearance) {
-            case NOTIFICATION_TYPE.ERROR: {
-                return [];
-            }
-            case NOTIFICATION_TYPE.WARNING:
-                return [
-                    {
-                        content: t('dialog.Ok'),
-                        onClick: onDismiss
-                    }
-                ];
-
-            default:
-                if (customActionNameKey?.length && customActionHandler?.length) {
-                    return customActionNameKey.map((customAction: string, customActionIndex: number) => {
-                        return {
-                            content: t(customAction),
-                            onClick: () => {
-                                if (customActionHandler?.[customActionIndex]()) {
-                                    onDismiss();
-                                }
-                            },
-                            type: customActionType?.[customActionIndex],
-                            testId: customAction
-                        };
-                    });
-                }
-
-                return [];
+        case NOTIFICATION_TYPE.ERROR: {
+            return [];
         }
-    }, [appearance, onDismiss, customActionHandler, customActionNameKey, hideErrorSupportLink]);
+        case NOTIFICATION_TYPE.WARNING:
+            return [];
+
+        default:
+            if (customActionNameKey?.length && customActionHandler?.length) {
+                return customActionNameKey.map((customAction: string, customActionIndex: number) => {
+                    return {
+                        content: t(customAction),
+                        onClick: () => {
+                            if (customActionHandler?.[customActionIndex]()) {
+                                onDismiss();
+                            }
+                        },
+                        type: customActionType?.[customActionIndex],
+                        testId: customAction
+                    };
+                });
+            }
+
+            return [];
+        }
+    }, [ appearance, onDismiss, customActionHandler, customActionNameKey, hideErrorSupportLink ]);
 
     return (
         <div
-            className={cx(classes.container, isMobile && 'is-mobile', unmounting.get(uid ?? '') && 'unmount')}
-            data-testid={titleKey || descriptionKey}
-            id={uid}>
-            <div className={classes.content}>
-                <div className={cx(classes.avatarContainer, isMobile && 'is-mobile')}>
+            aria-atomic = 'false'
+            aria-live = 'polite'
+            className = {cx(classes.container, isMobile && 'is-mobile', unmounting.get(uid ?? '') && 'unmount')}
+            data-testid = {titleKey || descriptionKey}
+            id = {uid}>
+            <div className = {classes.content}>
+                <div className = {cx(classes.avatarContainer, isMobile && 'is-mobile')}>
                     {(icon === NOTIFICATION_ICON.POLL || appearance === NOTIFICATION_ICON.POLL) ?
                         <Avatar
-                            className={cx(classes.avatar, 'avatar')}
-                            url={IconPoll}
-                            size={36}/>
-                        : <Avatar
-                            className={cx(classes.avatar, 'avatar')}
-                            participantId={participantId ?? "0"}
-                            size={36}/>
+                            className = {cx(classes.avatar, 'avatar')}
+                            url = {IconPoll}
+                            size = {36} />
+                        : icon === NOTIFICATION_ICON.SCREENSHARE ?
+                            <Avatar
+                                className = {cx(classes.avatar, 'avatar')}
+                                iconClassName = 'custom-notification-icon'
+                                url = {IconScreenshareNotification}
+                                size = {36} />
+                            : <Avatar
+                                className = {cx(classes.avatar, 'avatar')}
+                                participantId = {participantId ?? "0"}
+                                size = {36} />
                     }
                 </div>
-                <div className={cx(classes.textContainer, isMobile && 'is-mobile')}>
+                <div className = {cx(classes.textContainer, isMobile && 'is-mobile')}>
                     <span
-                        className={cx(classes.title, isMobile && 'is-mobile')}>{title || t(titleKey ?? '', titleArguments)}</span>
+                        className = {cx(classes.title, isMobile && 'is-mobile')}>{title || t(titleKey ?? '', titleArguments)}</span>
                     {renderDescription()}
-                    <div className={cx(classes.actionsContainer, isMobile && 'is-mobile')}>
-                        {mapAppearanceToButtons().map(({content, onClick, type, testId}) => (
+                    <div className = {cx(classes.actionsContainer, isMobile && 'is-mobile')}>
+                        {mapAppearanceToButtons().map(({ content, onClick, type, testId }) => (
                             <button
-                                className={cx(classes.action, isMobile && 'is-mobile', type)}
-                                data-testid={testId}
-                                key={content}
-                                onClick={onClick}>
+                                className = {cx(classes.action, isMobile && 'is-mobile', type)}
+                                data-testid = {testId}
+                                key = {content}
+                                onClick = {onClick}>
                                 {content}
                             </button>
                         ))}

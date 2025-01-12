@@ -1,34 +1,34 @@
-import React, {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {batch, connect, useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { batch, connect, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState, IStore} from '../../../app/types';
-import {isMobileBrowser} from '../../../base/environment/utils';
-import {IconDotsHorizontal} from '../../../base/icons/svg';
-import {getLocalParticipant, getParticipantCount, isParticipantModerator} from '../../../base/participants/functions';
+import { IReduxState, IStore } from '../../../app/types';
+import { isMobileBrowser } from '../../../base/environment/utils';
+import { IconDotsHorizontal } from '../../../base/icons/svg';
+import { getLocalParticipant, getParticipantCount } from '../../../base/participants/functions';
 import Popover from '../../../base/popover/components/Popover.web';
-import {setParticipantContextMenuOpen} from '../../../base/responsive-ui/actions';
-import {getHideSelfView} from '../../../base/settings/functions.web';
-import {getLocalVideoTrack} from '../../../base/tracks/functions';
+import { setParticipantContextMenuOpen } from '../../../base/responsive-ui/actions';
+import { getHideSelfView } from '../../../base/settings/functions.web';
+import { getLocalVideoTrack } from '../../../base/tracks/functions';
 import Button from '../../../base/ui/components/web/Button';
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
 import ContextMenuItemGroup from '../../../base/ui/components/web/ContextMenuItemGroup';
 import ConnectionIndicatorContent from '../../../connection-indicator/components/web/ConnectionIndicatorContent';
-import {THUMBNAIL_TYPE} from '../../../filmstrip/constants';
-import {isStageFilmstripAvailable} from '../../../filmstrip/functions.web';
-import {getParticipantMenuButtonsWithNotifyClick} from '../../../toolbox/functions.web';
-import {NOTIFY_CLICK_MODE} from '../../../toolbox/types';
-import {renderConnectionStatus} from '../../actions.web';
-import {PARTICIPANT_MENU_BUTTONS as BUTTONS} from '../../constants';
+import { THUMBNAIL_TYPE } from '../../../filmstrip/constants';
+import { isStageFilmstripAvailable } from '../../../filmstrip/functions.web';
+import { getParticipantMenuButtonsWithNotifyClick } from '../../../toolbox/functions.web';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
+import { renderConnectionStatus } from '../../actions.web';
+import { PARTICIPANT_MENU_BUTTONS as BUTTONS } from '../../constants';
 
 import ConnectionStatusButton from './ConnectionStatusButton';
 import DemoteToVisitorButton from './DemoteToVisitorButton';
 import FlipLocalVideoButton from './FlipLocalVideoButton';
 import TogglePinToStageButton from './TogglePinToStageButton';
-import {BUTTON_TYPES} from "../../../base/ui/constants.any";
+import { BUTTON_TYPES } from "../../../base/ui/constants.any";
 import Avatar from "../../../base/avatar/components/Avatar";
-import {PARTICIPANT_ROLE} from "../../../base/participants/constants";
+import { PARTICIPANT_ROLE } from "../../../base/participants/constants";
 
 /**
  * The type of the React {@code Component} props of
@@ -175,24 +175,24 @@ const useStyles = makeStyles()(() => {
 });
 
 const LocalVideoMenuTriggerButton = ({
-                                         _localParticipantId,
-                                         _localParticipantDisplayName,
-                                         _localParticipantRole,
-                                         _menuPosition,
-                                         _overflowDrawer,
-                                         _showConnectionInfo,
-                                         _showDemote,
-                                         _showHideSelfViewButton,
-                                         _showLocalVideoFlipButton,
-                                         _showPinToStage,
-                                         buttonVisible,
-                                         dispatch,
-                                         hidePopover,
-                                         showPopover,
-                                         popoverVisible
-                                     }: IProps) => {
-    const {classes, cx} = useStyles();
-    const {t} = useTranslation();
+    _localParticipantId,
+    _localParticipantDisplayName,
+    _localParticipantRole,
+    _menuPosition,
+    _overflowDrawer,
+    _showConnectionInfo,
+    _showDemote,
+    _showHideSelfViewButton,
+    _showLocalVideoFlipButton,
+    _showPinToStage,
+    buttonVisible,
+    dispatch,
+    hidePopover,
+    showPopover,
+    popoverVisible
+}: IProps) => {
+    const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const buttonsWithNotifyClick = useSelector(getParticipantMenuButtonsWithNotifyClick);
     const visitorsSupported = useSelector((state: IReduxState) => state['features/visitors'].supported);
     const isMobile = isMobileBrowser();
@@ -210,7 +210,7 @@ const LocalVideoMenuTriggerButton = ({
                 _localParticipantId,
                 notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY
             );
-        }, [buttonsWithNotifyClick]);
+        }, [ buttonsWithNotifyClick ]);
 
     const _onPopoverOpen = useCallback(() => {
         showPopover?.();
@@ -226,63 +226,63 @@ const LocalVideoMenuTriggerButton = ({
     }, []);
 
     const content = _showConnectionInfo
-        ? <ConnectionIndicatorContent participantId={_localParticipantId}/>
+        ? <ConnectionIndicatorContent participantId = {_localParticipantId} />
         : (
             <ContextMenu
-                className={classes.contextMenu}
-                hidden={false}
-                inDrawer={_overflowDrawer}>
+                className = {classes.contextMenu}
+                hidden = {false}
+                inDrawer = {_overflowDrawer}>
                 {isMobile && (
-                    <div className={classes.participantInfoContainer}>
-                        <div className={classes.participantInfoAvatar}>
+                    <div className = {classes.participantInfoContainer}>
+                        <div className = {classes.participantInfoAvatar}>
                             <Avatar
-                                id="participantInfoAvatar"
-                                participantId={_localParticipantId}
-                                size={44}/>
+                                id = "participantInfoAvatar"
+                                participantId = {_localParticipantId}
+                                size = {44} />
                         </div>
-                        <div className={classes.participantInfoNameRoleContainer}>
+                        <div className = {classes.participantInfoNameRoleContainer}>
                             <div
-                                className={classes.participantInfoName}>{`${_localParticipantDisplayName} (${t('me')})`}</div>
+                                className = {classes.participantInfoName}>{`${_localParticipantDisplayName} (${t('me')})`}</div>
                             <div
-                                className={classes.participantInfoRole}>{_localParticipantRole === PARTICIPANT_ROLE.MODERATOR ? t('videothumbnail.moderator') : t('videothumbnail.member')}</div>
+                                className = {classes.participantInfoRole}>{_localParticipantRole === PARTICIPANT_ROLE.MODERATOR ? t('videothumbnail.moderator') : t('videothumbnail.member')}</div>
                         </div>
                     </div>
                 )}
                 <ContextMenuItemGroup>
                     {_showLocalVideoFlipButton
                         && <FlipLocalVideoButton
-                            className={cx(_overflowDrawer ? classes.flipText : '', isMobile && 'is-mobile')}
+                            className = {cx(_overflowDrawer ? classes.flipText : '', isMobile && 'is-mobile')}
                             // eslint-disable-next-line react/jsx-no-bind
-                            notifyClick={() => notifyClick(BUTTONS.FLIP_LOCAL_VIDEO)}
-                            notifyMode={buttonsWithNotifyClick?.get(BUTTONS.FLIP_LOCAL_VIDEO)}
-                            onClick={hidePopover}/>
+                            notifyClick = {() => notifyClick(BUTTONS.FLIP_LOCAL_VIDEO)}
+                            notifyMode = {buttonsWithNotifyClick?.get(BUTTONS.FLIP_LOCAL_VIDEO)}
+                            onClick = {hidePopover} />
                     }
                     {
                         _showPinToStage && <TogglePinToStageButton
-                            textClassName={cx(_overflowDrawer ? classes.flipText : '', isMobile && 'is-mobile')}
-                            noIcon={false}
+                            textClassName = {cx(_overflowDrawer ? classes.flipText : '', isMobile && 'is-mobile')}
+                            noIcon = {false}
                             // eslint-disable-next-line react/jsx-no-bind
-                            notifyClick={() => notifyClick(BUTTONS.PIN_TO_STAGE)}
-                            notifyMode={buttonsWithNotifyClick?.get(BUTTONS.PIN_TO_STAGE)}
-                            onClick={hidePopover}
-                            participantID={_localParticipantId}/>
+                            notifyClick = {() => notifyClick(BUTTONS.PIN_TO_STAGE)}
+                            notifyMode = {buttonsWithNotifyClick?.get(BUTTONS.PIN_TO_STAGE)}
+                            onClick = {hidePopover}
+                            participantID = {_localParticipantId} />
                     }
                     {
                         _showDemote && visitorsSupported && <DemoteToVisitorButton
-                            className={cx(_overflowDrawer ? classes.flipText : '', isMobile && 'is-mobile')}
-                            noIcon={true}
+                            className = {cx(_overflowDrawer ? classes.flipText : '', isMobile && 'is-mobile')}
+                            noIcon = {true}
                             // eslint-disable-next-line react/jsx-no-bind
-                            notifyClick={() => notifyClick(BUTTONS.DEMOTE)}
-                            notifyMode={buttonsWithNotifyClick?.get(BUTTONS.DEMOTE)}
-                            onClick={hidePopover}
-                            participantID={_localParticipantId}/>
+                            notifyClick = {() => notifyClick(BUTTONS.DEMOTE)}
+                            notifyMode = {buttonsWithNotifyClick?.get(BUTTONS.DEMOTE)}
+                            onClick = {hidePopover}
+                            participantID = {_localParticipantId} />
                     }
                     {
                         isMobileBrowser() && <ConnectionStatusButton
                             // eslint-disable-next-line react/jsx-no-bind
-                            notifyClick={() => notifyClick(BUTTONS.CONN_STATUS)}
-                            notifyMode={buttonsWithNotifyClick?.get(BUTTONS.CONN_STATUS)}
-                            participantID={_localParticipantId}/>
+                            notifyClick = {() => notifyClick(BUTTONS.CONN_STATUS)}
+                            notifyMode = {buttonsWithNotifyClick?.get(BUTTONS.CONN_STATUS)}
+                            participantID = {_localParticipantId} />
                     }
                 </ContextMenuItemGroup>
             </ContextMenu>
@@ -291,20 +291,21 @@ const LocalVideoMenuTriggerButton = ({
     return (
         isMobileBrowser() || _showLocalVideoFlipButton || _showHideSelfViewButton
             ? <Popover
-                content={content}
-                headingLabel={t('dialog.localUserControls')}
-                id='local-video-menu-trigger'
-                onPopoverClose={_onPopoverClose}
-                onPopoverOpen={_onPopoverOpen}
-                position={_menuPosition}
-                visible={Boolean(popoverVisible)}>
+                content = {content}
+                headingLabel = {t('dialog.localUserControls')}
+                id = 'local-video-menu-trigger'
+                onPopoverClose = {_onPopoverClose}
+                onPopoverOpen = {_onPopoverOpen}
+                position = {_menuPosition}
+                trigger = { 'click' }
+                visible = {Boolean(popoverVisible)}>
                 {buttonVisible && !isMobileBrowser() && (
                     <Button
-                        accessibilityLabel={t('dialog.localUserControls')}
-                        className={classes.triggerButton}
-                        type={BUTTON_TYPES.TRIGGER}
-                        icon={IconDotsHorizontal}
-                        size='small'/>
+                        accessibilityLabel = {t('dialog.localUserControls')}
+                        className = {classes.triggerButton}
+                        type = {BUTTON_TYPES.TRIGGER}
+                        icon = {IconDotsHorizontal}
+                        size = 'small' />
                 )}
             </Popover>
             : null
@@ -320,33 +321,33 @@ const LocalVideoMenuTriggerButton = ({
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
-    const {thumbnailType} = ownProps;
+    const { thumbnailType } = ownProps;
     const localParticipant = getLocalParticipant(state);
-    const {disableLocalVideoFlip, disableSelfViewSettings} = state['features/base/config'];
+    const { disableLocalVideoFlip, disableSelfDemote, disableSelfViewSettings } = state['features/base/config'];
     const videoTrack = getLocalVideoTrack(state['features/base/tracks']);
-    const {overflowDrawer} = state['features/toolbox'];
-    const {showConnectionInfo} = state['features/base/connection'];
+    const { overflowDrawer } = state['features/toolbox'];
+    const { showConnectionInfo } = state['features/base/connection'];
     const showHideSelfViewButton = !disableSelfViewSettings && !getHideSelfView(state);
 
     let _menuPosition;
 
     switch (thumbnailType) {
-        case THUMBNAIL_TYPE.TILE:
-            _menuPosition = 'left-end';
-            break;
-        case THUMBNAIL_TYPE.VERTICAL:
-            _menuPosition = 'left-start';
-            break;
-        case THUMBNAIL_TYPE.HORIZONTAL:
-            _menuPosition = 'top-start';
-            break;
-        default:
-            _menuPosition = 'auto';
+    case THUMBNAIL_TYPE.TILE:
+        _menuPosition = 'left-end';
+        break;
+    case THUMBNAIL_TYPE.VERTICAL:
+        _menuPosition = 'left-end';
+        break;
+    case THUMBNAIL_TYPE.HORIZONTAL:
+        _menuPosition = 'bottom-start';
+        break;
+    default:
+        _menuPosition = 'auto';
     }
 
     return {
         _menuPosition,
-        _showDemote: getParticipantCount(state) > 1,
+        _showDemote: !disableSelfDemote && getParticipantCount(state) > 1,
         _showLocalVideoFlipButton: !disableLocalVideoFlip && videoTrack?.videoType !== 'desktop',
         _showHideSelfViewButton: showHideSelfViewButton,
         _overflowDrawer: overflowDrawer && isMobileBrowser(),

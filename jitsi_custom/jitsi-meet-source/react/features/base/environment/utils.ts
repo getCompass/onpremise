@@ -9,7 +9,6 @@ export function isMobileBrowser() {
     return Platform.OS === 'android' || Platform.OS === 'ios';
 }
 
-
 /**
  * Returns whether or not the current environment is an ios mobile device.
  *
@@ -17,5 +16,16 @@ export function isMobileBrowser() {
  */
 export function isIosMobileBrowser() {
     return Platform.OS === 'ios';
+}
+
+/**
+ * Returns whether or not the current environment is an ipad device.
+ *
+ * @returns {boolean}
+ */
+export function isIpadMobileBrowser() {
+
+    // @ts-ignore
+    return isIosMobileBrowser() && Platform.isPad;
 }
 

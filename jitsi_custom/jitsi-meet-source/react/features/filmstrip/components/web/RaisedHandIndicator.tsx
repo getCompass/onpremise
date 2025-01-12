@@ -1,14 +1,14 @@
 import React from 'react';
-import {useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../app/types';
-import {IconRaiseHand} from '../../../base/icons/svg';
-import {getParticipantById, hasRaisedHand} from '../../../base/participants/functions';
-import {IParticipant} from '../../../base/participants/types';
+import { IReduxState } from '../../../app/types';
+import { IconRaiseHand } from '../../../base/icons/svg';
+import { getParticipantById, hasRaisedHand } from '../../../base/participants/functions';
+import { IParticipant } from '../../../base/participants/types';
 import BaseIndicator from '../../../base/react/components/web/BaseIndicator';
-import {TOOLTIP_POSITION} from '../../../base/ui/constants.any';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { TOOLTIP_POSITION } from '../../../base/ui/constants.any';
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link RaisedHandIndicator}.
@@ -55,27 +55,27 @@ const useStyles = makeStyles()(theme => {
  * @returns {ReactElement}
  */
 const RaisedHandIndicator = ({
-                                 iconSize,
-                                 participantId,
-                                 tooltipPosition
-                             }: IProps) => {
+    iconSize,
+    participantId,
+    tooltipPosition
+}: IProps) => {
     const participant: IParticipant | undefined = useSelector((state: IReduxState) =>
         getParticipantById(state, participantId));
     const _raisedHand = hasRaisedHand(participant);
-    const {classes: styles, cx} = useStyles();
+    const { classes: styles, cx } = useStyles();
 
     if (!_raisedHand) {
         return null;
     }
 
     return (
-        <div className={cx(styles.raisedHandIndicator, isMobileBrowser() && 'is-mobile')}>
+        <div className = {cx(styles.raisedHandIndicator, isMobileBrowser() && 'is-mobile')}>
             <BaseIndicator
-                icon={IconRaiseHand}
-                iconColor={'rgba(0, 0, 0, 1)'}
-                iconSize={`${iconSize}px`}
-                tooltipKey='raisedHand'
-                tooltipPosition={tooltipPosition}/>
+                icon = {IconRaiseHand}
+                iconColor = {'rgba(0, 0, 0, 1)'}
+                iconSize = {`${iconSize}px`}
+                tooltipKey = 'raisedHand'
+                tooltipPosition = {tooltipPosition} />
         </div>
     );
 };

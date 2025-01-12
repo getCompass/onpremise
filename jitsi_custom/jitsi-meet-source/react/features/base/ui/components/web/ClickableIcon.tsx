@@ -1,7 +1,7 @@
 import React from 'react';
-import {makeStyles} from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui';
 
-import {isMobileBrowser} from '../../../environment/utils';
+import { isMobileBrowser } from '../../../environment/utils';
 import Icon from '../../../icons/components/Icon';
 
 interface IProps {
@@ -41,19 +41,19 @@ const useStyles = makeStyles()(theme => {
     };
 });
 
-const ClickableIcon = ({accessibilityLabel, className, icon, id, onClick}: IProps) => {
-    const {classes: styles, cx} = useStyles();
+const ClickableIcon = ({ accessibilityLabel, className, icon, id, onClick }: IProps) => {
+    const { classes: styles, cx } = useStyles();
     const isMobile = isMobileBrowser();
 
     return (
         <button
-            aria-label={accessibilityLabel}
-            className={cx(styles.button, isMobile && 'is-mobile', className)}
-            id={id}
-            onClick={onClick}>
+            aria-label = {accessibilityLabel}
+            className = {cx(styles.button, isMobile && 'is-mobile', className)}
+            id = {id}
+            onClick = {onClick}>
             <Icon
-                size={24}
-                src={icon}/>
+                size = {isMobile ? 28 : 24}
+                src = {icon} />
         </button>
     );
 };

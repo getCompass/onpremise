@@ -1,7 +1,4 @@
-import i18next from 'i18next';
 import React, { useCallback, useRef } from 'react';
-
-import { WHITEBOARD_UI_OPTIONS } from '../../constants';
 
 /**
  * Whiteboard wrapper for mobile.

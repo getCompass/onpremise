@@ -15,7 +15,7 @@ class PageReloadOverlay extends AbstractPageReloadOverlay<IProps> {
             return <ReloadPopup />;
         }
 
-        return <NoConnectionPopup getLocalization={this.props.t} />;
+        return <NoConnectionPopup getLocalization = {this.props.t} />;
     }
 }
 

@@ -9,6 +9,7 @@ import DialInSummaryApp from './features/invite/components/dial-in-summary/web/D
 import PrejoinApp from './features/prejoin/components/web/PrejoinApp';
 import WhiteboardApp from './features/whiteboard/components/web/WhiteboardApp';
 import { initSentry } from "./features/base/sentry";
+import { RELEASE } from "./features/base/compass";
 
 const logger = getLogger('index.web');
 
@@ -49,10 +50,16 @@ if (Platform.OS === 'ios') {
 
 const globalNS = getJitsiMeetGlobalNS();
 
+globalNS.releaseVersion = RELEASE;
+
 // Used for automated performance tests.
 globalNS.connectionTimes = {
     'index.loaded': window.indexLoadedTime
 };
+
+window.addEventListener('load', () => {
+    globalNS.connectionTimes['window.loaded'] = window.loadedEventTime;
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     const now = window.performance.now();

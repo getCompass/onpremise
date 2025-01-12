@@ -1,17 +1,17 @@
 import React from 'react';
-import {useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../app/types';
-import {isDisplayNameVisible, isNameReadOnly} from '../../../base/config/functions.any';
-import {isScreenShareParticipantById} from '../../../base/participants/functions';
+import { IReduxState } from '../../../app/types';
+import { isDisplayNameVisible, isNameReadOnly } from '../../../base/config/functions.any';
+import { isScreenShareParticipantById } from '../../../base/participants/functions';
 import DisplayName from '../../../display-name/components/web/DisplayName';
 
 import StatusIndicators from './StatusIndicators';
-import {isToolboxVisible} from "../../../toolbox/functions.web";
+import { isToolboxVisible } from "../../../toolbox/functions.web";
 import ConnectionIndicator from "../../../connection-indicator/components/web/ConnectionIndicator";
-import {STATS_POPOVER_POSITION, THUMBNAIL_TYPE} from "../../constants";
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { STATS_POPOVER_POSITION, THUMBNAIL_TYPE } from "../../constants";
+import { isMobileBrowser } from "../../../base/environment/utils";
 import VideoMenuTriggerButton from "./VideoMenuTriggerButton";
 
 interface IProps {
@@ -100,18 +100,18 @@ const useStyles = makeStyles()(() => {
 });
 
 const ThumbnailBottomIndicators = ({
-                                       disableConnectionIndicator,
-                                       hidePopover,
-                                       className,
-                                       isHovered,
-                                       local,
-                                       participantId,
-                                       popoverVisible,
-                                       showPopover,
-                                       showStatusIndicators = true,
-                                       thumbnailType
-                                   }: IProps) => {
-    const {classes: styles, cx} = useStyles();
+    disableConnectionIndicator,
+    hidePopover,
+    className,
+    isHovered,
+    local,
+    participantId,
+    popoverVisible,
+    showPopover,
+    showStatusIndicators = true,
+    thumbnailType,
+}: IProps) => {
+    const { classes: styles, cx } = useStyles();
     const _allowEditing = !useSelector(isNameReadOnly);
     const _defaultLocalDisplayName = interfaceConfig.DEFAULT_LOCAL_DISPLAY_NAME;
     const _showDisplayName = useSelector(isDisplayNameVisible);
@@ -121,7 +121,7 @@ const ThumbnailBottomIndicators = ({
     const toolboxVisible: boolean = useSelector(isToolboxVisible);
 
     const _isMobile = isMobileBrowser();
-    const {NORMAL = 16} = interfaceConfig.INDICATOR_FONT_SIZES || {};
+    const { NORMAL = 16 } = interfaceConfig.INDICATOR_FONT_SIZES || {};
     const _indicatorIconSize = NORMAL;
     const _connectionIndicatorAutoHideEnabled = Boolean(
         useSelector((state: IReduxState) => state['features/base/config'].connectionIndicators?.autoHide) ?? true);
@@ -130,48 +130,48 @@ const ThumbnailBottomIndicators = ({
     const showConnectionIndicator = isHovered || !_connectionIndicatorAutoHideEnabled;
 
     return (<>
-        <div className={cx(className, 'bottom-indicators', !toolboxVisible && styles.invisible)}>
+        <div className = {cx(className, 'bottom-indicators', !toolboxVisible && styles.invisible)}>
             {
                 showStatusIndicators && <StatusIndicators
-                    audio={!isVirtualScreenshareParticipant}
-                    moderator={true}
-                    participantID={participantId}
-                    screenshare={isVirtualScreenshareParticipant}
-                    thumbnailType={thumbnailType}/>
+                    audio = {!isVirtualScreenshareParticipant}
+                    moderator = {true}
+                    participantID = {participantId}
+                    screenshare = {isVirtualScreenshareParticipant}
+                    thumbnailType = {thumbnailType} />
             }
             {
                 _showDisplayName && (
-                    <span className={styles.nameContainer}>
+                    <span className = {styles.nameContainer}>
                     <DisplayName
-                        allowEditing={local ? _allowEditing : false}
-                        displayNameSuffix={local ? _defaultLocalDisplayName : ''}
-                        elementID={local ? 'localDisplayName' : `participant_${participantId}_name`}
-                        participantID={participantId}
-                        thumbnailType={thumbnailType}/>
+                        allowEditing = {local ? _allowEditing : false}
+                        displayNameSuffix = {local ? _defaultLocalDisplayName : ''}
+                        elementID = {local ? 'localDisplayName' : `participant_${participantId}_name`}
+                        participantID = {participantId}
+                        thumbnailType = {thumbnailType} />
                 </span>
                 )
             }
         </div>
         {thumbnailType === THUMBNAIL_TYPE.TILE && (
-            <div className={cx(styles.indicatorsContainer2, !toolboxVisible && styles.invisible)}>
+            <div className = {cx(styles.indicatorsContainer2, !toolboxVisible && styles.invisible)}>
                 {!_connectionIndicatorDisabled
                     && <ConnectionIndicator
-                        alwaysVisible={showConnectionIndicator}
-                        enableStatsDisplay={true}
-                        iconSize={_indicatorIconSize}
-                        participantId={participantId}
-                        statsPopoverPosition={STATS_POPOVER_POSITION[thumbnailType]}/>
+                        alwaysVisible = {showConnectionIndicator}
+                        enableStatsDisplay = {true}
+                        iconSize = {_indicatorIconSize}
+                        participantId = {participantId}
+                        statsPopoverPosition = {STATS_POPOVER_POSITION[thumbnailType]} />
                 }
 
-                <div className={styles.container}>
+                <div className = {styles.container}>
                     <VideoMenuTriggerButton
-                        hidePopover={hidePopover}
-                        local={local}
-                        participantId={participantId}
-                        popoverVisible={popoverVisible}
-                        showPopover={showPopover}
-                        thumbnailType={thumbnailType}
-                        visible={isHovered}/>
+                        hidePopover = {hidePopover}
+                        local = {local}
+                        participantId = {participantId}
+                        popoverVisible = {popoverVisible}
+                        showPopover = {showPopover}
+                        thumbnailType = {thumbnailType}
+                        visible = {isHovered} />
                 </div>
             </div>
         )}

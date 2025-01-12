@@ -11,7 +11,6 @@ import SettingsButton from '../../../base/settings/components/native/SettingsBut
 import BreakoutRoomsButton
     from '../../../breakout-rooms/components/native/BreakoutRoomsButton';
 import SharedDocumentButton from '../../../etherpad/components/SharedDocumentButton.native';
-import { customOverflowMenuButtonPressed } from '../../../mobile/external-api/actions';
 import ReactionMenu from '../../../reactions/components/native/ReactionMenu';
 import { shouldDisplayReactionsButtons } from '../../../reactions/functions.any';
 import LiveStreamButton from '../../../recording/components/LiveStream/native/LiveStreamButton';
@@ -19,12 +18,14 @@ import RecordButton from '../../../recording/components/Recording/native/RecordB
 import SecurityDialogButton
     from '../../../security/components/security-dialog/native/SecurityDialogButton';
 import SharedVideoButton from '../../../shared-video/components/native/SharedVideoButton';
+import { isSharedVideoEnabled } from '../../../shared-video/functions';
 import SpeakerStatsButton from '../../../speaker-stats/components/native/SpeakerStatsButton';
 import { isSpeakerStatsDisabled } from '../../../speaker-stats/functions';
 import ClosedCaptionButton from '../../../subtitles/components/native/ClosedCaptionButton';
 import TileViewButton from '../../../video-layout/components/TileViewButton';
 import styles from '../../../video-menu/components/native/styles';
 import WhiteboardButton from '../../../whiteboard/components/native/WhiteboardButton';
+import { customOverflowMenuButtonPressed } from '../../actions.native';
 import { getMovableButtons } from '../../functions.native';
 
 import AudioOnlyButton from './AudioOnlyButton';
@@ -54,6 +55,11 @@ interface IProps {
      * True if the overflow menu is currently visible, false otherwise.
      */
     _isOpen: boolean;
+
+    /**
+     * Whether the shared video is enabled or not.
+     */
+    _isSharedVideoEnabled: boolean;
 
     /**
      * Whether or not speaker stats is disable.
@@ -121,6 +127,7 @@ class OverflowMenu extends PureComponent<IProps, IState> {
         const {
             _isBreakoutRoomsSupported,
             _isSpeakerStatsDisabled,
+            _isSharedVideoEnabled,
             _shouldDisplayReactionsButtons,
             _width,
             dispatch
@@ -168,7 +175,7 @@ class OverflowMenu extends PureComponent<IProps, IState> {
                 <WhiteboardButton { ...buttonProps } />
                 {/* @ts-ignore */}
                 <Divider style = { styles.divider as ViewStyle } />
-                <SharedVideoButton { ...buttonProps } />
+                {_isSharedVideoEnabled && <SharedVideoButton { ...buttonProps } />}
                 {!toolbarButtons.has('screensharing') && <ScreenSharingButton { ...buttonProps } />}
                 {!_isSpeakerStatsDisabled && <SpeakerStatsButton { ...buttonProps } />}
                 {!toolbarButtons.has('tileview') && <TileViewButton { ...buttonProps } />}
@@ -255,6 +262,7 @@ function _mapStateToProps(state: IReduxState) {
     return {
         _customToolbarButtons: customToolbarButtons,
         _isBreakoutRoomsSupported: conference?.getBreakoutRooms()?.isSupported(),
+        _isSharedVideoEnabled: isSharedVideoEnabled(state),
         _isSpeakerStatsDisabled: isSpeakerStatsDisabled(state),
         _shouldDisplayReactionsButtons: shouldDisplayReactionsButtons(state),
         _width: state['features/base/responsive-ui'].clientWidth

@@ -798,7 +798,7 @@
             "answerPlaceholder": "Alternativ",
             "cancel": "Avbryt",
             "create": "Skapa en omröstning",
-            "pollOptions": "Alternativ för omröstning",
+            "pollOption": "Alternativ för omröstning",
             "pollQuestion": "Fråga för omröstning",
             "questionPlaceholder": "Ställ en fråga",
             "removeOption": "Ta bort alternativ",

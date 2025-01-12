@@ -1,11 +1,11 @@
-import React, {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
 
-import {withPixelLineHeight} from '../../base/styles/functions.web';
+import { withPixelLineHeight } from '../../base/styles/functions.web';
 import Select from '../../base/ui/components/web/Select';
-import {isMobileBrowser} from "../../base/environment/utils";
-import {useSelector} from "react-redux";
+import { isMobileBrowser } from "../../base/environment/utils";
+import { useSelector } from "react-redux";
 import SelectMobile from "../../base/ui/components/web/SelectMobile";
 
 /**
@@ -70,17 +70,17 @@ const useStyles = makeStyles()(theme => {
 });
 
 const DeviceSelector = ({
-                            devices,
-                            hasPermission,
-                            id,
-                            isDisabled,
-                            label,
-                            icon,
-                            onSelect,
-                            selectedDeviceId
-                        }: IProps) => {
-    const {classes} = useStyles();
-    const {t} = useTranslation();
+    devices,
+    hasPermission,
+    id,
+    isDisabled,
+    label,
+    icon,
+    onSelect,
+    selectedDeviceId
+}: IProps) => {
+    const { classes } = useStyles();
+    const { t } = useTranslation();
     const isMobile = useSelector(() => isMobileBrowser());
 
     const _onSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -89,7 +89,7 @@ const DeviceSelector = ({
         if (selectedDeviceId !== deviceId) {
             onSelect(deviceId);
         }
-    }, [selectedDeviceId, onSelect]);
+    }, [ selectedDeviceId, onSelect ]);
 
     const _createDropdown = (options: {
         defaultSelected?: MediaDeviceInfo; isDisabled: boolean;
@@ -101,7 +101,7 @@ const DeviceSelector = ({
 
         if (options.isDisabled || !options.items?.length) {
             return (
-                <div className={classes.textSelector}>
+                <div className = {classes.textSelector}>
                     {triggerText}
                 </div>
             );
@@ -110,22 +110,22 @@ const DeviceSelector = ({
         if (isMobile) {
             return (
                 <SelectMobile
-                    id={id}
-                    onSelect={onSelect}
-                    options={options.items}
-                    icon={icon}
-                    value={selectedDeviceId}
-                    isLanguages={false}/>
+                    id = {id}
+                    onSelect = {onSelect}
+                    options = {options.items}
+                    icon = {icon}
+                    value = {selectedDeviceId}
+                    isLanguages = {false} />
             );
         }
 
         return (
             <Select
-                id={id}
-                onChange={_onSelect}
-                options={options.items}
-                icon={icon}
-                value={selectedDeviceId}/>
+                id = {id}
+                onChange = {_onSelect}
+                options = {options.items}
+                icon = {icon}
+                value = {selectedDeviceId} />
         );
     };
 

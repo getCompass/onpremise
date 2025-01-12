@@ -11,6 +11,7 @@ import { getReceiverVideoQualityLevel } from '../video-quality/functions';
 import { getMinHeightForQualityLvlMap } from '../video-quality/selector';
 
 import { LAYOUTS } from './constants';
+import { isMobileBrowser } from "../base/environment/utils";
 
 /**
  * A selector for retrieving the current automatic pinning setting.
@@ -66,6 +67,12 @@ export function shouldDisplayTileView(state: IReduxState) {
         return false;
     }
 
+    // на мобилке режим плитки доступен от 3-х участников
+    const participantsCount = getParticipantCount(state);
+    if (isMobileBrowser() && participantsCount < 3) {
+        return false;
+    }
+
     const { tileViewEnabled } = state['features/video-layout'] ?? {};
 
     if (tileViewEnabled !== undefined) {
@@ -87,7 +94,6 @@ export function shouldDisplayTileView(state: IReduxState) {
     // None tile view mode is easier to calculate (no need for many negations), so we do
     // that and negate it only once.
     const shouldDisplayNormalMode = Boolean(
-
         // Reasons for normal mode:
 
         // Editing etherpad
@@ -119,7 +125,7 @@ export function shouldDisplayTileView(state: IReduxState) {
  * @returns {void}
  */
 export function updateAutoPinnedParticipant(
-        screenShares: Array<string>, { dispatch, getState }: IStore) {
+    screenShares: Array<string>, { dispatch, getState }: IStore) {
     const state = getState();
     const remoteScreenShares = state['features/video-layout'].remoteScreenShares;
     const pinned = getPinnedParticipant(getState);
@@ -167,7 +173,7 @@ export function isLayoutTileView(state: IReduxState) {
  */
 function getVideoQualityForHeight(height: number) {
     if (!height) {
-        return VIDEO_QUALITY_LEVELS.LOW;
+        return VIDEO_QUALITY_LEVELS.STANDARD_SD;
     }
     const levels = Object.values(VIDEO_QUALITY_LEVELS)
         .map(Number)
@@ -191,7 +197,7 @@ function getVideoQualityForHeight(height: number) {
  */
 export function getVideoQualityForResizableFilmstripThumbnails(height: number, state: IReduxState) {
     if (!height) {
-        return VIDEO_QUALITY_LEVELS.LOW;
+        return VIDEO_QUALITY_LEVELS.LOW_HD;
     }
 
     return getReceiverVideoQualityLevel(height, getMinHeightForQualityLvlMap(state));
@@ -206,7 +212,7 @@ export function getVideoQualityForResizableFilmstripThumbnails(height: number, s
  */
 export function getVideoQualityForScreenSharingFilmstrip(height: number, state: IReduxState) {
     if (!height) {
-        return VIDEO_QUALITY_LEVELS.LOW;
+        return VIDEO_QUALITY_LEVELS.LOW_HD;
     }
 
     return getReceiverVideoQualityLevel(height, getMinHeightForQualityLvlMap(state));
@@ -231,7 +237,7 @@ export function getVideoQualityForLargeVideo(largeVideoHeight: number) {
  */
 export function getVideoQualityForStageThumbnails(height: number, state: IReduxState) {
     if (!height) {
-        return VIDEO_QUALITY_LEVELS.LOW;
+        return VIDEO_QUALITY_LEVELS.LOW_HD;
     }
 
     return getReceiverVideoQualityLevel(height, getMinHeightForQualityLvlMap(state));

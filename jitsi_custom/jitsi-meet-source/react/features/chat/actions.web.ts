@@ -4,6 +4,7 @@ import { IStore } from '../app/types';
 
 import { OPEN_CHAT } from './actionTypes';
 import { closeChat } from './actions.any';
+import { close as closeParticipantsPane } from "../participants-pane/actions.any";
 
 export * from './actions.any';
 
@@ -34,10 +35,15 @@ export function openChat(participant?: Object, _disablePolls?: boolean) {
 export function toggleChat() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const isOpen = getState()['features/chat'].isOpen;
+        const isParticipantPaneOpen = getState()['features/participants-pane'].isOpen;
 
         if (isOpen) {
             dispatch(closeChat());
         } else {
+
+            if (isParticipantPaneOpen) {
+                dispatch(closeParticipantsPane());
+            }
             dispatch(openChat());
         }
 

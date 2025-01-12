@@ -28,9 +28,9 @@ import {
     LOCAL_PARTICIPANT_REJECTED,
     PARTICIPANT_APPROVED,
     PARTICIPANT_REJECTED,
-    REQUEST_DISABLE_AUDIO_MODERATION,
+    REQUEST_DISABLE_AUDIO_MODERATION, REQUEST_DISABLE_SCREENSHARE_MODERATION,
     REQUEST_DISABLE_VIDEO_MODERATION,
-    REQUEST_ENABLE_AUDIO_MODERATION,
+    REQUEST_ENABLE_AUDIO_MODERATION, REQUEST_ENABLE_SCREENSHARE_MODERATION,
     REQUEST_ENABLE_VIDEO_MODERATION
 } from './actionTypes';
 import {
@@ -118,12 +118,20 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         conference?.disableAVModeration(MEDIA_TYPE.VIDEO);
         break;
     }
+    case REQUEST_DISABLE_SCREENSHARE_MODERATION: {
+        conference?.disableAVModeration(MEDIA_TYPE.SCREENSHARE);
+        break;
+    }
     case REQUEST_ENABLE_AUDIO_MODERATION: {
         conference?.enableAVModeration(MEDIA_TYPE.AUDIO);
         break;
     }
     case REQUEST_ENABLE_VIDEO_MODERATION: {
         conference?.enableAVModeration(MEDIA_TYPE.VIDEO);
+        break;
+    }
+    case REQUEST_ENABLE_SCREENSHARE_MODERATION: {
+        conference?.enableAVModeration(MEDIA_TYPE.SCREENSHARE);
         break;
     }
     case PARTICIPANT_UPDATED: {

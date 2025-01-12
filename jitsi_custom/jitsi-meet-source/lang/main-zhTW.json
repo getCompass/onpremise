@@ -857,7 +857,7 @@
             "answerPlaceholder": "選項 {{index}}",
             "cancel": "取消",
             "create": "建立投票",
-            "pollOptions": "選項 {{index}}",
+            "pollOption": "選項 {{index}}",
             "pollQuestion": "投票問題",
             "questionPlaceholder": "詢問問題",
             "removeOption": "移除選項",

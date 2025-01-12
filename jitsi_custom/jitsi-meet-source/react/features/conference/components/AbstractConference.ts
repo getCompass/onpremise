@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 
 import { IReduxState } from '../../app/types';
 import { NotificationsContainer } from '../../notifications/components';
+import { NotificationsContainerMobile } from "../../notifications/components";
 import { shouldDisplayTileView } from '../../video-layout/functions.any';
 import { shouldDisplayNotifications } from '../functions';
+import { isMobileBrowser } from "../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link AbstractLabels}.
@@ -48,11 +50,17 @@ export class AbstractConference<P extends AbstractProps, S>
      * Renders the {@code LocalRecordingLabel}.
      *
      * @param {Object} props - The properties to be passed to
-     * the {@code NotificationsContainer}.
+     * the {@code NotificationsContainer} or {@code NotificationsContainerMobile}.
      * @protected
      * @returns {React$Element}
      */
     renderNotificationsContainer(props?: any) {
+        if (this.props._notificationsVisible && isMobileBrowser()) {
+            return (
+                React.createElement(NotificationsContainerMobile, props)
+            );
+        }
+
         if (this.props._notificationsVisible) {
             return (
                 React.createElement(NotificationsContainer, props)

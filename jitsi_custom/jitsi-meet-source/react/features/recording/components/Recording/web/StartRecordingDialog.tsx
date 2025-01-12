@@ -1,12 +1,12 @@
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {IReduxState} from '../../../../app/types';
-import {translate} from '../../../../base/i18n/functions';
+import { IReduxState } from '../../../../app/types';
+import { translate } from '../../../../base/i18n/functions';
 import Dialog from '../../../../base/ui/components/web/Dialog';
-import {toggleScreenshotCaptureSummary} from '../../../../screenshot-capture/actions';
-import {isScreenshotCaptureEnabled} from '../../../../screenshot-capture/functions';
-import {RECORDING_TYPES} from '../../../constants';
+import { toggleScreenshotCaptureSummary } from '../../../../screenshot-capture/actions';
+import { isScreenshotCaptureEnabled } from '../../../../screenshot-capture/functions';
+import { RECORDING_TYPES } from '../../../constants';
 import AbstractStartRecordingDialog, {
     mapStateToProps as abstractMapStateToProps
 } from '../AbstractStartRecordingDialog';
@@ -22,6 +22,7 @@ import StartRecordingDialogContent from './StartRecordingDialogContent';
  */
 class StartRecordingDialog extends AbstractStartRecordingDialog {
 
+    // compass changes
     // componentDidMount() {
     //     this._setLocalRecordingSelfChange(false);
     //     this._onRecordAudioAndVideoChange(true);
@@ -87,30 +88,30 @@ class StartRecordingDialog extends AbstractStartRecordingDialog {
 
         return (
             <Dialog
-                ok={{
+                ok = {{
                     translationKey: 'dialog.startRecording',
                     disabled: this.isStartRecordingDisabled()
                 }}
-                onSubmit={this._onSubmit}
-                titleKey='dialog.startRecording'>
+                onSubmit = {this._onSubmit}
+                titleKey = 'dialog.startRecording'>
                 <StartRecordingDialogContent
-                    fileRecordingsServiceEnabled={_fileRecordingsServiceEnabled}
-                    fileRecordingsServiceSharingEnabled={_fileRecordingsServiceSharingEnabled}
-                    integrationsEnabled={this._areIntegrationsEnabled()}
-                    isTokenValid={isTokenValid}
-                    isValidating={isValidating}
-                    localRecordingOnlySelf={localRecordingOnlySelf}
-                    onChange={this._onSelectedRecordingServiceChanged}
-                    onLocalRecordingSelfChange={this._onLocalRecordingSelfChange}
-                    onRecordAudioAndVideoChange={this._onRecordAudioAndVideoChange}
-                    onSharingSettingChanged={this._onSharingSettingChanged}
-                    onTranscriptionChange={this._onTranscriptionChange}
-                    selectedRecordingService={selectedRecordingService}
-                    sharingSetting={sharingEnabled}
-                    shouldRecordAudioAndVideo={shouldRecordAudioAndVideo}
-                    shouldRecordTranscription={shouldRecordTranscription}
-                    spaceLeft={spaceLeft}
-                    userName={userName}/>
+                    fileRecordingsServiceEnabled = {_fileRecordingsServiceEnabled}
+                    fileRecordingsServiceSharingEnabled = {_fileRecordingsServiceSharingEnabled}
+                    integrationsEnabled = {this._areIntegrationsEnabled()}
+                    isTokenValid = {isTokenValid}
+                    isValidating = {isValidating}
+                    localRecordingOnlySelf = {localRecordingOnlySelf}
+                    onChange = {this._onSelectedRecordingServiceChanged}
+                    onLocalRecordingSelfChange = {this._onLocalRecordingSelfChange}
+                    onRecordAudioAndVideoChange = {this._onRecordAudioAndVideoChange}
+                    onSharingSettingChanged = {this._onSharingSettingChanged}
+                    onTranscriptionChange = {this._onTranscriptionChange}
+                    selectedRecordingService = {selectedRecordingService}
+                    sharingSetting = {sharingEnabled}
+                    shouldRecordAudioAndVideo = {shouldRecordAudioAndVideo}
+                    shouldRecordTranscription = {shouldRecordTranscription}
+                    spaceLeft = {spaceLeft}
+                    userName = {userName} />
             </Dialog>
         );
     }
@@ -121,7 +122,7 @@ class StartRecordingDialog extends AbstractStartRecordingDialog {
      * @returns {void}
      */
     _toggleScreenshotCapture() {
-        const {dispatch, _screenshotCaptureEnabled} = this.props;
+        const { dispatch, _screenshotCaptureEnabled } = this.props;
 
         if (_screenshotCaptureEnabled) {
             dispatch(toggleScreenshotCaptureSummary(true));

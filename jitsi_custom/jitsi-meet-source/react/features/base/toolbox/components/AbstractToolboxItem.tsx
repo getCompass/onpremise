@@ -1,9 +1,9 @@
-import React, {Component, ReactElement, ReactNode} from 'react';
-import {WithTranslation} from 'react-i18next';
-import {GestureResponderEvent} from 'react-native';
+import React, { Component, ReactElement, ReactNode } from 'react';
+import { WithTranslation } from 'react-i18next';
+import { GestureResponderEvent } from 'react-native';
 
-import type {StyleType} from '../../styles/functions.any';
-import {TOOLTIP_POSITION} from '../../ui/constants.any';
+import type { StyleType } from '../../styles/functions.any';
+import { TOOLTIP_POSITION } from '../../ui/constants.any';
 
 export type Styles = {
 
@@ -183,7 +183,7 @@ export default class AbstractToolboxItem<P extends IProps> extends Component<P> 
      * @returns {string}
      */
     _maybeTranslateAttribute(text: string, textProps?: any) {
-        const {t} = this.props;
+        const { t } = this.props;
 
         if (textProps) {
 
@@ -201,7 +201,7 @@ export default class AbstractToolboxItem<P extends IProps> extends Component<P> 
      * @returns {void}
      */
     _onClick(...args: any) {
-        const {disabled, onClick} = this.props;
+        const { disabled, onClick } = this.props;
 
         disabled || onClick?.(...args);
     }

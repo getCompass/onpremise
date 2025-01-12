@@ -1,14 +1,14 @@
-import React, {Component} from 'react';
-import {WithTranslation} from 'react-i18next';
+import React, { Component } from 'react';
+import { WithTranslation } from 'react-i18next';
 
-import {createRemoteVideoMenuButtonEvent} from '../../../analytics/AnalyticsEvents';
-import {sendAnalytics} from '../../../analytics/functions';
-import {translate} from '../../../base/i18n/functions';
-import {IconRemoteControlStart, IconRemoteControlStop} from '../../../base/icons/svg';
+import { createRemoteVideoMenuButtonEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconRemoteControlStart, IconRemoteControlStop } from '../../../base/icons/svg';
 import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
-import {NOTIFY_CLICK_MODE} from '../../../toolbox/types';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 import Icon from "../../../base/icons/components/Icon";
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 // TODO: Move these enums into the store after further reactification of the
 // non-react RemoteVideo component.
@@ -82,41 +82,41 @@ class RemoteControlButton extends Component<IProps> {
      * @returns {null|ReactElement}
      */
     render() {
-        const {remoteControlState, className, t} = this.props;
+        const { remoteControlState, className, t } = this.props;
         const isMobile = isMobileBrowser();
 
         let disabled = false, icon;
 
         switch (remoteControlState) {
-            case REMOTE_CONTROL_MENU_STATES.NOT_STARTED:
-                icon = IconRemoteControlStart;
-                break;
-            case REMOTE_CONTROL_MENU_STATES.REQUESTING:
-                disabled = true;
-                icon = IconRemoteControlStart;
-                break;
-            case REMOTE_CONTROL_MENU_STATES.STARTED:
-                icon = IconRemoteControlStop;
-                break;
-            case REMOTE_CONTROL_MENU_STATES.NOT_SUPPORTED:
+        case REMOTE_CONTROL_MENU_STATES.NOT_STARTED:
+            icon = IconRemoteControlStart;
+            break;
+        case REMOTE_CONTROL_MENU_STATES.REQUESTING:
+            disabled = true;
+            icon = IconRemoteControlStart;
+            break;
+        case REMOTE_CONTROL_MENU_STATES.STARTED:
+            icon = IconRemoteControlStop;
+            break;
+        case REMOTE_CONTROL_MENU_STATES.NOT_SUPPORTED:
 
             // Intentionally fall through.
-            default:
-                return null;
+        default:
+            return null;
         }
 
         return (
             <ContextMenuItem
-                accessibilityLabel={t('videothumbnail.remoteControl')}
-                className={`kicklink ${className}`}
-                disabled={disabled}
-                customIcon={<Icon
-                    className={isMobile ? 'is-mobile' : ''}
-                    size={isMobile ? 22 : 18}
-                    src={icon}
-                    color={'rgba(255, 255, 255, 0.3)'}/>}
-                onClick={this._onClick}
-                text={t('videothumbnail.remoteControl')}/>
+                accessibilityLabel = {t('videothumbnail.remoteControl')}
+                className = {`kicklink ${className}`}
+                disabled = {disabled}
+                customIcon = {<Icon
+                    className = {isMobile ? 'is-mobile' : ''}
+                    size = {isMobile ? 22 : 18}
+                    src = {icon}
+                    color = {'rgba(255, 255, 255, 0.3)'} />}
+                onClick = {this._onClick}
+                text = {t('videothumbnail.remoteControl')} />
         );
     }
 
@@ -128,7 +128,7 @@ class RemoteControlButton extends Component<IProps> {
      * @returns {void}
      */
     _onClick() {
-        const {notifyClick, notifyMode, onClick, participantID, remoteControlState} = this.props;
+        const { notifyClick, notifyMode, onClick, participantID, remoteControlState } = this.props;
 
         notifyClick?.();
         if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {

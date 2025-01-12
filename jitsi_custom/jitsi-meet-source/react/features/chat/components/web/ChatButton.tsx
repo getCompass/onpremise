@@ -1,17 +1,17 @@
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {createToolbarEvent} from '../../../analytics/AnalyticsEvents';
-import {sendAnalytics} from '../../../analytics/functions';
-import {IReduxState} from '../../../app/types';
-import {translate} from '../../../base/i18n/functions';
-import {IconMessage} from '../../../base/icons/svg';
-import AbstractButton, {IProps as AbstractButtonProps} from '../../../base/toolbox/components/AbstractButton';
-import {closeOverflowMenuIfOpen} from '../../../toolbox/actions.web';
-import {toggleChat} from '../../actions.web';
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { IReduxState } from '../../../app/types';
+import { translate } from '../../../base/i18n/functions';
+import { IconMessage } from '../../../base/icons/svg';
+import AbstractButton, { IProps as AbstractButtonProps } from '../../../base/toolbox/components/AbstractButton';
+import { closeOverflowMenuIfOpen } from '../../../toolbox/actions.web';
+import { toggleChat } from '../../actions.web';
 
 import ChatCounter from './ChatCounter';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link ChatButton}.
@@ -38,8 +38,6 @@ class ChatButton extends AbstractButton<IProps> {
     icon = IconMessage;
     label = 'toolbar.openChat';
     toggledLabel = 'toolbar.closeChat';
-    tooltip = 'toolbar.openChat';
-    toggledTooltip = 'toolbar.closeChat';
 
     /**
      * Indicates whether this button is in toggled state or not.
@@ -75,10 +73,10 @@ class ChatButton extends AbstractButton<IProps> {
 
         return (
             <div
-                className={`toolbar-button-with-badge ${isMobile ? 'is-mobile' : ''}`}
-                key='chatcontainer'>
+                className = {`toolbar-button-with-badge ${isMobile ? 'is-mobile' : ''}`}
+                key = 'chatcontainer'>
                 {super.render()}
-                <ChatCounter/>
+                <ChatCounter />
             </div>
         );
     }
@@ -90,7 +88,7 @@ class ChatButton extends AbstractButton<IProps> {
      * @returns {void}
      */
     _handleClick() {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
 
         sendAnalytics(createToolbarEvent(
             'toggle.chat',
@@ -109,7 +107,7 @@ class ChatButton extends AbstractButton<IProps> {
  * @returns {Object}
  */
 const mapStateToProps = (state: IReduxState) => {
-    const {knocking} = state['features/lobby'];
+    const { knocking } = state['features/lobby'];
 
     return {
         _chatOpen: state['features/chat'].isOpen,

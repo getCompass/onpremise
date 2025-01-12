@@ -685,7 +685,7 @@
             "answerPlaceholder": "Opción {{index}}",
             "cancel": "Cancelar",
             "create": "Crear una encuesta",
-            "pollOptions": "Opción de encuesta {{index}}",
+            "pollOption": "Opción de encuesta {{index}}",
             "pollQuestion": "Pregunta de la encuesta",
             "questionPlaceholder": "Haz una pregunta",
             "removeOption": "Eliminar la opción",

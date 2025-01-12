@@ -1,4 +1,4 @@
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash-es';
 
 import { IStore } from '../app/types';
 import { NOTIFICATIONS_ENABLED } from '../base/flags/constants';
@@ -41,7 +41,7 @@ function getNotificationTimeout(type?: string, notificationTimeouts?: {
         return notificationTimeouts?.long ?? NOTIFICATION_TIMEOUT.LONG;
     }
 
-    return NOTIFICATION_TIMEOUT.STICKY;
+    return NOTIFICATION_TIMEOUT.LONG;
 }
 
 /**

@@ -1,7 +1,7 @@
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {translate} from '../../../base/i18n/functions';
+import { translate } from '../../../base/i18n/functions';
 import Dialog from '../../../base/ui/components/web/Dialog';
 import AbstractKickRemoteParticipantDialog from '../AbstractKickRemoteParticipantDialog';
 
@@ -18,14 +18,14 @@ class KickRemoteParticipantDialog extends AbstractKickRemoteParticipantDialog {
     render() {
         return (
             <Dialog
-                ok={{translationKey: 'dialog.kickParticipantButton'}}
-                onSubmit={this._onSubmit}
-                hideCloseButton={true}
-                titleKey='dialog.kickParticipantTitle'
-                className={'kick-user-dialog-container'}
-                classNameHeader={'kick-user-header-dialog'}
-                classNameContent={'kick-user-content-dialog'}
-                classNameFooter={'kick-user-footer-dialog'}>
+                ok = {{ translationKey: 'dialog.kickParticipantButton' }}
+                onSubmit = {this._onSubmit}
+                hideCloseButton = {true}
+                titleKey = 'dialog.kickParticipantTitle'
+                className = {'kick-user-dialog-container'}
+                classNameHeader = {'kick-user-header-dialog'}
+                classNameContent = {'kick-user-content-dialog'}
+                classNameFooter = {'kick-user-footer-dialog'}>
                 <div>
                     {this.props.t('dialog.kickParticipantDialog')}
                 </div>

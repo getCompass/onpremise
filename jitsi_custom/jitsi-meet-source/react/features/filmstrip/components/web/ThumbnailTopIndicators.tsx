@@ -1,18 +1,18 @@
 import React from 'react';
-import {useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {isMobileBrowser} from "../../../base/environment/utils";
-import {STATS_POPOVER_POSITION, THUMBNAIL_TYPE} from '../../constants';
-import {getTopIndicatorsTooltipPosition} from '../../functions.web';
+import { isMobileBrowser } from "../../../base/environment/utils";
+import { STATS_POPOVER_POSITION, THUMBNAIL_TYPE } from '../../constants';
+import { getTopIndicatorsTooltipPosition } from '../../functions.web';
 
 import PinnedIndicator from './PinnedIndicator';
 import RaisedHandIndicator from './RaisedHandIndicator';
 import StatusIndicators from './StatusIndicators';
 import VideoMenuTriggerButton from "./VideoMenuTriggerButton";
 import ConnectionIndicator from "../../../connection-indicator/components/web/ConnectionIndicator";
-import {IReduxState} from "../../../app/types";
-import {isScreenShareParticipantById} from "../../../base/participants/functions";
+import { IReduxState } from "../../../app/types";
+import { isScreenShareParticipantById } from "../../../base/participants/functions";
 
 interface IProps {
 
@@ -75,20 +75,20 @@ const useStyles = makeStyles()(() => {
 });
 
 const ThumbnailTopIndicators = ({
-                                    disableConnectionIndicator,
-                                    hidePopover,
-                                    indicatorsClassName,
-                                    isHovered,
-                                    local,
-                                    participantId,
-                                    popoverVisible,
-                                    showPopover,
-                                    thumbnailType
-                                }: IProps) => {
-    const {classes: styles, cx} = useStyles();
+    disableConnectionIndicator,
+    hidePopover,
+    indicatorsClassName,
+    isHovered,
+    local,
+    participantId,
+    popoverVisible,
+    showPopover,
+    thumbnailType
+}: IProps) => {
+    const { classes: styles, cx } = useStyles();
 
     const _isMobile = isMobileBrowser();
-    const {NORMAL = 16} = interfaceConfig.INDICATOR_FONT_SIZES || {};
+    const { NORMAL = 16 } = interfaceConfig.INDICATOR_FONT_SIZES || {};
     const _indicatorIconSize = NORMAL;
     const _connectionIndicatorAutoHideEnabled = Boolean(
         useSelector((state: IReduxState) => state['features/base/config'].connectionIndicators?.autoHide) ?? true);
@@ -101,14 +101,14 @@ const ThumbnailTopIndicators = ({
 
     if (isVirtualScreenshareParticipant) {
         return (
-            <div className={styles.container}>
+            <div className = {styles.container}>
                 {!_connectionIndicatorDisabled
                     && <ConnectionIndicator
-                        alwaysVisible={showConnectionIndicator}
-                        enableStatsDisplay={true}
-                        iconSize={_indicatorIconSize}
-                        participantId={participantId}
-                        statsPopoverPosition={STATS_POPOVER_POSITION[thumbnailType]}/>
+                        alwaysVisible = {showConnectionIndicator}
+                        enableStatsDisplay = {true}
+                        iconSize = {_indicatorIconSize}
+                        participantId = {participantId}
+                        statsPopoverPosition = {STATS_POPOVER_POSITION[thumbnailType]} />
                 }
             </div>
         );
@@ -117,43 +117,31 @@ const ThumbnailTopIndicators = ({
     const tooltipPosition = getTopIndicatorsTooltipPosition(thumbnailType);
 
     return (<>
-        <div className={styles.container}>
+        <div className = {styles.container}>
+            <RaisedHandIndicator
+                iconSize = {_indicatorIconSize}
+                participantId = {participantId}
+                tooltipPosition = {tooltipPosition} />
             <PinnedIndicator
-                iconSize={_indicatorIconSize}
-                participantId={participantId}
-                tooltipPosition={tooltipPosition}/>
+                iconSize = {_indicatorIconSize}
+                participantId = {participantId}
+                tooltipPosition = {tooltipPosition} />
             {thumbnailType !== THUMBNAIL_TYPE.TILE && !_connectionIndicatorDisabled && (
                 <ConnectionIndicator
-                    alwaysVisible={showConnectionIndicator}
-                    enableStatsDisplay={true}
-                    iconSize={_indicatorIconSize}
-                    participantId={participantId}
-                    statsPopoverPosition={STATS_POPOVER_POSITION[thumbnailType]}/>
+                    alwaysVisible = {showConnectionIndicator}
+                    enableStatsDisplay = {true}
+                    iconSize = {_indicatorIconSize}
+                    participantId = {participantId}
+                    statsPopoverPosition = {STATS_POPOVER_POSITION[thumbnailType]} />
             )}
-            <RaisedHandIndicator
-                iconSize={_indicatorIconSize}
-                participantId={participantId}
-                tooltipPosition={tooltipPosition}/>
             {thumbnailType !== THUMBNAIL_TYPE.TILE && (
-                <div className={cx(indicatorsClassName, 'top-indicators')}>
+                <div className = {cx(indicatorsClassName, 'top-indicators')}>
                     <StatusIndicators
-                        participantID={participantId}
-                        screenshare={false}/>
+                        participantID = {participantId}
+                        screenshare = {false} />
                 </div>
             )}
         </div>
-        {thumbnailType !== THUMBNAIL_TYPE.TILE && (
-            <div className={styles.container}>
-                <VideoMenuTriggerButton
-                    hidePopover={hidePopover}
-                    local={local}
-                    participantId={participantId}
-                    popoverVisible={popoverVisible}
-                    showPopover={showPopover}
-                    thumbnailType={thumbnailType}
-                    visible={isHovered}/>
-            </div>
-        )}
     </>);
 };
 

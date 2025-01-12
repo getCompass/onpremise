@@ -6,14 +6,18 @@ import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { isMobileBrowser } from '../../../react/features/base/environment/utils';
 import { browser } from '../../../react/features/base/lib-jitsi-meet';
-import { FILMSTRIP_BREAKPOINT } from '../../../react/features/filmstrip/constants';
+import {
+    COMPASS_HORIZONTAL_FILMSTRIP_HEIGHT,
+    COMPASS_TOOLBAR_HEIGHT,
+    FILMSTRIP_BREAKPOINT
+} from '../../../react/features/filmstrip/constants';
 import { setLargeVideoDimensions } from '../../../react/features/large-video/actions.any';
 import { ORIENTATION } from '../../../react/features/large-video/components/LargeVideoBackground';
 import { LAYOUTS } from '../../../react/features/video-layout/constants';
 import { getCurrentLayout } from '../../../react/features/video-layout/functions.any';
 /* eslint-enable no-unused-vars */
-import UIUtil from '../util/UIUtil';
 
 import Filmstrip from './Filmstrip';
 import LargeContainer from './LargeContainer';
@@ -42,45 +46,30 @@ const containerEvents = [ 'abort', 'canplaythrough', 'ended', 'error', 'stalled'
  * @param videoHeight the height of the video to position
  * @param videoSpaceWidth the width of the available space
  * @param videoSpaceHeight the height of the available space
- * @param subtractFilmstrip whether to subtract the filmstrip or not
  * @return an array with 2 elements, the video width and the video height
  */
 function computeDesktopVideoSize( // eslint-disable-line max-params
         videoWidth,
         videoHeight,
         videoSpaceWidth,
-        videoSpaceHeight,
-        subtractFilmstrip) {
-    if (videoWidth === 0 || videoHeight === 0 || videoSpaceWidth === 0 || videoSpaceHeight === 0) {
-        // Avoid NaN values caused by division by 0.
+        videoSpaceHeight
+) {
+    if (videoSpaceWidth === 0 || videoSpaceHeight === 0) {
+        // Avoid division by 0.
         return [ 0, 0 ];
     }
 
-    const aspectRatio = videoWidth / videoHeight;
-    let availableWidth = Math.max(videoWidth, videoSpaceWidth);
-    let availableHeight = Math.max(videoHeight, videoSpaceHeight);
+    const aspectRatio = interfaceConfig.REMOTE_THUMBNAIL_RATIO;
 
-    if (interfaceConfig.VERTICAL_FILMSTRIP) {
-        if (subtractFilmstrip) {
-            // eslint-disable-next-line no-param-reassign
-            videoSpaceWidth -= Filmstrip.getVerticalFilmstripWidth();
-        }
-    } else {
-        // eslint-disable-next-line no-param-reassign
-        videoSpaceHeight -= Filmstrip.getFilmstripHeight();
+    let height = videoSpaceHeight;
+    let width = height * aspectRatio;
+
+    if (width > videoSpaceWidth) {
+        width = videoSpaceWidth;
+        height = width / aspectRatio;
     }
 
-    if (availableWidth / aspectRatio >= videoSpaceHeight) {
-        availableHeight = videoSpaceHeight;
-        availableWidth = availableHeight * aspectRatio;
-    }
-
-    if (availableHeight * aspectRatio >= videoSpaceWidth) {
-        availableWidth = videoSpaceWidth;
-        availableHeight = availableWidth / aspectRatio;
-    }
-
-    return [ availableWidth, availableHeight ];
+    return [ width, height ];
 }
 
 
@@ -122,26 +111,26 @@ function computeCameraVideoSize( // eslint-disable-line max-params
             videoSpaceHeight,
             videoSpaceRatio < aspectRatio ? 'width' : 'height');
     case 'both': {
-        const maxZoomCoefficient = interfaceConfig.MAXIMUM_ZOOMING_COEFFICIENT
-            || Infinity;
+        const maxZoomCoefficient = interfaceConfig.MAXIMUM_ZOOMING_COEFFICIENT || Infinity;
 
-        if (videoSpaceRatio === aspectRatio) {
-            return [ videoSpaceWidth, videoSpaceHeight ];
+        let height, width;
+
+        if (videoSpaceRatio < aspectRatio) {
+            width = videoSpaceWidth;
+            height = width / aspectRatio;
+        } else {
+            height = videoSpaceHeight;
+            width = height * aspectRatio;
         }
 
-        let [ width, height ] = computeCameraVideoSize(
-            videoWidth,
-            videoHeight,
-            videoSpaceWidth,
-            videoSpaceHeight,
-            videoSpaceRatio < aspectRatio ? 'height' : 'width');
         const maxWidth = videoSpaceWidth * maxZoomCoefficient;
         const maxHeight = videoSpaceHeight * maxZoomCoefficient;
 
         if (width > maxWidth) {
             width = maxWidth;
             height = width / aspectRatio;
-        } else if (height > maxHeight) {
+        }
+        if (height > maxHeight) {
             height = maxHeight;
             width = height * aspectRatio;
         }
@@ -164,17 +153,11 @@ function getCameraVideoPosition( // eslint-disable-line max-params
         videoWidth,
         videoHeight,
         videoSpaceWidth,
-        videoSpaceHeight) {
-    // Parent height isn't completely calculated when we position the video in
-    // full screen mode and this is why we use the screen height in this case.
-    // Need to think it further at some point and implement it properly.
-    if (UIUtil.isFullScreen()) {
-        // eslint-disable-next-line no-param-reassign
-        videoSpaceHeight = window.innerHeight;
-    }
+        videoSpaceHeight,
+        state) {
 
-    const horizontalIndent = (videoSpaceWidth - videoWidth) / 2;
-    const verticalIndent = (videoSpaceHeight - videoHeight) / 2;
+    const horizontalIndent = 0; // высчитываем внутри LargeVideo.web.tsx
+    const verticalIndent = 0; // высчитываем внутри LargeVideo.web.tsx
 
     return { horizontalIndent,
         verticalIndent };
@@ -241,13 +224,14 @@ export class VideoContainer extends LargeContainer {
          * The HTMLElements of the remote connection message.
          * @type {HTMLElement}
          */
-        this.remoteConnectionMessage = document.getElementById('remoteConnectionMessage');
+        if (!isMobileBrowser()) {
+            this.remoteConnectionMessage = document.getElementById('remoteConnectionMessage');
+        }
         this.remotePresenceMessage = document.getElementById('remotePresenceMessage');
 
         this.$wrapper = $('#largeVideoWrapper');
 
-        this.wrapperParent = document.getElementById('largeVideoElementsContainer');
-        this.avatarHeight = document.getElementById('dominantSpeakerAvatarContainer').getBoundingClientRect().height;
+        this.wrapperParent = document.getElementById('largeVideoCompassContainer');
         this.video.onplaying = function(event) {
             logger.debug('Large video is playing!');
             if (typeof resizeContainer === 'function') {
@@ -310,18 +294,16 @@ export class VideoContainer extends LargeContainer {
      * Calculate optimal video size for specified container size.
      * @param {number} containerWidth container width
      * @param {number} containerHeight container height
-     * @param {number} verticalFilmstripWidth current width of the vertical filmstrip
      * @returns {{availableWidth, availableHeight}}
      */
-    _getVideoSize(containerWidth, containerHeight, verticalFilmstripWidth) {
+    _getVideoSize(containerWidth, containerHeight) {
         const { width, height } = this.getStreamSize();
 
         if (this.stream && this.isScreenSharing()) {
             return computeDesktopVideoSize(width,
                 height,
                 containerWidth,
-                containerHeight,
-                verticalFilmstripWidth < FILMSTRIP_BREAKPOINT);
+                containerHeight);
         }
 
         return computeCameraVideoSize(width,
@@ -340,9 +322,10 @@ export class VideoContainer extends LargeContainer {
      * @param {number} containerWidth container width
      * @param {number} containerHeight container height
      * @param {number} verticalFilmstripWidth current width of the vertical filmstrip
+     * @param {IReduxState} state current state
      * @returns {{horizontalIndent, verticalIndent}}
      */
-    getVideoPosition(width, height, containerWidth, containerHeight, verticalFilmstripWidth) {
+    getVideoPosition(width, height, containerWidth, containerHeight, verticalFilmstripWidth, state) {
         let containerWidthToUse = containerWidth;
 
         /* eslint-enable max-params */
@@ -354,13 +337,15 @@ export class VideoContainer extends LargeContainer {
             return getCameraVideoPosition(width,
                 height,
                 containerWidthToUse,
-                containerHeight);
+                containerHeight,
+                state);
         }
 
         return getCameraVideoPosition(width,
-                height,
-                containerWidthToUse,
-                containerHeight);
+            height,
+            containerWidthToUse,
+            containerHeight,
+            state);
 
     }
 
@@ -372,7 +357,9 @@ export class VideoContainer extends LargeContainer {
      * @returns {void}
      */
     positionRemoteStatusMessages() {
-        this._positionParticipantStatus(this.remoteConnectionMessage);
+        if (!isMobileBrowser()) {
+            this._positionParticipantStatus(this.remoteConnectionMessage);
+        }
         this._positionParticipantStatus(this.remotePresenceMessage);
     }
 
@@ -399,7 +386,7 @@ export class VideoContainer extends LargeContainer {
     /**
      *
      */
-    resize(containerWidth, containerHeight, animate = false) {
+    resize(containerWidth, tempContainerHeight, animate = false) {
         // XXX Prevent TypeError: undefined is not an object when the Web
         // browser does not support WebRTC (yet).
         if (!this.video) {
@@ -407,6 +394,8 @@ export class VideoContainer extends LargeContainer {
         }
         const state = APP.store.getState();
         const currentLayout = getCurrentLayout(state);
+        const { remoteParticipants } = state['features/filmstrip'];
+        const remoteParticipantsLength = remoteParticipants.length;
 
         const verticalFilmstripWidth = state['features/filmstrip'].width?.current;
 
@@ -416,9 +405,12 @@ export class VideoContainer extends LargeContainer {
             return;
         }
 
+        // eslint-disable-next-line max-len
+        const containerHeight = tempContainerHeight - COMPASS_TOOLBAR_HEIGHT - (currentLayout === LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW && remoteParticipantsLength > 0 ? COMPASS_HORIZONTAL_FILMSTRIP_HEIGHT : 10); // 10 это отступ сверху в режиме спикера
+
         this.positionRemoteStatusMessages();
 
-        const [ width, height ] = this._getVideoSize(containerWidth, containerHeight, verticalFilmstripWidth);
+        const [ width, height ] = this._getVideoSize(containerWidth, containerHeight);
 
         if (width === 0 || height === 0) {
             // We don't need to set 0 for width or height since the visibility is controlled by the visibility css prop
@@ -439,23 +431,39 @@ export class VideoContainer extends LargeContainer {
         this._updateBackground();
 
         const { horizontalIndent, verticalIndent }
-            = this.getVideoPosition(width, height, containerWidth, containerHeight, verticalFilmstripWidth);
+            = this.getVideoPosition(width, height, containerWidth, containerHeight, verticalFilmstripWidth, state);
 
         APP.store.dispatch(setLargeVideoDimensions(height, width));
 
-        this.$wrapper.animate({
-            width,
-            height,
+        if (isMobileBrowser()) {
+            this.$wrapper.animate({
+                containerWidth,
+                tempContainerHeight,
 
-            top: verticalIndent,
-            bottom: verticalIndent,
+                top: 0,
+                bottom: 0,
 
-            left: horizontalIndent,
-            right: horizontalIndent
-        }, {
-            queue: false,
-            duration: animate ? 500 : 0
-        });
+                left: 0,
+                right: 0
+            }, {
+                queue: false,
+                duration: animate ? 500 : 0
+            });
+        } else {
+            this.$wrapper.animate({
+                width,
+                height,
+
+                top: verticalIndent,
+                bottom: verticalIndent,
+
+                left: horizontalIndent,
+                right: horizontalIndent
+            }, {
+                queue: false,
+                duration: animate ? 500 : 0
+            });
+        }
     }
 
     /**
@@ -501,8 +509,7 @@ export class VideoContainer extends LargeContainer {
      * @param {string} videoType video type
      */
     setStream(userID, stream, videoType) {
-        this.userId = userID;
-        if (this.stream === stream && !stream?.forceStreamToReattach) {
+        if (this.userId === userID && this.stream === stream && !stream?.forceStreamToReattach) {
             logger.debug(`SetStream on the large video for user ${userID} ignored: the stream is not changed!`);
 
             // Handles the use case for the remote participants when the
@@ -515,6 +522,8 @@ export class VideoContainer extends LargeContainer {
 
             return;
         }
+
+        this.userId = userID;
 
         if (stream?.forceStreamToReattach) {
             delete stream.forceStreamToReattach;
@@ -540,9 +549,8 @@ export class VideoContainer extends LargeContainer {
                 logger.error(`Attaching the remote track ${stream} to large video has failed with `, error);
             });
 
-            // Ensure large video gets play() called on it when a new stream is attached to it. This is necessary in the
-            // case of Safari as autoplay doesn't kick-in automatically on Safari 15 and newer versions.
-            browser.isWebKitBased() && this._play();
+            // Ensure large video gets play() called on it when a new stream is attached to it.
+            this._play();
 
             const flipX = stream.isLocal() && this.localFlipX && !this.isScreenSharing();
 
@@ -659,6 +667,7 @@ export class VideoContainer extends LargeContainer {
             return;
         }
 
+        // compass changes
         ReactDOM.render(
             <div className="large-video-background">
                 <div className="animation_spin500ms preloader25">

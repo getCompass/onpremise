@@ -1,6 +1,6 @@
 import { IReduxState, IStore } from '../app/types';
 import {
-    getActiveSpeakersToBeDisplayed,
+    getActiveSpeakersToBeDisplayed, getLocalParticipant, getRaiseHandsQueue, getSortedModeratorList,
     getVirtualScreenshareParticipantOwnerId
 } from '../base/participants/functions';
 
@@ -12,23 +12,19 @@ import { isFilmstripScrollVisible } from './functions';
  *
  * @param {*} store - The redux store.
  * @param {boolean} force - Does not short circuit, the execution, make execute all checks.
- * @param {string} participantId - The endpoint id of the participant that joined the call.
+ * @param raisedHandParticipantsQueue
  * @returns {void}
  * @private
  */
-export function updateRemoteParticipants(store: IStore, force?: boolean, participantId?: string) {
+export function updateRemoteParticipants(store: IStore, force?: boolean, raisedHandParticipantsQueue?: Array<{
+    id: string;
+    raisedHandTimestamp: number;
+}>) {
     const state = store.getState();
     let reorderedParticipants = [];
     const { sortedRemoteVirtualScreenshareParticipants } = state['features/base/participants'];
 
     if (!isFilmstripScrollVisible(state) && !sortedRemoteVirtualScreenshareParticipants.size && !force) {
-        if (participantId) {
-            const { remoteParticipants } = state['features/filmstrip'];
-
-            reorderedParticipants = [ ...remoteParticipants, participantId ];
-            store.dispatch(setRemoteParticipants(Array.from(new Set(reorderedParticipants))));
-        }
-
         return;
     }
 
@@ -37,10 +33,42 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, partici
         sortedRemoteParticipants
     } = state['features/base/participants'];
     const remoteParticipants = new Map(sortedRemoteParticipants);
+    const localParticipant = getLocalParticipant(state);
     const screenShareParticipants = sortedRemoteVirtualScreenshareParticipants
         ? [ ...sortedRemoteVirtualScreenshareParticipants.keys() ] : [];
     const sharedVideos = fakeParticipants ? Array.from(fakeParticipants.keys()) : [];
     const speakers = getActiveSpeakersToBeDisplayed(state);
+    const raisedHandQueue = raisedHandParticipantsQueue ?? getRaiseHandsQueue(state);
+    const raisedHandParticipants = raisedHandQueue.map(({ id: particId }) => particId);
+    const remoteRaisedHandParticipants = new Set(raisedHandParticipants || []);
+    const moderatorsMap = getSortedModeratorList(state);
+
+    if (localParticipant !== undefined && remoteRaisedHandParticipants.has(localParticipant.id)) {
+        remoteRaisedHandParticipants.delete(localParticipant.id);
+    }
+
+    for (const participant of moderatorsMap.keys()) {
+        // Avoid duplicates.
+        if (remoteRaisedHandParticipants.has(participant)) {
+            remoteRaisedHandParticipants.delete(participant);
+        }
+        if (remoteParticipants.has(participant)) {
+            remoteParticipants.delete(participant);
+        }
+        if (speakers.has(participant)) {
+            speakers.delete(participant);
+        }
+    }
+
+    for (const participant of remoteRaisedHandParticipants.keys()) {
+        // Avoid duplicates.
+        if (remoteParticipants.has(participant)) {
+            remoteParticipants.delete(participant);
+        }
+        if (speakers.has(participant)) {
+            speakers.delete(participant);
+        }
+    }
 
     for (const screenshare of screenShareParticipants) {
         const ownerId = getVirtualScreenshareParticipantOwnerId(screenshare);
@@ -67,11 +95,20 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, partici
         return acc;
     }, []);
 
+    // сортируем по id от меньшего к большему
+    // НЕ сортируем по id remoteRaisedHandParticipants, чтобы их порядок сохранился по очереди поднятия руки
+    participantsWithScreenShare.sort((a, b) => a.localeCompare(b));
+    sharedVideos.sort((a, b) => a.localeCompare(b));
+    const reorderedSpeakers = Array.from(speakers.keys()).sort((a, b) => a.localeCompare(b));
+    const reorderedRemoteParticipants = Array.from(remoteParticipants.keys()).sort((a, b) => a.localeCompare(b));
+
     reorderedParticipants = [
+        ...Array.from(remoteRaisedHandParticipants.keys()),
+        ...Array.from(moderatorsMap.keys()),
         ...participantsWithScreenShare,
         ...sharedVideos,
-        ...Array.from(speakers.keys()),
-        ...Array.from(remoteParticipants.keys())
+        ...reorderedSpeakers,
+        ...reorderedRemoteParticipants
     ];
 
     store.dispatch(setRemoteParticipants(Array.from(new Set(reorderedParticipants))));
@@ -94,7 +131,7 @@ export function updateRemoteParticipantsOnLeave(store: IStore, participantId: st
     const reorderedParticipants = new Set(remoteParticipants);
 
     reorderedParticipants.delete(participantId)
-        && store.dispatch(setRemoteParticipants(Array.from(reorderedParticipants)));
+    && store.dispatch(setRemoteParticipants(Array.from(reorderedParticipants)));
 }
 
 /**

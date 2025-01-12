@@ -1,11 +1,11 @@
 import React from 'react';
-import {WithTranslation} from 'react-i18next';
-import {makeStyles} from 'tss-react/mui';
+import { WithTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
 
-import {translate} from '../../../i18n/functions';
+import { translate } from '../../../i18n/functions';
 import Icon from '../../../icons/components/Icon';
 import Tooltip from '../../../tooltip/components/Tooltip';
-import {TOOLTIP_POSITION} from '../../../ui/constants.any';
+import { TOOLTIP_POSITION } from '../../../ui/constants.any';
 
 /**
  * The type of the React {@code Component} props of {@link BaseIndicator}.
@@ -24,7 +24,7 @@ interface IProps extends WithTranslation {
 
     /**
      * The CSS classnames to set on the icon element of the component.
-     */
+    */
     iconClassName?: string;
 
     /**
@@ -76,18 +76,18 @@ const useStyles = makeStyles()(() => {
  * @returns {ReactElement}
  */
 const BaseIndicator = ({
-                           className = '',
-                           icon,
-                           iconClassName,
-                           iconColor,
-                           iconId,
-                           iconSize,
-                           id = '',
-                           t,
-                           tooltipKey,
-                           tooltipPosition = 'top'
-                       }: IProps) => {
-    const {classes: styles} = useStyles();
+    className = '',
+    icon,
+    iconClassName,
+    iconColor,
+    iconId,
+    iconSize,
+    id = '',
+    t,
+    tooltipKey,
+    tooltipPosition = 'top'
+}: IProps) => {
+    const { classes: styles } = useStyles();
     const style: { fontSize?: string | number; } = {};
 
     if (iconSize) {
@@ -95,17 +95,17 @@ const BaseIndicator = ({
     }
 
     return (
-        <div className={styles.indicator}>
+        <div className = {styles.indicator}>
                 <span
-                    className={className}
-                    id={id}>
+                    className = {className}
+                    id = {id}>
                     <Icon
-                        alt={t(tooltipKey)}
-                        className={iconClassName}
-                        color={iconColor}
-                        id={iconId}
-                        src={icon}
-                        style={style}/>
+                        alt = {t(tooltipKey)}
+                        className = {iconClassName}
+                        color = {iconColor}
+                        id = {iconId}
+                        src = {icon}
+                        style = {style} />
                 </span>
         </div>
     );

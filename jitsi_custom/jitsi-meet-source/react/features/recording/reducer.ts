@@ -1,4 +1,4 @@
-import ReducerRegistry from "../base/redux/ReducerRegistry";
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     CLEAR_RECORDING_SESSIONS,
@@ -9,12 +9,12 @@ import {
     SET_START_RECORDING_NOTIFICATION_SHOWN,
     SET_STREAM_KEY,
     TOGGLE_ELECTRON_RECORDING,
-} from "./actionTypes";
+} from './actionTypes';
 
 const DEFAULT_STATE = {
     disableHighlightMeetingMoment: false,
     pendingNotificationUids: {},
-    selectedRecordingService: "",
+    selectedRecordingService: '',
     isStartRecording: false,
     sessionDatas: [],
 };
@@ -45,7 +45,7 @@ export interface IRecordingState {
 /**
  * The name of the Redux store this feature stores its state in.
  */
-const STORE_NAME = "features/recording";
+const STORE_NAME = 'features/recording';
 
 /**
  * Reduces the Redux actions of the feature features/recording.

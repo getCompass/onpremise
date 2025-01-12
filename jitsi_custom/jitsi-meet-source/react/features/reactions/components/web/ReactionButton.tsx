@@ -1,6 +1,6 @@
-import React, {Component} from 'react';
-import {TOOLTIP_POSITION} from '../../../base/ui/constants.any';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import React, { Component } from 'react';
+import { TOOLTIP_POSITION } from '../../../base/ui/constants.any';
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link ReactionButton}.
@@ -122,7 +122,7 @@ class ReactionButton extends Component<IProps, IState> {
      * prop of this instance if any.
      */
     _onClick(...args: any) {
-        const {onClick} = this.props;
+        const { onClick } = this.props;
 
         return onClick?.(...args);
     }
@@ -185,13 +185,13 @@ class ReactionButton extends Component<IProps, IState> {
     _renderButton(children: React.ReactElement) {
         return (
             <div
-                aria-label={this.props.accessibilityLabel}
-                aria-pressed={this.props.toggled}
-                className='toolbox-button'
-                onClick={this._onClickHandler}
-                onKeyDown={this._onKeyDown}
-                role='button'
-                tabIndex={0}>
+                aria-label = {this.props.accessibilityLabel}
+                aria-pressed = {this.props.toggled}
+                className = 'toolbox-button'
+                onClick = {this._onClickHandler}
+                onKeyDown = {this._onKeyDown}
+                role = 'button'
+                tabIndex = {0}>
                 {children}
             </div>
         );
@@ -203,16 +203,16 @@ class ReactionButton extends Component<IProps, IState> {
      * @inheritdoc
      */
     _renderIcon() {
-        const {toggled, icon, label, className, classNameIcon} = this.props;
-        const {increaseLevel} = this.state;
+        const { toggled, icon, label, className, classNameIcon } = this.props;
+        const { increaseLevel } = this.state;
         const isMobile = isMobileBrowser();
 
         return (
             <div
-                className={`toolbox-icon ${toggled ? 'toggled' : ''} ${className && className} ${isMobile ? 'is-mobile' : ''}`}>
+                className = {`toolbox-icon ${toggled ? 'toggled' : ''} ${className && className} ${isMobile ? 'is-mobile' : ''}`}>
                 <span
-                    className={`emoji increase-${increaseLevel > 12 ? 12 : increaseLevel} ${classNameIcon && classNameIcon} ${isMobile ? 'is-mobile' : ''}`}>{icon}</span>
-                {label && <span className={`text ${isMobile ? 'is-mobile' : ''}`}>{label}</span>}
+                    className = {`emoji increase-${increaseLevel > 12 ? 12 : increaseLevel} ${classNameIcon && classNameIcon} ${isMobile ? 'is-mobile' : ''}`}>{icon}</span>
+                {label && <span className = {`text ${isMobile ? 'is-mobile' : ''}`}>{label}</span>}
             </div>
         );
     }

@@ -8,6 +8,8 @@ import { combineStyles } from '../../styles/functions.any';
 
 import { Styles } from './AbstractToolboxItem';
 import ToolboxItem from './ToolboxItem';
+import ToolboxItemMobile from './ToolboxItemMobile';
+import { isMobileBrowser } from "../../environment/utils";
 
 export interface IProps extends WithTranslation {
 
@@ -174,6 +176,13 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
     toggledIcon: Object;
 
     /**
+     * The icon of this button, when hovered.
+     *
+     * @abstract
+     */
+    hoveredIcon: Object;
+
+    /**
      * The text to display in the tooltip. Used only on web.
      *
      * If `toggleTooltip` is defined, this is used only when the button is not
@@ -191,6 +200,8 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
      * @abstract
      */
     toggledTooltip?: string;
+
+    containerClassName?: string;
 
     /**
      * Initializes a new {@code AbstractButton} instance.
@@ -248,7 +259,7 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
      */
     _getIcon() {
         return (
-            this._isToggled() ? this.toggledIcon : this.icon
+            this._isToggled() ? this.toggledIcon : this._isHovered() ? this.hoveredIcon : this.icon
         ) || this.icon;
     }
 
@@ -278,9 +289,24 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
      */
     _getAccessibilityLabel() {
         return (this._isToggled()
-            ? this.toggledAccessibilityLabel
-            : this.accessibilityLabel
+                ? this.toggledAccessibilityLabel
+                : this.accessibilityLabel
         ) || this.accessibilityLabel;
+    }
+
+    /**
+     * Gets the current accessibility label, taking the toggled state into
+     * account. If no toggled label is provided, the regular accessibility label
+     * will also be used in the toggled state.
+     *
+     * The accessibility label is not visible in the UI, it is meant to be
+     * used by assistive technologies, mainly screen readers.
+     *
+     * @private
+     * @returns {string}
+     */
+    _getContainerClassName() {
+        return this.containerClassName;
     }
 
     /**
@@ -348,6 +374,18 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
     }
 
     /**
+     * Helper function to be implemented by subclasses, which must return a
+     * {@code boolean} value indicating if this button is hovered or not or
+     * undefined if the button is not hoverable.
+     *
+     * @protected
+     * @returns {?boolean}
+     */
+    _isHovered(): boolean | undefined {
+        return undefined;
+    }
+
+    /**
      * Handles clicking / pressing the button.
      *
      * @param {Object} e - Event.
@@ -394,15 +432,27 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
             labelProps: this.labelProps,
             styles: this._getStyles(),
             toggled: this._isToggled(),
-            tooltip: this._getTooltip()
+            tooltip: this._getTooltip(),
+            containerClassName: this._getContainerClassName(),
         };
+
+        if (isMobileBrowser()) {
+
+            return (
+                <ToolboxItemMobile
+                    disabled = {this._isDisabled()}
+                    onClick = {this._onClick}
+                    onKeyDown = {this._onKeyDown}
+                    {...props} />
+            );
+        }
 
         return (
             <ToolboxItem
-                disabled = { this._isDisabled() }
-                onClick = { this._onClick }
-                onKeyDown = { this._onKeyDown }
-                { ...props } />
+                disabled = {this._isDisabled()}
+                onClick = {this._onClick}
+                onKeyDown = {this._onKeyDown}
+                {...props} />
         );
     }
 }

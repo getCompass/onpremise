@@ -14,7 +14,7 @@ import {
     getDominantSpeakerParticipant,
     getLocalParticipant,
     getRaiseHandsQueue,
-    getRemoteParticipantsSorted,
+    getRemoteParticipantsSorted, getSortedModeratorList,
     isLocalParticipantModerator,
     isParticipantModerator
 } from '../base/participants/functions';
@@ -25,6 +25,7 @@ import { BREAKOUT_ROOMS_RENAME_FEATURE } from '../breakout-rooms/constants';
 import { isInBreakoutRoom } from '../breakout-rooms/functions';
 
 import { MEDIA_STATE, QUICK_ACTION_BUTTON, REDUCER_KEY } from './constants';
+import { isNeedShowElectronOnlyElements } from "../base/environment/utils_web";
 
 /**
  * Checks if a participant is force muted.
@@ -60,8 +61,12 @@ export function isForceMuted(participant: IParticipant | undefined, mediaType: M
  * @returns {MediaState}
  */
 export function getParticipantAudioMediaState(participant: IParticipant | undefined,
-        muted: Boolean, state: IReduxState) {
+    muted: Boolean, state: IReduxState) {
     const dominantSpeaker = getDominantSpeakerParticipant(state);
+
+    if (participant?.isSilent) {
+        return MEDIA_STATE.NONE;
+    }
 
     if (muted) {
         if (isForceMuted(participant, MEDIA_TYPE.AUDIO, state)) {
@@ -87,7 +92,7 @@ export function getParticipantAudioMediaState(participant: IParticipant | undefi
  * @returns {MediaState}
  */
 export function getParticipantVideoMediaState(participant: IParticipant | undefined,
-        muted: Boolean, state: IReduxState) {
+    muted: Boolean, state: IReduxState) {
     if (muted) {
         if (isForceMuted(participant, MEDIA_TYPE.VIDEO, state)) {
             return MEDIA_STATE.FORCE_MUTED;
@@ -140,24 +145,26 @@ export const getParticipantsPaneOpen = (state: IReduxState) => Boolean(getState(
  * @returns {string} - The type of the quick action button.
  */
 export function getQuickActionButtonType(
-        participant: IParticipant | undefined,
-        isAudioMuted: Boolean,
-        isVideoMuted: Boolean,
-        state: IReduxState) {
+    participant: IParticipant | undefined,
+    isAudioMuted: Boolean,
+    isVideoMuted: Boolean,
+    state: IReduxState) {
     // handled only by moderators
     const isVideoForceMuted = isForceMuted(participant, MEDIA_TYPE.VIDEO, state);
+    const isParticipantSilent = participant?.isSilent || false;
+    const participantModerator = isParticipantModerator(participant);
 
-    if (isLocalParticipantModerator(state)) {
-        if (!isAudioMuted) {
+    if (isLocalParticipantModerator(state) && isNeedShowElectronOnlyElements()) {
+        if (!isAudioMuted && !isParticipantSilent && !participantModerator) {
             return QUICK_ACTION_BUTTON.MUTE;
         }
-        if (!isVideoMuted) {
+        if (!isVideoMuted && !participantModerator) {
             return QUICK_ACTION_BUTTON.STOP_VIDEO;
         }
         if (isVideoForceMuted) {
             return QUICK_ACTION_BUTTON.ALLOW_VIDEO;
         }
-        if (isSupported()(state)) {
+        if (isSupported()(state) && isAudioMuted) {
             return QUICK_ACTION_BUTTON.ASK_TO_UNMUTE;
         }
     }
@@ -182,13 +189,11 @@ export const shouldRenderInviteButton = (state: IReduxState) => {
 /**
  * Selector for retrieving ids of participants in the order that they are displayed in the filmstrip (with the
  * exception of participants with raised hand). The participants are reordered as follows.
- * 1. Dominant speaker.
- * 2. Local participant.
- * 3. Participants with raised hand.
- * 4. Participants with screenshare sorted alphabetically by their display name.
- * 5. Shared video participants.
- * 6. Recent speakers sorted alphabetically by their display name.
- * 7. Rest of the participants sorted alphabetically by their display name.
+ * 1. Local participant.
+ * 2. Participants with raised hand.
+ * 3. Participants with screenshare sorted alphabetically by their display name.
+ * 4. Shared video participants.
+ * 5. Rest of the participants sorted alphabetically by their display name.
  *
  * @param {IStateful} stateful - The (whole) redux state, or redux's
  * {@code getState} function to be used to retrieve the state features/base/participants.
@@ -200,7 +205,17 @@ export function getSortedParticipantIds(stateful: IStateful) {
     const reorderedParticipants = new Set(remoteParticipants);
     const raisedHandParticipants = getRaiseHandsQueue(stateful).map(({ id: particId }) => particId);
     const remoteRaisedHandParticipants = new Set(raisedHandParticipants || []);
-    const dominantSpeaker = getDominantSpeakerParticipant(stateful);
+    const moderatorsMap = getSortedModeratorList(stateful);
+
+    for (const participant of moderatorsMap.keys()) {
+        // Avoid duplicates.
+        if (remoteRaisedHandParticipants.has(participant)) {
+            remoteRaisedHandParticipants.delete(participant);
+        }
+        if (reorderedParticipants.has(participant)) {
+            reorderedParticipants.delete(participant);
+        }
+    }
 
     for (const participant of remoteRaisedHandParticipants.keys()) {
         // Avoid duplicates.
@@ -209,22 +224,13 @@ export function getSortedParticipantIds(stateful: IStateful) {
         }
     }
 
-    const dominant = [];
-    const dominantId = dominantSpeaker?.id;
     const local = remoteRaisedHandParticipants.has(id ?? '') ? [] : [ id ];
-
-    // In case dominat speaker has raised hand, keep the order in the raised hand queue.
-    // In case they don't have raised hand, goes first in the participants list.
-    if (dominantId && dominantId !== id && !remoteRaisedHandParticipants.has(dominantId)) {
-        reorderedParticipants.delete(dominantId);
-        dominant.push(dominantId);
-    }
 
     // Move self and participants with raised hand to the top of the list.
     return [
-        ...dominant,
         ...local,
         ...Array.from(remoteRaisedHandParticipants.keys()),
+        ...Array.from(moderatorsMap.keys()),
         ...Array.from(reorderedParticipants.keys())
     ];
 }
@@ -237,8 +243,8 @@ export function getSortedParticipantIds(stateful: IStateful) {
  * @returns {boolean}
  */
 export function participantMatchesSearch(participant: IParticipant | undefined
-    | { displayName?: string; name?: string; },
-searchString: string) {
+        | { displayName?: string; name?: string; },
+    searchString: string) {
     if (searchString === '') {
         return true;
     }
@@ -297,7 +303,7 @@ export function isBreakoutRoomRenameAllowed(state: IReduxState) {
     const isLocalModerator = isLocalParticipantModerator(state);
     const conference = getCurrentConference(state);
     const isRenameBreakoutRoomsSupported
-            = conference?.getBreakoutRooms()?.isFeatureSupported(BREAKOUT_ROOMS_RENAME_FEATURE) ?? false;
+        = conference?.getBreakoutRooms()?.isFeatureSupported(BREAKOUT_ROOMS_RENAME_FEATURE) ?? false;
 
     return isLocalModerator && isRenameBreakoutRoomsSupported;
 }

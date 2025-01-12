@@ -52,7 +52,6 @@ export function appNavigate(uri?: string, options: IReloadNowOptions = {}) {
     logger.info(`appNavigate to ${uri}`);
 
     return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-
         let location = parseURIString(uri);
 
         // If the specified location (URI) does not identify a host, use the app's
@@ -152,7 +151,7 @@ export function appNavigate(uri?: string, options: IReloadNowOptions = {}) {
         }
 
         dispatch(setLocationURL(locationURL));
-        dispatch(setConfig(config, locationURL));
+        dispatch(setConfig(config));
         dispatch(setRoom(room));
 
         if (!room) {

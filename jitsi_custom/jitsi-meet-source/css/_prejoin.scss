@@ -1,0 +1,10 @@
+.web-prejoin-video {
+    width: calc(100% - 16px) !important; // 100% - padding-left - padding-right
+    position: absolute;
+    border-radius: 8px;
+}
+
+.web-prejoin-video-mobile {
+    width: 100% !important;
+    position: absolute;
+}

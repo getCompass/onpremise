@@ -54,6 +54,8 @@ public class JitsiMeetActivity extends AppCompatActivity
     private static final String ACTION_JITSI_MEET_CONFERENCE = "org.jitsi.meet.CONFERENCE";
     private static final String JITSI_MEET_CONFERENCE_OPTIONS = "JitsiMeetConferenceOptions";
 
+    private boolean isReadyToClose;
+
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -124,6 +126,8 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
+        JitsiMeetLogger.i("onDestroy()");
+
         // Here we are trying to handle the following corner case: an application using the SDK
         // is using this Activity for displaying meetings, but there is another "main" Activity
         // with other content. If this Activity is "swiped out" from the recent list we will get
@@ -131,7 +135,10 @@ public class JitsiMeetActivity extends AppCompatActivity
         // current meeting, but when our view is detached from React the JS <-> Native bridge won't
         // be operational so the external API won't be able to notify the native side that the
         // conference terminated. Thus, try our best to clean up.
-        leave();
+        if (!isReadyToClose) {
+            JitsiMeetLogger.i("onDestroy(): leaving...");
+            leave();
+        }
 
         this.jitsiView = null;
 
@@ -149,8 +156,12 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     @Override
     public void finish() {
-        leave();
+        if (!isReadyToClose) {
+            JitsiMeetLogger.i("finish(): leaving...");
+            leave();
+        }
 
+        JitsiMeetLogger.i("finish(): finishing...");
         super.finish();
     }
 
@@ -170,8 +181,8 @@ public class JitsiMeetActivity extends AppCompatActivity
     }
 
     public void join(JitsiMeetConferenceOptions options) {
-        if (this.jitsiView  != null) {
-            this.jitsiView .join(options);
+        if (this.jitsiView != null) {
+            this.jitsiView.join(options);
         } else {
             JitsiMeetLogger.w("Cannot join, view is null");
         }
@@ -252,6 +263,7 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     protected void onReadyToClose() {
         JitsiMeetLogger.i("SDK is ready to close");
+        isReadyToClose = true;
         finish();
     }
 
@@ -294,8 +306,8 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     @Override
     protected void onUserLeaveHint() {
-        if (this.jitsiView  != null) {
-            this.jitsiView .enterPictureInPicture();
+        if (this.jitsiView != null) {
+            this.jitsiView.enterPictureInPicture();
         }
     }
 

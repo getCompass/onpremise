@@ -1,27 +1,25 @@
-import React, {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
-
-import Avatar from '../../../base/avatar/components/Avatar';
-import Icon from '../../../base/icons/components/Icon';
-import {IconCheck, IconCloseLarge} from '../../../base/icons/svg';
-import {withPixelLineHeight} from '../../../base/styles/functions.web';
-import {admitMultiple} from '../../../lobby/actions.web';
-import {getKnockingParticipants, getLobbyEnabled} from '../../../lobby/functions';
-import Drawer from '../../../toolbox/components/web/Drawer';
-import JitsiPortal from '../../../toolbox/components/web/JitsiPortal';
-import {showOverflowDrawer} from '../../../toolbox/functions.web';
-import {useLobbyActions, useParticipantDrawer} from '../../hooks';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
+import { admitMultiple } from '../../../lobby/actions.web';
+import { getKnockingParticipants, getLobbyEnabled } from '../../../lobby/functions';
+import { showOverflowDrawer } from '../../../toolbox/functions.web';
 
 import LobbyParticipantItems from './LobbyParticipantItems';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
+import { getVisitorsCount, getVisitorsInQueueCount, isVisitorsLive } from "../../../visitors/functions";
+import { isNeedShowElectronOnlyElements } from "../../../base/environment/utils_web";
 
 const useStyles = makeStyles()(theme => {
     return {
         separateLineContainer: {
             padding: '0 2px',
             marginBottom: '20px',
+        },
+        marginTop: {
+            marginTop: '16px',
         },
         drawerActions: {
             listStyleType: 'none',
@@ -100,14 +98,20 @@ const useStyles = makeStyles()(theme => {
 export default function LobbyParticipants() {
     const lobbyEnabled = useSelector(getLobbyEnabled);
     const participants = useSelector(getKnockingParticipants);
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const isMobile = isMobileBrowser();
-    const {classes, cx} = useStyles();
+    const { classes, cx } = useStyles();
     const dispatch = useDispatch();
     const admitAll = useCallback(() => {
         dispatch(admitMultiple(participants));
-    }, [dispatch, participants]);
+    }, [ dispatch, participants ]);
     const overflowDrawer = useSelector(showOverflowDrawer);
+
+    const visitorsCount = useSelector(getVisitorsCount);
+    const visitorsInQueueCount = useSelector(getVisitorsInQueueCount);
+    const isLive = useSelector(isVisitorsLive);
+    const showVisitorsInQueue = visitorsInQueueCount > 0 && isLive === false;
+    const isVisitorListVisible = visitorsCount > 0 && showVisitorsInQueue;
 
     if (!lobbyEnabled || !participants.length) {
         return null;
@@ -115,24 +119,28 @@ export default function LobbyParticipants() {
 
     return (
         <>
-            {!isMobileBrowser() && <div className={classes.separateLineContainer}>
-                <div className={cx('dotted-separate-line')}/>
-            </div>}
-            <div className={cx(classes.headingContainer, isMobile && 'is-mobile')}>
-                <div className={cx(classes.heading, isMobile && 'is-mobile')}>
-                    {isMobile ? t('participantsPane.headings.lobbyMobile') : t('participantsPane.headings.lobby', {count: participants.length})}
+            {(isNeedShowElectronOnlyElements() || isVisitorListVisible) ?(
+                <div className = {classes.separateLineContainer}>
+                    <div className = {cx('dotted-separate-line')} />
+                </div>
+            )  : (
+                <div className = {classes.marginTop} />
+            )}
+            <div className = {cx(classes.headingContainer, isMobile && 'is-mobile')}>
+                <div className = {cx(classes.heading, isMobile && 'is-mobile')}>
+                    {isMobile ? t('participantsPane.headings.lobbyMobile') : t('participantsPane.headings.lobby', { count: participants.length })}
                 </div>
                 {
                     participants.length > 1
                     && <div
-                        className={classes.link}
-                        onClick={admitAll}>{t('participantsPane.actions.admitAll')}</div>
+                        className = {classes.link}
+                        onClick = {admitAll}>{t('participantsPane.actions.admitAll')}</div>
                 }
             </div>
             <LobbyParticipantItems
-                openDrawerForParticipant={() => null}
-                overflowDrawer={overflowDrawer}
-                participants={participants}/>
+                openDrawerForParticipant = {() => null}
+                overflowDrawer = {overflowDrawer}
+                participants = {participants} />
         </>
     );
 }

@@ -1,4 +1,4 @@
-$rangeInputThumbSize: 14;
+$rangeInputThumbSize: 22;
 
 /**
  * Disable the default webkit styles for range inputs (sliders).
@@ -40,4 +40,15 @@ input[type=range]:focus {
     cursor: pointer;
     border-radius: 50%;
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+/**
+ * Include the mixin for a range input thumb style mobile.
+ */
+@include slider-thumb {
+    .is-mobile & {
+        margin-top: -8px;
+        width: 22px;
+        height: 22px;
+    }
 }

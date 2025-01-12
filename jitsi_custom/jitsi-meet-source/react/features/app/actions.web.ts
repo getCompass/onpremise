@@ -1,29 +1,14 @@
-// @ts-expect-error
-import {API_ID} from '../../../modules/API';
-import {setRoom} from '../base/conference/actions';
-import {
-    configWillLoad,
-    setConfig
-} from '../base/config/actions';
-import {setLocationURL} from '../base/connection/actions.web';
-import {loadConfig} from '../base/lib-jitsi-meet/functions.web';
-import {inIframe} from '../base/util/iframeUtils';
-import {parseURIString} from '../base/util/uri';
-import {isVpaasMeeting} from '../jaas/functions';
-import {clearNotifications, showNotification} from '../notifications/actions';
-import {NOTIFICATION_TIMEOUT_TYPE} from '../notifications/constants';
-import {isWelcomePageEnabled} from '../welcome/functions';
+import { setRoom } from '../base/conference/actions';
+import { configWillLoad, setConfig } from '../base/config/actions';
+import { setLocationURL } from '../base/connection/actions.web';
+import { loadConfig } from '../base/lib-jitsi-meet/functions.web';
+import { parseURIString } from '../base/util/uri';
+import { clearNotifications } from '../notifications/actions';
 
-import {
-    maybeRedirectToTokenAuthUrl,
-    redirectToAnotherPage,
-    redirectToStaticPage,
-    redirectWithStoredParams,
-    reloadWithStoredParams
-} from './actions.any';
-import {getDefaultURL, getName} from './functions.web';
+import { maybeRedirectToTokenAuthUrl, redirectToAnotherPage, reloadWithStoredParams } from './actions.any';
+import { getDefaultURL } from './functions.web';
 import logger from './logger';
-import {IStore} from './types';
+import { IStore } from './types';
 
 export * from './actions.any';
 
@@ -63,7 +48,7 @@ export function appNavigate(uri?: string) {
 
         location.protocol || (location.protocol = 'https:');
 
-        const {room} = location;
+        const { room } = location;
         const locationURL = new URL(location.toString());
 
         // There are notifications now that gets displayed after we technically left
@@ -75,7 +60,7 @@ export function appNavigate(uri?: string) {
         const config = await loadConfig();
 
         dispatch(setLocationURL(locationURL));
-        dispatch(setConfig(config, locationURL));
+        dispatch(setConfig(config));
         dispatch(setRoom(room));
     };
 }
@@ -139,7 +124,7 @@ export function reloadNow() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
 
         const state = getState();
-        const {locationURL} = state['features/base/connection'];
+        const { locationURL } = state['features/base/connection'];
 
         const reloadAction = () => {
             logger.info(`Reloading the conference using URL: ${locationURL}`);

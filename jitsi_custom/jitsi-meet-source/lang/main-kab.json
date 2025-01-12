@@ -661,7 +661,7 @@
             "answerPlaceholder": "Aɣewwaṛ {{index}}",
             "cancel": "Sefex",
             "create": "Rnu asenqed",
-            "pollOptions": "Taxtiṛt n usenqed {{index}}",
+            "pollOption": "Taxtiṛt n usenqed {{index}}",
             "pollQuestion": "Asteqsi n usenqed",
             "questionPlaceholder": "Efk asteqsi",
             "removeOption": "Kkes aɣewwaṛ",

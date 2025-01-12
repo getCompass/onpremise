@@ -138,6 +138,11 @@
         #{$selector} {
             @content;
         }
+
+        // для случая, когда input[type=range] имеет класс .is-mobile
+        .is-mobile #{$selector} {
+            @content;
+        }
     }
 }
 

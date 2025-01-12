@@ -22,6 +22,8 @@ $newToolbarBackgroundColor: #131519;
 $newToolbarSize: 48px;
 $newToolbarSizeMobile: 62px;
 $newToolbarSizeWithPadding: calc(#{$newToolbarSize} + 24px);
+$compassToolbarHeight: 66px; // COMPASS_TOOLBAR_HEIGHT
+$compassHorizontalFilmstripHeight: 106px; // COMPASS_HORIZONTAL_FILMSTRIP_HEIGHT
 
 /**
  * Chat

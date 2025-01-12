@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { WithTranslation } from 'react-i18next';
 
-import { IReduxState } from '../../app/types';
+import { IReduxState, IStore } from '../../app/types';
 import { JitsiRecordingConstants } from '../../base/lib-jitsi-meet';
 import { isRecorderTranscriptionsRunning } from '../../transcribing/functions';
 import {
-    getActiveSession,
     getSessionStatusToShow,
+    isLiveStreamingRunning,
     isRecordingRunning,
     isRemoteParticipantRecordingLocally
 } from '../functions';
@@ -38,6 +38,11 @@ export interface IProps extends WithTranslation {
      * The recording mode this indicator should display.
      */
     mode: string;
+
+    /**
+     * The redux dispatch function.
+     */
+    dispatch: IStore['dispatch'];
 }
 
 /**
@@ -81,9 +86,9 @@ export function _mapStateToProps(state: IReduxState, ownProps: any) {
     const { mode } = ownProps;
     const isLiveStreamingLabel = mode === JitsiRecordingConstants.mode.STREAM;
     const _isTranscribing = isRecorderTranscriptionsRunning(state);
-    const isLivestreamingRunning = Boolean(getActiveSession(state, JitsiRecordingConstants.mode.STREAM));
+    const _isLivestreamingRunning = isLiveStreamingRunning(state);
     const _isVisible = isLiveStreamingLabel
-        ? isLivestreamingRunning // this is the livestreaming label
+        ? _isLivestreamingRunning // this is the livestreaming label
         : isRecordingRunning(state) || isRemoteParticipantRecordingLocally(state)
             || _isTranscribing; // this is the recording label
 

@@ -34,8 +34,6 @@ export default class AbstractVideoMuteButton<P extends IProps> extends BaseVideo
     toggledAccessibilityLabel = 'toolbar.accessibilityLabel.videounmute';
     label = 'toolbar.videomute';
     toggledLabel = 'toolbar.videounmute';
-    tooltip = 'toolbar.videomute';
-    toggledTooltip = 'toolbar.videounmute';
 
     /**
      * Indicates if video is currently disabled or not.

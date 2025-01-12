@@ -7,6 +7,7 @@ import Checkbox from '../../base/ui/components/web/Checkbox';
 import Spinner from '../../base/ui/components/web/Spinner';
 
 import DesktopSourcePreview from './DesktopSourcePreview';
+import { isAudioScreenSharingSupported } from "../functions";
 
 /**
  * The type of the React {@code Component} props of {@link DesktopPickerPane}.
@@ -24,11 +25,6 @@ interface IProps extends WithTranslation {
     onDoubleClick: Function;
 
     /**
-     * The handler to be invoked if the users checks the audio screen sharing checkbox.
-     */
-    onShareAudioChecked: Function;
-
-    /**
      * The id of the DesktopCapturerSource that is currently selected.
      */
     selectedSourceId: string;
@@ -37,11 +33,6 @@ interface IProps extends WithTranslation {
      * An array of DesktopCapturerSources.
      */
     sources: Array<any>;
-
-    /**
-     * The source type of the DesktopCapturerSources to display.
-     */
-    type: string;
 }
 
 /**
@@ -59,18 +50,6 @@ class DesktopPickerPane extends Component<IProps> {
      */
     constructor(props: IProps) {
         super(props);
-
-        this._onShareAudioCheck = this._onShareAudioCheck.bind(this);
-    }
-
-    /**
-     * Function to be called when the Checkbox is used.
-     *
-     * @param {boolean} checked - Checkbox status (checked or not).
-     * @returns {void}
-     */
-    _onShareAudioCheck({ target: { checked } }: { target: { checked: boolean; }; }) {
-        this.props.onShareAudioChecked(checked);
     }
 
     /**
@@ -85,44 +64,29 @@ class DesktopPickerPane extends Component<IProps> {
             onDoubleClick,
             selectedSourceId,
             sources,
-            type,
             t
         } = this.props;
 
         const classNames
-            = `desktop-picker-pane default-scrollbar source-type-${type}`;
+            = `desktop-picker-pane default-scrollbar source-type-all-windows invisible-scrollbar`;
         const previews
-            = sources
+            = Array.isArray(sources) && sources.length > 0
                 ? sources.map(source => (
                     <DesktopSourcePreview
                         key = { source.id }
                         onClick = { onClick }
                         onDoubleClick = { onDoubleClick }
                         selected = { source.id === selectedSourceId }
-                        source = { source }
-                        type = { type } />))
+                        source = { source }/>))
                 : (
                     <div className = 'desktop-picker-pane-spinner'>
                         <Spinner />
                     </div>
                 );
 
-        let checkBox;
-
-        // Only display the share audio checkbox if we're on windows and on
-        // desktop sharing tab.
-        // App window and Mac OS screen sharing doesn't work with system audio.
-        if (type === 'screen' && Platform.OS === 'windows') {
-            checkBox = (<Checkbox
-                label = { t('dialog.screenSharingAudio') }
-                name = 'share-system-audio'
-                onChange = { this._onShareAudioCheck } />);
-        }
-
         return (
             <div className = { classNames }>
                 { previews }
-                { checkBox }
             </div>
         );
     }

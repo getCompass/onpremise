@@ -1,18 +1,18 @@
-import React, {useEffect} from 'react';
-import {WithTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
+import React, { useEffect } from 'react';
+import { WithTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
 
-import {createInviteDialogEvent} from '../../../../analytics/AnalyticsEvents';
-import {sendAnalytics} from '../../../../analytics/functions';
-import {IReduxState} from '../../../../app/types';
-import {getInviteURL} from '../../../../base/connection/functions';
-import {translate} from '../../../../base/i18n/functions';
-import {JitsiRecordingConstants} from '../../../../base/lib-jitsi-meet';
+import { createInviteDialogEvent } from '../../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../../analytics/functions';
+import { IReduxState } from '../../../../app/types';
+import { getInviteURL } from '../../../../base/connection/functions';
+import { translate } from '../../../../base/i18n/functions';
+import { JitsiRecordingConstants } from '../../../../base/lib-jitsi-meet';
 import Dialog from '../../../../base/ui/components/web/Dialog';
-import {StatusCode} from '../../../../base/util/uri';
-import {isDynamicBrandingDataLoaded} from '../../../../dynamic-branding/functions.any';
-import {getActiveSession} from '../../../../recording/functions';
-import {updateDialInNumbers} from '../../../actions.web';
+import { StatusCode } from '../../../../base/util/uri';
+import { isDynamicBrandingDataLoaded } from '../../../../dynamic-branding/functions.any';
+import { getActiveSession } from '../../../../recording/functions';
+import { updateDialInNumbers } from '../../../actions.web';
 import {
     _getDefaultPhoneNumber,
     getInviteText,
@@ -24,7 +24,7 @@ import {
 } from '../../../functions';
 
 import CopyMeetingLinkSection from './CopyMeetingLinkSection';
-import {isMobileBrowser} from "../../../../base/environment/utils";
+import { isMobileBrowser } from "../../../../base/environment/utils";
 
 interface IProps extends WithTranslation {
 
@@ -101,21 +101,21 @@ interface IProps extends WithTranslation {
  * @returns {React$Element<any>}
  */
 function AddPeopleDialog({
-                             _dialIn,
-                             _dialInVisible,
-                             _urlSharingVisible,
-                             _emailSharingVisible,
-                             _invitationText,
-                             _invitationTextiOS,
-                             _inviteAppName,
-                             _inviteContactsVisible,
-                             _inviteUrl,
-                             _isDialInOverLimit,
-                             _liveStreamViewURL,
-                             _phoneNumber,
-                             t,
-                             updateNumbers
-                         }: IProps) {
+    _dialIn,
+    _dialInVisible,
+    _urlSharingVisible,
+    _emailSharingVisible,
+    _invitationText,
+    _invitationTextiOS,
+    _inviteAppName,
+    _inviteContactsVisible,
+    _inviteUrl,
+    _isDialInOverLimit,
+    _liveStreamViewURL,
+    _phoneNumber,
+    t,
+    updateNumbers
+}: IProps) {
 
     /**
      * Updates the dial-in numbers.
@@ -143,11 +143,11 @@ function AddPeopleDialog({
 
     return (
         <Dialog
-            cancel={{hidden: true}}
-            ok={{hidden: true}}
-            hideCloseButton={isMobileBrowser()}
-            titleKey='addPeople.inviteMorePrompt'>
-            {_urlSharingVisible ? <CopyMeetingLinkSection url={_inviteUrl}/> : null}
+            cancel = {{ hidden: true }}
+            ok = {{ hidden: true }}
+            hideCloseButton = {isMobileBrowser()}
+            titleKey = 'addPeople.inviteMorePrompt'>
+            {_urlSharingVisible ? <CopyMeetingLinkSection url = {_inviteUrl} /> : null}
         </Dialog>
     );
 }
@@ -164,7 +164,7 @@ function AddPeopleDialog({
 function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
     const currentLiveStreamingSession
         = getActiveSession(state, JitsiRecordingConstants.mode.STREAM);
-    const {iAmRecorder, inviteAppName} = state['features/base/config'];
+    const { iAmRecorder, inviteAppName } = state['features/base/config'];
     const addPeopleEnabled = isAddPeopleEnabled(state);
     const dialOutEnabled = isDialOutEnabled(state);
     const hideInviteContacts = iAmRecorder || (!addPeopleEnabled && !dialOutEnabled);

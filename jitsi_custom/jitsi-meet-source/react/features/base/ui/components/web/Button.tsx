@@ -1,12 +1,12 @@
-import React, {ReactNode} from 'react';
-import {useTranslation} from 'react-i18next';
-import {makeStyles} from 'tss-react/mui';
+import React, { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
 
 import Icon from '../../../icons/components/Icon';
-import {withPixelLineHeight} from '../../../styles/functions.web';
-import {BUTTON_TYPES} from '../../constants.web';
-import {IButtonProps} from '../types';
-import {isMobileBrowser} from "../../../environment/utils";
+import { withPixelLineHeight } from '../../../styles/functions.web';
+import { BUTTON_TYPES } from '../../constants.web';
+import { IButtonProps } from '../types';
+import { isMobileBrowser } from "../../../environment/utils";
 
 interface IProps extends IButtonProps {
 
@@ -87,10 +87,13 @@ const useStyles = makeStyles()(theme => {
             },
 
             '&.is-mobile': {
-                borderRadius: '8px',
+                fontFamily: 'Lato SemiBold',
+                fontWeight: 'normal' as const,
                 fontSize: '17px',
                 lineHeight: '26px',
+                borderRadius: '8px',
                 padding: '11px 16px',
+                height: '44px',
             }
         },
 
@@ -219,11 +222,11 @@ const useStyles = makeStyles()(theme => {
 
             '&:not(:disabled)': {
                 '&:hover': {
-                    backgroundColor: 'transparent !important'
+                    backgroundColor: 'rgba(63, 63, 63, 0.9) !important'
                 },
 
                 '&:active': {
-                    backgroundColor: 'transparent !important'
+                    backgroundColor: 'rgba(63, 63, 63, 0.9) !important'
                 }
             },
 
@@ -233,7 +236,7 @@ const useStyles = makeStyles()(theme => {
         },
 
         textWithIcon: {
-            marginLeft: theme.spacing(2)
+            marginRight: '4px'
         },
 
         small: {
@@ -362,50 +365,50 @@ const useStyles = makeStyles()(theme => {
 });
 
 const Button = React.forwardRef<any, any>(({
-                                               accessibilityLabel,
-                                               autoFocus = false,
-                                               className,
-                                               disabled,
-                                               fullWidth,
-                                               customIcon,
-                                               icon,
-                                               id,
-                                               isSubmit,
-                                               label,
-                                               labelKey,
-                                               onClick = () => null,
-                                               onKeyPress = () => null,
-                                               size = 'medium',
-                                               testId,
-                                               type = BUTTON_TYPES.PRIMARY
-                                           }: IProps, ref) => {
-    const {classes: styles, cx} = useStyles();
-    const {t} = useTranslation();
+    accessibilityLabel,
+    autoFocus = false,
+    className,
+    disabled,
+    fullWidth,
+    customIcon,
+    icon,
+    id,
+    isSubmit,
+    label,
+    labelKey,
+    onClick = () => null,
+    onKeyPress = () => null,
+    size = 'medium',
+    testId,
+    type = BUTTON_TYPES.PRIMARY
+}: IProps, ref) => {
+    const { classes: styles, cx } = useStyles();
+    const { t } = useTranslation();
     const isMobile = isMobileBrowser();
 
     return (
         <button
-            aria-label={accessibilityLabel}
-            autoFocus={autoFocus}
-            className={cx(styles.button, styles[type],
+            aria-label = {accessibilityLabel}
+            autoFocus = {autoFocus}
+            className = {cx(styles.button, styles[type],
                 disabled && styles.disabled,
                 icon && !(labelKey || label) && `${styles.iconButton} iconButton`,
                 styles[size], fullWidth && styles.fullWidth, className,
                 isMobile && 'is-mobile')}
-            data-testid={testId}
-            disabled={disabled}
-            {...(id ? {id} : {})}
-            onClick={onClick}
-            onKeyPress={onKeyPress}
-            ref={ref}
-            type={isSubmit ? 'submit' : 'button'}>
-            {customIcon ? customIcon
-                : icon && <Icon
-                size={isMobile ? 26 : 21}
-                src={icon}/>}
-            {(labelKey || label) && <span className={icon ? styles.textWithIcon : ''}>
+            data-testid = {testId}
+            disabled = {disabled}
+            {...(id ? { id } : {})}
+            onClick = {onClick}
+            onKeyPress = {onKeyPress}
+            ref = {ref}
+            type = {isSubmit ? 'submit' : 'button'}>
+            {(labelKey || label) && <span className = {icon || customIcon ? styles.textWithIcon : ''}>
                 {labelKey ? t(labelKey) : label}
             </span>}
+            {customIcon ? customIcon
+                : icon && <Icon
+                size = {isMobile ? 26 : 21}
+                src = {icon} />}
         </button>
     );
 });

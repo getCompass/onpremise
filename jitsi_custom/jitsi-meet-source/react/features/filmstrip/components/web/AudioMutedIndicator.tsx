@@ -13,6 +13,16 @@ interface IProps {
      * From which side of the indicator the tooltip should appear from.
      */
     tooltipPosition: TOOLTIP_POSITION;
+
+    /**
+     * The color of the icon.
+     */
+    iconColor?: string;
+
+    /**
+     * The color of the icon.
+     */
+    iconSize?: number;
 }
 
 /**
@@ -20,14 +30,15 @@ interface IProps {
  *
  * @returns {Component}
  */
-const AudioMutedIndicator = ({ tooltipPosition }: IProps) => (
+const AudioMutedIndicator = ({ tooltipPosition, iconColor, iconSize }: IProps) => (
     <BaseIndicator
-        icon = { IconMicSlash }
+        icon = {IconMicSlash}
+        iconColor = {iconColor}
         iconId = 'mic-disabled'
-        iconSize = { 16 }
+        iconSize = {iconSize ?? 16}
         id = 'audioMuted'
         tooltipKey = 'videothumbnail.mute'
-        tooltipPosition = { tooltipPosition } />
+        tooltipPosition = {tooltipPosition} />
 );
 
 export default AudioMutedIndicator;

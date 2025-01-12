@@ -3,6 +3,7 @@ import { isWindows } from '../base/environment/environment';
 import { isMobileBrowser } from '../base/environment/utils';
 import { browser } from '../base/lib-jitsi-meet';
 import { getLocalDesktopTrack } from '../base/tracks/functions';
+import { getRemoteParticipants, isScreenShareParticipant } from "../base/participants/functions";
 
 /**
  * Is the current screen sharing session audio only.
@@ -55,4 +56,21 @@ export function isScreenVideoShared(state: IReduxState) {
     const localScreenshare = getLocalDesktopTrack(tracks);
 
     return localScreenshare?.jitsiTrack && !localScreenshare.jitsiTrack.isMuted();
+}
+
+/**
+ * Returns true if there is a video being shared in the meeting.
+ *
+ * @returns {boolean}
+ * @param state
+ */
+export function isScreenSharePlaying(state: IReduxState): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [ id, p ] of getRemoteParticipants(state)) {
+        if (isScreenShareParticipant(p)) {
+            return true;
+        }
+    }
+
+    return false;
 }

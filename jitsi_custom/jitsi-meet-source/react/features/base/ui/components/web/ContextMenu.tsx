@@ -1,18 +1,16 @@
-import React, {
-    KeyboardEvent, ReactNode,
-    useCallback, useEffect, useLayoutEffect, useRef, useState
-} from 'react';
-import {FocusOn} from 'react-focus-on';
-import {useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { KeyboardEvent, ReactNode,
+    useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { FocusOn } from 'react-focus-on';
+import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
 import Drawer from '../../../../toolbox/components/web/Drawer';
 import JitsiPortal from '../../../../toolbox/components/web/JitsiPortal';
-import {showOverflowDrawer} from '../../../../toolbox/functions.web';
+import { showOverflowDrawer } from '../../../../toolbox/functions.web';
 import participantsPaneTheme from '../../../components/themes/participantsPaneTheme.json';
-import {withPixelLineHeight} from '../../../styles/functions.web';
-import {spacing} from '../../Tokens';
-import {isMobileBrowser} from "../../../environment/utils";
+import { withPixelLineHeight } from '../../../styles/functions.web';
+import { spacing } from '../../Tokens';
+import { isMobileBrowser } from "../../../environment/utils";
 
 
 /**
@@ -157,7 +155,12 @@ const useStyles = makeStyles()(theme => {
             zIndex: 2,
             maxHeight: `${MAX_HEIGHT}px`,
             overflowY: 'auto',
-            padding: '12px 0'
+            padding: '12px 0',
+
+            '&.is-mobile': {
+                backgroundColor: 'rgba(23, 23, 23, 1)',
+                marginBottom: 0,
+            },
         },
 
         contextMenuHidden: {
@@ -178,36 +181,46 @@ const useStyles = makeStyles()(theme => {
                 '& svg': {
                     fill: 'rgba(255, 255, 255, 0.2)'
                 }
-            }
+            },
+
+            '&.is-mobile': {
+                '& > div': {
+                    color: 'rgba(255, 255, 255, 0.85)',
+
+                    '& svg': {
+                        fill: 'rgba(255, 255, 255, 0.85)'
+                    }
+                },
+            },
         }
     };
 });
 
 const ContextMenu = ({
-                         accessibilityLabel,
-                         activateFocusTrap = false,
-                         needCloseOnClick = true,
-                         children,
-                         className,
-                         entity,
-                         hidden,
-                         id,
-                         inDrawer,
-                         isDrawerOpen,
-                         offsetTarget,
-                         width,
-                         onClick,
-                         onKeyDown,
-                         onDrawerClose,
-                         onMouseEnter,
-                         onMouseLeave,
-                         role,
-                         tabIndex,
-                         ...aria
-                     }: IProps) => {
-    const [isHidden, setIsHidden] = useState(true);
+    accessibilityLabel,
+    activateFocusTrap = false,
+    needCloseOnClick = true,
+    children,
+    className,
+    entity,
+    hidden,
+    id,
+    inDrawer,
+    isDrawerOpen,
+    offsetTarget,
+    width,
+    onClick,
+    onKeyDown,
+    onDrawerClose,
+    onMouseEnter,
+    onMouseLeave,
+    role,
+    tabIndex,
+    ...aria
+}: IProps) => {
+    const [ isHidden, setIsHidden ] = useState(true);
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const {classes: styles, cx} = useStyles();
+    const { classes: styles, cx } = useStyles();
     const _overflowDrawer = useSelector(showOverflowDrawer);
 
     useLayoutEffect(() => {
@@ -219,7 +232,7 @@ const ContextMenu = ({
             && offsetTarget?.offsetParent
             && offsetTarget.offsetParent instanceof HTMLElement
         ) {
-            const {current: container} = containerRef;
+            const { current: container } = containerRef;
 
             // make sure the max height is not set
             container.style.maxHeight = 'none';
@@ -227,13 +240,13 @@ const ContextMenu = ({
             if (width) {
                 container.style.width = width + 'px';
             }
-            const {offsetTop, offsetParent: {offsetHeight, scrollTop}} = offsetTarget;
+            const { offsetTop, offsetParent: { offsetHeight, scrollTop } } = offsetTarget;
             let outerHeight = getComputedOuterHeight(container);
             let height = Math.min(MAX_HEIGHT, outerHeight);
 
             if (offsetTop + height > offsetHeight + scrollTop && height > offsetTop) {
                 // top offset and + padding + border
-                container.style.maxHeight = `${offsetTop - ((spacing[2] * 2) + 2)}px`;
+                container.style.maxHeight = `${offsetTop - (24 + 2)}px`;
             }
 
             // get the height after style changes
@@ -243,21 +256,22 @@ const ContextMenu = ({
             container.style.top = offsetTop + height > offsetHeight + scrollTop
                 ? `${offsetTop - outerHeight}`
                 : `${offsetTop}`;
+            container.style.right = '16px';
 
             setIsHidden(false);
         } else {
             hidden === undefined && setIsHidden(true);
         }
-    }, [entity, offsetTarget, _overflowDrawer]);
+    }, [ entity, offsetTarget, _overflowDrawer ]);
 
     useEffect(() => {
         if (hidden !== undefined) {
             setIsHidden(hidden);
         }
-    }, [hidden]);
+    }, [ hidden ]);
 
     const handleKeyDown = useCallback((event: KeyboardEvent) => {
-        const {current: listRef} = containerRef;
+        const { current: listRef } = containerRef;
         const currentFocusElement = document.activeElement;
 
         const moveFocus = (
@@ -376,16 +390,16 @@ const ContextMenu = ({
             event.preventDefault();
             moveFocus(listRef, currentFocusElement, nextItem);
         }
-    }, [containerRef]);
+    }, [ containerRef ]);
 
     const removeFocus = useCallback(() => {
         onDrawerClose?.();
-    }, [onMouseLeave]);
+    }, [ onMouseLeave ]);
 
     if (_overflowDrawer && inDrawer) {
         return (<div
-            className={styles.drawer}
-            onClick={needCloseOnClick ? onDrawerClose : undefined}>
+            className = {cx(styles.drawer, isMobileBrowser() && 'is-mobile')}
+            onClick = {needCloseOnClick ? onDrawerClose : undefined}>
             {children}
         </div>);
     }
@@ -393,11 +407,11 @@ const ContextMenu = ({
     return _overflowDrawer
         ? <JitsiPortal>
             <Drawer
-                isOpen={Boolean(isDrawerOpen && _overflowDrawer)}
-                onClose={onDrawerClose}>
+                isOpen = {Boolean(isDrawerOpen && _overflowDrawer)}
+                onClose = {onDrawerClose}>
                 <div
-                    className={styles.drawer}
-                    onClick={needCloseOnClick ? onDrawerClose : undefined}>
+                    className = {cx(styles.drawer, isMobileBrowser() && 'is-mobile')}
+                    onClick = {needCloseOnClick ? onDrawerClose : undefined}>
                     {children}
                 </div>
             </Drawer>
@@ -407,24 +421,25 @@ const ContextMenu = ({
             // Use the `enabled` prop instead of conditionally rendering ReactFocusOn
             // to prevent UI stutter on dialog appearance. It seems the focus guards generated annoy
             // our DialogPortal positioning calculations.
-            enabled={activateFocusTrap && !isHidden}
-            onClickOutside={removeFocus}
-            onEscapeKey={removeFocus}>
+            enabled = {activateFocusTrap && !isHidden}
+            onClickOutside = {removeFocus}
+            onEscapeKey = {removeFocus}>
             <div
                 {...aria}
-                aria-label={accessibilityLabel}
-                className={cx(styles.contextMenu,
+                aria-label = {accessibilityLabel}
+                className = {cx(styles.contextMenu,
                     isHidden && styles.contextMenuHidden,
-                    className
+                    className,
+                    isMobileBrowser() && 'is-mobile'
                 )}
-                id={id}
-                onClick={onClick}
-                onKeyDown={onKeyDown ?? handleKeyDown}
-                onMouseEnter={onMouseEnter}
-                onMouseLeave={onMouseLeave}
-                ref={containerRef}
-                role={role}
-                tabIndex={tabIndex}>
+                id = {id}
+                onClick = {onClick}
+                onKeyDown = {onKeyDown ?? handleKeyDown}
+                onMouseEnter = {onMouseEnter}
+                onMouseLeave = {onMouseLeave}
+                ref = {containerRef}
+                role = {role}
+                tabIndex = {tabIndex}>
                 {children}
             </div>
         </FocusOn>;

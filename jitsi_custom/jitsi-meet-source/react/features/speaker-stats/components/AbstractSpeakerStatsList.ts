@@ -1,19 +1,11 @@
-import {useCallback, useEffect, useRef} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from 'react-redux';
+import { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
 
-import {IReduxState} from '../../app/types';
-import {
-    getLocalParticipant,
-    getParticipantById,
-    getRemoteParticipants,
-    isParticipantModerator
-} from '../../base/participants/functions';
-import {initUpdateStats} from '../actions.any';
-import {
-    SPEAKER_STATS_RELOAD_INTERVAL
-} from '../constants';
-import {IParticipant} from "../../base/participants/types";
+import { IReduxState } from '../../app/types';
+import { getLocalParticipant, getRemoteParticipants, isParticipantModerator } from '../../base/participants/functions';
+import { initUpdateStats } from '../actions.any';
+import { SPEAKER_STATS_RELOAD_INTERVAL } from '../constants';
 
 /**
  * Component that renders the list of speaker stats.
@@ -24,20 +16,20 @@ import {IParticipant} from "../../base/participants/types";
  */
 const abstractSpeakerStatsList = (speakerStatsItem: Function): Function[] => {
     const dispatch = useDispatch();
-    const {t} = useTranslation();
-    const {conference} = useSelector((state: IReduxState) => state['features/base/conference']);
+    const { t } = useTranslation();
+    const { conference } = useSelector((state: IReduxState) => state['features/base/conference']);
     const {
         stats: speakerStats,
         showFaceExpressions,
         sortedSpeakerStatsIds
     } = useSelector((state: IReduxState) => state['features/speaker-stats']);
     const localParticipant = useSelector(getLocalParticipant);
-    const {defaultRemoteDisplayName} = useSelector(
+    const { defaultRemoteDisplayName } = useSelector(
         (state: IReduxState) => state['features/base/config']) || {};
-    const {faceLandmarks: faceLandmarksConfig} = useSelector((state: IReduxState) =>
+    const { faceLandmarks: faceLandmarksConfig } = useSelector((state: IReduxState) =>
         state['features/base/config']) || {};
-    const {faceLandmarks} = useSelector((state: IReduxState) => state['features/face-landmarks'])
-    || {faceLandmarks: []};
+    const { faceLandmarks } = useSelector((state: IReduxState) => state['features/face-landmarks'])
+    || { faceLandmarks: [] };
     const reloadInterval = useRef<number>();
     const remoteParticipants = useSelector(getRemoteParticipants);
 
@@ -75,11 +67,11 @@ const abstractSpeakerStatsList = (speakerStatsItem: Function): Function[] => {
         }
 
         return stats ?? {};
-    }, [faceLandmarks]);
+    }, [ faceLandmarks ]);
 
     const updateStats = useCallback(
         () => dispatch(initUpdateStats(getSpeakerStats)),
-        [dispatch, initUpdateStats, getSpeakerStats]);
+        [ dispatch, initUpdateStats, getSpeakerStats ]);
 
     useEffect(() => {
         reloadInterval.current = window.setInterval(() => {
@@ -91,7 +83,7 @@ const abstractSpeakerStatsList = (speakerStatsItem: Function): Function[] => {
                 clearInterval(reloadInterval.current);
             }
         };
-    }, [faceLandmarks]);
+    }, [ faceLandmarks ]);
 
     const localSpeakerStats = Object.keys(speakerStats).length === 0 ? getSpeakerStats() : speakerStats;
     const localSortedSpeakerStatsIds

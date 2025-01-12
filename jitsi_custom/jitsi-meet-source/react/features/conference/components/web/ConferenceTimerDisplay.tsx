@@ -20,6 +20,7 @@ const useStyles = makeStyles()(theme => {
 
             '@media (max-width: 500px)': {
                 fontFamily: 'Lato Regular',
+                fontWeight: 'normal' as const,
                 fontSize: '13px',
                 lineHeight: '16px',
                 padding: '5px 8px',

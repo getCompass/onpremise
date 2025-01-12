@@ -25,8 +25,6 @@ class FullscreenButton extends AbstractButton<IProps> {
     toggledAccessibilityLabel = 'toolbar.accessibilityLabel.exitFullScreen';
     label = 'toolbar.enterFullScreen';
     toggledLabel = 'toolbar.exitFullScreen';
-    tooltip = 'toolbar.enterFullScreen';
-    toggledTooltip = 'toolbar.exitFullScreen';
     toggledIcon = IconExitFullscreen;
     icon = IconEnterFullscreen;
 

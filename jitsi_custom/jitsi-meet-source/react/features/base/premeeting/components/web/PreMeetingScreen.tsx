@@ -1,14 +1,14 @@
 import clsx from 'clsx';
-import React, {ReactNode} from 'react';
-import {connect} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { ReactNode } from 'react';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {IReduxState} from '../../../../app/types';
+import { IReduxState } from '../../../../app/types';
 import DeviceStatus from '../../../../prejoin/components/web/preview/DeviceStatus';
 import Toolbox from '../../../../toolbox/components/web/Toolbox';
-import {isButtonEnabled} from '../../../../toolbox/functions.web';
-import {PREMEETING_BUTTONS, PREMEETING_BUTTONS_MOBILE, THIRD_PARTY_PREJOIN_BUTTONS} from '../../../config/constants';
-import {withPixelLineHeight} from '../../../styles/functions.web';
+import { isButtonEnabled } from '../../../../toolbox/functions.web';
+import { PREMEETING_BUTTONS, PREMEETING_BUTTONS_MOBILE, THIRD_PARTY_PREJOIN_BUTTONS } from '../../../config/constants';
+import { withPixelLineHeight } from '../../../styles/functions.web';
 
 import ConnectionStatus from './ConnectionStatus';
 import Preview from './Preview';
@@ -16,7 +16,7 @@ import RecordingWarning from './RecordingWarning';
 import UnsafeRoomWarning from './UnsafeRoomWarning';
 import Avatar from "../../../avatar/components/Avatar";
 import i18n from "i18next";
-import {isMobileBrowser} from "../../../environment/utils";
+import { isMobileBrowser } from "../../../environment/utils";
 
 interface IProps {
 
@@ -122,32 +122,22 @@ const useStyles = makeStyles()(theme => {
             '.toolbox-icon': {
                 width: '44px',
                 height: '44px',
-                backgroundColor:' #171717',
+                backgroundColor: ' #171717',
                 borderRadius: '8px !important',
 
                 '&.toggled.is-mobile': {
-                    backgroundColor:' #171717 !important'
+                    backgroundColor: ' #171717 !important'
                 }
-            },
-
-            '.settings-button-small-icon': {
-                right: '-3px',
-                top: '-4px',
-                borderRadius: '2px',
-            },
-
-            '.settings-button-small-icon svg': {
-                width: '13px',
-                height: '13px',
             },
 
             // для видео придется переопределять, там при каком-то статусе оно не дает примениться
             '.video-preview .toolbox-icon': {
-                backgroundColor:' #171717 !important',
+                backgroundColor: ' transparent !important',
+                opacity: ' 60% !important'
             },
 
             '.video-preview .toolbox-icon:hover': {
-                backgroundColor:' #525252 !important'
+                opacity: ' 100% !important'
             },
 
             '@media (max-width: 720px)': {
@@ -157,11 +147,11 @@ const useStyles = makeStyles()(theme => {
 
         lobbyNoticeContainer: {
             padding: '15px',
-            width: '396px',
+            width: '398px',
             background: 'linear-gradient(122.89deg, rgba(14, 76, 144, 0.8) -31.07%, rgba(14, 76, 144, 0.8) 6.08%, rgba(34, 96, 164, 0.8) 42.1%, rgba(14, 76, 144, 0.8) 89.18%, rgba(14, 76, 144, 0.8) 122.33%)',
             position: 'absolute',
             right: 'calc(50% - 215px)',
-            bottom: '108px',
+            bottom: '96px',
             display: 'flex',
             gap: '12px',
             border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -250,25 +240,25 @@ const useStyles = makeStyles()(theme => {
 });
 
 const PreMeetingScreen = ({
-                              _buttons,
-                              _premeetingBackground,
-                              _lobbyKnocking,
-                              children,
-                              className,
-                              showDeviceStatus,
-                              showRecordingWarning,
-                              showUnsafeRoomWarning,
-                              skipPrejoinButton,
-                              title,
-                              videoMuted,
-                              videoTrack,
-                              name,
-                              participantId,
-                              type,
-                              isLobby = false,
-                              _lobbyNoticeText,
-                          }: IProps) => {
-    const {classes} = useStyles();
+    _buttons,
+    _premeetingBackground,
+    _lobbyKnocking,
+    children,
+    className,
+    showDeviceStatus,
+    showRecordingWarning,
+    showUnsafeRoomWarning,
+    skipPrejoinButton,
+    title,
+    videoMuted,
+    videoTrack,
+    name,
+    participantId,
+    type,
+    isLobby = false,
+    _lobbyNoticeText,
+}: IProps) => {
+    const { classes } = useStyles();
     const style = _premeetingBackground ? {
         background: _premeetingBackground,
         backgroundPosition: 'center',
@@ -276,77 +266,79 @@ const PreMeetingScreen = ({
     } : {};
 
     return (
-        <div className={clsx('premeeting-screen', classes.container, className)}>
+        <div className = {clsx('premeeting-screen', classes.container, className)}>
             {isLobby && _lobbyKnocking && (
-                <div className={classes.lobbyNoticeContainer}>
-                    <div className={classes.lobbyNoticeIcon}>
-                        <svg width="66" height="66" viewBox="0 0 66 66" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g opacity="0.65" clipPath="url(#clip0_412_21657)">
-                                <path fillRule="evenodd" clipRule="evenodd"
-                                      d="M16.2017 6.30695C16.6573 6.30695 17.0267 6.67631 17.0267 7.13195V11.9777C17.0267 17.8523 19.9627 23.3382 24.8507 26.5969L43.7252 39.1799C49.0722 42.7446 52.2839 48.7457 52.2839 55.172V58.5487C52.2839 59.0043 51.9145 59.3737 51.4589 59.3737C51.0033 59.3737 50.6339 59.0043 50.6339 58.5487V55.172C50.6339 49.2974 47.6979 43.8114 42.81 40.5528L23.9354 27.9698C18.5884 24.4051 15.3767 18.404 15.3767 11.9777V7.13195C15.3767 6.67631 15.7461 6.30695 16.2017 6.30695Z"
-                                      fill="white"/>
-                                <path fillRule="evenodd" clipRule="evenodd"
-                                      d="M16.2017 59.3737C16.6573 59.3737 17.0267 59.0043 17.0267 58.5487V55.172C17.0267 49.2974 19.9627 43.8115 24.8507 40.5528L43.7252 27.9698C49.0722 24.4051 52.2839 18.404 52.2839 11.9777V7.13196C52.2839 6.67633 51.9145 6.30696 51.4589 6.30696C51.0033 6.30696 50.6339 6.67633 50.6339 7.13196V11.9777C50.6339 17.8523 47.6979 23.3382 42.81 26.5969L23.9354 39.1799C18.5884 42.7446 15.3767 48.7457 15.3767 55.172V58.5487C15.3767 59.0043 15.7461 59.3737 16.2017 59.3737Z"
-                                      fill="white"/>
-                                <path fillRule="evenodd" clipRule="evenodd"
-                                      d="M11.1611 7.13195C11.1611 6.67631 11.5305 6.30695 11.9861 6.30695H55.6744C56.13 6.30695 56.4994 6.67631 56.4994 7.13195C56.4994 7.58758 56.13 7.95695 55.6744 7.95695H11.9861C11.5305 7.95695 11.1611 7.58758 11.1611 7.13195Z"
-                                      fill="white"/>
-                                <path fillRule="evenodd" clipRule="evenodd"
-                                      d="M11.1611 59.3737C11.1611 58.918 11.5305 58.5487 11.9861 58.5487H55.6744C56.13 58.5487 56.4994 58.918 56.4994 59.3737C56.4994 59.8293 56.13 60.1987 55.6744 60.1987H11.9861C11.5305 60.1987 11.1611 59.8293 11.1611 59.3737Z"
-                                      fill="white"/>
+                <div className = {classes.lobbyNoticeContainer}>
+                    <div className = {classes.lobbyNoticeIcon}>
+                        <svg width = "66" height = "66" viewBox = "0 0 66 66" fill = "none"
+                             xmlns = "http://www.w3.org/2000/svg">
+                            <g opacity = "0.65" clipPath = "url(#clip0_412_21657)">
+                                <path fillRule = "evenodd" clipRule = "evenodd"
+                                      d = "M16.2017 6.30695C16.6573 6.30695 17.0267 6.67631 17.0267 7.13195V11.9777C17.0267 17.8523 19.9627 23.3382 24.8507 26.5969L43.7252 39.1799C49.0722 42.7446 52.2839 48.7457 52.2839 55.172V58.5487C52.2839 59.0043 51.9145 59.3737 51.4589 59.3737C51.0033 59.3737 50.6339 59.0043 50.6339 58.5487V55.172C50.6339 49.2974 47.6979 43.8114 42.81 40.5528L23.9354 27.9698C18.5884 24.4051 15.3767 18.404 15.3767 11.9777V7.13195C15.3767 6.67631 15.7461 6.30695 16.2017 6.30695Z"
+                                      fill = "white" />
+                                <path fillRule = "evenodd" clipRule = "evenodd"
+                                      d = "M16.2017 59.3737C16.6573 59.3737 17.0267 59.0043 17.0267 58.5487V55.172C17.0267 49.2974 19.9627 43.8115 24.8507 40.5528L43.7252 27.9698C49.0722 24.4051 52.2839 18.404 52.2839 11.9777V7.13196C52.2839 6.67633 51.9145 6.30696 51.4589 6.30696C51.0033 6.30696 50.6339 6.67633 50.6339 7.13196V11.9777C50.6339 17.8523 47.6979 23.3382 42.81 26.5969L23.9354 39.1799C18.5884 42.7446 15.3767 48.7457 15.3767 55.172V58.5487C15.3767 59.0043 15.7461 59.3737 16.2017 59.3737Z"
+                                      fill = "white" />
+                                <path fillRule = "evenodd" clipRule = "evenodd"
+                                      d = "M11.1611 7.13195C11.1611 6.67631 11.5305 6.30695 11.9861 6.30695H55.6744C56.13 6.30695 56.4994 6.67631 56.4994 7.13195C56.4994 7.58758 56.13 7.95695 55.6744 7.95695H11.9861C11.5305 7.95695 11.1611 7.58758 11.1611 7.13195Z"
+                                      fill = "white" />
+                                <path fillRule = "evenodd" clipRule = "evenodd"
+                                      d = "M11.1611 59.3737C11.1611 58.918 11.5305 58.5487 11.9861 58.5487H55.6744C56.13 58.5487 56.4994 58.918 56.4994 59.3737C56.4994 59.8293 56.13 60.1987 55.6744 60.1987H11.9861C11.5305 60.1987 11.1611 59.8293 11.1611 59.3737Z"
+                                      fill = "white" />
                             </g>
                             <defs>
-                                <clipPath id="clip0_412_21657">
-                                    <rect width="66" height="66" fill="white"/>
+                                <clipPath id = "clip0_412_21657">
+                                    <rect width = "66" height = "66" fill = "white" />
                                 </clipPath>
                             </defs>
                         </svg>
                     </div>
-                    <div className={classes.lobbyNoticeText}>
+                    <div className = {classes.lobbyNoticeText}>
                         {_lobbyNoticeText?.split("\n").map((line, index) => (
-                            <div key={index}>{line}</div>
+                            <div key = {index}>{line}</div>
                         ))}
                     </div>
                 </div>
             )}
             {!isLobby && (
-                <div style={style}>
-                    <div className={classes.content}>
-                        <ConnectionStatus/>
+                <div style = {style}>
+                    <div className = {classes.content}>
+                        <ConnectionStatus />
 
-                        <div className={classes.contentControls}>
+                        <div className = {classes.contentControls}>
                             {type === "guest" ? (
                                 <>
                                     <Avatar
-                                        className={`premeeting-screen-avatar ${classes.avatarGuest}`}
-                                        displayName={name}
-                                        participantId={participantId}
-                                        size={64}
-                                        url="images/compass_icon.png"
+                                        className = {`premeeting-screen-avatar ${classes.avatarGuest}`}
+                                        displayName = {name}
+                                        participantId = {participantId}
+                                        size = {64}
+                                        url = "images/compass_icon.png"
                                     />
-                                    <h1 className={classes.title} dangerouslySetInnerHTML={{__html: title ?? ''}}></h1>
+                                    <h1 className = {classes.title}
+                                        dangerouslySetInnerHTML = {{ __html: title ?? '' }}></h1>
                                 </>
                             ) : (
                                 <Avatar
-                                    className={`premeeting-screen-avatar ${classes.avatarMember}`}
-                                    displayName={name}
-                                    participantId={participantId}
-                                    size={120}/>
+                                    className = {`premeeting-screen-avatar ${classes.avatarMember}`}
+                                    displayName = {name}
+                                    participantId = {participantId}
+                                    size = {120} />
                             )}
                             {children}
                             {isLobby && _lobbyKnocking ? <></> : (_buttons.length &&
-                                <Toolbox toolbarButtons={_buttons}/>)}
+                                <Toolbox toolbarButtons = {_buttons} />)}
                             {skipPrejoinButton}
-                            {showUnsafeRoomWarning && <UnsafeRoomWarning/>}
-                            {showDeviceStatus && <DeviceStatus/>}
-                            {showRecordingWarning && <RecordingWarning/>}
+                            {showUnsafeRoomWarning && <UnsafeRoomWarning />}
+                            {showDeviceStatus && <DeviceStatus />}
+                            {showRecordingWarning && <RecordingWarning />}
                         </div>
                     </div>
                 </div>
             )}
             <Preview
-                videoMuted={videoMuted}
-                videoTrack={videoTrack}/>
+                videoMuted = {videoMuted}
+                videoTrack = {videoTrack} />
         </div>
     );
 };
@@ -360,14 +352,14 @@ const PreMeetingScreen = ({
  * @returns {Object}
  */
 function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
-    const {hiddenPremeetingButtons} = state['features/base/config'];
-    const {toolbarButtons} = state['features/toolbox'];
+    const { hiddenPremeetingButtons } = state['features/base/config'];
+    const { toolbarButtons } = state['features/toolbox'];
     const premeetingButtons = (ownProps.thirdParty
         ? THIRD_PARTY_PREJOIN_BUTTONS
-        : isMobileBrowser() ? PREMEETING_BUTTONS_MOBILE : PREMEETING_BUTTONS).filter((b: any) => !(hiddenPremeetingButtons || []).includes(b));
+        : PREMEETING_BUTTONS).filter((b: any) => !(hiddenPremeetingButtons || []).includes(b));
 
-    const {premeetingBackground} = state['features/dynamic-branding'];
-    const {knocking} = state['features/lobby'];
+    const { premeetingBackground } = state['features/dynamic-branding'];
+    const { knocking } = state['features/lobby'];
 
     return {
         // For keeping backwards compat.: if we pass an empty hiddenPremeetingButtons

@@ -32,7 +32,8 @@ const EMPTY_ARRAY: any[] = [];
 export const isEnabledFromState = (mediaType: MediaType, state: IReduxState) =>
     (mediaType === MEDIA_TYPE.AUDIO
         ? getState(state)?.audioModerationEnabled
-        : getState(state)?.videoModerationEnabled) === true;
+        : mediaType === MEDIA_TYPE.SCREENSHARE ? getState(state)?.screenshareModerationEnabled
+            : getState(state)?.videoModerationEnabled) === true;
 
 /**
  * Returns whether moderation is enabled per media type.

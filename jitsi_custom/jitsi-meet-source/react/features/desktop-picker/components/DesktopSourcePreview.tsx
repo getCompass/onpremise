@@ -1,8 +1,8 @@
-import React, {Component} from 'react';
-import {WithTranslation} from 'react-i18next';
+import React, { Component } from 'react';
+import { WithTranslation } from 'react-i18next';
 
-import {translate} from '../../base/i18n/functions';
-import {IconErrorLoadImg} from '../../base/icons/svg';
+import { translate } from '../../base/i18n/functions';
+import { IconErrorLoadImg } from '../../base/icons/svg';
 import Icon from '../../base/icons/components/Icon';
 
 
@@ -35,11 +35,6 @@ interface IProps extends WithTranslation {
      * The DesktopCapturerSource to display.
      */
     source: any;
-
-    /**
-     * The source type of the DesktopCapturerSources to display.
-     */
-    type: string;
 }
 
 interface IState {
@@ -77,9 +72,9 @@ class DesktopSourcePreview extends Component<IProps, IState> {
     }
 
     componentDidUpdate() {
-            if (!this.state.srcImage && this.state.hasLoadError) {
-                this.updateThumbnailURL();
-            }
+        if (!this.state.srcImage && this.state.hasLoadError) {
+            this.updateThumbnailURL();
+        }
     }
 
     updateThumbnailURL() {
@@ -90,7 +85,7 @@ class DesktopSourcePreview extends Component<IProps, IState> {
             srcImage = this.props.source.thumbnail.toDataURL();
         }
 
-        this.setState({srcImage: srcImage || '', hasLoadError: false});
+        this.setState({ srcImage: srcImage || '', hasLoadError: false });
     }
 
     /**
@@ -104,16 +99,16 @@ class DesktopSourcePreview extends Component<IProps, IState> {
         const displayClasses = `desktop-picker-source ${selectedClass}`;
 
         return (
-            <div className={displayClasses}
-                 onClick={this._onClick}
-                 onDoubleClick={this._onDoubleClick}
+            <div className = {displayClasses}
+                 onClick = {this._onClick}
+                 onDoubleClick = {this._onDoubleClick}
             >
                 {
                     this.state.hasLoadError
                         ? this._renderErrorLoadThumbnailImage()
                         : this._renderThumbnailImageContainer()
                 }
-                <div className='desktop-source-preview-label'>
+                <div className = 'desktop-source-preview-label'>
                     {this.props.source.name}
                 </div>
             </div>
@@ -129,16 +124,23 @@ class DesktopSourcePreview extends Component<IProps, IState> {
         const srcImage = this.state.srcImage;
 
         return (
-            <div className='desktop-source-preview-image-container'>
-                {this._renderThumbnailImage(srcImage)}
+            <div style = {{
+                height: '126px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                <div className = 'desktop-source-preview-image-container'>
+                    {this._renderThumbnailImage(srcImage)}
+                </div>
             </div>
         );
     }
 
     _renderErrorLoadThumbnailImage() {
         return (
-            <div className='desktop-source-preview-thumbnail-error-stub'>
-                <Icon src={IconErrorLoadImg}/>
+            <div className = 'desktop-source-preview-thumbnail-error-stub'>
+                <Icon src = {IconErrorLoadImg} />
             </div>
         )
     }
@@ -152,10 +154,10 @@ class DesktopSourcePreview extends Component<IProps, IState> {
     _renderThumbnailImage(src: string) {
         return (
             <img
-                alt={this.props.t('welcomepage.logo.desktopPreviewThumbnail')}
-                className='desktop-source-preview-thumbnail'
-                src={src}
-                onError={this._onErrorLoadThumbnailImage}
+                alt = {this.props.t('welcomepage.logo.desktopPreviewThumbnail')}
+                className = 'desktop-source-preview-thumbnail'
+                src = {src}
+                onError = {this._onErrorLoadThumbnailImage}
             />
         );
     }
@@ -166,9 +168,9 @@ class DesktopSourcePreview extends Component<IProps, IState> {
      * @returns {void}
      */
     _onClick() {
-        const {source, type} = this.props;
+        const { source } = this.props;
 
-        this.props.onClick(source.id, type);
+        this.props.onClick(source.id, source.type);
     }
 
     /**
@@ -177,13 +179,13 @@ class DesktopSourcePreview extends Component<IProps, IState> {
      * @returns {void}
      */
     _onDoubleClick() {
-        const {source, type} = this.props;
+        const { source } = this.props;
 
-        this.props.onDoubleClick(source.id, type);
+        this.props.onDoubleClick(source.id, source.type);
     }
 
     _onErrorLoadThumbnailImage() {
-        this.setState({hasLoadError: true})
+        this.setState({ hasLoadError: true })
     }
 }
 

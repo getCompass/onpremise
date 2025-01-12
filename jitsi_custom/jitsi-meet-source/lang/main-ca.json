@@ -766,7 +766,7 @@
             "answerPlaceholder": "Opció {{index}}",
             "cancel": "Cancel·la",
             "create": "Crea una enquesta",
-            "pollOptions": "Opció d'enquesta {{index}}",
+            "pollOption": "Opció d'enquesta {{index}}",
             "pollQuestion": "Pregunta de l'enquesta",
             "questionPlaceholder": "Feu una pregunta",
             "removeOption": "Elimina l'opció",

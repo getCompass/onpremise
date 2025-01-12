@@ -1,23 +1,23 @@
-import {Theme} from '@mui/material';
+import { Theme } from '@mui/material';
 import React from 'react';
-import {WithTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
-import {withStyles} from 'tss-react/mui';
+import { WithTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
+import { withStyles } from 'tss-react/mui';
 
-import {IReduxState, IStore} from '../../app/types';
-import {getAvailableDevices} from '../../base/devices/actions.web';
+import { IReduxState, IStore } from '../../app/types';
+import { getAvailableDevices } from '../../base/devices/actions.web';
 import AbstractDialogTab, {
     type IProps as AbstractDialogTabProps
 } from '../../base/dialog/components/web/AbstractDialogTab';
-import {translate} from '../../base/i18n/functions';
-import {createLocalTrack} from '../../base/lib-jitsi-meet/functions.web';
-import {iAmVisitor as iAmVisitorCheck} from '../../visitors/functions';
+import { translate } from '../../base/i18n/functions';
+import { createLocalTrack } from '../../base/lib-jitsi-meet/functions.web';
+import { iAmVisitor as iAmVisitorCheck } from '../../visitors/functions';
 import logger from '../logger';
 
 import AudioInputPreview from './AudioInputPreview';
 import DeviceSelector from './DeviceSelector.web';
-import {IconMicFilled, IconVolumeHighFilled} from "../../base/icons/svg";
-import {isMobileBrowser} from "../../base/environment/utils";
+import { IconMicFilled, IconVolumeHighFilled } from "../../base/icons/svg";
+import { isMobileBrowser } from "../../base/environment/utils";
 
 /**
  * The type of the React {@code Component} props of {@link AudioDevicesSelection}.
@@ -248,24 +248,24 @@ class AudioDevicesSelection extends AbstractDialogTab<IProps, IState> {
             selectedAudioOutputId,
             t
         } = this.props;
-        const {audioInput, audioOutput} = this._getSelectors();
+        const { audioInput, audioOutput } = this._getSelectors();
 
         const classes = withStyles.getClasses(this.props);
         const isMobile = isMobileBrowser();
 
         return (
-            <div className={classes.container}>
+            <div className = {classes.container}>
                 {!iAmVisitor && <div
-                    aria-live='polite'
-                    className={classes.inputContainer}>
+                    aria-live = 'polite'
+                    className = {classes.inputContainer}>
                     {this._renderSelector(audioInput)}
                 </div>}
                 {!hideAudioInputPreview && hasAudioPermission && !iAmVisitor && !isMobile
                     && <AudioInputPreview
-                        track={this.state.previewAudioTrack}/>}
+                        track = {this.state.previewAudioTrack} />}
                 <div
-                    aria-live='polite'
-                    className={isMobile ? classes.outputContainerMobile : classes.outputContainer}>
+                    aria-live = 'polite'
+                    className = {isMobile ? classes.outputContainerMobile : classes.outputContainer}>
                     {this._renderSelector(audioOutput)}
                 </div>
             </div>
@@ -280,7 +280,7 @@ class AudioDevicesSelection extends AbstractDialogTab<IProps, IState> {
      * @returns {void}
      */
     _createAudioInputTrack(deviceId: string) {
-        const {hideAudioInputPreview} = this.props;
+        const { hideAudioInputPreview } = this.props;
 
         if (hideAudioInputPreview) {
             return;
@@ -328,7 +328,7 @@ class AudioDevicesSelection extends AbstractDialogTab<IProps, IState> {
         return deviceSelectorProps ? (
             <DeviceSelector
                 {...deviceSelectorProps}
-                key={deviceSelectorProps.id}/>
+                key = {deviceSelectorProps.id} />
         ) : null;
     }
 
@@ -339,7 +339,7 @@ class AudioDevicesSelection extends AbstractDialogTab<IProps, IState> {
      * @returns {Object} Configurations.
      */
     _getSelectors() {
-        const {availableDevices, hasAudioPermission} = this.props;
+        const { availableDevices, hasAudioPermission } = this.props;
 
         const audioInput = {
             devices: availableDevices.audioInput,
@@ -349,7 +349,7 @@ class AudioDevicesSelection extends AbstractDialogTab<IProps, IState> {
             id: 'audioInput',
             label: 'settings.selectMic',
             icon: IconMicFilled,
-            onSelect: (selectedAudioInputId: string) => super._onChange({selectedAudioInputId}),
+            onSelect: (selectedAudioInputId: string) => super._onChange({ selectedAudioInputId }),
             selectedDeviceId: this.state.previewAudioTrack
                 ? this.state.previewAudioTrack.getDeviceId() : this.props.selectedAudioInputId
         };
@@ -364,7 +364,7 @@ class AudioDevicesSelection extends AbstractDialogTab<IProps, IState> {
                 id: 'audioOutput',
                 label: 'settings.selectAudioOutput',
                 icon: IconVolumeHighFilled,
-                onSelect: (selectedAudioOutputId: string) => super._onChange({selectedAudioOutputId}),
+                onSelect: (selectedAudioOutputId: string) => super._onChange({ selectedAudioOutputId }),
                 selectedDeviceId: this.props.selectedAudioOutputId
             };
         }

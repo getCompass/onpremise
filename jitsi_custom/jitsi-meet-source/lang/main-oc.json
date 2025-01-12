@@ -708,7 +708,7 @@
             "answerPlaceholder": "Opcion {{index}}",
             "cancel": "Anullar",
             "create": "Crear un sondatge",
-            "pollOptions": "Opcion sondarge {{index}}",
+            "pollOption": "Opcion sondarge {{index}}",
             "pollQuestion": "Question del sondatge",
             "questionPlaceholder": "Pausar una question",
             "removeOption": "Suprimir l'opcion",

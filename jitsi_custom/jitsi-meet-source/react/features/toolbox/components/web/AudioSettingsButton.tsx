@@ -9,10 +9,10 @@ import { IconArrowUp } from '../../../base/icons/svg';
 import JitsiMeetJS from '../../../base/lib-jitsi-meet/_';
 import { IGUMPendingState } from '../../../base/media/types';
 import ToolboxButtonWithIcon from '../../../base/toolbox/components/web/ToolboxButtonWithIcon';
-import { toggleAudioSettings } from '../../../settings/actions';
+import { toggleAudioSettings } from '../../../settings/actions.web';
 import AudioSettingsPopup from '../../../settings/components/web/audio/AudioSettingsPopup';
-import { getAudioSettingsVisibility } from '../../../settings/functions';
-import { isAudioSettingsButtonDisabled } from '../../functions';
+import { getAudioSettingsVisibility } from '../../../settings/functions.web';
+import { isAudioSettingsButtonDisabled } from '../../functions.web';
 
 import AudioMuteButton from './AudioMuteButton';
 
@@ -66,12 +66,20 @@ interface IProps extends WithTranslation {
     visible: boolean;
 }
 
+interface IState {
+
+    /**
+     * Whether or not is being hovered.
+     */
+    isHovered: boolean;
+}
+
 /**
  * Button used for audio & audio settings.
  *
  * @returns {ReactElement}
  */
-class AudioSettingsButton extends Component<IProps> {
+class AudioSettingsButton extends Component<IProps, IState> {
     /**
      * Initializes a new {@code AudioSettingsButton} instance.
      *
@@ -80,8 +88,14 @@ class AudioSettingsButton extends Component<IProps> {
     constructor(props: IProps) {
         super(props);
 
+        this.state = {
+            isHovered: false
+        };
+
         this._onEscClick = this._onEscClick.bind(this);
         this._onClick = this._onClick.bind(this);
+        this._onMouseEnter = this._onMouseEnter.bind(this);
+        this._onMouseLeave = this._onMouseLeave.bind(this);
     }
 
     /**
@@ -114,39 +128,70 @@ class AudioSettingsButton extends Component<IProps> {
     }
 
     /**
+     * Button is being hovered.
+     *
+     * @param {MouseEvent} e - The mouse down event.
+     * @returns {void}
+     */
+    _onMouseEnter() {
+        this.setState({
+            isHovered: true
+        });
+    }
+
+    /**
+     * Button is not being hovered.
+     *
+     * @returns {void}
+     */
+    _onMouseLeave() {
+        if (this.state.isHovered) {
+            this.setState({
+                isHovered: false
+            });
+        }
+    }
+
+    /**
      * Implements React's {@link Component#render}.
      *
      * @inheritdoc
      */
     render() {
         const { gumPending, hasPermissions, isDisabled, visible, isOpen, buttonKey, notifyMode, t } = this.props;
+        const { isHovered } = this.state;
         const settingsDisabled = !hasPermissions
             || isDisabled
             || !JitsiMeetJS.mediaDevices.isMultipleAudioInputSupported();
 
         return visible ? (
-            <AudioSettingsPopup>
-                <ToolboxButtonWithIcon
-                    ariaControls = 'audio-settings-dialog'
-                    ariaExpanded = { isOpen }
-                    ariaHasPopup = { true }
-                    ariaLabel = { t('toolbar.audioSettings') }
-                    buttonKey = { buttonKey }
-                    icon = { IconArrowUp }
-                    iconDisabled = { settingsDisabled || gumPending !== IGUMPendingState.NONE }
-                    iconId = 'audio-settings-button'
-                    iconTooltip = { t('toolbar.audioSettings') }
-                    notifyMode = { notifyMode }
-                    onIconClick = { this._onClick }
-                    onIconKeyDown = { this._onEscClick }>
-                    <AudioMuteButton
-                        buttonKey = { buttonKey }
-                        notifyMode = { notifyMode } />
-                </ToolboxButtonWithIcon>
-            </AudioSettingsPopup>
+            <div
+                onMouseLeave = {this._onMouseLeave}
+                onMouseEnter = {this._onMouseEnter}>
+                <AudioSettingsPopup>
+                    <ToolboxButtonWithIcon
+                        ariaControls = 'audio-settings-dialog'
+                        ariaExpanded = {isOpen}
+                        ariaHasPopup = {true}
+                        ariaLabel = {t('toolbar.audioSettings')}
+                        buttonKey = {buttonKey}
+                        icon = {IconArrowUp}
+                        iconDisabled = {settingsDisabled || gumPending !== IGUMPendingState.NONE}
+                        iconId = 'audio-settings-button'
+                        iconTooltip = {t('toolbar.audioSettings')}
+                        notifyMode = {notifyMode}
+                        onIconClick = {this._onClick}
+                        onIconKeyDown = {this._onEscClick}
+                        hovered = {isOpen || isHovered}>
+                        <AudioMuteButton
+                            buttonKey = {buttonKey}
+                            notifyMode = {notifyMode} />
+                    </ToolboxButtonWithIcon>
+                </AudioSettingsPopup>
+            </div>
         ) : <AudioMuteButton
-            buttonKey = { buttonKey }
-            notifyMode = { notifyMode } />;
+            buttonKey = {buttonKey}
+            notifyMode = {notifyMode} />;
     }
 }
 

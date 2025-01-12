@@ -786,7 +786,7 @@
             "answerPlaceholder": "Επιλογή {{index}}",
             "cancel": "Ακύρωση",
             "create": "Δημιουργία ψηφοφορίας",
-            "pollOptions": "Επιλογή ψηφοφορίας {{index}}",
+            "pollOption": "Επιλογή ψηφοφορίας {{index}}",
             "pollQuestion": "Ερώτηση Ψηφοφορίας",
             "questionPlaceholder": "Ρωτήστε",
             "removeOption": "Αφαιρέστε την επιλογή",

@@ -119,7 +119,11 @@ var interfaceConfig = {
      * @type {boolean}
      */
     RECENT_LIST_ENABLED: true,
-    REMOTE_THUMBNAIL_RATIO: 1, // 1:1
+
+    /**
+     * 16 / 9
+     */
+    REMOTE_THUMBNAIL_RATIO: 16 / 9,
 
     SETTINGS_SECTIONS: [ 'devices', 'language', 'moderator', 'profile', 'calendar', 'sounds', 'more' ],
 
@@ -155,7 +159,7 @@ var interfaceConfig = {
     /**
      * Whether to show thumbnails in filmstrip as a column instead of as a row.
      */
-    VERTICAL_FILMSTRIP: true,
+    VERTICAL_FILMSTRIP: false,
 
     // Determines how the video would fit the screen. 'both' would fit the whole
     // screen, 'height' would fit the original video height to the height of the
@@ -194,7 +198,7 @@ var interfaceConfig = {
     /**
      * Specify custom URL for downloading android mobile app.
      */
-    // MOBILE_DOWNLOAD_LINK_ANDROID: 'https://play.google.com/store/apps/details?id=Ωorg.jitsi.meet',
+    // MOBILE_DOWNLOAD_LINK_ANDROID: 'https://play.google.com/store/apps/details?id=org.jitsi.meet',
 
     /**
      * Specify mobile app scheme for opening the app from the mobile browser.

@@ -1,9 +1,9 @@
-import React, {ReactNode, useCallback} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { ReactNode, useCallback } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import Icon from '../../../icons/components/Icon';
-import {IconArrowDown} from '../../../icons/svg';
-import {withPixelLineHeight} from '../../../styles/functions.web';
+import { IconArrowDown } from '../../../icons/svg';
+import { withPixelLineHeight } from '../../../styles/functions.web';
 
 interface IProps {
 
@@ -174,29 +174,29 @@ const useStyles = makeStyles()(theme => {
  * @returns {ReactElement}
  */
 function ActionButton({
-                          children,
-                          className = '',
-                          disabled,
-                          hasOptions,
-                          OptionsIcon = IconArrowDown,
-                          testId,
-                          type = 'primary',
-                          onClick,
-                          onOptionsClick,
-                          tabIndex,
-                          role,
-                          ariaPressed,
-                          ariaLabel,
-                          ariaDropDownLabel
-                      }: IProps) {
-    const {classes, cx} = useStyles();
+    children,
+    className = '',
+    disabled,
+    hasOptions,
+    OptionsIcon = IconArrowDown,
+    testId,
+    type = 'primary',
+    onClick,
+    onOptionsClick,
+    tabIndex,
+    role,
+    ariaPressed,
+    ariaLabel,
+    ariaDropDownLabel
+}: IProps) {
+    const { classes, cx } = useStyles();
 
     const onKeyPressHandler = useCallback(e => {
         if (onClick && !disabled && (e.key === ' ' || e.key === 'Enter')) {
             e.preventDefault();
             onClick(e);
         }
-    }, [onClick, disabled]);
+    }, [ onClick, disabled ]);
 
     const onOptionsKeyPressHandler = useCallback(e => {
         if (onOptionsClick && !disabled && (e.key === ' ' || e.key === 'Enter')) {
@@ -204,7 +204,7 @@ function ActionButton({
             e.stopPropagation();
             onOptionsClick(e);
         }
-    }, [onOptionsClick, disabled]);
+    }, [ onOptionsClick, disabled ]);
 
     const containerClasses = cx(
         classes.actionButton,
@@ -215,31 +215,31 @@ function ActionButton({
 
     return (
         <div
-            aria-disabled={disabled}
-            aria-label={ariaLabel}
-            className={containerClasses}
-            data-testid={testId ? testId : undefined}
-            onClick={disabled ? undefined : onClick}
-            onKeyPress={onKeyPressHandler}
-            role='button'
-            tabIndex={0}>
+            aria-disabled = {disabled}
+            aria-label = {ariaLabel}
+            className = {containerClasses}
+            data-testid = {testId ? testId : undefined}
+            onClick = {disabled ? undefined : onClick}
+            onKeyPress = {onKeyPressHandler}
+            role = 'button'
+            tabIndex = {0}>
             {children}
             {hasOptions
                 && <div
-                    aria-disabled={disabled}
-                    aria-haspopup='true'
-                    aria-label={ariaDropDownLabel}
-                    aria-pressed={ariaPressed}
-                    className={classes.options}
-                    data-testid='prejoin.joinOptions'
-                    onClick={disabled ? undefined : onOptionsClick}
-                    onKeyPress={onOptionsKeyPressHandler}
-                    role={role}
-                    tabIndex={tabIndex}>
+                    aria-disabled = {disabled}
+                    aria-haspopup = 'true'
+                    aria-label = {ariaDropDownLabel}
+                    aria-pressed = {ariaPressed}
+                    className = {classes.options}
+                    data-testid = 'prejoin.joinOptions'
+                    onClick = {disabled ? undefined : onOptionsClick}
+                    onKeyPress = {onOptionsKeyPressHandler}
+                    role = {role}
+                    tabIndex = {tabIndex}>
                     <Icon
-                        className='icon'
-                        size={24}
-                        src={OptionsIcon}/>
+                        className = 'icon'
+                        size = {24}
+                        src = {OptionsIcon} />
                 </div>
             }
         </div>

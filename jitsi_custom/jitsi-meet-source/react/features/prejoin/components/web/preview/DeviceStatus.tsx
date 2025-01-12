@@ -35,10 +35,6 @@ const useStyles = makeStyles()(theme => {
             color: '#fff',
             marginTop: theme.spacing(4),
 
-            '& span': {
-                marginLeft: theme.spacing(3)
-            },
-
             '&.device-status-error': {
                 alignItems: 'flex-start',
                 backgroundColor: theme.palette.warning01,
@@ -73,13 +69,19 @@ function DeviceStatus({ deviceStatusType, deviceStatusText, t }: IProps) {
     const hasError = deviceStatusType === 'warning';
     const containerClassName = cx(classes.deviceStatus, { 'device-status-error': hasError });
 
+    if (!hasError) {
+        return <></>;
+    }
+
     return (
         <div
-            className = { containerClassName }
+            className = {containerClassName}
             role = 'alert'
-            tabIndex = { -1 }>
-            {!hasError && <div className = { classes.indicator } />}
-            <span role = 'heading'>
+            tabIndex = {-1}>
+            {!hasError && <div className = {classes.indicator} />}
+            <span role = 'heading' style = {{
+                textAlign: 'center'
+            }}>
                 {hasError ? t('prejoin.errorNoPermissions') : t(deviceStatusText ?? '')}
             </span>
         </div>

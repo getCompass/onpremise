@@ -4,14 +4,13 @@ import { connect } from 'react-redux';
 import { withStyles } from 'tss-react/mui';
 
 import { translate } from '../../../base/i18n/functions';
-import { IconRecord, IconSites } from '../../../base/icons/svg';
+import { IconFilledSquare, IconRecord, IconRecordInProcess, IconSites } from '../../../base/icons/svg';
 import Label from '../../../base/label/components/web/Label';
-import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
-import Tooltip from '../../../base/tooltip/components/Tooltip';
-import AbstractRecordingLabel, {
-    IProps as AbstractProps,
-    _mapStateToProps
-} from '../AbstractRecordingLabel';
+import { browser, JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
+import AbstractRecordingLabel, { _mapStateToProps, IProps as AbstractProps } from '../AbstractRecordingLabel';
+import { openDialog } from "../../../base/dialog/actions";
+import StopRecordingDialog from "../Recording/web/StopRecordingDialog";
+import { stopLocalVideoRecording } from "../../actions.any";
 
 interface IProps extends AbstractProps {
 
@@ -31,8 +30,32 @@ interface IProps extends AbstractProps {
  */
 const styles = (theme: Theme) => {
     return {
+        recordContainer: {
+            background: "rgba(33, 33, 33, 0.9)",
+            borderRadius: "4px",
+            padding: "5px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+        },
         record: {
-            background: theme.palette.actionDanger
+            background: "transparent",
+            margin: 0,
+            padding: 0,
+        },
+        recordText: {
+            marginLeft: "4px",
+            fontFamily: 'Inter Medium',
+            fontWeight: 'normal' as const,
+            fontSize: '12px',
+            lineHeight: '15px',
+            color: "rgba(255, 255, 255, 1)",
+        },
+        recordStopButton: {
+            cursor: "pointer",
+            background: "transparent",
+            margin: "0px 0px 0px 8px",
+            padding: 0,
         }
     };
 };
@@ -50,10 +73,10 @@ class RecordingLabel extends AbstractRecordingLabel<IProps> {
      * @inheritdoc
      */
     _renderLabel() {
-        const { _isTranscribing, _status, mode, t } = this.props;
+        const { _isTranscribing, _status, mode, t, dispatch } = this.props;
         const classes = withStyles.getClasses(this.props);
         const isRecording = mode === JitsiRecordingConstants.mode.FILE;
-        const icon = isRecording ? IconRecord : IconSites;
+        const icon = isRecording ? IconRecordInProcess : IconSites;
         let content;
 
         if (_status === JitsiRecordingConstants.status.ON) {
@@ -71,13 +94,20 @@ class RecordingLabel extends AbstractRecordingLabel<IProps> {
         }
 
         return (
-            <Tooltip
-                content = { content }
-                position = { 'bottom' }>
+            <div className = {classes.recordContainer}>
                 <Label
-                    className = { classes.record }
-                    icon = { icon } />
-            </Tooltip>
+                    className = {classes.record}
+                    icon = {icon}
+                    iconSize = "14"
+                    iconColor = "rgba(255, 79, 71, 1)" />
+                <div className = {classes.recordText}>{t("videoStatus.recording")}</div>
+                <Label
+                    className = {classes.recordStopButton}
+                    icon = {IconFilledSquare}
+                    iconSize = "13"
+                    iconColor = "rgba(255, 255, 255, 1)"
+                    onClick = {() => browser.isElectron() ? postMessage({ type: "recorder_stop" }, "*") : dispatch(stopLocalVideoRecording())} />
+            </div>
         );
     }
 }

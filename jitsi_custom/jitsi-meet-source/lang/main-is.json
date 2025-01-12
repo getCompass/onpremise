@@ -859,7 +859,7 @@
             "answerPlaceholder": "Valkostur {{index}}",
             "cancel": "Hætta við",
             "create": "Búa til könnun",
-            "pollOptions": "Valkostur í könnun {{index}}",
+            "pollOption": "Valkostur í könnun {{index}}",
             "pollQuestion": "Spurning könnunar",
             "questionPlaceholder": "Spurðu spurningar",
             "removeOption": "Fjarlægja valkost",

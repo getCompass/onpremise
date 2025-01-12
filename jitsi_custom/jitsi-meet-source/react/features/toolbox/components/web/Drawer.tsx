@@ -1,10 +1,15 @@
-import React, { KeyboardEvent, ReactNode, useCallback } from 'react';
+import React, { KeyboardEvent, ReactNode, useCallback, useEffect } from 'react';
 import { FocusOn } from 'react-focus-on';
 import { makeStyles } from 'tss-react/mui';
 
 import { isElementInTheViewport } from '../../../base/ui/functions.web';
 import { DRAWER_MAX_HEIGHT } from '../../constants';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
+import { close } from "../../../participants-pane/actions.any";
+import { useDispatch, useSelector } from "react-redux";
+import { getParticipantsPaneOpen } from "../../../participants-pane/functions";
+import { IReduxState } from "../../../app/types";
+import { isAnyDialogOpen } from "../../../base/dialog/functions";
 
 
 interface IProps {
@@ -29,6 +34,8 @@ interface IProps {
      */
     isOpen: boolean;
 
+    position?: "top" | "bottom";
+
     /**
      * Function that hides the drawer.
      */
@@ -39,8 +46,18 @@ const useStyles = makeStyles()(theme => {
     return {
         drawerMenuContainer: {
             backgroundColor: 'rgba(4, 4, 10, 0.9)',
-            height: '100dvh',
+            height: [
+                '100vh',
+                '100dvh',
+            ],
             display: 'flex',
+        },
+
+        drawerMenuContainerStart: {
+            alignItems: 'flex-start'
+        },
+
+        drawerMenuContainerEnd: {
             alignItems: 'flex-end'
         },
 
@@ -53,8 +70,18 @@ const useStyles = makeStyles()(theme => {
             width: '100%',
 
             '&.is-mobile': {
-                borderRadius: '15px 15px 0 0',
-                paddingBottom: '8px'
+                marginBottom: 0,
+
+                '&.top': {
+                    backgroundColor: 'rgba(23, 23, 23, 1)',
+                    borderRadius: '0 0 15px 15px',
+                    paddingBottom: 0
+                },
+
+                '&.bottom': {
+                    borderRadius: '15px 15px 0 0',
+                    paddingBottom: '8px'
+                },
             },
 
             '& .overflow-menu': {
@@ -101,9 +128,13 @@ function Drawer({
     className = '',
     headingId,
     isOpen,
-    onClose
+    onClose,
+    position
 }: IProps) {
     const { classes, cx } = useStyles();
+    const participantsPaneOpen = useSelector(getParticipantsPaneOpen);
+    const dispatch = useDispatch();
+    const is_open_any_dialog = useSelector((state: IReduxState) => isAnyDialogOpen(state));
 
     /**
      * Handles clicks within the menu, preventing the propagation of the click event.
@@ -140,15 +171,44 @@ function Drawer({
         }
     }, [ onClose ]);
 
+    useEffect(() => {
+
+        // функция для android доступная из dom, чтобы вызывать ее с kotlin
+        // @ts-ignore
+        window.dispatchNavigationBack = () => {
+
+            // если нажали назад, когда нет открытых drawer/панели участников/открытых диалогов - сворачиваемся в pip
+            if (!isOpen && !participantsPaneOpen && !is_open_any_dialog) {
+
+                // @ts-ignore
+                if (typeof AndroidJitsiWebInterface !== 'undefined' && typeof AndroidJitsiWebInterface.showPictureInPictureMode === 'function') {
+
+                    // @ts-ignore
+                    AndroidJitsiWebInterface.showPictureInPictureMode()
+                }
+                return;
+            }
+
+            // если нет открытых drawer, но открыта панель участников - закрываем панель участников
+            if (!isOpen && participantsPaneOpen) {
+                dispatch(close());
+                return;
+            }
+
+            // иначе просто закрываем drawer
+            onClose?.();
+        };
+    }, [ isOpen ])
+
     return (
         isOpen ? (
             <div
-                className = { classes.drawerMenuContainer }
-                onClick = { handleOutsideClick }
-                onKeyDown = { handleEscKey }>
+                className = {cx(classes.drawerMenuContainer, position === "top" ? classes.drawerMenuContainerStart : classes.drawerMenuContainerEnd)}
+                onClick = {handleOutsideClick}
+                onKeyDown = {handleEscKey}>
                 <div
-                    className = { cx(classes.drawer, className, isMobileBrowser() && 'is-mobile') }
-                    onClick = { handleInsideClick }>
+                    className = {cx(classes.drawer, className, isMobileBrowser() && 'is-mobile', position === "top" ? "top" : "bottom")}
+                    onClick = {handleInsideClick}>
                     <FocusOn
                         returnFocus = {
 
@@ -161,11 +221,11 @@ function Drawer({
                             isElementInTheViewport
                         }>
                         <div
-                            aria-labelledby = { headingId ? `#${headingId}` : undefined }
-                            aria-modal = { true }
-                            data-autofocus = { true }
+                            aria-labelledby = {headingId ? `#${headingId}` : undefined}
+                            aria-modal = {true}
+                            data-autofocus = {true}
                             role = 'dialog'
-                            tabIndex = { -1 }>
+                            tabIndex = {-1}>
                             {children}
                         </div>
                     </FocusOn>

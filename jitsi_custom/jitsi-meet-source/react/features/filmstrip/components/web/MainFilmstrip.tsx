@@ -11,10 +11,12 @@ import {
     FILMSTRIP_BREAKPOINT_OFFSET,
     FILMSTRIP_TYPE,
     TOOLBAR_HEIGHT,
-    TOOLBAR_HEIGHT_MOBILE } from '../../constants';
+    TOOLBAR_HEIGHT_MOBILE
+} from '../../constants';
 import { isFilmstripResizable, showGridInVerticalView } from '../../functions.web';
 
 import Filmstrip from './Filmstrip';
+import { getLocalParticipant, getPinnedParticipant } from "../../../base/participants/functions";
 
 interface IProps {
 
@@ -46,12 +48,12 @@ interface IProps {
     /**
      * The participants in the call.
      */
-    _remoteParticipants: Array<Object>;
+    _filteredRemoteParticipants: Array<Object>;
 
     /**
      * The length of the remote participants array.
      */
-    _remoteParticipantsLength: number;
+    _filteredRemoteParticipantsLength: number;
 
     /**
      * Whether or not the filmstrip should be user-resizable.
@@ -92,8 +94,8 @@ interface IProps {
 const MainFilmstrip = (props: IProps) => (
     <span>
         <Filmstrip
-            { ...props }
-            filmstripType = { FILMSTRIP_TYPE.MAIN } />
+            {...props}
+            filmstripType = {FILMSTRIP_TYPE.MAIN} />
     </span>
 );
 
@@ -110,8 +112,10 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     const { remoteParticipants, width: verticalFilmstripWidth } = state['features/filmstrip'];
     const reduceHeight = state['features/toolbox'].visible && toolbarButtons?.length;
     const {
-        gridDimensions: dimensions = { columns: undefined,
-            rows: undefined },
+        gridDimensions: dimensions = {
+            columns: undefined,
+            rows: undefined
+        },
         filmstripHeight,
         filmstripWidth,
         hasScroll: tileViewHasScroll,
@@ -120,6 +124,8 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     const _currentLayout = getCurrentLayout(state);
     const _resizableFilmstrip = isFilmstripResizable(state);
     const _verticalViewGrid = showGridInVerticalView(state);
+    const localParticipant = getLocalParticipant(state);
+    const localParticipantId = localParticipant?.id ?? '';
     let gridDimensions = dimensions;
     let _hasScroll = false;
 
@@ -170,8 +176,10 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
         remoteFilmstripWidth = remoteVideosContainer?.width;
 
         if (_verticalViewGrid) {
-            gridDimensions = gridView?.gridDimensions ?? { columns: undefined,
-                rows: undefined };
+            gridDimensions = gridView?.gridDimensions ?? {
+                columns: undefined,
+                rows: undefined
+            };
             _thumbnailSize = gridView?.thumbnailSize;
             _hasScroll = Boolean(gridView?.hasScroll);
         } else {
@@ -190,19 +198,39 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     }
     }
 
+    const tileViewActive = _currentLayout === LAYOUTS.TILE_VIEW;
+    const largeVideoParticipantId = state['features/large-video'].participantId;
+    const pinnedParticipant = getPinnedParticipant(state);
+    let filteredRemoteParticipants = remoteParticipants;
+
+    // фильтруем пользователя, который открыт в режиме спикера
+    if (!tileViewActive) {
+
+        if (remoteParticipants.length < 2) {
+            filteredRemoteParticipants = remoteParticipants.filter(participant => participant !== largeVideoParticipantId);
+        } else {
+            filteredRemoteParticipants = remoteParticipants.filter(participant => {
+                return !(pinnedParticipant?.id === largeVideoParticipantId && participant === largeVideoParticipantId);
+            });
+        }
+    }
+
     return {
         _columns: gridDimensions.columns ?? 1,
         _filmstripHeight: remoteFilmstripHeight,
         _filmstripWidth: remoteFilmstripWidth,
         _hasScroll,
         _remoteParticipants: remoteParticipants,
+        _filteredRemoteParticipants: filteredRemoteParticipants,
         _resizableFilmstrip,
         _rows: gridDimensions.rows ?? 1,
         _thumbnailWidth: _thumbnailSize?.width,
         _thumbnailHeight: _thumbnailSize?.height,
         _verticalViewGrid,
         _verticalViewBackground: Number(verticalFilmstripWidth.current)
-            + FILMSTRIP_BREAKPOINT_OFFSET >= FILMSTRIP_BREAKPOINT
+            + FILMSTRIP_BREAKPOINT_OFFSET >= FILMSTRIP_BREAKPOINT,
+        _largeVideoParticipantId: largeVideoParticipantId,
+        _localParticipantId: localParticipantId,
     };
 }
 

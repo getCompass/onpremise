@@ -1,17 +1,17 @@
-import React, {useCallback, useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from 'react-redux';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {hideDialog} from '../../../dialog/actions';
-import {IconCloseLarge} from '../../../icons/svg';
-import {operatesWithEnterKey} from '../../functions.web';
+import { hideDialog } from '../../../dialog/actions';
+import { IconCloseLarge } from '../../../icons/svg';
+import { operatesWithEnterKey } from '../../functions.web';
 
-import BaseDialog, {IProps as IBaseDialogProps} from './BaseDialog';
+import BaseDialog, { IProps as IBaseDialogProps } from './BaseDialog';
 import Button from './Button';
 import ClickableIcon from './ClickableIcon';
-import {IReduxState} from "../../../../app/types";
-import {isMobileBrowser} from "../../../environment/utils";
+import { IReduxState } from "../../../../app/types";
+import { isMobileBrowser } from "../../../environment/utils";
 
 
 const useStyles = makeStyles()(theme => {
@@ -84,6 +84,7 @@ interface IDialogProps extends IBaseDialogProps {
         translationKey?: string;
     };
     children?: React.ReactNode;
+    customButton?: React.ReactNode;
     disableAutoHideOnSubmit?: boolean;
     hideCloseButton?: boolean;
     ok?: {
@@ -96,108 +97,108 @@ interface IDialogProps extends IBaseDialogProps {
 }
 
 const Dialog = ({
-                    back = {hidden: true},
-                    cancel = {translationKey: 'dialog.Cancel'},
-                    children,
-                    className,
-                    classNameHeader,
-                    classNameContent,
-                    classNameFooter,
-                    description,
-                    disableAutoHideOnSubmit = false,
-                    disableBackdropClose,
-                    hideCloseButton,
-                    disableEnter,
-                    disableEscape,
-                    ok = {translationKey: 'dialog.Ok'},
-                    onCancel,
-                    onSubmit,
-                    size,
-                    testId,
-                    title,
-                    titleKey
-                }: IDialogProps) => {
-    const {classes, cx} = useStyles();
-    const {t} = useTranslation();
+    back = { hidden: true },
+    cancel = { translationKey: 'dialog.Cancel' },
+    customButton,
+    children,
+    className,
+    classNameHeader,
+    classNameHeaderTitle,
+    classNameContent,
+    classNameFooter,
+    description,
+    disableAutoHideOnSubmit = false,
+    disableBackdropClose,
+    hideCloseButton,
+    disableEnter,
+    disableEscape,
+    ok = { translationKey: 'dialog.Ok' },
+    onCancel,
+    onSubmit,
+    size,
+    testId,
+    title,
+    titleKey
+}: IDialogProps) => {
+    const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const dispatch = useDispatch();
-    const {is_in_picture_in_picture_mode} = useSelector((state: IReduxState) => state['features/picture-in-picture']);
+    const { is_in_picture_in_picture_mode } = useSelector((state: IReduxState) => state['features/picture-in-picture']);
     const isMobile = isMobileBrowser();
 
     const onClose = useCallback(() => {
         dispatch(hideDialog());
         onCancel?.();
-    }, [onCancel]);
+    }, [ onCancel ]);
 
     const submit = useCallback(() => {
-        if (onSubmit && (
-            (document.activeElement && !operatesWithEnterKey(document.activeElement))
-            || !document.activeElement
-        )) {
+        if ((document.activeElement && !operatesWithEnterKey(document.activeElement)) || !document.activeElement) {
             !disableAutoHideOnSubmit && dispatch(hideDialog());
-            onSubmit();
+            onSubmit?.();
         }
-    }, [onSubmit]);
+    }, [ onSubmit ]);
 
     useEffect(() => {
         if (is_in_picture_in_picture_mode) {
             dispatch(hideDialog());
         }
-    }, [is_in_picture_in_picture_mode]);
+    }, [ is_in_picture_in_picture_mode ]);
 
     return (
         <BaseDialog
-            className={className}
-            description={description}
-            disableBackdropClose={disableBackdropClose}
-            disableEnter={disableEnter}
-            disableEscape={disableEscape}
-            onClose={onClose}
-            size={size}
-            submit={submit}
-            testId={testId}
-            title={title}
-            titleKey={titleKey}>
-            <div className={cx(classes.header, classNameHeader, isMobile && 'is-mobile')}>
+            className = {className}
+            description = {description}
+            disableBackdropClose = {disableBackdropClose}
+            disableEnter = {disableEnter}
+            disableEscape = {disableEscape}
+            onClose = {onClose}
+            size = {size}
+            submit = {submit}
+            testId = {testId}
+            title = {title}
+            titleKey = {titleKey}>
+            <div className = {cx(classes.header, classNameHeader, isMobile && 'is-mobile')}>
                 <h1
-                    className={cx(classes.title, isMobile && 'is-mobile')}
-                    id='dialog-title'>
+                    className = {cx(classes.title, classNameHeaderTitle, isMobile && 'is-mobile')}
+                    id = 'dialog-title'>
                     {title ?? t(titleKey ?? '')}
                 </h1>
                 {!hideCloseButton && (
                     <ClickableIcon
-                        accessibilityLabel={t('dialog.accessibilityLabel.close')}
-                        icon={IconCloseLarge}
-                        id='modal-header-close-button'
-                        onClick={onClose}/>
+                        accessibilityLabel = {t('dialog.accessibilityLabel.close')}
+                        icon = {IconCloseLarge}
+                        id = 'modal-header-close-button'
+                        onClick = {onClose} />
                 )}
             </div>
             <div
-                className={cx(classes.content, classNameContent, isMobile && 'is-mobile')}
-                data-autofocus-inside='true'>
+                className = {cx(classes.content, classNameContent, isMobile && 'is-mobile')}
+                data-autofocus-inside = 'true'>
                 {children}
             </div>
-            {(!back.hidden || !cancel.hidden || !ok.hidden) && (
+            {(!back.hidden || !cancel.hidden || !ok.hidden || customButton) && (
                 <div
-                    className={cx(classes.footer, classNameFooter)}
-                    data-autofocus-inside='true'>
+                    className = {cx(classes.footer, classNameFooter)}
+                    data-autofocus-inside = 'true'>
+                    {customButton && customButton}
                     {!back.hidden && <Button
-                        accessibilityLabel={t(back.translationKey ?? '')}
-                        labelKey={back.translationKey}
+                        accessibilityLabel = {t(back.translationKey ?? '')}
+                        labelKey = {back.translationKey}
                         // eslint-disable-next-line react/jsx-handler-names
-                        onClick={back.onClick}
-                        type='secondary'/>}
+                        onClick = {back.onClick}
+                        type = 'secondary' />}
                     {!cancel.hidden && <Button
-                        accessibilityLabel={t(cancel.translationKey ?? '')}
-                        labelKey={cancel.translationKey}
-                        onClick={onClose}
-                        type='tertiary'/>}
+                        accessibilityLabel = {t(cancel.translationKey ?? '')}
+                        labelKey = {cancel.translationKey}
+                        onClick = {onClose}
+                        type = 'tertiary' />}
                     {!ok.hidden && <Button
-                        accessibilityLabel={t(ok.translationKey ?? '')}
-                        disabled={ok.disabled}
-                        id='modal-dialog-ok-button'
-                        isSubmit={true}
-                        labelKey={ok.translationKey}
-                        {...(!ok.disabled && {onClick: submit})} />}
+                        accessibilityLabel = {t(ok.translationKey ?? '')}
+                        disabled = {ok.disabled}
+                        id = 'modal-dialog-ok-button'
+                        isSubmit = {true}
+                        labelKey = {ok.translationKey}
+                        {...(!ok.disabled && { onClick: submit })} />}
                 </div>
             )}
         </BaseDialog>

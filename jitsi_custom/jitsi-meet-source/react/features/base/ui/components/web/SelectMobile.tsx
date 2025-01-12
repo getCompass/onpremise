@@ -1,17 +1,7 @@
-import React, {ChangeEvent, useCallback} from 'react';
-import {makeStyles} from 'tss-react/mui';
-
-import {isMobileBrowser} from '../../../environment/utils';
+import React, { useCallback } from 'react';
+import { makeStyles } from 'tss-react/mui';
 import Icon from '../../../icons/components/Icon';
-import {
-    IconArrowDown,
-    IconCheck,
-    IconCheckboxOnSmall, IconFlagDe,
-    IconFlagEn, IconFlagEs, IconFlagFr, IconFlagIt,
-    IconFlagRu,
-    IconUserDeleted
-} from '../../../icons/svg';
-import {withPixelLineHeight} from '../../../styles/functions.web';
+import { IconCheck, IconFlagDe, IconFlagEn, IconFlagEs, IconFlagFr, IconFlagIt, IconFlagRu } from '../../../icons/svg';
 
 interface ISelectMobileProps {
 
@@ -114,7 +104,7 @@ const useStyles = makeStyles()(theme => {
             fontSize: '17px',
             lineHeight: '22px',
             padding: '16px 16px 16px 0',
-            color: 'rgba(255, 255, 255, 0.5)',
+            color: 'rgba(255, 255, 255, 0.7)',
 
             '&.is-languages': {
                 color: 'rgba(255, 255, 255, 0.8)',
@@ -133,87 +123,87 @@ const useStyles = makeStyles()(theme => {
 });
 
 const SelectMobile = ({
-                          className,
-                          id,
-                          icon,
-                          onSelect,
-                          options,
-                          value,
-                          isLanguages
-                      }: ISelectMobileProps) => {
-    const {classes, cx, theme} = useStyles();
+    className,
+    id,
+    icon,
+    onSelect,
+    options,
+    value,
+    isLanguages
+}: ISelectMobileProps) => {
+    const { classes, cx, theme } = useStyles();
     const getLanguageIcon = useCallback((language: string | number) => {
 
         switch (language) {
 
-            case "ru": {
-                return <Icon
-                    className={classes.icon}
-                    size={22}
-                    src={IconFlagRu}/>;
-            }
+        case "ru": {
+            return <Icon
+                className = {classes.icon}
+                size = {22}
+                src = {IconFlagRu} />;
+        }
 
-            case "en": {
-                return <Icon
-                    className={classes.icon}
-                    size={22}
-                    src={IconFlagEn}/>;
-            }
+        case "en": {
+            return <Icon
+                className = {classes.icon}
+                size = {22}
+                src = {IconFlagEn} />;
+        }
 
-            case "de": {
-                return <Icon
-                    className={classes.icon}
-                    size={22}
-                    src={IconFlagDe}/>;
-            }
+        case "de": {
+            return <Icon
+                className = {classes.icon}
+                size = {22}
+                src = {IconFlagDe} />;
+        }
 
-            case "fr": {
-                return <Icon
-                    className={classes.icon}
-                    size={22}
-                    src={IconFlagFr}/>;
-            }
+        case "fr": {
+            return <Icon
+                className = {classes.icon}
+                size = {22}
+                src = {IconFlagFr} />;
+        }
 
-            case "es": {
-                return <Icon
-                    className={classes.icon}
-                    size={22}
-                    src={IconFlagEs}/>;
-            }
+        case "es": {
+            return <Icon
+                className = {classes.icon}
+                size = {22}
+                src = {IconFlagEs} />;
+        }
 
-            case "it": {
-                return <Icon
-                    className={classes.icon}
-                    size={22}
-                    src={IconFlagIt}/>;
-            }
+        case "it": {
+            return <Icon
+                className = {classes.icon}
+                size = {22}
+                src = {IconFlagIt} />;
+        }
 
-            default:
-                return <></>;
+        default:
+            return <></>;
         }
     }, []);
 
     return (
-        <div id={id} className={cx(classes.container, className ?? '')}>
+        <div id = {id} className = {cx(classes.container, className ?? '')}>
             {options.map(option => (
                 <div
-                    id={`select_mobile_${option.value}`}
-                    className={classes.itemContainer}
-                    onClick={() => onSelect(option.value)}>
+                    id = {`select_mobile_${option.value}`}
+                    className = {classes.itemContainer}
+                    onClick = {() => onSelect(option.value)}>
                     {icon && <Icon
-                        className={classes.icon}
-                        size={22}
-                        src={icon}/>}
+                        className = {classes.icon}
+                        size = {22}
+                        src = {icon} />}
                     {isLanguages && getLanguageIcon(option.value)}
-                    <div className={classes.item}>
-                        <div className={cx(classes.text, isLanguages && 'is-languages')}>
+                    <div className = {classes.item}>
+                        <div className = {cx(classes.text, isLanguages && 'is-languages')}>
                             {option.label}
                         </div>
                         <Icon
-                            className={cx(classes.selectedIcon, value === option.value && 'selected')}
-                            size={22}
-                            src={IconCheck}
-                            color={'rgba(0, 107, 224, 1)'}/>
+                            className = {cx(classes.selectedIcon, value === option.value && 'selected')}
+                            size = {22}
+                            src = {IconCheck}
+                            color = {'rgba(0, 107, 224, 1)'} />
                     </div>
                 </div>
             ))}

@@ -103,6 +103,11 @@ export function getServerURL(stateful: IStateful) {
     return state['features/base/settings'].serverURL || DEFAULT_SERVER_URL;
 }
 
+export function isAudioSharingEnabled(stateful: IStateful) {
+    const state = toState(stateful);
+    return state['features/base/settings'].isAudioSharingEnabled;
+}
+
 /**
  * Should we hide the helper dialog when a user tries to do audio only screen sharing.
  *
@@ -121,5 +126,6 @@ export function shouldHideShareAudioHelper(state: IReduxState): boolean | undefi
  * @returns {boolean}
  */
 export function getHideSelfView(state: IReduxState) {
+    // compass changes
     return state['features/base/config'].disableSelfView || iAmVisitor(state);
 }

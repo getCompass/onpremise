@@ -74,12 +74,20 @@ interface IProps extends WithTranslation {
     visible: boolean;
 }
 
+interface IState {
+
+    /**
+     * Whether or not is being hovered.
+     */
+    isHovered: boolean;
+}
+
 /**
  * Button used for video & video settings.
  *
  * @returns {ReactElement}
  */
-class VideoSettingsButton extends Component<IProps> {
+class VideoSettingsButton extends Component<IProps, IState> {
     /**
      * Initializes a new {@code VideoSettingsButton} instance.
      *
@@ -88,8 +96,14 @@ class VideoSettingsButton extends Component<IProps> {
     constructor(props: IProps) {
         super(props);
 
+        this.state = {
+            isHovered: false
+        };
+
         this._onEscClick = this._onEscClick.bind(this);
         this._onClick = this._onClick.bind(this);
+        this._onMouseEnter = this._onMouseEnter.bind(this);
+        this._onMouseLeave = this._onMouseLeave.bind(this);
     }
 
     /**
@@ -133,36 +147,67 @@ class VideoSettingsButton extends Component<IProps> {
     }
 
     /**
+     * Button is being hovered.
+     *
+     * @param {MouseEvent} e - The mouse down event.
+     * @returns {void}
+     */
+    _onMouseEnter() {
+        this.setState({
+            isHovered: true
+        });
+    }
+
+    /**
+     * Button is not being hovered.
+     *
+     * @returns {void}
+     */
+    _onMouseLeave() {
+        if (this.state.isHovered) {
+            this.setState({
+                isHovered: false
+            });
+        }
+    }
+
+    /**
      * Implements React's {@link Component#render}.
      *
      * @inheritdoc
      */
     render() {
         const { gumPending, t, visible, isOpen, buttonKey, notifyMode } = this.props;
+        const { isHovered } = this.state;
 
         return visible ? (
-            <VideoSettingsPopup>
-                <ToolboxButtonWithIcon
-                    ariaControls = 'video-settings-dialog'
-                    ariaExpanded = { isOpen }
-                    ariaHasPopup = { true }
-                    ariaLabel = { this.props.t('toolbar.videoSettings') }
-                    buttonKey = { buttonKey }
-                    icon = { IconArrowUp }
-                    iconDisabled = { this._isIconDisabled() || gumPending !== IGUMPendingState.NONE }
-                    iconId = 'video-settings-button'
-                    iconTooltip = { t('toolbar.videoSettings') }
-                    notifyMode = { notifyMode }
-                    onIconClick = { this._onClick }
-                    onIconKeyDown = { this._onEscClick }>
-                    <VideoMuteButton
-                        buttonKey = { buttonKey }
-                        notifyMode = { notifyMode } />
-                </ToolboxButtonWithIcon>
-            </VideoSettingsPopup>
+            <div
+                onMouseLeave = {this._onMouseLeave}
+                onMouseEnter = {this._onMouseEnter}>
+                <VideoSettingsPopup>
+                    <ToolboxButtonWithIcon
+                        ariaControls = 'video-settings-dialog'
+                        ariaExpanded = {isOpen}
+                        ariaHasPopup = {true}
+                        ariaLabel = {this.props.t('toolbar.videoSettings')}
+                        buttonKey = {buttonKey}
+                        icon = {IconArrowUp}
+                        iconDisabled = {this._isIconDisabled() || gumPending !== IGUMPendingState.NONE}
+                        iconId = 'video-settings-button'
+                        iconTooltip = {t('toolbar.videoSettings')}
+                        notifyMode = {notifyMode}
+                        onIconClick = {this._onClick}
+                        onIconKeyDown = {this._onEscClick}
+                        hovered = {isOpen || isHovered}>
+                        <VideoMuteButton
+                            buttonKey = {buttonKey}
+                            notifyMode = {notifyMode} />
+                    </ToolboxButtonWithIcon>
+                </VideoSettingsPopup>
+            </div>
         ) : <VideoMuteButton
-            buttonKey = { buttonKey }
-            notifyMode = { notifyMode } />;
+            buttonKey = {buttonKey}
+            notifyMode = {notifyMode} />;
     }
 }
 

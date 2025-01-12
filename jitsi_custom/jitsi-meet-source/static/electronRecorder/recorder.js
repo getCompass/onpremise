@@ -73,9 +73,7 @@ function baseHandler(event) {
                 }
                 break;
             case "recorder_stop":
-                JitsiMeetScreenObtainer.openConfrimFinished(() => {
-                    stopRecording();
-                });
+                stopRecording();
 
                 break;
         }

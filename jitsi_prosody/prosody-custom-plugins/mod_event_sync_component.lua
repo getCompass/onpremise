@@ -26,6 +26,7 @@ local jid = require 'util.jid';
 local http = require "net.http";
 local timer = require 'util.timer';
 local is_healthcheck_room = module:require "util".is_healthcheck_room;
+local st = require "util.stanza";
 
 local main_muc_component_host = module:get_option_string("muc_component");
 local muc_domain_base = module:get_option_string("muc_mapper_domain_base");
@@ -42,34 +43,34 @@ local include_speaker_stats = module:get_option("include_speaker_stats", false);
 
 -- Option for user to control HTTP response codes that will result in a retry.
 -- Defaults to returning true on any 5XX code or 0
-local api_should_retry_for_code = module:get_option("api_should_retry_for_code", function (code)
+local api_should_retry_for_code = module:get_option("api_should_retry_for_code", function(code)
     return code >= 500;
 end)
 
 -- Cannot proceed if "api_prefix" not configured
 if not api_prefix then
     module:log("error", "api_prefix not specified. Disabling %s", module:get_name());
-    return;
+    return ;
 end
 
 if main_muc_component_host == nil then
     log("error", "No muc_component specified. No muc to operate on!");
-    return;
+    return ;
 end
 
 -- common HTTP headers added to all API calls
 local http_headers = {
-    ["User-Agent"] = "Prosody ("..prosody.version.."; "..prosody.platform..")";
+    ["User-Agent"] = "Prosody (" .. prosody.version .. "; " .. prosody.platform .. ")";
     ["Content-Type"] = "application/json";
 };
-if api_headers then -- extra headers from config
+if api_headers then
+    -- extra headers from config
     for key, value in pairs(api_headers) do
         http_headers[key] = value;
     end
 end
 
 local URL_EVENT_ENDPOINT = api_prefix;
-
 
 --- Start non-blocking HTTP call
 -- @param url URL to call
@@ -83,14 +84,15 @@ local function async_http_request(url, options, callback, timeout_callback, retr
     local _retries = retries or api_retry_count;
 
     local function cb_(response_body, response_code)
-        if not timed_out then  -- request completed before timeout
+        if not timed_out then
+            -- request completed before timeout
             completed = true;
             if (response_code == 0 or api_should_retry_for_code(response_code)) and _retries > 0 then
                 module:log("warn", "API Response code %d. Will retry after %ds", response_code, api_retry_delay);
                 timer.add_task(api_retry_delay, function()
                     async_http_request(url, options, callback, timeout_callback, _retries - 1)
                 end)
-                return;
+                return ;
             end
 
             module:log("debug", "%s %s returned code %s", options.method, url, response_code);
@@ -103,7 +105,7 @@ local function async_http_request(url, options, callback, timeout_callback, retr
 
     local request = http.request(url, options, cb_);
 
-    timer.add_task(api_timeout, function ()
+    timer.add_task(api_timeout, function()
         timed_out = true;
 
         if not completed then
@@ -121,7 +123,6 @@ local function now()
     return os.time();
 end
 
-
 --- Start EventData implementation
 local EventData = {};
 EventData.__index = EventData;
@@ -131,8 +132,8 @@ function new_EventData(room_jid)
         room_jid = room_jid;
         room_name = jid.node(room_jid);
         created_at = now();
-        occupants = {};  -- table of all (past and present) occupants data
-        active = {};  -- set of active occupants (by occupant jid)
+        occupants = {}; -- table of all (past and present) occupants data
+        active = {}; -- set of active occupants (by occupant jid)
     }, EventData);
 end
 
@@ -142,10 +143,10 @@ function EventData:on_occupant_joined(occupant_jid, event_origin)
 
     -- N.B. we only store user details on join and assume they don't change throughout the duration of the meeting
     local occupant_data = {
-        occupant_jid   = occupant_jid;
-        name  = user_context.name;
-        id  = user_context.id;
-        email  = user_context.email;
+        occupant_jid = occupant_jid;
+        name = user_context.name;
+        id = user_context.id;
+        email = user_context.email;
         joined_at = now();
         left_at = nil;
     };
@@ -211,7 +212,7 @@ end
 --- Callback when new room created
 function room_created(event)
     if is_system_event(event) then
-        return;
+        return ;
     end
 
     local room = event.room;
@@ -236,7 +237,7 @@ end
 --- Callback when room destroyed
 function room_destroyed(event)
     if is_system_event(event) then
-        return;
+        return ;
     end
 
     local room = event.room;
@@ -247,7 +248,7 @@ function room_destroyed(event)
 
     if not room_data then
         module:log("error", "(room destroyed) Room has no Event data - %s", room.jid);
-        return;
+        return ;
     end
 
     local payload = {
@@ -268,16 +269,19 @@ end
 --- Callback when an occupant joins room
 function occupant_joined(event)
     if is_system_event(event) then
-        return;
+        return ;
     end
 
     local room = event.room;
     local room_data = room.event_data;
     local occupant_jid = event.occupant.jid;
 
+    -- получаем текущее качество видео в конференции
+    local quality_level = room.quality_level or "high";
+
     if not room_data then
         module:log("error", "(occupant joined) Room has no Event data - %s", room.jid);
-        return;
+        return ;
     end
 
     local occupant_data = room_data:on_occupant_joined(occupant_jid, event.origin);
@@ -294,6 +298,24 @@ function occupant_joined(event)
         method = "POST";
         body = json.encode(payload);
     })
+
+    -- отправляем сообщение пользователю о текущем качестве видео
+    local quality_level_data = {
+        type = "quality-level",
+        value = quality_level,
+    };
+    local quality_level_json_msg_str, error = json.encode(quality_level_data);
+    if not quality_level_json_msg_str then
+        module:log('error', 'Error encoding data room:%s error:%s', room.jid, error);
+    end
+    local stanza = st.message({
+        from = room.jid,
+        to = event.occupant.jid
+    })
+                     :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
+                     :text(quality_level_json_msg_str)
+                     :up();
+    room:route_stanza(stanza);
 end
 
 --- Callback when an occupant has left room
@@ -301,7 +323,7 @@ function occupant_left(event)
     local room = event.room;
 
     if is_system_event(event) then
-        return;
+        return ;
     end
 
     local occupant_jid = event.occupant.jid;
@@ -309,7 +331,7 @@ function occupant_left(event)
 
     if not room_data then
         module:log("error", "(occupant left) Room has no Event data - %s", room.jid);
-        return;
+        return ;
     end
 
     local occupant_data = room_data:on_occupant_leave(occupant_jid, room);
@@ -340,7 +362,7 @@ function run_when_component_loaded(component_host_name, callback)
 
     if prosody.hosts[component_host_name] == nil then
         module:log('debug', 'Host %s not yet loaded. Will trigger when it is loaded.', component_host_name);
-        prosody.events.add_handler('host-activated', function (host)
+        prosody.events.add_handler('host-activated', function(host)
             if host == component_host_name then
                 trigger_callback();
             end
@@ -393,7 +415,7 @@ end
 function handle_main_room_created(event)
     local room = event.room;
     if is_healthcheck_room(room.jid) then
-        return;
+        return ;
     end
 
     room._data.event_sync_extra_payload = {
@@ -410,7 +432,7 @@ end
 function handle_breakout_room_created(event)
     local room = event.room;
     if is_healthcheck_room(room.jid) then
-        return;
+        return ;
     end
 
     local main_room = get_main_room(room);
@@ -463,9 +485,44 @@ function occupant_affiliation_changed(event)
     })
 end
 
+local get_room_by_name_and_subdomain = module:require "util".get_room_by_name_and_subdomain;
+
+function occupant_groupchat(event)
+    local room_name = event.room.event_data.room_name;
+    local room = get_room_by_name_and_subdomain(room_name);
+    local stanza = event.stanza;
+    local body = stanza:get_child_text('body');
+
+    if body then
+
+        local data = json.decode(body)
+        if data and type(data) == "table" and data.type == 'quality-level' then
+            local qualityLevel = data.qualityLevel;
+            module:log("info", "Меняю уровень качества на: %s", tostring(qualityLevel));
+
+            local event_occupant_jid = event.stanza.attr.from;
+            local event_occupant = room:get_occupant_by_real_jid(event_occupant_jid);
+            if not event_occupant then
+                module:log("error", "Occupant %s was not found in room %s", event_occupant_jid, room.jid)
+                return
+            end
+
+            -- Access control: Check if the occupant is a moderator
+            local affiliation = room:get_affiliation(event_occupant.bare_jid);
+            if affiliation ~= 'owner' and affiliation ~= 'admin' then
+                module:log('warn', 'Unauthorized user %s attempted to update quality_level', event_occupant.jid);
+                return;
+            end
+
+            -- обновляем quality_level в room
+            room.quality_level = tostring(qualityLevel)
+        end
+    end
+end
+
 -- Handle events on main muc module
 run_when_component_loaded(main_muc_component_host, function(host_module, host_name)
-    run_when_muc_module_loaded(host_module, host_name, function (main_muc, main_module)
+    run_when_muc_module_loaded(host_module, host_name, function(main_muc, main_module)
         main_muc_service = main_muc;  -- so it can be accessed from breakout muc event handlers
 
         -- the following must run after speakerstats (priority -1)
@@ -475,12 +532,13 @@ run_when_component_loaded(main_muc_component_host, function(host_module, host_na
         main_module:hook("muc-occupant-left", occupant_left, -2);
         main_module:hook("muc-room-destroyed", room_destroyed, -2);
         main_module:hook('muc-set-affiliation', occupant_affiliation_changed, -1);
+        main_module:hook('muc-occupant-groupchat', occupant_groupchat, -4); -- must run after room_created
     end);
 end);
 
 -- Handle events on breakout muc module
 run_when_component_loaded(breakout_muc_component_host, function(host_module, host_name)
-    run_when_muc_module_loaded(host_module, host_name, function (_, breakout_module)
+    run_when_muc_module_loaded(host_module, host_name, function(_, breakout_module)
 
         -- the following must run after speakerstats (priority -1)
         breakout_module:hook("muc-room-created", handle_breakout_room_created, -2);

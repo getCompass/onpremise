@@ -1,14 +1,14 @@
-import React, {Component, RefObject} from 'react';
-import {WithTranslation} from 'react-i18next';
-import {connect} from 'react-redux';
+import React, { Component, RefObject } from 'react';
+import { WithTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
 
-import {IReduxState, IStore} from '../../../app/types';
-import {isMobileBrowser} from '../../../base/environment/utils';
-import {translate} from '../../../base/i18n/functions';
-import {IconMessage, IconSend} from '../../../base/icons/svg';
+import { IReduxState, IStore } from '../../../app/types';
+import { isMobileBrowser } from '../../../base/environment/utils';
+import { translate } from '../../../base/i18n/functions';
+import { IconMessage, IconSend } from '../../../base/icons/svg';
 import Button from '../../../base/ui/components/web/Button';
 import Input from '../../../base/ui/components/web/Input';
-import {areSmileysDisabled} from '../../functions';
+import { areSmileysDisabled } from '../../functions';
 import Icon from "../../../base/icons/components/Icon";
 
 /**
@@ -25,6 +25,8 @@ interface IProps extends WithTranslation {
      * The id of the message recipient, if any.
      */
     _privateMessageRecipientId?: string;
+
+    _isPollsTabFocused: boolean;
 
     /**
      * Invoked to send chat messages.
@@ -108,6 +110,10 @@ class ChatInput extends Component<IProps, IState> {
         if (prevProps._privateMessageRecipientId !== this.props._privateMessageRecipientId) {
             this._textArea?.current?.focus();
         }
+
+        if (!isMobileBrowser() && !this.props._isPollsTabFocused && prevProps._isPollsTabFocused !== this.props._isPollsTabFocused) {
+            this._focus();
+        }
     }
 
     /**
@@ -121,38 +127,39 @@ class ChatInput extends Component<IProps, IState> {
 
         return (
             <div
-                className={`chat-input-container${this.state.message.trim().length ? ' populated' : ''}${isMobile ? ' is-mobile' : ''}`}>
-                <div id='chat-input' className={isMobile ? 'is-mobile' : ''}>
+                className = {`chat-input-container${this.state.message.trim().length ? ' populated' : ''}${isMobile ? ' is-mobile' : ''}`}>
+                <div id = 'chat-input' className = {isMobile ? 'is-mobile' : ''}>
                     {isMobile && (
-                        <div className={`chat-input-icon${isMobile ? ' is-mobile' : ''}`}>
+                        <div className = {`chat-input-icon${isMobile ? ' is-mobile' : ''}`}>
                             <Icon
-                                color='rgba(196, 196, 196, 0.15)'
-                                size={24}
-                                src={IconMessage}/>
+                                color = 'rgba(196, 196, 196, 0.15)'
+                                size = {24}
+                                src = {IconMessage} />
                         </div>
                     )}
                     <Input
-                        className={`chat-input${isMobile ? ' is-mobile' : ''}`}
-                        inputClassName='chat-input-text-area'
-                        icon={undefined}
-                        iconClick={undefined}
-                        id='chat-input-messagebox'
-                        maxRows={2}
-                        onChange={this._onMessageChange}
-                        onKeyPress={this._onDetectSubmit}
-                        placeholder={this.props.t('chat.messagebox')}
-                        ref={this._textArea}
-                        textarea={true}
-                        value={this.state.message}/>
+                        className = {`chat-input${isMobile ? ' is-mobile' : ''}`}
+                        inputClassName = 'chat-input-text-area'
+                        icon = {undefined}
+                        iconClick = {undefined}
+                        id = 'chat-input-messagebox'
+                        maxRows = {2}
+                        onChange = {this._onMessageChange}
+                        onKeyPress = {this._onDetectSubmit}
+                        placeholder = {this.props.t('chat.messagebox')}
+                        ref = {this._textArea}
+                        textarea = {true}
+                        autoComplete = 'off'
+                        value = {this.state.message} />
                     <Button
-                        accessibilityLabel={this.props.t('chat.sendButton')}
-                        className={this.state.message.trim().length ? ' populated' : ''}
-                        disabled={!this.state.message.trim()}
-                        customIcon={<Icon
-                            size={isMobile ? 28 : 35}
-                            src={IconSend}/>}
-                        onClick={this._onSubmitMessage}
-                        size={isMobileBrowser() ? 'sendMobile' : 'sendDesktop'}/>
+                        accessibilityLabel = {this.props.t('chat.sendButton')}
+                        className = {this.state.message.trim().length ? ' populated' : ''}
+                        disabled = {!this.state.message.trim()}
+                        customIcon = {<Icon
+                            size = {isMobile ? 28 : 35}
+                            src = {IconSend} />}
+                        onClick = {this._onSubmitMessage}
+                        size = {isMobileBrowser() ? 'sendMobile' : 'sendDesktop'} />
                 </div>
             </div>
         );
@@ -179,7 +186,7 @@ class ChatInput extends Component<IProps, IState> {
         if (trimmed) {
             this.props.onSend(trimmed);
 
-            this.setState({message: ''});
+            this.setState({ message: '' });
         }
 
     }
@@ -223,7 +230,7 @@ class ChatInput extends Component<IProps, IState> {
      * @returns {void}
      */
     _onMessageChange(value: string) {
-        this.setState({message: value});
+        this.setState({ message: value });
     }
 
     /**
@@ -259,7 +266,7 @@ class ChatInput extends Component<IProps, IState> {
         if (this.state.showSmileysPanel) {
             this._focus();
         }
-        this.setState({showSmileysPanel: !this.state.showSmileysPanel});
+        this.setState({ showSmileysPanel: !this.state.showSmileysPanel });
     }
 }
 
@@ -273,11 +280,12 @@ class ChatInput extends Component<IProps, IState> {
  * }}
  */
 const mapStateToProps = (state: IReduxState) => {
-    const {privateMessageRecipient} = state['features/chat'];
+    const { isPollsTabFocused, privateMessageRecipient } = state['features/chat'];
 
     return {
         _areSmileysDisabled: areSmileysDisabled(state),
-        _privateMessageRecipientId: privateMessageRecipient?.id
+        _privateMessageRecipientId: privateMessageRecipient?.id,
+        _isPollsTabFocused: isPollsTabFocused
     };
 };
 

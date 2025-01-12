@@ -28,7 +28,7 @@ MiddlewareRegistry.register(store => next => action => {
         const { participant } = action;
 
         const participantDisplayName
-                = getParticipantDisplayName(store.getState, participant?.getId());
+                = getParticipantDisplayName(store.getState, participant.getId());
 
         dispatch(hangup(true, i18next.t('dialog.kickTitle', { participantDisplayName })));
 

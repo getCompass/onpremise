@@ -662,7 +662,7 @@
             "answerPlaceholder": "Možnost {{index}}",
             "cancel": "Prekliči",
             "create": "Ustvari anketo",
-            "pollOptions": "Možnost ankete {{index}}",
+            "pollOption": "Možnost ankete {{index}}",
             "pollQuestion": "Vprašanje ankete",
             "questionPlaceholder": "Postavi vprašanje",
             "removeOption": "Odstrani možnost",

@@ -1,19 +1,20 @@
 import clsx from 'clsx';
-import React, {useCallback} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import Avatar from '../../../base/avatar/components/Avatar';
-import {IMessage} from '../../types';
+import { IMessage } from '../../types';
 
 import ChatMessage from './ChatMessage';
-import {getPrivateNoticeMessage} from "../../functions";
-import {MESSAGE_TYPE_LOCAL} from "../../constants";
+import { getPrivateNoticeMessage } from "../../functions";
+import { MESSAGE_TYPE_LOCAL } from "../../constants";
 import PrivateMessageButton from "./PrivateMessageButton";
-import {isMobileBrowser} from "../../../base/environment/utils";
-import {handleLobbyChatInitialized, openChat} from "../../actions.web";
-import {useDispatch, useSelector} from "react-redux";
-import {IReduxState} from "../../../app/types";
-import {getLocalParticipant, getParticipantById} from "../../../base/participants/functions";
+import { isMobileBrowser } from "../../../base/environment/utils";
+import { handleLobbyChatInitialized, openChat } from "../../actions.web";
+import { useDispatch, useSelector } from "react-redux";
+import { IReduxState } from "../../../app/types";
+import { getLocalParticipant, getParticipantById } from "../../../base/participants/functions";
+import { close as closeParticipantsPane } from "../../../participants-pane/actions.any";
 
 interface IProps {
 
@@ -118,24 +119,29 @@ const useStyles = makeStyles()(theme => {
     };
 });
 
-const ChatMessageGroup = ({className = '', messages}: IProps) => {
-    const {classes, cx} = useStyles();
+const ChatMessageGroup = ({ className = '', messages }: IProps) => {
+    const { classes, cx } = useStyles();
     const messagesLength = messages.length;
     const dispatch = useDispatch();
-    const participant = useSelector((state: IReduxState) => getParticipantById(state, messages[0].id));
+    const participant = useSelector((state: IReduxState) => getParticipantById(state, messages[0].participantId));
     const localParticipant = useSelector((state: IReduxState) => getLocalParticipant(state));
+    const isParticipantPaneOpen = useSelector((state: IReduxState) => state['features/participants-pane'].isOpen);
     const isMobile = isMobileBrowser();
 
     const handleClick = useCallback(() => {
 
         // на себя клик не должен срабатывать
-        if (localParticipant === undefined || localParticipant.id === messages[0].id) {
+        if (localParticipant === undefined || localParticipant.id === messages[0].participantId) {
             return;
         }
 
         if (messages[0].lobbyChat) {
-            dispatch(handleLobbyChatInitialized(messages[0].id));
+            dispatch(handleLobbyChatInitialized(messages[0].participantId));
         } else {
+
+            if (isParticipantPaneOpen) {
+                dispatch(closeParticipantsPane());
+            }
             dispatch(openChat(participant));
         }
     }, []);
@@ -145,37 +151,38 @@ const ChatMessageGroup = ({className = '', messages}: IProps) => {
     }
 
     return (
-        <div className={clsx(classes.container, messages[0].privateMessage && 'privatemessage')}>
-            <div className={clsx(classes.groupContainer, className, isMobile && 'is-mobile')}>
-                <div className={classes.avatarContainer} onClick={() => handleClick()}>
+        <div className = {clsx(classes.container, messages[0].privateMessage && 'privatemessage')}>
+            <div className = {clsx(classes.groupContainer, className, isMobile && 'is-mobile')}>
+                <div className = {classes.avatarContainer} onClick = {() => handleClick()}>
                     <Avatar
-                        className={clsx(classes.avatar, 'avatar', (localParticipant !== undefined && localParticipant.id !== messages[0].id) && 'clickable')}
-                        participantId={messages[0].id}
-                        size={36}
+                        className = {clsx(classes.avatar, 'avatar', (localParticipant !== undefined && localParticipant.id !== messages[0].participantId) && 'clickable')}
+                        participantId = {messages[0].participantId}
+                        size = {36}
                     />
                 </div>
-                <div className={`${classes.messageGroup} chat-message-group ${className}`}>
+                <div className = {`${classes.messageGroup} chat-message-group ${className}`}>
                     {messages.map((message, i) => (
                         <ChatMessage
-                            key={i}
-                            message={message}
-                            showDisplayName={i === 0}
-                            showTimestamp={i === messages.length - 1}
-                            type={className}/>
+                            key = { i }
+                            message = { message }
+                            shouldDisplayChatMessageMenu = { false }
+                            showDisplayName = { i === 0 }
+                            showTimestamp = { i === messages.length - 1 }
+                            type = { className } />
                     ))}
                 </div>
             </div>
             {messages[0].privateMessage && (
-                <div className={cx(classes.privateMessageContainer, isMobile && 'is-mobile')}>
-                    <div className={cx(classes.privateMessageNotice, isMobile && 'is-mobile')}>
+                <div className = {cx(classes.privateMessageContainer, isMobile && 'is-mobile')}>
+                    <div className = {cx(classes.privateMessageNotice, isMobile && 'is-mobile')}>
                         {getPrivateNoticeMessage(messages[0])}
                     </div>
                     {messages[0].messageType !== MESSAGE_TYPE_LOCAL && (
                         <div
-                            className={classes.replyButtonContainer}>
+                            className = {classes.replyButtonContainer}>
                             <PrivateMessageButton
-                                isLobbyMessage={messages[0].lobbyChat}
-                                participantID={messages[0].id}/>
+                                isLobbyMessage = {messages[0].lobbyChat}
+                                participantID = {messages[0].participantId} />
                         </div>
                     )}
                 </div>)}

@@ -2,6 +2,9 @@ import { AnyAction } from 'redux';
 
 import { IStore } from '../app/types';
 import { ENDPOINT_MESSAGE_RECEIVED } from '../base/conference/actionTypes';
+import { isJwtFeatureEnabled } from '../base/jwt/functions';
+import JitsiMeetJS from '../base/lib-jitsi-meet';
+import { isLocalParticipantModerator } from '../base/participants/functions';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 
 import {
@@ -10,9 +13,12 @@ import {
 } from './actionTypes';
 import {
     removeTranscriptMessage,
+    setRequestingSubtitles,
     updateTranscriptMessage
 } from './actions.any';
 import { notifyTranscriptionChunkReceived } from './functions';
+import logger from './logger';
+import { ITranscriptMessage } from './types';
 
 
 /**
@@ -38,6 +44,11 @@ const P_NAME_REQUESTING_TRANSCRIPTION = 'requestingTranscription';
  * preference for translation for a participant.
  */
 const P_NAME_TRANSLATION_LANGUAGE = 'translation_language';
+
+/**
+ * The dial command to use for starting a transcriber.
+ */
+const TRANSCRIBER_DIAL_NUMBER = 'jitsi_meet_transcribe';
 
 /**
 * Time after which the rendered subtitles will be removed.
@@ -106,10 +117,9 @@ function _endpointMessageReceived(store: IStore, next: Function, action: AnyActi
     const { dumpTranscript, skipInterimTranscriptions } = state['features/base/config'].testing ?? {};
 
     const transcriptMessageID = json.message_id;
-    const { name, id, avatar_url: avatarUrl, type: type } = json.participant;
+    const { name, id, avatar_url: avatarUrl } = json.participant;
     const participant = {
         avatarUrl,
-        type,
         id,
         name
     };
@@ -173,8 +183,11 @@ function _endpointMessageReceived(store: IStore, next: Function, action: AnyActi
             }
         }
 
-        // If the suer is not requesting transcriptions just bail.
-        if (json.language.slice(0, 2) !== language) {
+        // If the user is not requesting transcriptions just bail.
+        // Regex to filter out all possible country codes after language code:
+        // this should catch all notations like 'en-GB' 'en_GB' and 'enGB'
+        // and be independent of the country code length
+        if (json.language.replace(/[-_A-Z].*/, '') !== language) {
             return next(action);
         }
 
@@ -186,9 +199,8 @@ function _endpointMessageReceived(store: IStore, next: Function, action: AnyActi
         // message ID or adds a new transcript message if it does not
         // exist in the map.
         const existingMessage = state['features/subtitles']._transcriptMessages.get(transcriptMessageID);
-        const newTranscriptMessage: any = {
+        const newTranscriptMessage: ITranscriptMessage = {
             clearTimeOut: existingMessage?.clearTimeOut,
-            language,
             participant
         };
 
@@ -227,7 +239,7 @@ function _endpointMessageReceived(store: IStore, next: Function, action: AnyActi
  * @returns {void}
  */
 function _requestingSubtitlesChange(
-        { getState }: IStore,
+        { dispatch, getState }: IStore,
         enabled: boolean,
         language?: string | null) {
     const state = getState();
@@ -236,6 +248,21 @@ function _requestingSubtitlesChange(
     conference?.setLocalParticipantProperty(
         P_NAME_REQUESTING_TRANSCRIPTION,
         enabled);
+
+    if (enabled && conference?.getTranscriptionStatus() === JitsiMeetJS.constants.transcriptionStatus.OFF) {
+        const isModerator = isLocalParticipantModerator(state);
+        const featureAllowed = isJwtFeatureEnabled(getState(), 'transcription', isModerator, isModerator);
+
+        if (featureAllowed) {
+            conference?.dial(TRANSCRIBER_DIAL_NUMBER)
+                .catch((e: any) => {
+                    logger.error('Error dialing', e);
+
+                    // let's back to the correct state
+                    dispatch(setRequestingSubtitles(false, false));
+                });
+        }
+    }
 
     if (enabled && language) {
         conference?.setLocalParticipantProperty(

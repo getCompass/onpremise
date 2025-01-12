@@ -1,15 +1,15 @@
-import React, {useCallback, useMemo} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch} from 'react-redux';
+import React, { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
-import {approveParticipantAudio, approveParticipantVideo} from '../../../av-moderation/actions';
-import {IconMic, IconVideo} from '../../../base/icons/svg';
-import {MEDIA_TYPE, MediaType} from '../../../base/media/constants';
+import { approveParticipantAudio, approveParticipantVideo } from '../../../av-moderation/actions';
+import { IconMic, IconVideo } from '../../../base/icons/svg';
+import { MEDIA_TYPE, MediaType } from '../../../base/media/constants';
 import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
-import {NOTIFY_CLICK_MODE} from '../../../toolbox/types';
-import {IButtonProps} from '../../types';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
+import { IButtonProps } from '../../types';
 import Icon from "../../../base/icons/components/Icon";
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 interface IProps extends IButtonProps {
     buttonType: MediaType;
@@ -23,14 +23,14 @@ interface IProps extends IButtonProps {
  * @returns {JSX.Element}
  */
 const AskToUnmuteButton = ({
-                               buttonType,
-                               notifyMode,
-                               notifyClick,
-                               participantID,
-                               className
-                           }: IProps): JSX.Element => {
+    buttonType,
+    notifyMode,
+    notifyClick,
+    participantID,
+    className
+}: IProps): JSX.Element => {
     const dispatch = useDispatch();
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const isMobile = isMobileBrowser();
     const _onClick = useCallback(() => {
         notifyClick?.();
@@ -42,7 +42,7 @@ const AskToUnmuteButton = ({
         } else if (buttonType === MEDIA_TYPE.VIDEO) {
             dispatch(approveParticipantVideo(participantID));
         }
-    }, [buttonType, dispatch, notifyClick, notifyMode, participantID]);
+    }, [ buttonType, dispatch, notifyClick, notifyMode, participantID ]);
 
     const text = useMemo(() => {
         if (buttonType === MEDIA_TYPE.AUDIO) {
@@ -52,7 +52,7 @@ const AskToUnmuteButton = ({
         }
 
         return '';
-    }, [buttonType]);
+    }, [ buttonType ]);
 
     const icon = useMemo(() => {
         if (buttonType === MEDIA_TYPE.AUDIO) {
@@ -60,20 +60,20 @@ const AskToUnmuteButton = ({
         } else if (buttonType === MEDIA_TYPE.VIDEO) {
             return IconVideo;
         }
-    }, [buttonType]);
+    }, [ buttonType ]);
 
     return (
         <ContextMenuItem
-            accessibilityLabel={text}
-            className={className}
-            customIcon={<Icon
-                className={isMobile ? 'is-mobile' : ''}
-                size={isMobile ? 22 : 18}
-                src={icon}
-                color={'rgba(255, 255, 255, 0.3)'}/>}
-            onClick={_onClick}
-            testId={`unmute-${buttonType}-${participantID}`}
-            text={text}/>
+            accessibilityLabel = {text}
+            className = {className}
+            customIcon = {<Icon
+                className = {isMobile ? 'is-mobile' : ''}
+                size = {isMobile ? 22 : 18}
+                src = {icon}
+                color = {'rgba(255, 255, 255, 0.3)'} />}
+            onClick = {_onClick}
+            testId = {`unmute-${buttonType}-${participantID}`}
+            text = {text} />
     );
 };
 

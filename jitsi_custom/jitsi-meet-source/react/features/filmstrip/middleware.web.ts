@@ -34,7 +34,7 @@ import {
     addStageParticipant,
     removeStageParticipant,
     setFilmstripHeight,
-    setFilmstripWidth,
+    setFilmstripWidth, setHorizontalViewDimensions,
     setScreenshareFilmstripParticipant,
     setStageParticipants
 } from './actions.web';
@@ -114,7 +114,7 @@ MiddlewareRegistry.register(store => next => action => {
             break;
         }
 
-        updateRemoteParticipants(store, false, action.participant?.id);
+        updateRemoteParticipants(store, true);
         break;
     }
     case SETTINGS_UPDATED: {
@@ -303,6 +303,7 @@ MiddlewareRegistry.register(store => next => action => {
 
             if (screenshares.find(sId => sId === participantId)) {
                 dispatch(setScreenshareFilmstripParticipant(participantId));
+                dispatch(setHorizontalViewDimensions());
                 break;
             }
         }
@@ -328,6 +329,8 @@ MiddlewareRegistry.register(store => next => action => {
         } else {
             dispatch(addStageParticipant(participantId, true));
         }
+
+        dispatch(setHorizontalViewDimensions());
         break;
     }
     case CLEAR_STAGE_PARTICIPANTS: {

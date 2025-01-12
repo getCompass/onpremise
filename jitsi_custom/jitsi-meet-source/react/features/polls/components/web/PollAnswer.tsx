@@ -1,13 +1,19 @@
-import React from 'react';
-import {makeStyles} from 'tss-react/mui';
+/* eslint-disable react/jsx-no-bind */
 
-import {withPixelLineHeight} from '../../../base/styles/functions.web';
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
+
+import Icon from '../../../base/icons/components/Icon';
+import { IconCloseLarge } from '../../../base/icons/svg';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import Button from '../../../base/ui/components/web/Button';
 import Checkbox from '../../../base/ui/components/web/Checkbox';
-import {BUTTON_TYPES} from '../../../base/ui/constants.web';
-import {isSubmitAnswerDisabled} from '../../functions';
-import AbstractPollAnswer, {AbstractProps} from '../AbstractPollAnswer';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { BUTTON_TYPES } from '../../../base/ui/constants.web';
+import { editPoll, removePoll } from '../../actions';
+import { isSubmitAnswerDisabled } from '../../functions';
+import AbstractPollAnswer, { AbstractProps } from '../AbstractPollAnswer';
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -17,6 +23,10 @@ const useStyles = makeStyles()(theme => {
             backgroundColor: 'rgba(255, 255, 255, 0.03)',
             borderRadius: '8px',
             wordBreak: 'break-word'
+        },
+        closeBtn: {
+            cursor: 'pointer',
+            float: 'right'
         },
         header: {
             marginBottom: '16px',
@@ -104,59 +114,92 @@ const useStyles = makeStyles()(theme => {
 });
 
 const PollAnswer = ({
-                        creatorName,
-                        checkBoxStates,
-                        poll,
-                        setCheckbox,
-                        skipAnswer,
-                        skipChangeVote,
-                        submitAnswer,
-                        t
-                    }: AbstractProps) => {
-    const {changingVote} = poll;
-    const {classes, cx} = useStyles();
+    creatorName,
+    checkBoxStates,
+    poll,
+    pollId,
+    setCheckbox,
+    setCreateMode,
+    skipAnswer,
+    skipChangeVote,
+    sendPoll,
+    submitAnswer,
+    t
+}: AbstractProps) => {
+    const { changingVote, saved: pollSaved } = poll;
+    const dispatch = useDispatch();
+
+    const { classes, cx } = useStyles();
+
     const isMobile = isMobileBrowser();
 
     return (
-        <div className={classes.container}>
-            <div className={cx(classes.header, isMobile && 'is-mobile')}>
-                <div className={cx(classes.question, isMobile && 'is-mobile')}>
+        <div className = {classes.container}>
+            {
+                pollSaved && <Icon
+                    ariaLabel = { t('polls.closeButton') }
+                    className = { classes.closeBtn }
+                    onClick = { () => dispatch(removePoll(pollId, poll)) }
+                    role = 'button'
+                    src = { IconCloseLarge }
+                    tabIndex = { 0 } />
+            }
+            <div className = {cx(classes.header, isMobile && 'is-mobile')}>
+                <div className = {cx(classes.question, isMobile && 'is-mobile')}>
                     {poll.question}
                 </div>
-                <div className={cx(classes.creator, isMobile && 'is-mobile')}>
+                <div className = {cx(classes.creator, isMobile && 'is-mobile')}>
                     {creatorName}
                 </div>
             </div>
-            <ul className={cx(classes.answerList, isMobile && 'is-mobile')}>
+            <ul className = {cx(classes.answerList, isMobile && 'is-mobile')}>
                 {
-                    poll.answers.map((answer: any, index: number) => (
+                    poll.answers.map((answer, index: number) => (
                         <li
-                            className={classes.answer}
-                            key={index}>
+                            className = {classes.answer}
+                            key = {index}>
                             <Checkbox
-                                className={classes.checkbox}
-                                checked={checkBoxStates[index]}
-                                key={index}
-                                label={answer.name}
-                                // eslint-disable-next-line react/jsx-no-bind
-                                onChange={ev => setCheckbox(index, ev.target.checked)}/>
+                                className = {classes.checkbox}
+                                checked = {checkBoxStates[index]}
+                                disabled = { poll.saved }
+                                key = {index}
+                                label = {answer.name}
+                                onChange = {ev => setCheckbox(index, ev.target.checked)} />
                         </li>
                     ))
                 }
             </ul>
-            <div className={cx(classes.footer, isMobile && 'is-mobile')}>
-                <Button
-                    accessibilityLabel={t('polls.answer.skip')}
-                    className={classes.buttonCancel}
-                    labelKey={'polls.answer.skip'}
-                    onClick={changingVote ? skipChangeVote : skipAnswer}
-                    type={BUTTON_TYPES.SECONDARY}/>
-                <Button
-                    accessibilityLabel={t('polls.answer.submit')}
-                    className={classes.buttonCreate}
-                    disabled={isSubmitAnswerDisabled(checkBoxStates)}
-                    labelKey={'polls.answer.submit'}
-                    onClick={submitAnswer}/>
+            <div className = {cx(classes.footer, isMobile && 'is-mobile')}>
+                {
+                    pollSaved ? <>
+                        <Button
+                            accessibilityLabel = { t('polls.answer.edit') }
+                            className = { classes.buttonCancel }
+                            labelKey = { 'polls.answer.edit' }
+                            onClick = { () => {
+                                setCreateMode(true);
+                                dispatch(editPoll(pollId, true));
+                            } }
+                            type = { BUTTON_TYPES.SECONDARY } />
+                        <Button
+                            accessibilityLabel = { t('polls.answer.send') }
+                            labelKey = { 'polls.answer.send' }
+                            onClick = { sendPoll } />
+                    </> : <>
+                        <Button
+                            accessibilityLabel = {t('polls.answer.skip')}
+                            className = {classes.buttonCancel}
+                            labelKey = {'polls.answer.skip'}
+                            onClick = {changingVote ? skipChangeVote : skipAnswer}
+                            type = {BUTTON_TYPES.SECONDARY} />
+                        <Button
+                            accessibilityLabel = {t('polls.answer.submit')}
+                            className = {classes.buttonCreate}
+                            disabled = {isSubmitAnswerDisabled(checkBoxStates)}
+                            labelKey = {'polls.answer.submit'}
+                            onClick = {submitAnswer} />
+                    </>
+                }
             </div>
         </div>
     );

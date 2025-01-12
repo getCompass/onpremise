@@ -47,6 +47,15 @@ export const REQUEST_DISABLE_AUDIO_MODERATION = 'REQUEST_DISABLE_AUDIO_MODERATIO
 export const REQUEST_DISABLE_VIDEO_MODERATION = 'REQUEST_DISABLE_VIDEO_MODERATION';
 
 /**
+ * The type of (redux) action which signals that Screenshare Moderation disable has been requested.
+ *
+ * {
+ *     type: REQUEST_DISABLE_SCREENSHARE_MODERATION
+ * }
+ */
+export const REQUEST_DISABLE_SCREENSHARE_MODERATION = 'REQUEST_DISABLE_SCREENSHARE_MODERATION';
+
+/**
  * The type of (redux) action which signals that Audio Moderation enable has been requested.
  *
  * {
@@ -63,6 +72,15 @@ export const REQUEST_ENABLE_AUDIO_MODERATION = 'REQUEST_ENABLE_AUDIO_MODERATION'
  * }
  */
 export const REQUEST_ENABLE_VIDEO_MODERATION = 'REQUEST_ENABLE_VIDEO_MODERATION';
+
+/**
+ * The type of (redux) action which signals that Screenshare Moderation enable has been requested.
+ *
+ * {
+ *     type: REQUEST_ENABLE_SCREENSHARE_MODERATION
+ * }
+ */
+export const REQUEST_ENABLE_SCREENSHARE_MODERATION = 'REQUEST_ENABLE_SCREENSHARE_MODERATION';
 
 /**
  * The type of (redux) action which signals that the local participant had been approved.

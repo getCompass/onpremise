@@ -759,7 +759,7 @@
             "answerPlaceholder": "خيار {{index}}",
             "cancel": "إلغاء",
             "create": "إنشاء استطلاع",
-            "pollOptions": "خيار الاستطلاع {{index}}",
+            "pollOption": "خيار الاستطلاع {{index}}",
             "pollQuestion": "سؤال الاستطلاع",
             "questionPlaceholder": "طرح سؤال",
             "removeOption": "إزالة خيار",

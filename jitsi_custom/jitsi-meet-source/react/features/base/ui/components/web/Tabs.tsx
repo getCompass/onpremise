@@ -1,8 +1,7 @@
-import React, {useCallback, useEffect} from 'react';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback, useEffect } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
-import {isMobileBrowser} from '../../../environment/utils';
-import {withPixelLineHeight} from '../../../styles/functions.web';
+import { isMobileBrowser } from '../../../environment/utils';
 
 interface ITabProps {
     accessibilityLabel: string;
@@ -90,26 +89,26 @@ const useStyles = makeStyles()(theme => {
             fontFamily: 'Inter Semibold',
             fontWeight: 'normal' as const,
             fontSize: '9px',
-            lineHeight: '13px',
+            lineHeight: '14px',
             color: 'rgba(255, 255, 255, 0.9)',
             padding: '0 4px',
-            borderRadius: '100%',
+            borderRadius: '20px',
             backgroundColor: 'rgba(255, 79, 71, 1)',
             marginLeft: '4px',
-            minWidth: '5px',
+            minWidth: '6px',
         }
     };
 });
 
 
 const Tabs = ({
-                  accessibilityLabel,
-                  className,
-                  onChange,
-                  selected,
-                  tabs
-              }: ITabProps) => {
-    const {classes, cx} = useStyles();
+    accessibilityLabel,
+    className,
+    onChange,
+    selected,
+    tabs
+}: ITabProps) => {
+    const { classes, cx } = useStyles();
     const isMobile = isMobileBrowser();
     const onClick = useCallback(id => () => {
         onChange(id);
@@ -130,36 +129,36 @@ const Tabs = ({
         if (newIndex !== null) {
             onChange(tabs[newIndex].id);
         }
-    }, [tabs]);
+    }, [ tabs ]);
 
     useEffect(() => {
         // this test is needed to make sure the effect is triggered because of user actually changing tab
         if (document.activeElement?.getAttribute('role') === 'tab') {
             document.querySelector<HTMLButtonElement>(`#${selected}`)?.focus();
         }
-    }, [selected]);
+    }, [ selected ]);
 
     return (
-        <div className={classes.paddingContainer}>
+        <div className = {classes.paddingContainer}>
             <div
-                aria-label={accessibilityLabel}
-                className={cx(classes.container, className, isMobile && 'is-mobile')}
-                role='tablist'>
+                aria-label = {accessibilityLabel}
+                className = {cx(classes.container, className, isMobile && 'is-mobile')}
+                role = 'tablist'>
                 {tabs.map((tab, index) => (
                     <button
-                        aria-controls={tab.controlsId}
-                        aria-label={tab.accessibilityLabel}
-                        aria-selected={selected === tab.id}
-                        className={cx(classes.tab, selected === tab.id && 'selected', isMobile && 'is-mobile')}
-                        disabled={tab.disabled}
-                        id={tab.id}
-                        key={tab.id}
-                        onClick={onClick(tab.id)}
-                        onKeyDown={onKeyDown(index)}
-                        role='tab'
-                        tabIndex={selected === tab.id ? undefined : -1}>
+                        aria-controls = {tab.controlsId}
+                        aria-label = {tab.accessibilityLabel}
+                        aria-selected = {selected === tab.id}
+                        className = {cx(classes.tab, selected === tab.id && 'selected', isMobile && 'is-mobile')}
+                        disabled = {tab.disabled}
+                        id = {tab.id}
+                        key = {tab.id}
+                        onClick = {onClick(tab.id)}
+                        onKeyDown = {onKeyDown(index)}
+                        role = 'tab'
+                        tabIndex = {selected === tab.id ? undefined : -1}>
                         {tab.label}
-                        {tab.countBadge && <span className={classes.badge}>{tab.countBadge}</span>}
+                        {tab.countBadge && <span className = {classes.badge}>{tab.countBadge > 9 ? '9+' : tab.countBadge}</span>}
                     </button>
                 ))}
             </div>

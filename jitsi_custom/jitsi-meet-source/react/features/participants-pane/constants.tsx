@@ -11,7 +11,7 @@ import {
     IconVideoOff,
     IconVideoOffThin
 } from '../base/icons/svg';
-import {isMobileBrowser} from "../base/environment/utils";
+import { isMobileBrowser } from "../base/environment/utils";
 
 /**
  * Reducer key for the feature.
@@ -66,25 +66,25 @@ export const QUICK_ACTION_BUTTON: {
 export const AudioStateIcons = {
     [MEDIA_STATE.DOMINANT_SPEAKER]: (
         <Icon
-            className='jitsi-icon-dominant-speaker'
-            size={24}
-            src={IconMic}/>
+            className = 'jitsi-icon-dominant-speaker'
+            size = {24}
+            src = {IconMic} />
     ),
     [MEDIA_STATE.FORCE_MUTED]: (
         <Icon
-            color='#E04757'
-            size={24}
-            src={IconMicSlash}/>
+            color = '#E04757'
+            size = {24}
+            src = {IconMicSlash} />
     ),
     [MEDIA_STATE.MUTED]: (
         <Icon
-            size={24}
-            src={IconMicSlash}/>
+            size = {24}
+            src = {IconMicSlash} />
     ),
     [MEDIA_STATE.UNMUTED]: (
         <Icon
-            size={24}
-            src={IconMic}/>
+            size = {24}
+            src = {IconMic} />
     ),
     [MEDIA_STATE.NONE]: null
 };
@@ -95,29 +95,29 @@ export const AudioStateIcons = {
 export const AudioThinStateIcons = {
     [MEDIA_STATE.DOMINANT_SPEAKER]: (
         <Icon
-            className='jitsi-icon-dominant-speaker'
-            size={24}
-            color={isMobileBrowser() ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 1)'}
-            src={IconMicThin}/>
+            className = 'jitsi-icon-dominant-speaker'
+            size = {isMobileBrowser() ? 28 : 24}
+            color = {isMobileBrowser() ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 1)'}
+            src = {IconMicThin} />
     ),
     [MEDIA_STATE.FORCE_MUTED]: (
         <Icon
-            size={24}
-            color={isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
-            src={IconMicSlashThin}/>
+            size = {isMobileBrowser() ? 28 : 24}
+            color = {isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
+            src = {IconMicSlashThin} />
     ),
     [MEDIA_STATE.MUTED]: (
         <Icon
-            size={24}
-            color={isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
-            src={IconMicSlashThin}/>
+            size = {isMobileBrowser() ? 28 : 24}
+            color = {isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
+            src = {IconMicSlashThin} />
     ),
     [MEDIA_STATE.UNMUTED]: (
         <Icon
-            className='jitsi-icon-dominant-speaker'
-            size={24}
-            color={isMobileBrowser() ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 1)'}
-            src={IconMicThin}/>
+            className = 'jitsi-icon-dominant-speaker'
+            size = {isMobileBrowser() ? 28 : 24}
+            color = {isMobileBrowser() ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 1)'}
+            src = {IconMicThin} />
     ),
     [MEDIA_STATE.NONE]: null
 };
@@ -129,21 +129,21 @@ export const VideoStateIcons = {
     [MEDIA_STATE.DOMINANT_SPEAKER]: null,
     [MEDIA_STATE.FORCE_MUTED]: (
         <Icon
-            color='#E04757'
-            id='videoMuted'
-            size={24}
-            src={IconVideoOff}/>
+            color = '#E04757'
+            id = 'videoMuted'
+            size = {24}
+            src = {IconVideoOff} />
     ),
     [MEDIA_STATE.MUTED]: (
         <Icon
-            id='videoMuted'
-            size={24}
-            src={IconVideoOff}/>
+            id = 'videoMuted'
+            size = {24}
+            src = {IconVideoOff} />
     ),
     [MEDIA_STATE.UNMUTED]: (
         <Icon
-            size={24}
-            src={IconVideo}/>
+            size = {24}
+            src = {IconVideo} />
     ),
     [MEDIA_STATE.NONE]: null
 };
@@ -155,23 +155,23 @@ export const VideoThinStateIcons = {
     [MEDIA_STATE.DOMINANT_SPEAKER]: null,
     [MEDIA_STATE.FORCE_MUTED]: (
         <Icon
-            id='videoMuted'
-            size={24}
-            color={isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
-            src={IconVideoOffThin}/>
+            id = 'videoMuted'
+            size = {isMobileBrowser() ? 28 : 24}
+            color = {isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
+            src = {IconVideoOffThin} />
     ),
     [MEDIA_STATE.MUTED]: (
         <Icon
-            id='videoMuted'
-            size={24}
-            color={isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
-            src={IconVideoOffThin}/>
+            id = 'videoMuted'
+            size = {isMobileBrowser() ? 28 : 24}
+            color = {isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
+            src = {IconVideoOffThin} />
     ),
     [MEDIA_STATE.UNMUTED]: (
         <Icon
-            size={24}
-            color={isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
-            src={IconVideoThin}/>
+            size = {isMobileBrowser() ? 28 : 24}
+            color = {isMobileBrowser() ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.5)'}
+            src = {IconVideoThin} />
     ),
     [MEDIA_STATE.NONE]: null
 };

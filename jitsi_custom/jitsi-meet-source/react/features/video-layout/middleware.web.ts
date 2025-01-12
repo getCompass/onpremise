@@ -28,6 +28,7 @@ MiddlewareRegistry.register(store => next => action => {
     case CONFERENCE_WILL_INIT:
         // Reset VideoLayout. It's destroyed on CONFERENCE_WILL_LEAVE so re-initialize it.
         VideoLayout.initLargeVideo();
+        VideoLayout.initMinimizedVideo();
         VideoLayout.resizeVideoArea();
         break;
     case CONFERENCE_WILL_LEAVE:
@@ -48,6 +49,7 @@ MiddlewareRegistry.register(store => next => action => {
     case TRACK_ADDED:
         if (action.track.mediaType !== MEDIA_TYPE.AUDIO) {
             VideoLayout._updateLargeVideoIfDisplayed(action.track.participantId, true);
+            VideoLayout._updateMinimizedVideoIfDisplayed(action.track.participantId, true);
         }
 
         break;
@@ -57,6 +59,7 @@ MiddlewareRegistry.register(store => next => action => {
             const participant = getLocalParticipant(store.getState);
 
             VideoLayout._updateLargeVideoIfDisplayed(participant?.id);
+            VideoLayout._updateMinimizedVideoIfDisplayed(participant?.id);
         }
         break;
     }

@@ -16,7 +16,7 @@ import { connect, useDispatch } from 'react-redux';
 import { appNavigate } from '../../../app/actions.native';
 import { IReduxState, IStore } from '../../../app/types';
 import { CONFERENCE_BLURRED, CONFERENCE_FOCUSED } from '../../../base/conference/actionTypes';
-import { FULLSCREEN_ENABLED, PIP_ENABLED } from '../../../base/flags/constants';
+import { FULLSCREEN_ENABLED } from '../../../base/flags/constants';
 import { getFeatureFlag } from '../../../base/flags/functions';
 import Container from '../../../base/react/components/native/Container';
 import LoadingIndicator from '../../../base/react/components/native/LoadingIndicator';
@@ -39,7 +39,7 @@ import LargeVideo from '../../../large-video/components/LargeVideo.native';
 import { getIsLobbyVisible } from '../../../lobby/functions';
 import { navigate } from '../../../mobile/navigation/components/conference/ConferenceNavigationContainerRef';
 import { screen } from '../../../mobile/navigation/routes';
-import { setPictureInPictureEnabled } from '../../../mobile/picture-in-picture/functions';
+import { isPipEnabled, setPictureInPictureEnabled } from '../../../mobile/picture-in-picture/functions';
 import Captions from '../../../subtitles/components/native/Captions';
 import { setToolboxVisible } from '../../../toolbox/actions.native';
 import Toolbox from '../../../toolbox/components/native/Toolbox';
@@ -58,11 +58,11 @@ import TitleBar from './TitleBar';
 import { EXPANDED_LABEL_TIMEOUT } from './constants';
 import styles from './styles';
 import { getHideSelfView } from '../../../base/settings/functions.any';
-import { 
-    getLocalParticipant, 
-    getParticipantDisplayName 
+import {
+    getLocalParticipant,
+    getParticipantDisplayName
 } from '../../../base/participants/functions';
-import { 
+import {
     shouldRemoteVideosBeVisible,
     shouldDisplayLocalThumbnailSeparately
 } from '../../../filmstrip/functions.native';
@@ -435,7 +435,7 @@ class Conference extends AbstractConference<IProps, State> {
             let participants = [ _localParticipantId, ..._participants ];
             participantsCount = (participants as ArrayLike<String>).length;
         }
-        
+
         // Ширина экрана
         let screenWidth = dimensions.width;
         // Ширина одной миниатюры
@@ -491,11 +491,11 @@ class Conference extends AbstractConference<IProps, State> {
                     {
                         _shouldDisplayTileView
                         // Если необходим кастомный стиль, то устанавливаем его
-                        || <Container style = { isNeedCustomStyle 
-                            ? styles.displayNameAndFilmstripContainer 
+                        || <Container style = { isNeedCustomStyle
+                            ? styles.displayNameAndFilmstripContainer
                             : styles.displayNameContainer }>
                             <DisplayNameLabel
-                                participantId = { _largeVideoParticipantId } />    
+                                participantId = { _largeVideoParticipantId } />
                         </Container>
                     }
 
@@ -635,6 +635,7 @@ const NO_REMOTE_VIDEOS: any[] = [];
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState, _ownProps: any) {
+    const { appState } = state['features/background'];
     const { isOpen } = state['features/participants-pane'];
     const { aspectRatio, reducedUI } = state['features/base/responsive-ui'];
     const { backgroundColor } = state['features/dynamic-branding'];
@@ -660,8 +661,8 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
         _isParticipantsPaneOpen: isOpen,
         _largeVideoParticipantId: largeVideoParticipantId,
         _largeVideoParticipantName: getParticipantDisplayName(state, largeVideoParticipantId),
-        _pictureInPictureEnabled: getFeatureFlag(state, PIP_ENABLED),
-        _reducedUI: reducedUI,
+        _pictureInPictureEnabled: isPipEnabled(state),
+        _reducedUI: reducedUI || appState === 'background',
         _showLobby: getIsLobbyVisible(state),
         _startCarMode: startCarMode,
         _toolboxVisible: isToolboxVisible(state),

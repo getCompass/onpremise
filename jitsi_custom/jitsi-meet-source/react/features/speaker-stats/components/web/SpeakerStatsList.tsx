@@ -1,6 +1,6 @@
 import React from 'react';
-import {makeStyles} from 'tss-react/mui';
-import {MOBILE_BREAKPOINT} from '../../constants';
+import { makeStyles } from 'tss-react/mui';
+import { MOBILE_BREAKPOINT } from '../../constants';
 import abstractSpeakerStatsList from '../AbstractSpeakerStatsList';
 
 import SpeakerStatsItem from './SpeakerStatsItem';
@@ -79,11 +79,11 @@ const useStyles = makeStyles()(theme => {
  * @returns {React$Element<any>}
  */
 const SpeakerStatsList = () => {
-    const {classes} = useStyles();
+    const { classes } = useStyles();
     const items = abstractSpeakerStatsList(SpeakerStatsItem);
 
     return (
-        <div className={classes.list}>
+        <div className = {classes.list}>
             {items}
         </div>
     );

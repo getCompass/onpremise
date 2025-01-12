@@ -46,7 +46,6 @@ import { preJoinStyles as styles } from './styles';
 
 
 const Prejoin: React.FC<IPrejoinProps> = ({ navigation }: IPrejoinProps) => {
-
     const dispatch = useDispatch();
     const isFocused = useIsFocused();
     const { t } = useTranslation();

@@ -1,9 +1,8 @@
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {IReduxState} from '../../../../app/types';
-import {openDialog} from '../../../../base/dialog/actions';
-import {translate} from '../../../../base/i18n/functions';
-
+import { IReduxState } from '../../../../app/types';
+import { openDialog } from '../../../../base/dialog/actions';
+import { translate } from '../../../../base/i18n/functions';
 import AbstractRecordButton, {
     IProps,
     _mapStateToProps as _abstractMapStateToProps
@@ -26,7 +25,7 @@ class RecordingButton extends AbstractRecordButton<IProps> {
      * @returns {void}
      */
     _onHandleClick() {
-        const {_isRecordingRunning, dispatch} = this.props;
+        const { _isRecordingRunning, dispatch } = this.props;
 
         dispatch(openDialog(
             _isRecordingRunning ? StopRecordingDialog : StartRecordingDialog
@@ -60,9 +59,9 @@ class RecordingButton extends AbstractRecordButton<IProps> {
  */
 export function _mapStateToProps(state: IReduxState) {
     const abstractProps = _abstractMapStateToProps(state);
-    const {toolbarButtons} = state['features/toolbox'];
+    const { toolbarButtons } = state['features/toolbox'];
     const visible = Boolean(toolbarButtons?.includes('recording') && abstractProps.visible);
-    const {knocking} = state['features/lobby'];
+    const { knocking } = state['features/lobby'];
 
     return {
         ...abstractProps,

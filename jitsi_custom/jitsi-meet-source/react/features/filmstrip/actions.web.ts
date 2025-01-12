@@ -3,10 +3,11 @@ import { pinParticipant } from '../base/participants/actions';
 import {
     getLocalParticipant,
     getParticipantById,
+    getPinnedParticipant,
     getRemoteParticipantCountWithFake
 } from '../base/participants/functions';
 import { getHideSelfView } from '../base/settings/functions.any';
-import { getMaxColumnCount } from '../video-layout/functions.web';
+import { getCurrentLayout, getMaxColumnCount } from '../video-layout/functions.web';
 
 import {
     ADD_STAGE_PARTICIPANT,
@@ -30,17 +31,18 @@ import {
     TOGGLE_PIN_STAGE_PARTICIPANT
 } from './actionTypes';
 import {
+    COMPASS_TOOLBAR_HEIGHT,
     HORIZONTAL_FILMSTRIP_MARGIN,
+    HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE,
     MAX_ACTIVE_PARTICIPANTS,
     SCROLL_SIZE,
-    STAGE_VIEW_THUMBNAIL_VERTICAL_BORDER,
     TILE_HORIZONTAL_MARGIN,
     TILE_MIN_HEIGHT_SMALL,
     TILE_VERTICAL_CONTAINER_HORIZONTAL_MARGIN,
     TILE_VERTICAL_MARGIN,
     TILE_VIEW_DEFAULT_NUMBER_OF_VISIBLE_TILES,
     TILE_VIEW_GRID_HORIZONTAL_MARGIN,
-    TILE_VIEW_GRID_VERTICAL_MARGIN,
+    TILE_VIEW_GRID_VERTICAL_MARGIN, TILE_VIEW_MAX_ROWS_COUNT, TILE_VIEW_MAX_ROWS_COUNT_MOBILE,
     TOP_FILMSTRIP_HEIGHT,
     VERTICAL_FILMSTRIP_VERTICAL_MARGIN
 } from './constants';
@@ -53,8 +55,11 @@ import {
     getVerticalViewMaxWidth,
     isFilmstripResizable,
     isStageFilmstripAvailable,
-    isStageFilmstripTopPanel
-    , showGridInVerticalView } from './functions.web';
+    isStageFilmstripTopPanel,
+    showGridInVerticalView
+} from './functions.web';
+import { LAYOUTS } from "../video-layout/constants";
+import { isMobileBrowser } from "../base/environment/utils";
 
 export * from './actions.any';
 
@@ -84,37 +89,22 @@ export function setTileViewDimensions() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
-        const {
-            disableResponsiveTiles,
-            disableTileEnlargement,
-            tileView = {}
-        } = state['features/base/config'];
-        const { numberOfVisibleTiles = TILE_VIEW_DEFAULT_NUMBER_OF_VISIBLE_TILES } = tileView;
-        const numberOfParticipants = getNumberOfPartipantsForTileView(state);
-        const maxColumns = getMaxColumnCount(state);
 
         const {
             height,
             width,
             columns,
             rows
-        } = disableResponsiveTiles
-            ? calculateNonResponsiveTileViewDimensions(state)
-            : calculateResponsiveTileViewDimensions({
-                clientWidth,
-                clientHeight,
-                disableTileEnlargement,
-                maxColumns,
-                numberOfParticipants,
-                desiredNumberOfVisibleTiles: numberOfVisibleTiles
-            });
-        const thumbnailsTotalHeight = (rows ?? 1) * (TILE_VERTICAL_MARGIN + (height ?? 0));
-        const availableHeight = clientHeight - TILE_VIEW_GRID_VERTICAL_MARGIN;
+        } = calculateNonResponsiveTileViewDimensions(state);
+        const maxRowsCount = isMobileBrowser() ? TILE_VIEW_MAX_ROWS_COUNT_MOBILE : TILE_VIEW_MAX_ROWS_COUNT;
+        const rowsForCalculateTotalHeight = Math.min(rows ?? 1, maxRowsCount); // специально ограничиваем здесь только для расчета максимальной высоты, иначе FixedGridSize начинает с ума сходить
+        const thumbnailsTotalHeight = (rowsForCalculateTotalHeight ?? 1) * (TILE_VERTICAL_MARGIN + (height ?? 0));
+        const availableHeight = clientHeight - COMPASS_TOOLBAR_HEIGHT - 6; //clientHeight - COMPASS_TOOLBAR_HEIGHT - padding сверху(должен быть -8, но т.к у тумб margin 2, то делаем -6)
         const hasScroll = availableHeight < thumbnailsTotalHeight;
         const filmstripWidth
             = Math.min(clientWidth - TILE_VIEW_GRID_HORIZONTAL_MARGIN,
                 (columns ?? 1) * (TILE_HORIZONTAL_MARGIN + (width ?? 0)))
-                + (hasScroll ? SCROLL_SIZE : 0);
+            + (hasScroll ? SCROLL_SIZE : 0);
         const filmstripHeight = Math.min(availableHeight, thumbnailsTotalHeight);
 
         dispatch({
@@ -228,7 +218,7 @@ export function setVerticalViewDimensions() {
 
             hasScroll
                 = remoteVideosContainerHeight
-                    < (thumbnails?.remote.height + TILE_VERTICAL_MARGIN) * numberOfRemoteParticipants;
+                < (thumbnails?.remote.height + TILE_VERTICAL_MARGIN) * numberOfRemoteParticipants;
         }
 
         dispatch({
@@ -251,20 +241,32 @@ export function setVerticalViewDimensions() {
  *
  * @returns {Function}
  */
-export function setHorizontalViewDimensions() {
+export function setHorizontalViewDimensions(numberOfParticipants?: number) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const { clientHeight = 0, clientWidth = 0 } = state['features/base/responsive-ui'];
         const disableSelfView = getHideSelfView(state);
         const thumbnails = calculateThumbnailSizeForHorizontalView(clientHeight);
+        const { remoteParticipants } = state['features/filmstrip'];
+        const currentLayout = getCurrentLayout(state);
+        const tileViewActive = currentLayout === LAYOUTS.TILE_VIEW;
+        const largeVideoParticipantId = state['features/large-video'].participantId;
+        const pinnedParticipant = getPinnedParticipant(state);
+        let isRemoteParticipantPinnedOnLargeVideo = false;
+
+        if (!tileViewActive && largeVideoParticipantId !== undefined && remoteParticipants.includes(largeVideoParticipantId) && pinnedParticipant !== undefined) {
+            isRemoteParticipantPinnedOnLargeVideo = true;
+        }
+        let remoteParticipantsLength = numberOfParticipants ?? Math.min((remoteParticipants?.length ?? 0), HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE);
+        remoteParticipantsLength = isRemoteParticipantPinnedOnLargeVideo ? remoteParticipantsLength - 1 : remoteParticipantsLength;
+        const participantsWidth = (thumbnails?.remote.width * remoteParticipantsLength) + (remoteParticipantsLength < 1 ? 0 : (remoteParticipantsLength * TILE_HORIZONTAL_MARGIN));
         const remoteVideosContainerWidth
-            = clientWidth - (disableSelfView ? 0 : thumbnails?.local?.width) - HORIZONTAL_FILMSTRIP_MARGIN;
-        const remoteVideosContainerHeight
-            = thumbnails?.local?.height + TILE_VERTICAL_MARGIN + STAGE_VIEW_THUMBNAIL_VERTICAL_BORDER + SCROLL_SIZE;
+            = Math.min(clientWidth - (disableSelfView ? 0 : thumbnails?.local?.width) - HORIZONTAL_FILMSTRIP_MARGIN, participantsWidth);
+        const remoteVideosContainerHeight = thumbnails?.local?.height;
         const numberOfRemoteParticipants = getRemoteParticipantCountWithFake(state);
         const hasScroll
             = remoteVideosContainerHeight
-                < (thumbnails?.remote.width + TILE_HORIZONTAL_MARGIN) * numberOfRemoteParticipants;
+            < (thumbnails?.remote.width + TILE_HORIZONTAL_MARGIN) * numberOfRemoteParticipants;
 
         dispatch({
             type: SET_HORIZONTAL_VIEW_DIMENSIONS,

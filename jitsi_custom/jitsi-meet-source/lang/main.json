@@ -116,7 +116,7 @@
         "message": "Message",
         "messageAccessibleTitle": "{{user}} says:",
         "messageAccessibleTitleMe": "me says:",
-        "messageTo": "Private message to {{recipient}}",
+        "messageTo": "You → {{recipient}}",
         "messagebox": "Type a message",
         "newMessages": "New messages",
         "nickname": {
@@ -125,7 +125,7 @@
             "titleWithPolls": "Enter a nickname to use chat and polls"
         },
         "noMessagesMessage": "There are no messages in the meeting yet. Start a conversation here!",
-        "privateNotice": "Private message to {{recipient}}",
+        "privateNotice": "You → {{recipient}}",
         "privateNoticeForYou": "Сообщение вам",
         "privateMessageReply": "Ответить",
         "sendButton": "Send",
@@ -145,6 +145,12 @@
         "close": "Close",
         "dontShowAgain": "Don’t show me this again",
         "installExtensionText": "Install the extension for Google Calendar and Office 365 integration"
+    },
+    "conference": {
+        "title": "Conference",
+        "one_member": "participant",
+        "two_members": "participants",
+        "five_members": "participants"
     },
     "connectingOverlay": {
         "joiningRoom": "Connecting you to your meeting..."
@@ -189,7 +195,9 @@
             "inactive": "Inactive",
             "lost": "Lost",
             "nonoptimal": "Nonoptimal",
-            "poor": "Poor"
+            "poor": "Poor",
+            "medium": "Average connection",
+            "low": "Poor connection"
         },
         "remoteaddress": "Remote address:",
         "remoteaddress_plural": "Remote addresses:",
@@ -266,6 +274,7 @@
         "Share": "Share",
         "Submit": "Submit",
         "WaitForHostMsg": "The conference has not yet started because no moderators have yet arrived. If you'd like to become a moderator please log-in. Otherwise, please wait.",
+        "WaitForHostNoAuthMsg": "The conference has not yet started because no moderators have yet arrived. Please wait.",
         "WaitingForHostButton": "Wait for moderator",
         "WaitingForHostTitle": "Waiting for a moderator...",
         "Yes": "Yes",
@@ -325,6 +334,7 @@
         "embedMeeting": "Embed meeting",
         "enterDisplayName": "Enter your name",
         "error": "Error",
+        "errorRoomCreationRestriction": "You tried to join too quickly, please come back in a bit.",
         "gracefulShutdown": "Our service is currently down for maintenance. Please try again later.",
         "grantModeratorDialog": "Are you sure you want to grant moderator rights to {{participantName}}?",
         "grantModeratorTitle": "Grant moderator rights",
@@ -413,7 +423,9 @@
         "reservationError": "Reservation system error",
         "reservationErrorMsg": "Error code: {{code}}, message: {{msg}}",
         "retry": "Retry",
-        "screenSharingAudio": "Share audio",
+        "screenSharingAudio": "Share screen sound",
+        "screenSharingAudioNotAvailable": "Your OS does not support screen sound sharing\n",
+        "screenSharingAudioNotAvailableOS": "Sound sharing is available from {{os}}",
         "screenSharingFailed": "Oops! Something went wrong, we weren’t able to start screen sharing!",
         "screenSharingFailedTitle": "Screen sharing failed!",
         "screenSharingPermissionDeniedError": "Oops! Something went wrong with your screen sharing permissions. Please reload and try again.",
@@ -443,11 +455,14 @@
         "shareScreenWarningD2": "you need to stop audio sharing, start screen sharing and check the \"share audio\" option.",
         "shareScreenWarningH1": "If you want to share just your screen:",
         "shareScreenWarningTitle": "You need to stop audio sharing before sharing your screen",
-        "shareVideoLinkError": "Please provide a correct video link.",
+        "shareVideoConfirmPlay": "You’re about to open an external website. Do you want to continue?",
+        "shareVideoConfirmPlayTitle": "{{name}} has shared a video with you.",
+        "shareVideoLinkError": "Oops, this video cannot be played.",
+        "shareVideoLinkStopped": "The video from {{name}} was stopped.",
         "shareVideoTitle": "Share video",
         "shareYourScreen": "Share your screen",
         "shareYourScreenDisabled": "Screen sharing disabled.",
-        "sharedVideoDialogError": "Error: Invalid URL",
+        "sharedVideoDialogError": "Error: Invalid or forbidden URL",
         "sharedVideoLinkPlaceholder": "YouTube link or direct video link",
         "show": "Show",
         "start": "Start ",
@@ -612,7 +627,7 @@
         "toggleScreensharing": "Switch between camera and screen sharing",
         "toggleShortcuts": "Show or hide keyboard shortcuts",
         "videoMute": "Start or stop your camera",
-        "tileViewToggle": "Включить/выключить режим плитки"
+        "tileViewToggle": "Включить/выключить режим галереи"
     },
     "largeVideo": {
         "screenIsShared": "You are sharing your screen",
@@ -741,8 +756,10 @@
         "connectedOneMember": "{{name}} joined the meeting",
         "connectedThreePlusMembers": "{{name}} and many others joined the meeting",
         "connectedTwoMembers": "{{first}} and {{second}} joined the meeting",
-        "dataChannelClosed": "Video quality impaired",
-        "dataChannelClosedDescription": "The bridge channel has been disconnected and thus video quality is limited to its lowest setting.",
+        "dataChannelClosed": "Video quality may be impaired",
+        "dataChannelClosedDescription": "The bridge channel is down and thus video quality may be limited to its lowest setting.",
+        "dataChannelClosedDescriptionWithAudio": "The bridge channel is down and thus disruptions to audio and video may occur.",
+        "dataChannelClosedWithAudio": "Audio and video quality may be impaired",
         "disabledIframe": "Embedding is only meant for demo purposes, so this call will disconnect in {{timeout}} minutes.",
         "disabledIframeSecondary": "Embedding {{domain}} is only meant for demo purposes, so this call will disconnect in {{timeout}} minutes. Please use <a href='{{jaasDomain}}' rel='noopener noreferrer' target='_blank'>Jitsi as a Service</a> for production embedding!",
         "disconnected": "disconnected",
@@ -789,6 +806,7 @@
         "newDeviceAction": "Use",
         "newDeviceAudioTitle": "New audio device detected",
         "newDeviceCameraTitle": "New camera detected",
+        "nextToSpeak": "You are the next in line to speak",
         "noiseSuppressionDesktopAudioDescription": "Noise suppression can't be enabled while sharing desktop audio, please disable it and try again.",
         "noiseSuppressionFailedTitle": "Failed to start noise suppression",
         "noiseSuppressionStereoDescription": "Stereo audio noise suppression is not currently supported.",
@@ -823,8 +841,11 @@
         "videoUnmuteBlockedDescription": "Camera unmute and desktop sharing operation have been temporarily blocked because of system limits.",
         "videoUnmuteBlockedTitle": "Camera unmute and desktop sharing blocked!",
         "viewLobby": "View lobby",
+        "viewParticipants": "View participants",
         "viewVisitors": "View visitors",
         "waitingParticipants": "{{waitingParticipants}} people",
+        "waitingVisitors": "Visitors waiting in queue: {{waitingVisitors}}",
+        "waitingVisitorsTitle": "The meeting is not live yet!",
         "whiteboardLimitDescription": "Please save your progress, as the user limit will soon be reached and the whiteboard will close.",
         "whiteboardLimitTitle": "Whiteboard usage"
     },
@@ -839,7 +860,10 @@
             "audioModeration": "Unmute themselves",
             "blockEveryoneMicCamera": "Block everyone's mic and camera",
             "breakoutRooms": "Breakout rooms",
+            "goLive": "Go live",
             "invite": "Invite Someone",
+            "lowerAllHands": "Lower all hands",
+            "lowerHand": "Lower the hand",
             "moreModerationActions": "More moderation options",
             "moreModerationControls": "More moderation controls",
             "moreParticipantOptions": "More participant options",
@@ -858,6 +882,7 @@
             "lobby": "Lobby ({{count}})",
             "lobbyMobile": "Lobby",
             "participantsList": "Meeting participants ({{count}})",
+            "visitorInQueue": " (waiting {{count}})",
             "connected": "Connected",
             "visitorRequests": " (requests {{count}})",
             "visitors": "Visitors {{count}}",
@@ -874,20 +899,24 @@
     "pinnedParticipant": "The participant is pinned",
     "polls": {
         "answer": {
+            "edit": "Edit",
+            "send": "Send",
             "skip": "Skip",
             "submit": "Submit"
         },
         "by": "By {{ name }}",
+        "closeButton": "Close poll",
         "create": {
             "addOption": "Add option",
             "answerPlaceholder": "Option {{index}}",
             "anotherAnswerPlaceholder": "Option {{index}}",
             "cancel": "Cancel",
             "create": "Create a poll",
-            "pollOptions": "Poll option {{index}}",
+            "pollOption": "Poll option {{index}}",
             "pollQuestion": "Poll Question",
             "questionPlaceholder": "Ask a question",
             "removeOption": "Remove option",
+            "save": "Save",
             "send": "Send"
         },
         "errors": {
@@ -945,6 +974,7 @@
         "errorDialOutFailed": "Could not dial out. Call failed",
         "errorDialOutStatus": "Error getting dial out status",
         "errorMissingName": "Please enter your name to join the meeting",
+        "errorNoPermissionsTitle": "No permissions",
         "errorNoPermissions": "You need to enable microphone and camera access",
         "errorStatusCode": "Error dialing out, status code: {{status}}",
         "errorValidation": "Number validation failed",
@@ -1079,6 +1109,7 @@
     },
     "settings": {
         "audio": "Audio",
+        "audioNoPermissions": "Нет доступа к звуку",
         "buttonLabel": "Settings",
         "calendar": {
             "about": "The {{appName}} calendar integration is used to securely access your calendar so it can read upcoming events.",
@@ -1092,6 +1123,7 @@
         "desktopShareWarning": "You need to restart the screen share for the new settings to take effect.",
         "devices": "Devices",
         "followMe": "Everyone follows me",
+        "followMeRecorder": "Recorder follows me",
         "framesPerSecond": "frames-per-second",
         "incomingMessage": "Incoming message",
         "language": "Language",
@@ -1122,7 +1154,27 @@
         "talkWhileMuted": "Talk while muted",
         "title": "Settings",
         "video": "Video",
+        "videoNoPermissions": "Нет доступа к видео",
         "virtualBackgroundsTitle": "Virtual backgrounds"
+    },
+    "moderatorSettings": {
+        "conferenceQualityTitle": "All participants video quality",
+        "highQuality": "High",
+        "mediumQuality": "Medium",
+        "lowQuality": "Low",
+        "startRecording": "Start recording the conference",
+        "stopRecording": "Stop recording conference",
+        "muteAllAudio": "Mute all",
+        "muteAllVideo": "Stop participants video",
+        "participantsCanUnmuteAudio": "Allow participants to unmute themselves",
+        "participantsCanUnmuteVideo": "Allow participants to turn on their video",
+        "participantsCanScreenshare": "Allow participants to share screen"
+    },
+    "screenshare": {
+        "no_permissions_notification": {
+            "description": "Please raise your hand if you'd like to speak.",
+            "title": "Screen sharing function is turned off by the moderator"
+        }
     },
     "settingsView": {
         "advanced": "Advanced",
@@ -1222,7 +1274,7 @@
             "embedMeeting": "Embed meeting",
             "endConference": "End meeting for all",
             "enterFullScreen": "View full screen",
-            "enterTileView": "Enter tile view",
+            "enterTileView": "Enable gallery mode",
             "exitFullScreen": "Exit full screen",
             "exitTileView": "Exit tile view",
             "expand": "Expand",
@@ -1254,12 +1306,13 @@
             "muteEveryonesVideoStream": "Stop everyone's video",
             "muteGUMPending": "Connecting your microphone",
             "noiseSuppression": "Noise suppression",
-            "openChat": "Open chat",
+            "openChat": "Conference chat",
             "participants": "Open participants pane",
             "pip": "Toggle Picture-in-Picture mode",
             "privateMessage": "Send private message",
             "profile": "Edit your profile",
             "raiseHand": "Raise your hand",
+            "react": "Message reactions",
             "reactions": "Reactions",
             "reactionsMenu": "Reactions menu",
             "recording": "Toggle recording",
@@ -1312,7 +1365,7 @@
         "enableNoiseSuppression": "Enable noise suppression",
         "endConference": "End meeting for all",
         "enterFullScreen": "View full screen",
-        "enterTileView": "Enter tile view",
+        "enterTileView": "Enable gallery mode",
         "exitFullScreen": "Exit full screen",
         "exitTileView": "Exit tile view",
         "feedback": "Leave feedback",
@@ -1332,6 +1385,7 @@
         "login": "Log-in",
         "logout": "Log-out",
         "lowerYourHand": "Lower your hand",
+        "moderatorSettings": "Moderator settings",
         "moreActions": "More actions",
         "moreOptions": "More options",
         "mute": "Mute microphone",
@@ -1346,7 +1400,7 @@
         "noiseSuppression": "Noise suppression",
         "noisyAudioInputDesc": "It sounds like your microphone is making noise, please consider muting or changing the device.",
         "noisyAudioInputTitle": "Your microphone appears to be noisy!",
-        "openChat": "Open chat",
+        "openChat": "Conference chat",
         "openParticipantsPane": "Открыть панель участников",
         "openReactionsMenu": "Open reactions menu",
         "participants": "Participants",
@@ -1379,8 +1433,8 @@
         "stopSubtitles": "Stop subtitles",
         "surprised": "Surprised",
         "talkWhileMutedPopup": "Trying to speak? You are muted.",
-        "tileViewToggle": "Toggle tile view",
-        "tileViewToggled": "Toggle tile view",
+        "tileViewToggle": "Enable gallery mode",
+        "tileViewToggled": "Disable gallery mode",
         "toggleCamera": "Toggle camera",
         "unmute": "Unmute microphone",
         "videoSettings": "Video settings",
@@ -1440,7 +1494,7 @@
         "ldTooltip": "Viewing low definition video",
         "lowDefinition": "Low definition",
         "performanceSettings": "Performance settings",
-        "recording": "Recording in progress",
+        "recording": "Recording...",
         "sd": "SD",
         "sdTooltip": "Viewing standard definition video",
         "standardDefinition": "Standard definition",
@@ -1502,12 +1556,22 @@
     },
     "visitors": {
         "chatIndicator": "(visitor)",
+        "joinMeeting": {
+            "description": "You're currently an observer in this conference.",
+            "raiseHand": "Raise your hand",
+            "title": "Joining meeting",
+            "wishToSpeak": "If you wish to speak, please raise your hand below and wait for the moderator's approval."
+        },
         "labelTooltip": "Number of visitors: {{count}}",
         "notification": {
             "demoteDescription": "Sent here by {{actor}}, raise your hand to participate",
-            "description": "To participate raise your hand",
+            "noMainParticipantsDescription": "A participant needs to start the meeting. Please try again in a bit.",
+            "noMainParticipantsTitle": "This meeting hasn’t started yet.",
+            "noVisitorLobby": "You cannot join while there is a lobby enabled for the meeting.",
+            "notAllowedPromotion": "A participant needs to allow your request first.",
             "title": "You are a visitor in the meeting"
-        }
+        },
+        "waitingMessage": "You'll join the meeting as soon as it is live!"
     },
     "volumeSlider": "Volume slider",
     "welcomepage": {

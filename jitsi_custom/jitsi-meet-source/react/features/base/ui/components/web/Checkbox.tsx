@@ -1,10 +1,10 @@
 import React from 'react';
-import {makeStyles} from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui';
 
-import {isMobileBrowser} from '../../../environment/utils';
+import { isMobileBrowser } from '../../../environment/utils';
 import Icon from '../../../icons/components/Icon';
-import {IconCheck} from '../../../icons/svg';
-import {withPixelLineHeight} from '../../../styles/functions.web';
+import { IconCheck } from '../../../icons/svg';
+import { withPixelLineHeight } from '../../../styles/functions.web';
 
 interface ICheckboxProps {
 
@@ -52,6 +52,8 @@ const useStyles = makeStyles()(theme => {
             display: 'inline-flex',
             alignItems: 'center',
             padding: '8px 12px 6px 12px',
+            cursor: 'pointer',
+            '-webkit-tap-highlight-color': 'transparent',
 
             '&.is-mobile': {
                 ...withPixelLineHeight(theme.typography.bodyLongRegularLarge)
@@ -165,34 +167,34 @@ const useStyles = makeStyles()(theme => {
 });
 
 const Checkbox = ({
-                      checked,
-                      className,
-                      classNameText,
-                      disabled,
-                      label,
-                      name,
-                      onChange
-                  }: ICheckboxProps) => {
-    const {classes: styles, cx, theme} = useStyles();
+    checked,
+    className,
+    classNameText,
+    disabled,
+    label,
+    name,
+    onChange
+}: ICheckboxProps) => {
+    const { classes: styles, cx, theme } = useStyles();
     const isMobile = isMobileBrowser();
 
     return (
-        <label className={cx(styles.formControl, isMobile && 'is-mobile', className)}>
-            <div className={cx(styles.activeArea, isMobile && 'is-mobile', disabled && styles.disabled)}>
+        <label className = {cx(styles.formControl, isMobile && 'is-mobile', className)}>
+            <div className = {cx(styles.activeArea, isMobile && 'is-mobile', disabled && styles.disabled)}>
                 <input
-                    checked={checked}
-                    disabled={disabled}
-                    name={name}
-                    onChange={onChange}
-                    type='checkbox'/>
+                    checked = {checked}
+                    disabled = {disabled}
+                    name = {name}
+                    onChange = {onChange}
+                    type = 'checkbox' />
                 <Icon
-                    aria-hidden={true}
-                    className='checkmark'
-                    color={disabled ? theme.palette.icon03 : theme.palette.icon01}
-                    size={18}
-                    src={IconCheck}/>
+                    aria-hidden = {true}
+                    className = 'checkmark'
+                    color = {disabled ? theme.palette.icon03 : theme.palette.icon01}
+                    size = {18}
+                    src = {IconCheck} />
             </div>
-            <div className={cx(styles.text, isMobile && 'is-mobile', classNameText)}>{label}</div>
+            <div className = {cx(styles.text, isMobile && 'is-mobile', classNameText)}>{label}</div>
         </label>
     );
 };

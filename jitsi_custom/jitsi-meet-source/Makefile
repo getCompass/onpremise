@@ -39,7 +39,7 @@ endif
 
 all: compile deploy clean sentry
 
-compile:
+compile: clean
 	NODE_OPTIONS=--max-old-space-size=8192 \
 	$(WEBPACK)
 
@@ -128,7 +128,7 @@ deploy-local:
 dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-olm deploy-tf-wasm deploy-face-landmarks
 	$(WEBPACK_DEV_SERVER)
 
-source-package:
+source-package: compile deploy
 	mkdir -p source_package/jitsi-meet/css && \
 	cp -r *.js *.html resources/*.txt fonts images libs static sounds LICENSE lang source_package/jitsi-meet && \
 	cp css/all.css source_package/jitsi-meet/css && \

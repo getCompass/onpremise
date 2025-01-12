@@ -1,11 +1,11 @@
 /* eslint-disable react/no-multi-comp */
 import React from 'react';
-import {useTranslation} from 'react-i18next';
-import {makeStyles} from 'tss-react/mui';
+import { useTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
 
-import {isMobileBrowser} from '../../base/environment/utils';
+import { isMobileBrowser } from '../../base/environment/utils';
 import Icon from '../../base/icons/components/Icon';
-import {IconGear} from '../../base/icons/svg';
+import { IconGear } from '../../base/icons/svg';
 import ContextMenu from '../../base/ui/components/web/ContextMenu';
 
 type DownloadUpload = {
@@ -310,42 +310,42 @@ const useStyles = makeStyles()(theme => {
 });
 
 const ConnectionStatsTable = ({
-                                  audioSsrc,
-                                  bandwidth,
-                                  bitrate,
-                                  bridgeCount,
-                                  codec,
-                                  connectionSummary,
-                                  disableShowMoreStats,
-                                  e2eeVerified,
-                                  enableAssumedBandwidth,
-                                  enableSaveLogs,
-                                  framerate,
-                                  isVirtualScreenshareParticipant,
-                                  isLocalVideo,
-                                  isNarrowLayout,
-                                  maxEnabledResolution,
-                                  onOpenBandwidthDialog,
-                                  onSaveLogs,
-                                  onShowMore,
-                                  packetLoss,
-                                  participantId,
-                                  region,
-                                  resolution,
-                                  serverRegion,
-                                  shouldShowMore,
-                                  transport,
-                                  videoSsrc
-                              }: IProps) => {
-    const {classes, cx} = useStyles();
-    const {t} = useTranslation();
+    audioSsrc,
+    bandwidth,
+    bitrate,
+    bridgeCount,
+    codec,
+    connectionSummary,
+    disableShowMoreStats,
+    e2eeVerified,
+    enableAssumedBandwidth,
+    enableSaveLogs,
+    framerate,
+    isVirtualScreenshareParticipant,
+    isLocalVideo,
+    isNarrowLayout,
+    maxEnabledResolution,
+    onOpenBandwidthDialog,
+    onSaveLogs,
+    onShowMore,
+    packetLoss,
+    participantId,
+    region,
+    resolution,
+    serverRegion,
+    shouldShowMore,
+    transport,
+    videoSsrc
+}: IProps) => {
+    const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const isMobile = isMobileBrowser();
 
     const _renderResolution = () => {
         let resolutionString = 'N/A';
 
         if (resolution && videoSsrc) {
-            const {width, height} = resolution[videoSsrc] ?? {};
+            const { width, height } = resolution[videoSsrc] ?? {};
 
             if (width && height) {
                 resolutionString = `${width}x${height}`;
@@ -354,10 +354,10 @@ const ConnectionStatsTable = ({
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     <span>{t('connectionindicator.resolution')}</span>
                 </td>
-                <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{resolutionString}</td>
+                <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{resolutionString}</td>
             </tr>
         );
     };
@@ -371,24 +371,24 @@ const ConnectionStatsTable = ({
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     <span>{t('connectionindicator.framerate')}</span>
                 </td>
-                <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{frameRateString}</td>
+                <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{frameRateString}</td>
             </tr>
         );
     };
 
     const _renderScreenShareStatus = () => {
-        const className = cx(classes.connectionStatsTable, {[classes.mobile]: isMobileBrowser()}, isMobile && 'is-mobile');
+        const className = cx(classes.connectionStatsTable, { [classes.mobile]: isMobileBrowser() }, isMobile && 'is-mobile');
 
         return (<ContextMenu
-            className={classes.contextMenu}
-            hidden={false}
-            inDrawer={true}>
+            className = {classes.contextMenu}
+            hidden = {false}
+            inDrawer = {true}>
             <div
-                className={className}
-                onClick={onClick}>
+                className = {className}
+                onClick = {onClick}>
                 <tbody>
                 {_renderResolution()}
                 {_renderFrameRate()}
@@ -398,29 +398,29 @@ const ConnectionStatsTable = ({
     };
 
     const _renderBandwidth = () => {
-        const {download, upload} = bandwidth || {};
+        const { download, upload } = bandwidth || {};
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     {t('connectionindicator.bandwidth')}
                 </td>
-                <td className={cx(classes.bandwidth, classes.statValue, isMobile && 'is-mobile')}>
-                    <span className={classes.download}>
+                <td className = {cx(classes.bandwidth, classes.statValue, isMobile && 'is-mobile')}>
+                    <span className = {classes.download}>
                         &darr;
                     </span>
                     {download ? `${download} Kbps` : 'N/A'}
-                    <span className={classes.upload}>
+                    <span className = {classes.upload}>
                         &uarr;
                     </span>
                     {upload ? `${upload} Kbps` : 'N/A'}
                     {enableAssumedBandwidth && (
                         <div
-                            className={classes.assumedBandwidth}
-                            onClick={onOpenBandwidthDialog}>
+                            className = {classes.assumedBandwidth}
+                            onClick = {onOpenBandwidthDialog}>
                             <Icon
-                                size={10}
-                                src={IconGear}/>
+                                size = {10}
+                                src = {IconGear} />
                         </div>
                     )}
                 </td>
@@ -429,16 +429,16 @@ const ConnectionStatsTable = ({
     };
 
     const _renderTransportTableRow = (config: any) => {
-        const {additionalData, data, key, label} = config;
+        const { additionalData, data, key, label } = config;
 
         return (
-            <tr key={key}>
-                <td className={classes.statTitle}>
+            <tr key = {key}>
+                <td className = {classes.statTitle}>
                     <span>
                         {label}
                     </span>
                 </td>
-                <td className={classes.statValue}>
+                <td className = {classes.statValue}>
                     {getStringFromArray(data)}
                     {additionalData || null}
                 </td>
@@ -449,17 +449,17 @@ const ConnectionStatsTable = ({
     const _renderTransport = () => {
         if (!transport || transport.length === 0) {
             const NA = (
-                <tr key='address'>
-                    <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <tr key = 'address'>
+                    <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                         <span>{t('connectionindicator.address')}</span>
                     </td>
-                    <td className={cx(classes.statValue, isMobile && 'is-mobile')}>
+                    <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>
                         N/A
                     </td>
                 </tr>
             );
 
-            return [NA];
+            return [ NA ];
         }
 
         const data: {
@@ -529,31 +529,31 @@ const ConnectionStatsTable = ({
                 data: data.remoteIP,
                 key: 'remoteaddress',
                 label: t('connectionindicator.remoteaddress',
-                    {count: data.remoteIP.length})
+                    { count: data.remoteIP.length })
             },
             {
                 data: data.remotePort,
                 key: 'remoteport',
                 label: t('connectionindicator.remoteport',
-                    {count: transport.length})
+                    { count: transport.length })
             },
             {
                 data: data.localIP,
                 key: 'localaddress',
                 label: t('connectionindicator.localaddress',
-                    {count: data.localIP.length})
+                    { count: data.localIP.length })
             },
             {
                 data: data.localPort,
                 key: 'localport',
                 label: t('connectionindicator.localport',
-                    {count: transport.length})
+                    { count: transport.length })
             },
             {
                 data: data.transportType,
                 key: 'transport',
                 label: t('connectionindicator.transport',
-                    {count: data.transportType.length})
+                    { count: data.transportType.length })
             }
         ];
 
@@ -574,10 +574,10 @@ const ConnectionStatsTable = ({
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     <span>{t('connectionindicator.connectedTo')}</span>
                 </td>
-                <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{str}</td>
+                <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{str}</td>
             </tr>
         );
     };
@@ -590,38 +590,38 @@ const ConnectionStatsTable = ({
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     <span>{t('connectionindicator.bridgeCount')}</span>
                 </td>
-                <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{bridgeCount}</td>
+                <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{bridgeCount}</td>
             </tr>
         );
     };
 
     const _renderAudioSsrc = () => (
         <tr>
-            <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+            <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                 <span>{t('connectionindicator.audio_ssrc')}</span>
             </td>
-            <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{audioSsrc || 'N/A'}</td>
+            <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{audioSsrc || 'N/A'}</td>
         </tr>
     );
 
     const _renderVideoSsrc = () => (
         <tr>
-            <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+            <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                 <span>{t('connectionindicator.video_ssrc')}</span>
             </td>
-            <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{videoSsrc || 'N/A'}</td>
+            <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{videoSsrc || 'N/A'}</td>
         </tr>
     );
 
     const _renderParticipantId = () => (
         <tr>
-            <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+            <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                 <span>{t('connectionindicator.participant_id')}</span>
             </td>
-            <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{participantId || 'N/A'}</td>
+            <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{participantId || 'N/A'}</td>
         </tr>
     );
 
@@ -632,10 +632,10 @@ const ConnectionStatsTable = ({
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     <span>{t('connectionindicator.e2eeVerified')}</span>
                 </td>
-                <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{t(`connectionindicator.${e2eeVerified ? 'yes' : 'no'}`)}</td>
+                <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{t(`connectionindicator.${e2eeVerified ? 'yes' : 'no'}`)}</td>
             </tr>
         );
     };
@@ -656,21 +656,21 @@ const ConnectionStatsTable = ({
     );
 
     const _renderBitrate = () => {
-        const {download, upload} = bitrate || {};
+        const { download, upload } = bitrate || {};
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     <span>
                         {t('connectionindicator.bitrate')}
                     </span>
                 </td>
-                <td className={cx(classes.statValue, isMobile && 'is-mobile')}>
-                    <span className={classes.download}>
+                <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>
+                    <span className = {classes.download}>
                         &darr;
                     </span>
                     {download ? `${download} Kbps` : 'N/A'}
-                    <span className={classes.upload}>
+                    <span className = {classes.upload}>
                         &uarr;
                     </span>
                     {upload ? `${upload} Kbps` : 'N/A'}
@@ -693,20 +693,20 @@ const ConnectionStatsTable = ({
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     <span>{t('connectionindicator.codecs')}</span>
                 </td>
-                <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{codecString}</td>
+                <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{codecString}</td>
             </tr>
         );
     };
 
     const _renderConnectionSummary = () => (
-        <tr className={classes.status}>
-            <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+        <tr className = {classes.status}>
+            <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                 <span>{t('connectionindicator.status')}</span>
             </td>
-            <td className={cx(classes.statValue, isMobile && 'is-mobile')}>{connectionSummary}</td>
+            <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>{connectionSummary}</td>
         </tr>
     );
 
@@ -714,27 +714,27 @@ const ConnectionStatsTable = ({
         let packetLossTableData;
 
         if (packetLoss) {
-            const {download, upload} = packetLoss;
+            const { download, upload } = packetLoss;
 
             packetLossTableData = (
-                <td className={cx(classes.statValue, isMobile && 'is-mobile')}>
-                    <span className={classes.download}>
+                <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>
+                    <span className = {classes.download}>
                         &darr;
                     </span>
                     {download === null ? 'N/A' : `${download}%`}
-                    <span className={classes.upload}>
+                    <span className = {classes.upload}>
                         &uarr;
                     </span>
                     {upload === null ? 'N/A' : `${upload}%`}
                 </td>
             );
         } else {
-            packetLossTableData = <td className={cx(classes.statValue, isMobile && 'is-mobile')}>N/A</td>;
+            packetLossTableData = <td className = {cx(classes.statValue, isMobile && 'is-mobile')}>N/A</td>;
         }
 
         return (
             <tr>
-                <td className={cx(classes.statTitle, isMobile && 'is-mobile')}>
+                <td className = {cx(classes.statTitle, isMobile && 'is-mobile')}>
                     <span>
                         {t('connectionindicator.packetloss')}
                     </span>
@@ -745,7 +745,7 @@ const ConnectionStatsTable = ({
     };
 
     const _renderStatistics = () => (
-        <table className={cx(classes.table, isMobile && 'is-mobile')}>
+        <table className = {cx(classes.table, isMobile && 'is-mobile')}>
             <tbody>
             {_renderConnectionSummary()}
             {_renderBitrate()}
@@ -763,14 +763,14 @@ const ConnectionStatsTable = ({
 
     return (
         <ContextMenu
-            className={classes.contextMenu}
-            hidden={false}
-            inDrawer={true}>
+            className = {classes.contextMenu}
+            hidden = {false}
+            inDrawer = {true}>
             <div
-                className={cx(classes.connectionStatsTable, {
+                className = {cx(classes.connectionStatsTable, {
                     [classes.mobile]: isMobileBrowser() || isNarrowLayout
                 })}
-                onClick={onClick}>
+                onClick = {onClick}>
                 {_renderStatistics()}
                 {shouldShowMore ? _renderAdditionalStats() : null}
             </div>

@@ -749,7 +749,7 @@
             "answerPlaceholder": "wotmołwa {{index}}",
             "cancel": "přetorhnyć",
             "create": "naprašowanje zestajić",
-            "pollOptions": "wotmołwa {{index}}",
+            "pollOption": "wotmołwa {{index}}",
             "pollQuestion": "prašenje",
             "questionPlaceholder": "prašenje stajić",
             "removeOption": "wotmołwu wotstronić",

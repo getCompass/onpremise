@@ -1,10 +1,10 @@
-import React, {useCallback, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {makeStyles} from 'tss-react/mui';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
 
 import Icon from '../../../base/icons/components/Icon';
-import {IconVolumeHigh, IconVolumeLow} from '../../../base/icons/svg';
-import {VOLUME_SLIDER_SCALE} from '../../constants';
+import { IconVolumeHigh, IconVolumeLow } from '../../../base/icons/svg';
+import { VOLUME_SLIDER_SCALE } from '../../constants';
 
 /**
  * The type of the React {@code Component} props of {@link VolumeSlider}.
@@ -36,12 +36,7 @@ const useStyles = makeStyles()(theme => {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            padding: '10px 12px 8px 12px',
-
-            '&:hover': {
-                borderRadius: '5px',
-                backgroundColor: 'rgba(255, 255, 255, 0.05)'
-            },
+            padding: '0px 12px',
         },
 
         iconVolumeLow: {
@@ -66,7 +61,8 @@ const useStyles = makeStyles()(theme => {
 
         sliderContainer: {
             position: 'relative',
-            width: '100%'
+            width: '100%',
+            padding: '20px 0px 16px 0px',
         },
 
         slider: {
@@ -78,10 +74,6 @@ const useStyles = makeStyles()(theme => {
     };
 });
 
-const _onClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-};
-
 const VolumeSlider = ({
     initialValue,
     onChange
@@ -90,44 +82,101 @@ const VolumeSlider = ({
     const { t } = useTranslation();
 
     const [ volumeLevel, setVolumeLevel ] = useState((initialValue || 0) * VOLUME_SLIDER_SCALE);
+    const [ isDragging, setIsDragging ] = useState(false);
+
+    const _updateVolumeFromMouseEvent = (event: React.MouseEvent<HTMLDivElement>) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = event.clientX - rect.left; // x position within the slider container
+        let newVolumeLevel = Math.round((x / rect.width) * VOLUME_SLIDER_SCALE);
+        if (newVolumeLevel > 100) {
+            newVolumeLevel = 100;
+        }
+        if (newVolumeLevel < 0) {
+            newVolumeLevel = 0;
+        }
+
+        onChange(newVolumeLevel / VOLUME_SLIDER_SCALE);
+        setVolumeLevel(newVolumeLevel);
+    };
 
     const _onVolumeChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const newVolumeLevel = Number(event.currentTarget.value);
+        let newVolumeLevel = Number(event.currentTarget.value);
+        if (newVolumeLevel > 100) {
+            newVolumeLevel = 100;
+        }
+        if (newVolumeLevel < 0) {
+            newVolumeLevel = 0;
+        }
 
         onChange(newVolumeLevel / VOLUME_SLIDER_SCALE);
         setVolumeLevel(newVolumeLevel);
     }, [ onChange ]);
 
+    const _onSliderContainerClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+        _updateVolumeFromMouseEvent(event);
+    }, []);
+
+    const _onMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+        setIsDragging(true);
+        _updateVolumeFromMouseEvent(event);
+    }, []);
+
+    const _onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+        if (isDragging) {
+            _updateVolumeFromMouseEvent(event);
+        }
+    }, [ isDragging ]);
+
+    useEffect(() => {
+        const handleMouseUp = () => {
+            setIsDragging(false);
+        };
+
+        window.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
+
+    const _onClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+    };
+
     return (
-        <div className={classes.hoverContainer}>
+        <div className = {classes.hoverContainer}>
             <div
-                aria-label={t('volumeSlider')}
-                className={cx('popupmenu__contents', classes.container)}
-                onClick={_onClick}>
-            <span className={classes.iconVolumeLow}>
-                <Icon
-                    size={18}
-                    src={IconVolumeLow}/>
-            </span>
-                <div className={classes.sliderContainer}>
+                aria-label = {t('volumeSlider')}
+                className = {cx('popupmenu__contents', classes.container)}
+                onClick = {_onClick}>
+                <span className = {classes.iconVolumeLow}>
+                    <Icon
+                        size = {18}
+                        src = {IconVolumeLow} />
+                </span>
+                <div
+                    className = {classes.sliderContainer}
+                    onClick = {_onSliderContainerClick}
+                    onMouseDown = {_onMouseDown}
+                    onMouseMove = {_onMouseMove}>
                     <input
-                        aria-valuemax={VOLUME_SLIDER_SCALE}
-                        aria-valuemin={0}
-                        aria-valuenow={volumeLevel}
-                        className={cx('popupmenu__volume-slider', classes.slider)}
-                        max={VOLUME_SLIDER_SCALE}
-                        min={0}
-                        onChange={_onVolumeChange}
-                        style={{'--value': `${(volumeLevel / VOLUME_SLIDER_SCALE) * 100}%`} as any}
-                        tabIndex={0}
-                        type='range'
-                        value={volumeLevel}/>
+                        aria-valuemax = {VOLUME_SLIDER_SCALE}
+                        aria-valuemin = {0}
+                        aria-valuenow = {volumeLevel}
+                        className = {cx('popupmenu__volume-slider', classes.slider)}
+                        max = {VOLUME_SLIDER_SCALE}
+                        min = {0}
+                        onChange = {_onVolumeChange}
+                        style = {{ '--value': `${(volumeLevel / VOLUME_SLIDER_SCALE) * 100}%` } as any}
+                        tabIndex = {0}
+                        type = 'range'
+                        value = {volumeLevel} />
                 </div>
-                <span className={classes.iconVolumeHigh}>
-                <Icon
-                    size={18}
-                    src={IconVolumeHigh}/>
-            </span>
+                <span className = {classes.iconVolumeHigh}>
+                    <Icon
+                        size = {18}
+                        src = {IconVolumeHigh} />
+                </span>
             </div>
         </div>
     );

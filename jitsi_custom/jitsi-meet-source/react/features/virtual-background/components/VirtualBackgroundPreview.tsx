@@ -16,6 +16,7 @@ import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
 import { toggleBackgroundEffect } from '../actions';
 import logger from '../logger';
 import { IVirtualBackground } from '../reducer';
+import clsx from "clsx";
 
 /**
  * The type of the React {@code PureComponent} props of {@link VirtualBackgroundPreview}.
@@ -46,6 +47,8 @@ export interface IProps extends WithTranslation {
      * The id of the selected video device.
      */
     selectedVideoInputId: string;
+
+    localFlipX: boolean;
 }
 
 /**
@@ -86,11 +89,12 @@ const styles = (theme: Theme) => {
             zIndex: 2,
             borderRadius: '3px',
             backgroundColor: theme.palette.uiBackground,
-            position: 'relative' as const
+            position: 'relative' as const,
+            minHeight: '223px',
         },
 
         previewLoader: {
-            height: '220px',
+            height: '223px',
 
             '& svg': {
                 position: 'absolute' as const,
@@ -229,7 +233,7 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
      * @returns {React$Node}
      */
     _renderPreviewEntry(data: Object) {
-        const { t } = this.props;
+        const { t, localFlipX } = this.props;
         const classes = withStyles.getClasses(this.props);
 
         if (this.state.loading) {
@@ -243,7 +247,7 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
 
         return (
             <Video
-                className = { classes.previewVideo }
+                className = { clsx(classes.previewVideo, localFlipX && 'flipVideoX') }
                 playsinline = { true }
                 videoTrack = {{ jitsiTrack: data }} />
         );

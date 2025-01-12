@@ -1,11 +1,9 @@
-// @ts-expect-error
-import UIEvents from '../../../service/UI/UIEvents';
-import {VIDEO_MUTE, createToolbarEvent} from '../analytics/AnalyticsEvents';
-import {sendAnalytics} from '../analytics/functions';
-import {IStore} from '../app/types';
-import {setAudioOnly} from '../base/audio-only/actions';
-import {setVideoMuted} from '../base/media/actions';
-import {VIDEO_MUTISM_AUTHORITY} from '../base/media/constants';
+import { VIDEO_MUTE, createToolbarEvent } from '../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../analytics/functions';
+import { IStore } from '../app/types';
+import { setAudioOnly } from '../base/audio-only/actions';
+import { setVideoMuted } from '../base/media/actions';
+import { VIDEO_MUTISM_AUTHORITY } from '../base/media/constants';
 
 import {
     SET_TOOLBOX_ENABLED,
@@ -38,7 +36,7 @@ export function setToolboxEnabled(enabled: boolean) {
  */
 export function setToolboxVisible(visible: boolean) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        const {toolbarConfig} = getState()['features/base/config'];
+        const { toolbarConfig } = getState()['features/base/config'];
         const alwaysVisible = toolbarConfig?.alwaysVisible;
 
         if (!visible && alwaysVisible) {
@@ -60,10 +58,10 @@ export function setToolboxVisible(visible: boolean) {
 export function toggleToolboxVisible() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
-        const {toolbarConfig} = getState()['features/base/config'];
+        const { toolbarConfig } = getState()['features/base/config'];
         const alwaysVisible = toolbarConfig?.alwaysVisible;
-        const {visible} = state['features/toolbox'];
-        const {is_in_picture_in_picture_mode} = state['features/picture-in-picture'];
+        const { visible } = state['features/toolbox'];
+        const { is_in_picture_in_picture_mode } = state['features/picture-in-picture'];
 
         if ((visible && alwaysVisible) || is_in_picture_in_picture_mode) {
             return;
@@ -88,9 +86,9 @@ export function toggleToolboxVisible() {
 export function handleToggleVideoMuted(muted: boolean, showUI: boolean, ensureTrack: boolean) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
-        const {enabled: audioOnly} = state['features/base/audio-only'];
+        const { enabled: audioOnly } = state['features/base/audio-only'];
 
-        sendAnalytics(createToolbarEvent(VIDEO_MUTE, {enable: muted}));
+        sendAnalytics(createToolbarEvent(VIDEO_MUTE, { enable: muted }));
         if (audioOnly) {
             dispatch(setAudioOnly(false));
         }
@@ -104,7 +102,7 @@ export function handleToggleVideoMuted(muted: boolean, showUI: boolean, ensureTr
         // FIXME: The old conference logic still relies on this event being
         // emitted.
         typeof APP === 'undefined'
-        || APP.UI.emitEvent(UIEvents.VIDEO_MUTED, muted, showUI);
+            || APP.conference.muteVideo(muted, showUI);
 
     };
 }

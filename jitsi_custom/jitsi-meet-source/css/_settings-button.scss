@@ -3,7 +3,7 @@
 
     .toolbox-icon {
         align-items: center;
-        border-radius: 3px;
+        border-radius: 8px;
         cursor: pointer;
         display: flex;
         justify-content: center;
@@ -20,22 +20,34 @@
     }
 }
 
+.toolbox-button-with-icon {
+    position: absolute;
+    right: -4px;
+    top: -4px;
+    cursor: pointer;
+    border-radius: 100%;
+    background-color: rgba(65, 65, 65, 1);
+    padding: 4px;
+
+    &:hover {
+        background-color: rgba(95, 95, 95, 1);
+    }
+}
+
 .settings-button-small-icon {
     background: rgba(65, 65, 65, 1);
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.1);
-    border-radius: 3px;
+    border-radius: 100%;
     cursor: pointer;
-    padding: 1px;
+    padding: 4px;
     position: absolute;
     right: -4px;
     top: -3px;
 
     &:hover {
-        background: #F2F3F4;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.1);
+        background: rgba(95, 95, 95, 1);
 
         & svg {
-            fill: #040404;
+            fill: white;
         }
 
         &.settings-button-small-icon--disabled {
@@ -62,6 +74,8 @@
 }
 
 .settings-button-small-icon-container {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
     position: absolute;
     right: -4px;
     top: -3px;
@@ -70,5 +84,18 @@
         position: relative;
         top: 0;
         right: 0;
+    }
+
+    &.visible {
+        opacity: 1;
+    }
+}
+
+.opacity-with-animation-200ms {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+
+    &.visible {
+        opacity: 1;
     }
 }

@@ -4,18 +4,14 @@ import { IStore } from '../../app/types';
 import { hideNotification } from '../../notifications/actions';
 import { isPrejoinPageVisible } from '../../prejoin/functions';
 import { getAvailableDevices } from '../devices/actions.web';
-import { setScreenshareMuted } from '../media/actions';
-import {
-    MEDIA_TYPE,
-    VIDEO_TYPE
-} from '../media/constants';
+import { setScreenshareMuted, setVideoMuted } from '../media/actions';
+import { MEDIA_TYPE, VIDEO_TYPE } from '../media/constants';
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 
 import {
     TRACK_ADDED,
     TRACK_MUTE_UNMUTE_FAILED,
     TRACK_NO_DATA_FROM_SOURCE,
-    TRACK_OWNER_CHANGED,
     TRACK_REMOVED,
     TRACK_STOPPED,
     TRACK_UPDATED
@@ -25,12 +21,11 @@ import {
     toggleScreensharing,
     trackNoDataFromSourceNotificationInfoChanged
 } from './actions.web';
-import {
-    getTrackByJitsiTrack, logTracksForParticipant
-} from './functions.web';
+import { getTrackByJitsiTrack, getTrackState, isLocalTrackMuted, logTracksForParticipant } from './functions.web';
 import { ITrack } from './types';
 
 import './middleware.any';
+import { setLocalVideoWasMutedBeforeScreensharingState } from "../../screen-share/actions.web";
 
 /**
  * Middleware that captures LIB_DID_DISPOSE and LIB_DID_INIT actions and,
@@ -82,23 +77,6 @@ MiddlewareRegistry.register(store => next => action => {
         return result;
     }
 
-    case TRACK_OWNER_CHANGED: {
-        const oldTrack = getTrackByJitsiTrack(store.getState()['features/base/tracks'], action.track?.jitsiTrack);
-        const oldOwner = oldTrack?.participantId;
-        const result = next(action);
-        const newOwner = action.track?.participantId;
-
-        if (oldOwner) {
-            logTracksForParticipant(store.getState()['features/base/tracks'], oldOwner, 'Owner changed');
-        }
-
-        if (newOwner) {
-            logTracksForParticipant(store.getState()['features/base/tracks'], newOwner, 'Owner changed');
-        }
-
-        return result;
-    }
-
     case TRACK_MUTE_UNMUTE_FAILED: {
         const { jitsiTrack } = action.track;
         const muted = action.wasMuted;
@@ -130,6 +108,9 @@ MiddlewareRegistry.register(store => next => action => {
 
         const result = next(action);
         const state = store.getState();
+        const tracks = getTrackState(state);
+        const isLocalVideoMuted = isLocalTrackMuted(tracks, MEDIA_TYPE.VIDEO);
+        const { videoWasMutedBeforeScreensharing } = state['features/screen-share'];
 
         if (isPrejoinPageVisible(state)) {
             return result;
@@ -152,6 +133,22 @@ MiddlewareRegistry.register(store => next => action => {
 
         if (typeof action.track?.muted !== 'undefined' && participantID && !local) {
             logTracksForParticipant(store.getState()['features/base/tracks'], participantID, 'Track updated');
+        }
+
+        // когда я демонстрирую экран - мое видео отключается
+        // когда я закончу демонстрацию - мое видео снова включится
+        if (isVideoTrack && jitsiTrack.getVideoType() === VIDEO_TYPE.DESKTOP && local) {
+
+            if (typeof action.track?.muted !== 'undefined' && action.track?.muted) {
+
+                // размьючиваем только если видео было включено до демонстрации экрана
+                !videoWasMutedBeforeScreensharing && store.dispatch(setVideoMuted(false));
+            } else if (typeof action.track?.videoStarted !== 'undefined' && action.track?.videoStarted) {
+
+                // сохраняем состояние видео перед отключением
+                store.dispatch(setLocalVideoWasMutedBeforeScreensharingState(isLocalVideoMuted));
+                store.dispatch(setVideoMuted(true));
+            }
         }
 
         return result;

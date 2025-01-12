@@ -1,19 +1,20 @@
 /* global __dirname */
 
-const CircularDependencyPlugin = require("circular-dependency-plugin");
-const fs = require("fs");
-const { join, resolve } = require("path");
-const process = require("process");
-const webpack = require("webpack");
-const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
-const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
+const CircularDependencyPlugin = require('circular-dependency-plugin');
+const fs = require('fs');
+const { join, resolve } = require('path');
+const process = require('process');
+const webpack = require('webpack');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const packageJson = require('./package.json');
 
 /**
  * The URL of the Jitsi Meet deployment to be proxy to in the context of
  * development with webpack-dev-server.
  */
-const devServerProxyTarget = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || "https://alpha.jitsi.net";
+const devServerProxyTarget
+    = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || 'https://alpha.jitsi.net';
 
 /**
  * Build a Performance configuration object for the given size.
@@ -29,9 +30,9 @@ function getPerformanceHints(options, size) {
     const { analyzeBundle, isProduction } = options;
 
     return {
-        hints: isProduction && !analyzeBundle ? "error" : false,
+        hints: isProduction && !analyzeBundle ? 'error' : false,
         maxAssetSize: size,
-        maxEntrypointSize: size,
+        maxEntrypointSize: size
     };
 }
 
@@ -47,13 +48,11 @@ function getBundleAnalyzerPlugin(analyzeBundle, name) {
         return [];
     }
 
-    return [
-        new BundleAnalyzerPlugin({
-            analyzerMode: "disabled",
-            generateStatsFile: true,
-            statsFilename: `${name}-stats.json`,
-        }),
-    ];
+    return [ new BundleAnalyzerPlugin({
+        analyzerMode: 'disabled',
+        generateStatsFile: true,
+        statsFilename: `${name}-stats.json`
+    }) ];
 }
 
 /**
@@ -66,22 +65,21 @@ function getBundleAnalyzerPlugin(analyzeBundle, name) {
  * target, undefined; otherwise, the path to the local file to be served.
  */
 function devServerProxyBypass({ path }) {
-    if (
-        path.startsWith("/css/") ||
-        path.startsWith("/doc/") ||
-        path.startsWith("/fonts/") ||
-        path.startsWith("/images/") ||
-        path.startsWith("/lang/") ||
-        path.startsWith("/sounds/") ||
-        path.startsWith("/static/") ||
-        path.endsWith(".wasm")
-    ) {
+    if (path.startsWith('/css/')
+            || path.startsWith('/doc/')
+            || path.startsWith('/fonts/')
+            || path.startsWith('/images/')
+            || path.startsWith('/lang/')
+            || path.startsWith('/sounds/')
+            || path.startsWith('/static/')
+            || path.endsWith('.wasm')) {
+
         return path;
     }
 
-    if (path.startsWith("/libs/")) {
-        if (path.endsWith(".min.js") && !fs.existsSync(join(process.cwd(), path))) {
-            return path.replace(".min.js", ".js");
+    if (path.startsWith('/libs/')) {
+        if (path.endsWith('.min.js') && !fs.existsSync(join(process.cwd(), path))) {
+            return path.replace('.min.js', '.js');
         }
 
         return path;
@@ -104,130 +102,132 @@ function getConfig(options = {}) {
     const sentryEnvironment = process.env.SENTRY_ENVIRONMENT ?? 'development';
 
     return {
-        devtool: isProduction ? "source-map" : "eval-source-map",
-        mode: isProduction ? "production" : "development",
+        devtool: isProduction ? 'source-map' : 'eval-source-map',
+        mode: isProduction ? 'production' : 'development',
         module: {
-            rules: [
-                {
-                    // Transpile ES2015 (aka ES6) to ES5. Accept the JSX syntax by React
-                    // as well.
+            rules: [ {
+                // Transpile ES2015 (aka ES6) to ES5. Accept the JSX syntax by React
+                // as well.
 
-                    loader: "babel-loader",
-                    options: {
-                        // Avoid loading babel.config.js, since we only use it for React Native.
-                        configFile: false,
+                loader: 'babel-loader',
+                options: {
+                    // Avoid loading babel.config.js, since we only use it for React Native.
+                    configFile: false,
 
-                        // XXX The require.resolve below solves failures to locate the
-                        // presets when lib-jitsi-meet, for example, is npm linked in
-                        // jitsi-meet.
-                        plugins: [require.resolve("@babel/plugin-proposal-export-default-from")],
-                        presets: [
-                            [
-                                require.resolve("@babel/preset-env"),
-
-                                // Tell babel to avoid compiling imports into CommonJS
-                                // so that webpack may do tree shaking.
-                                {
-                                    modules: false,
-
-                                    // Specify our target browsers so no transpiling is
-                                    // done unnecessarily. For browsers not specified
-                                    // here, the ES2015+ profile will be used.
-                                    targets: {
-                                        chrome: 80,
-                                        electron: 10,
-                                        firefox: 68,
-                                        safari: 14,
-                                    },
-                                },
-                            ],
-                            require.resolve("@babel/preset-react"),
-                        ],
-                    },
-                    test: /\.jsx?$/,
-                },
-                {
-                    // Allow CSS to be imported into JavaScript.
-
-                    test: /\.css$/,
-                    use: ["style-loader", "css-loader"],
-                },
-                {
-                    test: /\.svg$/,
-                    use: [
-                        {
-                            loader: "@svgr/webpack",
-                            options: {
-                                dimensions: false,
-                                expandProps: "start",
-                            },
-                        },
+                    // XXX The require.resolve below solves failures to locate the
+                    // presets when lib-jitsi-meet, for example, is npm linked in
+                    // jitsi-meet.
+                    plugins: [
+                        require.resolve('@babel/plugin-proposal-export-default-from')
                     ],
+                    presets: [
+                        [
+                            require.resolve('@babel/preset-env'),
+
+                            // Tell babel to avoid compiling imports into CommonJS
+                            // so that webpack may do tree shaking.
+                            {
+                                modules: false,
+
+                                // Specify our target browsers so no transpiling is
+                                // done unnecessarily. For browsers not specified
+                                // here, the ES2015+ profile will be used.
+                                targets: {
+                                    chrome: 80,
+                                    electron: 10,
+                                    firefox: 68,
+                                    safari: 14
+                                }
+
+                            }
+                        ],
+                        require.resolve('@babel/preset-react')
+                    ]
                 },
-                {
-                    test: /\.tsx?$/,
-                    exclude: /node_modules/,
-                    loader: "ts-loader",
+                test: /\.jsx?$/
+            }, {
+                // Allow CSS to be imported into JavaScript.
+
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader'
+                ]
+            }, {
+                test: /\.svg$/,
+                use: [ {
+                    loader: '@svgr/webpack',
                     options: {
-                        configFile: "tsconfig.web.json",
-                        transpileOnly: !isProduction, // Skip type checking for dev builds.,
-                    },
-                },
-            ],
+                        dimensions: false,
+                        expandProps: 'start'
+                    }
+                } ]
+            }, {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                loader: 'ts-loader',
+                options: {
+                    configFile: 'tsconfig.web.json',
+                    transpileOnly: !isProduction // Skip type checking for dev builds.,
+                }
+            } ]
         },
         node: {
             // Allow the use of the real filename of the module being executed. By
             // default Webpack does not leak path-related information and provides a
             // value that is a mock (/index.js).
-            __filename: true,
+            __filename: true
         },
         optimization: {
             concatenateModules: isProduction,
-            minimize: isProduction,
+            minimize: isProduction
         },
         output: {
-            filename: `[name]${isProduction ? ".min" : ""}.js`,
+            filename: `[name]${isProduction ? '.min' : ''}.js`,
             path: `${__dirname}/build`,
-            publicPath: "/libs/",
-            sourceMapFilename: "[file].map",
+            publicPath: '/libs/',
+            sourceMapFilename: '[file].map'
         },
         plugins: [
-            detectCircularDeps &&
-                new CircularDependencyPlugin({
+            detectCircularDeps
+                && new CircularDependencyPlugin({
                     allowAsyncCycles: false,
                     exclude: /node_modules/,
-                    failOnError: false,
+                    failOnError: false
                 }),
-            new webpack.DefinePlugin({
-                __RELEASE__: JSON.stringify(release),
-                __SENTRY_DSN__: JSON.stringify(sentryDsn),
-                __IS_PRODUCTION__: JSON.stringify(isProduction),
-                __SENTRY_ENVIRONMENT__: JSON.stringify(sentryEnvironment)
-            })
+                new webpack.DefinePlugin({
+                    __RELEASE__: JSON.stringify(release),
+                    __SENTRY_DSN__: JSON.stringify(sentryDsn),
+                    __IS_PRODUCTION__: JSON.stringify(isProduction),
+                    __SENTRY_ENVIRONMENT__: JSON.stringify(sentryEnvironment)
+                })
         ].filter(Boolean),
         resolve: {
-            aliasFields: ["browser"],
+            // compass changes
+            aliasFields: [
+                'browser'
+            ],
             extensions: [
-                ".web.js",
-                ".web.ts",
-                ".web.tsx",
+                '.web.js',
+                '.web.ts',
+                '.web.tsx',
 
                 // Typescript:
-                ".tsx",
-                ".ts",
+                '.tsx',
+                '.ts',
 
                 // Webpack defaults:
-                ".js",
-                ".json",
+                '.js',
+                '.json'
             ],
             fallback: {
                 // Provide some empty Node modules (required by AtlasKit, olm).
                 crypto: false,
                 fs: false,
                 path: false,
-                process: false,
-            },
-        },
+                process: false
+            }
+        }
     };
 }
 
@@ -244,62 +244,61 @@ function getDevServerConfig() {
         client: {
             overlay: {
                 errors: true,
-                warnings: false,
-            },
+                warnings: false
+            }
         },
-        host: "127.0.0.1",
+        host: '127.0.0.1',
         hot: true,
         proxy: {
-            "/": {
+            '/': {
                 bypass: devServerProxyBypass,
                 secure: false,
                 target: devServerProxyTarget,
                 headers: {
-                    Host: new URL(devServerProxyTarget).host,
-                },
-            },
+                    'Host': new URL(devServerProxyTarget).host
+                }
+            }
         },
-        server: process.env.CODESPACES ? "http" : "https",
+        server: process.env.CODESPACES ? 'http' : 'https',
         static: {
-            directory: process.cwd(),
-        },
+            directory: process.cwd()
+        }
     };
 }
 
 module.exports = (_env, argv) => {
     const analyzeBundle = Boolean(process.env.ANALYZE_BUNDLE);
-    const mode = typeof argv.mode === "undefined" ? "production" : argv.mode;
-    const isProduction = mode === "production";
+    const mode = typeof argv.mode === 'undefined' ? 'production' : argv.mode;
+    const isProduction = mode === 'production';
     const configOptions = {
         detectCircularDeps: Boolean(process.env.DETECT_CIRCULAR_DEPS),
-        isProduction,
+        isProduction
     };
     const config = getConfig(configOptions);
     const perfHintOptions = {
         analyzeBundle,
-        isProduction,
+        isProduction
     };
 
     return [
         Object.assign({}, config, {
             entry: {
-                "app.bundle": "./app.js",
+                'app.bundle': './app.js'
             },
-            devtool: "source-map",
             devServer: isProduction ? {} : getDevServerConfig(),
             plugins: [
                 ...config.plugins,
-                ...getBundleAnalyzerPlugin(analyzeBundle, "app"),
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'app'),
                 new webpack.IgnorePlugin({
                     resourceRegExp: /^canvas$/,
-                    contextRegExp: /resemblejs$/,
+                    contextRegExp: /resemblejs$/
                 }),
                 new webpack.IgnorePlugin({
                     resourceRegExp: /^\.\/locale$/,
-                    contextRegExp: /moment$/,
+                    contextRegExp: /moment$/
                 }),
                 new webpack.ProvidePlugin({
-                    process: "process/browser",
+                    process: 'process/browser'
                 }),
                 sentryWebpackPlugin({
                     disable: true,
@@ -313,47 +312,63 @@ module.exports = (_env, argv) => {
                 })
             ],
 
-            performance: getPerformanceHints(perfHintOptions, 5 * 1024 * 1024),
+            performance: getPerformanceHints(perfHintOptions, 5 * 1024 * 1024)
+
         }),
         Object.assign({}, config, {
             entry: {
-                alwaysontop: "./react/features/always-on-top/index.tsx",
+                'alwaysontop': './react/features/always-on-top/index.tsx'
             },
-            plugins: [...config.plugins, ...getBundleAnalyzerPlugin(analyzeBundle, "alwaysontop")],
-            performance: getPerformanceHints(perfHintOptions, 800 * 1024),
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'alwaysontop')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 800 * 1024)
         }),
         Object.assign({}, config, {
             entry: {
-                "analytics-ga": "./react/features/analytics/handlers/GoogleAnalyticsHandler.ts",
+                'analytics-ga': './react/features/analytics/handlers/GoogleAnalyticsHandler.ts'
             },
-            plugins: [...config.plugins, ...getBundleAnalyzerPlugin(analyzeBundle, "analytics-ga")],
-            performance: getPerformanceHints(perfHintOptions, 5 * 1024),
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'analytics-ga')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 5 * 1024)
         }),
         Object.assign({}, config, {
             entry: {
-                close3: "./static/close3.js",
+                'close3': './static/close3.js'
             },
-            plugins: [...config.plugins, ...getBundleAnalyzerPlugin(analyzeBundle, "close3")],
-            performance: getPerformanceHints(perfHintOptions, 128 * 1024),
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'close3')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 128 * 1024)
         }),
 
         Object.assign({}, config, {
             entry: {
-                external_api: "./modules/API/external/index.js",
+                'external_api': './modules/API/external/index.js'
             },
             output: Object.assign({}, config.output, {
-                library: "JitsiMeetExternalAPI",
-                libraryTarget: "umd",
+                library: 'JitsiMeetExternalAPI',
+                libraryTarget: 'umd'
             }),
-            plugins: [...config.plugins, ...getBundleAnalyzerPlugin(analyzeBundle, "external_api")],
-            performance: getPerformanceHints(perfHintOptions, 40 * 1024),
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'external_api')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 40 * 1024)
         }),
         Object.assign({}, config, {
             entry: {
-                "face-landmarks-worker": "./react/features/face-landmarks/faceLandmarksWorker.ts",
+                'face-landmarks-worker': './react/features/face-landmarks/faceLandmarksWorker.ts'
             },
-            plugins: [...config.plugins, ...getBundleAnalyzerPlugin(analyzeBundle, "face-landmarks-worker")],
-            performance: getPerformanceHints(perfHintOptions, 1024 * 1024 * 2),
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'face-landmarks-worker')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 1024 * 1024 * 2)
         }),
         Object.assign({}, config, {
             /**
@@ -367,35 +382,37 @@ module.exports = (_env, argv) => {
              * so we replace it.
              */
             entry: {
-                "noise-suppressor-worklet":
-                    "./react/features/stream-effects/noise-suppression/NoiseSuppressorWorklet.ts",
+                'noise-suppressor-worklet':
+                    './react/features/stream-effects/noise-suppression/NoiseSuppressorWorklet.ts'
             },
 
-            module: {
-                rules: [
-                    ...config.module.rules,
-                    {
-                        test: resolve(__dirname, "node_modules/webpack-dev-server/client"),
-                        loader: "null-loader",
-                    },
-                ],
-            },
-            plugins: [],
+            module: { rules: [
+                ...config.module.rules,
+                {
+                    test: resolve(__dirname, 'node_modules/webpack-dev-server/client'),
+                    loader: 'null-loader'
+                }
+            ] },
+            plugins: [
+            ],
             performance: getPerformanceHints(perfHintOptions, 200 * 1024),
 
             output: {
                 ...config.output,
 
-                globalObject: "AudioWorkletGlobalScope",
-            },
+                globalObject: 'AudioWorkletGlobalScope'
+            }
         }),
 
         Object.assign({}, config, {
             entry: {
-                "screenshot-capture-worker": "./react/features/screenshot-capture/worker.ts",
+                'screenshot-capture-worker': './react/features/screenshot-capture/worker.ts'
             },
-            plugins: [...config.plugins, ...getBundleAnalyzerPlugin(analyzeBundle, "screenshot-capture-worker")],
-            performance: getPerformanceHints(perfHintOptions, 4 * 1024),
-        }),
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'screenshot-capture-worker')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 4 * 1024)
+        })
     ];
 };

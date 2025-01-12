@@ -43,10 +43,20 @@ export interface IProps {
     className?: string;
 
     /**
+     * A prop to maintain compatibility with web.
+     */
+    iconClassName?: string;
+
+    /**
      * A string to override the initials to generate a color of. This is handy if you don't want to make
      * the background color match the string that the initials are generated from.
      */
     colorBase?: string;
+
+    /**
+     * Indicates the default icon for the avatar.
+     */
+    defaultIcon?: string;
 
     /**
      * Display name of the entity to render an avatar for (if any). This is handy when we need
@@ -112,6 +122,7 @@ class Avatar<P extends IProps> extends PureComponent<P, IState> {
      * @static
      */
     static defaultProps = {
+        defaultIcon: IconUser,
         dynamicColor: true
     };
 
@@ -171,7 +182,9 @@ class Avatar<P extends IProps> extends PureComponent<P, IState> {
             _loadableAvatarUrl,
             _loadableAvatarUrlUseCORS,
             className,
+            iconClassName,
             colorBase,
+            defaultIcon,
             dynamicColor,
             id,
             size,
@@ -183,6 +196,7 @@ class Avatar<P extends IProps> extends PureComponent<P, IState> {
 
         const avatarProps: AbstractProps & {
             className?: string;
+            iconClassName?: string;
             iconUser?: any;
             id?: string;
             status?: string;
@@ -191,6 +205,7 @@ class Avatar<P extends IProps> extends PureComponent<P, IState> {
             useCORS?: boolean;
         } = {
             className,
+            iconClassName,
             color: undefined,
             id,
             initials: undefined,
@@ -229,7 +244,7 @@ class Avatar<P extends IProps> extends PureComponent<P, IState> {
         }
 
         if (navigator.product !== 'ReactNative') {
-            avatarProps.iconUser = IconUser;
+            avatarProps.iconUser = defaultIcon;
         }
 
         return (

@@ -1,6 +1,6 @@
-import React, {useEffect} from 'react';
-import {useDispatch} from 'react-redux';
-import {useStyles} from 'tss-react/mui';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { useStyles } from 'tss-react/mui';
 
 import Icon from '../../../base/icons/components/Icon';
 import {
@@ -9,9 +9,9 @@ import {
     IconConnectionInactive, IconConnectionLow,
     IconConnectionMedium
 } from '../../../base/icons/svg';
-import {JitsiTrackEvents} from '../../../base/lib-jitsi-meet';
-import {trackStreamingStatusChanged} from '../../../base/tracks/actions.web';
-import {ITrack} from '../../../base/tracks/types';
+import { JitsiTrackEvents } from '../../../base/lib-jitsi-meet';
+import { trackStreamingStatusChanged } from '../../../base/tracks/actions.web';
+import { ITrack } from '../../../base/tracks/types';
 
 interface IProps {
 
@@ -47,14 +47,14 @@ interface IProps {
 }
 
 export const ConnectionIndicatorIcon = ({
-                                            classes,
-                                            colorClass,
-                                            connectionIndicatorInactiveDisabled,
-                                            isConnectionStatusInactive,
-                                            isConnectionStatusInterrupted,
-                                            track
-                                        }: IProps) => {
-    const {cx} = useStyles();
+    classes,
+    colorClass,
+    connectionIndicatorInactiveDisabled,
+    isConnectionStatusInactive,
+    isConnectionStatusInterrupted,
+    track
+}: IProps) => {
+    const { cx } = useStyles();
     const dispatch = useDispatch();
     const sourceName = track?.jitsiTrack?.getSourceName();
 
@@ -81,7 +81,7 @@ export const ConnectionIndicatorIcon = ({
                 dispatch(trackStreamingStatusChanged(track.jitsiTrack, track.jitsiTrack.getTrackStreamingStatus?.()));
             }
         };
-    }, [sourceName]);
+    }, [ sourceName ]);
 
     if (isConnectionStatusInactive) {
         if (connectionIndicatorInactiveDisabled) {
@@ -89,11 +89,11 @@ export const ConnectionIndicatorIcon = ({
         }
 
         return (
-            <span className='connection_ninja'>
+            <span className = 'connection_ninja'>
                 <Icon
-                    className={cx(classes?.icon, classes?.inactiveIcon, colorClass)}
-                    size={24}
-                    src={IconConnectionInactive}/>
+                    className = {cx(classes?.icon, classes?.inactiveIcon, colorClass)}
+                    size = {24}
+                    src = {IconConnectionInactive} />
             </span>
         );
     }
@@ -106,11 +106,11 @@ export const ConnectionIndicatorIcon = ({
     }
 
     return (
-        <span className={emptyIconWrapperClassName}>
+        <span className = {emptyIconWrapperClassName}>
             <Icon
-                className={cx(classes?.icon, colorClass)}
-                size={18}
-                src={colorClass === 'status-high' ? IconConnectionHigh : colorClass === 'status-med' ? IconConnectionMedium : colorClass === 'status-low' ? IconConnectionLow : IconConnection}/>
+                className = {cx(classes?.icon, colorClass)}
+                size = {18}
+                src = {colorClass === 'status-high' ? IconConnectionHigh : colorClass === 'status-med' ? IconConnectionMedium : colorClass === 'status-low' ? IconConnectionLow : IconConnection} />
         </span>
     );
 };

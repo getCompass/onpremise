@@ -1,11 +1,11 @@
-import React, {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDispatch} from 'react-redux';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
 import Icon from '../../../base/icons/components/Icon';
-import {IconCloseLarge} from '../../../base/icons/svg';
-import {toggleChat} from '../../actions.web';
-import {isMobileBrowser} from "../../../base/environment/utils";
+import { IconCloseLarge } from '../../../base/icons/svg';
+import { toggleChat } from '../../actions.web';
+import { isMobileBrowser } from "../../../base/environment/utils";
 
 interface IProps {
 
@@ -30,9 +30,9 @@ interface IProps {
  *
  * @returns {React$Element<any>}
  */
-function ChatHeader({className, isPollsEnabled}: IProps) {
+function ChatHeader({ className, isPollsEnabled }: IProps) {
     const dispatch = useDispatch();
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     const onCancel = useCallback(() => {
         dispatch(toggleChat());
@@ -47,21 +47,21 @@ function ChatHeader({className, isPollsEnabled}: IProps) {
 
     return (
         <div
-            className={className || 'chat-dialog-header'}>
+            className = {className || 'chat-dialog-header'}>
             <span
-                aria-level={1}
-                role='heading'>
+                aria-level = {1}
+                role = 'heading'>
                 {t(isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title')}
             </span>
             <Icon
-                ariaLabel={t('toolbar.closeChat')}
-                onClick={onCancel}
-                onKeyPress={onKeyPressHandler}
-                role='button'
-                src={IconCloseLarge}
-                className={'close-icon-button'}
-                size={isMobileBrowser() ? 28 : 24}
-                tabIndex={0}/>
+                ariaLabel = {t('toolbar.closeChat')}
+                onClick = {onCancel}
+                onKeyPress = {onKeyPressHandler}
+                role = 'button'
+                src = {IconCloseLarge}
+                className = {'close-icon-button'}
+                size = {isMobileBrowser() ? 28 : 24}
+                tabIndex = {0} />
         </div>
     );
 }

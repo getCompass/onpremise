@@ -1,5 +1,4 @@
 import { Theme } from '@mui/material';
-import clsx from 'clsx';
 import React from 'react';
 import { WithTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
@@ -13,25 +12,20 @@ import {
     getParticipantById,
     isScreenShareParticipant
 } from '../../../base/participants/functions';
-import Popover from '../../../base/popover/components/Popover.web';
 import {
     getTrackByMediaTypeAndParticipant,
     getVirtualScreenshareParticipantTrack
 } from '../../../base/tracks/functions';
 import { ITrack } from '../../../base/tracks/types';
-import {
-    isTrackStreamingStatusInactive,
-    isTrackStreamingStatusInterrupted
-} from '../../functions';
+import { isTrackStreamingStatusInactive, isTrackStreamingStatusInterrupted } from '../../functions';
 import AbstractConnectionIndicator, {
+    INDICATOR_DISPLAY_THRESHOLD,
     IProps as AbstractProps,
     IState as AbstractState,
-    INDICATOR_DISPLAY_THRESHOLD,
     mapStateToProps as _abstractMapStateToProps
 } from '../AbstractConnectionIndicator';
-
-import ConnectionIndicatorContent from './ConnectionIndicatorContent';
 import { ConnectionIndicatorIcon } from './ConnectionIndicatorIcon';
+import Tooltip from "../../../base/tooltip/components/Tooltip";
 
 /**
  * An array of display configurations for the connection indicator and its bars.
@@ -166,11 +160,11 @@ const styles = (theme: Theme) => {
             },
 
             '&.status-med': {
-                backgroundColor: theme.palette.warning01
+                backgroundColor: 'rgba(255, 157, 20, 1)'
             },
 
             '&.status-low': {
-                backgroundColor: theme.palette.iconError
+                backgroundColor: 'rgba(255, 79, 71, 1)'
             },
 
             '&.status-disabled': {
@@ -225,31 +219,30 @@ class ConnectionIndicator extends AbstractConnectionIndicator<IProps, IState> {
      * @returns {ReactElement}
      */
     render() {
-        const { enableStatsDisplay, participantId, statsPopoverPosition, t } = this.props;
-        const classes = withStyles.getClasses(this.props);
-        const visibilityClass = this._getVisibilityClass();
+        const { t } = this.props;
+        const connectColorClass = this._getConnectionColorClass();
+
+        if ([ "status-high", "status-disabled", "status-other", "status-lost" ].includes(connectColorClass)) {
+            return <div></div>;
+        }
 
         if (this.props._popoverDisabled) {
-            return this._renderIndicator();
+            return (
+                <Tooltip
+                    content = {connectColorClass === "status-med" ? t("connectionindicator.quality.medium") : t("connectionindicator.quality.low")}
+                    position = 'top'>
+                    {this._renderIndicator()}
+                </Tooltip>
+            )
         }
 
         return (
-            <Popover
-                className = { clsx(classes.container, visibilityClass) }
-                size = 'auto'
-                content = { <ConnectionIndicatorContent
-                    inheritedStats = { this.state.stats }
-                    participantId = { participantId } /> }
-                disablePopover = { !enableStatsDisplay }
-                headingLabel = { t('videothumbnail.connectionInfo') }
-                id = 'participant-connection-indicator'
-                onPopoverClose = { this._onHidePopover }
-                onPopoverOpen = { this._onShowPopover }
-                position = { statsPopoverPosition }
-                visible = { this.state.popoverVisible }>
-                { this._renderIndicator() }
-            </Popover>
-        );
+            <Tooltip
+                content = {connectColorClass === "status-med" ? t("connectionindicator.quality.medium") : t("connectionindicator.quality.low")}
+                position = 'top'>
+                {this._renderIndicator()}
+            </Tooltip>
+        )
     }
 
     /**
@@ -276,7 +269,7 @@ class ConnectionIndicator extends AbstractConnectionIndicator<IProps, IState> {
 
             return 'status-other';
         } else if (_isConnectionStatusInterrupted) {
-            return 'status-lost';
+            return 'status-low';
         } else if (typeof percent === 'undefined') {
             return 'status-high';
         }
@@ -311,9 +304,9 @@ class ConnectionIndicator extends AbstractConnectionIndicator<IProps, IState> {
         const classes = withStyles.getClasses(this.props);
 
         return this.state.showIndicator
-            || this.props.alwaysVisible
-            || _isConnectionStatusInterrupted
-            || _isConnectionStatusInactive
+        || this.props.alwaysVisible
+        || _isConnectionStatusInterrupted
+        || _isConnectionStatusInactive
             ? '' : classes.hidden;
     }
 
@@ -357,14 +350,14 @@ class ConnectionIndicator extends AbstractConnectionIndicator<IProps, IState> {
         return (
             <div
                 style = {{ fontSize: iconSize }}>
-                <span className = 'sr-only'>{ t('videothumbnail.connectionInfo') }</span>
+                <span className = 'sr-only'>{t('videothumbnail.connectionInfo')}</span>
                 <ConnectionIndicatorIcon
-                    classes = { classes }
-                    colorClass = { this._getConnectionColorClass() }
-                    connectionIndicatorInactiveDisabled = { _connectionIndicatorInactiveDisabled }
-                    isConnectionStatusInactive = { _isConnectionStatusInactive }
-                    isConnectionStatusInterrupted = { _isConnectionStatusInterrupted }
-                    track = { _videoTrack } />
+                    classes = {classes}
+                    colorClass = {this._getConnectionColorClass()}
+                    connectionIndicatorInactiveDisabled = {_connectionIndicatorInactiveDisabled}
+                    isConnectionStatusInactive = {_isConnectionStatusInactive}
+                    isConnectionStatusInterrupted = {_isConnectionStatusInterrupted}
+                    track = {_videoTrack} />
             </div>
         );
     }

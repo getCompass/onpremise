@@ -76,6 +76,11 @@ interface IProps {
      * Additional styles.
      */
     styles?: Object;
+
+    /**
+     * Whether or not the button is hovered.
+     */
+    hovered?: boolean;
 }
 
 /**
@@ -99,7 +104,8 @@ export default function ToolboxButtonWithIcon(props: IProps) {
         ariaHasPopup,
         ariaControls,
         ariaExpanded,
-        iconId
+        iconId,
+        hovered
     } = props;
 
     const iconProps: {
@@ -144,18 +150,15 @@ export default function ToolboxButtonWithIcon(props: IProps) {
             style = { styles }>
             {children}
 
-            <div>
-                <Tooltip
-                    containerClassName = { className }
-                    content = { iconTooltip }
-                    position = 'top'>
+            <div className={`opacity-with-animation-200ms${hovered ? ' visible' : ''}`}>
+                <div className='toolbox-button-with-icon'>
                     <Icon
                         { ...iconProps }
                         ariaHasPopup = { ariaHasPopup }
                         ariaLabel = { ariaLabel }
-                        size = { 16 }
+                        size = { 10 }
                         src = { icon } />
-                </Tooltip>
+                </div>
             </div>
         </div>
     );

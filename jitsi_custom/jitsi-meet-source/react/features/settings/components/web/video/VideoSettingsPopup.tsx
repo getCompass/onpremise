@@ -21,9 +21,11 @@ import VideoSettingsContent from './VideoSettingsContent';
 interface IProps {
 
     /**
-    * Component children (the Video button).
-    */
+     * Component children (the Video button).
+     */
     children: ReactNode;
+
+    className?: string;
 
     /**
      * The deviceId of the camera device currently being used.
@@ -31,13 +33,13 @@ interface IProps {
     currentCameraDeviceId: string;
 
     /**
-    * Flag controlling the visibility of the popup.
-    */
+     * Flag controlling the visibility of the popup.
+     */
     isOpen: boolean;
 
     /**
-    * Callback executed when the popup closes.
-    */
+     * Callback executed when the popup closes.
+     */
     onClose: Function;
 
     /**
@@ -77,25 +79,26 @@ function VideoSettingsPopup({
     onClose,
     popupPlacement,
     setVideoInputDevice,
-    videoDeviceIds
+    videoDeviceIds,
+    className
 }: IProps) {
     const { classes, cx } = useStyles();
 
     return (
-        <div className = { cx('video-preview', classes.container) }>
+        <div className = {cx('video-preview', classes.container, className ?? '')}>
             <Popover
-                allowClick = { true }
-                content = { <VideoSettingsContent
-                    currentCameraDeviceId = { currentCameraDeviceId }
-                    setVideoInputDevice = { setVideoInputDevice }
-                    toggleVideoSettings = { onClose }
-                    videoDeviceIds = { videoDeviceIds } /> }
+                allowClick = {true}
+                content = {<VideoSettingsContent
+                    currentCameraDeviceId = {currentCameraDeviceId}
+                    setVideoInputDevice = {setVideoInputDevice}
+                    toggleVideoSettings = {onClose}
+                    videoDeviceIds = {videoDeviceIds} />}
                 headingId = 'video-settings-button'
-                onPopoverClose = { onClose }
-                position = { popupPlacement }
+                onPopoverClose = {onClose}
+                position = {popupPlacement}
                 trigger = 'click'
-                visible = { isOpen }>
-                { children }
+                visible = {isOpen}>
+                {children}
             </Popover>
         </div>
     );

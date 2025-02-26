@@ -16,7 +16,6 @@ set_time_limit(0);
 class Domino_CreateTeam {
 
 	protected const _INITIAL_TARIFF_MEMBER_LIMIT  = 1000;
-	protected const _INITIAL_TARIFF_DAYS_DURATION = 365;
 
 	protected string $_company_name;
 
@@ -52,8 +51,13 @@ class Domino_CreateTeam {
 				generateUUID(),
 				false);
 
-			// устанавливаем стартовый тарифный план
-			$alteration = Domain_SpaceTariff_Plan_MemberCount_Product_ActivateDefault::makeAlteration(self::_INITIAL_TARIFF_MEMBER_LIMIT, self::_INITIAL_TARIFF_DAYS_DURATION);
+            // создаем альтерацию с бесконечным сроком действия
+            $alteration = \Tariff\Plan\MemberCount\Alteration::make()
+			->setMemberCount(self::_INITIAL_TARIFF_MEMBER_LIMIT)
+			->setActions(\Tariff\Plan\BaseAlteration::PROLONG, \Tariff\Plan\BaseAlteration::CHANGE, \Tariff\Plan\BaseAlteration::ACTIVATE)
+			->setProlongation(\Tariff\Plan\BaseAlteration::PROLONGATION_RULE_INFINITE)
+			->setAvailability(new \Tariff\Plan\AlterationAvailability(\Tariff\Plan\AlterationAvailability::AVAILABLE_REASON_REQUIRED));
+			
 			Domain_SpaceTariff_Action_AlterMemberCount::run($user_id, $company->company_id, \Tariff\Plan\BaseAction::METHOD_FORCE, $alteration);
 		} catch (\paramException) {
 

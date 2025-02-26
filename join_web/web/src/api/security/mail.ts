@@ -1,6 +1,10 @@
 import { useGetResponse } from "../_index.ts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { APIAuthInfo, APIJoinLinkInfo } from "../_types.ts";
+import {
+	APIAuthInfo,
+	APIJoinLinkInfo,
+	ONPREMISE_EMAIL_LOGIN_TYPE,
+} from "../_types.ts";
 import { useNavigateDialog, useNavigatePage } from "../../components/hooks.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
 import {useAtomValue, useSetAtom} from "jotai/index";
@@ -11,6 +15,7 @@ import {
 	firstAuthState,
 	isPasswordChangedState,
 	passwordInputState,
+	deviceLoginTypeState,
 } from "../_stores.ts";
 
 export type ApiSecurityMailTryResetPasswordArgs = {
@@ -113,6 +118,7 @@ export function useApiSecurityMailFinishResetPassword() {
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
 	const captchaProvider = useAtomValue(captchaProviderState);
+	const setDeviceLoginType = useSetAtom(deviceLoginTypeState);
 
 	return useMutation({
 		retry: false,
@@ -143,6 +149,7 @@ export function useApiSecurityMailFinishResetPassword() {
 			setPasswordInput("");
 			setConfirmPassword("");
 			setIsPasswordChanged(true);
+			setDeviceLoginType(ONPREMISE_EMAIL_LOGIN_TYPE);
 			if (response.need_fill_profile === 1) {
 				navigateToDialog("auth_create_profile");
 			} else {

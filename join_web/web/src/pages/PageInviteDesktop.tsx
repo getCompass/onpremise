@@ -2,7 +2,7 @@ import { Box, Center, HStack, styled, VStack } from "../../styled-system/jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
-	authenticationTokenTimeLeft,
+	authenticationTokenTimeLeftState,
 	authInputState,
 	authState,
 	confirmPasswordState, downloadAppUrlState,
@@ -11,6 +11,7 @@ import {
 	nameInputState,
 	passwordInputState,
 	prepareJoinLinkErrorState,
+	deviceLoginTypeState,
 	useToastConfig,
 } from "../api/_stores.ts";
 import { Text } from "../components/text.tsx";
@@ -274,7 +275,7 @@ const StepOneContent = ({
 	const tokenBoxRef = useRef<HTMLDivElement>(null);
 	const joinLink = useAtomValue(joinLinkState);
 	const prepareJoinLinkError = useAtomValue(prepareJoinLinkErrorState);
-	const timeLeft = useAtomValue(authenticationTokenTimeLeft);
+	const timeLeft = useAtomValue(authenticationTokenTimeLeftState);
 	const isAuthenticationTokenExpired = useMemo(() => timeLeft <= 0, [timeLeft]);
 
 	const onClickHandler = () => {
@@ -307,6 +308,7 @@ const StepOneContent = ({
 	};
 
 	const apiAuthGenerateToken = useApiAuthGenerateToken();
+	const loginType = useAtomValue(deviceLoginTypeState);
 
 	useEffect(() => {
 		let join_link_uniq = joinLink === null ? undefined : joinLink.join_link_uniq;
@@ -320,7 +322,10 @@ const StepOneContent = ({
 
 			join_link_uniq = prepareJoinLinkErrorData.join_link_uniq;
 		}
-		apiAuthGenerateToken.mutate({ join_link_uniq: join_link_uniq });
+		apiAuthGenerateToken.mutate({
+			join_link_uniq: join_link_uniq,
+			login_type: loginType === 0 ? undefined : loginType
+		});
 	}, []);
 
 	return (

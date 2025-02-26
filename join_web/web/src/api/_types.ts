@@ -193,3 +193,8 @@ export type APIResponse<T> = {
 	response: T;
 	status: "ok" | "error";
 };
+
+export const ONPREMISE_SMS_LOGIN_TYPE = 100;
+export const ONPREMISE_EMAIL_LOGIN_TYPE = 101;
+export const ONPREMISE_LDAP_LOGIN_TYPE = 102;
+export const ONPREMISE_SSO_LOGIN_TYPE = 103;

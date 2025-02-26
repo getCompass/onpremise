@@ -6,7 +6,7 @@ import {Text} from "./text.tsx";
 import {HStack} from "../../styled-system/jsx";
 import {ApiAuthGenerateToken, ApiAuthGenerateTokenAcceptArgs} from "../api/auth.ts";
 import {useAtom, useAtomValue} from "jotai/index";
-import {authenticationTokenTimeLeft, joinLinkState} from "../api/_stores.ts";
+import {authenticationTokenTimeLeftState, deviceLoginTypeState, joinLinkState} from "../api/_stores.ts";
 import {UseMutationResult} from "@tanstack/react-query";
 import {plural} from "../lib/plural.ts";
 import useIsMobile from "../lib/useIsMobile.ts";
@@ -31,9 +31,10 @@ export const DynamicTimerAuthenticationToken = ({apiAuthGenerateToken}: DynamicT
 	const [expiresAt, setExpiresAt] = useState(
 		apiAuthGenerateToken.data !== undefined ? apiAuthGenerateToken.data.expires_at : 0
 	);
-	const [timeLeft, setTimeLeft] = useAtom(authenticationTokenTimeLeft);
+	const [timeLeft, setTimeLeft] = useAtom(authenticationTokenTimeLeftState);
 	const minutes = useMemo(() => Math.ceil(timeLeft / 60), [timeLeft]);
 	const joinLink = useAtomValue(joinLinkState);
+	const loginType = useAtomValue(deviceLoginTypeState);
 
 	// обновляем таймер, когда пользователь вернулся на страницу
 	// нужно для того, чтобы правильно обновить таймер при выходе из бэкграунда мобильных устройств
@@ -54,6 +55,7 @@ export const DynamicTimerAuthenticationToken = ({apiAuthGenerateToken}: DynamicT
 	const onRefreshClickHandler = useCallback(async () => {
 		const response = await apiAuthGenerateToken.mutateAsync({
 			join_link_uniq: joinLink === null ? undefined : joinLink.join_link_uniq,
+			login_type: loginType === 0 ? undefined : loginType
 		});
 		setExpiresAt(response.expires_at);
 	}, [joinLink]);

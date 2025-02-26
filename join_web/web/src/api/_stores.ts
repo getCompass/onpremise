@@ -50,7 +50,23 @@ export const firstAuthState = atom(false);
 export const loadingState = atom(true);
 
 export const langState = atom<Lang>("ru");
-export const authenticationTokenTimeLeft = atom(0);
+export const authenticationTokenTimeLeftState = atom(0);
+export const authenticationSessionTimeLeftState = atomWithStorage<number | null>(
+	"authentication_web_session_time_left",
+	JSON.parse(localStorage.getItem("authentication_web_session_time_left") ?? 'null')
+);
+
+// константа времени истечения когда страница считается переоткрытой
+// чтобы сбросить сессию в случае если страницу долго не открывали
+export const pageReopenExpiredAtState = atomWithStorage<number>(
+	"page_reopen_expired_at",
+	JSON.parse(localStorage.getItem("page_reopen_expired_at") ?? '0')
+);
+
+export const deviceLoginTypeState = atomWithStorage<number>(
+	"device_login_type",
+	JSON.parse(localStorage.getItem("device_login_type") ?? '0')
+);
 
 export const toastConfigState = atomWithImmer<{
 	[dialogId: string]: {

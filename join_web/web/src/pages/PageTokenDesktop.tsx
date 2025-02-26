@@ -17,7 +17,7 @@ import {
 } from "../components/menu.tsx";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
-	authenticationTokenTimeLeft,
+	authenticationTokenTimeLeftState,
 	authInputState,
 	authState,
 	confirmPasswordState, downloadAppUrlState,
@@ -27,6 +27,7 @@ import {
 	nameInputState,
 	passwordInputState,
 	prepareJoinLinkErrorState,
+	deviceLoginTypeState,
 	useToastConfig,
 } from "../api/_stores.ts";
 import { css } from "../../styled-system/css";
@@ -340,8 +341,10 @@ const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneCo
 	const tokenBoxRef = useRef<HTMLDivElement>(null);
 	const joinLink = useAtomValue(joinLinkState);
 	const isRegistration = useAtomValue(isRegistrationState);
-	const timeLeft = useAtomValue(authenticationTokenTimeLeft);
+	const timeLeft = useAtomValue(authenticationTokenTimeLeftState);
 	const isAuthenticationTokenExpired = useMemo(() => timeLeft <= 0, [timeLeft]);
+
+	const loginType = useAtomValue(deviceLoginTypeState);
 
 	const apiAuthGenerateToken = useApiAuthGenerateToken();
 
@@ -362,7 +365,10 @@ const StepOneContent = ({ scrollableParentBlockRef, parentButtonRef }: StepOneCo
 	};
 
 	useEffect(() => {
-		apiAuthGenerateToken.mutate({ join_link_uniq: joinLink === null ? undefined : joinLink.join_link_uniq });
+		apiAuthGenerateToken.mutate({
+			join_link_uniq: joinLink === null ? undefined : joinLink.join_link_uniq,
+			login_type: loginType === 0 ? undefined : loginType
+		});
 	}, []);
 
 	return (

@@ -1,8 +1,19 @@
 import {useGetResponse} from "../_index.ts";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {APIAuthInfo, APIJoinLinkInfo} from "../_types.ts";
+import {
+	APIAuthInfo,
+	APIJoinLinkInfo,
+	ONPREMISE_SMS_LOGIN_TYPE
+} from "../_types.ts";
 import {useSetAtom} from "jotai";
-import {authInputState, authState, captchaProviderState, firstAuthState} from "../_stores.ts";
+import {
+	authenticationSessionTimeLeftState,
+	authInputState,
+	authState,
+	captchaProviderState,
+	firstAuthState,
+	deviceLoginTypeState,
+} from "../_stores.ts";
 import {useNavigateDialog, useNavigatePage} from "../../components/hooks.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
 import {useAtomValue} from "jotai/index";
@@ -70,6 +81,8 @@ export function useApiAuthPhoneNumberConfirm() {
 	const queryClient = useQueryClient();
 	const {navigateToDialog} = useNavigateDialog();
 	const {navigateToPage} = useNavigatePage();
+	const setSessionTimeLeft = useSetAtom(authenticationSessionTimeLeftState);
+	const setDeviceLoginType = useSetAtom(deviceLoginTypeState);
 
 	return useMutation({
 
@@ -100,6 +113,8 @@ export function useApiAuthPhoneNumberConfirm() {
 
 			setAuth(null);
 			setAuthInput("");
+			setSessionTimeLeft(60 * 15);
+			setDeviceLoginType(ONPREMISE_SMS_LOGIN_TYPE);
 			if (response.need_fill_profile === 1) {
 				navigateToDialog("auth_create_profile");
 			} else {

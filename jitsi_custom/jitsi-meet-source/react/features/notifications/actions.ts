@@ -169,6 +169,22 @@ export function showWarningNotification(props: INotificationProps, type?: string
     }, type);
 }
 
+
+/**
+ * Queues a warning notification for display.
+ *
+ * @param {Object} props - The props needed to show the notification component.
+ * @param {string} type - Notification type.
+ * @returns {Object}
+ */
+export function showCautioningNotification(props: INotificationProps, type?: string) {
+    return showNotification({
+        ...props,
+        icon: NOTIFICATION_ICON.WARNING
+    }, type);
+}
+
+
 /**
  * Queues a message notification for display.
  *

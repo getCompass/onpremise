@@ -26,7 +26,8 @@ import {
     RAISE_HAND_UPDATED,
     SCREENSHARE_PARTICIPANT_NAME_CHANGED,
     SET_LOADABLE_AVATAR_URL,
-    SET_LOCAL_PARTICIPANT_RECORDING_STATUS
+    SET_LOCAL_PARTICIPANT_RECORDING_STATUS,
+    UPDATE_PARTICIPANT_LIST_JOINED_AT
 } from './actionTypes';
 import {
     DISCO_REMOTE_CONTROL_FEATURE
@@ -62,7 +63,7 @@ import { FakeParticipant, IJitsiParticipant, IParticipant } from './types';
  * }}
  */
 export function dominantSpeakerChanged(
-        dominantSpeaker: string, previousSpeakers: string[], silence: boolean, conference: IJitsiConference) {
+    dominantSpeaker: string, previousSpeakers: string[], silence: boolean, conference: IJitsiConference) {
     return {
         type: DOMINANT_SPEAKER_CHANGED,
         participant: {
@@ -247,7 +248,7 @@ export function participantJoined(participant: IParticipant) {
             = getState()['features/base/conference'];
 
         if (conference === stateFeaturesBaseConference.conference
-                || conference === stateFeaturesBaseConference.joining) {
+            || conference === stateFeaturesBaseConference.joining) {
             return dispatch({
                 type: PARTICIPANT_JOINED,
                 participant
@@ -294,10 +295,10 @@ export function participantSourcesUpdated(jitsiParticipant: IJitsiParticipant) {
  *
  * @param {JitsiParticipant} jitsiParticipant - The ID of the participant.
  * @returns {{
-*     type: PARTICIPANT_UPDATED,
-*     participant: IParticipant
-* }}
-*/
+ *     type: PARTICIPANT_UPDATED,
+ *     participant: IParticipant
+ * }}
+ */
 export function updateRemoteParticipantFeatures(jitsiParticipant: any) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         if (!jitsiParticipant) {
@@ -606,7 +607,7 @@ export function pinParticipant(id?: string | null) {
  *         loadableAvatarUrlUseCORS: boolean
  *     }
  * }}
-*/
+ */
 export function setLoadableAvatarUrl(participantId: string, url: string, useCORS: boolean) {
     return {
         type: SET_LOADABLE_AVATAR_URL,
@@ -638,9 +639,9 @@ export function raiseHand(enabled: boolean) {
  * Clear the raise hand queue.
  *
  * @returns {{
-*     type: RAISE_HAND_CLEAR
-* }}
-*/
+ *     type: RAISE_HAND_CLEAR
+ * }}
+ */
 export function raiseHandClear() {
     return {
         type: RAISE_HAND_CLEAR
@@ -722,5 +723,18 @@ export function updateLocalRecordingStatus(recording: boolean, onlySelf?: boolea
         type: SET_LOCAL_PARTICIPANT_RECORDING_STATUS,
         recording,
         onlySelf
+    };
+}
+
+/**
+ * Overwrites the joined_at of the given participants.
+ *
+ * @returns {Object}
+ * @param joinedAtList
+ */
+export function updateParticipantListJoinedAt(joinedAtList: { participantId: string, joinedAt: number }[]) {
+    return {
+        type: UPDATE_PARTICIPANT_LIST_JOINED_AT,
+        joinedAtList
     };
 }

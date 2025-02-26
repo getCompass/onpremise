@@ -182,5 +182,8 @@ class Domain_Jitsi_Scenario_Api_Permanent {
 
 		// удаляем постоянную комнату из списка у пользователя
 		Domain_Jitsi_Entity_PermanentConference::remove($conference_id);
+
+		// убираем активную конференцию для всех участников, чтобы ни у кого не повисла активная конференция
+		Domain_Jitsi_Entity_UserActiveConference::onConferenceFinished($conference_id);
 	}
 }

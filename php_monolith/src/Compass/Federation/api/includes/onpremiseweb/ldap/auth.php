@@ -5,6 +5,7 @@ namespace Compass\Federation;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CaseException;
+use BaseFrame\Exception\Request\ParamException;
 
 /**
  * Методы аутентификации по протоколу LDAP
@@ -29,9 +30,12 @@ class Onpremiseweb_Ldap_Auth extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * метод для попытки аутентификации по протоколу LDAP
+	 * Метод для попытки аутентификации по протоколу LDAP
 	 *
-	 * @return array
+	 * @throws CaseException
+	 * @throws ParseFatalException
+	 * @throws ParamException
+	 * @throws \queryException
 	 */
 	public function tryAuthenticate():array {
 

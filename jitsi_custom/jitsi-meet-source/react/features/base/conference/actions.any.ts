@@ -69,7 +69,8 @@ import {
     SET_ROOM,
     SET_START_MUTED_POLICY,
     SET_START_REACTIONS_MUTED,
-    UPDATE_CONFERENCE_METADATA
+    UPDATE_CONFERENCE_METADATA,
+    CONFERENCE_LOCAL_JOIN_TIMESTAMP_CHANGED
 } from './actionTypes';
 import { setupVisitorStartupMedia } from './actions';
 import {
@@ -120,7 +121,10 @@ function _addConferenceListeners(conference: IJitsiConference, dispatch: IStore[
         (err: string, ...args: any[]) => dispatch(conferenceFailed(conference, err, ...args)));
     conference.on(
         JitsiConferenceEvents.CONFERENCE_JOINED,
-        (..._args: any[]) => dispatch(conferenceJoined(conference)));
+        (..._args: any[]) => {
+            dispatch(conferenceJoined(conference))
+            dispatch(conferenceLocalJoinTimestampChanged(new Date().getTime()))
+        });
     conference.on(
         JitsiConferenceEvents.CONFERENCE_UNIQUE_ID_SET,
         (..._args: any[]) => dispatch(conferenceUniqueIdSet(conference)));
@@ -131,6 +135,7 @@ function _addConferenceListeners(conference: IJitsiConference, dispatch: IStore[
         JitsiConferenceEvents.CONFERENCE_LEFT,
         (..._args: any[]) => {
             dispatch(conferenceTimestampChanged(0));
+            dispatch(conferenceLocalJoinTimestampChanged(0));
             dispatch(conferenceLeft(conference));
         });
     conference.on(JitsiConferenceEvents.SUBJECT_CHANGED,
@@ -467,6 +472,22 @@ export function conferenceTimestampChanged(conferenceTimestamp: number) {
     return {
         type: CONFERENCE_TIMESTAMP_CHANGED,
         conferenceTimestamp
+    };
+}
+
+/**
+ * Signals that the conference timestamp has been changed.
+ *
+ * @param {number} conferenceLocalJoinTimestamp - The UTC timestamp.
+ * @returns {{
+ *       type: CONFERENCE_LOCAL_JOIN_TIMESTAMP_CHANGED,
+ *       conferenceTimestamp
+ * }}
+ */
+export function conferenceLocalJoinTimestampChanged(conferenceLocalJoinTimestamp: number) {
+    return {
+        type: CONFERENCE_LOCAL_JOIN_TIMESTAMP_CHANGED,
+        conferenceLocalJoinTimestamp
     };
 }
 

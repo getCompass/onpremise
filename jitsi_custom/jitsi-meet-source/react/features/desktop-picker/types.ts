@@ -3,5 +3,6 @@ export type ElectronWindowType = {
         obtainDesktopStreams: Function;
         stopObtainDesktopStreams: Function;
         isAudioScreenSharingSupported: Function;
+        isScreenSharingSupported: Function;
     } ;
 } & typeof window;

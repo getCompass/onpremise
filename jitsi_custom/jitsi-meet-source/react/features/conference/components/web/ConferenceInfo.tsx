@@ -9,6 +9,7 @@ import { isToolboxVisible } from '../../../toolbox/functions.web';
 import { getConferenceInfo } from '../functions.web';
 
 import ConferenceInfoContainer from './ConferenceInfoContainer';
+import ParticipantsRecordingLabel from "../../../recording/components/web/ParticipantsRecordingLabel";
 
 /**
  * The type of the React {@code Component} props of {@link Subject}.
@@ -41,6 +42,7 @@ const COMPONENTS: Array<{
     {
         Component: () => (
             <>
+                <ParticipantsRecordingLabel />
                 <RecordingLabel mode = {JitsiRecordingConstants.mode.FILE} />
                 <RecordingLabel mode = {JitsiRecordingConstants.mode.STREAM} />
             </>

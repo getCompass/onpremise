@@ -201,10 +201,12 @@ const Dialog = ({
                 <div
                     className = {cx(classes.footer, classNameFooter)}
                     data-autofocus-inside = 'true'>
-                    {<div className = {classes.footerLeftButtonBlock}>
-                        {popoverButton && popoverButton}
-                        {customButton && customButton}
-                    </div>}
+                    {(popoverButton || customButton) && (
+                        <div className = {classes.footerLeftButtonBlock}>
+                            {popoverButton && popoverButton}
+                            {customButton && customButton}
+                        </div>
+                    )}
                     {!back.hidden && <Button
                         accessibilityLabel = {t(back.translationKey ?? '')}
                         labelKey = {back.translationKey}
@@ -222,7 +224,7 @@ const Dialog = ({
                         id = 'modal-dialog-ok-button'
                         isSubmit = {true}
                         labelKey = {ok.translationKey}
-                        className={okButtonClassName}
+                        className = {okButtonClassName}
                         {...(!ok.disabled && { onClick: submit })} />}
                 </div>
             )}

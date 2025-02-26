@@ -122,26 +122,46 @@ const NotificationsContainer = ({
     return (
         <>
             {(isMobile && _notifications.length > 0) && (
-                <div className = {cx(classes.backgroundContainer, isMobile && 'is-mobile')}>
-                    <div className = {cx(classes.background1, isMobile && 'is-mobile')} />
-                    <div className = {cx(classes.background2, isMobile && 'is-mobile')} />
-                    <div className = {cx(classes.background3, isMobile && 'is-mobile')} />
-                    <div className = {cx(classes.background4, isMobile && 'is-mobile')} />
+                <div className = {classes.backgroundContainer}>
+                    <div className = {classes.background1} />
+                    <div className = {classes.background2} />
+                    <div className = {classes.background3} />
+                    <div className = {classes.background4} />
                 </div>
             )}
             <div
-                className = {cx(classes.container, isMobile && 'is-mobile', {
+                className = {cx(classes.container, {
                     [classes.containerPortal]: portal
                 })}
                 id = 'notifications-container'>
                 <NotificationsTransition>
-                    {_notifications.map(({ props, uid }) => (
-                        <Notification
-                            {...props}
-                            key = {uid}
-                            onDismissed = {_onDismissed}
-                            uid = {uid} />
-                    )) || null}
+                    {
+                        _notifications.map(({ props, uid }, index) => {
+                            // для последних 5 показываем обычное уведомление
+                            if (index < 5) {
+                                return (
+                                    <Notification
+                                        key = {uid}
+                                        {...props}
+                                        onDismissed = {_onDismissed}
+                                        uid = {uid}
+                                    />
+                                );
+                            }
+
+                            // для всех остальных сразу вызываем _onDismissed и тоже «рисуем»,
+                            // но они тут же пропадут
+                            _onDismissed(uid);
+                            return (
+                                <Notification
+                                    key = {uid}
+                                    {...props}
+                                    onDismissed = {_onDismissed}
+                                    uid = {uid}
+                                />
+                            );
+                        }) || null
+                    }
                 </NotificationsTransition>
             </div>
         </>

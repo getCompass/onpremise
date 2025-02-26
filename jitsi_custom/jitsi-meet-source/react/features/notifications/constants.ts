@@ -53,7 +53,9 @@ export const NOTIFICATION_ICON = {
     PARTICIPANT: 'participant',
     PARTICIPANTS: 'participants',
     POLL: 'poll',
+    RECORDING: 'recording',
     SCREENSHARE: 'screenshare',
+    WARNING: 'warning',
 };
 
 /**

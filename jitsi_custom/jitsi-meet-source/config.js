@@ -725,7 +725,7 @@ var config = {
     // defaultLocalDisplayName: 'me',
 
     // Default remote name to be displayed
-    // defaultRemoteDisplayName: 'Fellow Jitster',
+    // defaultRemoteDisplayName: 'Покинул конференцию',
 
     // Hides the display name from the participant thumbnail
     // hideDisplayName: false,

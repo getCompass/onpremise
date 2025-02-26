@@ -10,15 +10,8 @@ import {
 import { getCurrentConference } from '../base/conference/functions';
 import { IJitsiConference } from '../base/conference/reducer';
 import i18next from '../base/i18n/i18next';
-import {
-    JitsiConferenceErrors,
-    JitsiConferenceEvents
-} from '../base/lib-jitsi-meet';
-import {
-    getLocalParticipant,
-    getParticipantById,
-    getParticipantDisplayName
-} from '../base/participants/functions';
+import { JitsiConferenceErrors, JitsiConferenceEvents } from '../base/lib-jitsi-meet';
+import { getLocalParticipant, getParticipantById, getParticipantDisplayName } from '../base/participants/functions';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import { playSound, registerSound, unregisterSound } from '../base/sounds/actions';
@@ -42,7 +35,6 @@ import {
     SET_IS_POLL_TAB_FOCUSED
 } from './actionTypes';
 import { addMessage, addMessageReaction, clearMessages, closeChat } from './actions.any';
-import { ChatPrivacyDialog } from './components';
 import {
     INCOMING_MSG_SOUND_ID,
     LOBBY_CHAT_MESSAGE,
@@ -53,7 +45,6 @@ import {
 } from './constants';
 import { getUnreadCount } from './functions';
 import { INCOMING_MSG_SOUND_FILE } from './sounds';
-import { COMMAND_QUALITY_LEVEL } from "../quality-control/constants";
 
 /**
  * Timeout for when to show the privacy notice after a private message was received.
@@ -91,7 +82,7 @@ MiddlewareRegistry.register(store => next => action => {
 
     case APP_WILL_MOUNT:
         dispatch(
-                registerSound(INCOMING_MSG_SOUND_ID, INCOMING_MSG_SOUND_FILE));
+            registerSound(INCOMING_MSG_SOUND_ID, INCOMING_MSG_SOUND_FILE));
         break;
 
     case APP_WILL_UNMOUNT:
@@ -277,8 +268,8 @@ function _addChatMsgListener(conference: IJitsiConference, store: IStore) {
         JitsiConferenceEvents.MESSAGE_RECEIVED,
         /* eslint-disable max-params */
         (participantId: string, message: string, timestamp: number,
-                displayName: string, isGuest: boolean, messageId: string) => {
-        /* eslint-enable max-params */
+            displayName: string, isGuest: boolean, messageId: string) => {
+            /* eslint-enable max-params */
             _onConferenceMessageReceived(store, {
                 // in case of messages coming from visitors we can have unknown id
                 participantId: participantId || displayName,
@@ -287,7 +278,8 @@ function _addChatMsgListener(conference: IJitsiConference, store: IStore) {
                 displayName,
                 isGuest,
                 messageId,
-                privateMessage: false });
+                privateMessage: false
+            });
         }
     );
 
@@ -329,19 +321,20 @@ function _addChatMsgListener(conference: IJitsiConference, store: IStore) {
  * @returns {void}
  */
 function _onConferenceMessageReceived(store: IStore,
-        { displayName, isGuest, message, messageId, participantId, privateMessage, timestamp }: {
+    { displayName, isGuest, message, messageId, participantId, privateMessage, timestamp }: {
         displayName?: string; isGuest?: boolean; message: string; messageId?: string;
-        participantId: string; privateMessage: boolean; timestamp: number; }
+        participantId: string; privateMessage: boolean; timestamp: number;
+    }
 ) {
 
     try {
         const jsonMessage = JSON.parse(message);
 
-        // не отправляем сообщения в чат об изменении качества видео
-        if (jsonMessage?.type === COMMAND_QUALITY_LEVEL) {
+        // не отправляем сообщения в чат о системных событиях
+        if ('type' in jsonMessage) {
             return;
         }
-    } catch(e) {
+    } catch (e) {
         // если не смогли спарсить - значит обычное сообщение, ничего не делаем
     }
 
@@ -375,7 +368,8 @@ function _onConferenceMessageReceived(store: IStore,
  * @returns {void}
  */
 function _onReactionReceived(store: IStore, { participantId, reactionList, messageId }: {
-    messageId: string; participantId: string; reactionList: string[]; }) {
+    messageId: string; participantId: string; reactionList: string[];
+}) {
 
     const reactionPayload = {
         participantId,
@@ -426,12 +420,16 @@ function _handleChatError({ dispatch }: IStore, error: Error) {
  */
 export function handleLobbyMessageReceived(message: string, participantId: string) {
     return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        _handleReceivedMessage({ dispatch,
-            getState }, { participantId,
+        _handleReceivedMessage({
+            dispatch,
+            getState
+        }, {
+            participantId,
             message,
             privateMessage: false,
             lobbyChat: true,
-            timestamp: Date.now() });
+            timestamp: Date.now()
+        });
     };
 }
 
@@ -470,11 +468,12 @@ function getLobbyChatDisplayName(state: IReduxState, participantId: string) {
  * @returns {void}
  */
 function _handleReceivedMessage({ dispatch, getState }: IStore,
-        { displayName, isGuest, lobbyChat, message, messageId, participantId, privateMessage, timestamp }: {
+    { displayName, isGuest, lobbyChat, message, messageId, participantId, privateMessage, timestamp }: {
         displayName?: string; isGuest?: boolean; lobbyChat: boolean; message: string;
-        messageId?: string; participantId: string; privateMessage: boolean; timestamp: number; },
-        shouldPlaySound = true,
-        isReaction = false
+        messageId?: string; participantId: string; privateMessage: boolean; timestamp: number;
+    },
+    shouldPlaySound = true,
+    isReaction = false
 ) {
     // Logic for all platforms:
     const state = getState();
@@ -554,7 +553,7 @@ function _handleReceivedMessage({ dispatch, getState }: IStore,
  * @returns {void}
  */
 function _persistSentPrivateMessage({ dispatch, getState }: IStore, recipientID: string,
-        message: string, isLobbyPrivateMessage = false) {
+    message: string, isLobbyPrivateMessage = false) {
     const state = getState();
     const localParticipant = getLocalParticipant(state);
 

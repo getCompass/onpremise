@@ -13,6 +13,7 @@ import { assign, set } from '../redux/functions';
 import {
     AUTH_STATUS_CHANGED,
     CONFERENCE_FAILED,
+    CONFERENCE_LOCAL_JOIN_TIMESTAMP_CHANGED,
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
     CONFERENCE_LOCAL_SUBJECT_CHANGED,
@@ -158,6 +159,7 @@ export interface IConferenceState {
     authRequired?: IJitsiConference;
     conference?: IJitsiConference;
     conferenceTimestamp?: number;
+    conferenceLocalJoinTimestamp?: number;
     dataChannelOpen?: boolean;
     e2eeSupported?: boolean;
     error?: Error;
@@ -222,6 +224,9 @@ ReducerRegistry.register<IConferenceState>('features/base/conference',
 
         case CONFERENCE_TIMESTAMP_CHANGED:
             return set(state, 'conferenceTimestamp', action.conferenceTimestamp);
+
+        case CONFERENCE_LOCAL_JOIN_TIMESTAMP_CHANGED:
+                return set(state, 'conferenceLocalJoinTimestamp', action.conferenceLocalJoinTimestamp);
 
         case CONFERENCE_LEFT:
         case CONFERENCE_WILL_LEAVE:

@@ -1,6 +1,6 @@
 import { IReduxState, IStore } from '../app/types';
 import {
-    getActiveSpeakersToBeDisplayed, getLocalParticipant, getRaiseHandsQueue, getSortedModeratorList,
+    getActiveSpeakersToBeDisplayed, getLocalParticipant, getParticipantById, getRaiseHandsQueue, getSortedModeratorList,
     getVirtualScreenshareParticipantOwnerId
 } from '../base/participants/functions';
 
@@ -32,7 +32,12 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, raisedH
         fakeParticipants,
         sortedRemoteParticipants
     } = state['features/base/participants'];
-    const remoteParticipants = new Map(sortedRemoteParticipants);
+    const remoteParticipants = new Map(
+        Array.from(sortedRemoteParticipants.entries()).map(([id, name]) => {
+            const remoteParticipant = getParticipantById(state, id);
+            return [id, { name, joinedAt: remoteParticipant?.joinedAt || 9999999999 }];
+        })
+    );
     const localParticipant = getLocalParticipant(state);
     const screenShareParticipants = sortedRemoteVirtualScreenshareParticipants
         ? [ ...sortedRemoteVirtualScreenshareParticipants.keys() ] : [];
@@ -85,7 +90,7 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, raisedH
         remoteParticipants.delete(speaker);
     }
 
-    // Always update the order of the thumnails.
+    // Always update the order of the thumbnails.
     const participantsWithScreenShare = screenShareParticipants.reduce<string[]>((acc, screenshare) => {
         const ownerId = getVirtualScreenshareParticipantOwnerId(screenshare);
 
@@ -99,8 +104,10 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, raisedH
     // НЕ сортируем по id remoteRaisedHandParticipants, чтобы их порядок сохранился по очереди поднятия руки
     participantsWithScreenShare.sort((a, b) => a.localeCompare(b));
     sharedVideos.sort((a, b) => a.localeCompare(b));
-    const reorderedSpeakers = Array.from(speakers.keys()).sort((a, b) => a.localeCompare(b));
-    const reorderedRemoteParticipants = Array.from(remoteParticipants.keys()).sort((a, b) => a.localeCompare(b));
+    const reorderedSpeakers = Array.from(speakers.keys());
+    const reorderedRemoteParticipants = Array.from(remoteParticipants)
+        .sort(([, aData], [, bData]) => aData.joinedAt - bData.joinedAt) // Сортируем по joinedAt
+        .map(([id]) => id); // Преобразуем обратно в массив id
 
     reorderedParticipants = [
         ...Array.from(remoteRaisedHandParticipants.keys()),

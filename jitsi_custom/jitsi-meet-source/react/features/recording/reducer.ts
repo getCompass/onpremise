@@ -8,7 +8,7 @@ import {
     SET_SELECTED_RECORDING_SERVICE,
     SET_START_RECORDING_NOTIFICATION_SHOWN,
     SET_STREAM_KEY,
-    TOGGLE_ELECTRON_RECORDING,
+    TOGGLE_ELECTRON_RECORDING, USER_RECORDING_COUNT_UPDATES,
 } from './actionTypes';
 
 const DEFAULT_STATE = {
@@ -16,6 +16,8 @@ const DEFAULT_STATE = {
     pendingNotificationUids: {},
     selectedRecordingService: '',
     isStartRecording: false,
+    userRecordingCount: 0,
+    previousUserRecordingCount: 0,
     sessionDatas: [],
 };
 
@@ -40,6 +42,8 @@ export interface IRecordingState {
     streamKey?: string;
     wasStartRecordingSuggested?: boolean;
     isStartRecording: boolean;
+    userRecordingCount: number;
+    previousUserRecordingCount: number;
 }
 
 /**
@@ -106,6 +110,13 @@ ReducerRegistry.register<IRecordingState>(STORE_NAME, (state = DEFAULT_STATE, ac
             return {
                 ...state,
                 wasStartRecordingSuggested: true,
+            };
+
+        case USER_RECORDING_COUNT_UPDATES:
+            return {
+                ...state,
+                userRecordingCount: action.userRecordingCount,
+                previousUserRecordingCount: state.userRecordingCount,
             };
 
         default:

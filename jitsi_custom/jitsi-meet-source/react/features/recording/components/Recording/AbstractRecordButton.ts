@@ -33,6 +33,11 @@ export interface IProps extends AbstractButtonProps {
      * Whether or not the knocking lobby.
      */
     _lobbyKnocking?: boolean;
+
+    /**
+     * Whether or not the participant moderator.
+     */
+    _isModerator?: boolean;
 }
 
 /**

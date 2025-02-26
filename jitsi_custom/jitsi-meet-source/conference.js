@@ -14,21 +14,19 @@ import {
     createTrackMutedEvent
 } from './react/features/analytics/AnalyticsEvents';
 import { sendAnalytics } from './react/features/analytics/functions';
-import {
-    maybeRedirectToWelcomePage,
-    reloadWithStoredParams
-} from './react/features/app/actions';
+import { maybeRedirectToWelcomePage, reloadWithStoredParams } from './react/features/app/actions';
 import { showModeratedNotification } from './react/features/av-moderation/actions';
 import { shouldShowModeratedNotification } from './react/features/av-moderation/functions';
 import {
     _conferenceWillJoin,
     authStatusChanged,
     conferenceFailed,
-    conferenceJoinInProgress,
     conferenceJoined,
+    conferenceJoinInProgress,
     conferenceLeft,
     conferenceSubjectChanged,
     conferenceTimestampChanged,
+    conferenceLocalJoinTimestampChanged,
     conferenceUniqueIdSet,
     conferenceWillInit,
     conferenceWillLeave,
@@ -71,12 +69,12 @@ import {
     setAudioOutputDeviceId
 } from './react/features/base/devices/functions.web';
 import {
+    browser,
     JitsiConferenceErrors,
     JitsiConferenceEvents,
     JitsiE2ePingEvents,
     JitsiMediaDevicesEvents,
-    JitsiTrackEvents,
-    browser
+    JitsiTrackEvents
 } from './react/features/base/lib-jitsi-meet';
 import {
     gumPending,
@@ -137,7 +135,7 @@ import {
 } from './react/features/base/tracks/functions';
 import { downloadJSON } from './react/features/base/util/downloadJSON';
 import { openLeaveReasonDialog } from './react/features/conference/actions.web';
-import { showDesktopPicker, showConfirmDialog } from './react/features/desktop-picker/actions';
+import { showConfirmDialog, showDesktopPicker } from './react/features/desktop-picker/actions';
 import { appendSuffix } from './react/features/display-name/functions';
 import { maybeOpenFeedbackDialog, submitFeedback } from './react/features/feedback/actions';
 import { initKeyboardShortcuts } from './react/features/keyboard-shortcuts/actions';
@@ -167,7 +165,6 @@ import { handleToggleVideoMuted } from './react/features/toolbox/actions.any';
 import { muteLocal } from './react/features/video-menu/actions.any';
 import i18next from "./react/features/base/i18n/i18next";
 import { setTileView } from "./react/features/video-layout/actions.any";
-import { open as openParticipantsPane } from "./react/features/participants-pane/actions.web";
 import { isMobileBrowser } from "./react/features/base/environment/utils";
 
 const logger = Logger.getLogger(__filename);
@@ -1513,6 +1510,7 @@ export default {
         // add local streams when joined to the conference
         room.on(JitsiConferenceEvents.CONFERENCE_JOINED, () => {
             this._onConferenceJoined();
+            APP.store.dispatch(conferenceLocalJoinTimestampChanged(new Date().getTime()));
         });
         room.on(
             JitsiConferenceEvents.CONFERENCE_JOIN_IN_PROGRESS,
@@ -1522,6 +1520,7 @@ export default {
             JitsiConferenceEvents.CONFERENCE_LEFT,
             (...args) => {
                 APP.store.dispatch(conferenceTimestampChanged(0));
+                APP.store.dispatch(conferenceLocalJoinTimestampChanged(0));
                 APP.store.dispatch(conferenceLeft(room, ...args));
             });
 
@@ -1744,6 +1743,7 @@ export default {
         room.on(
             JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED,
             (participant, data) => {
+
                 APP.store.dispatch(endpointMessageReceived(participant, data));
                 if (data?.name === ENDPOINT_TEXT_MESSAGE_NAME) {
                     APP.API.notifyEndpointTextMessageReceived({

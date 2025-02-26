@@ -473,7 +473,7 @@ function _translateLegacyConfig(oldValue: IConfig) {
     }
 
     newValue.defaultRemoteDisplayName
-        = newValue.defaultRemoteDisplayName || 'Fellow Jitster';
+        = newValue.defaultRemoteDisplayName || 'Покинул конференцию';
 
     newValue.transcription = newValue.transcription || {};
     if (oldValue.transcribingEnabled !== undefined) {

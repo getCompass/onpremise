@@ -54,15 +54,34 @@ export function stopObtainDesktopSources() {
     }
 }
 
+let cacheAudioSharingSupport: undefined | boolean;
 export function isAudioScreenSharingSupported() {
     // @ts-ignore
     if (navigator.mediaDevices.getDisplayMedia) {
         const { JitsiMeetElectron } = window as ElectronWindowType;
         if (JitsiMeetElectron) {
-            return JitsiMeetElectron.isAudioScreenSharingSupported && JitsiMeetElectron.isAudioScreenSharingSupported();
+            if (cacheAudioSharingSupport !== undefined) {
+                return cacheAudioSharingSupport;
+            }
+            cacheAudioSharingSupport = JitsiMeetElectron.isAudioScreenSharingSupported && JitsiMeetElectron.isAudioScreenSharingSupported() as boolean;
+            return cacheAudioSharingSupport;
         }
     }
     return false;
+}
+
+let cacheScreenSharingSupport: undefined | boolean;
+export function isScreenSharingSupported() {
+    const { JitsiMeetElectron } = window as ElectronWindowType;
+    // чтобы не ломать старых клиентов
+    if (!JitsiMeetElectron || !JitsiMeetElectron.isScreenSharingSupported) {
+        return true;
+    }
+    if (cacheScreenSharingSupport !== undefined) {
+        return cacheScreenSharingSupport;
+    }
+    cacheScreenSharingSupport = JitsiMeetElectron.isScreenSharingSupported() as boolean;
+    return cacheScreenSharingSupport
 }
 
 /**

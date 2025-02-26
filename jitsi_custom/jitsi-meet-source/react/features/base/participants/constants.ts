@@ -80,3 +80,6 @@ export const LOWER_HAND_AUDIO_LEVEL = 0.2;
  * Icon URL for the whiteboard participant.
  */
 export const WHITEBOARD_PARTICIPANT_ICON = IconWhiteboard;
+
+export const COMMAND_PARTICIPANT_JOINED_AT = "participant-joined-at";
+export const COMMAND_ACTIVE_PARTICIPANTS_INFO = "active-participants-info";

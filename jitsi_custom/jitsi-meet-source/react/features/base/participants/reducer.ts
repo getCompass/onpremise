@@ -17,7 +17,8 @@ import {
     RAISE_HAND_CLEAR,
     RAISE_HAND_UPDATED,
     SCREENSHARE_PARTICIPANT_NAME_CHANGED,
-    SET_LOADABLE_AVATAR_URL
+    SET_LOADABLE_AVATAR_URL,
+    UPDATE_PARTICIPANT_LIST_JOINED_AT
 } from './actionTypes';
 import { LOCAL_PARTICIPANT_DEFAULT_ID, PARTICIPANT_ROLE } from './constants';
 import {
@@ -80,7 +81,7 @@ const DEFAULT_STATE = {
     remoteVideoSources: new Set<string>(),
     sortedRemoteVirtualScreenshareParticipants: new Map(),
     sortedRemoteParticipants: new Map(),
-    speakersList: new Map()
+    speakersList: new Map(),
 };
 
 export interface IParticipantsState {
@@ -348,13 +349,24 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
 
         // Insert the new participant.
         const displayName = _getDisplayName(state, name);
-        const sortedRemoteParticipants = Array.from(state.sortedRemoteParticipants);
+        const sortedRemoteParticipants = new Map(state.sortedRemoteParticipants);
 
-        sortedRemoteParticipants.push([ id, displayName ]);
-        sortedRemoteParticipants.sort((a, b) => a[0].localeCompare(b[0]));
+        sortedRemoteParticipants.set(id, displayName);
+
+        const sortedArray = Array.from(sortedRemoteParticipants.entries())
+            .map(([participantId, name]) => ({
+                participantId,
+                name,
+                joinedAt: state.remote.get(participantId)?.joinedAt || 9999999999
+            }))
+            .sort((a, b) => a.joinedAt - b.joinedAt);
+
+        const finalSortedParticipants = new Map(
+            sortedArray.map(({ participantId, name }) => [participantId, name])
+        );
 
         // The sort order of participants is preserved since Map remembers the original insertion order of the keys.
-        state.sortedRemoteParticipants = new Map(sortedRemoteParticipants);
+        state.sortedRemoteParticipants = new Map(finalSortedParticipants);
 
         if (isRemoteScreenshareParticipant(participant)) {
             const sortedRemoteVirtualScreenshareParticipants = [ ...state.sortedRemoteVirtualScreenshareParticipants ];
@@ -510,6 +522,18 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
             }
         };
     }
+
+    case UPDATE_PARTICIPANT_LIST_JOINED_AT: {
+        const { joinedAtList } = action;
+
+        for (const { participantId, joinedAt } of joinedAtList) {
+            _updateParticipantProperty(state, participantId, 'joinedAt', joinedAt);
+        }
+
+        return {
+            ...state
+        };
+    }
     }
 
     return state;
@@ -526,7 +550,7 @@ function _getDisplayName(state: Object, name?: string): string {
     // @ts-ignore
     const config = state['features/base/config'];
 
-    return name ?? (config?.defaultRemoteDisplayName || 'Fellow Jitster');
+    return name ?? (config?.defaultRemoteDisplayName || 'Покинул конференцию');
 }
 
 /**

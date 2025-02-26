@@ -1,5 +1,5 @@
 /* eslint-disable react/no-multi-comp */
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { connect, useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
@@ -12,17 +12,17 @@ import QualityButtons from "../../../../quality-control/components/web/QualityBu
 import Icon from "../../../../base/icons/components/Icon";
 import {
     IconCheckboxOffSmall,
-    IconCheckboxOnSmall, IconFilledSquare,
+    IconCheckboxOnSmall,
+    IconFilledSquare,
     IconMicSlash,
+    IconQuestionCircle,
     IconRecord,
     IconVideoOff
 } from "../../../../base/icons/svg";
 import { openDialog } from "../../../../base/dialog/actions";
 import MuteEveryoneDialog from "../../../../video-menu/components/web/MuteEveryoneDialog";
 import MuteEveryonesVideoDialog from "../../../../video-menu/components/web/MuteEveryonesVideoDialog";
-import { StartRecordingDialog } from "../../../../recording/components/Recording";
 import { browser } from "../../../../base/lib-jitsi-meet";
-import StopRecordingDialog from "../../../../recording/components/Recording/web/StopRecordingDialog";
 import { isRecordingRunning, supportsLocalRecording } from "../../../../recording/functions";
 import { isRecorderTranscriptionsRunning } from "../../../../transcribing/functions";
 import { isEnabled as isAvModerationEnabled, } from "../../../../av-moderation/functions";
@@ -36,6 +36,8 @@ import {
     requestEnableVideoModeration
 } from "../../../../av-moderation/actions";
 import { startLocalVideoRecording, stopLocalVideoRecording } from "../../../../recording/actions.any";
+import { isScreenSharingSupported } from "../../../../desktop-picker/functions";
+import UnsupportedScreenSharing from "../UnsupportedScreenSharing";
 
 export interface IProps {
     isAlreadyRecording: boolean;
@@ -82,6 +84,11 @@ const useStyles = makeStyles()(theme => {
                 '.context-text-item': {
                     color: 'rgba(255, 255, 255, 1)',
                 },
+            },
+            '&[aria-disabled="true"]': {
+                '.context-text-item': {
+                    color: 'rgba(255, 255, 255, 0.2);',
+                }
             }
         },
 
@@ -138,10 +145,30 @@ const useStyles = makeStyles()(theme => {
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
             height: '1px'
         },
+        contextMenuFaqItem: {
+            marginLeft: '-8px',
+            width: '26px',
+            height: '22px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            pointerEvents: 'all',
+
+            '.jitsi-icon svg': {
+                fill: 'rgba(255, 255, 255, 0.3) !important',
+            },
+
+            '&:hover': {
+                '.jitsi-icon svg': {
+                    fill: 'rgba(255, 255, 255, 0.75) !important',
+                },
+            }
+        }
     };
 });
 
-const ModeratorSettingsContent = ({ isAlreadyRecording }: IProps) => {
+const ModeratorSettingsContent = (props: IProps) => {
+    const { isAlreadyRecording } = props
     const { classes } = useStyles();
     const { t } = useTranslation();
     const dispatch = useDispatch();
@@ -150,6 +177,7 @@ const ModeratorSettingsContent = ({ isAlreadyRecording }: IProps) => {
     const isScreenshareModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.SCREENSHARE));
     const { localRecording } = useSelector((state: IReduxState) => state['features/base/config']);
     const localRecordingEnabled = !localRecording?.disable && supportsLocalRecording();
+    const [isPopoverVisible, changeIsPopoverVisible] = useState(false);
 
     const startRecording = useCallback(() => {
         browser.isElectron() ? postMessage({
@@ -195,6 +223,9 @@ const ModeratorSettingsContent = ({ isAlreadyRecording }: IProps) => {
         e?.stopPropagation();
         dispatch(requestEnableScreenshareModeration())
     }, [ dispatch ]);
+    const isScreenRecordingNotAvailable = !isScreenSharingSupported();
+    let text = isAlreadyRecording ? t('moderatorSettings.stopRecording') : t('moderatorSettings.startRecording');
+    text = isScreenRecordingNotAvailable ? t('dialog.screenRecordingNotAvailableButton') : text;
 
     const buttonActions = localRecordingEnabled ? [
         {
@@ -203,11 +234,25 @@ const ModeratorSettingsContent = ({ isAlreadyRecording }: IProps) => {
             accessibilityLabel: t('moderatorSettings.startRecording'),
             id: 'moderator-settings-context-menu-recording',
             customIcon: <Icon
-                size = {18}
-                src = {isAlreadyRecording ? IconFilledSquare : IconRecord}
-                color = {'rgba(255, 79, 71, 1)'} />,
+                size={18}
+                src={isAlreadyRecording ? IconFilledSquare : IconRecord}
+                color={!isScreenRecordingNotAvailable ? 'rgba(255, 79, 71, 1)' : 'rgba(255, 79, 71, 0.3)'}/>,
             onClick: isAlreadyRecording ? stopRecording : startRecording,
-            text: isAlreadyRecording ? t('moderatorSettings.stopRecording') : t('moderatorSettings.startRecording')
+            disabled: isScreenRecordingNotAvailable,
+            text: text,
+            children: isScreenRecordingNotAvailable ?
+                <UnsupportedScreenSharing isRecording={true} isVisible={isPopoverVisible}>
+                    {<div
+                        className={classes.contextMenuFaqItem}
+                        onMouseLeave = {() => changeIsPopoverVisible(false)}
+                        onClick = {() => changeIsPopoverVisible(true)}
+                        onMouseEnter = {() => changeIsPopoverVisible(true)}
+                        >
+                        <Icon
+                            src={IconQuestionCircle} size={16} color={'rgba(255, 255, 255, 0.3)'}
+                        />
+                    </div>
+                }</UnsupportedScreenSharing> : undefined,
         },
         {
             containerClassName: classes.contextMenuItemContainer,

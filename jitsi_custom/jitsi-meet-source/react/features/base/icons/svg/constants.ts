@@ -103,6 +103,7 @@ import { default as IconPlus } from './plus.svg';
 import { default as IconRaiseHand } from './raise-hand.svg';
 import { default as IconRecord } from './record.svg';
 import { default as IconRecordInProcess } from './record-in-process.svg';
+import { default as IconRecordingNotification } from './recording-notification.svg';
 import { default as IconReply } from './reply.svg';
 import { default as IconRestore } from './restore.svg';
 import { default as IconScreenshare } from './screenshare.svg';
@@ -154,6 +155,7 @@ import { default as IconYahoo } from './yahoo.svg';
 import { default as IconErrorLoadImg } from './error-load-image.svg';
 import { default as IconCircleWarning } from './circle-warning.svg';
 import { default as IconQuestionCircle } from './questions.svg';
+import { default as IconWarningColor } from './warning-color.svg';
 /**
  * Map containing the default icons.
  */
@@ -260,6 +262,7 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconRaiseHand,
     IconRecord,
     IconRecordInProcess,
+    IconRecordingNotification,
     IconRecordAccount,
     IconRecordContact,
     IconRecordLead,
@@ -313,5 +316,6 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconYahoo,
     IconErrorLoadImg,
     IconCircleWarning,
-    IconQuestionCircle
+    IconQuestionCircle,
+    IconWarningColor
 };

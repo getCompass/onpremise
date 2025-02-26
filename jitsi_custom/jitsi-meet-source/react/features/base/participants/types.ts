@@ -26,6 +26,7 @@ export interface IParticipant {
     isReplaced?: boolean;
     isReplacing?: number;
     isSilent?: boolean;
+    joinedAt?: number;
     jwtId?: string;
     loadableAvatarUrl?: string;
     loadableAvatarUrlUseCORS?: boolean;

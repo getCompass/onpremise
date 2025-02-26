@@ -2,35 +2,35 @@ import { createRecordingEvent } from '../analytics/AnalyticsEvents';
 import { sendAnalytics } from '../analytics/functions';
 import { IStore } from '../app/types';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
-import { CONFERENCE_JOIN_IN_PROGRESS } from '../base/conference/actionTypes';
+import { CONFERENCE_JOIN_IN_PROGRESS, NON_PARTICIPANT_MESSAGE_RECEIVED } from '../base/conference/actionTypes';
 import { getCurrentConference } from '../base/conference/functions';
-import JitsiMeetJS, {
-    JitsiConferenceEvents,
-    JitsiRecordingConstants
-} from '../base/lib-jitsi-meet';
+import JitsiMeetJS, { JitsiConferenceEvents, JitsiRecordingConstants } from '../base/lib-jitsi-meet';
 import { MEDIA_TYPE } from '../base/media/constants';
 import { PARTICIPANT_UPDATED } from '../base/participants/actionTypes';
 import { updateLocalRecordingStatus } from '../base/participants/actions';
 import { PARTICIPANT_ROLE } from '../base/participants/constants';
-import { getLocalParticipant, getParticipantDisplayName } from '../base/participants/functions';
+import {
+    getLocalParticipant,
+    getParticipantById,
+    getParticipantDisplayName,
+    isParticipantModerator
+} from '../base/participants/functions';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import StateListenerRegistry from '../base/redux/StateListenerRegistry';
-import {
-    playSound,
-    stopSound
-} from '../base/sounds/actions';
+import { playSound, stopSound } from '../base/sounds/actions';
 import { TRACK_ADDED } from '../base/tracks/actionTypes';
 import { hideNotification, showErrorNotification, showNotification } from '../notifications/actions';
-import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
+import { NOTIFICATION_ICON, NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 import { isRecorderTranscriptionsRunning } from '../transcribing/functions';
 
 import {
     RECORDING_SESSION_UPDATED,
-    START_LOCAL_RECORDING,
-    STOP_LOCAL_RECORDING,
     START_ELECTRON_RECORDING,
+    START_LOCAL_RECORDING,
     STOP_ELECTRON_RECORDING,
+    STOP_LOCAL_RECORDING,
     TOGGLE_ELECTRON_RECORDING,
+    USER_RECORDING_COUNT_UPDATES
 } from './actionTypes';
 import {
     clearRecordingSessions,
@@ -39,26 +39,33 @@ import {
     showRecordingError,
     showRecordingLimitNotification,
     showRecordingWarning,
-    showStartRecordingNotification,
     showStartedRecordingNotification,
+    showStartRecordingNotification,
     showStoppedRecordingNotification,
     updateRecordingSessionData
 } from './actions';
 import LocalRecordingManager from './components/Recording/LocalRecordingManager';
 import {
+    COMMAND_USER_RECORDING_COUNT,
     LIVE_STREAMING_OFF_SOUND_ID,
     LIVE_STREAMING_ON_SOUND_ID,
+    LOCAL_USER_RECORDING_COUNT_ACTION_DEC,
+    LOCAL_USER_RECORDING_COUNT_ACTION_INC,
     RECORDING_OFF_SOUND_ID,
     RECORDING_ON_SOUND_ID,
     START_RECORDING_NOTIFICATION_ID
 } from './constants';
 import {
     getResourceId,
-    getSessionById,
+    getSessionById, isRecordingRunning,
     registerRecordingAudioFiles,
-    unregisterRecordingAudioFiles
+    unregisterRecordingAudioFiles,
+    updateUserRecordingCount
 } from './functions';
 import logger from './logger';
+import { IParticipant } from '../base/participants/types';
+import { setReducerQuality } from "../quality-control/actions";
+import { userRecordingCountUpdates } from "./actions.any";
 
 /**
  * StateListenerRegistry provides a reliable way to detect the leaving of a
@@ -111,72 +118,118 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                     recorderSession.getError() && _showRecordingErrorNotification(recorderSession, dispatch, getState);
                 }
 
-            return;
-        });
+                return;
+            });
         break;
     }
 
     case START_ELECTRON_RECORDING: {
-        dispatch({
-            type: TOGGLE_ELECTRON_RECORDING,
-            payload: true,
-        });
+        const participant = getLocalParticipant(getState());
+        const isModerator = isParticipantModerator(participant);
+        const { conference } = getState()['features/base/conference'];
+        try {
+            if (!isModerator) {
+                throw new Error('NoPermissionsForRecord');
+            }
+
+            dispatch({
+                type: TOGGLE_ELECTRON_RECORDING,
+                payload: true,
+            });
+
+        } catch (err: any) {
+            logger.error("Capture failed", err);
+
+            let descriptionKey = "recording.error";
+
+            if (err.message === "NoPermissionsForRecord") {
+                descriptionKey = "recording.noModeratorPermission";
+            }
+            const props = {
+                descriptionKey,
+                titleKey: "recording.failedToStart",
+            };
+
+            dispatch(showErrorNotification(props, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+        }
         break;
     }
 
     case START_LOCAL_RECORDING: {
-        const { localRecording } = getState()['features/base/config'];
+        const { localRecording } = getState()["features/base/config"];
         const { onlySelf } = action;
+        const participant = getLocalParticipant(getState());
+        const isModerator = isParticipantModerator(participant);
+        const { conference } = getState()['features/base/conference'];
 
-        LocalRecordingManager.startLocalRecording({
-            dispatch,
-            getState
-        }, action.onlySelf)
-        .then(() => {
-            if (localRecording?.notifyAllParticipants && !onlySelf) {
-                dispatch(playSound(RECORDING_ON_SOUND_ID));
-            }
-            dispatch(updateLocalRecordingStatus(true, onlySelf));
-            sendAnalytics(createRecordingEvent('started', `local${onlySelf ? '.self' : ''}`));
-            if (typeof APP !== 'undefined') {
-                APP.API.notifyRecordingStatusChanged(
-                    true, 'local', undefined, isRecorderTranscriptionsRunning(getState()));
-            }
-        })
-        .catch(err => {
-            logger.error('Capture failed', err);
+        if (!isModerator) {
 
-            let descriptionKey = 'recording.error';
-
-            if (err.message === 'WrongSurfaceSelected') {
-                descriptionKey = 'recording.surfaceError';
-
-            } else if (err.message === 'NoLocalStreams') {
-                descriptionKey = 'recording.noStreams';
-            } else if (err.message === 'NoMicTrack') {
-                descriptionKey = 'recording.noMicPermission';
-            }
             const props = {
-                descriptionKey,
+                descriptionKey: 'recording.noModeratorPermission',
                 titleKey: 'recording.failedToStart'
             };
 
             if (typeof APP !== 'undefined') {
                 APP.API.notifyRecordingStatusChanged(
-                    false, 'local', err.message, isRecorderTranscriptionsRunning(getState()));
+                    false, 'local', 'NoPermissionsForRecord', isRecorderTranscriptionsRunning(getState()));
             }
 
             dispatch(showErrorNotification(props, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
-        });
+            break;
+        }
+
+        LocalRecordingManager.startLocalRecording({
+            dispatch,
+            getState
+        }, action.onlySelf)
+            .then(() => {
+                if (localRecording?.notifyAllParticipants && !onlySelf) {
+                    dispatch(playSound(RECORDING_ON_SOUND_ID));
+                }
+                dispatch(updateLocalRecordingStatus(true, onlySelf));
+                sendAnalytics(createRecordingEvent('started', `local${onlySelf ? '.self' : ''}`));
+                if (typeof APP !== 'undefined') {
+                    APP.API.notifyRecordingStatusChanged(
+                        true, 'local', undefined, isRecorderTranscriptionsRunning(getState()));
+                }
+
+            })
+            .catch(err => {
+                logger.error('Capture failed', err);
+
+                let descriptionKey = 'recording.error';
+
+                if (err.message === 'WrongSurfaceSelected') {
+                    descriptionKey = 'recording.surfaceError';
+
+                } else if (err.message === 'NoLocalStreams') {
+                    descriptionKey = 'recording.noStreams';
+                } else if (err.message === 'NoMicTrack') {
+                    descriptionKey = 'recording.noMicPermission';
+                }
+                const props = {
+                    descriptionKey,
+                    titleKey: 'recording.failedToStart'
+                };
+
+                if (typeof APP !== 'undefined') {
+                    APP.API.notifyRecordingStatusChanged(
+                        false, 'local', err.message, isRecorderTranscriptionsRunning(getState()));
+                }
+
+                dispatch(showErrorNotification(props, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+            });
         break;
     }
 
     case STOP_ELECTRON_RECORDING: {
+        const { conference } = getState()['features/base/conference'];
         APP.API.notifyRecordingStatusChanged(false, 'local');
 
         const props = {
-            descriptionKey: 'recording.off',
-            titleKey: 'dialog.recording',
+            descriptionKey: 'recording.saveInDownloads',
+            titleKey: 'recording.pushTitle',
+            icon: NOTIFICATION_ICON.RECORDING,
         };
 
         dispatch(showNotification(props, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
@@ -186,11 +239,13 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
             payload: false,
         });
 
+
         break;
     }
 
     case STOP_LOCAL_RECORDING: {
         const { localRecording } = getState()['features/base/config'];
+        const { conference } = getState()['features/base/conference'];
 
         if (LocalRecordingManager.isRecordingLocally()) {
             LocalRecordingManager.stopLocalRecording();
@@ -202,6 +257,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                 APP.API.notifyRecordingStatusChanged(
                     false, 'local', undefined, isRecorderTranscriptionsRunning(getState()));
             }
+
         }
         break;
     }
@@ -332,6 +388,16 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
         return next(action);
     }
+
+    case NON_PARTICIPANT_MESSAGE_RECEIVED: {
+        break;
+    }
+
+    case USER_RECORDING_COUNT_UPDATES: {
+        const { userRecordingCount } = action;
+        _handleUserRecordingCountUpdates(dispatch, getState, userRecordingCount);
+        break;
+    }
     }
 
     return result;
@@ -400,5 +466,33 @@ function _showRecordingErrorNotification(session: any, dispatch: IStore['dispatc
 
     if (typeof APP !== 'undefined') {
         APP.API.notifyRecordingStatusChanged(false, mode, error, isRecorderTranscriptionsRunning(getState()));
+    }
+}
+
+/**
+ * Function to handle an notification about recording.
+ *
+ * @param {IStore["dispatch"]} dispatch - The Redux store.
+ * @param {IStore["getState"]} getState - The Redux store.
+ * @param {number} userRecordingCount - Users recording count.
+ * @returns {void}
+ */
+function _handleUserRecordingCountUpdates(dispatch: IStore["dispatch"], getState: IStore["getState"], userRecordingCount: number) {
+    const previousUserRecordingCount = getState()['features/recording'].previousUserRecordingCount;
+    const isLocalRecording = isRecordingRunning(getState());
+
+    // показываем один раз, а не каждый раз когда кто-то включает запись
+    if (previousUserRecordingCount < 1 && userRecordingCount > 0 && !isLocalRecording) {
+
+        dispatch(
+            showNotification(
+                {
+                    titleKey: "recording.localRecordingStartWarningForOtherParticipantsTitle",
+                    descriptionKey: "recording.localRecordingStartWarningForOtherParticipants",
+                    icon: NOTIFICATION_ICON.RECORDING,
+                },
+                NOTIFICATION_TIMEOUT_TYPE.LONG
+            )
+        );
     }
 }

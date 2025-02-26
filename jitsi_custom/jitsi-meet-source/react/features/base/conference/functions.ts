@@ -14,20 +14,13 @@ import {
 } from '../participants/actions';
 import { getLocalParticipant } from '../participants/functions';
 import { toState } from '../redux/functions';
-import {
-    appendURLParam,
-    getBackendSafePath,
-    safeDecodeURIComponent
-} from '../util/uri';
+import { appendURLParam, getBackendSafePath, safeDecodeURIComponent } from '../util/uri';
 
 import { setObfuscatedRoom } from './actions';
-import {
-    AVATAR_URL_COMMAND,
-    EMAIL_COMMAND,
-    JITSI_CONFERENCE_URL_KEY
-} from './constants';
+import { AVATAR_URL_COMMAND, EMAIL_COMMAND, JITSI_CONFERENCE_URL_KEY } from './constants';
 import logger from './logger';
 import { IJitsiConference } from './reducer';
+import { UPDATE_PARTICIPANTS_SORT } from "../participants/actionTypes";
 
 /**
  * Returns root conference state.
@@ -355,6 +348,20 @@ export function getConferenceTimestamp(stateful: IStateful) {
     const { conferenceTimestamp } = getConferenceState(state);
 
     return conferenceTimestamp;
+}
+
+/**
+ * Returns the UTC timestamp when the participant joined the conference.
+ *
+ * @param {IStateful} stateful - Reference that can be resolved to Redux
+ * state with the {@code toState} function.
+ * @returns {number}
+ */
+export function getConferenceLocalJoinTimestamp(stateful: IStateful) {
+    const state = toState(stateful);
+    const { conferenceLocalJoinTimestamp } = getConferenceState(state);
+
+    return conferenceLocalJoinTimestamp;
 }
 
 /**

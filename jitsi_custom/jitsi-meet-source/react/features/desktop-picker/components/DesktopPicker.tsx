@@ -17,6 +17,8 @@ import { updateSettings } from '../../base/settings/actions';
 import { isAudioSharingEnabled } from "../../base/settings/functions.any";
 import { setScreenshareFramerate } from "../../screen-share/actions.any";
 import DesktopPickerQualityButton from "./DesktopPickerQualityButton";
+import { NOTIFICATION_TIMEOUT_TYPE } from "../../notifications/constants";
+import { handleScreenSharingError } from "../../base/tracks/actions.web";
 
 /**
  * The sources polling interval in ms.
@@ -294,6 +296,9 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * @returns {void}
      */
     _onCloseModal(id = '', type?: string, screenShareAudio = this.props._isAudioSharingEnabled, screenShareHint = this.state.screenShareHint) {
+        if (!isAudioScreenSharingSupported()) {
+            screenShareAudio = false;
+        }
         this.props.dispatch(setScreenshareFramerate(screenShareHint === "motion" ? 30 : 5));
         this.props.onSourceChoose(id, type, screenShareAudio, screenShareHint);
         this.props.dispatch(hideDialog());
@@ -407,7 +412,10 @@ class DesktopPicker extends PureComponent<IProps, IState> {
                         sources: allSources
                     });
                 })
-                .catch((error: any) => logger.log(error));
+                .catch((error: any) => {
+                    this.props.dispatch(handleScreenSharingError(error, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+                    this.props.dispatch(hideDialog());
+                });
         }
     }
 

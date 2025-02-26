@@ -57,6 +57,11 @@ class Domain_Ldap_Action_AuthenticateStrategy_FilterDnSearch implements Domain_L
 			throw new ParseFatalException("unexpected behaviour, account not found");
 		}
 
+		// если после всех фильтраций все равно нашли больше одного пользователя, ругаемся на кривой фильтр
+		if ($count > 1) {
+			throw new Domain_Ldap_Exception_ProtocolError_FilterError("incorrect ldap.user_search_filter");
+		}
+
 		return $entry_list[0];
 	}
 }

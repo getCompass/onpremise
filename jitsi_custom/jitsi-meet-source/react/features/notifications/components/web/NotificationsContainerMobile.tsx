@@ -105,13 +105,31 @@ const NotificationsContainerMobile = ({
                 id = 'notifications-container'>
                 <div className = {classes.notificationsScrollContainer}>
                     <NotificationsTransition>
-                        {_notifications.map(({ props, uid }) => (
-                            <Notification
-                                {...props}
-                                key = {uid}
-                                onDismissed = {_onDismissed}
-                                uid = {uid} />
-                        )) || null}
+                        {
+                            _notifications.map(({ props, uid }, index) => {
+                                // для последних 5 показываем обычное уведомление
+                                if (index < 5) {
+                                    return (
+                                        <Notification
+                                            {...props}
+                                            key = {uid}
+                                            onDismissed = {_onDismissed}
+                                            uid = {uid} />
+                                    );
+                                }
+
+                                // для всех остальных сразу вызываем _onDismissed и тоже «рисуем»,
+                                // но они тут же пропадут
+                                _onDismissed(uid);
+                                return (
+                                    <Notification
+                                        {...props}
+                                        key = {uid}
+                                        onDismissed = {_onDismissed}
+                                        uid = {uid} />
+                                );
+                            }) || null
+                        }
                     </NotificationsTransition>
                 </div>
             </div>

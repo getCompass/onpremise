@@ -10,6 +10,7 @@ import AbstractRecordButton, {
 
 import StartRecordingDialog from './StartRecordingDialog';
 import StopRecordingDialog from './StopRecordingDialog';
+import { getLocalParticipant, isParticipantModerator } from "../../../../base/participants/functions";
 
 
 /**
@@ -40,7 +41,7 @@ class RecordingButton extends AbstractRecordButton<IProps> {
      * @returns {boolean}
      */
     _isDisabled() {
-        return this.props._lobbyKnocking !== undefined && this.props._lobbyKnocking;
+        return !this.props._isModerator || (this.props._lobbyKnocking !== undefined && this.props._lobbyKnocking);
     }
 }
 
@@ -62,9 +63,12 @@ export function _mapStateToProps(state: IReduxState) {
     const { toolbarButtons } = state['features/toolbox'];
     const visible = Boolean(toolbarButtons?.includes('recording') && abstractProps.visible);
     const { knocking } = state['features/lobby'];
+    const participant = getLocalParticipant(state);
+    const isModerator = isParticipantModerator(participant);
 
     return {
         ...abstractProps,
+        _isModerator: isModerator,
         _lobbyKnocking: knocking,
         visible
     };

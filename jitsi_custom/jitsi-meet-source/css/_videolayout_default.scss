@@ -284,6 +284,11 @@
     left: 0px;
     top: 0px;
     margin-top: 10px;
+    max-width: calc(100% - 30px);
+    padding: 0 15px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 /**

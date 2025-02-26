@@ -10,6 +10,7 @@ import { MAIN_COMPASS_TOOLBAR_BUTTONS_PRIORITY, MAIN_TOOLBAR_BUTTONS_PRIORITY, T
 import { IMainToolbarButtonThresholds, IToolboxButton, NOTIFY_CLICK_MODE } from './types';
 import { isMobileBrowser } from "../base/environment/utils";
 import { browser } from "../base/lib-jitsi-meet";
+import { isScreenSharingSupported } from "../desktop-picker/functions";
 
 export * from './functions.any';
 
@@ -89,7 +90,7 @@ export function isDesktopShareButtonDisabled(state: IReduxState) {
     const videoOrShareInProgress = !muted || isScreenMediaShared(state);
     const enabledInJwt = isJwtFeatureEnabled(state, MEET_FEATURES.SCREEN_SHARING, true, true);
 
-    return !enabledInJwt || (unmuteBlocked && !videoOrShareInProgress);
+    return !enabledInJwt || (unmuteBlocked && !videoOrShareInProgress) || !isScreenSharingSupported();
 }
 
 /**

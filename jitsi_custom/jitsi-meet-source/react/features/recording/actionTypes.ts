@@ -95,3 +95,14 @@ export const TOGGLE_ELECTRON_RECORDING = 'TOGGLE_ELECTRON_RECORDING';
  * }
  */
 export const SET_START_RECORDING_NOTIFICATION_SHOWN = 'SET_START_RECORDING_NOTIFICATION_SHOWN';
+
+/**
+ * The type of (redux) action which indicates that an endpoint message
+ * local recording started/stopped by another participant to the data channel is received.
+ *
+ * {
+ *     type: USER_RECORDING_COUNT_UPDATES,
+ *     userRecordingCount: number
+ * }
+ */
+export const USER_RECORDING_COUNT_UPDATES = 'USER_RECORDING_COUNT_UPDATES';

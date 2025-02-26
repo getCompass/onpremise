@@ -9,7 +9,7 @@ import Avatar from '../../../base/avatar/components/Avatar';
 import { isIosMobileBrowser, isMobileBrowser } from '../../../base/environment/utils';
 import { MEDIA_TYPE } from '../../../base/media/constants';
 import { PARTICIPANT_ROLE } from '../../../base/participants/constants';
-import { getLocalParticipant, isParticipantModerator } from '../../../base/participants/functions';
+import {getLocalParticipant, getParticipantCount, isParticipantModerator} from '../../../base/participants/functions';
 import { IParticipant } from '../../../base/participants/types';
 import { isParticipantAudioMuted, isParticipantVideoMuted } from '../../../base/tracks/functions.any';
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
@@ -43,6 +43,7 @@ import VerifyParticipantButton from './VerifyParticipantButton';
 import VolumeSlider from './VolumeSlider';
 import VolumeSliderMobile from "./VolumeSliderMobile";
 import { isNeedShowElectronOnlyElements } from "../../../base/environment/utils_web";
+import {toState} from "../../../base/redux/functions";
 
 interface IProps {
 
@@ -103,6 +104,12 @@ interface IProps {
 
 const useStyles = makeStyles()(theme => {
     return {
+        contextMenu: {
+            '& .context-menu-item-group:empty + div': {
+                display: "none",
+            }
+        },
+
         participantInfoContainer: {
             display: 'flex',
             background: 'rgba(25, 25, 25, 1)',
@@ -220,6 +227,7 @@ const ParticipantContextMenu = ({
     const isNeedAddAction = isNeedShowElectronOnlyElements();
     const isEnabledVideoFromState = useSelector((state: IReduxState) => isEnabledFromState(MEDIA_TYPE.VIDEO, state));
     const isEnabledAudioModerationFromState = useSelector((state: IReduxState) => isEnabledFromState(MEDIA_TYPE.AUDIO, state));
+    const participantCount = useSelector(getParticipantCount);
 
     const _currentRoomId = useSelector(getCurrentRoomId);
     const _rooms: IRoom[] = Object.values(useSelector(getBreakoutRooms));
@@ -311,16 +319,23 @@ const ParticipantContextMenu = ({
             if (!(isClickedFromParticipantPane && quickActionButtonType === QUICK_ACTION_BUTTON.MUTE)) {
                 buttons.push(<MuteButton {...getButtonProps(BUTTONS.MUTE)} className = {styles.contextItem} />);
             }
-            buttons.push(<MuteEveryoneElseButton
-                isEnabledAudioModerationFromState = {isEnabledAudioModerationFromState} {...getButtonProps(BUTTONS.MUTE_OTHERS)}
-                className = {styles.contextItem} />);
+
+            if (participantCount > 2) {
+                buttons.push(<MuteEveryoneElseButton
+                    isEnabledAudioModerationFromState = {isEnabledAudioModerationFromState} {...getButtonProps(BUTTONS.MUTE_OTHERS)}
+                    className = {styles.contextItem} />);
+            }
+
             if (!(isClickedFromParticipantPane && quickActionButtonType === QUICK_ACTION_BUTTON.STOP_VIDEO)) {
                 buttons.push(<MuteVideoButton {...getButtonProps(BUTTONS.MUTE_VIDEO)} className = {styles.contextItem}
                                               text = {t('participantsPane.actions.stopVideoFull')} />);
             }
-            buttons.push(<MuteEveryoneElsesVideoButton
-                isEnabledVideoFromState = {isEnabledVideoFromState} {...getButtonProps(BUTTONS.MUTE_OTHERS_VIDEO)}
-                className = {styles.contextItem} />);
+
+            if (participantCount > 2) {
+                buttons.push(<MuteEveryoneElsesVideoButton
+                    isEnabledVideoFromState = {isEnabledVideoFromState} {...getButtonProps(BUTTONS.MUTE_OTHERS_VIDEO)}
+                    className = {styles.contextItem} />);
+            }
         }
 
         if (!disableGrantModerator && !isBreakoutRoom) {
@@ -409,7 +424,7 @@ const ParticipantContextMenu = ({
 
     return (
         <ContextMenu
-            className = {className}
+            className = {`${styles.contextMenu} ${className}`}
             entity = {participant}
             hidden = {thumbnailMenu ? false : undefined}
             inDrawer = {thumbnailMenu && _overflowDrawer}

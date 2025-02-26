@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { throttle } from 'lodash-es';
+import { throttle, debounce } from 'lodash-es';
 import React, { PureComponent } from 'react';
 import { WithTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
@@ -287,6 +287,8 @@ interface IState {
 class Filmstrip extends PureComponent <IProps, IState> {
 
     _throttledResize: Function;
+    _debouncedCountTileViewPages: Function;
+    _debouncedOnRecountStageFilmstripTotalPages: Function;
 
     /**
      * Initializes a new {@code Filmstrip} instance.
@@ -328,6 +330,8 @@ class Filmstrip extends PureComponent <IProps, IState> {
         this._onNextPageTileView = this._onNextPageTileView.bind(this);
         this._onPrevPageTileView = this._onPrevPageTileView.bind(this);
         this._countTileViewPages = this._countTileViewPages.bind(this);
+        this._debouncedCountTileViewPages = debounce(this._countTileViewPages, 200);
+        this._debouncedOnRecountStageFilmstripTotalPages = debounce(this._onRecountStageFilmstripTotalPages, 200);
 
         this._throttledResize = throttle(
             this._onFilmstripResize,
@@ -674,7 +678,7 @@ class Filmstrip extends PureComponent <IProps, IState> {
         const indices: number[] = [];
 
         // в разговоре 1х1 такое может быть, не падаем на fullPages = infinity
-        if (totalItems === 1 && itemsPerPage < 1) {
+        if (itemsPerPage < 1) {
             return indices;
         }
 
@@ -698,13 +702,19 @@ class Filmstrip extends PureComponent <IProps, IState> {
     }
 
     _onRecountStageFilmstripTotalPages() {
-        const { _filteredRemoteParticipantsLength: totalItems, dispatch } = this.props;
+        const { _filteredRemoteParticipantsLength: totalItems, dispatch, _currentLayout, filmstripType } = this.props;
         const { itemsPerPage, startIndex, totalPages, currentPageIndex } = this.state;
+
+        if (_currentLayout !== LAYOUTS.TILE_VIEW || filmstripType === FILMSTRIP_TYPE.MAIN) {
+            return;
+        }
 
         // вычисляем допустимые startIndex для страниц
         const pageStartIndices = this._computePageStartIndices(totalItems, itemsPerPage);
 
-        const pageIndex = pageStartIndices[currentPageIndex] === undefined ? pageStartIndices[pageStartIndices.length - 1] : currentPageIndex;
+        const pageIndex = currentPageIndex >= pageStartIndices.length
+            ? pageStartIndices.length - 1
+            : currentPageIndex;
         const newStartIndex = pageStartIndices[pageIndex];
 
         // пересчитываем startIndex, если количество страниц уменьшилось
@@ -780,7 +790,7 @@ class Filmstrip extends PureComponent <IProps, IState> {
 
     _countTileViewPages() {
         const { itemsPerPageTileView, startIndexTileView } = this.state;
-        const { _disableSelfView, _localScreenShareId } = this.props;
+        const { _disableSelfView, _localScreenShareId, dispatch } = this.props;
         const localParticipantsLength = (!_disableSelfView ? 1 : 0) + (_localScreenShareId ? 1 : 0);
         const totalItems = this.props._filteredRemoteParticipantsLength + localParticipantsLength;
 
@@ -793,10 +803,18 @@ class Filmstrip extends PureComponent <IProps, IState> {
         // текущий номер страницы определяется позицией текущего startIndex в массиве
         const currentPageIndex = pageStartIndices.indexOf(startIndexTileView) === -1 ? ((pageStartIndices.length - 1) < 0 ? 0 : (pageStartIndices.length - 1)) : pageStartIndices.indexOf(startIndexTileView);
         const currentPageNumberTileView = currentPageIndex + 1; // добавляем 1, чтобы получить номер страницы, начиная с 1
-        const newStartIndex = pageStartIndices[currentPageIndex];
+        const newStartIndex = pageStartIndices[currentPageIndex] === undefined ? 0 : pageStartIndices[currentPageIndex];
+
+        if (newStartIndex !== startIndexTileView) {
+            const {
+                startPageIndex: calculatedStartPageIndex,
+                stopPageIndex: calculatedStopPageIndex
+            } = this._calculateVisibleRemoteParticipantsIndices(newStartIndex, itemsPerPageTileView);
+            dispatch(setVisibleRemoteParticipants(calculatedStartPageIndex, calculatedStopPageIndex));
+        }
 
         this.setState({
-            startIndexTileView: newStartIndex === undefined ? 0 : newStartIndex,
+            startIndexTileView: newStartIndex,
             totalPagesNumberTileView: totalPagesNumberTileView,
             currentPageNumberTileView: currentPageNumberTileView
         });
@@ -955,7 +973,7 @@ class Filmstrip extends PureComponent <IProps, IState> {
 
         if (_currentLayout === LAYOUTS.TILE_VIEW || _verticalViewGrid || filmstripType !== FILMSTRIP_TYPE.MAIN) {
 
-            this._countTileViewPages();
+            this._debouncedCountTileViewPages();
 
             return (
                 <>
@@ -1030,7 +1048,7 @@ class Filmstrip extends PureComponent <IProps, IState> {
             );
         }
 
-        this._onRecountStageFilmstripTotalPages();
+        this._debouncedOnRecountStageFilmstripTotalPages();
 
         const totalItems = _filteredRemoteParticipantsLength;
         const itemsPerPageByWidth = Math.floor(_filmstripWidth / 164);

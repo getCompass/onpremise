@@ -47,10 +47,8 @@ class Domain_Jitsi_Entity_ConferenceMember_Behavior_CompassUser implements Domai
 		$opponent_user_id = Domain_Jitsi_Entity_Conference_Data::getOpponentUserId($conference->data);
 
 		// отправляем вску и сообщение, что приняли звонок
-		// если это сингл-конференция, конференция ранее не была активна,
 		// у входящего пользователя статус dialing и он является оппонентом создателя звонка
 		if ($conference_type === Domain_Jitsi_Entity_Conference_Data::CONFERENCE_TYPE_SINGLE &&
-			$conference->status !== Domain_Jitsi_Entity_Conference::STATUS_ACTIVE &&
 			$old_status->getAcceptStatusOutput() === Domain_Jitsi_Entity_ConferenceMember_Status::ACCEPT_STATUS_DIALING &&
 			(int) $user_id === $opponent_user_id) {
 

@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import { IReduxState, IStore } from '../app/types';
 import { isMobileBrowser } from '../base/environment/utils';
 import { isJwtFeatureEnabled } from '../base/jwt/functions';
-import { JitsiRecordingConstants, browser } from '../base/lib-jitsi-meet';
+import { browser, JitsiRecordingConstants } from '../base/lib-jitsi-meet';
 import { getSoundFileSrc } from '../base/media/functions';
 import {
     getLocalParticipant,
@@ -18,6 +18,7 @@ import { canAddTranscriber, isRecorderTranscriptionsRunning } from '../transcrib
 
 import LocalRecordingManager from './components/Recording/LocalRecordingManager';
 import {
+    COMMAND_UPDATE_USER_RECORDING,
     LIVE_STREAMING_OFF_SOUND_ID,
     LIVE_STREAMING_ON_SOUND_ID,
     RECORDING_OFF_SOUND_ID,
@@ -32,6 +33,7 @@ import {
     RECORDING_OFF_SOUND_FILE,
     RECORDING_ON_SOUND_FILE
 } from './sounds';
+import { IJitsiConference } from "../base/conference/reducer";
 
 /**
  * Searches in the passed in redux state for an active recording session of the
@@ -458,4 +460,25 @@ export function isLiveStreamingButtonVisible({
     liveStreamingEnabled: boolean;
 }) {
     return !isInBreakoutRoom && liveStreamingEnabled && liveStreamingAllowed;
+}
+
+/**
+ * Update user recording count
+ *
+ * @returns {boolean}
+ * @param conference
+ * @param action
+ */
+export function updateUserRecordingCount(conference: IJitsiConference | undefined, action: string): void {
+
+    if (conference === undefined) {
+        return;
+    }
+
+    // обновляем количество записывающих в prosody
+    const messagePayload = {
+        type: COMMAND_UPDATE_USER_RECORDING,
+        action: action
+    };
+    conference.sendMessage(JSON.stringify(messagePayload));
 }

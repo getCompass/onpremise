@@ -105,6 +105,7 @@ const {
     IconRaiseHand,
     IconRecord,
     IconRecordInProcess,
+    IconRecordingNotification,
     IconRecordAccount,
     IconRecordContact,
     IconRecordLead,
@@ -159,6 +160,7 @@ const {
     IconErrorLoadImg,
     IconCircleWarning,
     IconQuestionCircle,
+    IconWarningColor,
 } = Object.keys(DEFAULT_ICON).reduce((exportedIcons: Record<string, any>, key) => {
     return {
         ...exportedIcons,
@@ -272,6 +274,7 @@ export {
     IconRaiseHand,
     IconRecord,
     IconRecordInProcess,
+    IconRecordingNotification,
     IconRecordAccount,
     IconRecordContact,
     IconRecordLead,
@@ -325,5 +328,6 @@ export {
     IconYahoo,
     IconErrorLoadImg,
     IconCircleWarning,
-    IconQuestionCircle
+    IconQuestionCircle,
+    IconWarningColor
 };

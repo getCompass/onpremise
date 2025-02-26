@@ -3,7 +3,7 @@ import React, { isValidElement, useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { keyframes } from 'tss-react';
 import { makeStyles } from 'tss-react/mui';
-import { IconPoll, IconScreenshareNotification } from '../../../base/icons/svg';
+import { IconPoll, IconRecordingNotification, IconScreenshareNotification, IconWarningColor } from '../../../base/icons/svg';
 import Message from '../../../base/react/components/web/Message';
 import { NOTIFICATION_ICON, NOTIFICATION_TYPE } from '../../constants';
 import { INotificationProps } from '../../types';
@@ -30,12 +30,13 @@ const useStyles = makeStyles()((theme: Theme) => {
     return {
         container: {
             backgroundColor: 'rgba(33, 33, 33, 1)',
-            outline: '1px solid rgba(255, 255, 255, 0.05)',
             padding: '4px 17px 4px 12px',
             display: 'flex',
             position: 'relative' as const,
             borderRadius: '8px',
-            marginBottom: '4px',
+            marginBottom: '2px',
+            userSelect: 'none',
+            '-webkit-tap-highlight-color': 'transparent',
 
             '&:last-of-type': {
                 marginBottom: 0
@@ -121,6 +122,8 @@ const useStyles = makeStyles()((theme: Theme) => {
             fontSize: '15px',
             lineHeight: '22px',
             color: 'rgba(255, 255, 255, 0.75)',
+            userSelect: 'none',
+            '-webkit-tap-highlight-color': 'transparent',
 
             '&.is-mobile': {
                 fontSize: '16px',
@@ -133,11 +136,12 @@ const useStyles = makeStyles()((theme: Theme) => {
             fontFamily: 'Lato Regular',
             fontWeight: 'normal' as const,
             fontSize: '15px',
-            lineHeight: '22px',
+            lineHeight: '19px',
             color: 'rgba(255, 255, 255, 0.6)',
             overflow: 'auto',
             overflowWrap: 'break-word',
-            userSelect: 'all',
+            userSelect: 'none',
+            '-webkit-tap-highlight-color': 'transparent',
 
             '&.is-mobile': {
                 fontSize: '16px',
@@ -281,30 +285,47 @@ const Notification = ({
         }
     }, [ appearance, onDismiss, customActionHandler, customActionNameKey, hideErrorSupportLink ]);
 
+    const iconPathByIconName: {[p: string]: string} = {
+        [NOTIFICATION_ICON.POLL]: IconPoll,
+        [NOTIFICATION_ICON.RECORDING]: IconRecordingNotification,
+        [NOTIFICATION_ICON.SCREENSHARE]: IconScreenshareNotification,
+        [NOTIFICATION_ICON.WARNING]: IconWarningColor,
+    };
+
+    const iconPathByAppearance: {[p: string]: string} = {
+        [NOTIFICATION_ICON.POLL]: IconPoll,
+        [NOTIFICATION_ICON.RECORDING]: IconRecordingNotification,
+    };
+
+    const getIcon = (iconName = '', appearance = ''): string | null => {
+        return iconPathByIconName[iconName] || iconPathByAppearance[appearance] || null;
+    }
+
+    const iconPath = getIcon(icon, appearance);
+
     return (
         <div
             aria-atomic = 'false'
             aria-live = 'polite'
             className = {cx(classes.container, isMobile && 'is-mobile', unmounting.get(uid ?? '') && 'unmount')}
             data-testid = {titleKey || descriptionKey}
-            id = {uid}>
+            id = {uid}
+            onClick = {() => (icon === NOTIFICATION_ICON.RECORDING || appearance === NOTIFICATION_ICON.RECORDING) ? onDismiss() : undefined}
+        >
             <div className = {classes.content}>
                 <div className = {cx(classes.avatarContainer, isMobile && 'is-mobile')}>
-                    {(icon === NOTIFICATION_ICON.POLL || appearance === NOTIFICATION_ICON.POLL) ?
-                        <Avatar
-                            className = {cx(classes.avatar, 'avatar')}
-                            url = {IconPoll}
-                            size = {36} />
-                        : icon === NOTIFICATION_ICON.SCREENSHARE ?
-                            <Avatar
-                                className = {cx(classes.avatar, 'avatar')}
-                                iconClassName = 'custom-notification-icon'
-                                url = {IconScreenshareNotification}
-                                size = {36} />
-                            : <Avatar
-                                className = {cx(classes.avatar, 'avatar')}
-                                participantId = {participantId ?? "0"}
-                                size = {36} />
+                    { (iconPath ?
+                                <Avatar
+                                    className = {cx(classes.avatar, 'avatar')}
+                                    iconClassName = 'custom-notification-icon'
+                                    url = {iconPath}
+                                    size = {36} />
+                            :
+                                <Avatar
+                                    className = {cx(classes.avatar, 'avatar')}
+                                    participantId = {participantId ?? "0"}
+                                    size = {36} />
+                    )
                     }
                 </div>
                 <div className = {cx(classes.textContainer, isMobile && 'is-mobile')}>

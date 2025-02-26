@@ -1,10 +1,15 @@
 // @ts-expect-error
-import { AUDIO_ONLY_SCREEN_SHARE_NO_TRACK } from '../../../../modules/UI/UIErrors';
+import { AUDIO_ONLY_SCREEN_SHARE_NO_TRACK, SCREEN_SHARING_ERROR } from '../../../../modules/UI/UIErrors';
 import { IReduxState, IStore } from '../../app/types';
 import { showModeratedNotification } from '../../av-moderation/actions';
 import { shouldShowModeratedNotification } from '../../av-moderation/functions';
 import { setNoiseSuppressionEnabled } from '../../noise-suppression/actions';
-import { showErrorNotification, showNotification } from '../../notifications/actions';
+import {
+    showCautioningNotification,
+    showErrorNotification,
+    showNotification,
+    showWarningNotification
+} from '../../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
 import { stopReceiver } from '../../remote-control/actions';
 import { setScreenAudioShareState, setScreenshareAudioTrack } from '../../screen-share/actions';
@@ -485,6 +490,10 @@ export function handleScreenSharingError(
         error: Error | AUDIO_ONLY_SCREEN_SHARE_NO_TRACK,
         timeout: NOTIFICATION_TIMEOUT_TYPE) {
     return (dispatch: IStore['dispatch']) => {
+        if (error && error.name === JitsiTrackErrors.SCREENSHARING_USER_CANCELED) {
+            return;
+        }
+
         logger.error('failed to share local desktop', error);
 
         let descriptionKey;
@@ -502,12 +511,12 @@ export function handleScreenSharingError(
         } else if (error === AUDIO_ONLY_SCREEN_SHARE_NO_TRACK) {
             descriptionKey = 'notify.screenShareNoAudio';
             titleKey = 'notify.screenShareNoAudioTitle';
-        } else { // safeguard for not showing notification with empty text. This will also include
-            // error.name === JitsiTrackErrors.SCREENSHARING_USER_CANCELED
-            return;
+        } else {
+            descriptionKey = 'dialog.screenSharingError';
+            titleKey = 'dialog.screenSharingErrorTitle';
         }
 
-        dispatch(showErrorNotification({
+        dispatch(showCautioningNotification({
             descriptionKey,
             titleKey
         }, timeout));

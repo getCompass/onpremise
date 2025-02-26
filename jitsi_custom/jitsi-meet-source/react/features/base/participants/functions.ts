@@ -78,28 +78,39 @@ export function getActiveSpeakersToBeDisplayed(stateful: IStateful) {
         speakersList
     } = state['features/base/participants'];
     const { visibleRemoteParticipants } = state['features/filmstrip'];
-    let activeSpeakers = new Map(speakersList);
+    let activeSpeakers = new Map<string, { name: string; joinedAt: number }>();
 
-    // Do not re-sort the active speakers if dominant speaker is currently visible.
-    if (dominantSpeaker && visibleRemoteParticipants.has(dominantSpeaker)) {
-        return activeSpeakers;
+    // Заполняем activeSpeakers с добавлением joinedAt
+    for (const [participantId, participantName] of speakersList.entries()) {
+        const participant = getParticipantById(state, participantId);
+        if (participant) {
+            activeSpeakers.set(participantId, { name: participantName, joinedAt: participant.joinedAt ?? 9999999999 });
+        }
     }
+
+    // Не пересортировать активных спикеров, если доминантный спикер виден
+    if (dominantSpeaker && visibleRemoteParticipants.has(dominantSpeaker)) {
+        return new Map(Array.from(activeSpeakers).map(([id, { name }]) => [id, name])); // Вернем без изменений
+    }
+
     let availableSlotsForActiveSpeakers = visibleRemoteParticipants.size;
 
     if (activeSpeakers.has(dominantSpeaker ?? '')) {
         activeSpeakers.delete(dominantSpeaker ?? '');
     }
 
-    // Add dominant speaker to the beginning of the list (not including self) since the active speaker list is always
-    // alphabetically sorted.
+    // Добавляем доминантного спикера в начало списка (не включая себя)
     if (dominantSpeaker && dominantSpeaker !== getLocalParticipant(state)?.id) {
         const updatedSpeakers = Array.from(activeSpeakers);
 
-        updatedSpeakers.splice(0, 0, [ dominantSpeaker, getParticipantById(state, dominantSpeaker)?.name ?? '' ]);
+        updatedSpeakers.splice(0, 0, [
+            dominantSpeaker,
+            { name: getParticipantById(state, dominantSpeaker)?.name ?? '', joinedAt: getParticipantById(state, dominantSpeaker)?.joinedAt ?? 9999999999 }
+        ]);
         activeSpeakers = new Map(updatedSpeakers);
     }
 
-    // Remove screenshares from the count.
+    // Удаляем экранные трансляции из списка
     if (sortedRemoteVirtualScreenshareParticipants) {
         availableSlotsForActiveSpeakers -= sortedRemoteVirtualScreenshareParticipants.size * 2;
         for (const screenshare of Array.from(sortedRemoteVirtualScreenshareParticipants.keys())) {
@@ -109,15 +120,18 @@ export function getActiveSpeakersToBeDisplayed(stateful: IStateful) {
         }
     }
 
-    // Remove fake participants from the count.
+    // Удаляем фейковых участников
     if (fakeParticipants) {
         availableSlotsForActiveSpeakers -= fakeParticipants.size;
     }
-    const truncatedSpeakersList = Array.from(activeSpeakers).slice(0, availableSlotsForActiveSpeakers);
 
-    truncatedSpeakersList.sort((a: any, b: any) => a[1].localeCompare(b[1]));
+    // Урезаем список спикеров и сортируем по joinedAt
+    const truncatedSpeakersList: [string, string][] = Array.from(activeSpeakers)
+        .slice(0, availableSlotsForActiveSpeakers)
+        .sort((a, b) => a[1].joinedAt - b[1].joinedAt) // Сортировка по joinedAt
+        .map(([id, { name }]) => [id, name]); // Преобразование в Map<string, string>
 
-    return new Map(truncatedSpeakersList);
+    return new Map<string, string>(truncatedSpeakersList);
 }
 
 /**
@@ -132,19 +146,21 @@ export function getSortedModeratorList(stateful: IStateful) {
     const {
         sortedRemoteParticipants
     } = state['features/base/participants'];
-    const moderatorsMap = new Map<string, string>();
+    const moderatorsMap = new Map<string, { name: string; joinedAt: number }>();
 
     for (const [participantId, participantName] of sortedRemoteParticipants.entries()) {
         const participant = getParticipantById(state, participantId);
         if (participant && isParticipantModerator(participant)) {
-            moderatorsMap.set(participantId, participantName);
+            moderatorsMap.set(participantId, { name: participantName, joinedAt: participant.joinedAt ?? 9999999999 });
         }
     }
 
-    // сортируем по id
-    const sortedModeratorList = Array.from(moderatorsMap).sort((a: any, b: any) => a[1].localeCompare(b[1]));
+    // сортируем по joinedAt
+    const sortedModeratorList: [string, string][] = Array.from(moderatorsMap)
+        .sort((a, b) => a[1].joinedAt - b[1].joinedAt)
+        .map(([id, data]) => [id, data.name]);
 
-    return new Map(sortedModeratorList);
+    return new Map<string, string>(sortedModeratorList);
 }
 
 /**

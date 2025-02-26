@@ -67,8 +67,10 @@ export function shouldDisplayTileView(state: IReduxState) {
         return false;
     }
 
+    const { sortedRemoteVirtualScreenshareParticipants } = state['features/base/participants'];
+
     // на мобилке режим плитки доступен от 3-х участников
-    const participantsCount = getParticipantCount(state);
+    const participantsCount = getParticipantCount(state) + sortedRemoteVirtualScreenshareParticipants.size;
     if (isMobileBrowser() && participantsCount < 3) {
         return false;
     }

@@ -257,3 +257,22 @@ export const OVERWRITE_PARTICIPANTS_NAMES = 'OVERWRITE_PARTICIPANTS_NAMES';
  * }
  */
 export const SET_LOCAL_PARTICIPANT_RECORDING_STATUS = 'SET_LOCAL_PARTICIPANT_RECORDING_STATUS';
+
+/**
+ * Action to signal that a participants need to update joined at.
+ *
+ * {
+ *     type: UPDATE_PARTICIPANT_LIST_JOINED_AT,
+ *     joinedAtList: Array<Object>,
+ * }
+ */
+export const UPDATE_PARTICIPANT_LIST_JOINED_AT = 'UPDATE_PARTICIPANT_LIST_JOINED_AT';
+
+/**
+ * Action to signal that a participants need to update sort.
+ *
+ * {
+ *     type: UPDATE_PARTICIPANTS_SORT,
+ * }
+ */
+export const UPDATE_PARTICIPANTS_SORT = 'UPDATE_PARTICIPANTS_SORT';

@@ -568,11 +568,14 @@ class Domain_Jitsi_Scenario_Api {
 		$rejected_conference_member = null;
 		foreach ($conference_member_list as $conference_member) {
 
-			if ($conference_member->status === Domain_Jitsi_Entity_ConferenceMember_Status::SPEAKING) {
+			// бросаем ошибку только если мы уже в разговоре и мы же пытаемся отклонить
+			$conference_member_user_id = (int) Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveId($conference_member->member_id);
+			if ($conference_member->status === Domain_Jitsi_Entity_ConferenceMember_Status::SPEAKING
+				&& $user_id === $conference_member_user_id) {
 				throw new Domain_Jitsi_Exception_ConferenceMember_IsSpeaking();
 			}
 
-			if ($user_id === (int) Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveId($conference_member->member_id)) {
+			if ($user_id === $conference_member_user_id) {
 				$rejected_conference_member = $conference_member;
 			}
 		}

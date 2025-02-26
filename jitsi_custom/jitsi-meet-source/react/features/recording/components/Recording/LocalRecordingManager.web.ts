@@ -124,9 +124,16 @@ const LocalRecordingManager: ILocalRecordingManager = {
      * */
     getFilename() {
         const now = new Date();
-        const timestamp = now.toISOString();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear());
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
 
-        return `${this.roomName}_${timestamp}`;
+        const formattedDateTime = `${day}.${month}.${year}, ${hours}_${minutes}_${seconds}`;
+
+        return `Конференция Compass ${formattedDateTime}`;
     },
 
     /**

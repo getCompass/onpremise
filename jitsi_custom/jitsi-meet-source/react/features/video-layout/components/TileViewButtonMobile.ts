@@ -1,17 +1,10 @@
 import { batch, connect } from 'react-redux';
-
-import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
-import { sendAnalytics } from '../../analytics/functions';
 import { IReduxState } from '../../app/types';
-import { TILE_VIEW_ENABLED } from '../../base/flags/constants';
-import { getFeatureFlag } from '../../base/flags/functions';
 import { translate } from '../../base/i18n/functions';
-import { IconSpeakerView, IconTileView, IconTileViewMobile } from '../../base/icons/svg';
+import { IconTileViewMobile } from '../../base/icons/svg';
 import AbstractButton, { IProps as AbstractButtonProps } from '../../base/toolbox/components/AbstractButton';
 import { setOverflowMenuVisible } from '../../toolbox/actions';
 import { setTileView } from '../actions';
-import { shouldDisplayTileView } from '../functions';
-import logger from '../logger';
 
 /**
  * The type of the React {@code Component} props of {@link TileViewButtonMobile}.

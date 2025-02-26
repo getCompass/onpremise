@@ -248,7 +248,7 @@ var interfaceConfig = {
     // DEFAULT_LOGO_URL: 'images/watermark.svg',
 
     // Please use defaultRemoteDisplayName from config.js
-    // DEFAULT_REMOTE_DISPLAY_NAME: 'Fellow Jitster',
+    // DEFAULT_REMOTE_DISPLAY_NAME: 'Покинул конференцию',
 
     // Moved to config.js as `toolbarConfig.initialTimeout`.
     // INITIAL_TOOLBAR_TIMEOUT: 20000,

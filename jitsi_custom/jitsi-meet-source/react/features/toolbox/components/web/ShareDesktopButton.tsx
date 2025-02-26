@@ -1,3 +1,5 @@
+// @ts-ignore
+import React from "react";
 import { connect } from 'react-redux';
 
 import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
@@ -20,6 +22,8 @@ import {
     NOTIFICATION_TIMEOUT_TYPE,
     SCREENSHARE_NO_PERMISSIONS_NOTIFICATION_ID
 } from "../../../notifications/constants";
+import {isScreenSharingSupported} from "../../../desktop-picker/functions";
+import UnsupportedScreenSharing from "../../../settings/components/web/UnsupportedScreenSharing";
 
 interface IProps extends AbstractButtonProps {
 
@@ -49,6 +53,12 @@ class ShareDesktopButton extends AbstractButton<IProps> {
     icon = IconScreenshare;
     toggledIcon = IconScreenshareToggled;
     toggledLabel = 'toolbar.stopScreenSharing';
+
+    constructor(props: IProps) {
+        super(props);
+        this.state = { isPopoverVisible: false };
+    }
+
 
     /**
      * Indicates whether this button is in toggled state or not.
@@ -88,6 +98,23 @@ class ShareDesktopButton extends AbstractButton<IProps> {
         dispatch(closeOverflowMenuIfOpen());
         dispatch(startScreenShareFlow(!_screensharing));
     }
+
+    _changeIsPopoverVisible(value: boolean) {
+        this.setState({ isPopoverVisible: value });
+    }
+
+    render() {
+        const needShowPopover = !isScreenSharingSupported();
+        if (needShowPopover) {
+            return <UnsupportedScreenSharing isVisible={ this.state.isPopoverVisible } isRecording={ false }>
+                <div
+                    onMouseLeave = {() => this._changeIsPopoverVisible(false)}
+                    onClick = {() => this._changeIsPopoverVisible(true)}
+                    onMouseEnter = {() => this._changeIsPopoverVisible(true)}>{super.render()}</div>
+            </UnsupportedScreenSharing>
+        }
+        return super.render();
+    }
 }
 
 /**
@@ -108,7 +135,7 @@ const mapStateToProps = (state: IReduxState) => {
         _screensharing: isScreenVideoShared(state),
         _lobbyKnocking: knocking,
         customClass: 'screen-share-button',
-        visible: JitsiMeetJS.isDesktopSharingEnabled()
+        visible: JitsiMeetJS.isDesktopSharingEnabled(),
     };
 };
 

@@ -62,3 +62,8 @@ export const RECORDING_STATUS_PRIORITIES = [
 export const START_RECORDING_NOTIFICATION_ID = 'START_RECORDING_NOTIFICATION_ID';
 
 export const RECORDING_METADATA_ID = 'recording';
+
+export const LOCAL_USER_RECORDING_COUNT_ACTION_INC = "inc";
+export const LOCAL_USER_RECORDING_COUNT_ACTION_DEC = "dec";
+export const COMMAND_UPDATE_USER_RECORDING = "update-user-recording";
+export const COMMAND_USER_RECORDING_COUNT = "user-recording-count";

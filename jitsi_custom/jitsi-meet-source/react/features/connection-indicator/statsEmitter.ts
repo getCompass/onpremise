@@ -6,6 +6,7 @@ import {
 } from '../base/lib-jitsi-meet';
 import { trackCodecChanged } from '../base/tracks/actions.any';
 import { getLocalTracks } from '../base/tracks/functions.any';
+import { sendUpdatedStats } from "../connection-stats/actions";
 
 /**
  * Contains all the callbacks to be notified when stats are updated.
@@ -132,8 +133,8 @@ const statsEmitter = {
         });
 
         modifiedLocalStats.codec
-            && Object.keys(modifiedLocalStats.codec).length
-            && this._updateLocalCodecs(modifiedLocalStats.codec);
+        && Object.keys(modifiedLocalStats.codec).length
+        && this._updateLocalCodecs(modifiedLocalStats.codec);
 
         this._emitStatsUpdate(localUserId, modifiedLocalStats);
 

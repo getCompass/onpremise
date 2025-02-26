@@ -185,7 +185,7 @@ async function startRecording(videoStreamPromise, isExternalSave) {
             }
         };
         recorder.start(1000);
-        window.parent.postMessage({ type: "recorder_start" }, "*");
+        window.parent.postMessage({ type: "recorder_start", data: app_title }, "*");
 
         APP.store.dispatch({
             type: "SET_SCREENSHOT_CAPTURE",

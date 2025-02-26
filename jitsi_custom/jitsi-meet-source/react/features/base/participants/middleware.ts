@@ -14,13 +14,12 @@ import {
     NOTIFICATION_TIMEOUT_TYPE,
     RAISE_HAND_NOTIFICATION_ID
 } from '../../notifications/constants';
-import { open as openParticipantsPane } from '../../participants-pane/actions';
 import { isForceMuted } from '../../participants-pane/functions';
 import { CALLING, INVITED } from '../../presence-status/constants';
 import { RAISE_HAND_SOUND_ID } from '../../reactions/constants';
 import { RECORDING_OFF_SOUND_ID, RECORDING_ON_SOUND_ID } from '../../recording/constants';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app/actionTypes';
-import { CONFERENCE_JOINED, CONFERENCE_WILL_JOIN } from '../conference/actionTypes';
+import { CONFERENCE_JOINED, CONFERENCE_WILL_JOIN, NON_PARTICIPANT_MESSAGE_RECEIVED } from '../conference/actionTypes';
 import { forEachConference, getCurrentConference } from '../conference/functions';
 import { IJitsiConference } from '../conference/reducer';
 import { SET_CONFIG } from '../config/actionTypes';
@@ -44,7 +43,8 @@ import {
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
     RAISE_HAND_UPDATED,
-    SET_LOCAL_PARTICIPANT_RECORDING_STATUS
+    SET_LOCAL_PARTICIPANT_RECORDING_STATUS,
+    UPDATE_PARTICIPANTS_SORT
 } from './actionTypes';
 import {
     localParticipantIdChanged,
@@ -55,9 +55,12 @@ import {
     participantUpdated,
     raiseHand,
     raiseHandUpdateQueue,
-    setLoadableAvatarUrl
+    setLoadableAvatarUrl,
+    updateParticipantListJoinedAt
 } from './actions';
 import {
+    COMMAND_ACTIVE_PARTICIPANTS_INFO,
+    COMMAND_PARTICIPANT_JOINED_AT,
     LOCAL_PARTICIPANT_DEFAULT_ID,
     LOWER_HAND_AUDIO_LEVEL,
     PARTICIPANT_JOINED_SOUND_ID,
@@ -395,6 +398,36 @@ MiddlewareRegistry.register(store => next => action => {
                 name
             }));
         }
+        break;
+    }
+
+    case NON_PARTICIPANT_MESSAGE_RECEIVED: {
+        const { json: data } = action;
+
+        let joinedAtList: { participantId: string, joinedAt: number }[] = [];
+        if (data.type === COMMAND_PARTICIPANT_JOINED_AT) {
+            joinedAtList.push({
+                // @ts-ignore
+                participantId: Strophe.getResourceFromJid(data.nick),
+                joinedAt: data.joined_at,
+            })
+        }
+
+        if (data.type === COMMAND_ACTIVE_PARTICIPANTS_INFO) {
+            const participants = data.participants as Record<string, { joined_at: number; name: string }>;
+
+            const result = Object.entries(participants).map(([ nick, participantData ]) => ({
+                // @ts-ignore
+                participantId: Strophe.getResourceFromJid(nick),
+                joinedAt: participantData.joined_at,
+            }));
+            joinedAtList = joinedAtList.concat(result);
+        }
+
+        break;
+    }
+    case UPDATE_PARTICIPANTS_SORT: {
+        updateRemoteParticipants(store, true);
         break;
     }
     }

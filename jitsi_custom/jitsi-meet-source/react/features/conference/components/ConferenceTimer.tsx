@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { getConferenceTimestamp } from '../../base/conference/functions';
+import { getConferenceLocalJoinTimestamp } from '../../base/conference/functions';
 import { getLocalizedDurationFormatter } from '../../base/i18n/dateUtil';
 
 import { ConferenceTimerDisplay } from './index';
@@ -33,7 +33,7 @@ export interface IDisplayProps {
 }
 
 const ConferenceTimer = ({ textStyle }: IProps) => {
-    const startTimestamp = useSelector(getConferenceTimestamp);
+    const startTimestamp = useSelector(getConferenceLocalJoinTimestamp);
     const [ timerValue, setTimerValue ] = useState(getLocalizedDurationFormatter(0));
     const interval = useRef<number>();
 

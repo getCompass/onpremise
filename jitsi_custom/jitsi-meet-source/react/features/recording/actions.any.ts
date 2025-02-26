@@ -30,12 +30,10 @@ import {
     SET_START_RECORDING_NOTIFICATION_SHOWN,
     SET_STREAM_KEY,
     START_LOCAL_RECORDING,
-    STOP_LOCAL_RECORDING
+    STOP_LOCAL_RECORDING,
+    USER_RECORDING_COUNT_UPDATES
 } from './actionTypes';
-import {
-    RECORDING_METADATA_ID,
-    START_RECORDING_NOTIFICATION_ID
-} from './constants';
+import { RECORDING_METADATA_ID, START_RECORDING_NOTIFICATION_ID } from './constants';
 import {
     getRecordButtonProps,
     getRecordingLink,
@@ -238,9 +236,9 @@ export function showStoppedRecordingNotification(streamType: string, participant
  * @returns {Function}
  */
 export function showStartedRecordingNotification(
-        mode: string,
-        initiator: { getId: Function; } | string,
-        sessionId: string) {
+    mode: string,
+    initiator: { getId: Function; } | string,
+    sessionId: string) {
     return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const initiatorId = getResourceId(initiator);
@@ -323,8 +321,8 @@ export function updateRecordingSessionData(session: any) {
     const status = session.getStatus();
     const timestamp
         = status === JitsiRecordingConstants.status.ON
-            ? Date.now() / 1000
-            : undefined;
+        ? Date.now() / 1000
+        : undefined;
 
     return {
         type: RECORDING_SESSION_UPDATED,
@@ -467,5 +465,21 @@ export function showStartRecordingNotificationWithCallback(openRecordingDialog: 
             } ],
             appearance: NOTIFICATION_TYPE.NORMAL
         }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+    };
+}
+
+/**
+ * Signals that a count of participants started or stopped a local recording.
+ *
+ * @param {Number} userRecordingCount - The user recording counts
+ * @returns {{
+ *      type: ENDPOINT_MESSAGE_RECEIVED,
+ *      userRecordingCount: Number,
+ * }}
+ */
+export function userRecordingCountUpdates(userRecordingCount: number) {
+    return {
+        type: USER_RECORDING_COUNT_UPDATES,
+        userRecordingCount,
     };
 }

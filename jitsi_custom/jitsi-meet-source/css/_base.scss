@@ -40,7 +40,7 @@ body {
  * but it will still show up on keyboard focus, thus preserving accessibility.
  */
 .js-focus-visible :focus:not(.focus-visible) {
-  outline: none;
+    outline: none;
 }
 
 .jitsi-icon {
@@ -118,7 +118,7 @@ form {
 
 .leftwatermark {
     max-width: 140px;
-    max-height:70px;
+    max-height: 70px;
     left: 32px;
     top: 32px;
     background-position: center left;
@@ -126,8 +126,8 @@ form {
     background-size: contain;
 
     &.no-margin {
-        left:0;
-        top:0;
+        left: 0;
+        top: 0;
     }
 }
 
@@ -142,7 +142,7 @@ form {
     left: 25;
     bottom: 7;
     font-size: 11pt;
-    color: rgba(255,255,255,.50);
+    color: rgba(255, 255, 255, .50);
     text-decoration: none;
     z-index: 100;
 }
@@ -184,6 +184,24 @@ form {
     position: absolute !important;
     width: 1px !important;
     white-space: nowrap !important;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scaleX(1);
+    }
+
+    43% {
+        transform: scale3d(1.3333, 1.3333, 1.3333);
+    }
+
+    57% {
+        transform: scale3d(1.3333, 1.3333, 1.3333);
+    }
+
+    100% {
+        transform: scaleX(1);
+    }
 }
 
 .ml24 {

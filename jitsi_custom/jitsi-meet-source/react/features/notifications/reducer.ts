@@ -97,8 +97,8 @@ function _insertNotificationByPriority(notifications: INotification[], notificat
 
     // Get the index of any queued notification that has the same id as the new notification
     let insertAtLocation = copyOfNotifications.findIndex(
-            (queuedNotification: INotification) =>
-                queuedNotification?.uid === notification?.uid
+        (queuedNotification: INotification) =>
+            queuedNotification?.uid === notification?.uid
     );
 
     if (insertAtLocation !== -1) {
@@ -123,6 +123,10 @@ function _insertNotificationByPriority(notifications: INotification[], notificat
             insertAtLocation = i;
             break;
         }
+    }
+
+    if (insertAtLocation === -1) {
+        insertAtLocation = 0;
     }
 
     copyOfNotifications.splice(insertAtLocation, 0, notification);

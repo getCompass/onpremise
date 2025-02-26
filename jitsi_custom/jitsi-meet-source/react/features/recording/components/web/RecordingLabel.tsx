@@ -56,7 +56,25 @@ const styles = (theme: Theme) => {
             background: "transparent",
             margin: "0px 0px 0px 8px",
             padding: 0,
-        }
+        },
+
+        dotContainer: {
+            width: "14px",
+            height: "14px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            border: "1px solid rgba(255, 79, 71, 1)",
+            borderRadius: "100%",
+        },
+
+        dotAnimated: {
+            width: "6px",
+            height: "6px",
+            backgroundColor: "rgba(255, 79, 71, 1)",
+            borderRadius: "100%",
+            animation: "pulse 700ms ease-in-out infinite",
+        },
     };
 };
 
@@ -73,7 +91,7 @@ class RecordingLabel extends AbstractRecordingLabel<IProps> {
      * @inheritdoc
      */
     _renderLabel() {
-        const { _isTranscribing, _status, mode, t, dispatch } = this.props;
+        const { _isTranscribing, _status, mode, t, dispatch, _isVisible, _iAmRecorder } = this.props;
         const classes = withStyles.getClasses(this.props);
         const isRecording = mode === JitsiRecordingConstants.mode.FILE;
         const icon = isRecording ? IconRecordInProcess : IconSites;
@@ -95,11 +113,9 @@ class RecordingLabel extends AbstractRecordingLabel<IProps> {
 
         return (
             <div className = {classes.recordContainer}>
-                <Label
-                    className = {classes.record}
-                    icon = {icon}
-                    iconSize = "14"
-                    iconColor = "rgba(255, 79, 71, 1)" />
+                <div className = {classes.dotContainer}>
+                    <div className = {classes.dotAnimated} />
+                </div>
                 <div className = {classes.recordText}>{t("videoStatus.recording")}</div>
                 <Label
                     className = {classes.recordStopButton}

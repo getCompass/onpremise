@@ -65,16 +65,22 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 
 	public function __construct(string $host, int $port, bool $use_ssl, int $require_cert_strategy, int $timeout) {
 
-		$protocol              = $use_ssl ? "ldaps" : "ldap";
-		$this->ldap_connection = ldap_connect(sprintf("%s://%s", $protocol, $host), $port);
+		if ($use_ssl) {
+			$uri                   = "ldaps://" . $host . ":" . $port;
+			$this->ldap_connection = ldap_connect($uri);
+		} else {
+			$this->ldap_connection = ldap_connect($host, $port);
+		}
+
 		if (!$this->ldap_connection) {
 			throw new ParseFatalException(sprintf("could not connect to ldap server [%s]", ldap_error($this->ldap_connection)));
 		}
+
+		// Устанавливаем базовые опции
 		ldap_set_option($this->ldap_connection, LDAP_OPT_REFERRALS, false);
 		ldap_set_option($this->ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($this->ldap_connection, LDAP_OPT_NETWORK_TIMEOUT, $timeout);
-
-		ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, $require_cert_strategy);
+		ldap_set_option($this->ldap_connection, LDAP_OPT_X_TLS_REQUIRE_CERT, $require_cert_strategy);
 	}
 
 	public function bind(string $dn, string $password):bool {

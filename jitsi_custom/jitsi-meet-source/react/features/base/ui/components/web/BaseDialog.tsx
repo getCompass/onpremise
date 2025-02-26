@@ -163,6 +163,7 @@ export interface IProps {
     classNameHeaderTitle?: string;
     classNameContent?: string;
     classNameFooter?: string;
+    okButtonClassName?: string;
     description?: string;
     disableBackdropClose?: boolean;
     disableEnter?: boolean;

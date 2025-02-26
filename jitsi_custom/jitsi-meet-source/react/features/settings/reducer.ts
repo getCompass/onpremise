@@ -1,7 +1,7 @@
 import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
-    SET_AUDIO_SETTINGS_VISIBILITY, SET_MODERATOR_SETTINGS_VISIBILITY,
+    SET_AUDIO_SETTINGS_VISIBILITY, SET_DESKTOP_SHARE_QUALITY_SETTINGS_VISIBILITY, SET_MODERATOR_SETTINGS_VISIBILITY,
     SET_VIDEO_SETTINGS_VISIBILITY
 } from './actionTypes';
 
@@ -21,6 +21,11 @@ ReducerRegistry.register('features/settings', (state: ISettingsState = {}, actio
         return {
             ...state,
             moderatorSettingsVisible: action.value
+        };
+    case SET_DESKTOP_SHARE_QUALITY_SETTINGS_VISIBILITY:
+        return {
+            ...state,
+            desktopShareQualitySettingsVisible: action.value
         };
     case SET_VIDEO_SETTINGS_VISIBILITY:
         return {

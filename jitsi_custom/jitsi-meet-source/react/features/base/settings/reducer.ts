@@ -67,6 +67,7 @@ export interface ISettingsState {
     localFlipX?: boolean;
     maxStageParticipants?: number;
     moderatorSettingsVisible?: boolean;
+    desktopShareQualitySettingsVisible?: boolean;
     micDeviceId?: string | boolean;
     serverURL?: string;
     soundsIncomingMessage?: boolean;

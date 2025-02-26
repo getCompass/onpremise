@@ -965,7 +965,7 @@
         "errorDialOutFailed": "Anruf fehlgeschlagen. Anruf fehlgeschlagen",
         "errorDialOutStatus": "Fehler beim Abrufen des Anrufstatus",
         "errorMissingName": "Bitte geben Sie Ihren Namen ein, um der Konferenz beizutreten.",
-        "errorNoPermissionsTitle": "Нет доступа к микрофону или камере",
+        "errorNoPermissionsTitle": "Kein Zugriff auf Mikrofon oder Kamera",
         "errorNoPermissions": "Sie müssen den Zugriff auf Mikrofon und Kamera erlauben",
         "errorStatusCode": "Anruf fehlgeschlagen. Statuscode: {{status}}",
         "errorValidation": "Nummerverifikation fehlgeschlagen",
@@ -1099,7 +1099,7 @@
     },
     "settings": {
         "audio": "Audio",
-        "audioNoPermissions": "Нет доступа к звуку",
+        "audioNoPermissions": "Kein Zugriff auf Audio",
         "buttonLabel": "Einstellungen",
         "calendar": {
             "about": "Die Kalenderintegration von {{appName}} wird verwendet, um ein sicheres Zugreifen auf Ihren Kalender und Auslesen der bevorstehenden Termine zu ermöglichen.",
@@ -1143,7 +1143,7 @@
         "talkWhileMuted": "Wenn bei Stummschaltung gesprochen wird",
         "title": "Einstellungen",
         "video": "Kamera",
-        "videoNoPermissions": "Нет доступа к видео"
+        "videoNoPermissions": "Kein Zugriff auf Video"
     },
     "moderatorSettings": {
         "conferenceQualityTitle": "Videoqualität bei der Konferenz für alle",
@@ -1159,6 +1159,15 @@
         "participantsCanScreenshare": "Die Teilnehmer können eine Demonstration einschalten"
     },
     "screenshare": {
+        "quality": "Übertragungsqualität",
+        "smooth_video": {
+            "description": "Eine hohe Bildrate sorgt für ein flüssiges Bild, aber die Freigabe von Textdokumenten kann einige Sekunden Pufferzeit erfordern. Geeignet für die Freigabe von Videos ohne feine Details.",
+            "title": "Ruckelfreies Video"
+        },
+        "high_readability_text": {
+            "description": "Hohe Pufferungsgeschwindigkeit zeigt ein klares Bild, aber der Bildschirm kann bei Bewegungen in schlechter Qualität übertragen werden. Geeignet für die Anzeige von Tabellen und Dokumenten.",
+            "title": "Gute Lesbarkeit des Textes"
+        },
         "no_permissions_notification": {
             "description": "Heben Sie die Hand, wenn Sie etwas sagen möchten.",
             "title": "Die Funktion der Demonstration wurde vom Moderator deaktiviert"

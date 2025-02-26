@@ -974,7 +974,7 @@
         "errorDialOutFailed": "Could not dial out. Call failed",
         "errorDialOutStatus": "Error getting dial out status",
         "errorMissingName": "Please enter your name to join the meeting",
-        "errorNoPermissionsTitle": "No permissions",
+        "errorNoPermissionsTitle": "No access to microphone or camera",
         "errorNoPermissions": "You need to enable microphone and camera access",
         "errorStatusCode": "Error dialing out, status code: {{status}}",
         "errorValidation": "Number validation failed",
@@ -1109,7 +1109,7 @@
     },
     "settings": {
         "audio": "Audio",
-        "audioNoPermissions": "Нет доступа к звуку",
+        "audioNoPermissions": "No access to audio",
         "buttonLabel": "Settings",
         "calendar": {
             "about": "The {{appName}} calendar integration is used to securely access your calendar so it can read upcoming events.",
@@ -1154,7 +1154,7 @@
         "talkWhileMuted": "Talk while muted",
         "title": "Settings",
         "video": "Video",
-        "videoNoPermissions": "Нет доступа к видео",
+        "videoNoPermissions": "No access to video",
         "virtualBackgroundsTitle": "Virtual backgrounds"
     },
     "moderatorSettings": {
@@ -1171,6 +1171,15 @@
         "participantsCanScreenshare": "Allow participants to share screen"
     },
     "screenshare": {
+        "quality": "Screen sharing quality",
+        "smooth_video": {
+            "description": "High frame rate provides a smooth picture, but sharing text documents may take a few seconds of buffering. Suitable for sharing videos without fine details.",
+            "title": "Smooth video"
+        },
+        "high_readability_text": {
+            "description": "High buffering speed shows a clear picture, but the screen may be broadcasted in low quality when moving. Suitable for displaying tables and documents.",
+            "title": "High readability of text"
+        },
         "no_permissions_notification": {
             "description": "Please raise your hand if you'd like to speak.",
             "title": "Screen sharing function is turned off by the moderator"

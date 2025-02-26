@@ -957,7 +957,7 @@
         "errorDialOutFailed": "Impossible de composer le numéro. L'appel a échoué",
         "errorDialOutStatus": "Erreur lors de l'obtention de l'état d'appel sortant",
         "errorMissingName": "Veuillez entrer votre nom pour entrer en conférence",
-        "errorNoPermissionsTitle": "Нет доступа к микрофону или камере",
+        "errorNoPermissionsTitle": "Pas d'accès au microphone ou à la caméra",
         "errorNoPermissions": "Vous devez permettre l'accès microphone et caméra",
         "errorStatusCode": "Erreur de numérotation, code d'état: {{status}}",
         "errorValidation": "La validation du numéro a échoué",
@@ -1091,7 +1091,7 @@
     },
     "settings": {
         "audio": "Audio",
-        "audioNoPermissions": "Нет доступа к звуку",
+        "audioNoPermissions": "Pas d'accès à l'audio",
         "buttonLabel": "Paramètres",
         "calendar": {
             "about": "L'intégration de {{appName}} avec votre calendrier permet d'accéder de manière sécurisée aux événements à venir.",
@@ -1135,7 +1135,7 @@
         "talkWhileMuted": "vous parlez en étant muet",
         "title": "Paramètres",
         "video": "Vidéo",
-        "videoNoPermissions": "Нет доступа к видео"
+        "videoNoPermissions": "Pas d'accès à la vidéo"
     },
     "moderatorSettings": {
         "conferenceQualityTitle": "Qualité de vidéo dans la conférence pour tous",
@@ -1151,6 +1151,15 @@
         "participantsCanScreenshare": "Les participants peuvent présenter leurs écrans"
     },
     "screenshare": {
+        "quality": "Qualité du partage",
+        "smooth_video": {
+            "description": "Une fréquence d'images élevée permet d'obtenir une image fluide, mais le partage de documents textuels peut nécessiter quelques secondes de mise en mémoire tampon. Convient au partage de vidéos sans détails précis.",
+            "title": "Vidéo fluide"
+        },
+        "high_readability_text": {
+            "description": "La vitesse élevée de mise en mémoire tampon permet d'obtenir une image claire, mais l'écran peut être diffusé en basse qualité en cas de mouvement. Convient à l'affichage de tableaux et de documents.",
+            "title": "Haute lisibilité du texte"
+        },
         "no_permissions_notification": {
             "description": "Levez la main si vous voulez parler.",
             "title": "La fonction de présentation est désactivée par l'administrateur"

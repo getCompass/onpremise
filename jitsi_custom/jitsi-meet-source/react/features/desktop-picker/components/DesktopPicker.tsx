@@ -1,20 +1,22 @@
 import React, { PureComponent } from 'react';
 import { WithTranslation } from 'react-i18next';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {IReduxState, IStore} from '../../app/types';
+import { IReduxState, IStore } from '../../app/types';
 import { hideDialog } from '../../base/dialog/actions';
 import { translate } from '../../base/i18n/functions';
 import Dialog from '../../base/ui/components/web/Dialog';
 import { THUMBNAIL_SIZE } from '../constants';
-import { obtainDesktopSources, stopObtainDesktopSources, isAudioScreenSharingSupported } from '../functions';
+import { isAudioScreenSharingSupported, obtainDesktopSources, stopObtainDesktopSources } from '../functions';
 import logger from '../logger';
 
 import DesktopPickerPane from './DesktopPickerPane';
 import Checkbox from "../../base/ui/components/web/Checkbox";
 import DesktopPickerUnsupportedSound from './DesktopPickerUnsupportedSound'
 import { updateSettings } from '../../base/settings/actions';
-import {isAudioSharingEnabled} from "../../base/settings/functions.any";
+import { isAudioSharingEnabled } from "../../base/settings/functions.any";
+import { setScreenshareFramerate } from "../../screen-share/actions.any";
+import DesktopPickerQualityButton from "./DesktopPickerQualityButton";
 
 /**
  * The sources polling interval in ms.
@@ -72,6 +74,9 @@ interface IState {
      * The desktop source types to fetch previews for.
      */
     types: Array<string>;
+
+
+    screenShareHint: "detail" | "motion";
 }
 
 
@@ -105,13 +110,13 @@ class DesktopPicker extends PureComponent<IProps, IState> {
     }
 
 
-
     _poller: any = null;
 
     state: IState = {
         selectedSource: {},
         sources: {},
-        types: []
+        types: [],
+        screenShareHint: "detail",
     };
 
     /**
@@ -126,6 +131,7 @@ class DesktopPicker extends PureComponent<IProps, IState> {
         // Bind event handlers so they are only bound once per instance.
         this._onCloseModal = this._onCloseModal.bind(this);
         this._onPreviewClick = this._onPreviewClick.bind(this);
+        this._onScreenShareQualityChange = this._onScreenShareQualityChange.bind(this);
         this._onShareAudioChecked = this._onShareAudioChecked.bind(this);
         this._onSubmit = this._onSubmit.bind(this);
         this._updateSources = this._updateSources.bind(this);
@@ -164,12 +170,16 @@ class DesktopPicker extends PureComponent<IProps, IState> {
         const isCheckboxDisabled = !isAudioScreenSharingSupported();
 
         const getButton = () => {
+            if (this.state.screenShareHint === "detail") {
+                return <></>;
+            }
+
             if (isCheckboxDisabled) {
                 const is_enabled = this.props._isAudioSharingEnabled;
                 is_enabled && this.props.dispatch(updateSettings({
                     isAudioSharingEnabled: false,
                 }))
-                return  <DesktopPickerUnsupportedSound { ...this.props } />
+                return <DesktopPickerUnsupportedSound {...this.props} />
             }
 
             return <Checkbox
@@ -177,12 +187,13 @@ class DesktopPicker extends PureComponent<IProps, IState> {
                 className = 'desktop-picker-audio-checkbox'
                 label = {t('dialog.screenSharingAudio')}
                 name = 'share-system-audio'
-                disabled={isCheckboxDisabled}
+                disabled = {isCheckboxDisabled}
                 onChange = {this._onShareAudioChecked} />
         }
 
         return (
             <Dialog
+                className = 'desktop-picker-dialog'
                 classNameHeader = 'desktop-picker-dialog-header'
                 classNameContent = 'desktop-picker-dialog-content'
                 classNameFooter = 'desktop-picker-dialog-footer'
@@ -193,8 +204,14 @@ class DesktopPicker extends PureComponent<IProps, IState> {
                 cancel = {{
                     hidden: true,
                 }}
+                okButtonClassName = 'ml24'
                 customButton = {
                     getButton()
+                }
+                popoverButton = {
+                    // @ts-ignore
+                    <DesktopPickerQualityButton screenShareHint = {this.state.screenShareHint}
+                                                onClick = {this._onScreenShareQualityChange} />
                 }
                 onCancel = {this._onCloseModal}
                 onSubmit = {this._onSubmit}
@@ -273,10 +290,12 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * the onSourceChoose callback.
      * @param {boolean} screenShareAudio - Whether or not to add system audio to
      * screen sharing session.
+     * @param screenShareHint
      * @returns {void}
      */
-    _onCloseModal(id = '', type?: string, screenShareAudio = this.props._isAudioSharingEnabled) {
-        this.props.onSourceChoose(id, type, screenShareAudio);
+    _onCloseModal(id = '', type?: string, screenShareAudio = this.props._isAudioSharingEnabled, screenShareHint = this.state.screenShareHint) {
+        this.props.dispatch(setScreenshareFramerate(screenShareHint === "motion" ? 30 : 5));
+        this.props.onSourceChoose(id, type, screenShareAudio, screenShareHint);
         this.props.dispatch(hideDialog());
     }
 
@@ -298,6 +317,15 @@ class DesktopPicker extends PureComponent<IProps, IState> {
         this._saveScreenParams(type, id);
     }
 
+    _onScreenShareQualityChange(screenShareHint?: "detail" | "motion") {
+
+        if (screenShareHint === undefined) {
+            return;
+        }
+
+        this.setState({ screenShareHint: screenShareHint });
+    }
+
     /**
      * Request to close the modal and execute callbacks with the selected source
      * id.
@@ -306,7 +334,7 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      */
     _onSubmit() {
         const { selectedSource: { id, type } } = this.state;
-        this._onCloseModal(id, type, this.props._isAudioSharingEnabled);
+        this._onCloseModal(id, type, this.props._isAudioSharingEnabled, this.state.screenShareHint);
     }
 
     /**

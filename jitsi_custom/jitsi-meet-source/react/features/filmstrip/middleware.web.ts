@@ -2,11 +2,7 @@ import { batch } from 'react-redux';
 
 // @ts-expect-error
 import VideoLayout from '../../../modules/UI/videolayout/VideoLayout';
-import {
-    DOMINANT_SPEAKER_CHANGED,
-    PARTICIPANT_JOINED,
-    PARTICIPANT_LEFT
-} from '../base/participants/actionTypes';
+import { DOMINANT_SPEAKER_CHANGED, PARTICIPANT_JOINED, PARTICIPANT_LEFT } from '../base/participants/actionTypes';
 import {
     getDominantSpeakerParticipant,
     getLocalParticipant,
@@ -34,7 +30,8 @@ import {
     addStageParticipant,
     removeStageParticipant,
     setFilmstripHeight,
-    setFilmstripWidth, setHorizontalViewDimensions,
+    setFilmstripWidth,
+    setHorizontalViewDimensions,
     setScreenshareFilmstripParticipant,
     setStageParticipants
 } from './actions.web';

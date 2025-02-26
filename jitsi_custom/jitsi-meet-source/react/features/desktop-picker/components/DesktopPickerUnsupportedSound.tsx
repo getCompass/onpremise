@@ -10,13 +10,17 @@ import Popover from "../../base/popover/components/Popover.web";
 const useStyles = makeStyles()(() => {
     return {
         parent: {
-            display: 'flex',
-            alignItems: 'center',
+            display: 'inline',
             fontFamily: 'Lato Regular',
             fontWeight: 'normal' as const,
             fontSize: '15px',
             lineHeight: '22px',
-            marginRight: '25px'
+            marginRight: '25px',
+            // Apply display: inline to all child elements
+            '& *': {
+                display: 'inline !important',
+                verticalAlign: 'middle',
+            },
         },
         iconWrapper: {
             marginLeft: '6px',

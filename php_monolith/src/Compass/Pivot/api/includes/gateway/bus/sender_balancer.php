@@ -450,6 +450,19 @@ class Gateway_Bus_SenderBalancer {
 		], [$user_id]);
 	}
 
+	/**
+	 * Разлогинили список устройств пользователя.
+	 *
+	 * @throws ParseFatalException
+	 * @throws \parseException
+	 */
+	public static function authenticatedDeviceLogout(int $user_id, array $device_id_list):void {
+
+		self::_sendEvent([
+			Gateway_Bus_SenderBalancer_Event_AuthenticatedDeviceLogout_V1::makeEvent($device_id_list),
+		], [$user_id]);
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------

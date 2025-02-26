@@ -59,7 +59,7 @@ class Domain_Jitsi_Entity_ConferenceMember_Behavior_CompassUser implements Domai
 			Gateway_Bus_SenderBalancer::conferenceAcceptStatusUpdated(
 				$conference->conference_id,
 				$conference_member->status->getAcceptStatusOutput(),
-				$opponent_user_id,
+				$user_id,
 				[$opponent_user_id, $conference->creator_user_id]
 			);
 		}

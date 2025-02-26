@@ -1,14 +1,22 @@
 import { useGetResponse } from "../_index.ts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { APIAuthInfo, APIJoinLinkInfo, AUTH_MAIL_SCENARIO_FULL, AUTH_MAIL_SCENARIO_SHORT } from "../_types.ts";
+import {
+	APIAuthInfo,
+	APIJoinLinkInfo,
+	AUTH_MAIL_SCENARIO_FULL,
+	AUTH_MAIL_SCENARIO_SHORT,
+	ONPREMISE_EMAIL_LOGIN_TYPE,
+} from "../_types.ts";
 import {useAtomValue, useSetAtom} from "jotai/index";
 import {
+	authenticationSessionTimeLeftState,
 	authInputState,
 	authState,
 	captchaProviderState,
 	confirmPasswordState,
 	firstAuthState,
-	passwordInputState
+	passwordInputState,
+	deviceLoginTypeState,
 } from "../_stores.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
 import { useNavigateDialog, useNavigatePage } from "../../components/hooks.ts";
@@ -76,6 +84,7 @@ export function useApiAuthMailConfirmShortAuthPassword() {
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
 	const captchaProvider = useAtomValue(captchaProviderState);
+	const setSessionTimeLeft = useSetAtom(authenticationSessionTimeLeftState);
 
 	return useMutation({
 		retry: false,
@@ -114,6 +123,7 @@ export function useApiAuthMailConfirmShortAuthPassword() {
 			setAuthInput("");
 			setPasswordInput("");
 			setConfirmPassword("");
+			setSessionTimeLeft(60 * 15);
 			if (response.need_fill_profile === 1) {
 				navigateToDialog("auth_create_profile");
 			} else {
@@ -189,6 +199,8 @@ export function useApiAuthMailConfirmFullAuthCode() {
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
 	const captchaProvider = useAtomValue(captchaProviderState);
+	const setDeviceLoginType = useSetAtom(deviceLoginTypeState);
+	const setSessionTimeLeft = useSetAtom(authenticationSessionTimeLeftState);
 
 	return useMutation({
 		retry: false,
@@ -229,6 +241,8 @@ export function useApiAuthMailConfirmFullAuthCode() {
 			setAuthInput("");
 			setPasswordInput("");
 			setConfirmPassword("");
+			setSessionTimeLeft(60 * 15);
+			setDeviceLoginType(ONPREMISE_EMAIL_LOGIN_TYPE);
 			if (response.need_fill_profile === 1) {
 				navigateToDialog("auth_create_profile");
 			} else {

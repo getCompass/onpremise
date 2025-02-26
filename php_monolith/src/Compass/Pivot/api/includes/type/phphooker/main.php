@@ -37,6 +37,7 @@ class Type_Phphooker_Main {
 	public const TASK_TYPE_ON_PHONE_ADD_STORY_EXPIRE           = 55; // при истечении срока жизни попытки добавления номера телефона
 	public const TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES        = 56; // исключаем пользователя из всех команд
 	public const TASK_TYPE_UPDATE_MEMBER_INFO_ON_ALL_COMPANIES = 57; // обновляем данные пользователя во всех его командах
+	public const TASK_TYPE_ON_SUCCESS_DEVICE_LOGIN             = 58; // при успешной авторизации устройства
 
 	# endregion
 	##########################################################
@@ -66,6 +67,22 @@ class Type_Phphooker_Main {
 		self::_addFromApi(self::TASK_TYPE_DELETE_COMPANY, 0, [
 			"deleted_by_user_id" => $deleted_by_user_id,
 			"company_id"         => $company_id,
+		]);
+	}
+
+	/**
+	 * событие при успешной авторизации
+	 *
+	 */
+	public static function onSuccessDeviceLogin(int $user_id, string $login_type, string $device_name, string $app_version, string $server_version, string $locale):void {
+
+		self::_addFromApi(self::TASK_TYPE_ON_SUCCESS_DEVICE_LOGIN, 0, [
+			"user_id"        => $user_id,
+			"login_type"     => $login_type,
+			"device_name"    => $device_name,
+			"app_version"    => $app_version,
+			"server_version" => $server_version,
+			"locale"         => $locale,
 		]);
 	}
 

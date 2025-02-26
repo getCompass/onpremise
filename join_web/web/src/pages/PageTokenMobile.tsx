@@ -10,7 +10,7 @@ import { Portal } from "@ark-ui/react";
 import { Menu, MenuContent, MenuItem, MenuItemGroup, MenuPositioner, MenuTrigger } from "../components/menu.tsx";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
-	authenticationTokenTimeLeft,
+	authenticationTokenTimeLeftState,
 	authInputState,
 	authState,
 	confirmPasswordState, downloadAppUrlState,
@@ -20,6 +20,7 @@ import {
 	nameInputState,
 	passwordInputState,
 	prepareJoinLinkErrorState,
+	deviceLoginTypeState,
 	useToastConfig,
 } from "../api/_stores.ts";
 import { useApiAuthGenerateToken } from "../api/auth.ts";
@@ -323,13 +324,18 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 
 	const joinLink = useAtomValue(joinLinkState);
 	const isRegistration = useAtomValue(isRegistrationState);
-	const timeLeft = useAtomValue(authenticationTokenTimeLeft);
+	const timeLeft = useAtomValue(authenticationTokenTimeLeftState);
 	const isAuthenticationTokenExpired = useMemo(() => timeLeft <= 0, [timeLeft]);
+
+	const loginType = useAtomValue(deviceLoginTypeState);
 
 	const apiAuthGenerateToken = useApiAuthGenerateToken();
 
 	useEffect(() => {
-		apiAuthGenerateToken.mutate({ join_link_uniq: joinLink === null ? undefined : joinLink.join_link_uniq });
+		apiAuthGenerateToken.mutate({
+			join_link_uniq: joinLink === null ? undefined : joinLink.join_link_uniq,
+			login_type: loginType === 0 ? undefined : loginType
+		});
 	}, []);
 
 	// приходится извращаться с этой кнопкой на мобилках, иначе не на всех мобилках работает ховер на этой кнопке

@@ -28,6 +28,7 @@ class Gateway_Db_PivotUser_SessionActiveList extends Gateway_Db_PivotUser_Main {
 		int    $updated_at,
 		int    $login_at,
 		int    $refreshed_at,
+		int    $last_online_at,
 		string $ua_hash,
 		string $ip_address,
 		array  $extra
@@ -37,15 +38,16 @@ class Gateway_Db_PivotUser_SessionActiveList extends Gateway_Db_PivotUser_Main {
 		$table_name = self::_getTableKey($user_id);
 
 		$insert = [
-			"user_id"      => $user_id,
-			"session_uniq" => $session_uniq,
-			"created_at"   => $created_at,
-			"updated_at"   => $updated_at,
-			"login_at"     => $login_at,
-			"refreshed_at" => $refreshed_at,
-			"ua_hash"      => $ua_hash,
-			"ip_address"   => $ip_address,
-			"extra"        => $extra,
+			"user_id"        => $user_id,
+			"session_uniq"   => $session_uniq,
+			"created_at"     => $created_at,
+			"updated_at"     => $updated_at,
+			"login_at"       => $login_at,
+			"refreshed_at"   => $refreshed_at,
+			"last_online_at" => $last_online_at,
+			"ua_hash"        => $ua_hash,
+			"ip_address"     => $ip_address,
+			"extra"          => $extra,
 		];
 
 		// осуществляем запрос
@@ -98,10 +100,47 @@ class Gateway_Db_PivotUser_SessionActiveList extends Gateway_Db_PivotUser_Main {
 			$row["updated_at"],
 			$row["login_at"],
 			$row["refreshed_at"],
+			$row["last_online_at"],
 			$row["ua_hash"],
 			$row["ip_address"],
 			fromJson($row["extra"])
 		);
+	}
+
+	/**
+	 * метод для получения несколько записей пользователя
+	 *
+	 * @return Struct_Db_PivotUser_SessionActive[]
+	 * @throws \BaseFrame\Exception\Gateway\DBShardingNotFoundException
+	 * @throws \BaseFrame\Exception\Gateway\QueryFatalException
+	 */
+	public static function getList(int $user_id, array $session_uniq_list):array {
+
+		$shard_key  = self::_getDbKey($user_id);
+		$table_name = self::_getTableKey($user_id);
+
+		// формируем и осуществляем запрос. user_id в запросе во имя безопасности
+		$query = "SELECT * FROM `?p` WHERE `session_uniq` IN (?a) AND `user_id`=?i LIMIT ?i";
+		$list  = ShardingGateway::database($shard_key)->getAll($query, $table_name, $session_uniq_list, $user_id, count($session_uniq_list));
+
+		$struct_list = [];
+		foreach ($list as $row) {
+
+			$struct_list[] = new Struct_Db_PivotUser_SessionActive(
+				$row["session_uniq"],
+				$user_id,
+				$row["created_at"],
+				$row["updated_at"],
+				$row["login_at"],
+				$row["refreshed_at"],
+				$row["last_online_at"],
+				$row["ua_hash"],
+				$row["ip_address"],
+				fromJson($row["extra"])
+			);
+		}
+
+		return $struct_list;
 	}
 
 	/**
@@ -132,6 +171,7 @@ class Gateway_Db_PivotUser_SessionActiveList extends Gateway_Db_PivotUser_Main {
 				$row["updated_at"],
 				$row["login_at"],
 				$row["refreshed_at"],
+				$row["last_online_at"],
 				$row["ua_hash"],
 				$row["ip_address"],
 				fromJson($row["extra"])

@@ -74,7 +74,7 @@ func loadTasks(isolation *Isolation.Isolation) error {
 	for {
 
 		// получаем задачи из базы
-		recordList, err := CompanySystem.AsyncTaskTable.GetAll(isolation.GetContext(), conn, rowLimit, 0)
+		recordList, err := CompanySystem.AsyncTaskTable.GetAll(isolation.GetContext(), conn, rowLimit, offset)
 		if err != nil {
 			return err
 		}

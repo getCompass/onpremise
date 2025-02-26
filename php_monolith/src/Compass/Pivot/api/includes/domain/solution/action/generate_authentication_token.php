@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace Compass\Pivot;
 
@@ -12,7 +12,7 @@ class Domain_Solution_Action_GenerateAuthenticationToken {
 	/**
 	 * Генерирует токен авторизации для указанного пользователя.
 	 */
-	public static function exec(int $user_id, string|false $join_link_uniq = false):array {
+	public static function exec(int $user_id, string|false $join_link_uniq = false, int|null $login_type = null):array {
 
 		// генерируем токен и ключ
 		/** @var Struct_Solution_AuthenticationKeyCache|false $authentication_key_obj */
@@ -29,7 +29,8 @@ class Domain_Solution_Action_GenerateAuthenticationToken {
 		$expires_at             = time() + self::_TOKEN_TTL;
 		$authentication_key_obj = new Struct_Solution_AuthenticationKeyCache(
 			$authentication_key,
-			$expires_at
+			$expires_at,
+			$login_type,
 		);
 
 		ShardingGateway::cache()->set(static::makeKey($user_id), $authentication_key_obj, self::_TOKEN_TTL);

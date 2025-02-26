@@ -15,6 +15,7 @@ class Type_Api_Platform {
 	public const PLATFORM_ANDROID  = "android";
 	public const PLATFORM_IOS      = "iphone";
 	public const PLATFORM_IPAD     = "ipad";
+	public const PLATFORM_OPENAPI  = "openapi";
 	public const PLATFORM_OTHER    = "other";
 
 	// доступные платформы
@@ -23,6 +24,7 @@ class Type_Api_Platform {
 		self::PLATFORM_IOS,
 		self::PLATFORM_ANDROID,
 		self::PLATFORM_IPAD,
+		self::PLATFORM_OPENAPI,
 	];
 
 	// текущие возможные OS electron платформы
@@ -138,5 +140,49 @@ class Type_Api_Platform {
 			return $user_agent;
 		}
 		return mb_strtolower(strtok($user_agent, " -"));
+	}
+
+	// получение версии платформы
+	public static function getVersion(string $user_agent):string {
+
+		$matches = [];
+		if (!preg_match("/[\d.]+/m", $user_agent, $matches) || count($matches) < 1) {
+			throw new cs_PlatformVersionNotFound();
+		}
+
+		return $matches[0];
+	}
+
+	/**
+	 * Получить название устройства пользователя
+	 *
+	 * @throws cs_PlatformNotFound
+	 */
+	public static function getDeviceName(string $user_agent):string {
+
+		try {
+			$platform = self::getPlatform($user_agent);
+		} catch (cs_PlatformNotFound) {
+			return "";
+		}
+
+		preg_match("/(darwin|win32|linux|iPhone|Google|Huawei|iPad)(.+)/", $user_agent, $matches);
+		if (count($matches) < 1) {
+
+			// замена electron на понятный desktop
+			$platform = $platform == self::PLATFORM_ELECTRON ? "Desktop" : $platform;
+			return $platform;
+		}
+
+		$device_name = match ($platform) {
+			self::PLATFORM_ELECTRON, self::PLATFORM_ANDROID => $matches[2] ?? $matches[0],
+			default => $matches[0],
+		};
+
+		if (mb_strlen($device_name) < 1) {
+			return $platform;
+		}
+
+		return trim($device_name);
 	}
 }

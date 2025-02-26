@@ -17,14 +17,17 @@ class Domain_Solution_Scenario_Api {
 	 * @throws cs_UserAlreadyBlocked
 	 * @throws cs_UserAlreadyLoggedIn
 	 * @throws cs_UserNotFound
+	 * @long
 	 */
 	public static function tryAuthenticationToken(int $user_id, string $authentication_token):array {
 
 		self::_throwIfPlatformIsProhibited();
 
 		// валидируем токен
-		$authentication_token_data = Domain_Solution_Entity_AuthenticationValidator::validate($authentication_token);
-		$token_cache_key           = Domain_Solution_Action_GenerateAuthenticationToken::makeKey($authentication_token_data->user_id);
+		/** @var Struct_Solution_AuthenticationKeyCache|false $last_active_key_obj */
+		/** @var Struct_Solution_AuthenticationToken $authentication_token_data */
+		[$authentication_token_data, $last_active_key_obj] = Domain_Solution_Entity_AuthenticationValidator::validate($authentication_token);
+		$token_cache_key = Domain_Solution_Action_GenerateAuthenticationToken::makeKey($authentication_token_data->user_id);
 
 		try {
 
@@ -49,8 +52,14 @@ class Domain_Solution_Scenario_Api {
 		Type_User_Notifications::updateUserIdForDevice($user_id, getDeviceId());
 
 		// чистим кэш и выдаем сессию
-		Type_Session_Main::doLoginSession($user_id);
+		$login_type = !$last_active_key_obj || is_null($last_active_key_obj->login_type) ? 0 : $last_active_key_obj->login_type;
+		Type_Session_Main::doLoginSession($user_id, $login_type);
 		Type_User_ActionAnalytics::sessionStart($user_id);
+
+		$user_agent  = getUa();
+		$device_name = Type_Api_Platform::getDeviceName($user_agent);
+		$app_version = Type_Api_Platform::getVersion($user_agent);
+		Domain_User_Action_Security_Device_OnSuccessLogin::do($user_id, $login_type, $device_name, $app_version, ONPREMISE_VERSION);
 
 		Domain_Solution_Action_InvalidateAuthenticationKey::exec($token_cache_key);
 

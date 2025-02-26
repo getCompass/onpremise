@@ -6,6 +6,7 @@ use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\RowNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * Класс обработки сценариев сокет событий
@@ -595,7 +596,9 @@ class Domain_Conversation_Scenario_Socket {
 		$message_text = Type_Conversation_Message_Main::getHandler($message)::getText($message);
 		$system_info  = Gateway_Socket_Intercom::SYSTEM_SEND_REMIND_MESSAGE;
 
-		return "{$system_info}\n\n<b>Сообщение</b>\n{$message_text}\n\n<b>Комментарий к напоминанию</b>\n{$comment}";
+		$comment_for_remind = mb_strlen($comment) > 0 ? "\n\n<b>Комментарий к напоминанию</b>\n" : "";
+
+		return "{$system_info}\n\n<b>Сообщение</b>\n{$message_text}{$comment_for_remind}{$comment}";
 	}
 
 	/**
@@ -782,5 +785,28 @@ class Domain_Conversation_Scenario_Socket {
 		}
 
 		return [$single_conversation, $heroes_conversation];
+	}
+
+	/**
+	 * Отправляем сообщение об успешной авторизации устройства в чат поддержки
+	 *
+	 * @throws ParamException
+	 * @throws \BaseFrame\Exception\Domain\LocaleTextNotFound
+	 */
+	public static function sendDeviceLoginSuccess(int $user_id, string $login_type, string $device_name, string $app_version, string $server_version, string $locale):void {
+
+		if (ServerProvider::isOnPremise() || !defined(__NAMESPACE__ . "\IS_ALLOW_SEND_DEVICE_LOGIN_SUCCESS") || !IS_ALLOW_SEND_DEVICE_LOGIN_SUCCESS) {
+			return;
+		}
+
+		try {
+
+			$left_menu_row    = Type_Conversation_LeftMenu::getSupportGroupByUser($user_id);
+			$conversation_map = $left_menu_row["conversation_map"];
+		} catch (RowNotFoundException) {
+			return;
+		}
+
+		Type_Conversation_Support::sendDeviceLoginSuccess($conversation_map, $login_type, $device_name, $app_version, $server_version, $locale);
 	}
 }

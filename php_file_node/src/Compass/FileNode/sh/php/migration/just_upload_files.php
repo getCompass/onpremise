@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Compass\FileNode;
 
@@ -57,14 +57,15 @@ class Migration_Just_Upload_Files {
 
 			$file_source        = (int) $raw_file["source_type"];
 			$original_file_name = $raw_file["original_name"];
-			$tmp_file_path      = $raw_file["tmp_file_path"];
+			$tmp_file_path      = "/app/www" . $raw_file["tmp_file_path"];
+			$uploader_user_id   = $raw_file["uploader_user_id"] ?: $sender_user_id;
 
 			// обрезаем имя файла если необходимо
 			$original_file_name = $this->_cutFileName($original_file_name);
 
 			try {
 
-				[$file_row] = Helper_File::uploadFileByMigration($sender_user_id, $space_id, $domino_url, $file_source, $original_file_name, $tmp_file_path, $need_work);
+				[$file_row] = Helper_File::uploadFileByMigration($uploader_user_id, $space_id, $domino_url, $file_source, $original_file_name, $tmp_file_path, $need_work);
 				$file_map = \CompassApp\Pack\File::tryDecrypt($file_row["file_key"]);
 				$this->_insertBoundFiles($raw_file["uniq"], $file_map, $file_row["file_name"], $file_row["file_type"], $file_row["file_hash"]);
 
@@ -80,7 +81,7 @@ class Migration_Just_Upload_Files {
 				Type_System_Admin::log("migration-file-upload-error", "uniq: {$raw_file["uniq"]}");
 			} catch (\Exception $e) {
 
-				console("Не смогли загрузить файл {$tmp_file_path} из-за непредвиденной ошибки: " . $e->getMessage());
+				console("Не смогли загрузить файл {$tmp_file_path} из-за непредвиденной ошибки");
 				Type_System_Admin::log("migration-file-upload-error", "uniq: {$raw_file["uniq"]}");
 			}
 
@@ -106,10 +107,11 @@ class Migration_Just_Upload_Files {
 			}
 
 			$output[] = [
-				"uniq"          => $file_string_key_list[0],
-				"original_name" => $file_string_key_list[1],
-				"source_type"   => $file_string_key_list[2],
-				"tmp_file_path" => $file_string_key_list[3],
+				"uniq"             => $file_string_key_list[0],
+				"original_name"    => $file_string_key_list[1],
+				"source_type"      => $file_string_key_list[2],
+				"tmp_file_path"    => $file_string_key_list[3],
+				"uploader_user_id" => (int) ($file_string_key_list[4] ?? 0),
 			];
 		}
 

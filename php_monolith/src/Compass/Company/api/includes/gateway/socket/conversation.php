@@ -915,6 +915,28 @@ class Gateway_Socket_Conversation extends Gateway_Socket_Default {
 	}
 
 	/**
+	 * отправляем сообщение от бота в группу
+	 *
+	 * @throws ReturnFatalException
+	 */
+	public static function sendUserbotMessageToGroup(int $userbot_user_id, string $conversation_key, string $message_text):void {
+
+		$params = [
+			"userbot_user_id"  => $userbot_user_id,
+			"conversation_key" => $conversation_key,
+			"text"             => $message_text,
+		];
+		[$status, $response] = self::doCall("userbot.sendMessageToGroup", $params);
+
+		// если произошла ошибка
+		if ($status != "ok") {
+
+			$txt = toJson($response);
+			throw new ReturnFatalException("Socket request status != ok. Response: $txt");
+		}
+	}
+
+	/**
 	 * добавляем реакцию к сообщению
 	 *
 	 * @throws ReturnFatalException

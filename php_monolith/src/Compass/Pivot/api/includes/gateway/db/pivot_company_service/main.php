@@ -39,6 +39,16 @@ class Gateway_Db_PivotCompanyService_Main {
 	}
 
 	/**
+	 * Метод устанавливает уровень изоляции READ COMMITTED для следующей начинаемой транзакций
+	 *
+	 * @return bool
+	 */
+	public static function setReadCommittedIsolationLevelInTransaction():bool {
+
+		return ShardingGateway::database(self::_getDbKey())->setTransactionIsolationLevel(\myPDObasic::ISOLATION_READ_COMMITTED);
+	}
+
+	/**
 	 * метод откатывает транзакцию
 	 *
 	 */

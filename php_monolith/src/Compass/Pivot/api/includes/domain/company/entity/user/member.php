@@ -217,12 +217,6 @@ class Domain_Company_Entity_User_Member {
 		// если вступил человек
 		if (Type_User_Main::isHuman($npc_type)) {
 
-			// если участник занимает слот в пространстве
-			if (in_array($user_space_role, self::SPACE_RESIDENT_ROLE_LIST)) {
-
-				Type_Space_NewUserJoinedSpace::send($user_id, $user_created_at, $company_id, $company->created_by_user_id);
-			}
-
 			// для всех случаев – фиксируем в аналитике и отправляем событие в crm
 			Type_Space_ActionAnalytics::init($user_id)->send($company_id, Type_Space_ActionAnalytics::NEW_MEMBER);
 			Domain_Crm_Entity_Event_SpaceJoinMember::create($company_id, $user_id, $user_space_role, $user_space_permissions, $user_company->created_at);

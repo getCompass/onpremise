@@ -1,0 +1,8 @@
+.git
+.idea
+.gitignore
+.golangci.yml
+.gitlab-ci.yml
+tag.gitlab-ci.yml
+run_test.sh
+readme.debug

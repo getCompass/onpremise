@@ -1,11 +1,16 @@
 import { useGetResponse } from "../_index.ts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ApiUserInfoData } from "../_types.ts";
 import {
+	ApiUserInfoData,
+	ONPREMISE_LDAP_LOGIN_TYPE,
+} from "../_types.ts";
+import {
+	authenticationSessionTimeLeftState,
 	authState,
 	firstAuthState,
 	isRegistrationState,
 	userInfoDataState,
+	deviceLoginTypeState,
 } from "../_stores.ts";
 import { useSetAtom } from "jotai";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
@@ -58,6 +63,8 @@ export function useApiPivotAuthLdapBegin() {
 	const isJoinLink = useIsJoinLink();
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
+	const setSessionTimeLeft = useSetAtom(authenticationSessionTimeLeftState);
+	const setDeviceLoginType = useSetAtom(deviceLoginTypeState);
 
 	return useMutation({
 		retry: false,
@@ -88,6 +95,8 @@ export function useApiPivotAuthLdapBegin() {
 
 			setAuth(null);
 			setUserInfoDataState(response.user_info);
+			setSessionTimeLeft(60 * 15);
+			setDeviceLoginType(ONPREMISE_LDAP_LOGIN_TYPE);
 
 			navigateToPage("token");
 			navigateToDialog("token_page");

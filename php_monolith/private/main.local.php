@@ -92,6 +92,9 @@ define("GO_RATING_GRPC_PORT"              , "${GO_RATING_GRPC_PORT}");
 define("GO_MOCK_SERVICE_URL"			, "${GO_MOCK_SERVICE_URL}");
 define("GO_TEST_URL"               		, "${GO_TEST_URL}");
 
+define("GO_ACTIVITY_GRPC_HOST"		, "${GO_ACTIVITY_HOST}");
+define("GO_ACTIVITY_GRPC_PORT"		, ${GO_ACTIVITY_GRPC_PORT});
+
 # endregion
 ##########################################################
 // @formatter:on

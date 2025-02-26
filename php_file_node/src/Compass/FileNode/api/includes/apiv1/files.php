@@ -31,9 +31,13 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 	 */
 	public function tryUpload():array {
 
-		$tmp_file_path = $this->post(\Formatter::TYPE_STRING, "file_path");
-		$file_name     = $this->post(\Formatter::TYPE_STRING, "file_name");
-		$token         = $this->post(\Formatter::TYPE_STRING, "token");
+		$tmp_file_path      = $this->post(\Formatter::TYPE_STRING, "file_path");
+		$file_name          = $this->post(\Formatter::TYPE_STRING, "file_name");
+		$original_file_name = $this->post(\Formatter::TYPE_STRING, "original_file_name", false);
+		$token              = $this->post(\Formatter::TYPE_STRING, "token");
+
+		// фикс для BAC-17868, когда в имени файла может быть символ ";"
+		$file_name = $original_file_name === false ? $file_name : $original_file_name;
 
 		// получаем информацию из мемкэша по токену и проверяем что он валиден
 		$cache     = Gateway_Memcache_Token::getDataByToken($token, Gateway_Memcache_Token::UPLOAD_TOKEN_TYPE);

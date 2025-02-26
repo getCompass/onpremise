@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Server\ServerProvider;
+use BaseFrame\System\File;
 
 require_once __DIR__ . "/../../../../../start.php";
 
@@ -16,7 +17,7 @@ class Start_Create_System_Bot_List {
 	 */
 	public static function do():void {
 
-		$bot_info_list = fromJson(file_get_contents(PIVOT_MODULE_ROOT . "sh/start/bot_info_list.json"));
+		$bot_info_list = fromJson(File::init(PIVOT_MODULE_ROOT . "sh/start", "bot_info_list.json")->read());
 
 		try {
 

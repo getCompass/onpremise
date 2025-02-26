@@ -11,8 +11,8 @@ class Domain_Member_Entity_Sanitizer {
 	protected const _MAX_STATUS_LENGTH        = 500;
 	protected const _MAX_BADGE_CONTENT_LENGTH = 8;
 	protected const _MBTI_TYPE_PER_QUERY      = 100;  // максимальное количество результатов в getListByMBTI
-	protected const _DESCRIPTION_REGEXP       = "/[^а-яёa-z0-9[:punct:]'\- œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ¿¡<>]/ui";
-	protected const _BADGE_REGEXP             = "/[^а-яёa-z0-9 œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ:~@#%&_={},;.'^*()+$\/\-\[\]\"\\\\]/uism";
+	protected const _DESCRIPTION_REGEXP       = "/[^а-яёa-z0-9[:punct:]'\- œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñЎўІі¿¡<>]/ui";
+	protected const _BADGE_REGEXP             = "/[^а-яёa-z0-9 œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñЎўІі:~@#%&_={},;.'^*()+$\/\-\[\]\"\\\\]/uism";
 
 	/**
 	 * Очистка short_description пользователя

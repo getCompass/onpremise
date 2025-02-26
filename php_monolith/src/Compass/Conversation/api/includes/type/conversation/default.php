@@ -126,7 +126,7 @@ abstract class Type_Conversation_Default {
 
 	// формируем данные для вставки в левое меню
 	// @long - большая структура
-	protected static function _makeInsertDataLeftMenuRow(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted):array {
+	protected static function _makeInsertDataLeftMenuRow(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted = false):array {
 
 		$muted_until = $is_migration_muted ? time() : 0;
 

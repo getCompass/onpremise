@@ -88,6 +88,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		"attachPreview",
 		"deletePreviewList",
 		"hidePreviewList",
+		"sendDeviceLoginSuccess",
 	];
 
 	// -------------------------------------------------------
@@ -2804,6 +2805,26 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		$thread_message_map_list = $this->post(\Formatter::TYPE_ARRAY, "thread_message_map_list");
 
 		Domain_Conversation_Scenario_Socket::hidePreviewList($this->user_id, $thread_message_map_list);
+
+		return $this->ok();
+	}
+
+	/**
+	 * Отправляем сообщение об успешной авторизации устройства в чат поддержки
+	 *
+	 * @throws ParamException
+	 * @throws \BaseFrame\Exception\Domain\LocaleTextNotFound
+	 */
+	public function sendDeviceLoginSuccess():array {
+
+		$user_id        = $this->post(\Formatter::TYPE_INT, "user_id");
+		$login_type     = $this->post(\Formatter::TYPE_STRING, "login_type");
+		$device_name    = $this->post(\Formatter::TYPE_STRING, "device_name");
+		$app_version    = $this->post(\Formatter::TYPE_STRING, "app_version");
+		$server_version = $this->post(\Formatter::TYPE_STRING, "server_version");
+		$locale         = $this->post(\Formatter::TYPE_STRING, "locale");
+
+		Domain_Conversation_Scenario_Socket::sendDeviceLoginSuccess($user_id, $login_type, $device_name, $app_version, $server_version, $locale);
 
 		return $this->ok();
 	}

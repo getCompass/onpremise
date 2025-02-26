@@ -393,6 +393,33 @@ class Type_File_Utils {
 	}
 
 	/**
+	 * Перемещаем файл из папки ввв для миграции
+	 *
+	 * @param string $src_file_path - путь до копируемого файла
+	 * @param string $dst_file_path - путь до файла назначения
+	 *
+	 * @return void
+	 */
+	public static function moveFromFilesToFilesForMigration(string $src_file_path, string $dst_file_path):void {
+
+		$tmp_files_dir  = PATH_WWW;
+		$files_work_dir = PATH_WWW . FOLDER_FILE_NAME . "/";
+
+		$src_file_subpath = self::_makeSubpath($tmp_files_dir, $src_file_path);
+		$dst_file_subpath = self::_makeSubpath($files_work_dir, $dst_file_path);
+
+		$src_file = File::init($tmp_files_dir, $src_file_subpath);
+		$dst_file = File::init($files_work_dir, $dst_file_subpath);
+
+		// если успешно скопировали - удаляем файл, с которого копировали
+		if ($src_file->copy($dst_file)) {
+			$src_file->delete();
+		}
+
+		$dst_file->chmod(0644);
+	}
+
+	/**
 	 * Получить подкаталог в рабочей директории
 	 */
 	protected static function _makeSubpath(string $work_dir, string $file_path):string {

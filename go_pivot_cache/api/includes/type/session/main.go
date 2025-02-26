@@ -118,3 +118,9 @@ func ResetCache() {
 
 	mainSessionStore.reset()
 }
+
+// обновить last_online_at сессий
+func UpdateLastOnlineAt() {
+
+	mainSessionStore.updateLastOnlineAt()
+}

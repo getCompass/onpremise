@@ -1,8 +1,12 @@
 package gatewayPhpPivot
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"go_sender/api/conf"
 	"go_sender/api/includes/type/push"
 	"go_sender/api/includes/type/socket"
 	socketAuthKey "go_sender/api/includes/type/socket/auth"
@@ -91,4 +95,81 @@ func SendJitsiVoipPush(userId int64, pushData interface{}, uuid string, timeToLi
 	if err != nil || response.Status != "ok" {
 		log.Errorf("Не смогли выполнить запрос %v", err)
 	}
+}
+
+// ValidateUserSession проверяет пользовательскую сессию через PHP API.
+func ValidateUserSession(userID int64, pivotSession string) (string, error) {
+
+	// подготовка параметров для запроса
+	request := map[string]interface{}{
+		"method":        "user.validateSession",
+		"pivot_session": pivotSession,
+	}
+
+	// кодируем сообщение в JSON
+	data, err := json.Marshal(request)
+	if err != nil {
+
+		log.Errorf("Ошибка кодирования JSON: %v", err)
+		return "", err
+	}
+
+	moduleUrl, signature := preparePivotParams(data)
+
+	// выполняем HTTP-запрос
+	responseBytes, err := socket.DoCallPivot(moduleUrl, request["method"].(string), data, signature, userID)
+	if err != nil {
+
+		log.Errorf("Ошибка вызова PHP API: %v", err)
+		return "", err
+	}
+
+	// декодируем ответ
+	var response struct {
+		Status   string `json:"status"`
+		Response struct {
+			SessionUniq string `json:"session_uniq"`
+		} `json:"response"`
+		ErrorMessage string `json:"error_message,omitempty"`
+	}
+	err = json.Unmarshal(responseBytes, &response)
+	if err != nil {
+
+		log.Errorf("Ошибка декодирования ответа JSON: %v", err)
+		return "", err
+	}
+
+	// проверка статуса ответа
+	if response.Status != "ok" {
+
+		log.Errorf("Сервер вернул ошибку: %s", response.ErrorMessage)
+		return "", fmt.Errorf("сервер вернул ошибку: %s", response.ErrorMessage)
+	}
+
+	return response.Response.SessionUniq, nil
+}
+
+// подготовить параметры для запроса
+func preparePivotParams(data json.RawMessage) (string, string) {
+
+	// получаем урл модуля в который уйдет событие
+	configSocket := conf.GetSocketConfig()
+	moduleUrl := configSocket.SocketUrl["php_pivot"] + configSocket.SocketModule["php_pivot"]
+
+	config, _ := conf.GetConfig()
+	socketKeyMe := config.SocketKeyMe
+
+	// получаем подпись модуля
+	signature := GetPivotSignature(socketKeyMe, data)
+
+	return moduleUrl, signature
+}
+
+// сгенерить сигнатуру для запроса
+func GetPivotSignature(privateKey string, jsonParams json.RawMessage) string {
+
+	data := []byte(privateKey + string(jsonParams))
+	hash := md5.Sum(data) // nosemgrep
+
+	return hex.EncodeToString(hash[:])
 }

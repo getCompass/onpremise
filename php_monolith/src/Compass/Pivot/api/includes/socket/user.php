@@ -24,6 +24,7 @@ class Socket_User extends \BaseFrame\Controller\Socket {
 		"getScreenTimeStat",
 		"getUsersIntersectSpaces",
 		"incConferenceMembershipRating",
+		"validateSession",
 	];
 
 	/**
@@ -189,5 +190,26 @@ class Socket_User extends \BaseFrame\Controller\Socket {
 		Domain_User_Scenario_Socket::incConferenceMembershipRating($user_id, $space_id);
 
 		return $this->ok();
+	}
+
+	/**
+	 * метод для валидации pivot-сессии пользователя
+	 *
+	 * @return array
+	 */
+	public function validateSession():array {
+
+		$pivot_session = $this->post(\Formatter::TYPE_STRING, "pivot_session");
+
+		// проверяем, что сессия валидна
+		try {
+			$session_uniq = Domain_User_Scenario_Socket::validateSession($pivot_session);
+		} catch (\cs_DecryptHasFailed|\cs_UnpackHasFailed) {
+			throw new ParamException("incorrect pivot_session_key");
+		}
+
+		return $this->ok([
+			"session_uniq" => (string) $session_uniq,
+		]);
 	}
 }

@@ -19,7 +19,9 @@ class Domain_Jitsi_Scenario_Www {
 	 * @return Struct_Api_Conference_Data
 	 * @throws Domain_Jitsi_Exception_Conference_NotFound
 	 * @throws Domain_Jitsi_Exception_Conference_WrongPassword
+	 * @throws Domain_Jitsi_Exception_PermanentConference_ConferenceIsDeleted
 	 * @throws ParseFatalException
+	 * @throws RowNotFoundException
 	 * @throws Domain_Jitsi_Exception_Conference_IsFinished
 	 */
 	public static function getConferenceData(string $link):Struct_Api_Conference_Data {
@@ -32,6 +34,13 @@ class Domain_Jitsi_Scenario_Www {
 
 		// проверяем, что конференция не завершена
 		Domain_Jitsi_Entity_Conference_Asserts::init($conference)->assertNotFinished();
+
+		// проверяем что постоянная конференция не удалена
+		if (Domain_Jitsi_Entity_Conference::isPermanent($conference)) {
+
+			$permanent_conference = Domain_Jitsi_Entity_PermanentConference::getOne($conference->conference_id);
+			Domain_Jitsi_Entity_PermanentConference::assertNotDeleted($permanent_conference);
+		}
 
 		return Struct_Api_Conference_Data::buildFromDB($conference);
 	}

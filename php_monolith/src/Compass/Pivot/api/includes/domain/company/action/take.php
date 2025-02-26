@@ -108,6 +108,7 @@ class Domain_Company_Action_Take {
 	protected static function _getVacant():Struct_Db_PivotCompanyService_CompanyInitRegistry {
 
 		/** начало транзакции для списка свободных компаний */
+		Gateway_Db_PivotCompanyService_Main::setReadCommittedIsolationLevelInTransaction();
 		Gateway_Db_PivotCompanyService_Main::beginTransaction();
 
 		// получаем горячую свободную компанию

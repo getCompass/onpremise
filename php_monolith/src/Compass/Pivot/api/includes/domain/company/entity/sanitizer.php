@@ -8,7 +8,7 @@ namespace Compass\Pivot;
 class Domain_Company_Entity_Sanitizer {
 
 	// регулярка для названия компании
-	protected const _COMPANY_NAME_REGEXP = "/[^а-яёa-z0-9[:punct:] œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ¿¡]|[<>]/ui";
+	protected const _COMPANY_NAME_REGEXP = "/[^а-яёa-z0-9[:punct:] œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ¿¡ЎўІі]|[<>]/ui";
 
 	/**
 	 * Очистка названии компании от лишних символов

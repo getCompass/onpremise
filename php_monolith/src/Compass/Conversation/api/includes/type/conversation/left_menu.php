@@ -520,6 +520,9 @@ class Type_Conversation_LeftMenu {
 		if (Type_Conversation_Message_Main::getHandler($message)::getType($message) == CONVERSATION_MESSAGE_TYPE_FILE) {
 			$file_map = Type_Conversation_Message_Main::getHandler($message)::getFileMap($message);
 		}
+		if (Type_Conversation_Message_Main::getHandler($message)::getType($message) == CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_FILE) {
+			$file_map = Type_Conversation_Message_Main::getHandler($message)::getFileMap($message);
+		}
 
 		return $file_map;
 	}

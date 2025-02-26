@@ -2,14 +2,19 @@ import { useGetResponse } from "../_index.ts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai/index";
 import {
+	authenticationSessionTimeLeftState,
 	authSsoState,
 	authState,
 	firstAuthState,
 	isRegistrationState,
 	userInfoDataState,
+	deviceLoginTypeState,
 } from "../_stores.ts";
 import { useNavigateDialog, useNavigatePage } from "../../components/hooks.ts";
-import { ApiUserInfoData } from "../_types.ts";
+import {
+	ApiUserInfoData,
+	ONPREMISE_SSO_LOGIN_TYPE,
+} from "../_types.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
 
 /* параметры api-метода federation/api/onpremiseweb/sso/auth/begin */
@@ -91,6 +96,8 @@ export function useApiPivotAuthSsoBegin() {
 	const isJoinLink = useIsJoinLink();
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
+	const setSessionTimeLeft = useSetAtom(authenticationSessionTimeLeftState);
+	const setDeviceLoginType = useSetAtom(deviceLoginTypeState);
 
 	return useMutation({
 		retry: false,
@@ -123,6 +130,8 @@ export function useApiPivotAuthSsoBegin() {
 			setAuth(null);
 			setAuthSso(null);
 			setUserInfoDataState(response.user_info);
+			setSessionTimeLeft(60 * 15);
+			setDeviceLoginType(ONPREMISE_SSO_LOGIN_TYPE);
 
 			navigateToPage("token");
 			navigateToDialog("token_page");

@@ -169,7 +169,7 @@ class Type_File_Main {
 		self::_throwIfFileExist($file_path);
 
 		// перемещаем файл
-		Type_File_Utils::moveFromTmpToFiles($src_file_path, $file_path);
+		Type_File_Utils::moveFromFilesToFilesForMigration($src_file_path, $file_path);
 
 		return $part_path;
 	}

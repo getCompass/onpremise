@@ -117,6 +117,12 @@ export const text = defineRecipe({
 				fontFamily: "inter_regular",
 				fontWeight: "normal",
 			},
+			inter_14_21_500: {
+				fontSize: "14px",
+				lineHeight: "21px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
 			inter_14_21_600: {
 				fontSize: "14px",
 				lineHeight: "20px",

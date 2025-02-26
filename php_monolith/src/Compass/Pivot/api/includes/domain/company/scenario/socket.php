@@ -7,6 +7,7 @@ use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\CompanyNotServedException;
 use BaseFrame\Exception\Request\EndpointAccessDeniedException;
+use BaseFrame\Exception\Request\ParamException;
 
 /**
  * Сценарии компании для API

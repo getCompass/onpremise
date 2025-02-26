@@ -315,6 +315,7 @@ class Migration_Export_Messages {
 
 	/**
 	 * Форматирование сообщения
+	 * @long
 	 */
 	protected function _formatMessage(array $message, array $hidden_user_list):array {
 
@@ -332,23 +333,23 @@ class Migration_Export_Messages {
 			$formatted = $this->_addEditInfo($message, $formatted);
 		}
 
-		if (!empty($message["reaction_list"])) {
+		if (isset($message["reaction_list"])) {
 			$formatted = $this->_addReactions($message, $formatted);
 		}
 
-		if (!empty($message["mention_user_id_list"]) || $message["text"]) {
+		if ((isset($message["mention_user_id_list"]) && count($message["mention_user_id_list"]) > 0) || isset($message["text"])) {
 			$formatted = $this->_addRichText($message, $formatted);
 		}
 
-		if (!empty($message["data"]["file_map"])) {
+		if (isset($message["data"]["file_map"]) && mb_strlen($message["data"]["file_map"]) > 0) {
 			$formatted = $this->_addFiles($message, $formatted);
 		}
 
-		if (!empty($message["data"]["quoted_message_list"])) {
+		if (isset($message["data"]["quoted_message_list"]) && count($message["data"]["quoted_message_list"]) > 0) {
 			$formatted = $this->_addQuotedMessages($message, $formatted);
 		}
 
-		if (!empty($message["data"]["reposted_message_list"])) {
+		if (isset($message["data"]["reposted_message_list"]) && count($message["data"]["reposted_message_list"]) > 0) {
 			$formatted = $this->_addRepostedMessages($message, $formatted);
 		}
 
@@ -456,7 +457,7 @@ class Migration_Export_Messages {
 	 */
 	protected function _formatRichTextElements(array $message, array $elements = []):array {
 
-		if ($message["text"]) {
+		if (isset($message["text"])) {
 			$elements[] = $this->_createTextElement($message["text"]);
 		}
 
@@ -595,7 +596,7 @@ class Migration_Export_Messages {
 								"block_id" => "rich_text",
 								"elements" => [
 									[
-										"type"     => "rich_text_section",
+										"type"     => "rich_text_quote",
 										"elements" => $this->_formatRepostOrQuoteMessage($message["data"]["reposted_message_list"]),
 									],
 								],
@@ -618,7 +619,7 @@ class Migration_Export_Messages {
 
 		foreach ($message_list as $message) {
 
-			if (!empty($message["mention_user_id_list"]) || $message["text"]) {
+			if ((isset($message["mention_user_id_list"]) && count($message["mention_user_id_list"]) > 0) || isset($message["text"])) {
 				$elements = $this->_formatRichTextElements($message, $elements);
 			}
 
@@ -646,18 +647,18 @@ class Migration_Export_Messages {
 		$files = [];
 		foreach ($message_list as $message) {
 
-			if (!empty($message["data"]["file_map"])) {
+			if (isset($message["data"]["file_map"]) && mb_strlen($message["data"]["file_map"]) > 0) {
 				$files[] = $this->_formatFileInfo($message);
 			}
 
 			// Рекурсивно проверяем вложенные сообщения
-			if (!empty($message["data"]["quoted_message_list"])) {
+			if (isset($message["data"]["quoted_message_list"])) {
 				$files = array_merge($files, $this->_getFilesFromMessages($message["data"]["quoted_message_list"]));
 			}
-			if (!empty($message["data"]["quoted_message"])) {
+			if (isset($message["data"]["quoted_message"])) {
 				$files = array_merge($files, $this->_getFilesFromMessages([$message["data"]["quoted_message"]]));
 			}
-			if (!empty($message["data"]["reposted_message_list"])) {
+			if (isset($message["data"]["reposted_message_list"])) {
 				$files = array_merge($files, $this->_getFilesFromMessages($message["data"]["reposted_message_list"]));
 			}
 		}

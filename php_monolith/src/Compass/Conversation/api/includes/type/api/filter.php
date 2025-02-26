@@ -19,7 +19,7 @@ class Type_Api_Filter {
 	protected const _MAX_FILE_NAME_LENGTH         = 255;  // максимальная длина названия файла
 	protected const _MAX_GROUP_DESCRIPTION_LENGTH = 500; // максимальная длина описания группы
 	// регулярка для фильтрации названия группы
-	protected const _GROUP_NAME_REGEXP = "/[^а-яёa-z0-9[:punct:] œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ¿¡]|[<>]/ui";
+	protected const _GROUP_NAME_REGEXP = "/[^а-яёa-z0-9[:punct:] œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ¿¡ЎўІі]|[<>]/ui";
 
 	// список неподдерживаемых символов
 	protected const _NOT_ALLOW_CHARS = [

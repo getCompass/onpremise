@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"go_sender/api/conf"
+	gatewayPhpPivot "go_sender/api/includes/gateway/php_pivot"
 	"go_sender/api/includes/methods/sender"
+	"go_sender/api/includes/type/activitycache"
 	"go_sender/api/includes/type/event"
 	Isolation "go_sender/api/includes/type/isolation"
 	"go_sender/api/includes/type/push"
@@ -45,6 +48,7 @@ type clientConnectRequest struct {
 		Platform         string `json:"platform"`                     // платформа устройства
 		MethodConfigHash string `json:"method_config_hash,omitempty"` // sha1 хэш-сумма от содержимого конфига поддерживаемых версий ws событий
 		AppVersion       string `json:"app_version,omitempty"`        // версия приложения
+		PivotSession     string `json:"pivot_session,omitempty"`      // идентификатор сессии
 	} `json:"ws_data"`
 }
 
@@ -90,6 +94,22 @@ func (client) Connect(data *dataStruct) {
 
 		Error(data.connection, 101, fmt.Sprintf("Invalid token, deviceId: %s platform: %s", deviceId, platform))
 		return
+	}
+
+	// если передана сессия, то проверяем её
+	config, err := conf.GetConfig()
+	if requestData.WSData.PivotSession != "" && (config.Role == "pivot" || config.CurrentServer == "monolith") {
+
+		// делаем запрос на проверку сессии
+		sessionUniq, err := gatewayPhpPivot.ValidateUserSession(requestData.WSData.UserID, requestData.WSData.PivotSession)
+		if err != nil {
+
+			Error(data.connection, 102, fmt.Sprintf("Invalid pivot_session"))
+			return
+		}
+
+		// записываем sessionUniq в подключение
+		data.connection.SessionUniq = sessionUniq
 	}
 
 	// сохраняем информацию о подключении
@@ -324,6 +344,16 @@ func (client) Ping(data *dataStruct) {
 	}{
 		Uid: requestData.WSData.Uid,
 	})
+
+	// записываем активность
+	config, err := conf.GetConfig()
+	if config.Role == "pivot" || config.CurrentServer == "monolith" {
+
+		err := activitycache.AddActivity(data.connection.UserId, functions.GetCurrentTimeStamp(), data.connection.SessionUniq)
+		if err != nil {
+			return
+		}
+	}
 }
 
 // ставим фокус на подключение

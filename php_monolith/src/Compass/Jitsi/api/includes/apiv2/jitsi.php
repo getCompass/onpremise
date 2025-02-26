@@ -20,7 +20,6 @@ class Apiv2_Jitsi extends \BaseFrame\Controller\Api {
 		"setConferenceOptions",
 		"finishConference",
 		"leaveActiveConference",
-		"getPermanentList",
 	];
 
 	// -------------------------------------------------------

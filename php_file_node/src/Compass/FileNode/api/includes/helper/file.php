@@ -12,10 +12,10 @@ class Helper_File {
 
 	protected const _REDIRECT_MAX_COUNT               = 10;                // максимальное количество редиректов
 	public const    MAX_IMAGE_DOWNLOAD_CONTENT_LENGTH = 20 * 1024 * 1024;  // максимальный размер содержимого для превью
-	public const    MAX_FILE_DOWNLOAD_CONTENT_LENGTH  = 50 * 1024 * 1024;  // максимальный размер содержимого для файлов
+	public const    MAX_FILE_DOWNLOAD_CONTENT_LENGTH  = MAX_FILE_SIZE_MB * 1024 * 1024;  // максимальный размер содержимого для файлов
 
 	// скачивание файла
-	public static function downloadFile(string $file_url, bool $is_source_trusted = false, int $timeout = 2, string|bool $node_id = false, int $max_file_size = self::MAX_IMAGE_DOWNLOAD_CONTENT_LENGTH, string $proxy = ""):string {
+	public static function downloadFile(string $file_url, bool $is_source_trusted = false, int $timeout = DEFAULT_UPLOAD_TIMEOUT_SEC, string|bool $node_id = false, int $max_file_size = self::MAX_IMAGE_DOWNLOAD_CONTENT_LENGTH, string $proxy = ""):string {
 
 		// если файл находится на этой же ноде
 		if (NODE_ID == $node_id) {
@@ -66,7 +66,7 @@ class Helper_File {
 		$curl->setOpt(CURLOPT_NOBODY, false);
 		$curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
 
-		// мониторим, сколько скачали, если больше 20 мб, то завершаем
+		// мониторим, сколько скачали, если больше лимита, то завершаем
 		// нельзя верить только хедеру content-length. Злоумышленник или кривые руки разраба может им манипулировать. Для этого и добавлена функция прогресса
 		$curl->setOpt(CURLOPT_MAXFILESIZE, $max_file_size);
 		$curl->setOpt(CURLOPT_PROGRESSFUNCTION, function(int $download_size, int $downloaded, int $max_file_size) {

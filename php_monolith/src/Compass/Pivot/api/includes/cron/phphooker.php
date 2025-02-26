@@ -171,6 +171,7 @@ class Cron_Phphooker extends \Cron_Default {
 				Type_Phphooker_Main::TASK_TYPE_USER_ENTERING_FIRST_SPACE           => $this->_onUserJoinFirstSpace($params["user_id"], $params["company_id"], $params["entry_id"]),
 				Type_Phphooker_Main::TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES        => $this->_kickUserFromAllCompanies($params["user_id"]),
 				Type_Phphooker_Main::TASK_TYPE_UPDATE_MEMBER_INFO_ON_ALL_COMPANIES => $this->_updateMemberInfoOnAllCompanies($params["user_id"], $params["badge_content"], $params["status"], $params["description"]),
+				Type_Phphooker_Main::TASK_TYPE_ON_SUCCESS_DEVICE_LOGIN             => $this->_onSuccessDeviceLogin($params["user_id"], $params["login_type"], $params["device_name"], $params["app_version"], $params["server_version"], $params["locale"]),
 				default                                                            => throw new ParseFatalException("Unhandled task_type [{$task_type}] in " . __METHOD__),
 			};
 		} catch (\Exception $e) {
@@ -737,6 +738,54 @@ class Cron_Phphooker extends \Cron_Default {
 				// если передать color без badge_content то админу при установке снесет бейдж
 				$badge_color_id = $badge_content === false ? false : $current_badge_color_id;
 				Gateway_Socket_Company::updateMemberInfo($company->domino_id, $company->company_id, $private_key, $user_id, $description, $status, $badge_content, $badge_color_id);
+			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
+				// !!! если вдруг компания неактивна, то продолжаем
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * успешная авторизация устройства пользователя
+	 *
+	 * @throws ParseFatalException
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
+	 * @throws \cs_SocketRequestIsFailed
+	 * @throws cs_CompanyIncorrectCompanyId
+	 * @throws cs_CompanyNotExist
+	 */
+	protected function _onSuccessDeviceLogin(int $user_id, string $login_type, string $device_name, string $app_version, string $server_version, string $locale):bool {
+
+		// получаем все компании пользователя
+		$user_company_list = Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id);
+
+		// сортируем по order компании
+		usort($user_company_list, function(Struct_Db_PivotUser_Company $a, Struct_Db_PivotUser_Company $b) {
+
+			return $b->order <=> $a->order;
+		});
+
+		// проходимся по каждой компании
+		foreach ($user_company_list as $user_company) {
+
+			try {
+
+				$company = Domain_Company_Entity_Company::get($user_company->company_id);
+
+				// пропускаем если компания неактивная
+				if (!Domain_Company_Entity_Company::isCompanyActive($company)) {
+					continue;
+				}
+
+				$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
+				Gateway_Socket_Conversation::sendDeviceLoginSuccess(
+					$company->domino_id, $company->company_id, $private_key, $user_id, $login_type, $device_name, $app_version, $server_version, $locale
+				);
+
+				// заканчиваем после первой же успешной отправки в активную компанию
+				return true;
 			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
 				// !!! если вдруг компания неактивна, то продолжаем
 			}

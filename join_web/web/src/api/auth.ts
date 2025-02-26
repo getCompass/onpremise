@@ -34,6 +34,7 @@ export function useApiAuthLogout() {
 
 export type ApiAuthGenerateTokenAcceptArgs = {
 	join_link_uniq: undefined | string;
+	login_type: undefined | number;
 };
 
 export type ApiAuthGenerateToken = {
@@ -48,11 +49,14 @@ export function useApiAuthGenerateToken() {
 	return useMutation({
 		retry: false,
 		networkMode: "always",
-		mutationFn: async ({ join_link_uniq }: ApiAuthGenerateTokenAcceptArgs) => {
+		mutationFn: async ({ join_link_uniq, login_type }: ApiAuthGenerateTokenAcceptArgs) => {
 			const body = new URLSearchParams();
 
 			if (join_link_uniq !== undefined) {
 				body.append("join_link_uniq", join_link_uniq);
+			}
+			if (login_type !== undefined) {
+				body.append("login_type", login_type.toString());
 			}
 
 			const response = await getResponse<ApiAuthGenerateToken>("auth/generateToken", body);

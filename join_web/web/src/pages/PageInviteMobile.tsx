@@ -2,7 +2,7 @@ import { Box, HStack, styled, VStack } from "../../styled-system/jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
-	authenticationTokenTimeLeft,
+	authenticationTokenTimeLeftState,
 	authInputState,
 	authState,
 	confirmPasswordState, downloadAppUrlState,
@@ -11,6 +11,7 @@ import {
 	nameInputState,
 	passwordInputState,
 	prepareJoinLinkErrorState,
+	deviceLoginTypeState,
 	useToastConfig,
 } from "../api/_stores.ts";
 import { useLangString } from "../lib/getLangString.ts";
@@ -323,10 +324,11 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 
 	const joinLink = useAtomValue(joinLinkState);
 	const prepareJoinLinkError = useAtomValue(prepareJoinLinkErrorState);
-	const timeLeft = useAtomValue(authenticationTokenTimeLeft);
+	const timeLeft = useAtomValue(authenticationTokenTimeLeftState);
 	const isAuthenticationTokenExpired = useMemo(() => timeLeft <= 0, [timeLeft]);
 
 	const apiAuthGenerateToken = useApiAuthGenerateToken();
+	const loginType = useAtomValue(deviceLoginTypeState);
 
 	useEffect(() => {
 		let join_link_uniq = joinLink === null ? undefined : joinLink.join_link_uniq;
@@ -340,7 +342,10 @@ const StepOneContent = ({ scrollableParentBlockRef, parentBlockRef, setStoreMenu
 
 			join_link_uniq = prepareJoinLinkErrorData.join_link_uniq;
 		}
-		apiAuthGenerateToken.mutate({ join_link_uniq: join_link_uniq });
+		apiAuthGenerateToken.mutate({
+			join_link_uniq: join_link_uniq,
+			login_type: loginType === 0 ? undefined : loginType
+		});
 	}, []);
 
 	// приходится извращаться с этой кнопкой на мобилках, иначе не на всех мобилках работает ховер на этой кнопке

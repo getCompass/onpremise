@@ -127,9 +127,23 @@ class Cron_Sms_Provider_Observer extends \Cron_Default {
 		}
 
 		// получаем баланс провайдера
-		$provider_gateway = Type_Sms_Provider::getGatewayById($provider->provider_id);
-		$response         = $provider_gateway::getBalance();
-		$balance          = $provider_gateway::getBalanceValueFromResponse($response);
+		try {
+
+			$provider_gateway = Type_Sms_Provider::getGatewayById($provider->provider_id);
+			$response         = $provider_gateway::getBalance();
+			$balance          = $provider_gateway::getBalanceValueFromResponse($response);
+		} catch (cs_SmsFailedRequestToProvider $e) {
+
+			$to_monitoring = [
+				"text"     => "Не смогли получить баланс",
+				"provider" => $provider->provider_id,
+				"time"     => time(),
+				"code"     => $e->getCode(),
+				"response" => $e->getResponse(),
+			];
+			Gateway_Notice_Sender::sendGroup(SMS_EXCEPTION, formatArgs($to_monitoring));
+			return;
+		}
 
 		// триггерим, если баланс опустился ниже
 		$this->_triggerIfBalanceIsLowered($provider, $observe_provider_task, $provider_gateway, $balance);

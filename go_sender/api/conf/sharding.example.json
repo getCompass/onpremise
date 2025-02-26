@@ -22,6 +22,11 @@
       "protocol": "${GO_COLLECTOR_AGENT_PROTOCOL}",
       "host": "${GO_COLLECTOR_AGENT_HOST}",
       "port": "${GO_COLLECTOR_AGENT_HTTP_PORT}"
+    },
+    "activity": {
+      "protocol": "${GO_ACTIVITY_PROTOCOL}",
+      "host": "${GO_ACTIVITY_HOST}",
+      "port": "${GO_ACTIVITY_HTTP_PORT}"
     }
   }
 }

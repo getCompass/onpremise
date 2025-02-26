@@ -122,7 +122,7 @@ class Domain_Search_Scenario_Api {
 		$prepared_query = MatchBuilder::prepareQuery($prepared_query, MatchBuilder::SEARCH_MODE_WILDCARD_PREFIX);
 
 		// фильтруем строку и проверяем, что строка не состоит только из символов
-		if (!strpbrk($prepared_query, implode("", Domain_Search_Const::ALLOWED_SEARCH_QUERY_SYMBOLS)) && mb_strlen(filterLetter($prepared_query)) < 1) {
+		if (!strpbrk(trim($prepared_query, "()"), implode("", Domain_Search_Const::ALLOWED_SEARCH_QUERY_SYMBOLS)) && mb_strlen(filterLetter($prepared_query)) < 1) {
 			return [[], 0, false];
 		}
 

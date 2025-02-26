@@ -245,13 +245,17 @@ class Domain_User_Scenario_OnPremiseWeb {
 		$story->clearAuthCache();
 
 		// выдаем пользовательскую сессию
-		Type_Session_Main::doLoginSession($user_id);
+		// !!! в этом методе в сессию передаём тип авторизации через web-сайт
+		Type_Session_Main::doLoginSession($user_id, Domain_User_Entity_SessionExtra::ONPREMISE_WEB_LOGIN_TYPE);
+
+		// !!! для генерации токена уже передаём тип авторизации из auth_story
+		$login_type = Domain_User_Entity_SessionExtra::getLoginTypeByAuthType($story->getType());
 
 		// устанавливаем, что аутентификация прошла успешно
 		$story->handleSuccess($user_id);
 		Domain_User_Entity_Antispam_Auth::successAuth($story->getAuthPhoneHandler()->getPhoneNumber());
 		self::_onSuccessAuth($story, $user_id);
-		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
+		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, $join_link_uniq, $login_type);
 		return [
 			$token,
 			Type_User_Main::isEmptyProfile($user_id),

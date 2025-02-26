@@ -1058,7 +1058,7 @@ class Helper_Conversations {
 		if ($text != "") {
 			$text .= "\n\n";
 		}
-		return "{$text}<b>--РЕПОСТ--</b>\n\n{$intercom_message_text}";
+		return "{$text}--РЕПОСТ--\n\n{$intercom_message_text}";
 	}
 
 	/**
@@ -1070,13 +1070,15 @@ class Helper_Conversations {
 		$member            = Gateway_Bus_CompanyCache::getMember($message["sender_user_id"]);
 		$full_name         = $member->full_name;
 		$message_sender_at = $message["created_at"];
-		$platform          = $message["platform"];
 
-		$date_text         = date("m.d.y", $message_sender_at);
+		$platform = $message["platform"];
+
+		$date_text         = date("d.m.y", $message_sender_at);
 		$time_text         = date("H:i", $message_sender_at);
 		$time_text_message = "$time_text МСК {$date_text}";
 
 		if (isset($message["file_map"])) {
+
 			$file_map       = $message["file_map"];
 			$file_info_list = Gateway_Socket_FileBalancer::getFileList([$file_map]);
 			$file_url       = $file_info_list[0]["url"];
@@ -1129,7 +1131,7 @@ class Helper_Conversations {
 		if ($text != "") {
 			$text .= "\n\n";
 		}
-		return "{$text}<b>--ЦИТАТА--</b>\n{$intercom_message_text}";
+		return "{$text}--ЦИТАТА--\n{$intercom_message_text}";
 	}
 
 	/**
@@ -1166,11 +1168,12 @@ class Helper_Conversations {
 
 			$handler = Type_Conversation_Message_Main::getHandler($nested_message);
 
-			$message = [
+			$platform = $handler::getPlatform($nested_message);
+			$message  = [
 				"text"           => $handler::getText($nested_message),
 				"created_at"     => $handler::getCreatedAt($nested_message),
 				"sender_user_id" => $handler::getSenderUserId($nested_message),
-				"platform"       => ucfirst($handler::getPlatform($nested_message)),
+				"platform"       => $platform == $handler::WITHOUT_PLATFORM ? "" : ucfirst($platform),
 			];
 
 			if ($handler::getType($nested_message) == CONVERSATION_MESSAGE_TYPE_FILE) {
@@ -2749,13 +2752,15 @@ class Helper_Conversations {
 
 	// получаем все сообщения для перессылки из одного диалога в другой
 	// сообщения полностью подготовлены для перессылки
-	public static function getMessagesForForwarding(int $user_id, array $message_map_list, bool $is_need_special_action = false):array {
+	public static function getMessagesForForwarding(int $user_id, array $message_map_list, bool $is_need_special_action = false, bool $need_filter_special_repost = false):array {
 
 		$donor_conversation_map = self::_tryGetConversationMap($message_map_list);
 		$block_list             = self::_getBlockListRow($message_map_list, $donor_conversation_map);
 
 		// подготавливаем выбранные сообщения к перессылки
-		$prepared_message_list = self::_prepareMessageListForForwarding($user_id, $message_map_list, $block_list, $is_need_special_action);
+		$prepared_message_list = self::_prepareMessageListForForwarding(
+			$user_id, $message_map_list, $block_list, $is_need_special_action, $need_filter_special_repost
+		);
 
 		// если список сообщений для репоста оказался пуст, то выдаем exception cs_MessageList_IsEmpty
 		self::_throwIfEmptyMessageList($prepared_message_list);
@@ -2767,8 +2772,8 @@ class Helper_Conversations {
 		return self::_upgradeCallMessageList($user_id, $forwarding_message_list);
 	}
 
-	// подготавливаем выбранные сообщения к перессылки
-	protected static function _prepareMessageListForForwarding(int $user_id, array $message_map_list, array $block_list, bool $is_need_special_actions):array {
+	// подготавливаем выбранные сообщения к пересылке
+	protected static function _prepareMessageListForForwarding(int $user_id, array $message_map_list, array $block_list, bool $is_need_special_actions, bool $need_filter_special_repost):array {
 
 		$prepared_message_list = [];
 		$message_count         = 0;
@@ -2787,6 +2792,10 @@ class Helper_Conversations {
 			// для фиксирования времени по той же логике что и при репосте
 			if (!Type_Conversation_Message_Main::getHandler($forwarded_message)::isAllowToRepost($forwarded_message, $user_id)) {
 				throw new ParamException("you have not permissions to forward this message");
+			}
+
+			if ($need_filter_special_repost && Type_Conversation_Message_Main::getHandler($forwarded_message)::isUserbotSender($forwarded_message)) {
+				throw new ParamException("this message can not be forwarded");
 			}
 
 			// подготавливаем сообщение к перессылке

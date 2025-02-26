@@ -2,6 +2,7 @@ package usercache
 
 import (
 	"context"
+	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_activity/api/includes/type/db/pivot_user"
 	"sync"
@@ -49,14 +50,23 @@ func addUserToMainStore(ctx context.Context, userId int64) {
 
 	defer closeChannel(userId)
 
+	// если ничего не нашли, выходим
 	if userActivityRow == nil {
 
 		log.Errorf("Не нашли в базе: %v", err)
 		return
 	}
 
-	// сохраняем user_row в кэш
-	mainUserStore.doCacheUserItem(userId, userActivityRow, err)
+	// переводим данные в структуру
+	userData := UserActivityData{
+		Status:       functions.StringToInt32(userActivityRow["status"]),
+		CreatedAt:    functions.StringToInt64(userActivityRow["created_at"]),
+		UpdatedAt:    functions.StringToInt64(userActivityRow["updated_at"]),
+		LastPingWsAt: functions.StringToInt64(userActivityRow["last_ws_ping_at"]),
+	}
+
+	// записываем
+	mainUserStore.doCacheUserItem(userId, userData, err)
 }
 
 // закрываем канал для пользователя

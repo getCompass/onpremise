@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_activity/api/conf"
-	"strconv"
 	"time"
 )
 
@@ -29,9 +28,9 @@ type UserActivityListStruct struct {
 // ---------------------------------------------
 
 // GetActivityRow получение активности пользователя
-func GetActivityRow(ctx context.Context, userId int64) (map[string]string, error) {
+func GetActivityRow(ctx context.Context, userId int64) (UserActivityData, error) {
 
-	// получаем инфу из основного хранилища
+	// получаем данные из основного хранилища
 	userActivity, exist := mainUserStore.getUserFromCache(userId)
 	if !exist || userActivity.err != nil {
 
@@ -39,23 +38,23 @@ func GetActivityRow(ctx context.Context, userId int64) (map[string]string, error
 		err := waitUntilUserAddedToCache(ctx, userId)
 		if err != nil {
 
-			log.Errorf("error: %v", err)
-			return nil, err
+			log.Errorf("Ошибка при ожидании пользователя %d в кэше: %v", userId, err)
+			return UserActivityData{}, err
 		}
 
 		// если так и не появилась
 		userActivity, exist = mainUserStore.getUserFromCache(userId)
 		if !exist {
-			return nil, fmt.Errorf("не смогли получить данные для userId: %d", userId)
+			return UserActivityData{}, fmt.Errorf("не смогли получить данные для userId: %d", userId)
 		}
 	}
 
-	// обработка случая когда пользователь не найден
-	if len(userActivity.userRow) < 1 {
-		return nil, fmt.Errorf("не смогли получить данные для userId: %d", userId)
+	// проверяем, что данные пользователя не пустые
+	if userActivity.userActivityData == (UserActivityData{}) {
+		return UserActivityData{}, fmt.Errorf("данные пользователя %d отсутствуют", userId)
 	}
 
-	return userActivity.userRow, nil
+	return userActivity.userActivityData, nil
 }
 
 // ждем пока в кэше появится информация
@@ -81,11 +80,11 @@ func UpdateActivityRow(userId int64, activityTimestamp int64) {
 	userActivity, exist := mainUserStore.getUserFromCache(userId)
 	if exist {
 
-		// если запись существует, обновляем поле last_ws_ping_at
-		userActivity.userRow["last_ws_ping_at"] = strconv.FormatInt(activityTimestamp, 10)
+		// если запись существует, обновляем last_ws_ping_at
+		userActivity.userActivityData.LastPingWsAt = activityTimestamp
 
 		// перезаписываем обновленную запись в mainUserStore
-		mainUserStore.doCacheUserItem(userId, userActivity.userRow, userActivity.err)
+		mainUserStore.doCacheUserItem(userId, userActivity.userActivityData, userActivity.err)
 	}
 }
 

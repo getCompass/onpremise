@@ -11,14 +11,22 @@ type mainUserStorage struct {
 	cache map[int64]userActivityStruct
 }
 
+// структура активности пользователя из бд
+type UserActivityData struct {
+	Status       int32
+	CreatedAt    int64
+	UpdatedAt    int64
+	LastPingWsAt int64
+}
+
 // структура объекта пользователя
 type userActivityStruct struct {
 
 	// системные метрики
 	dateCached int64
 
-	// информация о пользователе из бд
-	userRow map[string]string
+	// информация о активности пользователе из бд
+	userActivityData UserActivityData
 
 	err error
 }
@@ -51,7 +59,7 @@ func (s *mainUserStorage) getUserFromCache(userId int64) (userActivityStruct, bo
 }
 
 // сохраняем пользователя
-func (s *mainUserStorage) doCacheUserItem(userId int64, userRow map[string]string, err error) {
+func (s *mainUserStorage) doCacheUserItem(userId int64, userData UserActivityData, err error) {
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -62,7 +70,7 @@ func (s *mainUserStorage) doCacheUserItem(userId int64, userRow map[string]strin
 	}
 
 	userCache.dateCached = functions.GetCurrentTimeStamp()
-	userCache.userRow = userRow
+	userCache.userActivityData = userData
 	userCache.err = err
 	s.cache[userId] = userCache
 }

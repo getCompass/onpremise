@@ -3,7 +3,6 @@ package user
 // пакет, в который вынесена вся бизнес-логика группы методов user
 import (
 	"context"
-	"github.com/getCompassUtils/go_base_frame/api/system/functions"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_activity/api/includes/type/activitycache"
 	"go_activity/api/includes/type/usercache"
@@ -18,14 +17,14 @@ func GetActivity(ctx context.Context, userId int64) (usercache.UserActivityStruc
 		return usercache.UserActivityStruct{}, errorStatus.Error(401, "passed bad user_id")
 	}
 
-	userRow, err := usercache.GetActivityRow(ctx, userId)
+	userActivityData, err := usercache.GetActivityRow(ctx, userId)
 	if err != nil {
 
 		log.Errorf("Не получили пользователя %d из кэша после ожидания канала", userId)
 		return usercache.UserActivityStruct{}, errorStatus.Error(901, "user row not found")
 	}
 
-	userActivityItem := prepareUserActivityStruct(userId, userRow)
+	userActivityItem := prepareUserActivityStruct(userId, userActivityData)
 	return userActivityItem, nil
 }
 
@@ -46,19 +45,13 @@ func GetActivityList(ctx context.Context, userIdList map[string]int64) (*usercac
 		}
 
 		// получаем информацию из кэша
-		userRow, err := usercache.GetActivityRow(ctx, userId)
+		userActivityData, err := usercache.GetActivityRow(ctx, userId)
 		if err != nil {
-
-			userRow = map[string]string{
-				"status":          "0",
-				"created_at":      "0",
-				"updated_at":      "0",
-				"last_ws_ping_at": "0",
-			}
+			userActivityData = usercache.UserActivityData{}
 		}
 
 		// собираем структуру активности пользователя
-		userActivityItem := prepareUserActivityStruct(userId, userRow)
+		userActivityItem := prepareUserActivityStruct(userId, userActivityData)
 		activities = append(activities, userActivityItem)
 	}
 
@@ -73,14 +66,14 @@ func GetActivityList(ctx context.Context, userIdList map[string]int64) (*usercac
 }
 
 // собираем объект UserActivityStruct из полученных записей бд
-func prepareUserActivityStruct(userId int64, userRow map[string]string) usercache.UserActivityStruct {
+func prepareUserActivityStruct(userId int64, userActivityData usercache.UserActivityData) usercache.UserActivityStruct {
 
 	return usercache.UserActivityStruct{
 		UserId:       userId,
-		Status:       functions.StringToInt32(userRow["status"]),
-		CreatedAt:    functions.StringToInt64(userRow["created_at"]),
-		UpdatedAt:    functions.StringToInt64(userRow["updated_at"]),
-		LastPingWsAt: functions.StringToInt64(userRow["last_ws_ping_at"]),
+		Status:       userActivityData.Status,
+		CreatedAt:    userActivityData.CreatedAt,
+		UpdatedAt:    userActivityData.UpdatedAt,
+		LastPingWsAt: userActivityData.LastPingWsAt,
 	}
 }
 

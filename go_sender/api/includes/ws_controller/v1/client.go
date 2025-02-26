@@ -125,6 +125,16 @@ func (client) Connect(data *dataStruct) {
 
 	// при успешном подключении
 	onSuccessConnection(data.connection, isolation)
+
+	// записываем активность
+	config, err = conf.GetConfig()
+	if config.Role == "pivot" || config.CurrentServer == "monolith" {
+
+		err := activitycache.AddActivity(data.connection.UserId, functions.GetCurrentTimeStamp(), data.connection.SessionUniq)
+		if err != nil {
+			return
+		}
+	}
 }
 
 // отправляем событие для запроа у клиента отправить нам конфиг

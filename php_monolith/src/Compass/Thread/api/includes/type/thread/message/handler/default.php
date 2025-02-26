@@ -1088,9 +1088,10 @@ class Type_Thread_Message_Handler_Default {
 
 		return match ($message["type"]) {
 
-			THREAD_MESSAGE_TYPE_FILE                                  => [self::getFileUuid($message)],
-			THREAD_MESSAGE_TYPE_QUOTE, THREAD_MESSAGE_TYPE_MASS_QUOTE => self::getFileUuidListFromAnyQuote($message),
-			default                                                   => [],
+			THREAD_MESSAGE_TYPE_FILE                                            => [self::getFileUuid($message)],
+			THREAD_MESSAGE_TYPE_QUOTE, THREAD_MESSAGE_TYPE_MASS_QUOTE           => self::getFileUuidListFromAnyQuote($message),
+			THREAD_MESSAGE_TYPE_REPOST, THREAD_MESSAGE_TYPE_CONVERSATION_REPOST => self::getFileUuidListFromAnyRepost($message),
+			default                                                             => [],
 		};
 	}
 
@@ -1099,6 +1100,41 @@ class Type_Thread_Message_Handler_Default {
 
 		$quote_message_list = self::getQuotedMessageList($message);
 		foreach ($quote_message_list as $v) {
+
+			// если это цитата, то собираем file_map среди его процитированных
+			if (self::isQuote($v)) {
+				$file_uuid_list = self::getFileUuidListFromAnyQuote($v, $file_uuid_list);
+			}
+
+			// если это репост, то собираем file_map среди его репостнутых
+			if (self::isRepost($v)) {
+				$file_uuid_list = self::getFileUuidListFromAnyRepost($v, $file_uuid_list);
+			}
+
+			// если сообщение - файл
+			if (self::isFile($v)) {
+				$file_uuid_list[] = self::getFileUuid($v);
+			}
+		}
+
+		return $file_uuid_list;
+	}
+
+	/**
+	 * функция получает список file_uuid файлов из сообщений репостов
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 */
+	public static function getFileUuidListFromAnyRepost(array $message, array $file_uuid_list = []):array {
+
+		$repost_message_list = self::getRepostedMessageList($message);
+		foreach ($repost_message_list as $v) {
+
+			// если это репост, то собираем file_map среди его репостнутых
+			if (self::isRepost($v)) {
+				$file_uuid_list = self::getFileUuidListFromAnyRepost($v, $file_uuid_list);
+			}
 
 			// если это цитата, то собираем file_map среди его процитированных
 			if (self::isQuote($v)) {
@@ -2164,7 +2200,7 @@ class Type_Thread_Message_Handler_Default {
 	}
 
 	// можно ли редактировать сообщение судя по флагам
-	#[Pure] public static function isFlagsAllowToEdit(array $message):bool {
+	public static function isFlagsAllowToEdit(array $message):bool {
 
 		// если тип сообщения не позволяет его редактировать
 		if (!in_array($message["type"], self::_ALLOW_TO_EDIT)) {
@@ -2195,11 +2231,6 @@ class Type_Thread_Message_Handler_Default {
 
 		// если тип сообщения не позволяет его удалять
 		if (!in_array($message["type"], self::_ALLOW_TO_DELETE)) {
-			return false;
-		}
-
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
 			return false;
 		}
 
@@ -2239,11 +2270,6 @@ class Type_Thread_Message_Handler_Default {
 			return false;
 		}
 
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -2279,11 +2305,6 @@ class Type_Thread_Message_Handler_Default {
 
 		// если сообщение скрыто пользователем
 		if (!$is_add_repost_quote && self::isHiddenByUser($message, $user_id)) {
-			return false;
-		}
-
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
 			return false;
 		}
 

@@ -104,6 +104,12 @@ type SendJitsiVoipPushRequestStruct struct {
 	RoutineKey string              `json:"routine_key"`
 }
 
+type UserPingData struct {
+	UserID       int64  `json:"user_id"`
+	SessionUniq  string `json:"session_uniq"`
+	LastPingTime int64  `json:"last_ping_time"`
+}
+
 // -------------------------------------------------------
 // Rabbit
 // -------------------------------------------------------

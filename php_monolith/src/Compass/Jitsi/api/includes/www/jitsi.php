@@ -41,7 +41,7 @@ class Www_Jitsi extends \BaseFrame\Controller\Www {
 			return $this->error(1619004, "conference not found");
 		} catch (Domain_Jitsi_Exception_ConferenceLink_IncorrectLink|Domain_Jitsi_Exception_Node_NotFound) {
 			return $this->error(1619004, "conference not found");
-		} catch (Domain_Jitsi_Exception_Conference_IsFinished) {
+		} catch (Domain_Jitsi_Exception_Conference_IsFinished|Domain_Jitsi_Exception_PermanentConference_ConferenceIsDeleted) {
 			return $this->error(1619002, "conference is finished");
 		} catch (BlockException $e) {
 
@@ -83,7 +83,7 @@ class Www_Jitsi extends \BaseFrame\Controller\Www {
 			return $this->error(1619004, "conference not found");
 		} catch (Domain_Jitsi_Exception_ConferenceMember_AttemptJoinToPrivateConference) {
 			return $this->error(1619001, "attempt join to private conference");
-		} catch (Domain_Jitsi_Exception_Conference_IsFinished) {
+		} catch (Domain_Jitsi_Exception_Conference_IsFinished|Domain_Jitsi_Exception_PermanentConference_ConferenceIsDeleted) {
 			return $this->error(1619002, "conference is finished");
 		} catch (BlockException $e) {
 

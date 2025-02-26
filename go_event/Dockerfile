@@ -1,7 +1,4 @@
-FROM docker.getcompass.ru/service/packages:0.1.12 AS packages
 FROM docker.getcompass.ru/service/go:1.23.2-1
-
-COPY --from=packages /tmp/migrate /usr/local/bin/migrate
 
 RUN apk add mysql mysql-client
 

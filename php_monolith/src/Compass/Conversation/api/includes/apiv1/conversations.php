@@ -2426,7 +2426,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 		// получаем все прикрепленные сообщения
 		try {
-			$forwarding_message_list = Helper_Conversations::getMessagesForForwarding($user_id, $message_map_list);
+			$forwarding_message_list = Helper_Conversations::getMessagesForForwarding($user_id, $message_map_list, false, true);
 		} catch (cs_Message_Limit) {
 
 			Gateway_Bus_Statholder::inc("messages", "row1006");
@@ -2508,7 +2508,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 		// получаем выбранные сообщения
 		try {
-			$forwarding_message_list = Helper_Conversations::getMessagesForForwarding($this->user_id, $message_map_list, true);
+			$forwarding_message_list = Helper_Conversations::getMessagesForForwarding($this->user_id, $message_map_list, true, true);
 		} catch (cs_Message_Limit) {
 
 			Gateway_Bus_Statholder::inc("messages", "row1030");

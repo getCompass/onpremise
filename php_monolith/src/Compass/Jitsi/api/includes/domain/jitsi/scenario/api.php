@@ -115,13 +115,6 @@ class Domain_Jitsi_Scenario_Api {
 		// верифицируем ссылку на конференцию
 		$conference = Domain_Jitsi_Entity_Conference::verifyConferenceLink($parsed_link);
 
-		// Проверяем что постоянная конференция не удалена
-		if (Domain_Jitsi_Entity_Conference::isPermanent($conference)) {
-
-			$permanent_conference = Domain_Jitsi_Entity_PermanentConference::getOne($conference->conference_id);
-			Domain_Jitsi_Entity_PermanentConference::assertNotDeleted($permanent_conference);
-		}
-
 		// подготавливаем все к подключению участника к конференции
 		[$conference_joining_data, $conference_member_data, $conference_creator_data] = self::prepareConferenceJoiningData($user_id, $space_id, $conference);
 

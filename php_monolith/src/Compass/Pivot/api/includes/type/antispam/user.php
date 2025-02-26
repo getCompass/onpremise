@@ -289,6 +289,25 @@ class Type_Antispam_User extends Type_Antispam_Main {
 	# endregion
 	##########################################################
 
+	##########################################################
+	# region security/device
+	##########################################################
+
+	const DEVICE_INVALIDATE = [
+		"key"    => "DEVICE_INVALIDATE",
+		"limit"  => 100,
+		"expire" => 20 * 60, // 20 минут
+	];
+
+	const DEVICE_INVALIDATE_OTHER = [
+		"key"    => "DEVICE_INVALIDATE_OTHER",
+		"limit"  => 20,
+		"expire" => DAY1,
+	];
+
+	# endregion
+	##########################################################
+
 	protected const _DB_KEY    = "pivot_system";
 	protected const _TABLE_KEY = "antispam_user";
 

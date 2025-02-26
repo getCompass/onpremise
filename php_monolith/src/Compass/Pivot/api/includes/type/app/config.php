@@ -52,14 +52,14 @@ class Type_App_Config {
 		$feature_data = fromJson(File::init(PIVOT_MODULE_ROOT . "conf", "feature_v1.json")->read());
 		$rule_data    = fromJson(File::init(PIVOT_MODULE_ROOT . "conf", "rule_v1.json")->read());
 
-		$feature_electron_compass = $feature_data[Type_Api_Platform::PLATFORM_ELECTRON . Domain_User_Entity_Feature::COMPASS_POSTFIX];
-		$feature_electron_comteam = $feature_data[Type_Api_Platform::PLATFORM_ELECTRON . Domain_User_Entity_Feature::COMTEAM_POSTFIX];
+		$feature_electron_compass = $feature_data[Type_Api_Platform::PLATFORM_ELECTRON . Domain_User_Entity_Feature::COMPASS_POSTFIX] ?? [];
+		$feature_electron_comteam = $feature_data[Type_Api_Platform::PLATFORM_ELECTRON . Domain_User_Entity_Feature::COMTEAM_POSTFIX] ?? [];
 
-		$feature_iphone_compass = $feature_data[Type_Api_Platform::PLATFORM_IOS . Domain_User_Entity_Feature::COMPASS_POSTFIX];
-		$feature_iphone_comteam = $feature_data[Type_Api_Platform::PLATFORM_IOS . Domain_User_Entity_Feature::COMTEAM_POSTFIX];
+		$feature_iphone_compass = $feature_data[Type_Api_Platform::PLATFORM_IOS . Domain_User_Entity_Feature::COMPASS_POSTFIX] ?? [];
+		$feature_iphone_comteam = $feature_data[Type_Api_Platform::PLATFORM_IOS . Domain_User_Entity_Feature::COMTEAM_POSTFIX] ?? [];
 
-		$feature_android_compass = $feature_data[Type_Api_Platform::PLATFORM_ANDROID . Domain_User_Entity_Feature::COMPASS_POSTFIX];
-		$feature_android_comteam = $feature_data[Type_Api_Platform::PLATFORM_ANDROID . Domain_User_Entity_Feature::COMTEAM_POSTFIX];
+		$feature_android_compass = $feature_data[Type_Api_Platform::PLATFORM_ANDROID . Domain_User_Entity_Feature::COMPASS_POSTFIX] ?? [];
+		$feature_android_comteam = $feature_data[Type_Api_Platform::PLATFORM_ANDROID . Domain_User_Entity_Feature::COMTEAM_POSTFIX] ?? [];
 
 		self::_updateConfig(Domain_User_Entity_Feature::RULES_KEY, $rule_data);
 		self::_updateConfig(

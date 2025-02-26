@@ -146,3 +146,12 @@ func (s *mainSessionStorage) reset() {
 	// так же поступаем к кэшем недавно использованных
 	resetLastUsed()
 }
+
+// функция для обновления last_online_at сессии
+func (s *mainSessionStorage) updateLastOnlineAt() {
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	updateLastOnlineAt()
+}

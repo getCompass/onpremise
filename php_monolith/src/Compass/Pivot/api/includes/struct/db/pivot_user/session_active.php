@@ -18,6 +18,7 @@ class Struct_Db_PivotUser_SessionActive {
 		public int    $updated_at,
 		public int    $login_at,
 		public int    $refreshed_at,
+		public int    $last_online_at,
 		public string $ua_hash,
 		public string $ip_address,
 		public array  $extra

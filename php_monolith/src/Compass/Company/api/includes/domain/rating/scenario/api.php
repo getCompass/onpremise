@@ -6,6 +6,7 @@ use AnalyticUtils\Domain\Event\Entity\User;
 use AnalyticUtils\Domain\Event\Entity\Main;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Permission;
+use DateTime;
 
 /**
  * Сценарии компании для API
@@ -56,6 +57,8 @@ class Domain_Rating_Scenario_Api {
 		\CompassApp\Domain\Member\Entity\Member::assertUserNotGuest($user_role);
 		Domain_Member_Entity_Permission::checkSpace($user_id, $method_version, Permission::IS_SHOW_COMPANY_MEMBER_ENABLED);
 
+		[$year, $week, $month] = self::_preventFutureDate($year, $week, $month);
+
 		$rating = Domain_Rating_Action_GetRatingByPeriod::do($period_type, $event, $year, $month, $week, $top_list_offset, $top_list_count);
 
 		// собираем пользователей для action users
@@ -71,6 +74,31 @@ class Domain_Rating_Scenario_Api {
 		$rating->top_list = $top_list;
 
 		return [$rating, $filtered_user_id_list];
+	}
+
+	/**
+	 * Исключаем возможность передачи даты в будущем, отдавая текущую
+	 */
+	protected static function _preventFutureDate(int $year, int $week, int $month):array {
+
+		// если запрашиваемая дата в будущем - берем последнюю неделю и месяц по времени сервера
+		$current_date = new DateTime();
+        $current_year = (int) $current_date->format("o");
+		$actual_year  = min($year, $current_year);
+
+		$actual_week = match ($year <=> $current_year) {
+			1  => (int) $current_date->format("W"),
+			0  => min($week, (int) $current_date->format("W")),
+			-1 => $week,
+		};
+
+		$actual_month = match ($year <=> $current_year) {
+			1  => (int) $current_date->format("n"),
+			0  => min($month, (int) $current_date->format("n")),
+			-1 => $month,
+		};
+
+		return [$actual_year, $actual_week, $actual_month];
 	}
 
 	/**

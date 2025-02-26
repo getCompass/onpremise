@@ -72,7 +72,8 @@ type ConnectionStruct struct {
 	analyticStore               *AnalyticStore
 	ThreadKStore                *thread.KeyStore
 	ThreadUserConnectionStore   *thread.UserConnectionStore
-	isHaveSupportVersionedEvent bool // имеется ли поддержка версионных событий
+	isHaveSupportVersionedEvent bool   // имеется ли поддержка версионных событий
+	SessionUniq                 string // session_uniq к которому относится подключение
 }
 
 // сохраняем данные о соединении

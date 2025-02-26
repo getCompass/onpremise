@@ -264,6 +264,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"tariff.getStuckObserveList",
 			"tariff.getAverageQueueTime",
 			"tariff.increaseMemberCountLimit",
+			"device.getDeviceLoginHistory",
 		],
 	],
 	"go_rating"        => [
@@ -306,7 +307,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"user.incConferenceMembershipRating",
 		],
 	],
-	"federation"            => [
+	"federation"       => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_FEDERATION,
 		"allow_methods" => [
@@ -314,6 +315,13 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"pivot.ldap.kickUserFromAllCompanies",
 			"pivot.ldap.unblockUserAuthentication",
 			"pivot.ldap.isLdapAuthAvailable",
+		],
+	],
+	"sender"           => [
+		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
+		"auth_key"      => SOCKET_KEY_SENDER,
+		"allow_methods" => [
+			"user.validateSession",
 		],
 	],
 ];

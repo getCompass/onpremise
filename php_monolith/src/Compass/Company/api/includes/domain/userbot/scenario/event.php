@@ -56,14 +56,13 @@ class Domain_Userbot_Scenario_Event {
 			}
 
 			// получаем токен и команды бота
-			$token        = Domain_Userbot_Entity_Userbot::getToken($userbot->extra);
-			$command_list = Domain_Userbot_Entity_Userbot::getCommandList($userbot->extra);
+			$token = Domain_Userbot_Entity_Userbot::getToken($userbot->extra);
 
 			// матчим текст сообщений с командами бота
 			foreach ($message_text_list as $message_map => $message_text) {
 
 				// если команда бота совпала с текстом сообщения, то это сообщение отправляется на вебхук бота
-				if (self::_matchCommand($command_list, $message_text)) {
+				if (self::_matchCommand($message_text)) {
 
 					$message_list_by_token[$token][$message_map] = $message_text;
 					$userbot_list_by_token[$token]               = $userbot;
@@ -84,24 +83,10 @@ class Domain_Userbot_Scenario_Event {
 	/**
 	 * матч команд и текста сообщения
 	 */
-	protected static function _matchCommand(array $command_list, string $message_text):bool {
+	protected static function _matchCommand(string $message_text):bool {
 
-		// проводим текст отправленного сообщения-команды через паттерн
-		$prepare_message_text = Domain_Userbot_Action_PreparePatternCommand::do($message_text);
-
-		// для каждой команды бота
-		foreach ($command_list as $command) {
-
-			// подготавливаем команду по паттерну
-			$prepare_command = Domain_Userbot_Action_PreparePatternCommand::do($command);
-
-			// если текст сообщения и команда совпали
-			if ($prepare_command == $prepare_message_text) {
-				return true;
-			}
-		}
-
-		return false;
+		// если сообщение начинается с /, то сразу отправляем его боту
+		return mb_strpos($message_text, "/") === 0;
 	}
 
 	/**

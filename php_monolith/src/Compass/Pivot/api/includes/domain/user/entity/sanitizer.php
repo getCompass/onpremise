@@ -10,7 +10,7 @@ class Domain_User_Entity_Sanitizer {
 	protected const _MAX_FULL_NAME_LENGTH = 40;    // максимальная длина имени пользователя
 
 	// регулярка для имени пользователя
-	protected const _PROFILE_NAME_REGEXP = "/[^а-яёa-z0-9'\- œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ]|[<>]/ui";
+	protected const _PROFILE_NAME_REGEXP = "/[^а-яёa-z0-9'\- œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñЎўІі]|[<>]/ui";
 
 	/**
 	 * Очистка имени от лишних символов

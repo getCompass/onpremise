@@ -426,6 +426,16 @@ class Domain_User_Entity_AuthStory {
 	}
 
 	/**
+	 * это аутентификация через LDAP
+	 *
+	 * @return bool
+	 */
+	public static function isLdapAuth(int $auth_type):bool {
+
+		return $auth_type == self::AUTH_STORY_TYPE_AUTH_BY_LDAP;
+	}
+
+	/**
 	 * это сброс пароля по почте
 	 *
 	 * @return bool

@@ -4,6 +4,7 @@ namespace Compass\FileNode;
 
 use BaseFrame\Search\Exception\ExecutionException;
 use BaseFrame\Search\Manticore;
+use BaseFrame\System\File;
 use Matrix\Exception;
 
 require_once "/app/src/Compass/FileNode/api/includes/type/script/input_parser.php";
@@ -16,6 +17,7 @@ require_once "/app/src/Modules/vendor/autoload.php";
 $local_manticore_host = _getLocalManticoreHost();
 $local_manticore_port = _getLocalManticorePort();
 $save_file_path       = _getFilePath();
+$only_local           = Type_Script_InputParser::getArgumentValue("--only-local", Type_Script_InputParser::TYPE_NONE, false, false);
 
 require_once __DIR__ . "/../../../../../../start.php";
 ini_set("memory_limit", "4096M");
@@ -39,7 +41,7 @@ class Migration_Just_Download_Files {
 	/**
 	 * Грузим файлы к нам
 	 */
-	public function run(string $local_manticore_host, int $local_manticore_port, string $save_file_path):void {
+	public function run(string $local_manticore_host, int $local_manticore_port, string $save_file_path, bool $only_local):void {
 
 		$this->_local_manticore_host = $local_manticore_host;
 		$this->_local_manticore_port = $local_manticore_port;
@@ -56,6 +58,8 @@ class Migration_Just_Download_Files {
 			$file_url           = $raw_file["download_link"];
 			$file_source        = $raw_file["source_type"];
 			$original_file_name = $raw_file["original_name"];
+			$uploader_user_id   = (int) $raw_file["uploader_user_id"];
+			$is_exported        = (bool) $raw_file["is_exported"];
 
 			try {
 
@@ -63,10 +67,19 @@ class Migration_Just_Download_Files {
 					throw new Domain_File_Exception_IncorrectFileName();
 				}
 
+				if (!$is_exported && $only_local) {
+
+					$file_url_counter++;
+					console(purpleText("Пропускаю файл $original_file_name. Обработано файлов: {$file_url_counter}/{$raw_file_list_count}"));
+
+					continue;
+				}
+
 				// пробуем скачать файл
-				$file_content = $this->_downloadFile($file_url);
+				$file_content = $is_exported ? $this->_readFile($file_url, PATH_WWW . $save_file_path) : $this->_downloadFile($file_url);
 
 				// сохраняем содержимое скачиваемого файла во временный файл
+				$file_extension = Type_File_Utils::getExtension($raw_file["original_name"]);
 				$tmp_file_path  = Type_File_Utils::generateTmpPath();
 				Type_File_Utils::saveContentToTmp($tmp_file_path, $file_content);
 
@@ -78,7 +91,8 @@ class Migration_Just_Download_Files {
 					$tmp_file_path = $new_tmp_file_path;
 				}
 
-				$this->_writeToFile("migration-file-download", "{$raw_file["uniq"]}|||||{$original_file_name}|||||{$file_source}|||||{$tmp_file_path}");
+				$file_path = Type_File_Main::generatePathPart($save_file_path, $tmp_file_path, $file_extension);
+				$this->_writeToFile("migration-file-download", "{$raw_file["uniq"]}|||||{$original_file_name}|||||{$file_source}|||||{$file_path}|||||{$uploader_user_id}");
 
 				// делаем вывод чтобы было понятно что скрипт что-то делает
 				console("Успешно скачали файл: {$file_url}");
@@ -97,8 +111,27 @@ class Migration_Just_Download_Files {
 			}
 
 			$file_url_counter++;
-			console(greenText("Скачано файлов: {$file_url_counter}/{$raw_file_list_count}"));
+			console(greenText("Обработано файлов: {$file_url_counter}/{$raw_file_list_count}"));
 		}
+	}
+
+	/**
+	 * Читает экспортированный файл.
+	 * @throws \Compass\FileNode\cs_DownloadFailed
+	 */
+	protected function _readFile(string $path, string $source_dir):string|false {
+
+		if (!file_exists("$source_dir/$path") || !is_file("$source_dir/$path")) {
+			throw new cs_DownloadFailed();
+		}
+
+		$content = file_get_contents("$source_dir/$path");
+
+		if ($content === false) {
+			throw new cs_DownloadFailed();
+		}
+
+		return $content;
 	}
 
 	/**
@@ -115,7 +148,7 @@ class Migration_Just_Download_Files {
 			$path = parse_url($file_url)["path"];
 			$path = strstr($path, FOLDER_FILE_NAME);
 
-			return file_get_contents(PATH_WWW . $path);
+			return File::init(PATH_WWW, $path)->read();
 		}
 
 		$curl = new \Curl();
@@ -308,4 +341,4 @@ function _getFilePath():string {
 	return $save_file_path;
 }
 
-(new Migration_Just_Download_Files())->run($local_manticore_host, $local_manticore_port, $save_file_path);
+(new Migration_Just_Download_Files())->run($local_manticore_host, $local_manticore_port, $save_file_path, $only_local);

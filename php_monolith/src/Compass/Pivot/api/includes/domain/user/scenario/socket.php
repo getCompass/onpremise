@@ -585,4 +585,68 @@ class Domain_User_Scenario_Socket {
 		// запрещаем авторизовываться, помечая профиль заблокированным
 		Domain_User_Action_EnableProfile::do($user_id);
 	}
+
+	/**
+	 * Получить список истории логина/разлогина устройств пользователя
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws \BaseFrame\Exception\Gateway\DBShardingNotFoundException
+	 * @throws \BaseFrame\Exception\Gateway\QueryFatalException
+	 */
+	public static function getDeviceLoginHistory(int $user_id):array {
+
+		if ($user_id < 1) {
+			return [];
+		}
+
+		try {
+			$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
+		} catch (cs_UserNotFound) {
+			return [];
+		}
+
+		$all_session_list = [];
+
+		// получаем активные сессии устройств пользователя
+		$session_active_list = Gateway_Db_PivotUser_SessionActiveList::getActiveSessionList($user_id);
+
+		$all_session_list = array_merge($all_session_list, $session_active_list);
+
+		// достаём записи пользователя из истории
+		foreach (range(date("Y", $user_info->created_at), date("Y", time())) as $shard_id) {
+
+			$session_history_list = Gateway_Db_PivotHistoryLogs_SessionHistory::getListByShardAndUserId($shard_id, $user_id);
+			$all_session_list     = array_merge($all_session_list, $session_history_list);
+		}
+
+		return $all_session_list;
+	}
+
+	/**
+	 * валидация pivot-сессии пользователя
+	 *
+	 * @return string
+	 * @throws \cs_DecryptHasFailed
+	 */
+	public static function validateSession(string $pivot_session):string {
+
+		// проверяем, начинается ли строка с "Bearer "
+		if (str_starts_with($pivot_session, "Bearer ")) {
+
+			// убираем "Bearer " из начала строки
+			$pivot_session = preg_replace("/^Bearer\s+/", "", $pivot_session);
+
+			// декодируем оставшуюся строку из base64
+			$pivot_session_key = base64_decode($pivot_session);
+		} else {
+			$pivot_session_key = urldecode(urldecode($pivot_session));
+		}
+
+		// проверяем, что session_key валиден
+		$pivot_session_map = Type_Pack_PivotSession::doDecrypt($pivot_session_key);
+
+		// достаем session_uniq
+		return Type_Pack_PivotSession::getSessionUniq($pivot_session_map);
+	}
 }

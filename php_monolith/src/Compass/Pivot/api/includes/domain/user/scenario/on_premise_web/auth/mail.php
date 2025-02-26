@@ -195,13 +195,25 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		$story->clearAuthCache();
 
 		// выдаем пользовательскую сессию
-		Type_Session_Main::doLoginSession($user_id);
+		// !!! в этом методе в сессию передаём тип авторизации через web-сайт
+		Type_Session_Main::doLoginSession($user_id, Domain_User_Entity_SessionExtra::ONPREMISE_WEB_LOGIN_TYPE);
+
+		// !!! для генерации токена уже передаём тип авторизации из auth_story
+		$login_type = Domain_User_Entity_SessionExtra::getLoginTypeByAuthType($story->getType());
+
+		if (!$story->isNeedToCreateUser()) {
+
+			$user_agent  = getUa();
+			$device_name = Type_Api_Platform::getDeviceName($user_agent);
+			$app_version = Type_Api_Platform::getVersion($user_agent);
+			Domain_User_Action_Security_Device_OnSuccessLogin::do($user_id, $login_type, $device_name, $app_version, ONPREMISE_VERSION);
+		}
 
 		// устанавливаем, что аутентификация прошла успешно
 		$story->handleSuccess($user_id);
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
 
-		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
+		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, $join_link_uniq, $login_type);
 		return [
 			$token,
 			Type_User_Main::isEmptyProfile($user_id),
@@ -444,14 +456,27 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Mail {
 		$story->clearAuthCache();
 
 		// выдаем пользовательскую сессию
-		Type_Session_Main::doLoginSession($user_id);
+		// !!! в этом методе в сессию передаём тип авторизации через web-сайт
+		Type_Session_Main::doLoginSession($user_id, Domain_User_Entity_SessionExtra::ONPREMISE_WEB_LOGIN_TYPE);
+
+		// !!! для генерации токена уже передаём тип авторизации из auth_story
+		$login_type = Domain_User_Entity_SessionExtra::getLoginTypeByAuthType($story->getType());
+
+		if (!$story->isNeedToCreateUser()) {
+
+			$user_agent  = getUa();
+			$device_name = Type_Api_Platform::getDeviceName($user_agent);
+			$app_version = Type_Api_Platform::getVersion($user_agent);
+			Domain_User_Action_Security_Device_OnSuccessLogin::do($user_id, $login_type, $device_name, $app_version, ONPREMISE_VERSION);
+		}
 
 		// устанавливаем, что аутентификация прошла успешно
 		$story->handleSuccess($user_id, [
 			"has_code" => 1,
 		]);
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
-		[$token, ] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, join_link_uniq: $join_link_uniq);
+
+		[$token,] = Domain_Solution_Action_GenerateAuthenticationToken::exec($user_id, $join_link_uniq, $login_type);
 		return [
 			$token,
 			Type_User_Main::isEmptyProfile($user_id),

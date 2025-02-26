@@ -82,6 +82,9 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 		// добавляем запись в таблицу последних регистраций
 		static::_insertToLastRegistration($parent_data->user->user_id, $default_partner_id, $data->ip_address);
 
+		// создаем запись онлайна пользователя
+		static::_createUserOnline($parent_data->user->user_id);
+
 		return $parent_data;
 	}
 
@@ -248,6 +251,21 @@ class Domain_User_Action_Create_Human extends Domain_User_Action_Create {
 
 		// вставляем запись в историю
 		Gateway_Db_PivotData_LastRegisteredUser::insert($user_id, $partner_id, $extra);
+	}
+
+	/**
+	 * Добавляем запись в таблицу онлайна пользователя
+	 */
+	protected static function _createUserOnline(int $user_id):void {
+
+		// добавляем запись
+		Gateway_Db_PivotUser_UserActivityList::insertOrUpdate(
+			$user_id,
+			0,
+			time(),
+			0,
+			0
+		);
 	}
 
 	/**

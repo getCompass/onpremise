@@ -93,4 +93,35 @@ class Type_Conversation_Support extends Type_Conversation_Default {
 			$meta_row["conversation_map"], $message, $meta_row["users"], $meta_row["type"], $meta_row["conversation_name"], $meta_row["extra"]
 		);
 	}
+
+	/**
+	 * Отправляем сообщение об успешной авторизации в чат
+	 *
+	 * @return void
+	 * @throws LocaleTextNotFound
+	 * @throws ParamException
+	 */
+	public static function sendDeviceLoginSuccess(string $conversation_map, string $login_type, string $device_name, string $app_version, string $server_version, string $locale):void {
+
+		// получаем текст в зависимости от локализации
+		$message_text = Locale::getText(getConfig("LOCALE_TEXT"), "support_bot", "device_login_success_message_text", $locale, [
+			"login_type"     => $login_type,
+			"device_name"    => $device_name,
+			"app_version"    => $app_version,
+			"server_version" => $server_version,
+		]);
+
+		// создаём сообщение с текстом
+		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeSystemBotText(
+			SUPPORT_BOT_USER_ID,
+			$message_text,
+			generateUUID()
+		);
+
+		$meta_row = Type_Conversation_Meta::get($conversation_map);
+
+		Helper_Conversations::addMessage(
+			$meta_row["conversation_map"], $message, $meta_row["users"], $meta_row["type"], $meta_row["conversation_name"], $meta_row["extra"]
+		);
+	}
 }

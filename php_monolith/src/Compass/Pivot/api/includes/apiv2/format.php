@@ -4,7 +4,6 @@ namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
 use JetBrains\PhpStorm\ArrayShape;
-use Symfony\Component\Yaml\Exception\ParseException;
 
 /**
  * Класс для форматирования сущностей под формат API
@@ -278,6 +277,65 @@ class Apiv2_Format {
 					"stage"                   => (string) $stage,
 				],
 			],
+		];
+	}
+
+	/**
+	 * Форматируем данные сессии для устройства пользователя
+	 */
+	public static function sessionDevice(string $public_session_id, Struct_Db_PivotUser_SessionActive $session_active, bool $is_current):array {
+
+		return [
+			"session_id"     => (string) $public_session_id,
+			"is_current"     => (int) $is_current ? 1 : 0,
+			"login_at"       => (int) $session_active->login_at,
+			"last_online_at" => (int) $session_active->last_online_at,
+			"device_name"    => (string) Domain_User_Entity_SessionExtra::getDeviceName($session_active->extra),
+			"device_type"    => (string) Domain_User_Entity_SessionExtra::getOutputDeviceType($session_active->extra),
+			"login_type"     => (int) Domain_User_Entity_SessionExtra::getLoginType($session_active->extra),
+			"app_version"    => (string) Domain_User_Entity_SessionExtra::getAppVersion($session_active->extra),
+			"server_version" => (string) Domain_User_Entity_SessionExtra::getServerVersion($session_active->extra),
+		];
+	}
+
+	/**
+	 * Форматируем ответ для получения онлайна пользователя
+	 */
+	public static function getOnline(int $last_online_at):array {
+
+		return [
+			"last_online_at" => (int) $last_online_at,
+		];
+	}
+
+	/**
+	 * Форматируем ответ для получения списка онлайна пользователей
+	 */
+	public static function getOnlineList(array $user_online_list):array {
+
+		// подводим под формат
+		$formatted_user_online_list = [];
+		foreach ($user_online_list as $v) {
+			$formatted_user_online_list[] = self::_makeOutputOnlineList($v);
+		}
+
+		return [
+			"online_list" => (array) $formatted_user_online_list,
+		];
+	}
+
+	/**
+	 * Формируем массив online_list
+	 *
+	 * @param Struct_Db_PivotUser_UserActivityList $user_online
+	 *
+	 * @return array
+	 */
+	protected static function _makeOutputOnlineList(Struct_Db_PivotUser_UserActivityList $user_online):array {
+
+		return [
+			"user_id"        => (int) $user_online->user_id,
+			"last_online_at" => (int) $user_online->last_ws_ping_at,
 		];
 	}
 }

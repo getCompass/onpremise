@@ -7,13 +7,15 @@ import (
 )
 
 var (
-	is1HourWorker atomic.Value
+	is1HourWorker   atomic.Value
+	is1MinuteWorker atomic.Value
 )
 
 // метод для выполнения работы через время
 func Work() {
 
 	go doWork1Hour()
+	go doWork1Minute()
 }
 
 // каждый час
@@ -30,5 +32,22 @@ func doWork1Hour() {
 		time.Sleep(time.Hour)
 
 		session.DeleteUnusedSessions()
+	}
+}
+
+// каждую минуту
+func doWork1Minute() {
+
+	if is1MinuteWorker.Load() != nil && is1MinuteWorker.Load().(bool) {
+		return
+	}
+	is1MinuteWorker.Store(true)
+
+	for {
+
+		// задержка 1 минута
+		time.Sleep(time.Minute)
+
+		session.UpdateLastOnlineAt()
 	}
 }

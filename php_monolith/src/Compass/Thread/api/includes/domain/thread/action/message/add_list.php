@@ -380,6 +380,10 @@ class Domain_Thread_Action_Message_AddList {
 
 				$need_add_file_list = self::_onAddMessageMassQuote($message);
 				break;
+			case THREAD_MESSAGE_TYPE_REPOST:
+			case THREAD_MESSAGE_TYPE_CONVERSATION_REPOST:
+				$need_add_file_list = self::_onAddMessageRepost($message);
+				break;
 			default:
 				return;
 		}
@@ -434,6 +438,21 @@ class Domain_Thread_Action_Message_AddList {
 		return self::_getInsertListIfMessageIsQuoteOrRepost($quoted_message_list);
 	}
 
+	/**
+	 * Обрабатываем добавленное сообщение-репост.
+	 */
+	protected static function _onAddMessageRepost(array $message):array {
+
+		// получаем список пересланных сообщений
+		$reposted_message_list = Type_Thread_Message_Main::getHandler($message)::getRepostedMessageList($message);
+
+		// переворачиваем список процитированных сообщений сообщений, чтобы не нарушить порядок файлов
+		$reposted_message_list = array_reverse($reposted_message_list);
+
+		// проходим по всем сообщениям в цитате и заносим все файлы, что содержатся в них
+		return self::_getInsertListIfMessageIsQuoteOrRepost($reposted_message_list);
+	}
+
 	// получаем массив для вставки если сообщение имеет тип цитата или репост
 	protected static function _getInsertListIfMessageIsQuoteOrRepost(array $message_list, array $insert_list = []):array {
 
@@ -447,11 +466,18 @@ class Domain_Thread_Action_Message_AddList {
 	// получаем массив для вставки файла если сообщение имеет файл
 	protected static function _getInsertListIfMessageHasFile(array $message, array $insert_list):array {
 
-		// если это цитата или репост, то дополнительно проходимся по процитированным/репостнутым сообщениям
+		// если это цитата, то дополнительно проходимся по процитированным сообщениям
 		if (Type_Thread_Message_Main::getHandler($message)::isQuote($message)) {
 
 			$quoted_message_list = Type_Thread_Message_Main::getHandler($message)::getQuotedMessageList($message);
 			return self::_getInsertListIfMessageIsQuoteOrRepost($quoted_message_list, $insert_list);
+		}
+
+		// если это репост, то дополнительно проходимся по пересланным сообщениям
+		if (Type_Thread_Message_Main::getHandler($message)::isRepost($message)) {
+
+			$reposted_message_list = Type_Thread_Message_Main::getHandler($message)::getRepostedMessageList($message);
+			return self::_getInsertListIfMessageIsQuoteOrRepost($reposted_message_list, $insert_list);
 		}
 
 		// получаем map файла, если сообщение имеет тип файл или файл репостнутый из треда

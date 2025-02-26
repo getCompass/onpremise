@@ -14,5 +14,12 @@ class Domain_Jitsi_Entity_ConferenceMember_JoiningAsserts_ConferenceState implem
 		if ($conference->status === Domain_Jitsi_Entity_Conference::STATUS_FINISHED) {
 			throw new Domain_Jitsi_Exception_Conference_IsFinished();
 		}
+
+		// проверяем что постоянная конференция не удалена
+		if (Domain_Jitsi_Entity_Conference::isPermanent($conference)) {
+
+			$permanent_conference = Domain_Jitsi_Entity_PermanentConference::getOne($conference->conference_id);
+			Domain_Jitsi_Entity_PermanentConference::assertNotDeleted($permanent_conference);
+		}
 	}
 }

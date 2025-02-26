@@ -75,6 +75,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"antispam.clearAll",
 			"system.execCompanyUpdateScript",
 			"system.sendMessageWithFile",
+			"userbot.sendMessageToGroup",
 			"userbot.addReaction",
 			"userbot.removeReaction",
 			"intercom.addMessageFromSupportBot",
@@ -177,6 +178,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"groups.addMembersToRespectConversation",
 			"conversations.addMediaConferenceMessage",
 			"conversations.checkIsAllowedForCall",
+			"conversations.sendDeviceLoginSuccess",
 		],
 	],
 ];

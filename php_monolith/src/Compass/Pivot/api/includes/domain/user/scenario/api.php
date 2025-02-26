@@ -170,8 +170,18 @@ class Domain_User_Scenario_Api {
 
 		// чистим кэш и выдаем сессию
 		$story->clearAuthCache();
-		Type_Session_Main::doLoginSession($user_id);
+		$login_type = ServerProvider::isSaas() ? Domain_User_Entity_SessionExtra::SAAS_SMS_LOGIN_TYPE : Domain_User_Entity_SessionExtra::ONPREMISE_SMS_LOGIN_TYPE;
+		Type_Session_Main::doLoginSession($user_id, $login_type);
 		Type_User_ActionAnalytics::sessionStart($user_id);
+
+		if (!$story->isNeedToCreateUser()) {
+
+			$user_agent     = getUa();
+			$device_name    = Type_Api_Platform::getDeviceName($user_agent);
+			$app_version    = Type_Api_Platform::getVersion($user_agent);
+			$server_version = ServerProvider::isSaas() ? SAAS_VERSION : ONPREMISE_VERSION;
+			Domain_User_Action_Security_Device_OnSuccessLogin::do($user_id, $login_type, $device_name, $app_version, $server_version);
+		}
 
 		// устанавливаем, что аутентификация прошла успешно
 		$story->handleSuccess($user_id);
@@ -286,7 +296,7 @@ class Domain_User_Scenario_Api {
 	 * @throws \userAccessException
 	 * @long
 	 */
-	public static function doStart(int $user_id, string $app_version):array {
+	public static function doStart(int $user_id, string $session_uniq, string $app_version):array {
 
 		$platform = Type_Api_Platform::getPlatform();
 		$app_name = Type_Api_Platform::getAppNameByUserAgent();
@@ -327,6 +337,9 @@ class Domain_User_Scenario_Api {
 
 			// генерируем лицензионный токен
 			$client_connection_token = Domain_Solution_Entity_ClientConnectionToken::generate($user_id);
+
+			// обновляем информацию активной сессии, если требуется
+			Domain_User_Action_Security_Device_UpdateSessionIfNeed::do($user_id, $session_uniq, $app_version);
 		}
 
 		// получаем конфиг приложения для пользователя
@@ -1328,6 +1341,30 @@ class Domain_User_Scenario_Api {
 		];
 
 		Domain_User_Action_Onboarding_Activate::do($user, $type, $data);
+	}
+
+	/**
+	 * получаем онлайн пользователя
+	 *
+	 * @param int $user_id
+	 *
+	 * @return int
+	 */
+	public static function getOnline(int $user_id):int {
+
+		return Domain_User_Action_Online_Get::do($user_id);
+	}
+
+	/**
+	 * получаем список онлайна пользователей
+	 *
+	 * @param array $user_id_list
+	 *
+	 * @return array
+	 */
+	public static function getOnlineList(array $user_id_list):array {
+
+		return Domain_User_Action_Online_GetList::do($user_id_list);
 	}
 
 	// -------------------------------------------------------

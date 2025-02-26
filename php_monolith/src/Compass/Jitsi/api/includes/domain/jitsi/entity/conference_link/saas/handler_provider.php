@@ -28,7 +28,6 @@ class Domain_Jitsi_Entity_ConferenceLink_Saas_HandlerProvider implements Domain_
 	 */
 	public static function getByLink(string $link):Domain_Jitsi_Entity_ConferenceLink_Interface_LinkHandler {
 
-
 		// пробуем распарсить ссылку реализации v1 (поддержка старых ссылок)
 		try {
 

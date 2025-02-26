@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 // Response тип ответа от сервера
@@ -88,4 +89,28 @@ func DoCall(module string, method string, signature string, jsonParams string, u
 	}
 
 	return response, nil
+}
+
+// выполнить tcp запрос по url в pivot
+func DoCallPivot(socketUrl string, method string, jsonParams json.RawMessage, signature string, userId int64) ([]byte, error) {
+
+	// формируем данные которые пошлём в модуль
+	data := url.Values{
+		"method":        {method},
+		"user_id":       {strconv.FormatInt(userId, 10)},
+		"sender_module": {"sender"},
+		"json_params":   {string(jsonParams)},
+		"signature":     {signature},
+	}
+
+	// выполняем пост запрос
+	resp, err := client.PostForm(socketUrl, data)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	// считываем ответ
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+
+	return bodyBytes, nil
 }

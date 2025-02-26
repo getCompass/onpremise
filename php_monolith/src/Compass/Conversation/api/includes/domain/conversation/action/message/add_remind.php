@@ -158,10 +158,12 @@ class Domain_Conversation_Action_Message_AddRemind {
 		$message_text = Type_Conversation_Message_Main::getHandler($message)::getText($message);
 		$system_info  = Gateway_Socket_Intercom::SYSTEM_CREATE_REMIND_MESSAGE;
 
-		$date_text         = date("m.d.y", $time);
+		$date_text         = date("d.m.y", $time);
 		$time_text         = date("H:i", $time);
 		$time_text_message = "{$date_text} в $time_text МСК";
 
-		return "{$system_info}\n\n<b>Сообщение</b>\n{$message_text}\n\n<b>Комментарий к напоминанию</b>\n{$comment}\n\n<b>Сработает</b>\n{$time_text_message}";
+		$comment_for_remind = mb_strlen($comment) > 0 ? "\n\n<b>Комментарий к напоминанию</b>\n" : "";
+
+		return "{$system_info}\n\n<b>Сообщение</b>\n{$message_text}{$comment_for_remind}{$comment}\n\n<b>Сработает</b>\n{$time_text_message}";
 	}
 }

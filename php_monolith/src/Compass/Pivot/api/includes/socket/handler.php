@@ -43,6 +43,7 @@ class Socket_Handler extends Api implements \RouteHandler {
 		"rating",
 		"attribution",
 		"pivot_ldap",
+		"device",
 	];
 
 	/**

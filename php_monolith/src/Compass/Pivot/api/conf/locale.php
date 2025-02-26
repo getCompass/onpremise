@@ -32,6 +32,10 @@ $CONFIG["LOCALE_TEXT"] = [
 			"title"   => "Код подтверждения – {confirm_code}",
 			"content" => "Ваш код:<h3>{confirm_code}</h3>Используйте его, чтобы подтвердить адрес электронной почты и перейти к смене почты для авторизации в корпоративном мессенджере Compass On-premise.",
 		],
+		"local_type" => [
+			"qr_code" => "QR-код",
+			"unknown" => "Неизвестный",
+		],
 	],
 	"en-US" => [
 		"sms_confirm"        => [
@@ -61,6 +65,10 @@ $CONFIG["LOCALE_TEXT"] = [
 		"mail_change"        => [
 			"title"   => "",
 			"content" => "",
+		],
+		"local_type" => [
+			"qr_code" => "QR code",
+			"unknown" => "Unknown",
 		],
 	],
 	"de-DE" => [
@@ -92,6 +100,10 @@ $CONFIG["LOCALE_TEXT"] = [
 			"title"   => "",
 			"content" => "",
 		],
+		"local_type" => [
+			"qr_code" => "QR-Code",
+			"unknown" => "Unbekannt",
+		],
 	],
 	"fr-FR" => [
 		"sms_confirm"        => [
@@ -121,6 +133,10 @@ $CONFIG["LOCALE_TEXT"] = [
 		"mail_change"        => [
 			"title"   => "",
 			"content" => "",
+		],
+		"local_type" => [
+			"qr_code" => "code QR",
+			"unknown" => "Inconnu",
 		],
 	],
 	"it-IT" => [
@@ -152,6 +168,10 @@ $CONFIG["LOCALE_TEXT"] = [
 			"title"   => "",
 			"content" => "",
 		],
+		"local_type" => [
+			"qr_code" => "codice QR",
+			"unknown" => "Sconosciuto",
+		],
 	],
 	"es-ES" => [
 		"sms_confirm"        => [
@@ -181,6 +201,10 @@ $CONFIG["LOCALE_TEXT"] = [
 		"mail_change"        => [
 			"title"   => "",
 			"content" => "",
+		],
+		"local_type" => [
+			"qr_code" => "código QR",
+			"unknown" => "Desconocido",
 		],
 	],
 ];

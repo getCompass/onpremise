@@ -4,6 +4,7 @@ namespace Compass\Pivot;
 
 use BaseFrame\Exception\Request\EmptyAuthorizationException;
 use BaseFrame\Exception\Request\InvalidAuthorizationException;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * класс для работы с пользовательской сессией
@@ -69,13 +70,41 @@ class Type_Session_Main {
 
 	/**
 	 * Аутентифицируем сессию.
+	 * @long
 	 */
-	public static function doLoginSession(int $user_id):string {
+	public static function doLoginSession(int $user_id, int $login_type = 0):string {
 
-		$login_at = time();
+		$login_at   = time();
+		$user_agent = getUa();
 
 		$pivot_session_map  = self::startSession(self::_SESSION_STATUS_LOGGED_IN, $user_id);
 		$pivot_session_uniq = Type_Pack_PivotSession::getSessionUniq($pivot_session_map);
+
+		try {
+
+			$device_type = match (Type_Api_Platform::getPlatform($user_agent)) {
+				Type_Api_Platform::PLATFORM_ELECTRON                                 => "desktop",
+				Type_Api_Platform::PLATFORM_ANDROID, Type_Api_Platform::PLATFORM_IOS => "mobile",
+				Type_Api_Platform::PLATFORM_OPENAPI                                  => "open_api",
+				default                                                              => "unknown",
+			};
+		} catch (cs_PlatformNotFound) {
+			$device_type = "unknown";
+		}
+
+		try {
+			$app_version = Type_Api_Platform::getVersion($user_agent);
+		} catch (cs_PlatformVersionNotFound) {
+			$app_version = "-";
+		}
+
+		$extra = Domain_User_Entity_SessionExtra::initExtra();
+		$extra = Domain_User_Entity_SessionExtra::setLoginType($extra, $login_type);
+		$extra = Domain_User_Entity_SessionExtra::setDeviceId($extra, getDeviceId());
+		$extra = Domain_User_Entity_SessionExtra::setOutputDeviceType($extra, $device_type);
+		$extra = Domain_User_Entity_SessionExtra::setDeviceName($extra, Type_Api_Platform::getDeviceName($user_agent));
+		$extra = Domain_User_Entity_SessionExtra::setAppVersion($extra, $app_version);
+		$extra = Domain_User_Entity_SessionExtra::setServerVersion($extra, ServerProvider::isSaas() ? SAAS_VERSION : ONPREMISE_VERSION);
 
 		// делаем записи в таблицах о том что сессия залогинена
 		Gateway_Db_PivotUser_SessionActiveList::insert(
@@ -85,9 +114,10 @@ class Type_Session_Main {
 			$login_at,
 			$login_at,
 			$login_at,
-			Type_Hash_UserAgent::makeHash(getUa()),
+			$login_at,
+			Type_Hash_UserAgent::makeHash($user_agent),
 			getIp(),
-			[]
+			$extra
 		);
 
 		return $pivot_session_map;
@@ -95,6 +125,7 @@ class Type_Session_Main {
 
 	/**
 	 * Инвалидируем сессию.
+	 * @long
 	 */
 	public static function doLogoutSession(int $user_id):void {
 
@@ -102,7 +133,7 @@ class Type_Session_Main {
 
 			$pivot_session_map  = self::_getSessionMap();
 			$pivot_session_uniq = Type_Pack_PivotSession::getSessionUniq($pivot_session_map);
-		} catch (\BaseFrame\Exception\Request\EmptyAuthorizationException|\BaseFrame\Exception\Request\InvalidAuthorizationException) {
+		} catch (\BaseFrame\Exception\Request\EmptyAuthorizationException | \BaseFrame\Exception\Request\InvalidAuthorizationException) {
 			return;
 		}
 
@@ -110,6 +141,11 @@ class Type_Session_Main {
 
 			// удаляем сессию из таблицы активных и фиксируем событие в истории
 			$user_active_session_row = Gateway_Db_PivotUser_SessionActiveList::getOne($user_id, $pivot_session_uniq);
+
+			$user_active_session_row->extra = Domain_User_Entity_SessionExtra::setInvalidateReason(
+				$user_active_session_row->extra, Domain_User_Entity_SessionExtra::LOGOUT_INVALIDATE_REASON
+			);
+
 			Gateway_Db_PivotHistoryLogs_SessionHistory::insert(
 				$user_id, $pivot_session_uniq, self::_SESSION_STATUS_LOGGED_OUT, $user_active_session_row->login_at,
 				time(), Type_Hash_UserAgent::makeHash(getUa()), getIp(), $user_active_session_row->extra
@@ -118,6 +154,11 @@ class Type_Session_Main {
 
 			// это какая-то внештатная ситуация, такого не должно происходить
 			// но останавливать процесс разлогина не нужно, м.б. как-то в лог откинуть
+			Type_System_Admin::log("do_logout_session", [
+				"message"            => "Не смогли найти сессия пользователя в таблице",
+				"user_id"            => $user_id,
+				"pivot_session_uniq" => $pivot_session_uniq,
+			]);
 		}
 
 		// удаляем сессию и добавляем задачу на разлогин
@@ -132,7 +173,61 @@ class Type_Session_Main {
 	}
 
 	/**
+	 * Инвалидируем сессию определённого устройства.
+	 */
+	public static function doLogoutDevice(int $user_id, string $pivot_session_uniq):void {
+
+		$session_list = [];
+		try {
+			$session_list[] = Gateway_Db_PivotUser_SessionActiveList::getOne($user_id, $pivot_session_uniq);
+		} catch (\cs_RowIsEmpty) {
+
+			// это какая-то внештатная ситуация, такого не должно происходить
+			// но останавливать процесс разлогина не нужно, м.б. как-то в лог откинуть
+			Type_System_Admin::log("do_logout_device", [
+				"message"            => "Не смогли найти сессия пользователя в таблице",
+				"user_id"            => $user_id,
+				"pivot_session_uniq" => $pivot_session_uniq,
+			]);
+		}
+
+		self::_addSessionHistory(
+			$user_id, $session_list, Domain_User_Entity_SessionExtra::LOGOUT_DEVICE_INVALIDATE_REASON
+		);
+
+		// удаляем сессию и добавляем задачу на разлогин
+		Gateway_Db_PivotUser_SessionActiveList::delete($user_id, $pivot_session_uniq);
+		Gateway_Bus_PivotCache::clearSessionCacheBySessionUniq($pivot_session_uniq);
+		Type_Phphooker_Main::onUserLogout($user_id, [$pivot_session_uniq]);
+	}
+
+	/**
+	 * Инвалидируем список сессий устройств пользователя.
+	 *
+	 * @param int                                 $user_id
+	 * @param Struct_Db_PivotUser_SessionActive[] $active_session_list
+	 *
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws \busException
+	 * @throws \parseException
+	 * @throws cs_IncorrectSaltVersion
+	 * @long
+	 */
+	public static function doLogoutDeviceList(int $user_id, array $active_session_list):void {
+
+		$user_session_uniq_list_to_delete = self::_addSessionHistory(
+			$user_id, $active_session_list, Domain_User_Entity_SessionExtra::LOGOUT_DEVICE_INVALIDATE_REASON
+		);
+
+		// удаляем сессию и добавляем задачу на разлогин
+		Gateway_Db_PivotUser_SessionActiveList::deleteArray($user_id, $user_session_uniq_list_to_delete);
+		Type_Phphooker_Main::onUserLogout($user_id, $user_session_uniq_list_to_delete);
+		Gateway_Bus_PivotCache::clearSessionCacheByUserId($user_id);
+	}
+
+	/**
 	 * Инвалидируем все сессии, кроме текущей.
+	 * @long
 	 */
 	public static function doLogoutUserSessionsExceptCurrent(int $user_id):void {
 
@@ -148,42 +243,19 @@ class Type_Session_Main {
 		$session_list = Gateway_Db_PivotUser_SessionActiveList::getActiveSessionList($user_id);
 
 		// формируем массивы для удаления и истории
-		$user_session_history_list        = [];
-		$user_session_uniq_list_to_delete = [];
-
+		$filtered_session_list = [];
 		foreach ($session_list as $session) {
 
 			if ($session->session_uniq === $current_session_uniq) {
 				continue;
 			}
 
-			$logout_at  = time();
-			$shard_year = Gateway_Db_PivotHistoryLogs_Main::getShardIdByTime($logout_at);
-			if (!isset($user_session_history_list[$shard_year])) {
-				$user_session_history_list[$shard_year] = [];
-			}
-
-			$user_session_history_list[$shard_year][] = [
-				"session_uniq" => $session->session_uniq,
-				"user_id"      => $user_id,
-				"status"       => self::_SESSION_STATUS_LOGGED_OUT,
-				"login_at"     => $session->login_at,
-				"logout_at"    => $logout_at,
-				"ua_hash"      => Type_Hash_UserAgent::makeHash(getUa()),
-				"ip_address"   => getIp(),
-				"extra"        => $session->extra,
-			];
-
-			$user_session_uniq_list_to_delete[] = $session->session_uniq;
+			$filtered_session_list[] = $session;
 		}
 
-		if (count($user_session_uniq_list_to_delete) === 0) {
-			return;
-		}
-
-		foreach ($user_session_history_list as $shard_id => $history_list) {
-			Gateway_Db_PivotHistoryLogs_SessionHistory::insertArray($shard_id, $history_list);
-		}
+		$user_session_uniq_list_to_delete = self::_addSessionHistory(
+			$user_id, $filtered_session_list, Domain_User_Entity_SessionExtra::CHANGE_PHONE_INVALIDATE_REASON
+		);
 
 		Gateway_Db_PivotUser_SessionActiveList::deleteArray($user_id, $user_session_uniq_list_to_delete);
 
@@ -200,8 +272,11 @@ class Type_Session_Main {
 		Type_System_Admin::log("user-kicker", "удаляю активные сессии пользователя {$user_id}");
 
 		// сбрасываем сессии
-		$session_list      = Gateway_Db_PivotUser_SessionActiveList::getActiveSessionList($user_id);
-		$session_uniq_list = array_column($session_list, "session_uniq");
+		$session_list = Gateway_Db_PivotUser_SessionActiveList::getActiveSessionList($user_id);
+
+		$session_uniq_list = self::_addSessionHistory(
+			$user_id, $session_list, Domain_User_Entity_SessionExtra::DELETE_ACCOUNT_INVALIDATE_REASON
+		);
 
 		// удаляем сессии
 		Gateway_Db_PivotUser_SessionActiveList::deleteArray($user_id, $session_uniq_list);
@@ -535,7 +610,55 @@ class Type_Session_Main {
 
 		return [
 			"unique" => static::_TOKEN_HEADER_UNIQUE,
-			"token"  => sprintf("%s %s", static::_HEADER_AUTH_TYPE, base64_encode($session_key))
+			"token"  => sprintf("%s %s", static::_HEADER_AUTH_TYPE, base64_encode($session_key)),
 		];
+	}
+
+	// -------------------------------------------------------
+	// PROTECTED
+	// -------------------------------------------------------
+
+	/**
+	 * Добавить активную сессию в таблицу истории
+	 *
+	 * @throws cs_IncorrectSaltVersion
+	 * @long
+	 */
+	protected static function _addSessionHistory(int $user_id, array $session_list, int $invalidate_reason):array {
+
+		// формируем массивы для удаления и истории
+		$user_session_history_list        = [];
+		$user_session_uniq_list_to_delete = [];
+
+		foreach ($session_list as $session) {
+
+			$logout_at  = time();
+			$shard_year = Gateway_Db_PivotHistoryLogs_Main::getShardIdByTime($logout_at);
+			if (!isset($user_session_history_list[$shard_year])) {
+				$user_session_history_list[$shard_year] = [];
+			}
+
+			$session->extra = Domain_User_Entity_SessionExtra::setInvalidateReason($session->extra, $invalidate_reason);
+
+			$user_session_history_list[$shard_year][] = [
+				"session_uniq" => $session->session_uniq,
+				"user_id"      => $user_id,
+				"status"       => self::_SESSION_STATUS_LOGGED_OUT,
+				"login_at"     => $session->login_at,
+				"logout_at"    => $logout_at,
+				"ua_hash"      => Type_Hash_UserAgent::makeHash(getUa()),
+				"ip_address"   => getIp(),
+				"extra"        => $session->extra,
+			];
+
+			$user_session_uniq_list_to_delete[] = $session->session_uniq;
+		}
+
+		// фиксируем событие в истории
+		foreach ($user_session_history_list as $shard_id => $history_list) {
+			Gateway_Db_PivotHistoryLogs_SessionHistory::insertArray($shard_id, $history_list);
+		}
+
+		return $user_session_uniq_list_to_delete;
 	}
 }

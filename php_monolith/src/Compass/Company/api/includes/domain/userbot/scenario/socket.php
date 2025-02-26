@@ -233,7 +233,7 @@ class Domain_Userbot_Scenario_Socket {
 			case "hello bot": // тестовая команда для тестов
 
 				$message_text = "Приветствую тебя, человек. Я есть бот, личинка Скайнета";
-				Gateway_Socket_Conversation::sendMessageToConversation($userbot->user_id, $conversation_key, $message_text);
+				Gateway_Socket_Conversation::sendUserbotMessageToGroup($userbot->user_id, $conversation_key, $message_text);
 				break;
 			case "send to thread":
 

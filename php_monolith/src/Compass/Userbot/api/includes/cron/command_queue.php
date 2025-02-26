@@ -220,6 +220,7 @@ class Cron_CommandQueue extends \Cron_Default {
 		$headers = [
 			"Authorization" => "bearer={$token}",
 			"Signature"     => "signature={$signature}",
+			"Content-Type"  => "application/json",
 		];
 
 		return [toJson($params), $headers];
@@ -233,6 +234,7 @@ class Cron_CommandQueue extends \Cron_Default {
 		$headers = [
 			"Authorization" => "bearer={$token}",
 			"Signature"     => "signature={$signature}",
+			"Content-Type"  => "application/json",
 		];
 
 		return [toJson($params), $headers];

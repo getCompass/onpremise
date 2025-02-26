@@ -413,6 +413,9 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 		if (!isset($meta_row["users"][$user_id])) {
 
 			Type_System_Admin::log("change_role_fail", "Не удалось установить роль пользователю {$user_id} в чате {$meta_row["conversation_name"]} {$meta_row["conversation_map"]}");
+
+			Gateway_Db_CompanyConversation_ConversationMetaLegacy::rollback();
+			return $meta_row["users"];
 		}
 		// устанавливаем новую роль участнику
 		$meta_row["users"][$user_id] = Type_Conversation_Meta_Users::setUserRole($meta_row["users"][$user_id], $role);

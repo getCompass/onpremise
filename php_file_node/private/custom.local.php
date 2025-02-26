@@ -83,5 +83,9 @@ define("VIDEO_PROCESS_THREAD_COUNT"		, "${VIDEO_PROCESS_THREAD_COUNT}");
 
 define("INTEGRATION_AUTHORIZATION_TOKEN"  , "${INTEGRATION_AUTHORIZATION_TOKEN}");
 
-define("CA_CERTIFICATE"                			, "${CA_CERTIFICATE}");
+define("CA_CERTIFICATE"                	, "${CA_CERTIFICATE}");
+
+// максимальный размер загружаемого файла
+define("MAX_FILE_SIZE_MB"                 , ${MAX_FILE_SIZE_MB});
+define("DEFAULT_UPLOAD_TIMEOUT_SEC"       , ${DEFAULT_UPLOAD_TIMEOUT_SEC});
 // @formatter:on <чтобы автоформатирование не убирало табы>

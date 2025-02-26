@@ -106,6 +106,9 @@ class Domain_Search_Helper_Stemmer {
 		// например, в русской локализации слова с 'ё' работает отлично от 'е'
 		$text = Domain_Search_Helper_Query_Sanitizer::replaceSomeLetters($text);
 
+		// заменяем символы для корректной обработки запросов
+		$text = Domain_Search_Helper_Query_Sanitizer::replaceSomeSymbols($text);
+
 		// разбиваем текст по словам
 		$word_list = splitTextIntoWords($text);
 

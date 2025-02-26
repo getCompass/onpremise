@@ -55,6 +55,8 @@ class Socket_Billing extends \BaseFrame\Controller\Socket {
 			$is_admin = Domain_SpaceTariff_Scenario_Socket::isSpaceAdmin($user_id, $space_id);
 		} catch (cs_CompanyNotExist|Domain_Company_Exception_IsDeleted|cs_CompanyIncorrectCompanyId|Gateway_Socket_Exception_CompanyIsNotServed) {
 			return $this->error(1412003, "cant activate goods for space");
+		} catch (cs_CompanyIsHibernate) {
+			return $this->error(1412006, "company in hibernate");
 		}
 
 		return $this->ok([

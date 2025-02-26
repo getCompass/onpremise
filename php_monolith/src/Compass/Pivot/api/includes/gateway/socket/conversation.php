@@ -203,6 +203,35 @@ class Gateway_Socket_Conversation {
 		return $response["conversation_map"];
 	}
 
+	/**
+	 * Отправляем сообщение об успешной авторизации устройства пользователя
+	 *
+	 * @throws CompanyNotServedException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws cs_CompanyIsHibernate
+	 * @throws \cs_SocketRequestIsFailed
+	 */
+	public static function sendDeviceLoginSuccess(string $domino_id, int $company_id, string $private_key, int $user_id, string $login_type, string $device_name, string $app_version, string $server_version, string $locale):void {
+
+		$params = [
+			"user_id"        => $user_id,
+			"login_type"     => $login_type,
+			"device_name"    => $device_name,
+			"app_version"    => $app_version,
+			"server_version" => $server_version,
+			"locale"         => $locale,
+		];
+		[$status, $response] = self::_call("conversations.sendDeviceLoginSuccess", $params, 0, $company_id, $domino_id, $private_key);
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw new ParseFatalException("passed unknown error_code");
+		}
+	}
 
 	// -------------------------------------------------------
 	// PROTECTED

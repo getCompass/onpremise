@@ -63,6 +63,7 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 			"member_permission_list"                   => (object) $member_permission_list,
 			"space_uniq"                               => (string) random_int(1000000, 9999999) . "-" . random_int(100000, 999999),
 			"has_confirmed_join_request"               => (int) $has_confirmed_join_request,
+			"max_file_size"                            => (int) MAX_FILE_SIZE_MB,
 		];
 
 		return $this->ok($output);

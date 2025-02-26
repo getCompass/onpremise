@@ -2649,7 +2649,7 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		$dynamic_obj = Type_Thread_Dynamic::get($thread_map);
 		$this->_throwIfThreadIsLocked($dynamic_obj);
 
-		$selected_message_list = $this->_getSelectedMessageList($message_map_list, $dynamic_obj, $thread_map, true);
+		$selected_message_list = $this->_getSelectedMessageList($message_map_list, $dynamic_obj, $thread_map, true, true);
 
 		try {
 			$parent_message_data = Type_Thread_Rel_Parent::getParentMessageIfNeed($this->user_id, $meta_row, $is_attach_parent == 1);
@@ -2763,7 +2763,7 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		$dynamic_obj = Type_Thread_Dynamic::get($thread_map);
 		$this->_throwIfThreadIsLocked($dynamic_obj);
 
-		$selected_message_list = $this->_getSelectedMessageList($message_map_list, $dynamic_obj, $thread_map, true);
+		$selected_message_list = $this->_getSelectedMessageList($message_map_list, $dynamic_obj, $thread_map, true, true);
 
 		try {
 			$parent_message_data = Type_Thread_Rel_Parent::getParentMessageIfNeed($this->user_id, $meta_row, $is_attach_parent == 1);
@@ -3128,7 +3128,7 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем сообщения для репоста/перессылки (например для фиксации сообщений вместе с отработанными часами в чат "Личный Heroes")
-	protected function _getSelectedMessageList(array $message_map_list, Struct_Db_CompanyThread_ThreadDynamic $dynamic_obj, string $thread_map, bool $is_add_repost_quote = false):array {
+	protected function _getSelectedMessageList(array $message_map_list, Struct_Db_CompanyThread_ThreadDynamic $dynamic_obj, string $thread_map, bool $is_add_repost_quote = false, bool $need_filter_special_repost = false):array {
 
 		$block_list            = $this->_getBlockListRow($message_map_list, $dynamic_obj, $thread_map);
 		$selected_message_list = [];
@@ -3151,6 +3151,10 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 			// проверяем, можно ли репостить сообщение
 			// такую же проверку делаем и для перессылаемых сообщений, так как логика идентична
 			$this->_throwIfMessageNotAllowToRepost($message, $is_add_repost_quote);
+
+			if ($need_filter_special_repost && Type_Thread_Message_Main::getHandler($message)::isUserbotSender($message)) {
+				throw new ParamException("Can't repost this message");
+			}
 
 			// форматируем сообщение в нужный формат для репоста
 			$message_index                         = \CompassApp\Pack\Message\Thread::getThreadMessageIndex($message["message_map"]);

@@ -1728,11 +1728,20 @@ class Type_Conversation_Message_Handler_Default {
 			case CONVERSATION_MESSAGE_TYPE_TEXT:
 			case CONVERSATION_MESSAGE_TYPE_RESPECT:
 			case CONVERSATION_MESSAGE_TYPE_EMPLOYEE_METRIC_DELTA:
+				if ($is_push_hide) {
+					return "Сообщение";
+				}
+				return $message["data"]["text"];
 			case CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_TEXT:
 
 				if ($is_push_hide) {
 					return "Сообщение";
 				}
+
+				if (str_contains($message["data"]["text"], "[\"#\"|\"security/device\"|\"Безопасность\"]")) {
+					return "Вход с нового устройства";
+				}
+
 				return $message["data"]["text"];
 
 			case CONVERSATION_MESSAGE_TYPE_FILE:
@@ -3679,11 +3688,6 @@ class Type_Conversation_Message_Handler_Default {
 			return false;
 		}
 
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -3735,11 +3739,6 @@ class Type_Conversation_Message_Handler_Default {
 			return false;
 		}
 
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -3755,11 +3754,6 @@ class Type_Conversation_Message_Handler_Default {
 
 		// если сообщение является достижением
 		if (self::isContainAdditionalAchievement($message)) {
-			return false;
-		}
-
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
 			return false;
 		}
 
@@ -3797,11 +3791,6 @@ class Type_Conversation_Message_Handler_Default {
 
 		// если сообщение скрыто пользователем
 		if (!$is_allow_new_repost && self::isHiddenByUser($message, $user_id)) {
-			return false;
-		}
-
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
 			return false;
 		}
 
@@ -3868,11 +3857,6 @@ class Type_Conversation_Message_Handler_Default {
 
 		// если сообщение - респект, требовательность или достижение
 		if (self::isContainAdditionalRespect($message) || self::isContainAdditionalExactingness($message) || self::isContainAdditionalAchievement($message)) {
-			return false;
-		}
-
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
 			return false;
 		}
 
@@ -3948,11 +3932,6 @@ class Type_Conversation_Message_Handler_Default {
 
 	// проверяет возможность прятать сообщения определенного типа
 	public static function isAllowToHide(array $message):bool {
-
-		// если отправителем сообщения является пользовательский бот
-		if (self::isUserbotSender($message)) {
-			return false;
-		}
 
 		// если тип сообщения не позволяет прикрепить тред
 		return in_array($message["type"], self::_ALLOW_TO_HIDE);

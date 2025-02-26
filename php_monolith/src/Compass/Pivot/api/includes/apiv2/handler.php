@@ -40,6 +40,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 		"user_onboarding",
 		"security_mail",
 		"security_phone",
+		"security_device",
+		"user_online",
 	];
 
 	// поддерживаемые методы которые доступны без авторизации (при создании новой группы заносятся вручную)

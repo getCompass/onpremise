@@ -47,13 +47,9 @@ func (t *asyncTaskTable) GetAll(ctx context.Context, connection *Database.Connec
 	// EXPLAIN INDEX get_by_need_work
 	query := fmt.Sprintf("SELECT %s FROM `%s` WHERE `is_failed` = ? LIMIT ? OFFSET ?", t.fieldList, t.tableName)
 
-	fl := make([]interface{}, len(t.fieldList))
+	fl := make([]interface{}, 0)
 
-	for i, v := range t.fieldList {
-		fl[i] = v
-	}
-
-	fl = append(fl, limit, offset)
+	fl = append(fl, 0, limit, offset)
 
 	rows, err := connection.GetAll(ctx, query, fl...)
 	if err != nil {

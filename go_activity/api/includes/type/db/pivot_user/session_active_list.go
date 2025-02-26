@@ -69,11 +69,6 @@ func UpdateUserSessionActivity(ctx context.Context, activities []UserSessionActi
 		for tableName, tblActivitiesByPingWsAt := range tableMap {
 
 			for pingWsAt, tblActivities := range tblActivitiesByPingWsAt {
-
-				// формируем список обновляемых значений
-				values := make([]interface{}, 0)
-				values = append(values, pingWsAt, time.Now().Unix())
-
 				for i := 0; i < len(tblActivities); i += batchSize {
 					end := i + batchSize
 					if end > len(tblActivities) {
@@ -81,6 +76,10 @@ func UpdateUserSessionActivity(ctx context.Context, activities []UserSessionActi
 					}
 
 					batch := tblActivities[i:end]
+
+					// формируем список обновляемых значений
+					values := make([]interface{}, 0)
+					values = append(values, pingWsAt, time.Now().Unix())
 
 					whereClauses := make([]string, 0, len(batch))
 

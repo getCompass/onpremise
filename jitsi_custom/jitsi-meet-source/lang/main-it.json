@@ -840,7 +840,7 @@
         "errorDialOutFailed": "Impossibile fare la chiamata. Chiamata fallita",
         "errorDialOutStatus": "Errore nel ricevere lo stato della rete",
         "errorMissingName": "Inserire il proprio nome, per accedere alla riunione",
-        "errorNoPermissionsTitle": "Нет доступа к микрофону или камере",
+        "errorNoPermissionsTitle": "Nessun accesso al microfono o alla fotocamera",
         "errorNoPermissions": "Devi autorizzare l'accesso al microfono e alla videocamera",
         "errorStatusCode": "Errore nella chiamata, codice: {{status}}",
         "errorValidation": "Numero inesistente",
@@ -965,7 +965,7 @@
         "title": "Impostazioni di sicurezza"
     },
     "settings": {
-        "audioNoPermissions": "Нет доступа к звуку",
+        "audioNoPermissions": "Nessun accesso all'audio",
         "buttonLabel": "Impostazioni",
         "calendar": {
             "about": "L’integrazione del calendario con {{appName}} è usata per accedere in sicurezza al proprio calendario e poter leggere i prossimi appuntamenti ",
@@ -994,7 +994,7 @@
         "participantLeft": "Partecipante Uscito",
         "playSounds": "Suoni attivati",
         "reactions": "Reazioni riunione",
-        "videoNoPermissions": "Нет доступа к видео",
+        "videoNoPermissions": "Nessun accesso al video",
         "sameAsSystem": "Stesso del computer ({{label}})",
         "selectAudioOutput": "Uscita audio",
         "selectCamera": "Videocamera",
@@ -1022,6 +1022,15 @@
         "participantsCanScreenshare": "I partecipanti possono attivare la dimostrazione"
     },
     "screenshare": {
+        "quality": "Qualità di condivisione",
+        "smooth_video": {
+            "description": "L'elevata frequenza dei fotogrammi fornisce un'immagine fluida, ma la condivisione di documenti di testo può richiedere alcuni secondi di buffering. Adatto per la condivisione di video senza dettagli fini.",
+            "title": "Video fluido"
+        },
+        "high_readability_text": {
+            "description": "L'elevata velocità di buffering mostra un'immagine chiara, ma lo schermo può essere trasmesso in bassa qualità quando ci si muove. Adatto alla visualizzazione di tabelle e documenti.",
+            "title": "Alta leggibilità del testo"
+        },
         "no_permissions_notification": {
             "description": "Alza la mano se desideri parlare.",
             "title": "Dimostrazione disabilitata dal moderatore"

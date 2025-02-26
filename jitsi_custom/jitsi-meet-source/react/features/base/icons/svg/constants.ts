@@ -16,6 +16,7 @@ import { default as IconCameraRefresh } from './camera-refresh.svg';
 import { default as IconCar } from './car.svg';
 import { default as IconChatUnread } from './chat-unread.svg';
 import { default as IconCheck } from './check.svg';
+import { default as IconCheckSmall } from './check-small.svg';
 import { default as IconCheckboxOnSmall } from './checkbox-on-small.svg';
 import { default as IconCheckboxOffSmall } from './checkbox-off-small.svg';
 import { default as IconCloseCircle } from './close-circle.svg';
@@ -175,6 +176,7 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconCar,
     IconChatUnread,
     IconCheck,
+    IconCheckSmall,
     IconCheckboxOnSmall,
     IconCheckboxOffSmall,
     IconCloseCircle,

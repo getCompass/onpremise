@@ -286,6 +286,16 @@ export function getModeratorSettingsVisibility(state: IReduxState) {
 }
 
 /**
+ * Returns the visibility state of the desktop share quality settings.
+ *
+ * @param {Object} state - The state of the application.
+ * @returns {boolean}
+ */
+export function getDesktopShareQualitySettingsVisibility(state: IReduxState) {
+    return state['features/settings'].desktopShareQualitySettingsVisible;
+}
+
+/**
  * Returns the visibility state of the video settings.
  *
  * @param {Object} state - The state of the application.

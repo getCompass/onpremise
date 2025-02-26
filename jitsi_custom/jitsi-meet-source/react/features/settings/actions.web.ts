@@ -22,7 +22,8 @@ import { toggleBackgroundEffect } from '../virtual-background/actions';
 import virtualBackgroundLogger from '../virtual-background/logger';
 
 import {
-    SET_AUDIO_SETTINGS_VISIBILITY, SET_MODERATOR_SETTINGS_VISIBILITY,
+    SET_AUDIO_SETTINGS_VISIBILITY, SET_DESKTOP_SHARE_QUALITY_SETTINGS_VISIBILITY,
+    SET_MODERATOR_SETTINGS_VISIBILITY,
     SET_VIDEO_SETTINGS_VISIBILITY
 } from './actionTypes';
 import LogoutDialog from './components/web/LogoutDialog';
@@ -117,6 +118,19 @@ function setAudioSettingsVisibility(value: boolean) {
 function setModeratorSettingsVisibility(value: boolean) {
     return {
         type: SET_MODERATOR_SETTINGS_VISIBILITY,
+        value
+    };
+}
+
+/**
+ * Sets the visibility of the desktop share quality settings.
+ *
+ * @param {boolean} value - The new value.
+ * @returns {Function}
+ */
+export function setDesktopShareQualitySettingsVisibility(value: boolean) {
+    return {
+        type: SET_DESKTOP_SHARE_QUALITY_SETTINGS_VISIBILITY,
         value
     };
 }
@@ -321,6 +335,19 @@ export function toggleModeratorSettings() {
         const value = getState()['features/settings'].moderatorSettingsVisible;
 
         dispatch(setModeratorSettingsVisibility(!value));
+    };
+}
+
+/**
+ * Toggles the visibility of the moderator settings.
+ *
+ * @returns {void}
+ */
+export function toggleDesktopShareQualitySettings() {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        const value = getState()['features/settings'].desktopShareQualitySettingsVisible;
+
+        dispatch(setDesktopShareQualitySettingsVisibility(!value));
     };
 }
 

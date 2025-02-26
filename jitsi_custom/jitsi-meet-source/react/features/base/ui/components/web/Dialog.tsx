@@ -12,6 +12,8 @@ import Button from './Button';
 import ClickableIcon from './ClickableIcon';
 import { IReduxState } from "../../../../app/types";
 import { isMobileBrowser } from "../../../environment/utils";
+import { setDesktopShareQualitySettingsVisibility } from "../../../../settings/actions.web";
+import { getDesktopShareQualitySettingsVisibility } from "../../../../settings/functions.any";
 
 
 const useStyles = makeStyles()(theme => {
@@ -69,7 +71,15 @@ const useStyles = makeStyles()(theme => {
             '& button:last-child': {
                 marginLeft: '16px'
             }
-        }
+        },
+
+        footerLeftButtonBlock: {
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '24px',
+        },
     };
 });
 
@@ -85,6 +95,7 @@ interface IDialogProps extends IBaseDialogProps {
     };
     children?: React.ReactNode;
     customButton?: React.ReactNode;
+    popoverButton?: React.ReactNode;
     disableAutoHideOnSubmit?: boolean;
     hideCloseButton?: boolean;
     ok?: {
@@ -98,6 +109,7 @@ interface IDialogProps extends IBaseDialogProps {
 
 const Dialog = ({
     back = { hidden: true },
+    popoverButton,
     cancel = { translationKey: 'dialog.Cancel' },
     customButton,
     children,
@@ -106,6 +118,7 @@ const Dialog = ({
     classNameHeaderTitle,
     classNameContent,
     classNameFooter,
+    okButtonClassName,
     description,
     disableAutoHideOnSubmit = false,
     disableBackdropClose,
@@ -124,12 +137,20 @@ const Dialog = ({
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const { is_in_picture_in_picture_mode } = useSelector((state: IReduxState) => state['features/picture-in-picture']);
+    const isDesktopShareQualitySettingsVisible = useSelector((state: IReduxState) => Boolean(getDesktopShareQualitySettingsVisibility(state)));
     const isMobile = isMobileBrowser();
 
     const onClose = useCallback(() => {
+
+        if (isDesktopShareQualitySettingsVisible) {
+
+            dispatch(setDesktopShareQualitySettingsVisibility(false));
+            return;
+        }
+
         dispatch(hideDialog());
         onCancel?.();
-    }, [ onCancel ]);
+    }, [ onCancel, isDesktopShareQualitySettingsVisible ]);
 
     const submit = useCallback(() => {
         if ((document.activeElement && !operatesWithEnterKey(document.activeElement)) || !document.activeElement) {
@@ -176,11 +197,14 @@ const Dialog = ({
                 data-autofocus-inside = 'true'>
                 {children}
             </div>
-            {(!back.hidden || !cancel.hidden || !ok.hidden || customButton) && (
+            {(!back.hidden || !cancel.hidden || !ok.hidden || customButton || popoverButton) && (
                 <div
                     className = {cx(classes.footer, classNameFooter)}
                     data-autofocus-inside = 'true'>
-                    {customButton && customButton}
+                    {<div className = {classes.footerLeftButtonBlock}>
+                        {popoverButton && popoverButton}
+                        {customButton && customButton}
+                    </div>}
                     {!back.hidden && <Button
                         accessibilityLabel = {t(back.translationKey ?? '')}
                         labelKey = {back.translationKey}
@@ -198,6 +222,7 @@ const Dialog = ({
                         id = 'modal-dialog-ok-button'
                         isSubmit = {true}
                         labelKey = {ok.translationKey}
+                        className={okButtonClassName}
                         {...(!ok.disabled && { onClick: submit })} />}
                 </div>
             )}

@@ -56,6 +56,12 @@ const getTopBotMidAlign = (bounds: DOMRect, size: DOMRectReadOnly) => {
     };
 };
 
+const getTopBotStartBlockAlign = (bounds: DOMRect, size: DOMRectReadOnly) => {
+    return {
+        right: `${window.innerWidth - bounds.x - size.width}px`
+    };
+};
+
 const getTopBotEndAlign = (bounds: DOMRect) => {
     return {
         left: `${bounds.x + bounds.width - 6}px`
@@ -74,8 +80,8 @@ const getTopBotEndAlign = (bounds: DOMRect) => {
  * @returns {Object} = The style to apply to context menu for positioning it correctly.
  */
 export const getContextMenuStyle = (triggerBounds: DOMRect,
-        dialogSize: DOMRectReadOnly,
-        position: string) => {
+    dialogSize: DOMRectReadOnly,
+    position: string) => {
     const parsed = position.split('-');
     const OFFSET = 8;
 
@@ -119,72 +125,74 @@ export const getContextMenuStyle = (triggerBounds: DOMRect,
 
     let alignmentStyle = {};
     switch (parsed[0]) {
-        case 'top': {
-            if (parsed[1]) {
-                alignmentStyle = parsed[1] === 'start'
-                    ? getTopBotStartAlign(triggerBounds)
-                    : parsed[1] === 'mid'
-                        ? getTopBotMidAlign(triggerBounds, dialogSize)
+    case 'top': {
+        if (parsed[1]) {
+            alignmentStyle = parsed[1] === 'start'
+                ? getTopBotStartAlign(triggerBounds)
+                : parsed[1] === 'mid'
+                    ? getTopBotMidAlign(triggerBounds, dialogSize)
+                    : parsed[1] === 'start_block'
+                        ? getTopBotStartBlockAlign(triggerBounds, dialogSize)
                         : getTopBotEndAlign(triggerBounds);
-            } else {
-                alignmentStyle = getTopBotMidAlign(triggerBounds, dialogSize);
-            }
-            return keepInBounds({
-                ...getTopAlignedStyle(triggerBounds),
-                ...alignmentStyle
-            });
+        } else {
+            alignmentStyle = getTopBotMidAlign(triggerBounds, dialogSize);
         }
-        case 'bottom': {
-            if (parsed[1]) {
-                alignmentStyle = parsed[1] === 'start'
-                    ? getTopBotStartAlign(triggerBounds)
-                    : parsed[1] === 'mid'
-                        ? getTopBotMidAlign(triggerBounds, dialogSize)
-                        : getTopBotEndAlign(triggerBounds);
-            } else {
-                alignmentStyle = getTopBotMidAlign(triggerBounds, dialogSize);
-            }
-            return keepInBounds({
-                ...getBottomAlignedStyle(triggerBounds),
-                ...alignmentStyle
-            });
+        return keepInBounds({
+            ...getTopAlignedStyle(triggerBounds),
+            ...alignmentStyle
+        });
+    }
+    case 'bottom': {
+        if (parsed[1]) {
+            alignmentStyle = parsed[1] === 'start'
+                ? getTopBotStartAlign(triggerBounds)
+                : parsed[1] === 'mid'
+                    ? getTopBotMidAlign(triggerBounds, dialogSize)
+                    : getTopBotEndAlign(triggerBounds);
+        } else {
+            alignmentStyle = getTopBotMidAlign(triggerBounds, dialogSize);
         }
-        case 'left': {
-            if (parsed[1]) {
-                alignmentStyle = parsed[1] === 'start'
-                    ? getLeftRightStartAlign(triggerBounds, dialogSize)
-                    : parsed[1] === 'mid'
-                        ? getLeftRightMidAlign(triggerBounds, dialogSize)
-                        : getLeftRightEndAlign(triggerBounds, dialogSize);
-            } else {
-                alignmentStyle = getLeftRightMidAlign(triggerBounds, dialogSize);
-            }
-            return keepInBounds({
-                ...getLeftAlignedStyle(triggerBounds),
-                ...alignmentStyle
-            });
+        return keepInBounds({
+            ...getBottomAlignedStyle(triggerBounds),
+            ...alignmentStyle
+        });
+    }
+    case 'left': {
+        if (parsed[1]) {
+            alignmentStyle = parsed[1] === 'start'
+                ? getLeftRightStartAlign(triggerBounds, dialogSize)
+                : parsed[1] === 'mid'
+                    ? getLeftRightMidAlign(triggerBounds, dialogSize)
+                    : getLeftRightEndAlign(triggerBounds, dialogSize);
+        } else {
+            alignmentStyle = getLeftRightMidAlign(triggerBounds, dialogSize);
         }
-        case 'right': {
-            if (parsed[1]) {
-                alignmentStyle = parsed[1] === 'start'
-                    ? getLeftRightStartAlign(triggerBounds, dialogSize)
-                    : parsed[1] === 'mid'
-                        ? getLeftRightMidAlign(triggerBounds, dialogSize)
-                        : getLeftRightEndAlign(triggerBounds, dialogSize);
-            } else {
-                alignmentStyle = getLeftRightMidAlign(triggerBounds, dialogSize);
-            }
-            return keepInBounds({
-                ...getRightAlignedStyle(triggerBounds),
-                ...alignmentStyle
-            });
+        return keepInBounds({
+            ...getLeftAlignedStyle(triggerBounds),
+            ...alignmentStyle
+        });
+    }
+    case 'right': {
+        if (parsed[1]) {
+            alignmentStyle = parsed[1] === 'start'
+                ? getLeftRightStartAlign(triggerBounds, dialogSize)
+                : parsed[1] === 'mid'
+                    ? getLeftRightMidAlign(triggerBounds, dialogSize)
+                    : getLeftRightEndAlign(triggerBounds, dialogSize);
+        } else {
+            alignmentStyle = getLeftRightMidAlign(triggerBounds, dialogSize);
         }
-        default: {
-            return keepInBounds({
-                ...getLeftAlignedStyle(triggerBounds),
-                ...getLeftRightEndAlign(triggerBounds, dialogSize)
-            });
-        }
+        return keepInBounds({
+            ...getRightAlignedStyle(triggerBounds),
+            ...alignmentStyle
+        });
+    }
+    default: {
+        return keepInBounds({
+            ...getLeftAlignedStyle(triggerBounds),
+            ...getLeftRightEndAlign(triggerBounds, dialogSize)
+        });
+    }
     }
 };
 

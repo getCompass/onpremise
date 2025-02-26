@@ -885,7 +885,7 @@
         "errorDialOutFailed": "No se pudo marcar. La llamada falló.",
         "errorDialOutStatus": "Hubo algún error, y no se pudo determinar cuál",
         "errorMissingName": "Ingrese su nombre para unirse a la reunión",
-        "errorNoPermissionsTitle": "Нет доступа к микрофону или камере",
+        "errorNoPermissionsTitle": "Sin acceso al micrófono o a la cámara",
         "errorNoPermissions": "Tienes que habilitar el acceso al micrófono y a la cámara",
         "errorStatusCode": "Error al marcar, código de error {{status}}",
         "errorValidation": "No se pudo validar el número",
@@ -1017,7 +1017,7 @@
     },
     "settings": {
         "audio": "Audio",
-        "audioNoPermissions": "Нет доступа к звуку",
+        "audioNoPermissions": "Sin acceso al audio",
         "buttonLabel": "Ajustes",
         "calendar": {
             "about": "La integración del calendario de {{appName}} se usa para acceder al calendario de manera segura para que puedas estar al tanto de los próximos eventos.",
@@ -1061,7 +1061,7 @@
         "talkWhileMuted": "Hablar en silencio",
         "title": "Ajustes",
         "video": "Video",
-        "videoNoPermissions": "Нет доступа к видео"
+        "videoNoPermissions": "Sin acceso al video"
     },
     "moderatorSettings": {
         "conferenceQualityTitle": "Calidad del vídeo en la conferencia para todos",
@@ -1077,6 +1077,15 @@
         "participantsCanScreenshare": "Los participantes pueden activar la demostración"
     },
     "screenshare": {
+        "quality": "Calidad de transmisión",
+        "smooth_video": {
+            "description": "La alta velocidad de fotogramas proporciona una imagen fluida, pero compartir documentos de texto puede tardar unos segundos en almacenarse en el búfer. Adecuado para compartir vídeos sin detalles finos.",
+            "title": "Vídeo fluido"
+        },
+        "high_readability_text": {
+            "description": "La alta velocidad de almacenamiento en búfer muestra una imagen clara, pero la pantalla puede emitirse en baja calidad al moverse. Adecuado para visualizar tablas y documentos.",
+            "title": "Alta legibilidad del texto"
+        },
         "no_permissions_notification": {
             "description": "Levante la mano si desea intervenir.",
             "title": "La posibilidad de demostrar fue desactivada por el moderador"

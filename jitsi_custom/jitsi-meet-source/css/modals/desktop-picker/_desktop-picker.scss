@@ -1,3 +1,9 @@
+.desktop-picker-dialog {
+    border: 1px solid #FFFFFF1A;
+    box-sizing: border-box;
+    border-radius: 6px
+}
+
 .desktop-picker-pane {
     height: 395px;
     overflow-x: hidden;
@@ -119,7 +125,7 @@
 }
 
 .desktop-picker-dialog-header {
-    padding: 24px 24px 0px 24px;
+    padding: 23px 23px 0 23px;
     align-items: center;
 
     & #dialog-title {
@@ -132,15 +138,33 @@
 }
 
 .desktop-picker-dialog-content {
-    padding: 0px 24px 0px 24px;
+    padding: 0 23px 0 23px;
 }
 
 .desktop-picker-dialog-footer {
-    padding: 16px 24px 8px 24px;
+    padding: 16px 23px 7px 23px;
     justify-content: space-between;
+    min-height: 67px;
 
     .desktop-picker-audio-checkbox {
         cursor: pointer;
         padding: 0;
+    }
+}
+
+.desktop-picker-picker-quality-button {
+    cursor: pointer;
+    background: rgba(33, 33, 33, 1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    padding: 8px 11px;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: "Lato Regular";
+    font-weight: normal;
+    font-size: 15px;
+    line-height: 18px;
+
+    &:hover {
+        background: rgba(43, 43, 43, 1);
     }
 }

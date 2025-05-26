@@ -49,13 +49,13 @@ migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${
 migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false version
 
 # инициализируем модули
-bash /app/src/Compass/_entrypoint.sh || die "entrypoint.sh unsuccessful";
+bash /app/src/Compass/_entrypoint.sh || exit 1;
 
 # инициализируем подписки
-bash /app/src/Compass/_init_subscriptions.sh || die "_init_subscriptions.sh unsuccessful";
+bash /app/src/Compass/_init_subscriptions.sh || exit 1;
 
 # запускаем кроны
-bash /app/sh/cron/start_cron.sh || die "start_cron.sh unsuccessful";
+bash /app/sh/cron/start_cron.sh || exit 1;
 
 echo "ready to serve" > status
 

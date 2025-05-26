@@ -379,7 +379,7 @@ class Helper_Preview {
 	protected static function _checkDomainAfterRedirect(string $prepared_url, string $domain_after_redirects, string $domain_before_redirects, string $prepared_url_after_redirects):string {
 
 		// если домен в доверенных то отдаем первоначальную ссылку
-		if (Type_Preview_Main::isWhiteDomain($domain_before_redirects)) {
+		if (Type_Preview_Config::isDomainInWhiteList($domain_before_redirects)) {
 			return $prepared_url;
 		}
 
@@ -454,18 +454,6 @@ class Helper_Preview {
 			return false;
 		}
 
-		// переворачиваем массив для удобства
-		$temp = array_reverse($temp);
-
-		// собираем домен 2 уровня
-		$domain_second = $temp[1] . "." . $temp[0];
-
-		// получаем список доменов для которых не нужен favicon
-		$no_favicon_list = getConfig("PREVIEW_NO_FAVICON_DOMAIN_LIST");
-
-		if (in_array($domain_second, $no_favicon_list)) {
-			return false;
-		}
 		return true;
 	}
 
@@ -814,17 +802,27 @@ class Helper_Preview {
 	// проверяем, можно ли парсить домен
 	protected static function _isDomainAllowToParse(string $domain):bool {
 
-		// проверяем, что домен не в списке исключений, иначе
-		// проверяем наличие домена в белом или черном списке
-		if (Type_Preview_Main::isDomainExcluded($domain)) {
+		// если парсинг отключен, запрещаем
+		if (!Type_Preview_Config::isPreviewEnabled()) {
 			return false;
 		}
 
-		if (!Type_Preview_Main::isWhiteDomain($domain) && Type_Preview_Main::isBlackDomain($domain)) {
-			return false;
+		// если оба листы пустые, то разрешаем парсить все
+		if (Type_Preview_Config::isWhiteListEmpty() && Type_Preview_Config::isBlackListEmpty()) {
+			return true;
 		}
 
-		return true;
+		// если белый лист заполнен, пропускаем только то что в нем есть
+		if (!Type_Preview_Config::isWhiteListEmpty() && Type_Preview_Config::isDomainInWhiteList($domain)) {
+			return true;
+		}
+
+		// если белый лист пустой, а черный заполнен, то пропускаем все что не в черном листе
+		if (Type_Preview_Config::isWhiteListEmpty() && !Type_Preview_Config::isBlackListEmpty() && !Type_Preview_Config::isDomainInBlackList($domain)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	// устанавливаем timeout для курла

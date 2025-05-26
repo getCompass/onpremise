@@ -13,7 +13,7 @@ class Type_Preview_Producer {
 	public static function addTaskIfLinkExistInMessage(int $user_id, string $text, string $message_map, array $user_list, bool $is_preview_parse = true):void {
 
 		// если URL Preview сейчас отключено - просто выходим
-		if (IS_URL_PREVIEW_ENABLED === false) {
+		if (Type_Preview_Config::isPreviewEnabled() === false) {
 			return;
 		}
 

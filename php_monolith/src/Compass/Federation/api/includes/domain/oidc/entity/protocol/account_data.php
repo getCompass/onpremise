@@ -54,4 +54,17 @@ class Domain_Oidc_Entity_Protocol_AccountData implements Domain_Sso_Entity_Compa
 
 		return Domain_Oidc_Entity_Protocol_Token::getIdTokenCustomFieldValue($data, $attribute);
 	}
+
+	/**
+	 * Спарсить выражение
+	 *
+	 * @param mixed  $data
+	 * @param string $expression
+	 *
+	 * @return string
+	 */
+	public static function parseAssignment(mixed $data, string $assignment):array {
+
+		return [];
+	}
 }

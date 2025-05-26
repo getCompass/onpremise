@@ -65,8 +65,12 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 
 	public function __construct(string $host, int $port, bool $use_ssl, int $require_cert_strategy, int $timeout) {
 
+		// устанавливаем глобальные параметры SSL до создания соединения
+		ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, $require_cert_strategy);
+
+		// создаем соединение с правильным форматированием URL
 		if ($use_ssl) {
-			$uri                   = "ldaps://" . $host . ":" . $port;
+			$uri = "ldaps://" . $host . ":" . $port;
 			$this->ldap_connection = ldap_connect($uri);
 		} else {
 			$this->ldap_connection = ldap_connect($host, $port);
@@ -76,10 +80,12 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 			throw new ParseFatalException(sprintf("could not connect to ldap server [%s]", ldap_error($this->ldap_connection)));
 		}
 
-		// Устанавливаем базовые опции
+		// устанавливаем опции для конкретного соединения
 		ldap_set_option($this->ldap_connection, LDAP_OPT_REFERRALS, false);
 		ldap_set_option($this->ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($this->ldap_connection, LDAP_OPT_NETWORK_TIMEOUT, $timeout);
+
+		// делаем настройку сертификата для текущего соединения
 		ldap_set_option($this->ldap_connection, LDAP_OPT_X_TLS_REQUIRE_CERT, $require_cert_strategy);
 	}
 

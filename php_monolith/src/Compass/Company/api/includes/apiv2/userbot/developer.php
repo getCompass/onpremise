@@ -26,6 +26,7 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 		"getSensitiveData",
 		"addToGroup",
 		"removeFromGroup",
+		"refreshSmartAppKeys",
 	];
 
 	// список запрещенных методов по ролям
@@ -47,27 +48,42 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 */
 	public function create():array {
 
-		$name              = $this->post(\Formatter::TYPE_STRING, "name");
-		$short_description = $this->post(\Formatter::TYPE_STRING, "short_description");
-		$avatar_color_id   = $this->post(\Formatter::TYPE_INT, "avatar_color_id");
-		$is_react_command  = $this->post(\Formatter::TYPE_INT, "is_react_command");
-		$webhook           = $this->post(\Formatter::TYPE_STRING, "webhook", false);
+		$name                     = $this->post(\Formatter::TYPE_STRING, "name");
+		$short_description        = $this->post(\Formatter::TYPE_STRING, "short_description");
+		$avatar_color_id          = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
+		$avatar_file_key          = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
+		$is_react_command         = $this->post(\Formatter::TYPE_INT, "is_react_command");
+		$webhook                  = $this->post(\Formatter::TYPE_STRING, "webhook", false);
+		$is_smart_app             = $this->post(\Formatter::TYPE_INT, "is_smart_app", 0);
+		$smart_app_name           = $this->post(\Formatter::TYPE_STRING, "smart_app_name", false);
+		$smart_app_url            = $this->post(\Formatter::TYPE_STRING, "smart_app_url", false);
+		$is_smart_app_sip         = $this->post(\Formatter::TYPE_INT, "is_smart_app_sip", 0);
+		$is_smart_app_mail        = $this->post(\Formatter::TYPE_INT, "is_smart_app_mail", 0);
+		$smart_app_default_width  = $this->post(\Formatter::TYPE_INT, "smart_app_default_width", 414);
+		$smart_app_default_height = $this->post(\Formatter::TYPE_INT, "smart_app_default_height", 896);
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::USERBOT_CREATE);
 
 		try {
 
 			[$userbot, $sensitive_data] = Domain_Userbot_Scenario_Api::create(
-				$this->role, $this->permissions, $name, $avatar_color_id, $short_description, $is_react_command, $webhook
+				$this->role, $this->permissions, $name, $avatar_color_id, $avatar_file_key, $short_description, $is_react_command, $webhook,
+				$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height
 			);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2216006, "user is not a developer");
-		} catch (\cs_InvalidProfileName | Domain_Userbot_Exception_IncorrectParam) {
+		} catch (\cs_InvalidProfileName|Domain_Userbot_Exception_IncorrectParam) {
 			throw new CaseException(2217001, "incorrect params");
 		} catch (Domain_Userbot_Exception_EmptyWebhook) {
 			throw new CaseException(2217003, "empty webhook");
 		} catch (Domain_Userbot_Exception_CreateLimit) {
 			throw new CaseException(2217010, "limit is exceeded for create");
+		} catch (Domain_Userbot_Exception_EmptySmartAppName) {
+			throw new CaseException(2217011, "empty smart_app_name");
+		} catch (Domain_Userbot_Exception_NotUniqSmartAppName) {
+			throw new CaseException(2217012, "incorrect smart_app_name");
+		} catch (Domain_Userbot_Exception_EmptySmartAppUrl) {
+			throw new CaseException(2217013, "empty smart_app_url");
 		}
 
 		$this->action->users([$userbot->user_id]);
@@ -115,23 +131,33 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 */
 	public function edit():array {
 
-		$userbot_id        = $this->post(\Formatter::TYPE_STRING, "userbot_id");
-		$name              = $this->post(\Formatter::TYPE_STRING, "name", false);
-		$short_description = $this->post(\Formatter::TYPE_STRING, "short_description", false);
-		$avatar_color_id   = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
-		$is_react_command  = $this->post(\Formatter::TYPE_INT, "is_react_command", false);
-		$webhook           = $this->post(\Formatter::TYPE_STRING, "webhook", false);
+		$userbot_id               = $this->post(\Formatter::TYPE_STRING, "userbot_id");
+		$name                     = $this->post(\Formatter::TYPE_STRING, "name", false);
+		$short_description        = $this->post(\Formatter::TYPE_STRING, "short_description", false);
+		$avatar_color_id          = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
+		$avatar_file_key          = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
+		$is_react_command         = $this->post(\Formatter::TYPE_INT, "is_react_command", false);
+		$webhook                  = $this->post(\Formatter::TYPE_STRING, "webhook", false);
+		$is_smart_app             = $this->post(\Formatter::TYPE_INT, "is_smart_app", false);
+		$smart_app_name           = $this->post(\Formatter::TYPE_STRING, "smart_app_name", false);
+		$smart_app_url            = $this->post(\Formatter::TYPE_STRING, "smart_app_url", false);
+		$is_smart_app_sip         = $this->post(\Formatter::TYPE_INT, "is_smart_app_sip", false);
+		$is_smart_app_mail        = $this->post(\Formatter::TYPE_INT, "is_smart_app_mail", false);
+		$smart_app_default_width  = $this->post(\Formatter::TYPE_INT, "smart_app_default_width", false);
+		$smart_app_default_height = $this->post(\Formatter::TYPE_INT, "smart_app_default_height", false);
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::USERBOT_EDIT);
 
 		try {
 
 			$user_id = Domain_Userbot_Scenario_Api::edit(
-				$this->user_id, $this->role, $this->permissions, $userbot_id, $name, $short_description, $avatar_color_id, $is_react_command, $webhook
+				$this->user_id, $this->role, $this->permissions, $userbot_id, $name, $short_description, $avatar_color_id, $avatar_file_key,
+				$is_react_command, $webhook, $is_smart_app, $smart_app_name, $smart_app_url,
+				$is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height
 			);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2216006, "user is not have permissions for this action");
-		} catch (\cs_InvalidProfileName | Domain_Userbot_Exception_IncorrectParam) {
+		} catch (\cs_InvalidProfileName|Domain_Userbot_Exception_IncorrectParam) {
 			throw new CaseException(2217001, "incorrect param name");
 		} catch (Domain_Userbot_Exception_EmptyParam) {
 			throw new CaseException(2217002, "empty param");
@@ -143,6 +169,12 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 			throw new CaseException(2217005, "userbot is disabled");
 		} catch (Domain_Userbot_Exception_DeletedStatus) {
 			throw new CaseException(2217008, "userbot is deleted");
+		} catch (Domain_Userbot_Exception_EmptySmartAppName) {
+			throw new CaseException(2217011, "empty smart_app_name");
+		} catch (Domain_Userbot_Exception_NotUniqSmartAppName) {
+			throw new CaseException(2217012, "incorrect smart_app_name");
+		} catch (Domain_Userbot_Exception_EmptySmartAppUrl) {
+			throw new CaseException(2217013, "empty smart_app_url");
 		}
 
 		$this->action->users([$user_id]);
@@ -213,6 +245,40 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 
 		return $this->ok([
 			"token" => (string) $token,
+		]);
+	}
+
+	/**
+	 * обновляем приватный и публичный ключи smart_app
+	 *
+	 * @throws CaseException
+	 * @throws ParamException
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \blockException
+	 * @throws \parseException
+	 * @throws \blockException
+	 */
+	public function refreshSmartAppKeys():array {
+
+		$userbot_id = $this->post(\Formatter::TYPE_STRING, "userbot_id");
+
+		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::USERBOT_REFRESH_SMART_APP_KEYS);
+
+		try {
+			$public_key = Domain_Userbot_Scenario_Api::refreshSmartAppKeys($this->user_id, $this->role, $this->permissions, $userbot_id);
+		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
+			throw new CaseException(2216006, "user is not have permissions for this action");
+		} catch (Domain_Userbot_Exception_UserbotNotFound) {
+			throw new CaseException(2217004, "not found userbot");
+		} catch (Domain_Userbot_Exception_DisabledStatus) {
+			throw new CaseException(2217005, "userbot is disabled");
+		} catch (Domain_Userbot_Exception_DeletedStatus) {
+			throw new CaseException(2217008, "userbot is deleted");
+		}
+
+		return $this->ok([
+			"smart_app_public_key" => (string) $public_key,
 		]);
 	}
 

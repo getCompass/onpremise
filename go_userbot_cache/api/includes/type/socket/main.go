@@ -25,6 +25,7 @@ type Response struct {
 }
 
 var client = &http.Client{
+
 	Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,

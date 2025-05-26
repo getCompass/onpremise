@@ -18,8 +18,7 @@ namespace Compass\Userbot;
 define("USERBOT_MODULE_ROOT", dirname(__FILE__) . "/");
 define("USERBOT_MODULE_API", USERBOT_MODULE_ROOT . "api/");
 
-require_once USERBOT_MODULE_API . "includes/custom_define.php";
-require_once USERBOT_MODULE_API . "includes/custom_exception.php";
+\BaseFrame\Server\ServerHandler::init(SERVER_TAG_LIST);
 
 // подгружаем данные
 include_once USERBOT_MODULE_ROOT . "_module/autoload.php";

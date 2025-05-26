@@ -20,6 +20,7 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 		"addMessage",
 		"deleteMessageList",
 		"addMessageFromSupportBot",
+		"addFileMessageFromSupportBot",
 		"getUserSupportConversationKey",
 	];
 
@@ -90,8 +91,8 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 
 		// формируем сообщение
 		$message = match ($type) {
-			"file" => Type_Conversation_Message_Main::getLastVersionHandler()::makeFile($sender_user_id, "", generateUUID(), File::doDecrypt($file_key)),
-			"text" => self::_makeTextMessage($sender_user_id, $text, $meta_row),
+			"file"  => Type_Conversation_Message_Main::getLastVersionHandler()::makeFile($sender_user_id, "", generateUUID(), File::doDecrypt($file_key)),
+			"text"  => self::_makeTextMessage($sender_user_id, $text, $meta_row),
 			default => throw new ParamException("undefined message type={$type}"),
 		};
 
@@ -146,7 +147,7 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 			foreach ($message_key_list as $message_key) {
 				$message_map_list[] = Conversation::doDecrypt($message_key);
 			}
-		} catch (\cs_DecryptHasFailed | \cs_UnpackHasFailed) {
+		} catch (\cs_DecryptHasFailed|\cs_UnpackHasFailed) {
 			throw new ParamException("wrong message key");
 		}
 
@@ -191,6 +192,40 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 			SUPPORT_BOT_USER_ID,
 			$text,
 			generateUUID()
+		);
+
+		// отправляем приветственное сообщение в чат
+		$meta_row = Type_Conversation_Meta::get($conversation_map);
+		Helper_Conversations::addMessage(
+			$meta_row["conversation_map"], $message, $meta_row["users"], $meta_row["type"], $meta_row["conversation_name"], $meta_row["extra"]
+		);
+
+		return $this->ok();
+	}
+
+	/**
+	 * Оптравляем сообщение с файлом от лица бота поддержки
+	 *
+	 * @return array
+	 * @throws ParamException
+	 */
+	public function addFileMessageFromSupportBot():array {
+
+		$file_key         = $this->post(\Formatter::TYPE_STRING, "file_key");
+		$receiver_user_id = $this->post(\Formatter::TYPE_INT, "receiver_user_id");
+		$file_map         = \CompassApp\Pack\File::doDecrypt($file_key);
+
+		// получаем диалог
+		$left_menu_row    = Type_Conversation_LeftMenu::getSupportGroupByUser($receiver_user_id);
+		$conversation_map = $left_menu_row["conversation_map"];
+
+		// создаем сообщение с текстом
+		// FIXME ВНИМАНИЕ! Тут намеренно делем makeFile, а не makeSystemBotText потому что на андройде из-за этого не отображается фото
+		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeFile(
+			SUPPORT_BOT_USER_ID,
+			"",
+			generateUUID(),
+			$file_map,
 		);
 
 		// отправляем приветственное сообщение в чат

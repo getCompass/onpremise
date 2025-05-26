@@ -9,11 +9,6 @@ class Domain_Conversation_Action_GetShared {
 
 	/**
 	 * Получить общие группы с пользователем
-	 *
-	 * @param int $user_id
-	 * @param int $opponent_user_id
-	 *
-	 * @return array
 	 */
 	public static function do(int $user_id, int $opponent_user_id):array {
 

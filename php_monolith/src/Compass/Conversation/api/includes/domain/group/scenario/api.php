@@ -126,22 +126,16 @@ class Domain_Group_Scenario_Api {
 	/**
 	 * Создать группу
 	 *
-	 * @param int    $user_id
-	 * @param string $name
-	 * @param string $avatar_file_map
-	 * @param string $description
-	 *
-	 * @return array
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
 	 * @throws Domain_Group_Exception_InvalidFileForAvatar
 	 * @throws Domain_Group_Exception_InvalidName
 	 * @throws Domain_Group_Exception_NameContainsEmoji
 	 * @throws Domain_Member_Exception_ActionNotAllowed
 	 * @throws ParseFatalException
-	 * @throws BusFatalException
-	 * @throws ControllerMethodNotFoundException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public static function add(int $user_id, string $name, string $avatar_file_map, string $description):array {
+	public static function add(int $user_id, string $name, string $avatar_file_map, string $description, bool $is_channel):array {
 
 		// проверяем ограничение на создание группы
 		Domain_Member_Entity_Permission::check($user_id, Permission::IS_ADD_GROUP_ENABLED);
@@ -149,7 +143,7 @@ class Domain_Group_Scenario_Api {
 		// форматируем название группового диалога
 		[$name, $description] = self::_validateGroupFields($name, $avatar_file_map, $description);
 
-		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description);
+		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description, is_channel: $is_channel);
 
 		// получаем запись из левого меню
 		$left_menu_row = Type_Conversation_LeftMenu::get($user_id, $meta_row["conversation_map"]);
@@ -197,14 +191,6 @@ class Domain_Group_Scenario_Api {
 	/**
 	 * Продублировать группу
 	 *
-	 * @param int    $user_id
-	 * @param string $conversation_map
-	 * @param string $name
-	 * @param string $avatar_file_map
-	 * @param string $description
-	 * @param array  $excluded_user_id_list
-	 *
-	 * @return array
 	 * @throws BusFatalException
 	 * @throws ControllerMethodNotFoundException
 	 * @throws Domain_Group_Exception_InvalidFileForAvatar
@@ -214,6 +200,7 @@ class Domain_Group_Scenario_Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws \cs_RowIsEmpty
+	 * @long
 	 */
 	public static function copy(int $user_id, string $conversation_map, string $name, string $avatar_file_map, string $description, array $excluded_user_id_list):array {
 
@@ -225,6 +212,9 @@ class Domain_Group_Scenario_Api {
 
 		// получаем мету диалога
 		$meta_row = Type_Conversation_Meta::get($conversation_map);
+
+		// получаем настройки чата
+		$options = Type_Conversation_Meta_Extra::getOptions($meta_row["extra"]);
 
 		// выбрасываем ошибку, если пользователь не может изменить информацию о группе
 		if (!Type_Conversation_Meta_Users::isGroupAdmin($user_id, $meta_row["users"])) {
@@ -255,7 +245,11 @@ class Domain_Group_Scenario_Api {
 		$user_list = self::_filterInvitedUserList($user_list);
 
 		// создаем групповой диалог
-		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description);
+		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description, is_channel: $options["is_channel"]);
+
+		// прокидываем настройки
+		$meta_row["extra"] = Type_Conversation_Meta_Extra::setOptions($meta_row["extra"], $options);
+		Type_Conversation_Group::setOptions($meta_row["conversation_map"], $meta_row["extra"]);
 
 		// получаем запись из левого меню
 		$left_menu_row = Type_Conversation_LeftMenu::get($user_id, $meta_row["conversation_map"]);
@@ -272,14 +266,6 @@ class Domain_Group_Scenario_Api {
 	/**
 	 * Продублировать группу c добавлением пользователей в неё
 	 *
-	 * @param int    $user_id
-	 * @param string $conversation_map
-	 * @param string $name
-	 * @param string $avatar_file_map
-	 * @param string $description
-	 * @param array  $excluded_user_id_list
-	 *
-	 * @return array
 	 * @throws BusFatalException
 	 * @throws ControllerMethodNotFoundException
 	 * @throws Domain_Group_Exception_InvalidFileForAvatar
@@ -289,6 +275,7 @@ class Domain_Group_Scenario_Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws \cs_RowIsEmpty|cs_PlatformNotFound
+	 * @long
 	 */
 	public static function copyWithUsers(int $user_id, string $conversation_map, string $name, string $avatar_file_map, string $description, array $excluded_user_id_list):array {
 
@@ -300,6 +287,9 @@ class Domain_Group_Scenario_Api {
 
 		// получаем мету диалога
 		$meta_row = Type_Conversation_Meta::get($conversation_map);
+
+		// получаем настройки чата
+		$options = Type_Conversation_Meta_Extra::getOptions($meta_row["extra"]);
 
 		// выбрасываем ошибку, если пользователь не может изменить информацию о группе
 		if (!Type_Conversation_Meta_Users::isGroupAdmin($user_id, $meta_row["users"])) {
@@ -330,7 +320,11 @@ class Domain_Group_Scenario_Api {
 		$user_list = self::_filterInvitedUserList($user_list);
 
 		// создаем групповой диалог
-		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description);
+		$meta_row = Helper_Groups::create($user_id, $name, $avatar_file_map, $description, is_channel: $options["is_channel"]);
+
+		// прокидываем настройки
+		$meta_row["extra"] = Type_Conversation_Meta_Extra::setOptions($meta_row["extra"], $options);
+		Type_Conversation_Group::setOptions($meta_row["conversation_map"], $meta_row["extra"]);
 
 		// получаем запись из левого меню
 		$left_menu_row = Type_Conversation_LeftMenu::get($user_id, $meta_row["conversation_map"]);

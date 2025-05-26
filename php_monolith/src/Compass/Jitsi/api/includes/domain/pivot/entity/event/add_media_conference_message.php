@@ -14,7 +14,7 @@ class Domain_Pivot_Entity_Event_AddMediaConferenceMessage extends Domain_Pivot_E
 	 *
 	 * @throws \busException
 	 */
-	public static function create(Struct_Db_JitsiData_Conference $conference, Struct_Db_JitsiData_ConferenceMember $member):void {
+	public static function create(Struct_Db_JitsiData_Conference $conference, Struct_Db_JitsiData_ConferenceMember $member, int $opponent_user_id = 0):void {
 
 		$params = [
 			"space_id"         => $conference->space_id,
@@ -23,7 +23,8 @@ class Domain_Pivot_Entity_Event_AddMediaConferenceMessage extends Domain_Pivot_E
 			"link"             => Domain_Jitsi_Entity_ConferenceLink_Main::getHandlerProvider()::getByConference($conference)::prepareLandingConferenceLink($conference),
 			"conversation_map" => Domain_Jitsi_Entity_Conference_Data::getConversationMap($conference->data),
 			"accept_status"    => $member->status->getAcceptStatusOutput(),
-			"conference_code"  => Domain_Jitsi_Entity_Conference::getConferenceCode($conference)
+			"conference_code"  => Domain_Jitsi_Entity_Conference::getConferenceCode($conference),
+			"opponent_user_id" => $opponent_user_id,
 		];
 
 		// отправляем в пивот

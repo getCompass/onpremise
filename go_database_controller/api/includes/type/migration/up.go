@@ -61,7 +61,22 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 
 	// расшифровываем пользователя и пароль от базы
 	user, err := registry.GetDecryptedMysqlUser()
+	if err != nil {
+		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("could not decrypt MySQL user, error: %v", err))
+		return
+	}
+
 	pass, err := registry.GetDecryptedMysqlPass()
+	if err != nil {
+		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("could not decrypt MySQL password, error: %v", err))
+		return
+	}
+
+	// проверяем, что учетные данные не пустые
+	if user == "" || pass == "" || registry.Port == 0 {
+		routineChan <- routine.MakeRoutineStatus(routine.StatusError, "invalid database credentials (empty user, password or port)")
+		return
+	}
 
 	credentials := &sharding.DbCredentials{
 		Host: company.GetCompanyHost(registry),
@@ -84,6 +99,10 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 		Pass: rootPass,
 		Port: registry.Port,
 	}
+
+	// пишем информацию о подключении для отладки
+	logItem.AddLog(fmt.Sprintf("attempting to connect to MySQL with Host=%s, User=%s, Port=%d",
+		credentials.Host, credentials.User, credentials.Port))
 
 	// выполняем миграцию для баз данных
 	errMessage := doMigrateDb(ctx, credentials, rootCredentials, logItem)
@@ -125,6 +144,16 @@ func migrateUp(routineChan chan *routine.Status, spaceId int64, logItem *logger.
 // выполнить миграцию для баз данных
 // @long
 func doMigrateDb(ctx context.Context, credentials *sharding.DbCredentials, rootCredentials *sharding.DbCredentials, logItem *logger.Log) string {
+
+	// проверяем валидность учетных данных
+	if credentials == nil {
+		return "database credentials are nil"
+	}
+
+	if credentials.Host == "" || credentials.User == "" || credentials.Pass == "" || credentials.Port == 0 {
+		return fmt.Sprintf("invalid database credentials: Host=%s, User=%s, Port=%d",
+			credentials.Host, credentials.User, credentials.Port)
+	}
 
 	// получаем список баз данных для миграции
 	databaseList, err := getDatabaseList()

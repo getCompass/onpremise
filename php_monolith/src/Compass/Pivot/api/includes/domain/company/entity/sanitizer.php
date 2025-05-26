@@ -7,24 +7,19 @@ namespace Compass\Pivot;
  */
 class Domain_Company_Entity_Sanitizer {
 
-	// регулярка для названия компании
-	protected const _COMPANY_NAME_REGEXP = "/[^а-яёa-z0-9[:punct:] œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ¿¡ЎўІі]|[<>]/ui";
-
 	/**
 	 * Очистка названии компании от лишних символов
 	 *
 	 */
 	public static function sanitizeCompanyName(string $full_name):string {
 
-		return trim(preg_replace([self::_COMPANY_NAME_REGEXP, "/[ ]{2,}/u"], ["", " "], $full_name));
-	}
-
-	/**
-	 * Очистка комментария пользователя от лишних символов
-	 *
-	 */
-	public static function sanitizeInviteLinkUserComment(string $comment):string {
-
-		return trim(preg_replace(["/[^[:alnum:][:punct:] ]|[<>\/]/u", "/[ ]{2,}/u"], ["", " "], $comment));
+		return trim(preg_replace([
+			\BaseFrame\System\Character::EMOJI_REGEX,
+			\BaseFrame\System\Character::COMMON_FORBIDDEN_CHARACTER_REGEX,
+			\BaseFrame\System\Character::ANGLE_BRACKET_REGEX,
+			\BaseFrame\System\Character::FANCY_TEXT_REGEX,
+			\BaseFrame\System\Character::DOUBLE_SPACE_REGEX,
+			\BaseFrame\System\Character::NEWLINE_REGEX,
+		], ["", "", "", "", " ", ""], $full_name));
 	}
 }

@@ -231,5 +231,9 @@ func trySendEventMessage(connection *ConnectionStruct, event string, eventJsonSt
 	}
 
 	analyticItem.OnEventSend()
-	connection.analyticStoreWs.Add(analyticItem, functions.GenerateUuid())
+
+	// добавляем все события кроме pong
+	if analyticItem.EventName != "talking.pong" {
+		connection.analyticStoreWs.Add(analyticItem, functions.GenerateUuid())
+	}
 }

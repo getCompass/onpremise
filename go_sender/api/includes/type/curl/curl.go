@@ -124,6 +124,7 @@ func addCertificateToPostClient(clientItem *http.Client) error {
 
 	// добавляем сертификат в пул и в объект клиента
 	certPoolItem.AddCert(certItem)
+
 	clientItem.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{RootCAs: certPoolItem},
 	}

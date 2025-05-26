@@ -390,8 +390,13 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 		// расшифровываем ключ файла
 		$file_map = Type_Pack_File::tryDecrypt($file_key);
 
-		// обновляем содержимое
-		Domain_File_Scenario_Socket::setContent($file_map, $content);
+		// удаляем эмодзи из контента
+		$content = removeEmojiFromText($content);
+
+		// обновляем содержимое, если что-то осталось
+		if (mb_strlen($content) > 0) {
+			Domain_File_Scenario_Socket::setContent($file_map, $content);
+		}
 
 		return $this->ok();
 	}

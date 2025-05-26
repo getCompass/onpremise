@@ -17,6 +17,7 @@ class Type_Conversation_Group_SelfAdmin_Action {
 	 * @param int    $user_id
 	 * @param int    $user_role
 	 * @param int    $user_permissions
+	 * @param bool   $is_need_check_admin_exist
 	 *
 	 * @return array
 	 * @throws ReturnFatalException
@@ -25,7 +26,7 @@ class Type_Conversation_Group_SelfAdmin_Action {
 	 * @throws cs_UserIsNotMember
 	 * @long
 	 */
-	public static function do(string $conversation_map, int $user_id, int $user_role, int $user_permissions):array {
+	public static function do(string $conversation_map, int $user_id, int $user_role, int $user_permissions, bool $is_need_check_admin_exist = true):array {
 
 		Gateway_Db_CompanyConversation_Main::beginTransaction();
 
@@ -56,7 +57,7 @@ class Type_Conversation_Group_SelfAdmin_Action {
 		}
 
 		// проверим есть ли администратор в группе
-		if (self::_adminExist($meta_row)) {
+		if ($is_need_check_admin_exist && self::_adminExist($meta_row)) {
 
 			Gateway_Db_CompanyConversation_Main::rollback();
 			throw new cs_Conversation_IsGroupIfOwnerExist();

@@ -23,15 +23,6 @@ func WorkPivotObserver(ctx context.Context, globalIsolation *GlobalIsolation.Glo
 	startPivotEnv(ctx, globalIsolation, companyContextList, 0, config)
 }
 
-// WorkAnnouncementObserver Work метод для выполнения работы через время
-func WorkAnnouncementObserver(ctx context.Context, globalIsolation *GlobalIsolation.GlobalIsolation, companyContextList *Isolation.CompanyEnvList) {
-
-	config := &conf.CompanyConfigStruct{
-		Status: Isolation.ActiveCompanyStatus,
-	}
-	startPivotEnv(ctx, globalIsolation, companyContextList, -1, config)
-}
-
 // WorkDominoObserver Work метод для выполнения работы через время
 func WorkDominoObserver(ctx context.Context, globalIsolation *GlobalIsolation.GlobalIsolation, companyContextList *Isolation.CompanyEnvList) {
 
@@ -84,7 +75,7 @@ func updateCompanyList(ctx context.Context, globalIsolation *GlobalIsolation.Glo
 
 		// супер-решение для глобальной изоляции,
 		// которая зачем-то идентифицирует себя как изоляция компании
-		if companyId < 1 {
+		if companyId == 0 {
 			continue
 		}
 
@@ -103,8 +94,8 @@ func startPivotEnv(ctx context.Context, globalIsolation *GlobalIsolation.GlobalI
 		return nil
 	}
 
-	pusherConn := pusher.MakePusherConn(globalIsolation.GetConfig().CurrentServer, globalIsolation.GetConfig().SocketKeyMe, 0)
-	isolation, companyCtx := companyContextList.StartEnv(
+	pusherConn := pusher.MakePusherConn(globalIsolation.GetConfig().CurrentServer, globalIsolation.GetConfig().SocketKeyMe, companyId)
+	isolation, companyCtx, _ := companyContextList.StartEnv(
 		ctx, companyId, config, globalIsolation.GetConfig().CapacityLimit, globalIsolation, companyDataConnProvider, pusherConn,
 	)
 
@@ -150,21 +141,48 @@ func startDominoEnv(ctx context.Context, globalIsolation *GlobalIsolation.Global
 	}
 
 	pusherConn := pusher.MakePusherConn(globalIsolation.GetConfig().CurrentServer, globalIsolation.GetConfig().SocketKeyMe, companyId)
-	isolation, companyCtx := companyContextList.StartEnv(
-		ctx, companyId, config, globalIsolation.GetConfig().CapacityLimit, globalIsolation, companyDataConnProvider, pusherConn,
-	)
 
-	if isolation == nil {
-		return
-	}
+	startCompanyEnv(companyId, config, ctx, globalIsolation, companyContextList, companyDataConnProvider, pusherConn, 0)
 
-	// запускаем observer по ней
-	observer.WorkCompanyObserver(companyCtx, isolation)
-
-	go shutdownEnv(companyCtx, isolation)
 	isSuccess = true
 
 	return isSuccess
+}
+
+// стартуем новую среду для компании
+func startCompanyEnv(companyId int64, companyConfig *conf.CompanyConfigStruct, ctx context.Context, globalIsolation *GlobalIsolation.GlobalIsolation, companyContextList *Isolation.CompanyEnvList, companyDataConnProvider Isolation.CompanyDataProvider, pusherConn *pusher.Conn, errorCount int) {
+
+	isolation, companyCtx, err := companyContextList.StartEnv(
+		ctx, companyId, companyConfig, globalIsolation.GetConfig().CapacityLimit, globalIsolation, companyDataConnProvider, pusherConn,
+	)
+
+	if isolation != nil {
+
+		// запускаем observer по ней
+		observer.WorkCompanyObserver(companyCtx, isolation)
+
+		go shutdownEnv(companyCtx, isolation)
+	} else {
+
+		if err == nil {
+			return
+		}
+
+		if !globalIsolation.GetConfig().IsIsolationCreateRepeat {
+			return
+		}
+
+		// в случае ошибки инкрементим количество ошибок - значит что-то не удалось
+		errorCount++
+
+		if errorCount > 5 {
+			return
+		}
+
+		// пробуем получить ещё раз
+		time.Sleep(time.Second)
+		startCompanyEnv(companyId, companyConfig, ctx, globalIsolation, companyContextList, companyDataConnProvider, pusherConn, errorCount)
+	}
 }
 
 // shutdown окружение, когда сработает контекст закроются коннекты

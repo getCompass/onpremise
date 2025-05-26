@@ -246,9 +246,14 @@ class Type_Phphooker_Worker {
 				return $result;
 
 			// обновляем last_message пользователей при отключении показа удаленных сообщений в диалоге
-			case Type_Phphooker_Main::TASK_TYPE_DISABLE_SYSTEM_DELETED_MESSAGE_CONVERSATION:
+			case Type_Phphooker_Main::TASK_TYPE_CHANGE_SYSTEM_DELETED_MESSAGE_CONVERSATION:
 
-				$result = true;
+				$result = self::_updateDynamicIfShowDeleteMessageChanged($params["conversation_map"]);
+
+				// если опцию включили, то не продолжаем
+				if ($params["value"]) {
+					return $result;
+				}
 
 				foreach ($params["users"] as $k => $_) {
 
@@ -257,6 +262,27 @@ class Type_Phphooker_Worker {
 				}
 
 				return $result;
+
+			// обновляем версию в лм если сменили опцию канала в группе
+			case Type_Phphooker_Main::TASK_TYPE_CHANGE_CHANNEL_OPTION:
+
+				$result = true;
+
+				foreach ($params["users"] as $k => $_) {
+
+					$temp   = $this->_updateLeftMenuVersionIfChangeChannelOption($k, $params["conversation_map"], $params["is_channel"]);
+					$result = $result && $temp;
+				}
+
+				return $result;
+
+			// делаем пользователя админом в группах в которых необходимо
+			case Type_Phphooker_Main::TASK_TYPE_GRANT_ADMIN_RIGHTS_FOR_CONVERSATION_LIST:
+
+				$this->_grantAdminRightsForConversationList($params["user_id"], $params["user_role"],
+					$params["user_permissions"], $params["conversation_map_list"]);
+
+				return true;
 
 			default:
 				throw new ParseFatalException("Unhandled task_type [$task_type] in " . __METHOD__);
@@ -864,7 +890,7 @@ class Type_Phphooker_Worker {
 
 		try {
 			Helper_Conversations::checkIsAllowed($single_conversation_map, $single_meta_row, $inviter_user_id);
-		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted | Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
+		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted|Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return false;
 		}
 
@@ -888,7 +914,7 @@ class Type_Phphooker_Worker {
 
 		try {
 			Helper_Invites::setInactiveAllUserInviteToConversation($user_id, $conversation_map, $inactive_reason, $is_remove_user);
-		} catch (cs_InviteStatusIsNotExpected | ReturnFatalException) {
+		} catch (cs_InviteStatusIsNotExpected|ReturnFatalException) {
 			return false;
 		}
 
@@ -900,7 +926,7 @@ class Type_Phphooker_Worker {
 
 		try {
 			Helper_Invites::setDeclinedAllUserInviteToConversation($user_id, $conversation_map);
-		} catch (cs_InviteStatusIsNotExpected | ReturnFatalException) {
+		} catch (cs_InviteStatusIsNotExpected|ReturnFatalException) {
 			return false;
 		}
 
@@ -1116,6 +1142,9 @@ class Type_Phphooker_Worker {
 	/**
 	 * обновляем last_message в left_menu при отключении показа удаленных сообщений
 	 *
+	 * @param int    $user_id
+	 * @param string $conversation_map
+	 *
 	 * @return bool
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
@@ -1124,8 +1153,9 @@ class Type_Phphooker_Worker {
 	 */
 	protected function _updateLastMessageIfDisabledShowDeleteMessage(int $user_id, string $conversation_map):bool {
 
-		// получаем запись из левого меню
 		Gateway_Db_CompanyConversation_Main::beginTransaction();
+
+		// получаем запись из левого меню
 		$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getForUpdate($user_id, $conversation_map);
 		if (!isset($left_menu_row["user_id"])) {
 
@@ -1153,6 +1183,8 @@ class Type_Phphooker_Worker {
 
 		$message_type = Type_Conversation_Message_Main::getHandler($message)::getType($message);
 		if ($message_type !== CONVERSATION_MESSAGE_TYPE_DELETED) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
 			return true;
 		}
 
@@ -1205,6 +1237,111 @@ class Type_Phphooker_Worker {
 		Gateway_Db_CompanyConversation_Main::commitTransaction();
 
 		$this->_sendWsLeftMenuUpdated($user_id, $left_menu_row);
+
+		return true;
+	}
+
+	/**
+	 * Обновляем dynamic при смене опции
+	 *
+	 * @param string $conversation_map
+	 *
+	 * @return bool
+	 * @throws ReturnFatalException
+	 */
+	protected static function _updateDynamicIfShowDeleteMessageChanged(string $conversation_map):bool {
+
+		Gateway_Db_CompanyConversation_Main::beginTransaction();
+
+		try {
+			$dynamic = Gateway_Db_CompanyConversation_ConversationDynamic::getForUpdate($conversation_map);
+		} catch (\cs_RowIsEmpty) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return false;
+		}
+
+		$dynamic->messages_updated_version = $dynamic->messages_updated_version + 1;
+		$dynamic->messages_updated_at      = time();
+		$dynamic->updated_at               = time();
+
+		// обновляем временную метку и версию обновления сообщений в диалоге
+		$set = [
+			"messages_updated_version" => $dynamic->messages_updated_version,
+			"messages_updated_at"      => $dynamic->messages_updated_at,
+			"updated_at"               => $dynamic->updated_at,
+		];
+		Domain_Conversation_Entity_Dynamic::set($conversation_map, $set);
+		Gateway_Db_CompanyConversation_Main::commitTransaction();
+
+		return true;
+	}
+
+	/**
+	 * Обновляем версию левого меню если сменили опцию канала в группе
+	 *
+	 * @throws ReturnFatalException
+	 */
+	protected function _updateLeftMenuVersionIfChangeChannelOption(int $user_id, string $conversation_map, int $is_channel):bool {
+
+		// получаем запись из левого меню
+		Gateway_Db_CompanyConversation_Main::beginTransaction();
+		$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getForUpdate($user_id, $conversation_map);
+		if (!isset($left_menu_row["user_id"])) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return false;
+		}
+
+		// проверяем, быть может пользователь покинул диалог
+		if ($left_menu_row["is_leaved"] == 1) {
+
+			Gateway_Db_CompanyConversation_Main::rollback();
+			return true;
+		}
+
+		$left_menu_row["version"] = Domain_User_Action_Conversation_UpdateLeftMenu::do($user_id, $conversation_map, [
+			"is_channel_alias" => $is_channel,
+		]);
+		Gateway_Db_CompanyConversation_Main::commitTransaction();
+		$left_menu_row["is_channel_alias"] = $is_channel;
+
+		$this->_sendWsLeftMenuUpdated($user_id, $left_menu_row);
+
+		return true;
+	}
+
+	/**
+	 * Выдаем права админа пользователю в необходимых группах
+	 *
+	 * @param int   $user_id
+	 * @param int   $user_role
+	 * @param int   $user_permissions
+	 * @param array $conversation_map_list
+	 *
+	 * @return bool
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \parseException
+	 */
+	protected function _grantAdminRightsForConversationList(int $user_id, int $user_role, int $user_permissions, array $conversation_map_list):bool {
+
+		$group_role = Type_Conversation_Meta_Users::ROLE_OWNER;
+		foreach ($conversation_map_list as $conversation_map) {
+
+			try {
+				$meta_row = Type_Conversation_Group_SelfAdmin_Action::do($conversation_map, $user_id, $user_role, $user_permissions, false);
+			} catch (cs_UserIsNotMember) {
+
+				// если пользователя кикнули во время выполнения хукера то ничего не делаем
+				continue;
+			}
+
+			$users              = $meta_row["users"];
+			$previous_user_role = Type_Conversation_Meta_Users::getRole($user_id, $users);
+			$talking_user_list  = Type_Conversation_Meta_Users::getTalkingUserList($users);
+			Gateway_Bus_Sender::conversationGroupRoleChanged($talking_user_list, $conversation_map, $user_id, $group_role, $previous_user_role);
+		}
 
 		return true;
 	}

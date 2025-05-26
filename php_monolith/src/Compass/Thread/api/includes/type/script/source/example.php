@@ -2,6 +2,8 @@
 
 namespace Compass\Thread;
 
+use CompassApp\Pack\Message\Conversation;
+
 /**
  * Пример использования логики обновления скриптов.
  */

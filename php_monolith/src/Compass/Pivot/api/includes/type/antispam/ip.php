@@ -90,10 +90,10 @@ class Type_Antispam_Ip {
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
 	 */
-	public static function incrementAndAssertRecaptchaIfBlocked(array $block_key, string|false $grecaptcha_response, bool $is_from_web = false):int {
+	public static function incrementAndAssertRecaptchaIfBlocked(array $block_key, string|false $grecaptcha_response, bool $is_from_web = false):array {
 
 		if (Type_Antispam_User::needCheckIsBlocked()) {
-			return 0;
+			return [0, false];
 		}
 
 		// для онпремайза сервера учитываем настройку с лимитом кол-ва попыток аутентификации
@@ -101,15 +101,17 @@ class Type_Antispam_Ip {
 			$block_key["limit"] = Domain_User_Entity_Auth_Config::getCaptchaRequireAfter();
 		}
 
+		$is_already_checked = false;
 		try {
 			$block_count = self::checkAndIncrementBlock($block_key);
 		} catch (BlockException) {
 
 			Type_Captcha_Main::assertCaptcha($grecaptcha_response, $is_from_web);
-			$block_count = $block_key["limit"];
+			$block_count        = $block_key["limit"];
+			$is_already_checked = true;
 		}
 
-		return $block_count;
+		return [$block_count, $is_already_checked];
 	}
 
 	/**

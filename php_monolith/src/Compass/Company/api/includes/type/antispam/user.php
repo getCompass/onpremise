@@ -41,6 +41,12 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => 60,
 	];
 
+	const COMPANY_SET_UNLIMITED_MESSAGES_EDITING = [
+		"key"    => "COMPANY_SET_UNLIMITED_MESSAGES_EDITING",
+		"limit"  => 10,
+		"expire" => 60,
+	];
+
 	const REQUIRE_PIN_CODE_COMPANY = [
 		"key"    => "REQUIRE_PIN_CODE_COMPANY",
 		"limit"  => 3,
@@ -333,6 +339,12 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => 60,
 	];
 
+	const SET_SHOW_MESSAGE_READ_STATUS = [
+		"key"    => "SET_SHOW_MESSAGE_READ_STATUS",
+		"limit"  => 10,
+		"expire" => 60,
+	];
+
 	// -------------------------------------------------------
 	// join link
 	// -------------------------------------------------------
@@ -413,6 +425,12 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	const USERBOT_REFRESH_SECRET_KEY = [
 		"key"    => "USERBOT_REFRESH_SECRET_KEY",
+		"limit"  => 15,
+		"expire" => 10 * 60,
+	];
+
+	const USERBOT_REFRESH_SMART_APP_KEYS = [
+		"key"    => "USERBOT_REFRESH_SMART_APP_KEYS",
 		"limit"  => 15,
 		"expire" => 10 * 60,
 	];

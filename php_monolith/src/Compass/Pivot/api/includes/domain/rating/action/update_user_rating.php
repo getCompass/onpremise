@@ -127,8 +127,8 @@ class Domain_Rating_Action_UpdateUserRating {
 	 */
 	protected static function _calculateAvgScreenTime(int $user_created_at, array $row_list):int {
 
-		// считаем сколько дней пользователь зарегистрирован в приложении
-		$user_days_count = floor((time() - $user_created_at) / DAY1);
+		// считаем сколько дней пользователь зарегистрирован в приложении. Считаем и первый неполный день
+		$user_days_count = ceil((time() - $user_created_at) / DAY1);
 		if ($user_days_count < 1) {
 			return 0;
 		}
@@ -141,7 +141,7 @@ class Domain_Rating_Action_UpdateUserRating {
 			}
 		}
 
-		// если зареган меньше 5 дней назад, то делим на количество полных дней в приложении
+		// если зареган меньше 5 дней назад, то делим на количество дней (включая первый неполный) в приложении
 		return $user_days_count < 5 ? floor($total_screen_time / $user_days_count) : floor($total_screen_time / 5);
 	}
 

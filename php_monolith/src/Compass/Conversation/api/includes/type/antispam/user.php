@@ -303,6 +303,24 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => 60,
 	];
 
+	public const GROUPS_SETOPTIONS_IS_REACTIONS_ENABLED = [
+		"key"    => "GROUPS_SETOPTIONS_IS_REACTIONS_ENABLED",
+		"limit"  => 16,
+		"expire" => 60,
+	];
+
+	public const GROUPS_SETOPTIONS_IS_COMMENTS_ENABLED = [
+		"key"    => "GROUPS_SETOPTIONS_IS_COMMENTS_ENABLED",
+		"limit"  => 16,
+		"expire" => 60,
+	];
+
+	public const GROUPS_SETOPTIONS_IS_CHANNEL = [
+		"key"    => "GROUPS_SETOPTIONS_IS_CHANNEL",
+		"limit"  => 16,
+		"expire" => 60,
+	];
+
 	// -------------------------------------------------------
 	// invites
 	// -------------------------------------------------------

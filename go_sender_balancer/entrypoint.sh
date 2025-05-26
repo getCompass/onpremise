@@ -9,4 +9,6 @@ sh wait-services.sh
 if [[ "${IS_LOCAL}" == "true" ]]; then
   cd /app && go build -o sender_balancer -mod vendor main.go
 fi
+
+ln -sf /dev/stdout /app/logs/main.log
 /app/sender_balancer -confdir=/app/api/conf -logsdir=/app/logs -executabledir=/app

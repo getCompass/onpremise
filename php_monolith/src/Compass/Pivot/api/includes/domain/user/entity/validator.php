@@ -112,6 +112,28 @@ class Domain_User_Entity_Validator {
 	}
 
 	/**
+	 * выбрасывает исключение, если пользователь забанен
+	 *
+	 * @param int $user_id
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function assertBanned(int $user_id):void {
+
+		if ($user_id !== 0) {
+
+			try {
+				Domain_User_Entity_UserBanned::get($user_id);
+			} catch (RowNotFoundException) {
+
+				// все ок не забанен
+				return;
+			}
+			throw new Domain_User_Exception_UserBanned();
+		}
+	}
+
+	/**
 	 * проверяем код подтверждения
 	 *
 	 * @param string $code

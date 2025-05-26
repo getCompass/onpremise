@@ -1,0 +1,105 @@
+syntax = "proto3";
+package pusherGrpc;
+option go_package = "pusher/";
+// сервис, который описывает все метод go_pusher
+service pusher {
+
+  rpc PusherUpdateBadge(PusherUpdateBadgeRequestStruct) returns (PusherUpdateBadgeResponseStruct) {}
+  rpc PusherSendTestPush(PusherSendTestPushRequestStruct) returns (PusherSendTestPushResponseStruct) {}
+
+  rpc SystemStatus(SystemStatusRequestStruct) returns (SystemStatusResponseStruct) {}
+  rpc SystemTraceGoroutine(SystemTraceGoroutineRequestStruct) returns (SystemTraceGoroutineResponseStruct) {}
+  rpc SystemTraceMemory(SystemTraceMemoryRequestStruct) returns (SystemTraceMemoryResponseStruct) {}
+  rpc SystemCpuProfile(SystemCpuProfileRequestStruct) returns (SystemCpuProfileResponseStruct) {}
+  rpc SystemReloadConfig(SystemReloadConfigRequestStruct) returns (SystemReloadConfigResponseStruct) {}
+  rpc SystemReloadSharding(SystemReloadShardingRequestStruct) returns (SystemReloadShardingResponseStruct) {}
+  rpc SystemCheckSharding(SystemCheckShardingRequestStruct) returns (SystemCheckShardingResponseStruct) {}
+}
+
+// формат запроса для pusher.UpdateBadge
+message PusherUpdateBadgeRequestStruct {
+  int64 user_id = 1;
+}
+
+// формат ответа для pusher.UpdateBadge
+message PusherUpdateBadgeResponseStruct {}
+
+message TokenItem {
+  int64 version = 1;
+  string token = 2;
+  string platform = 3;
+  int64 token_type = 4;
+  string session_uniq = 5;
+  string device_id = 6;
+  int64 sound_type = 7;
+  int64 is_new_firebase_push = 8;
+  string app_name = 9;
+}
+
+// формат запроса для pusher.SendTestPush
+message PusherSendTestPushRequestStruct {
+  int64 user_id = 1;
+  TokenItem token_item = 2;
+  string type = 3;
+}
+
+// формат ответа для pusher.SendTestPush
+message PusherSendTestPushResponseStruct {}
+
+// формат запроса для system.status
+message SystemStatusRequestStruct {}
+
+// формат ответа для system.status
+message SystemStatusResponseStruct {
+  string name = 1;
+  int64 goroutines = 2;
+  int64 memory = 3;
+  string memory_kb = 4;
+  string memory_mb = 5;
+  int32 uptime = 6;
+}
+
+// формат запроса для system.traceGoroutine
+message SystemTraceGoroutineRequestStruct {}
+
+// формат ответа для system.traceGoroutine
+message SystemTraceGoroutineResponseStruct {}
+
+// формат запроса для system.traceMemory
+message SystemTraceMemoryRequestStruct {}
+
+// формат ответа для system.traceMemory
+message SystemTraceMemoryResponseStruct {}
+
+// формат запроса для system.cpuProfile
+message SystemCpuProfileRequestStruct {
+  int64 time = 1;
+}
+
+// формат ответа для system.cpuProfile
+message SystemCpuProfileResponseStruct {}
+
+// формат запроса для system.reloadConfig
+message SystemReloadConfigRequestStruct {}
+
+// формат ответа для system.reloadConfig
+message SystemReloadConfigResponseStruct {
+  int32 logging_level = 1;
+  string server_type = 2;
+  int64 current_dpc = 3;
+  int64 tcp_port = 4;
+  string rabbit_queue = 5;
+  string rabbit_exchange = 6;
+}
+
+// формат запроса для system.reloadSharding
+message SystemReloadShardingRequestStruct {}
+
+// формат ответа для system.reloadSharding
+message SystemReloadShardingResponseStruct {}
+
+// формат запроса для system.checkSharding
+message SystemCheckShardingRequestStruct {}
+
+// формат ответа для system.checkSharding
+message SystemCheckShardingResponseStruct {}

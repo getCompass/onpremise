@@ -10,8 +10,21 @@ class Domain_Thread_Action_DoRead {
 	/**
 	 * Прочитать тред
 	 *
+	 * @param int    $user_id
+	 * @param int    $member_role
+	 * @param int    $member_permissions
+	 * @param string $thread_map
+	 * @param string $last_read_message_map
+	 *
+	 * @return bool
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
+	 * @throws \busException
+	 * @throws \parseException
 	 */
-	public static function do(int $user_id, string $thread_map, string $last_read_message_map):bool {
+	public static function do(int $user_id, int $member_role, int $member_permissions, string $thread_map, string $last_read_message_map):bool {
 
 		$was_unread = false;
 
@@ -23,23 +36,27 @@ class Domain_Thread_Action_DoRead {
 		if (!isset($thread_menu_row["user_id"])) {
 
 			Gateway_Db_CompanyThread_Main::rollback();
+			Domain_Thread_Action_Message_AddReadParticipant::do($thread_map, $last_read_message_map, $user_id, $member_role, $member_permissions);
 			return $was_unread;
 		}
 
 		// если сообщение уже прочитано - отменяем транзакцию
 		$need_read_message_index    = \CompassApp\Pack\Message\Thread::getThreadMessageIndex($last_read_message_map);
 		$current_read_message_index = self::_getCurrentReadThreadMessageIndex($thread_menu_row);
-		if ($need_read_message_index <= $current_read_message_index && $thread_menu_row["unread_count"] == 0) {
 
+		// вносим в базу изменения, если действительно новое сообщение
+		if ($need_read_message_index > $current_read_message_index || $thread_menu_row["unread_count"] != 0) {
+
+			$was_unread = true;
+
+			// если есть непрочитанные сообщения, обновляем данные юзера
+			self::_updateUserDataOnMessageRead($user_id, $thread_map, $thread_menu_row, $last_read_message_map);
+			Gateway_Db_CompanyThread_Main::commitTransaction();
+		} else {
 			Gateway_Db_CompanyThread_Main::rollback();
-			return $was_unread;
 		}
 
-		$was_unread = true;
-
-		// если есть непрочитанные сообщения, обновляем данные юзера
-		self::_updateUserDataOnMessageRead($user_id, $thread_map, $thread_menu_row, $last_read_message_map);
-		Gateway_Db_CompanyThread_Main::commitTransaction();
+		Domain_Thread_Action_Message_AddReadParticipant::do($thread_map, $last_read_message_map, $user_id, $member_role, $member_permissions);
 
 		return $was_unread;
 	}

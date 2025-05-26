@@ -16,4 +16,11 @@ class Domain_Thread_Entity_MessageBlock_Message {
 			yield $message;
 		}
 	}
+
+	// возвращает сообщение из записи с блоком
+	public static function get(string $message_map, array $block_row):array {
+
+		return $block_row["data"][$message_map];
+	}
+
 }

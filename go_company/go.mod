@@ -3,8 +3,8 @@ module go_company
 go 1.22
 
 require (
-	github.com/getCompassUtils/company_protobuf_schemes v1.1.1
-	github.com/getCompassUtils/go_base_frame v1.0.5
+	github.com/getCompassUtils/company_protobuf_schemes v1.1.90
+	github.com/getCompassUtils/go_base_frame v1.0.7
 	google.golang.org/grpc v1.65.0
 )
 

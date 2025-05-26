@@ -16,7 +16,7 @@ class Domain_User_Entity_Attribution_Traffic_TypeDetector {
 	 *
 	 * @return Domain_User_Entity_Attribution_Traffic_Abstract
 	 */
-	public static function detect(Struct_Db_PivotAttribution_UserAppRegistration $user_app_registration):Domain_User_Entity_Attribution_Traffic_Abstract {
+	public static function  detect(Struct_Db_PivotAttribution_UserAppRegistration $user_app_registration):Domain_User_Entity_Attribution_Traffic_Abstract {
 
 		// проверяем, что IP адрес пользователя корректен
 		Domain_User_Entity_Attribution::assertIpAddress($user_app_registration->ip_address);

@@ -2,6 +2,7 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
@@ -40,8 +41,11 @@ class Apiv2_Security_Device extends \BaseFrame\Controller\Api {
 	/**
 	 * Инвалидировать устройство пользователя.
 	 *
+	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\DBShardingNotFoundException
+	 * @throws \BaseFrame\Exception\Gateway\QueryFatalException
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \parseException
 	 * @throws cs_blockException
@@ -53,9 +57,11 @@ class Apiv2_Security_Device extends \BaseFrame\Controller\Api {
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::DEVICE_INVALIDATE);
 
 		try {
-			Domain_User_Scenario_Api_Security_Device::invalidate($this->user_id, $session_id);
+			Domain_User_Scenario_Api_Security_Device::invalidate($this->user_id, $this->session_uniq, $session_id);
 		} catch (Domain_User_Exception_Security_Device_IncorrectSessionId) {
 			throw new ParamException("incorrect session_id");
+		} catch (Domain_User_Exception_Security_Device_RecentlyLoginSession) {
+			throw new CaseException(1221001 , "current used session is recently login");
 		} catch (\cs_RowIsEmpty) {
 			// в этом случае не кидаем ошибку
 		}
@@ -66,17 +72,24 @@ class Apiv2_Security_Device extends \BaseFrame\Controller\Api {
 	/**
 	 * Инвалидировать остальные устройства пользователя.
 	 *
-	 * @throws ParamException
+	 * @throws CaseException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws \busException
 	 * @throws \parseException
+	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_blockException
 	 */
 	public function invalidateOther():array {
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::DEVICE_INVALIDATE_OTHER);
 
-		Domain_User_Scenario_Api_Security_Device::invalidateOther($this->user_id, $this->session_uniq);
+		try {
+			Domain_User_Scenario_Api_Security_Device::invalidateOther($this->user_id, $this->session_uniq);
+		} catch (Domain_User_Exception_Security_Device_RecentlyLoginSession) {
+			throw new CaseException(1221001 , "current used session is recently login");
+		}
 
 		return $this->ok();
 	}

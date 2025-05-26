@@ -115,6 +115,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"space.getInfoForPurchase",
 			"space.getEventCountInfo",
 			"intercom.addMessageFromSupportBot",
+			"intercom.addFileMessageFromSupportBot",
 			"hiring.joinlink.add",
 			"hiring.joinlink.getInfoForMember",
 			"space.search.tryReindex",

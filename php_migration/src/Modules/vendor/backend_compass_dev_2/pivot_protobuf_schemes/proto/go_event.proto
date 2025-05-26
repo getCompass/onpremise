@@ -1,0 +1,58 @@
+syntax = "proto3";
+package eventGrpc;
+option go_package = "/event";
+
+// сервис, который описывает все метод go_event
+service event {
+
+  rpc EventSetEventTrap(EventSetEventTrapRequestStruct) returns (EventSetEventTrapResponseStruct) {}
+  rpc EventWaitEventTrap(EventWaitEventTrapRequestStruct) returns (EventWaitEventTrapResponseStruct) {}
+
+  rpc TaskPush(TaskPushRequestStruct) returns (TaskPushResponseStruct) {}
+}
+
+// формат запроса для Event.SetEventTrap
+message EventSetEventTrapRequestStruct {
+  string unique_key = 1;
+  string subscriber = 2;
+  int64 created_after = 3;
+  string event_type = 4;
+  map<string, string> translations = 5;
+  int64 company_id = 6;
+  bool is_global = 7;
+}
+
+// формат ответа для Event.SetEventTrap
+message EventSetEventTrapResponseStruct {
+
+}
+
+// формат запроса для Event.WaitEventTrap
+message EventWaitEventTrapRequestStruct {
+  string unique_key = 1;
+  int64 company_id = 2;
+  bool is_global = 3;
+}
+
+// формат ответа для Event.WaitEventTrap
+message EventWaitEventTrapResponseStruct {
+  int32 is_found = 1;
+}
+
+// формат запроса для Task.Push
+message TaskPushRequestStruct {
+  string unique_key = 1;
+  string type = 2;
+  string data = 3;
+  string module = 4;
+  string group = 5;
+  int64 need_work = 6;
+  int64 error_limit = 7;
+  int64 company_id = 8;
+  bool is_global = 9;
+}
+
+// формат ответа для Task.Push
+message TaskPushResponseStruct {
+
+}

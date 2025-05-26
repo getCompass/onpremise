@@ -18,6 +18,7 @@ define("MYSQL_SSL"					, false);
 
 // system db
 define("MYSQL_SYSTEM_HOST"			, "${MYSQL_HOST}");
+define("MYSQL_SYSTEM_PORT"			, "${MYSQL_PORT}");
 define("MYSQL_SYSTEM_USER"			, "${MYSQL_SYSTEM_USER}");
 define("MYSQL_SYSTEM_PASS"			, "${MYSQL_PASS}");
 

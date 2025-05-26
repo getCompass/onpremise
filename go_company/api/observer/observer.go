@@ -7,15 +7,17 @@ import (
 	"go_company/api/includes/methods/methods_rating"
 	Isolation "go_company/api/includes/type/isolation"
 	timer_worker "go_company/api/includes/type/timer/worker"
+	readMessageObserver "go_company/api/observer/read_message"
 	"time"
 )
 
 const (
 
 	// интервалы с которыми работают различные воркера обсервера
-	timerWorkerInterval    = time.Second
-	ratingWorkerInterval   = time.Minute * 5
-	reactionWorkerInterval = time.Millisecond * 150
+	timerWorkerInterval           = time.Second
+	ratingWorkerInterval          = time.Minute * 5
+	reactionWorkerInterval        = time.Millisecond * 150
+	readParticipantWorkerInterval = time.Second
 )
 
 // WorkCompanyObserver Work метод для выполнения работы в компаниях через время
@@ -24,6 +26,7 @@ func WorkCompanyObserver(ctx context.Context, companyIsolation *Isolation.Isolat
 	go doWorkTimer(ctx, companyIsolation)
 	go goWorkDumpRating(ctx, companyIsolation)
 	go goWorkReactionHandler(ctx, companyIsolation)
+	go goWorkReadMessageHandler(ctx, companyIsolation)
 }
 
 // каждую итерацию для таймера
@@ -105,6 +108,39 @@ func goWorkReactionHandler(ctx context.Context, companyIsolation *Isolation.Isol
 		case <-ctx.Done():
 
 			log.Infof("Закрыли обсервер реакций для компании %d", companyIsolation.GetCompanyId())
+			return
+
+		}
+	}
+}
+
+// запускаем observer который разруливает кэш go рутины по просмотренным сообщениям
+func goWorkReadMessageHandler(ctx context.Context, companyIsolation *Isolation.Isolation) {
+
+	for {
+
+		// используем select для выхода по истечении времени жизни контекста
+		select {
+
+		case <-time.After(readParticipantWorkerInterval):
+
+			// получаем кэш
+			cache := companyIsolation.ReadMessageStore.GetAndClearCache()
+
+			// спим
+			if len(cache) < 1 {
+				continue
+			}
+
+			// работаем с кешом
+			err := readMessageObserver.HandleReadParticipants(companyIsolation, cache)
+
+			if err != nil {
+				log.Errorf("Произошла ошибка read_message: %v", err)
+			}
+		case <-ctx.Done():
+
+			log.Infof("Закрыли обсервер просмотренных сообщений для компании %d", companyIsolation.GetCompanyId())
 			return
 
 		}

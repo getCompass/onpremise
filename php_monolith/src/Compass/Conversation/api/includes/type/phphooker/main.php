@@ -44,7 +44,9 @@ class Type_Phphooker_Main {
 	public const TASK_TYPE_CLEAR_PARENT_MESSAGE_CACHE                              = 34;
 	public const TASK_TYPE_CLEAR_PARENT_MESSAGE_LIST_CACHE                         = 35;
 	public const TASK_TYPE_UPDATE_LAST_MESSAGE_ON_DELETE_IF_DISABLED_SHOW_MESSAGE  = 36; // обновляем last_message пользователей при удалении и отключенном показе удаленных сообщений
-	public const TASK_TYPE_DISABLE_SYSTEM_DELETED_MESSAGE_CONVERSATION             = 37; // отключен показ системных сообщений об удаленных сообщениях
+	public const TASK_TYPE_CHANGE_SYSTEM_DELETED_MESSAGE_CONVERSATION              = 37; // отключен показ системных сообщений об удаленных сообщениях
+	public const TASK_TYPE_CHANGE_CHANNEL_OPTION                                   = 38; // сменили опцию канала в группе
+	public const TASK_TYPE_GRANT_ADMIN_RIGHTS_FOR_CONVERSATION_LIST                = 39; // делаем пользователя админом в группах в которых необходимо
 
 	# endregion
 	##########################################################
@@ -446,11 +448,37 @@ class Type_Phphooker_Main {
 	}
 
 	// отключен показ системных сообщений об удаленных сообщениях
-	public static function doDisableSystemDeletedMessageConversation(string $conversation_map, array $users):void {
+	public static function doChangeSystemDeletedMessageConversation(string $conversation_map, bool $value, array $users):void {
 
-		$event_data = Type_Event_Task_TaskAddedConversation::create(self::TASK_TYPE_DISABLE_SYSTEM_DELETED_MESSAGE_CONVERSATION, [
+		$event_data = Type_Event_Task_TaskAddedConversation::create(self::TASK_TYPE_CHANGE_SYSTEM_DELETED_MESSAGE_CONVERSATION, [
 			"conversation_map" => $conversation_map,
+			"value"            => $value,
 			"users"            => $users,
+		]);
+
+		Gateway_Event_Dispatcher::dispatch($event_data);
+	}
+
+	// сменили опцию канала в группе
+	public static function doChangeChannelOption(string $conversation_map, int $is_channel, array $users):void {
+
+		$event_data = Type_Event_Task_TaskAddedConversation::create(self::TASK_TYPE_CHANGE_CHANNEL_OPTION, [
+			"conversation_map" => $conversation_map,
+			"is_channel"       => $is_channel,
+			"users"            => $users,
+		]);
+
+		Gateway_Event_Dispatcher::dispatch($event_data);
+	}
+
+	// делаем пользователя админом в группах в которых необходимо
+	public static function grantAdminRightsForConversationList(int $user_id, int $user_role, int $user_permissions, array $conversation_map_list):void {
+
+		$event_data = Type_Event_Task_TaskAddedConversation::create(self::TASK_TYPE_GRANT_ADMIN_RIGHTS_FOR_CONVERSATION_LIST, [
+			"user_id"               => $user_id,
+			"user_role"             => $user_role,
+			"user_permissions"      => $user_permissions,
+			"conversation_map_list" => $conversation_map_list,
 		]);
 
 		Gateway_Event_Dispatcher::dispatch($event_data);

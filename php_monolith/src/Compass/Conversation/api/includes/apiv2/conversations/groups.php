@@ -145,6 +145,7 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		$name            = $this->post(\Formatter::TYPE_STRING, "name");
 		$avatar_file_key = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", "");
 		$description     = $this->post(\Formatter::TYPE_STRING, "description", "");
+		$is_channel      = $this->post(\Formatter::TYPE_INT, "is_channel", false);
 
 		$avatar_file_map = "";
 
@@ -152,11 +153,15 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 			$avatar_file_map = \CompassApp\Pack\File::tryDecrypt($avatar_file_key);
 		}
 
+		if ($is_channel && !in_array($is_channel, [0, 1], true)) {
+			throw new ParamException("is_channel must be 0 or 1");
+		}
+
 		// инкрементим блокировку
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::GROUPS_ADD, "groups", "row2");
 
 		try {
-			$prepared_conversation = Domain_Group_Scenario_Api::add($this->user_id, $name, $avatar_file_map, $description);
+			$prepared_conversation = Domain_Group_Scenario_Api::add($this->user_id, $name, $avatar_file_map, $description, $is_channel);
 		} catch (Domain_Group_Exception_InvalidFileForAvatar) {
 			throw new ParamException("invalid file for avatar");
 		} catch (Domain_Group_Exception_InvalidName) {

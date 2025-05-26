@@ -59,7 +59,7 @@ if (COMPANY_ID > 0) {
 				"exit_list"                    => "exit_task_id,user_id,status,step,created_at,updated_at,extra",
 				"join_link_list"               => "join_link_uniq,entry_option,status,type,can_use_count,expires_at,creator_user_id,created_at,updated_at",
 				"member_list"                  => "user_id,role,npc_type,permissions,created_at,updated_at,company_joined_at,left_at,full_name_updated_at,mbti_type,full_name,short_description,avatar_file_key,comment,extra",
-				"userbot_list"                 => "userbot_id,status_alias,npc_type_alias,user_id,created_at,updated_at,extra",
+				"userbot_list"                 => "userbot_id,status_alias,user_id,smart_app_name,created_at,updated_at,extra",
 				"member_notification_list"     => "user_id,snoozed_until,created_at,updated_at,token,device_list,extra",
 				"dismissal_request"            => "dismissal_request_id,status,created_at,updated_at,creator_user_id,dismissal_user_id,extra",
 				"hiring_conversation_preset"   => "hiring_conversation_preset_id,status,creator_user_id,created_at,updated_at,title,conversation_list",

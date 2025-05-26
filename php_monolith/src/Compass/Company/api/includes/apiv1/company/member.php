@@ -402,7 +402,7 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 		}
 
 		return $this->ok([
-			"member_list"       => (array) Apiv1_Format::memberList($member_list),
+			"member_list"       => (array) Apiv1_Format::memberList($this->user_id, $this->role, $member_list),
 			"left_user_id_list" => (array) Apiv1_Format::leftUserIdList($left_user_id_list),
 		]);
 	}

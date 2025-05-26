@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use CompassApp\Domain\Member\Entity\Permission;
 use JetBrains\PhpStorm\ArrayShape;
 use BaseFrame\Exception\Domain\ParseFatalException;
 
@@ -346,10 +347,26 @@ class Apiv2_Format {
 				];
 
 			case "mass_quote":
-			case "system_bot_remind":
 
 				$data = [
 					"quoted_message_list" => (array) [],
+				];
+
+				// проходимся по каждому сообщению из цитаты
+				foreach ($prepared_message["data"]["quoted_message_list"] as $v) {
+					$data["quoted_message_list"][] = (object) self::conversationMessage($v);
+				}
+
+				// добавляем количество сообщений, который имеет в себе цитата
+				$data["quoted_message_count"] = (int) $prepared_message["data"]["quoted_message_count"];
+
+				return $data;
+
+			case "system_bot_remind":
+
+				$data = [
+					"quoted_message_list"    => (array) [],
+					"remind_creator_user_id" => (int) $prepared_message["data"]["remind_creator_user_id"],
 				];
 
 				// проходимся по каждому сообщению из цитаты
@@ -538,7 +555,7 @@ class Apiv2_Format {
 				"day_start_string" => (string) $item["data"]["day_start_string"],
 				"sender_type"      => (string) ($item["data"]["sender_type"] ?? Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_USER_SENDER),
 			],
-			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_RESPECT      => [
+			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_RESPECT => [
 				"receiver_user_id" => (int) $item["data"]["receiver_user_id"],
 				"receiver_name"    => (string) ($item["data"]["receiver_name"] ?? ""),
 				"respect_id"       => (int) $item["data"]["respect_id"],
@@ -550,11 +567,11 @@ class Apiv2_Format {
 				"exactingness_id"  => (int) ($item["data"]["exactingness_id"] ?? 0),
 				"sender_name"      => (string) ($item["data"]["sender_name"] ?? ""),
 			],
-			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_ACHIEVEMENT  => [
+			Type_Conversation_Message_Handler_Default::ADDITIONAL_TYPE_ACHIEVEMENT => [
 				"receiver_user_id" => (int) $item["data"]["receiver_user_id"],
 				"achievement_id"   => (int) $item["data"]["achievement_id"],
 			],
-			default                                                                 => [],
+			default => [],
 		};
 	}
 
@@ -581,6 +598,8 @@ class Apiv2_Format {
 			=> self::_formatSystemMessageAdminChangedGroupDescriptionExtra($extra),
 			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_CHANGED_GROUP_AVATAR
 			=> self::_formatSystemMessageAdminChangedGroupAvatarExtra($extra),
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_CHANGED_CHANNEL_OPTION
+			=> self::_formatSystemMessageAdminChangedChannelOptionExtra($extra),
 			default
 			=> throw new ParseFatalException("Unsupported system message type '{$system_message_type}' in " . __METHOD__),
 		};
@@ -635,6 +654,15 @@ class Apiv2_Format {
 		return [
 			"user_id"  => (int) $extra["user_id"],
 			"file_map" => (string) $extra["file_map"],
+		];
+	}
+
+	// форматируем extra системного сообщения типа admin_changed_channel_option
+	protected static function _formatSystemMessageAdminChangedChannelOptionExtra(array $extra):array {
+
+		return [
+			"user_id"    => (int) $extra["user_id"],
+			"is_channel" => (int) $extra["is_channel"],
 		];
 	}
 
@@ -792,7 +820,7 @@ class Apiv2_Format {
 	 * @return array
 	 * @throws ParseFatalException
 	 */
-	#[ArrayShape(["conversation_map" => "string", "created_at" => "int", "total_action_count" => "int", "messages_updated_at" => "int", "reactions_updated_at" => "int", "threads_updated_at" => "int", "messages_updated_version" => "int", "reactions_updated_version" => "int", "threads_updated_version" => "int", "type" => "string", "users" => "array", "talking_hash" => "string", "data" => "object"])]
+	#[ArrayShape(["conversation_map" => "string", "created_at" => "int", "total_action_count" => "int", "messages_updated_at" => "int", "reactions_updated_at" => "int", "threads_updated_at" => "int", "messages_updated_version" => "int", "reactions_updated_version" => "int", "threads_updated_version" => "int", "type" => "string", "users" => "array", "last_read_message" => "array", "talking_hash" => "string", "data" => "object"])]
 	public static function conversationMeta(array $prepared_conversation):array {
 
 		return [
@@ -805,6 +833,7 @@ class Apiv2_Format {
 			"messages_updated_version"  => (int) $prepared_conversation["messages_updated_version"],
 			"reactions_updated_version" => (int) $prepared_conversation["reactions_updated_version"],
 			"threads_updated_version"   => (int) $prepared_conversation["threads_updated_version"],
+			"last_read_message"         => (array) $prepared_conversation["last_read_message"],
 			"type"                      => (string) self::getConversationOutputType($prepared_conversation["type"]),
 			"users"                     => (array) $prepared_conversation["users"],
 			"talking_hash"              => (string) $prepared_conversation["talking_hash"],
@@ -851,6 +880,7 @@ class Apiv2_Format {
 					"group_options"   => (object) $data["group_options"],
 					"subtype"         => (string) self::getConversationSubtype($data["subtype"]),
 					"description"     => (string) $data["description"],
+					"is_channel"      => (int) $data["is_channel"],
 				];
 
 				// добавляем к ответу avatar_file_key если он есть
@@ -988,6 +1018,7 @@ class Apiv2_Format {
 					"members_count" => (int) $data["member_count"],
 					"role"          => (string) self::getUserRole($data["role"]),
 					"subtype"       => (string) self::getConversationSubtype($type),
+					"is_channel"    => (int) $data["is_channel"],
 				];
 
 				// добавляем к ответу avatar_file_key если он есть
@@ -1016,6 +1047,7 @@ class Apiv2_Format {
 					"name"          => (string) $data["name"],
 					"members_count" => (int) $data["member_count"],
 					"role"          => (string) self::getUserRole($data["role"]),
+					"is_channel"    => (int) $data["is_channel"],
 				];
 
 				// добавляем к ответу avatar_file_key если он есть
@@ -1398,8 +1430,8 @@ class Apiv2_Format {
 			$output[] = match ($search_location["type"]) {
 
 				Domain_Search_Entity_Conversation_Location::API_LOCATION_TYPE => static::searchLocationListConversation($search_location),
-				Domain_Search_Entity_Thread_Location::API_LOCATION_TYPE       => static::searchLocationListThread($search_location),
-				default                                                       => throw new ParseFatalException("got unknown location")
+				Domain_Search_Entity_Thread_Location::API_LOCATION_TYPE => static::searchLocationListThread($search_location),
+				default => throw new ParseFatalException("got unknown location")
 			};
 		}
 
@@ -1449,8 +1481,8 @@ class Apiv2_Format {
 			$output[] = match ($search_hit["type"]) {
 
 				Domain_Search_Entity_ConversationMessage_Hit::API_HIT_TYPE => static::searchHitListConversationMessage($search_hit),
-				Domain_Search_Entity_ThreadMessage_Hit::API_HIT_TYPE       => static::searchHitListThreadMessage($search_hit),
-				default                                                    => throw new ParseFatalException("got unknown hit")
+				Domain_Search_Entity_ThreadMessage_Hit::API_HIT_TYPE => static::searchHitListThreadMessage($search_hit),
+				default => throw new ParseFatalException("got unknown hit")
 			};
 		}
 
@@ -1508,7 +1540,7 @@ class Apiv2_Format {
 			],
 
 			// передан неизвестный родитель
-			default                                                => throw new ParseFatalException("got unknown hit")
+			default => throw new ParseFatalException("got unknown hit")
 		};
 	}
 
@@ -1582,6 +1614,21 @@ class Apiv2_Format {
 			"is_sent"    => (int) $is_sent,
 			"list_ok"    => (array) $list_ok,
 			"list_error" => (array) $list_error,
+		];
+	}
+
+	/**
+	 * Прочитавший участник
+	 *
+	 * @param Struct_Db_CompanyConversation_MessageReadParticipant_Participant $read_participant
+	 *
+	 * @return int[]
+	 */
+	public static function messageReadParticipant(Struct_Db_CompanyConversation_MessageReadParticipant_Participant $read_participant):array {
+
+		return [
+			"user_id" => (int) $read_participant->user_id,
+			"read_at" => (int) $read_participant->read_at,
 		];
 	}
 }

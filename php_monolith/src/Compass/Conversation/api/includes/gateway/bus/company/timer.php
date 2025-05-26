@@ -7,7 +7,7 @@ namespace Compass\Conversation;
  */
 class Gateway_Bus_Company_Timer extends Gateway_Bus_Company_Main {
 
-	public const UPDATE_BADGE = "update_badge"; // обновления баджа
+	public const UPDATE_BADGE              = "update_badge"; // обновления баджа
 
 	// -------------------------------------------------------
 	// WORK PUBLIC

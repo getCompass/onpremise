@@ -35,17 +35,45 @@ func Mysql(ctx context.Context, dbKey string) *mysql.ConnectionPoolItem {
 // получаем mysql подключение из хранилища
 func MysqlWithCredentials(ctx context.Context, dbKey string, credentials *DbCredentials) *mysql.ConnectionPoolItem {
 
+	if ctx == nil {
+		return nil
+	}
+
+	if credentials == nil {
+		return nil
+	}
+
 	mysqlConnectionPoolItem, err := mysql.GetMysqlConnection(ctx, dbKey, credentials.Host+":"+functions.IntToString(int(credentials.Port)),
 		credentials.User, credentials.Pass, 10, false)
 
-	if err != nil || mysqlConnectionPoolItem.Ping() != nil {
+	if err != nil {
+		return nil
+	}
+
+	if mysqlConnectionPoolItem == nil {
+		log.Errorf("mysqlConnectionPoolItem is nil after GetMysqlConnection")
+		return nil
+	}
+
+	err = mysqlConnectionPoolItem.Ping()
+	if err != nil {
 
 		// пытаемся переподключиться - вдруг изменилось подключение
 		mysqlConnectionPoolItem, err = mysql.GetMysqlConnection(ctx, dbKey, credentials.Host+":"+functions.IntToString(int(credentials.Port)),
 			credentials.User, credentials.Pass, 10, false)
 
+		if err != nil {
+			return nil
+		}
+
+		if mysqlConnectionPoolItem == nil {
+			log.Errorf("mysqlConnectionPoolItem is nil after GetMysqlConnection")
+			return nil
+		}
+
 		// снова пингуем - должны были подключиться
-		if err != nil || mysqlConnectionPoolItem.Ping() != nil {
+		err = mysqlConnectionPoolItem.Ping()
+		if err != nil {
 
 			log.Errorf("cant connect to db %s, %s", dbKey, err.Error())
 			return nil

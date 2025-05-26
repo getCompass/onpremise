@@ -191,11 +191,11 @@ class Migration_Export_Threads {
 	 */
 	protected function _formatRichTextElements(array $message, array $elements = []):array {
 
-		if ($message["text"]) {
+		if (isset($message["text"])) {
 			$elements[] = $this->_createTextElement($message["text"]);
 		}
 
-		if (!empty($message["mention_user_id_list"])) {
+		if (isset($message["mention_user_id_list"]) && count($message["mention_user_id_list"]) > 0) {
 			$elements = array_merge(
 				$elements,
 				$this->_createMentionElements($message["mention_user_id_list"])
@@ -314,23 +314,23 @@ class Migration_Export_Threads {
 			$formatted = $this->_addEditInfo($message, $formatted);
 		}
 
-		if (!empty($message["reaction_list"])) {
+		if (isset($message["reaction_list"]) && count($message["reaction_list"]) > 0) {
 			$formatted = $this->_addReactions($message, $formatted);
 		}
 
-		if (!empty($message["mention_user_id_list"]) || $message["text"]) {
+		if ((isset($message["mention_user_id_list"]) && count($message["mention_user_id_list"]) > 0) || isset($message["text"])) {
 			$formatted = $this->_addRichText($message, $formatted);
 		}
 
-		if (!empty($message["data"]["file_map"])) {
+		if (isset($message["data"]["file_map"]) && mb_strlen($message["data"]["file_map"]) > 0) {
 			$formatted = $this->_addFiles($message, $formatted);
 		}
 
-		if (!empty($message["data"]["quoted_message_list"])) {
+		if (isset($message["data"]["quoted_message_list"])) {
 			$formatted = $this->_addQuotedMessages($message, $formatted);
 		}
 
-		if (!empty($message["data"]["reposted_message_list"])) {
+		if (isset($message["data"]["reposted_message_list"])) {
 			$formatted = $this->_addRepostedMessages($message, $formatted);
 		}
 
@@ -576,7 +576,7 @@ class Migration_Export_Threads {
 
 		foreach ($message_list as $message) {
 
-			if (!empty($message["mention_user_id_list"]) || $message["text"]) {
+			if ((isset($message["mention_user_id_list"]) && count($message["mention_user_id_list"]) > 0) || isset($message["text"])) {
 				$elements = $this->_formatRichTextElements($message, $elements);
 			}
 
@@ -604,18 +604,18 @@ class Migration_Export_Threads {
 		$files = [];
 		foreach ($message_list as $message) {
 
-			if (!empty($message["data"]["file_map"])) {
+			if (isset($message["data"]["file_map"]) && mb_strlen($message["data"]["file_map"]) > 0) {
 				$files[] = $this->_formatFileInfo($message);
 			}
 
 			// Рекурсивно проверяем вложенные сообщения
-			if (!empty($message["data"]["quoted_message_list"])) {
+			if (isset($message["data"]["quoted_message_list"])) {
 				$files = array_merge($files, $this->_getFilesFromMessages($message["data"]["quoted_message_list"]));
 			}
-			if (!empty($message["data"]["quoted_message"])) {
+			if (isset($message["data"]["quoted_message"])) {
 				$files = array_merge($files, $this->_getFilesFromMessages([$message["data"]["quoted_message"]]));
 			}
-			if (!empty($message["data"]["reposted_message_list"])) {
+			if (isset($message["data"]["reposted_message_list"])) {
 				$files = array_merge($files, $this->_getFilesFromMessages($message["data"]["reposted_message_list"]));
 			}
 		}

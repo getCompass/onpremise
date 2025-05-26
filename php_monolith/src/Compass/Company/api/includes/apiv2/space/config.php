@@ -15,12 +15,14 @@ class Apiv2_Space_Config extends \BaseFrame\Controller\Api {
 		"setMemberPermissions",
 		"getMemberPermissions",
 		"setAddToGeneralChatOnHiring",
+		"setShowMessageReadStatus",
 	];
 
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"setMemberPermissions",
 		"getMemberPermissions",
 		"setAddToGeneralChatOnHiring",
+		"setShowMessageReadStatus",
 	];
 
 	// список запрещенных методов по ролям
@@ -77,6 +79,26 @@ class Apiv2_Space_Config extends \BaseFrame\Controller\Api {
 
 		try {
 			Domain_Company_Scenario_Api::setAddToGeneralChatOnHiring($this->role, $this->permissions, $is_add_to_general_chat_on_hiring);
+		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
+			throw new CaseException(2235001, "User is not a company owner");
+		} catch (cs_InvalidConfigValue) {
+			throw new \BaseFrame\Exception\Request\ParamException("Incorrect params");
+		}
+
+		return $this->ok();
+	}
+
+	/**
+	 * Изменяем настройки позволять смотреть статус просмотра сообщения
+	 */
+	public function setShowMessageReadStatus():array {
+
+		$is_add_to_general_chat_on_hiring = $this->post(\Formatter::TYPE_INT, "show_message_read_status");
+
+		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::SET_SHOW_MESSAGE_READ_STATUS);
+
+		try {
+			Domain_Company_Scenario_Api::setShowMessageReadStatus($this->role, $this->permissions, $is_add_to_general_chat_on_hiring);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2235001, "User is not a company owner");
 		} catch (cs_InvalidConfigValue) {

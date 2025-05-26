@@ -16,6 +16,8 @@ namespace Compass\FileBalancer;
 const PIVOT_SERVER = "pivot";
 const CLOUD_SERVER = "domino";
 
+\CompassApp\Conf\Company::init(COMPANY_ID);
+
 if (!defined("CURRENT_SERVER")) {
 	define("CURRENT_SERVER", COMPANY_ID > 0 ? CLOUD_SERVER : PIVOT_SERVER);
 }

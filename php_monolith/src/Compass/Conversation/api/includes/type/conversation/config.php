@@ -72,4 +72,35 @@ class Type_Conversation_Config {
 
 		return $this->configuration[$key];
 	}
+
+	/**
+	 * Получить список конфигов
+	 *
+	 * @param array $key_list
+	 *
+	 * @return array
+	 * @throws \queryException
+	 */
+	public function getList(array $key_list):array {
+
+		// получаем список конфигов
+		$config_list = Type_Company_Config::init()->getList($key_list);
+
+		// для каждого ключа
+		foreach ($key_list as $key) {
+
+			// если мы получили пустой конфиг - устанавливаем значение для ключа по умолчанию
+			if (count($config_list[$key]) < 1) {
+
+				$time   = time();
+				$value  = ["value" => Domain_Company_Entity_Config::CONFIG_DEFAULT_VALUE_LIST[$key]];
+				$config = new Struct_Db_CompanyData_CompanyConfig($key, $time, $time, $value);
+				Gateway_Db_CompanyData_CompanyConfig::insert($config);
+
+				$config_list[$key] = $value;
+			}
+		}
+
+		return $config_list;
+	}
 }

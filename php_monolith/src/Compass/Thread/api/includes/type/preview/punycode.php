@@ -2,8 +2,10 @@
 
 namespace Compass\Thread;
 
-// класс для работы с кириллическими url адресами
-// преобразование utf-8 доменов в punycode и обратно
+/**
+ * класс для работы с кириллическими url адресами
+ * преобразование utf-8 доменов в punycode и обратно
+ */
 class Type_Preview_Punycode {
 
 	// дефолтные параметры
@@ -41,9 +43,11 @@ class Type_Preview_Punycode {
 		"4" => 30, "5" => 31, "6" => 32, "7" => 33, "8" => 34, "9" => 35,
 	];
 
-	// перекодирует utf-8 домен по алгоритму punycode
-	// @mixed @long
-	public static function encode(string $input, string $encoding = "utf-8") {
+	/**
+	 * перекодирует utf-8 домен по алгоритму punycode
+	 *
+	 */
+	public static function encode(string $input, string $encoding = "utf-8"):string|false {
 
 		// переводим домен в нижний регистр и разбиваем на части
 		$input = mb_strtolower($input, $encoding);
@@ -74,9 +78,11 @@ class Type_Preview_Punycode {
 		return $encoded_url;
 	}
 
-	// перекодирует домен из кодировки punycode в utf-8
-	// @mixed @long
-	public static function decode(string $input, string $encoding = "utf-8") {
+	/**
+	 * перекодирует домен из кодировки punycode в utf-8
+	 *
+	 */
+	public static function decode(string $input, string $encoding = "utf-8"):string|false {
 
 		// переводим домен в нижний регистр и разбиваем на части
 		$input = strtolower($input);
@@ -118,8 +124,8 @@ class Type_Preview_Punycode {
 	// -------------------------------------------------
 
 	// перекодирует часть utf-8 домена
-	// @mixed @long
-	protected static function _encodePart(string $input, string $encoding) {
+	// @long
+	protected static function _encodePart(string $input, string $encoding):string|false {
 
 		$code_points = self::_listCodePoints($input, $encoding);
 
@@ -148,9 +154,9 @@ class Type_Preview_Punycode {
 		$length = mb_strlen($input, $encoding);
 		while ($h < $length) {
 
-			$m     = $code_points["non_basic"][$i++];
-			$delta = $delta + ($m - $n) * ($h + 1);
-			$n     = $m;
+			$m = $code_points["non_basic"][$i++];
+			$delta += ($m - $n) * ($h + 1);
+			$n = $m;
 
 			foreach ($code_points["all"] as $c) {
 
@@ -171,7 +177,7 @@ class Type_Preview_Punycode {
 						$code = $t + (($q - $t) % (self::_BASE - $t));
 						$output .= self::_ENCODE_TABLE[$code];
 
-						$q = (int) ($q - $t) / (self::_BASE - $t);
+						$q = (int) (($q - $t) / (self::_BASE - $t));
 					}
 
 					$output .= self::_ENCODE_TABLE[$q];
@@ -222,8 +228,8 @@ class Type_Preview_Punycode {
 			for ($k = self::_BASE; ; $k += self::_BASE) {
 
 				$digit = self::_DECODE_TABLE[$input[$pos++]];
-				$i     = $i + ($digit * $w);
-				$t     = self::_calculateThreshold($k, $bias);
+				$i += ($digit * $w);
+				$t = self::_calculateThreshold($k, $bias);
 
 				if ($digit < $t) {
 					break;
@@ -269,7 +275,7 @@ class Type_Preview_Punycode {
 			$k += self::_BASE;
 		}
 
-		$k = $k + (int) (((self::_BASE - self::_TMIN + 1) * $delta) / ($delta + self::_SKEW));
+		$k += (int) (((self::_BASE - self::_TMIN + 1) * $delta) / ($delta + self::_SKEW));
 
 		return $k;
 	}

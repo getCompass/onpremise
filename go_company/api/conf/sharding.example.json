@@ -25,7 +25,13 @@
 	"go": {
 		"sender": {
 			"host": "${GO_SENDER_HOST}",
-			"port": "${TCP_PORT}"
+			"grpc_port": "${GRPC_PORT}",
+			"tcp_port": "${TCP_PORT}"
+		},
+		"company_cache": {
+			"host": "${GO_COMPANY_CACHE_HOST}",
+			"grpc_port": "${GRPC_PORT}",
+			"tcp_port": "${TCP_PORT}"
 		}
 	}
 }

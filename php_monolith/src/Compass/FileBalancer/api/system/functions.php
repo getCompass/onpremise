@@ -2,6 +2,8 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\System\File;
+
 // ------------------------------------------------
 // содержатся вспомогательные функции системы
 // ------------------------------------------------
@@ -833,7 +835,7 @@ function debug(... $arr):void {
 		$text .= "\n";
 	}
 
-	@file_put_contents(PATH_LOGS . "debug.log", $text, FILE_APPEND);
+	File::init(PATH_LOGS, "debug.log")->write($text, true);
 }
 
 // получаем доменное имя

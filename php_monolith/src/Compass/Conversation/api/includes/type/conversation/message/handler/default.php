@@ -25,7 +25,8 @@ use CompassApp\Domain\User\Main;
  */
 class Type_Conversation_Message_Handler_Default {
 
-	use Type_Conversation_Message_Handler_Indexation; // трейт для работы с индексацией сообщений
+	// трейт для работы с индексацией сообщений
+	use Type_Conversation_Message_Handler_Indexation;
 
 	// версия класса для работы с сообщением
 	protected const _CURRENT_HANDLER_VERSION = 0;
@@ -247,6 +248,7 @@ class Type_Conversation_Message_Handler_Default {
 	public const SYSTEM_MESSAGE_USER_ADD_GROUP                  = "user_add_group";
 	public const SYSTEM_MESSAGE_ADMIN_CHANGED_GROUP_DESCRIPTION = "admin_changed_group_description";
 	public const SYSTEM_MESSAGE_ADMIN_CHANGED_GROUP_AVATAR      = "admin_changed_group_avatar";
+	public const SYSTEM_MESSAGE_ADMIN_CHANGED_CHANNEL_OPTION    = "admin_changed_channel_option";
 
 	/*
 	 * метод изменяет поля в сообщении, которые отвечают за его идентификацию в рамках системы.
@@ -568,6 +570,22 @@ class Type_Conversation_Message_Handler_Default {
 		return $message;
 	}
 
+	// системное сообщение о том что администратор сменил тип группы для канала
+	public static function makeSystemChannelOptionChanged(int $user_id, int $is_channel):array {
+
+		$message = self::_getDefaultStructure(CONVERSATION_MESSAGE_TYPE_SYSTEM, 0, "", self::SYSTEM_PLATFORM);
+
+		$message["data"]["system_message_type"] = self::SYSTEM_MESSAGE_ADMIN_CHANGED_CHANNEL_OPTION;
+		$message["data"]["extra"]               = [
+			"user_id"    => $user_id,
+			"is_channel" => $is_channel,
+		];
+
+		$message["action_users_list"][] = $user_id;
+
+		return $message;
+	}
+
 	// это системное сообщение о смене администратором аватарки группы?
 	public static function isMessageSystemAdminChangedAvatar(array $message):bool {
 
@@ -613,14 +631,15 @@ class Type_Conversation_Message_Handler_Default {
 
 	// создать сообщение типа "конференция"
 	public static function makeMediaConference(int $sender_user_id, string $conference_id, string $conference_accept_status
-		, string $conference_link, string $conference_code, string $platform = self::WITHOUT_PLATFORM):array {
+		, string                                 $conference_link, string $conference_code, int $opponent_user_id, string $platform = self::WITHOUT_PLATFORM):array {
 
-		$message                          = self::_getDefaultStructure(
+		$message                                     = self::_getDefaultStructure(
 			CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE, $sender_user_id, "", $platform);
-		$message["data"]["conference_id"] = $conference_id;
+		$message["data"]["conference_id"]            = $conference_id;
 		$message["data"]["conference_accept_status"] = $conference_accept_status;
 		$message["data"]["conference_link"]          = $conference_link;
 		$message["data"]["conference_code"]          = $conference_code;
+		$message["data"]["opponent_user_id"]         = $opponent_user_id;
 
 		return $message;
 	}
@@ -693,7 +712,7 @@ class Type_Conversation_Message_Handler_Default {
 	}
 
 	// создать сообщение тип "сообщение-Напоминание"
-	public static function makeSystemBotRemind(int $sender_user_id, string $text, string $client_message_id, array $quoted_message_list, int $recipient_message_sender_id):array {
+	public static function makeSystemBotRemind(int $sender_user_id, string $text, string $client_message_id, array $quoted_message_list, int $recipient_message_sender_id, int $remind_creator_user_id):array {
 
 		// проверяем что можем процитировать сообщения
 		foreach ($quoted_message_list as $v) {
@@ -704,6 +723,7 @@ class Type_Conversation_Message_Handler_Default {
 		$message["data"]["text"]  = $text;
 		$message["data"]["extra"] = [
 			"recipient_message_sender_id" => $recipient_message_sender_id,
+			"remind_creator_user_id"      => $remind_creator_user_id,
 		];
 
 		// обновляем поле file_uid процитированным файлам
@@ -733,6 +753,18 @@ class Type_Conversation_Message_Handler_Default {
 		}
 
 		return (int) ($message["data"]["extra"]["recipient_message_sender_id"] ?? 0);
+	}
+	/**
+	 * достаём создателя Напоминания
+	 */
+	public static function getRemindCreatorUserId(array $message):int {
+
+		// если это не сообщение-Напоминание
+		if (!self::isSystemBotRemind($message)) {
+			return 0;
+		}
+
+		return (int) ($message["data"]["extra"]["remind_creator_user_id"] ?? 0);
 	}
 
 	/**
@@ -1666,36 +1698,37 @@ class Type_Conversation_Message_Handler_Default {
 
 		return match ($message["type"]) {
 
-			CONVERSATION_MESSAGE_TYPE_FILE => match (\CompassApp\Pack\File::getFileType($message["data"]["file_map"])) {
+			CONVERSATION_MESSAGE_TYPE_FILE                                            => match (\CompassApp\Pack\File::getFileType($message["data"]["file_map"])) {
 
-				FILE_TYPE_IMAGE => $push_locale->setType(Body::MESSAGE_IMAGE),
-				FILE_TYPE_VIDEO => $push_locale->setType(Body::MESSAGE_VIDEO),
-				FILE_TYPE_AUDIO => $push_locale->setType(Body::MESSAGE_AUDIO),
+				FILE_TYPE_IMAGE    => $push_locale->setType(Body::MESSAGE_IMAGE),
+				FILE_TYPE_VIDEO    => $push_locale->setType(Body::MESSAGE_VIDEO),
+				FILE_TYPE_AUDIO    => $push_locale->setType(Body::MESSAGE_AUDIO),
 				FILE_TYPE_DOCUMENT => $push_locale->setType(Body::MESSAGE_DOCUMENT),
-				FILE_TYPE_ARCHIVE => $push_locale->setType(Body::MESSAGE_ARCHIVE),
-				FILE_TYPE_VOICE => $push_locale->setType(Body::MESSAGE_VOICE),
-				default => $push_locale->setType(Body::MESSAGE_FILE),
+				FILE_TYPE_ARCHIVE  => $push_locale->setType(Body::MESSAGE_ARCHIVE),
+				FILE_TYPE_VOICE    => $push_locale->setType(Body::MESSAGE_VOICE),
+				default            => $push_locale->setType(Body::MESSAGE_FILE),
 			},
-			CONVERSATION_MESSAGE_TYPE_INVITE => $push_locale->setType(Body::MESSAGE_INVITE),
-			CONVERSATION_MESSAGE_TYPE_QUOTE, CONVERSATION_MESSAGE_TYPE_MASS_QUOTE => match ($message["data"]["text"]) {
+			CONVERSATION_MESSAGE_TYPE_INVITE                                          => $push_locale->setType(Body::MESSAGE_INVITE),
+			CONVERSATION_MESSAGE_TYPE_QUOTE, CONVERSATION_MESSAGE_TYPE_MASS_QUOTE     => match ($message["data"]["text"]) {
 
-				"" => $push_locale->setType(Body::MESSAGE_QUOTE),
+				""      => $push_locale->setType(Body::MESSAGE_QUOTE),
 				default => $push_locale->setType(Message::MESSAGE_UNKNOWN)->addArg($message["data"]["text"]),
 			},
 			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST, CONVERSATION_MESSAGE_TYPE_REPOST => match ($message["data"]["text"]) {
 
-				"" => $push_locale->setType(Body::MESSAGE_REPOST),
+				""      => $push_locale->setType(Body::MESSAGE_REPOST),
 				default => $push_locale->setType(Message::MESSAGE_UNKNOWN)->addArg($message["data"]["text"]),
 			},
-			CONVERSATION_MESSAGE_TYPE_SYSTEM => $push_locale->setType(Body::MESSAGE_SYSTEM),
-			CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST => $push_locale->setType(Body::MESSAGE_HIRING),
-			CONVERSATION_MESSAGE_TYPE_DISMISSAL_REQUEST => $push_locale->setType(Body::MESSAGE_DISMISSAL),
-			CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_ANNIVERSARY => $push_locale->setType(Body::MESSAGE_EDITOR_EMPLOYEE_ANNIVERSARY),
-			CONVERSATION_MESSAGE_TYPE_COMPANY_EMPLOYEE_METRIC_STATISTIC => $push_locale->setType(Body::MESSAGE_COMPANY_EMPLOYEE_METRIC_STATISTIC),
-			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_RATING => $push_locale->setType(Body::MESSAGE_SYSTEM_BOT_RATING),
-			CONVERSATION_MESSAGE_TYPE_EDITOR_WORKSHEET_RATING => $push_locale->setType(Body::MESSAGE_EDITOR_WORKSHEET_RATING),
-			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND => self::_setPushLocaleTypeForRemind($message, $push_locale),
-			default => $push_locale->setType(Message::MESSAGE_UNKNOWN)
+			CONVERSATION_MESSAGE_TYPE_SYSTEM                                          => $push_locale->setType(Body::MESSAGE_SYSTEM),
+			CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST                                  => $push_locale->setType(Body::MESSAGE_HIRING),
+			CONVERSATION_MESSAGE_TYPE_DISMISSAL_REQUEST                               => $push_locale->setType(Body::MESSAGE_DISMISSAL),
+			CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_ANNIVERSARY                     => $push_locale->setType(Body::MESSAGE_EDITOR_EMPLOYEE_ANNIVERSARY),
+			CONVERSATION_MESSAGE_TYPE_COMPANY_EMPLOYEE_METRIC_STATISTIC               => $push_locale->setType(Body::MESSAGE_COMPANY_EMPLOYEE_METRIC_STATISTIC),
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_RATING                               => $push_locale->setType(Body::MESSAGE_SYSTEM_BOT_RATING),
+			CONVERSATION_MESSAGE_TYPE_EDITOR_WORKSHEET_RATING                         => $push_locale->setType(Body::MESSAGE_EDITOR_WORKSHEET_RATING),
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND                               => self::_setPushLocaleTypeForRemind($message, $push_locale),
+			CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE                                => self::_setPushLocaleTypeForConference($message, $push_locale),
+			default                                                                   => $push_locale->setType(Message::MESSAGE_UNKNOWN)
 		};
 	}
 
@@ -1719,6 +1752,27 @@ class Type_Conversation_Message_Handler_Default {
 		return self::_setPushLocaleType($original_message, $push_locale);
 	}
 
+	/**
+	 * Устанавливаем тип сообщения для сообщения звонка о пропущенном
+	 *
+	 * @return Domain_Push_Entity_Locale_Message_Body
+	 * @throws ParseFatalException
+	 */
+	protected static function _setPushLocaleTypeForConference(array $message, Body $push_locale):Body {
+
+		if (!in_array(Type_Conversation_Message_Main::getHandler($message)::getConferenceAcceptStatus($message), ["ignored", "rejected"])) {
+			return $push_locale;
+		}
+
+		$push_text = self::_getPushText($message, false);
+
+		if ($push_text != "Пропущенный звонок") {
+			return $push_locale;
+		}
+
+		return $push_locale->setType(Body::MESSAGE_MEDIA_CONFERENCE)->addArg($push_text);
+	}
+
 	// получаем текст пуша
 	// @long
 	protected static function _getPushText(array $message, bool $is_push_hide):string {
@@ -1738,7 +1792,7 @@ class Type_Conversation_Message_Handler_Default {
 					return "Сообщение";
 				}
 
-				if (str_contains($message["data"]["text"], "[\"#\"|\"security/device\"|\"Безопасность\"]")) {
+				if (str_contains($message["data"]["text"], "[\"#\"|\"security/device\"|")) {
 					return "Вход с нового устройства";
 				}
 
@@ -1750,13 +1804,13 @@ class Type_Conversation_Message_Handler_Default {
 
 				return match ($file_type) {
 
-					FILE_TYPE_IMAGE => "🖼 изображение",
-					FILE_TYPE_VIDEO => "🎥 видео",
-					FILE_TYPE_AUDIO => "🔈 аудиозапись",
+					FILE_TYPE_IMAGE    => "🖼 изображение",
+					FILE_TYPE_VIDEO    => "🎥 видео",
+					FILE_TYPE_AUDIO    => "🔈 аудиозапись",
 					FILE_TYPE_DOCUMENT => "📋 документ",
-					FILE_TYPE_ARCHIVE => "📁 архив",
-					FILE_TYPE_VOICE => "🗣 голосовое сообщение",
-					default => "📎 файл",
+					FILE_TYPE_ARCHIVE  => "📁 архив",
+					FILE_TYPE_VOICE    => "🗣 голосовое сообщение",
+					default            => "📎 файл",
 				};
 
 			case CONVERSATION_MESSAGE_TYPE_INVITE:
@@ -1808,6 +1862,9 @@ class Type_Conversation_Message_Handler_Default {
 
 				return $message["data"]["text"];
 
+			case CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE:
+				return in_array(Type_Conversation_Message_Main::getHandler($message)::getConferenceAcceptStatus($message), ["ignored", "rejected"]) ? "Пропущенный звонок" : "";
+
 			default:
 				return "";
 		}
@@ -1820,6 +1877,9 @@ class Type_Conversation_Message_Handler_Default {
 
 		// регулярка чтобы заменить ["@"|160593|"Имя"] -> "Имя"
 		$new_text = preg_replace("/\[\"(@)\"\|\d*\|\"(.*)\"]/mU", "$1$2", $text);
+
+		// регулярка чтобы заменить [smart_app <любые параметры>]отправить письмо[/smart_app] -> отправить письмо
+		$new_text = preg_replace("/\[smart_app[^]]*](.*?)\[\/smart_app]/mU", "$1", $new_text);
 
 		// если не смогли преобразовать то отдаем обычный текст
 		if ($new_text === false || is_array($new_text)) {
@@ -2335,6 +2395,19 @@ class Type_Conversation_Message_Handler_Default {
 		}
 
 		return $message["data"]["conference_id"];
+	}
+
+	// получает opponent_user_id, прикрепленного к сообщению
+	public static function getConferenceOpponentId(array $message):int {
+
+		self::_checkVersion($message);
+
+		// если сообщение не типа звонок
+		if ($message["type"] != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			throw new ParseFatalException("Trying to get opponent_user_id of message, which is not TYPE_MEDIA_CONFERENCE");
+		}
+
+		return $message["data"]["opponent_user_id"] ?? 0;
 	}
 
 	// получает статус конференции, прикрепленного к сообщению
@@ -3095,6 +3168,7 @@ class Type_Conversation_Message_Handler_Default {
 		// достаем данные из сообщения треда
 		$sender_user_id                   = Type_Thread_Message_Main::getHandler($thread_message)::getSenderUserId($thread_message);
 		$thread_message_conference_id     = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceId($thread_message);
+		$thread_message_opponent_user_id  = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceOpponentId($thread_message);
 		$thread_message_conference_status = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceAcceptStatus($thread_message);
 		$thread_message_conference_link   = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceLink($thread_message);
 		$thread_message_created_at        = Type_Thread_Message_Main::getHandler($thread_message)::getCreatedAt($thread_message);
@@ -3103,7 +3177,8 @@ class Type_Conversation_Message_Handler_Default {
 		// формируем сообщение типа call для диалога
 		$class_handler = Type_Conversation_Message_Main::getLastVersionHandler();
 		$message       = $class_handler::makeMediaConference(
-			$sender_user_id, $thread_message_conference_id, $thread_message_conference_status, $thread_message_conference_link, $platform);
+			$sender_user_id, $thread_message_conference_id, $thread_message_conference_status, $thread_message_conference_link, $thread_message_opponent_user_id, $platform
+		);
 
 		// меняем created_at на тот что был у сообщения треда
 		return self::changeCreatedAt($message, $thread_message_created_at);
@@ -3312,13 +3387,14 @@ class Type_Conversation_Message_Handler_Default {
 
 			case THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE:
 
-				$conference_id = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceId($thread_message);
-				$status        = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceAcceptStatus($thread_message);
-				$link          = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceLink($thread_message);
-				$platform      = Type_Thread_Message_Main::getHandler($thread_message)::getPlatform($thread_message);
+				$conference_id    = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceId($thread_message);
+				$opponent_user_id = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceOpponentId($thread_message);
+				$status           = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceAcceptStatus($thread_message);
+				$link             = Type_Thread_Message_Main::getHandler($thread_message)::getConferenceLink($thread_message);
+				$platform         = Type_Thread_Message_Main::getHandler($thread_message)::getPlatform($thread_message);
 
 				// преобразуем сообщение в звонок для диалога
-				$reposted_message = $last_handler_class::makeMediaConference($sender_user_id, $conference_id, $status, $link, $platform);
+				$reposted_message = $last_handler_class::makeMediaConference($sender_user_id, $conference_id, $status, $link, $opponent_user_id, $platform);
 
 				break;
 			default:
@@ -3593,7 +3669,7 @@ class Type_Conversation_Message_Handler_Default {
 	// можно ли ставить реакцию
 	// не проверяем, что сообщение скрыто пользователем ставившим реакцию, чтобы при convert горячих реакций
 	// выставлять их пользователями, скрывшими сообщение
-	public static function isAllowToReaction(array $message, int $user_id,):bool {
+	public static function isAllowToReaction(array $message, int $user_id):bool {
 
 		// если тип сообщения не позволяет ставить реакцию
 		if (!in_array($message["type"], self::_ALLOW_TO_REACTION)) {
@@ -4515,36 +4591,36 @@ class Type_Conversation_Message_Handler_Default {
 			CONVERSATION_MESSAGE_TYPE_RESPECT,
 			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_MESSAGES_MOVED_NOTIFICATION => self::_prepareText($output, $message),
 			CONVERSATION_MESSAGE_TYPE_FILE,
-			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_FILE => self::_prepareFile($output, $message),
-			CONVERSATION_MESSAGE_TYPE_INVITE => self::_prepareInvite($output, $message),
-			CONVERSATION_MESSAGE_TYPE_QUOTE => self::_prepareQuote($output, $message),
-			CONVERSATION_MESSAGE_TYPE_MASS_QUOTE,
-			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND => self::_prepareMassQuote($output, $message),
-			CONVERSATION_MESSAGE_TYPE_REPOST => self::_prepareRepost($output, $message),
-			CONVERSATION_MESSAGE_TYPE_SYSTEM => self::_prepareSystem($output, $message),
-			CONVERSATION_MESSAGE_TYPE_DELETED => self::_prepareDeleted($output),
-			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST => self::_prepareThreadRepost($output, $message),
-			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_TEXT => self::_prepareThreadRepostItemText($output, $message),
-			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_FILE => self::_prepareThreadRepostItemFile($output, $message),
-			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_QUOTE => self::_prepareThreadRepostItemQuote($output, $message),
-			CONVERSATION_MESSAGE_TYPE_CALL => self::_prepareCall($output, $message),
-			CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE => self::_prepareMediaConference($output, $message),
-			THREAD_MESSAGE_TYPE_CONVERSATION_CALL => self::_prepareThreadRepostCall($output, $message),
-			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_RATING => self::_prepareSystemBotRating($output, $message),
-			CONVERSATION_MESSAGE_TYPE_EMPLOYEE_METRIC_DELTA => self::_prepareEmployeeMetricDelta($output, $message),
-			CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_ANNIVERSARY => self::_prepareEditorEmployeeAnniversary($output, $message),
-			CONVERSATION_MESSAGE_TYPE_EMPLOYEE_ANNIVERSARY => self::_prepareEmployeeAnniversary($output, $message),
-			CONVERSATION_MESSAGE_TYPE_EDITOR_FEEDBACK_REQUEST => self::_prepareEditorFeedbackRequest($output, $message),
-			CONVERSATION_MESSAGE_TYPE_EDITOR_WORKSHEET_RATING => self::_prepareEditorWorksheetRating($output, $message),
-			CONVERSATION_MESSAGE_TYPE_COMPANY_EMPLOYEE_METRIC_STATISTIC => self::_prepareCompanyEmployeeMetricStatistic($output, $message),
-			CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_METRIC_NOTICE => self::_prepareEditorEmployeeMetricNotice($output, $message),
-			CONVERSATION_MESSAGE_TYPE_WORK_TIME_AUTO_LOG_NOTICE => self::_prepareWorkTimeAutoLogNotice($output, $message),
-			CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST => self::_prepareHiringRequest($output, $message),
-			CONVERSATION_MESSAGE_TYPE_DISMISSAL_REQUEST => self::_prepareDismissalRequest($output, $message),
-			CONVERSATION_MESSAGE_TYPE_INVITE_TO_COMPANY_INVITER_SINGLE => self::_prepareInviteToCompanyInviterSingle($output, $message),
-			CONVERSATION_MESSAGE_TYPE_SHARED_MEMBER => self::_prepareSharedMember($output, $message),
-			THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE => self::_prepareThreadRepostMediaConference($output, $message),
-			default => throw new ParseFatalException(
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_FILE                        => self::_prepareFile($output, $message),
+			CONVERSATION_MESSAGE_TYPE_INVITE                                 => self::_prepareInvite($output, $message),
+			CONVERSATION_MESSAGE_TYPE_QUOTE                                  => self::_prepareQuote($output, $message),
+			CONVERSATION_MESSAGE_TYPE_MASS_QUOTE                             => self::_prepareMassQuote($output, $message),
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND                      => self::_prepareSystemBotRemind($output, $message),
+			CONVERSATION_MESSAGE_TYPE_REPOST                                 => self::_prepareRepost($output, $message),
+			CONVERSATION_MESSAGE_TYPE_SYSTEM                                 => self::_prepareSystem($output, $message),
+			CONVERSATION_MESSAGE_TYPE_DELETED                                => self::_prepareDeleted($output),
+			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST                          => self::_prepareThreadRepost($output, $message),
+			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_TEXT                => self::_prepareThreadRepostItemText($output, $message),
+			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_FILE                => self::_prepareThreadRepostItemFile($output, $message),
+			CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_QUOTE               => self::_prepareThreadRepostItemQuote($output, $message),
+			CONVERSATION_MESSAGE_TYPE_CALL                                   => self::_prepareCall($output, $message),
+			CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE                       => self::_prepareMediaConference($output, $message),
+			THREAD_MESSAGE_TYPE_CONVERSATION_CALL                            => self::_prepareThreadRepostCall($output, $message),
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_RATING                      => self::_prepareSystemBotRating($output, $message),
+			CONVERSATION_MESSAGE_TYPE_EMPLOYEE_METRIC_DELTA                  => self::_prepareEmployeeMetricDelta($output, $message),
+			CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_ANNIVERSARY            => self::_prepareEditorEmployeeAnniversary($output, $message),
+			CONVERSATION_MESSAGE_TYPE_EMPLOYEE_ANNIVERSARY                   => self::_prepareEmployeeAnniversary($output, $message),
+			CONVERSATION_MESSAGE_TYPE_EDITOR_FEEDBACK_REQUEST                => self::_prepareEditorFeedbackRequest($output, $message),
+			CONVERSATION_MESSAGE_TYPE_EDITOR_WORKSHEET_RATING                => self::_prepareEditorWorksheetRating($output, $message),
+			CONVERSATION_MESSAGE_TYPE_COMPANY_EMPLOYEE_METRIC_STATISTIC      => self::_prepareCompanyEmployeeMetricStatistic($output, $message),
+			CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_METRIC_NOTICE          => self::_prepareEditorEmployeeMetricNotice($output, $message),
+			CONVERSATION_MESSAGE_TYPE_WORK_TIME_AUTO_LOG_NOTICE              => self::_prepareWorkTimeAutoLogNotice($output, $message),
+			CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST                         => self::_prepareHiringRequest($output, $message),
+			CONVERSATION_MESSAGE_TYPE_DISMISSAL_REQUEST                      => self::_prepareDismissalRequest($output, $message),
+			CONVERSATION_MESSAGE_TYPE_INVITE_TO_COMPANY_INVITER_SINGLE       => self::_prepareInviteToCompanyInviterSingle($output, $message),
+			CONVERSATION_MESSAGE_TYPE_SHARED_MEMBER                          => self::_prepareSharedMember($output, $message),
+			THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE                => self::_prepareThreadRepostMediaConference($output, $message),
+			default                                                          => throw new ParseFatalException(
 				__CLASS__ . ": unsupported message type = $message_type"
 			),
 		};
@@ -4668,6 +4744,15 @@ class Type_Conversation_Message_Handler_Default {
 
 		$output["text"]                   = $message["data"]["text"];
 		$output["data"]["quoted_message"] = Type_Conversation_Message_Main::getHandler($quoted_message)::prepareForFormatLegacy($quoted_message);
+
+		return $output;
+	}
+
+	// готовим сообщение-напоминание от бота
+	protected static function _prepareSystemBotRemind(array $output, array $message):array {
+
+		$output                                   = self::_prepareMassQuote($output, $message);
+		$output["data"]["remind_creator_user_id"] = Type_Conversation_Message_Main::getHandler($message)::getRemindCreatorUserId($message);
 
 		return $output;
 	}
@@ -4835,6 +4920,14 @@ class Type_Conversation_Message_Handler_Default {
 				$output["data"]["extra"]["user_id"]    = $message["data"]["extra"]["user_id"];
 				$output["data"]["extra"]["file_map"]   = $message["data"]["extra"]["file_map"];
 				break;
+			case self::SYSTEM_MESSAGE_ADMIN_CHANGED_CHANNEL_OPTION:
+
+				$output["text"] = "[{$message["data"]["extra"]["user_id"]}] changed is_channel group option";
+
+				$output["data"]["system_message_type"] = self::SYSTEM_MESSAGE_ADMIN_CHANGED_CHANNEL_OPTION;
+				$output["data"]["extra"]["user_id"]    = $message["data"]["extra"]["user_id"];
+				$output["data"]["extra"]["is_channel"] = $message["data"]["extra"]["is_channel"];
+				break;
 		}
 
 		return $output;
@@ -4934,7 +5027,7 @@ class Type_Conversation_Message_Handler_Default {
 	// готовим сообщение типа CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE
 	protected static function _prepareMediaConference(array $output, array $message):array {
 
-		$output["data"]["conference_id"] = $message["data"]["conference_id"];
+		$output["data"]["conference_id"]            = $message["data"]["conference_id"];
 		$output["data"]["conference_accept_status"] = $message["data"]["conference_accept_status"];
 		$output["data"]["conference_link"]          = $message["data"]["conference_link"];
 		$output["data"]["conference_code"]          = $message["data"]["conference_code"] ?? "";
@@ -4963,7 +5056,7 @@ class Type_Conversation_Message_Handler_Default {
 	// готовим сообщение типа THREAD_MESSAGE_TYPE_CONVERSATION_CALL
 	protected static function _prepareThreadRepostMediaConference(array $output, array $message):array {
 
-		$output["data"]["conference_id"] = $message["data"]["conference_id"];
+		$output["data"]["conference_id"]            = $message["data"]["conference_id"];
 		$output["data"]["conference_accept_status"] = $message["data"]["conference_accept_status"];
 		$output["data"]["conference_link"]          = $message["data"]["conference_link"];
 		$output["data"]["conference_code"]          = $message["data"]["conference_code"];

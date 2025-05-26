@@ -119,12 +119,11 @@ class Domain_User_Scenario_Api {
 
 		$device_id = getDeviceId();
 		$platform  = Type_Api_Platform::getPlatform();
-		$token     = COMPANY_ID . ":" . generateUUID();
 
 		try {
 
 			Domain_User_Entity_Validator::assertLoggedIn($user_id);
-			$ws_connection_info = Gateway_Bus_Sender::setToken($user_id, $token, $device_id, $platform);
+			$ws_connection_info = Gateway_Bus_Sender::setToken($user_id, $device_id, $platform);
 		} catch (cs_TalkingBadResponse) {
 			throw new ParamException("Failed to connect");
 		}
@@ -158,16 +157,20 @@ class Domain_User_Scenario_Api {
 			Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY,
 			Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY,
 			Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS,
+			Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING,
 			Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING,
 			Domain_Company_Entity_Config::MEMBER_COUNT,
+			Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS,
 		]);
 
 		// достаём значения
-		$config["is_push_body_display"]                 = $config_list[Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY]["value"];
-		$config["is_extended_employee_card_enabled"]    = $config_list[Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY]["value"];
-		$config["is_general_chat_notification_enabled"] = $config_list[Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS]["value"];
-		$config["is_add_to_general_chat_on_hiring"]     = $config_list[Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING]["value"];
-		$config["member_count"]                         = $config_list[Domain_Company_Entity_Config::MEMBER_COUNT]["value"];
+		$config["is_push_body_display"]                  = $config_list[Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY]["value"];
+		$config["is_extended_employee_card_enabled"]     = $config_list[Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY]["value"];
+		$config["is_general_chat_notification_enabled"]  = $config_list[Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS]["value"];
+		$config["is_add_to_general_chat_on_hiring"]      = $config_list[Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING]["value"];
+		$config["member_count"]                          = $config_list[Domain_Company_Entity_Config::MEMBER_COUNT]["value"];
+		$config["show_message_read_status"]              = $config_list[Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS]["value"];
+		$config["is_unlimited_messages_editing_enabled"] = $config_list[Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING]["value"];
 
 		return $config;
 	}
@@ -221,9 +224,9 @@ class Domain_User_Scenario_Api {
 
 			// если имеется device_id, то удаляем устройство из списка тех, которые могут получать пуши, если это не электрон(им пуши не нужны)
 			if ($device_id !== "" && Type_Api_Platform::getPlatform() != Type_Api_Platform::PLATFORM_ELECTRON) {
-				Domain_User_Action_Notifications_DeleteDevice::do($user_id, $device_id );
+				Domain_User_Action_Notifications_DeleteDevice::do($user_id, $device_id);
 			}
-		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty | \cs_SessionNotFound) {
+		} catch (cs_UserNotLoggedIn|\cs_RowIsEmpty|\cs_SessionNotFound) {
 			// просто ничего не делаем
 		}
 

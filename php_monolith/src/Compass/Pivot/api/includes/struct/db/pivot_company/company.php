@@ -54,4 +54,26 @@ class Struct_Db_PivotCompany_Company {
 			$domino_entrypoint_config[$domino_id]["template_public_company_url"]
 		);
 	}
+
+	/**
+	 * Формирует ссылку для редиректа ссылок в чате.
+	 */
+	public function getPublicRedirectUrl():string {
+
+		$domino_entrypoint_config = getConfig("DOMINO_ENTRYPOINT");
+
+		if (!isset($domino_entrypoint_config[$this->domino_id])) {
+			return "{$this->url}/redirect";
+		}
+
+		if (!isset($domino_entrypoint_config[$this->domino_id]["template_redirect_company_url"])) {
+			return "{$this->url}/redirect";
+		}
+
+		return str_replace(
+			["{company_id}", "{domino_id}", "{domino_url}"],
+			[(string) $this->company_id, $this->domino_id, $domino_entrypoint_config[$this->domino_id]["public_url"]],
+			$domino_entrypoint_config[$this->domino_id]["template_redirect_company_url"]
+		);
+	}
 }

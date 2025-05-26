@@ -6,7 +6,7 @@ timeout=100
 envsubst < /app/src/Compass/Announcement/private/custom.local.php > /app/src/Compass/Announcement/private/custom.php
 envsubst < /app/src/Compass/Announcement/private/main.local.php > /app/src/Compass/Announcement/private/main.php
 
-while ! mysqladmin ping -h "${MYSQL_HOST}" -P ${MYSQL_PORT} --silent; do
+while ! mariadb-admin ping -h "${MYSQL_HOST}" -P ${MYSQL_PORT} --silent --skip-ssl; do
 
     echo "Ждем mysql host ${MYSQL_HOST} port ${MYSQL_PORT}"
     sleep 1

@@ -13,4 +13,5 @@ class Domain_Conversation_Action_Config_Get {
 
 		return $config->get($key);
 	}
+
 }

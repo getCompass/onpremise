@@ -4,9 +4,11 @@ namespace Compass\Conversation;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
 use BaseFrame\Exception\Gateway\RowNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Server\ServerProvider;
+use CompassApp\Pack\Message\Conversation;
 
 /**
  * Класс обработки сценариев сокет событий
@@ -542,7 +544,7 @@ class Domain_Conversation_Scenario_Socket {
 
 		// формируем структуру сообщения-Напоминания
 		$remind_message = Type_Conversation_Message_Main::getLastVersionHandler()::makeSystemBotRemind(
-			$sender_user_id, $comment, generateUUID(), [$message], $recipient_message_sender_id
+			$sender_user_id, $comment, generateUUID(), [$message], $recipient_message_sender_id, $remind->creator_user_id
 		);
 
 		// добавляем упомянутых к сообщению
@@ -808,5 +810,24 @@ class Domain_Conversation_Scenario_Socket {
 		}
 
 		Type_Conversation_Support::sendDeviceLoginSuccess($conversation_map, $login_type, $device_name, $app_version, $server_version, $locale);
+	}
+
+	/**
+	 * Проверяем является ли пользователь участником диалога
+	 *
+	 * @throws ParamException
+	 */
+	public static function checkIsUserMember(int $user_id, string $conversation_key):bool {
+
+		try {
+			$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
+		} catch (\Exception) {
+			return false;
+		}
+
+		// получаем мету диалога
+		$meta_row = Type_Conversation_Meta::get($conversation_map);
+
+		return Type_Conversation_Meta_Users::isMember($user_id, $meta_row["users"]);
 	}
 }

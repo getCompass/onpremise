@@ -22,7 +22,7 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 		"getAvatarBatching",
 	];
 
-	protected const _MAX_FILES_COUNT = 100;     // максимальное количество файлов в запросе
+	protected const _MAX_FILES_COUNT = 150;     // максимальное количество файлов в запросе
 
 	// -------------------------------------------------------
 	// WORK METHODS

@@ -3,9 +3,15 @@
 namespace Compass\Conversation;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
 use BaseFrame\Exception\Request\CaseException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\PaymentRequiredException;
+use CompassApp\Domain\Member\Entity\Permission;
+use CompassApp\Domain\Member\Exception\ActionNotAllowed;
+use CompassApp\Domain\Member\Exception\UserIsGuest;
 
 /**
  * контроллер, отвечающий за подгрузку ленты сообщений
@@ -20,6 +26,7 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 		"getBatchingMessages",
 		"getBatchingReactions",
 		"getBatchingThreads",
+		"getMessageReadParticipants",
 	];
 
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
@@ -269,7 +276,7 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 		$message_map = \CompassApp\Pack\Message::tryDecrypt($message_key);
 
 		try {
-			Domain_Conversation_Feed_Scenario_Api::readMessage($this->user_id, $message_map);
+			Domain_Conversation_Feed_Scenario_Api::readMessage($this->user_id, $this->role, $this->permissions, $message_map);
 		} catch (Domain_Conversation_Exception_User_IsNotMember) {
 			throw new CaseException(2218001, "User is not conversation member");
 		} catch (Domain_Conversation_Exception_Message_IsNotRead) {
@@ -280,14 +287,53 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 
 		return $this->ok();
 	}
-	
+
+	/**
+	 * Получить список прочитавших сообщение
+	 *
+	 * @return array
+	 * @throws BusFatalException
+	 * @throws CaseException
+	 * @throws ControllerMethodNotFoundException
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws QueryFatalException
+	 * @throws \cs_DecryptHasFailed
+	 * @throws \cs_RowIsEmpty
+	 * @throws \cs_UnpackHasFailed
+	 * @throws \paramException
+	 */
+	public function getMessageReadParticipants():array {
+
+		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key");
+		$message_map = \CompassApp\Pack\Message::tryDecrypt($message_key);
+
+		try {
+			[$read_participants, $read_participant_count] = Domain_Conversation_Feed_Scenario_Api::getMessageReadParticipants(
+				$this->user_id, $message_map, $this->role, $this->method_version);
+		} catch (Domain_Conversation_Exception_User_IsNotMember) {
+			throw new CaseException(2218001, "User is not conversation member");
+		} catch (ActionNotAllowed|UserIsGuest|Domain_Member_Exception_ActionNotAllowed) {
+			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Conversation_Exception_Message_IsNotFromConversation) {
+			throw new ParamException("message is not from conversation");
+		} catch (Domain_Conversation_Exception_Message_ExpiredForGetReadParticipants) {
+			return $this->error(2218012, "message sent 2 weeks ago");
+		}
+
+		return $this->ok([
+			"message_read_participants"      => (array) $read_participants,
+			"message_read_participant_count" => (int) $read_participant_count,
+		]);
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------
 
 	/**
 	 * подготавливаем параметры для батчинга
-	 * 
+	 *
 	 * @throws ParamException
 	 * @throws \paramException
 	 */

@@ -89,6 +89,8 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		"deletePreviewList",
 		"hidePreviewList",
 		"sendDeviceLoginSuccess",
+		"checkIsUserMember",
+		"getConversationTypeList",
 	];
 
 	// -------------------------------------------------------
@@ -186,6 +188,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		$link             = $this->post(\Formatter::TYPE_STRING, "link");
 		$conference_code  = $this->post(\Formatter::TYPE_STRING, "conference_code");
 		$platform         = $this->post(\Formatter::TYPE_STRING, "platform", Type_Conversation_Message_Handler_Default::WITHOUT_PLATFORM);
+		$opponent_user_id = $this->post(\Formatter::TYPE_INT, "opponent_user_id");
 
 		// получаем мету диалога
 		$meta_row = Type_Conversation_Meta::get($conversation_map);
@@ -201,7 +204,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 
 		// формируем сообщение
 		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeMediaConference(
-			$this->user_id, $conference_id, $status, $link, $conference_code, $platform
+			$this->user_id, $conference_id, $status, $link, $conference_code, $opponent_user_id, $platform
 		);
 
 		try {
@@ -2498,7 +2501,8 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		// читаем диалог
 		try {
 
-			Domain_Conversation_Scenario_Api::doRead($this->user_id, $conversation_map, $message_map, $user_local_date, $user_local_time);
+			$member_info = Gateway_Bus_CompanyCache::getMember($this->user_id);
+			Domain_Conversation_Scenario_Api::doRead($member_info->user_id, $member_info->role, $member_info->permissions, $conversation_map, $message_map, $user_local_date, $user_local_time);
 		} catch (cs_LeftMenuRowIsNotExist) {
 			throw new ParamException("action is not allowed");
 		}
@@ -2725,6 +2729,7 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		try {
 			Domain_Conversation_Scenario_Socket::sendRemindMessage($message_map, $comment);
 		} catch (cs_Message_IsDeleted|Domain_Remind_Exception_AlreadyRemoved) {
+
 			// обработчик события не смог отправить сообщение - ничего не делаем в случае ошибки
 		} catch (cs_Message_IsTooLong) {
 
@@ -2829,6 +2834,47 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		return $this->ok();
 	}
 
+	/**
+	 * Проверяем является ли пользователь участником диалога
+	 *
+	 * @throws ParamException
+	 */
+	public function checkIsUserMember():array {
+
+		$user_id          = $this->post(\Formatter::TYPE_INT, "user_id");
+		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key");
+
+		$is_member = Domain_Conversation_Scenario_Socket::checkIsUserMember($user_id, $conversation_key);
+
+		return $this->ok([
+			"is_member" => (int) $is_member,
+		]);
+	}
+
+	/**
+	 * Получить типы чатов
+	 *
+	 * @return array
+	 * @throws ParamException
+	 * @throws \cs_DecryptHasFailed
+	 * @throws \cs_UnpackHasFailed
+	 */
+	public function getConversationTypeList():array {
+
+		$conversation_map_list = $this->post(\Formatter::TYPE_ARRAY, "conversation_map_list");
+
+		$meta_row_list = Gateway_Db_CompanyConversation_ConversationMeta::getAll($conversation_map_list);
+
+		$output = [];
+
+		foreach ($meta_row_list as $meta_row) {
+			$output[$meta_row->conversation_map] = $meta_row->type;
+		}
+
+		return $this->ok([
+			"conversation_type_list" => (array) $output,
+		]);
+	}
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------
@@ -2882,11 +2928,11 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		$exception_class = get_class($e);
 		$allow_status    = match ($exception_class) {
 
-			cs_Conversation_MemberIsDisabled::class                    => Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DISABLED,
+			cs_Conversation_MemberIsDisabled::class => Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DISABLED,
 			Domain_Conversation_Exception_User_IsAccountDeleted::class => Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DELETED,
-			cs_Conversation_UserbotIsDisabled::class                   => Type_Conversation_Utils::ALLOW_STATUS_USERBOT_IS_DISABLED,
-			cs_Conversation_UserbotIsDeleted::class                    => Type_Conversation_Utils::ALLOW_STATUS_USERBOT_IS_DELETED,
-			default                                                    => throw new ParseFatalException(__METHOD__ . ": passed unhandled exception class"),
+			cs_Conversation_UserbotIsDisabled::class => Type_Conversation_Utils::ALLOW_STATUS_USERBOT_IS_DISABLED,
+			cs_Conversation_UserbotIsDeleted::class => Type_Conversation_Utils::ALLOW_STATUS_USERBOT_IS_DELETED,
+			default => throw new ParseFatalException(__METHOD__ . ": passed unhandled exception class"),
 		};
 
 		return $this->error(10010, "single conversations is blocked", [

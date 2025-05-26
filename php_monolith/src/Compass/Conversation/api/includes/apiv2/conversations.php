@@ -39,7 +39,7 @@ class Apiv2_Conversations extends \BaseFrame\Controller\Api {
 
 			$conversation_map_list = $this->_tryDecryptConversationKeyList($conversation_key_list);
 			[$prepared_conversation_meta_list, $not_allowed_conversation_map_list, $users] = Domain_Conversation_Scenario_Apiv2::get(
-				$this->user_id, $conversation_map_list, $this->extra["space"]["is_restricted_access"]
+				$this->user_id, $conversation_map_list, $this->extra["space"]["is_restricted_access"], $this->role, $this->permissions
 			);
 		} catch (cs_IncorrectConversationMapList) {
 			throw new ParamException("Passed conversation_key_list biggest than max");

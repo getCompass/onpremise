@@ -132,7 +132,7 @@ class Gateway_Socket_Conversation {
 	 * @throws \cs_SocketRequestIsFailed
 	 * @throws cs_CompanyIsHibernate
 	 */
-	public static function addMediaConferenceMessage(Struct_Db_PivotCompany_Company $space, int $user_id, string $conversation_map, string $conference_id, string $status, string $link, string $conference_code):void {
+	public static function addMediaConferenceMessage(Struct_Db_PivotCompany_Company $space, int $user_id, string $conversation_map, string $conference_id, string $status, string $link, string $conference_code, int $opponent_user_id):void {
 
 		// формируем параметры для запроса
 		$params = [
@@ -141,6 +141,7 @@ class Gateway_Socket_Conversation {
 			"status"           => $status,
 			"link"             => $link,
 			"conference_code"  => $conference_code,
+			"opponent_user_id" => $opponent_user_id,
 		];
 
 		[$status, $response] = self::_call(

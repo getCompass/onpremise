@@ -2,9 +2,16 @@
 
 namespace Compass\Thread;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
 use BaseFrame\Exception\Request\CaseException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Permission;
+use CompassApp\Domain\Member\Exception\ActionNotAllowed;
+use CompassApp\Domain\Member\Exception\UserIsGuest;
 
 /**
  * Контроллер, отвечающий за подгрузку ленты сообщений в треде
@@ -14,6 +21,7 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 	public const ALLOW_METHODS = [
 		"getMessages",
 		"repost",
+		"getMessageReadParticipants",
 	];
 
 	/**
@@ -48,6 +56,7 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Сделать репост
+	 * Версия метода 3
 	 *
 	 * @throws CaseException
 	 * @throws ParamException
@@ -86,16 +95,16 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 		try {
 
 			[$source_map, $message_map_list] = match ($source_type) {
-				Domain_Thread_Entity_Repost::REPOST_FROM_CONVERSATION_TYPE                                                             => $this->_decryptConversationMessageList($source_key, $source_message_key_list),
+				Domain_Thread_Entity_Repost::REPOST_FROM_CONVERSATION_TYPE => $this->_decryptConversationMessageList($source_key, $source_message_key_list),
 				Domain_Thread_Entity_Repost::REPOST_FROM_THREAD_TYPE, Domain_Thread_Entity_Repost::REPOST_FROM_THREAD_WITH_PARENT_TYPE =>
 				$this->_decryptThreadMessageList($source_key, $source_message_key_list),
-				default                                                                                                                => throw new ParamException("unknown source type"),
+				default => throw new ParamException("unknown source type"),
 			};
 
 			Domain_Member_Entity_Permission::check($this->user_id, $this->method_version, Permission::IS_REPOST_MESSAGE_ENABLED);
 
 			[$thread_meta, $message_list] = Domain_Thread_Scenario_Feed_Api::addRepost(
-				$this->user_id, $source_type, $source_map, $receiver_thread_map, $message_map_list, $text, $client_message_id, $platform);
+				$this->user_id, $source_type, $source_map, $receiver_thread_map, $message_map_list, $text, $client_message_id, $platform, $this->method_version);
 		} catch (Domain_Thread_Exception_Message_IsDuplicated) {
 			throw new ParamException("Passed duplicated message in repost");
 		} catch (cs_Message_DuplicateClientMessageId) {
@@ -134,6 +143,8 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 			throw new ParamException("cant repost respect message");
 		} catch (Domain_Member_Exception_ActionNotAllowed) {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 
 		foreach ($message_list as $message) {
@@ -143,6 +154,46 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 		return $this->ok([
 			"thread_meta"  => (object) Apiv1_Format::threadMeta($thread_meta),
 			"message_list" => (array) $output,
+		]);
+	}
+
+	/**
+	 * Получить список прочитавших сообщение
+	 *
+	 * @return array
+	 * @throws BusFatalException
+	 * @throws CaseException
+	 * @throws ControllerMethodNotFoundException
+	 * @throws ParamException
+	 * @throws QueryFatalException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \cs_RowIsEmpty
+	 * @throws \paramException
+	 * @throws \parseException
+	 * @throws cs_Conversation_IsBlockedOrDisabled
+	 */
+	public function getMessageReadParticipants():array {
+
+		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key");
+		$message_map = \CompassApp\Pack\Message::tryDecrypt($message_key);
+
+		try {
+			[$read_participants, $read_participant_count] = Domain_Thread_Scenario_Feed_Api::getMessageReadParticipants(
+				$this->user_id, $message_map, $this->role, $this->method_version);
+		} catch (cs_Thread_UserNotMember|cs_Message_HaveNotAccess|Gateway_Socket_Exception_Conversation_UserIsNotMember) {
+			return $this->error(2229002, "You are not allow to do this action");
+		} catch (ActionNotAllowed|UserIsGuest|Domain_Member_Exception_ActionNotAllowed) {
+			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Thread_Exception_Message_IsNotFromThread) {
+			throw new ParamException("not thread message key");
+		} catch (Domain_Thread_Exception_Message_ExpiredForGetReadParticipants) {
+			return $this->error(2229010, "message sent 2 weeks ago");
+		}
+
+		return $this->ok([
+			"message_read_participants"      => (array) $read_participants,
+			"message_read_participant_count" => (int) $read_participant_count,
 		]);
 	}
 

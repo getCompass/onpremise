@@ -31,6 +31,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	public const ALLOW_CONTROLLERS = [
 		"threads.feed",
 		"threads.remind",
+		"threads",
 	];
 
 	/**

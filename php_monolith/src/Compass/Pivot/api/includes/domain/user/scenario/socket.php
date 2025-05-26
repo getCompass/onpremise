@@ -549,6 +549,11 @@ class Domain_User_Scenario_Socket {
 			return;
 		}
 
+		// в неактивных компаниях статистику не инкрементим
+		if ($space->status !== Domain_Company_Entity_Company::COMPANY_STATUS_ACTIVE) {
+			return;
+		}
+
 		Gateway_Socket_Company::incConferenceMembershipRating($space, $user_id);
 	}
 

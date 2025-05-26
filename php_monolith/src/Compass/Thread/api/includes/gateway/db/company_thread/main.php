@@ -48,4 +48,12 @@ class Gateway_Db_CompanyThread_Main {
 
 		return self::_DB_KEY;
 	}
+
+	/**
+	 * Создает подключение к базе данных
+	 */
+	protected static function _connect(string $sharding_key):\BaseFrame\Database\PDODriver {
+
+		return ShardingGateway::database($sharding_key);
+	}
 }

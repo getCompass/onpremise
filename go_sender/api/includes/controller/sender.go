@@ -112,7 +112,7 @@ func (senderController) SendEventToAll(data *request.Data) ResponseStruct {
 	eventVersionList := sender.ConvertEventVersionList(senderRequest.EventVersionList)
 
 	talking.SendEventToAll(data.Isolation, senderRequest.Event, eventVersionList, senderRequest.PushData, senderRequest.WSUsers,
-		senderRequest.Uuid, senderRequest.RoutineKey, senderRequest.IsNeedPush, senderRequest.Channel)
+		senderRequest.Uuid, senderRequest.RoutineKey, senderRequest.IsNeedPush, senderRequest.Channel, senderRequest.ExcludeUserIdList)
 
 	return Ok()
 }

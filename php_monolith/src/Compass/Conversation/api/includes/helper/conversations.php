@@ -590,7 +590,7 @@ class Helper_Conversations {
 
 			// уведомление + левое меню
 			$talking_user_item = self::_makeTalkingUserItem(
-				$user_id, $user_mute_info, $sender_user_id, $conversation_type, $message_type, $created_at, $is_mention
+				$user_id, $user_mute_info, $sender_user_id, $conversation_type, $message_type, $created_at, $is_mention, $message
 			);
 
 			$output["talking_user_list"][] = $talking_user_item;
@@ -626,7 +626,7 @@ class Helper_Conversations {
 	}
 
 	// формируем talking_user_item и добавляем в список получателей WS и push уведомлений
-	protected static function _makeTalkingUserItem(int $user_id, array $user_mute_info, int $sender_user_id, int $conversation_type, int $message_type, int $created_at, bool $is_mention):array {
+	protected static function _makeTalkingUserItem(int $user_id, array $user_mute_info, int $sender_user_id, int $conversation_type, int $message_type, int $created_at, bool $is_mention, array $message):array {
 
 		// проверяем если в муте
 		$is_need_push = !Domain_Conversation_Entity_Dynamic::isMuted($user_mute_info, $user_id, $created_at);
@@ -638,9 +638,15 @@ class Helper_Conversations {
 		if (($user_id == $sender_user_id && $message_type != CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST)
 			|| $message_type == CONVERSATION_MESSAGE_TYPE_SYSTEM
 			|| $message_type == CONVERSATION_MESSAGE_TYPE_CALL
-			|| $message_type == CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE
 			|| $conversation_type == CONVERSATION_TYPE_PUBLIC_DEFAULT) {
 			$is_need_push = 0;
+		}
+
+		// если сообщение звонка и получатель является оппонентом в звонке, то пуш нужен
+		if ($message_type == CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+
+			$opponent_user_id = Type_Conversation_Message_Main::getHandler($message)::getConferenceOpponentId($message);
+			$is_need_push     = (int) ($opponent_user_id > 0 && $opponent_user_id == $user_id);
 		}
 
 		// если сообщение-Напоминание, то пуш нужен

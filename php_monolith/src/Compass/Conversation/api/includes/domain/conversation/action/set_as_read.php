@@ -2,7 +2,9 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
 
 /**
  * Установить чат как прочитанный
@@ -13,29 +15,39 @@ class Domain_Conversation_Action_SetAsRead {
 	 * Установить чат как прочитанный
 	 *
 	 * @param int    $user_id
+	 * @param int    $member_role
+	 * @param int    $member_permissions
 	 * @param string $conversation_map
-	 * @param string $need_read_message_map
+	 * @param array  $need_read_message
 	 *
 	 * @return array
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
+	 * @throws \busException
 	 * @throws \cs_UnpackHasFailed
+	 * @throws \parseException
 	 * @throws cs_LeftMenuRowIsNotExist
 	 */
-	public static function do(int $user_id, string $conversation_map, string $need_read_message_map):array {
+	public static function do(int $user_id, int $member_role, int $member_permissions, string $conversation_map, array $need_read_message):array {
 
 		Gateway_Db_CompanyConversation_Main::beginTransaction();
 
 		// если чат пустой
-		if (mb_strlen($need_read_message_map) < 1) {
+		if ($need_read_message === []) {
 
 			$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getForUpdate($user_id, $conversation_map);
 			self::_rollbackAndThrowIfNotExistRowInLeftMenu($left_menu_row);
 
+			$was_unread = $left_menu_row["unread_count"] > 0;
+
 			// читаем сообщение
-			$left_menu_row = Domain_Conversation_Feed_Action_ReadMessage::setConversationAsRead($user_id, $need_read_message_map, $left_menu_row);
+			$left_menu_row = Domain_Conversation_Feed_Action_ReadMessage::setConversationAsRead($user_id, "", $left_menu_row);
 			Gateway_Db_CompanyConversation_Main::commitTransaction();
-			return [$left_menu_row, false];
+			return [$left_menu_row, $was_unread];
 		}
+
+		$need_read_message_map = Type_Conversation_Message_Main::getHandler($need_read_message)::getMessageMap($need_read_message);
 
 		$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getForUpdate($user_id, $conversation_map);
 		self::_rollbackAndThrowIfNotExistRowInLeftMenu($left_menu_row);
@@ -54,6 +66,10 @@ class Domain_Conversation_Action_SetAsRead {
 		$left_menu_row = Domain_Conversation_Feed_Action_ReadMessage::setConversationAsRead($user_id, $need_read_message_map, $left_menu_row);
 
 		Gateway_Db_CompanyConversation_Main::commitTransaction();
+
+		// отправляем асинхронную задачу на просмотр
+		Domain_Conversation_Action_Message_AddReadParticipant::do($left_menu_row, $need_read_message, $user_id, $member_role, $member_permissions);
+
 		return [$left_menu_row, true];
 	}
 

@@ -57,6 +57,7 @@ class Domain_Jitsi_Entity_ConferenceMember {
 			$conference_member->user_agent   = self::_prepareUserAgent($member_context->user_agent);
 			$conference_member->created_at   = time();
 			$conference_member->updated_at   = 0;
+			$conference_member->data         = Domain_Jitsi_Entity_ConferenceMember_ExtraData::init($member_context->space_id);
 
 			// обновляем запись
 			Gateway_Db_JitsiData_ConferenceMemberList::set($conference->conference_id, $member_context->member_type->value, $member_context->member_id, [
@@ -66,6 +67,7 @@ class Domain_Jitsi_Entity_ConferenceMember {
 				"user_agent"   => $conference_member->user_agent,
 				"created_at"   => $conference_member->created_at,
 				"updated_at"   => $conference_member->updated_at,
+				"data"         => $conference_member->data,
 			]);
 		}
 

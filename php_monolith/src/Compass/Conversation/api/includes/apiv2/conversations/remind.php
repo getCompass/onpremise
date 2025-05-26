@@ -2,7 +2,12 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CaseException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Permission;
 
@@ -23,17 +28,18 @@ class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Метод для создания Напоминания
+	 * Версия метода 2
 	 *
 	 * @throws CaseException
 	 * @throws ParamException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
-	 * @throws \BaseFrame\Exception\Request\BlockException
-	 * @throws \apiAccessException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws BusFatalException
+	 * @throws BlockException
+	 * @throws ControllerMethodNotFoundException
 	 * @throws \busException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \cs_UnpackHasFailed
-	 * @throws \paramException
 	 * @throws \parseException
 	 * @throws \returnException
 	 * @long try..catch разросся
@@ -48,6 +54,11 @@ class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::REMIND_CREATE);
 
 		try {
+
+			if ($this->method_version >= 2) {
+				Domain_Group_Entity_Options::checkChannelRestrictionByMessageMap($this->user_id, $message_map);
+			}
+
 			[$remind_id, $comment] = Domain_Remind_Scenario_Api::create($this->user_id, $message_map, $remind_at, $comment);
 		} catch (cs_Message_IsDeleted) {
 			throw new CaseException(2218003, "Message is deleted");
@@ -69,6 +80,8 @@ class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
 			throw new CaseException(2218008, "Time before current");
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2118002, "not enough right");
 		}
 
 		Type_User_ActionAnalytics::send($this->user_id, Type_User_ActionAnalytics::ADD_REMIND);

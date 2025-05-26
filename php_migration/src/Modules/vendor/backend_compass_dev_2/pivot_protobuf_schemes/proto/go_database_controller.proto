@@ -1,0 +1,184 @@
+syntax = "proto3";
+package databaseControllerGrpc;
+option go_package = "/database_controller";
+
+// сервис, который описывает все метод go_company
+service databaseController {
+  rpc GetStatus(GetStatusRequestStruct) returns (GetStatusResponseStruct) {}
+  rpc GetCompanyPort(GetCompanyPortRequestStruct) returns (GetCompanyPortResponseStruct) {}
+  rpc BindOnServicePort(BindOnServicePortRequestStruct) returns (BindOnServicePortResponseStruct) {}
+  rpc BeginDataCopying(BeginDataCopyingRequestStruct) returns (BeginDataCopyingResponseStruct) {}
+  rpc BeginDataApplying(BeginDataApplyingRequestStruct) returns (BeginDataApplyingResponseStruct) {}
+  rpc GetRoutineStatus(GetRoutineStatusRequest) returns (GetRoutineStatusResponse) {}
+  rpc GenerateMysqlConfig(GenerateMysqlConfigRequest) returns (GenerateMysqlConfigResponse) {}
+  rpc BindPort(BindPortRequestStruct) returns (BindPortResponseStruct) {}
+  rpc UnbindPort(UnbindPortRequestStruct) returns (NullResponseStruct) {}
+  rpc AddPort(AddPortRequestStruct) returns (NullResponseStruct) {}
+  rpc CreateMysqlBackup(CreateMysqlBackupRequestStruct) returns (CreateMysqlBackupResponseStruct) {}
+  rpc SetPortInvalid(SetPortInvalidRequestStruct) returns (NullResponseStruct) {}
+  rpc SyncPortStatus(SyncPortStatusRequestStruct) returns (NullResponseStruct) {}
+  rpc ResetPort(ResetPortRequestStruct) returns (NullResponseStruct) {}
+  rpc MigrateUp(MigrateRequestStruct) returns (MigrateResponseStruct) {}
+  rpc MigrateLegacyClean(MigrateRequestStruct) returns (MigrateResponseStruct) {}
+  rpc PrepareCompanyDataDir(PrepareCompanyDataDirRequestStruct) returns (NullResponseStruct) {}
+  rpc InitSearch(InitSearchRequestStruct) returns (NullResponseStruct) {}
+  rpc DropSearchTable(DropSearchTableRequestStruct) returns (NullResponseStruct) {}
+  rpc UpdateDeployment(NullRequestStruct) returns (NullResponseStruct) {}
+}
+
+message NullRequestStruct {
+}
+
+message NullResponseStruct {
+}
+
+message GetStatusRequestStruct {
+  int32 port = 1;
+  string host = 2;
+}
+
+message GetStatusResponseStruct {
+  string status = 1;
+  string message = 2;
+}
+
+message GetCompanyPortRequestStruct {
+  int64 company_id = 1;
+}
+
+message GetCompanyPortResponseStruct {
+  int32 port = 1;
+  string host = 2;
+  string mysql_user = 3;
+  string mysql_pass = 4;
+}
+
+message BindOnServicePortRequestStruct {
+  int64 company_id = 1;
+}
+
+message BindOnServicePortResponseStruct {
+  int32 port = 1;
+  string host = 2;
+  string mysql_user = 3;
+  string mysql_pass = 4;
+}
+
+message BeginDataCopyingRequestStruct {
+  int64 company_id = 1;
+  string target_host = 3;
+}
+
+message BeginDataCopyingResponseStruct {
+  string routine_key = 1;
+  GetRoutineStatusResponse routine = 2;
+}
+
+message BeginDataApplyingRequestStruct {
+  int64 company_id = 1;
+}
+
+message BeginDataApplyingResponseStruct {
+  string routine_key = 1;
+  GetRoutineStatusResponse routine = 2;
+}
+
+message GetRoutineStatusRequest {
+  string routine_key = 1;
+}
+
+message GetRoutineStatusResponse {
+  int32 status = 1;
+  string message = 2;
+  string log = 3;
+}
+
+message GenerateMysqlConfigRequest {}
+message GenerateMysqlConfigResponse {}
+
+message BindPortRequestStruct {
+  int32 port = 1;
+  string host = 3;
+  int64 company_id = 4;
+  int32 duplicate_data_dir_policy = 5;
+  int32 non_existing_data_dir_policy = 6;
+}
+
+message BindPortResponseStruct {
+  string routine_key = 1;
+  GetRoutineStatusResponse routine = 2;
+}
+
+message UnbindPortRequestStruct {
+  int32 port = 1;
+  string host = 2;
+}
+
+message AddPortRequestStruct {
+  int32 port = 1;
+  string host = 2;
+  int32 status = 3;
+  int32 type = 4;
+  int32 locked_till = 5;
+  int32 created_at = 6;
+  int32 updated_at = 7;
+  int64 company_id = 8;
+  string extra = 9;
+  int64 locked_by_company_id = 10;
+}
+
+message CreateMysqlBackupRequestStruct {
+  int64 companyId = 1;
+}
+
+message CreateMysqlBackupResponseStruct {
+  string backup_name = 1;
+  string routine_key = 2;
+  GetRoutineStatusResponse routine = 3;
+}
+
+message MigrateRequestStruct {
+  int64 company_id = 1;
+}
+
+message MigrateResponseStruct {
+  string routine_key = 1;
+  GetRoutineStatusResponse routine = 2;
+}
+
+message SetPortInvalidRequestStruct {
+  int32 port = 1;
+  string host = 2;
+}
+
+message SyncPortStatusRequestStruct {
+  int32 port = 1;
+  string host = 2;
+  int32 status = 3;
+  int32 locked_till = 4;
+  int64 company_id = 5;
+  int64 locked_by_company_id = 6;
+}
+
+message SyncPortStatusResponseStruct {
+  int32  status = 1;
+  string message = 2;
+}
+
+message ResetPortRequestStruct {
+  int32 port = 1;
+  string host = 2;
+}
+
+message PrepareCompanyDataDirRequestStruct {
+  int64 company_id = 1;
+  int32 duplicate_data_dir_policy = 2;
+}
+
+message InitSearchRequestStruct {
+  int64 space_id = 1;
+}
+
+message DropSearchTableRequestStruct {
+  int64 space_id = 1;
+}

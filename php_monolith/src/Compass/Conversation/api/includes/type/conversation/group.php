@@ -11,22 +11,13 @@ use BaseFrame\Exception\Domain\ReturnFatalException;
 class Type_Conversation_Group extends Type_Conversation_Default {
 
 	/**
-	 * создает групповой диалог с создателем внутри
+	 * Создает групповой диалог с создателем внутри
 	 *
-	 * @param int    $creator_user_id
-	 * @param string $group_name
-	 * @param int    $group_type
-	 * @param bool   $is_favorite
-	 * @param bool   $is_mentioned
-	 * @param string $avatar_file_map
-	 * @param string $description
-	 * @param bool   $is_need_add_creator
-	 * @param bool   $is_need_send_system_message
-	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 */
-	public static function add(int $creator_user_id, string $group_name, int $group_type, bool $is_favorite = false, bool $is_mentioned = false, string $avatar_file_map = "", string $description = "", bool $is_need_add_creator = true, bool $is_need_send_system_message = true):array {
+	public static function add(int    $creator_user_id, string $group_name, int $group_type, bool $is_favorite = false, bool $is_mentioned = false,
+					   string $avatar_file_map = "", string $description = "", bool $is_need_add_creator = true, bool $is_need_send_system_message = true,
+					   bool   $is_channel = false):array {
 
 		// формируем users добавляя туда создателя
 		$users = [];
@@ -37,6 +28,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 		// инициируем extra для диалога и устанавливаем подтип диалога
 		$extra = Type_Conversation_Meta_Extra::initExtra();
 		$extra = Type_Conversation_Meta_Extra::setDescription($extra, $description);
+		$extra = Type_Conversation_Meta_Extra::setFlagIsChannel($extra, $is_channel);
 
 		// создаем новый conversation
 		$meta_row = self::_createNewConversation(
@@ -48,7 +40,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 			// создаем запись в левом меню создателя, записываем 0 т.к. allow_status_alias не существует для групповых диалогов
 			self::_createUserCloudData(
 				$creator_user_id, $meta_row["conversation_map"], Type_Conversation_Meta_Users::ROLE_OWNER,
-				$group_type, 0, count($users), $group_name, $avatar_file_map, $is_favorite, $is_mentioned
+				$group_type, 0, count($users), $group_name, $avatar_file_map, $is_favorite, $is_mentioned, is_channel: $is_channel
 			);
 
 			// пушим событие, что пользователь присоединился к группе
@@ -265,6 +257,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 			"is_hidden"         => 0,
 			"is_leaved"         => 0,
 			"is_have_notice"    => 0,
+			"is_channel_alias"  => Type_Conversation_Meta_Extra::isChannel($meta_row["extra"]) ? 1 : 0,
 			"type"              => $meta_row["type"],
 			"updated_at"        => time(),
 			"member_count"      => $member_count,
@@ -530,7 +523,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 	// создаем запись в таблице left_menu
 	// @long т.к. большая структура
 	protected static function _insertLeftMenuOnUserJoinToGroup(string $conversation_map, array $meta_row, int $user_id, int $role,
-										     bool $is_favorite, bool $is_mentioned, bool $is_migration_muted = false):array {
+										     bool   $is_favorite, bool $is_mentioned, bool $is_migration_muted = false):array {
 
 		$muted_until = $is_migration_muted ? time() : 0;
 
@@ -545,6 +538,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 			"role"                  => $role,
 			"is_hidden"             => 0,
 			"is_leaved"             => 0,
+			"is_channel_alias"      => Type_Conversation_Meta_Extra::isChannel($meta_row["extra"]) ? 1 : 0,
 			"type"                  => $meta_row["type"],
 			"unread_count"          => 0,
 			"member_count"          => count($meta_row["users"]),

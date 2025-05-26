@@ -1,0 +1,54 @@
+{
+	"name": "service/php_base_frame",
+	"type": "library",
+	"description": "php_base_frame",
+	"autoload": {
+		"files": ["start.php"],
+		"psr-4": {
+			"BaseFrame\\": "src/"
+		}
+	},
+	"minimum-stability": "dev",
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/company_protobuf_schemes"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php_analytic_utils"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php_base_frame"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phpseclib"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php-amqplib"
+		}
+	],
+	"require": {
+		"backend_compass_dev_2/php_analytic_utils": "*",
+		"php-amqplib/php-amqplib": "v3.1.2",
+		"phpseclib/phpseclib": "3.0.42",
+		"google/protobuf": "v3.23.0",
+		"grpc/grpc": "v1.52.0",
+		"ext-posix": "*",
+		"ext-mbstring": "*",
+		"ext-openssl": "*",
+		"ext-pdo": "*",
+		"ext-curl": "*",
+		"ext-calendar": "*",
+		"ext-readline": "*",
+		"ext-shmop": "*",
+		"ext-zend-opcache": "*",
+		"ext-grpc": "*",
+		"ext-geoip": "*",
+		"ext-memcache": "*",
+		"ext-bcmath": "*"
+	}
+}

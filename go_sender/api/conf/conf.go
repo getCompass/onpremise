@@ -45,6 +45,7 @@ type ConfigStruct struct {
 
 	ServerTagList                       []string      `json:"server_tag_list"`
 	ForceCompanyConfigUpdateIntervalSec time.Duration `json:"force_company_config_update_interval_sec"`
+	IsIsolationCreateRepeat             bool          `json:"is_isolation_create_repeat"`
 }
 
 var config *ConfigStruct = nil

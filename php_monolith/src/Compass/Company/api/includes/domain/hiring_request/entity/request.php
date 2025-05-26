@@ -372,7 +372,7 @@ class Domain_HiringRequest_Entity_Request {
 	public static function getConfirmedAndDismissedList(int $limit, int $offset = 0):array {
 
 		return Gateway_Db_CompanyData_HiringRequest::getListByStatusList(
-			[self::STATUS_CONFIRMED, self::STATUS_DISMISSED],
+			[self::STATUS_CONFIRMED, self::STATUS_DISMISSED, self::STATUS_CONFIRMED_POSTMODERATION],
 			$limit,
 			$offset);
 	}

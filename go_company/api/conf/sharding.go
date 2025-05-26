@@ -33,8 +33,9 @@ type RabbitShardingStruct struct {
 
 // структура go шардов
 type GoShardingStruct struct {
-	Host string `json:"host,omitempty"`
-	Port string `json:"port,omitempty"`
+	Host     string `json:"host,omitempty"`
+	TcpPort  string `json:"tcp_port,omitempty"`
+	GrpcPort string `json:"grpc_port,omitempty"`
 }
 
 // структура go ноды

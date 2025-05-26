@@ -214,6 +214,22 @@ class Gateway_Bus_CollectorAgent implements \BaseFrame\Monitor\Sender {
 		}
 	}
 
+	/**
+	 * Сохраняем аналитику пушей.
+	 */
+	public function saveAnalyticsPush(array $push_list):void {
+
+		try {
+
+			self::_callHttp("analyticspush.savePush", array_filter([
+				"push_data" => $push_list,
+			]), 1);
+		} catch (\Exception | \Error) {
+
+			// ничего не делаем если не удалось отправить
+		}
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------

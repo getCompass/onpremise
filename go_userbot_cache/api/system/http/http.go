@@ -36,7 +36,15 @@ func (h *httpHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	response := handlerHttp.DoStart(method, jsonParams)
-	_, err = w.Write(response)
+
+	responseJson, err := json.Marshal(response)
+
+	if err != nil {
+
+		log.Errorf("cant marshal response %v", response)
+		return
+	}
+	_, err = w.Write(responseJson)
 	if err != nil {
 
 		log.Errorf("Write http error: %v", err)
@@ -49,7 +57,7 @@ func Listen(port int64) {
 
 	handler := httpHandler{}
 
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), &handler)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), &handler) // nosemgrep
 	if err != nil {
 		panic(err)
 	}

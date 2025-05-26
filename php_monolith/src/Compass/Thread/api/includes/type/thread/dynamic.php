@@ -13,6 +13,18 @@ class Type_Thread_Dynamic {
 		return Gateway_Db_CompanyThread_ThreadDynamic::getOne($thread_map);
 	}
 
+	/**
+	 * Получить список динамических записей для тредов
+	 *
+	 * @param array $thread_map_list
+	 *
+	 * @return Struct_Db_CompanyThread_ThreadDynamic[]
+	 */
+	public static function getList(array $thread_map_list):array {
+
+		return Gateway_Db_CompanyThread_ThreadDynamic::getAll($thread_map_list, true);
+	}
+
 	// обновляет запись в dynamic
 	public static function set(string $thread_map, array $set):void {
 

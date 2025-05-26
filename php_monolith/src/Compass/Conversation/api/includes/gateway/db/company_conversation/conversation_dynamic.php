@@ -103,7 +103,7 @@ class Gateway_Db_CompanyConversation_ConversationDynamic extends Gateway_Db_Comp
 	}
 
 	/**
-	 * Создаем сткруктуру из строки бд
+	 * Создаем структуру из строки бд
 	 * @long - большая структура
 	 */
 	protected static function _rowToObject(array $row):Struct_Db_CompanyConversation_ConversationDynamic {
@@ -112,29 +112,8 @@ class Gateway_Db_CompanyConversation_ConversationDynamic extends Gateway_Db_Comp
 		$row["user_clear_info"]         = fromJson($row["user_clear_info"]);
 		$row["user_mute_info"]          = fromJson($row["user_mute_info"]);
 		$row["user_file_clear_info"]    = fromJson($row["user_file_clear_info"]);
+		$row["last_read_message"]       = fromJson($row["last_read_message"]);
 
-		return new Struct_Db_CompanyConversation_ConversationDynamic(
-			$row["conversation_map"],
-			$row["is_locked"],
-			$row["last_block_id"],
-			$row["start_block_id"],
-			$row["total_message_count"],
-			$row["total_action_count"],
-			$row["file_count"],
-			$row["image_count"],
-			$row["video_count"],
-			$row["created_at"],
-			$row["updated_at"],
-			$row["messages_updated_at"],
-			$row["reactions_updated_at"],
-			$row["threads_updated_at"],
-			$row["messages_updated_version"],
-			$row["reactions_updated_version"],
-			$row["threads_updated_version"],
-			$row["user_mute_info"],
-			$row["user_clear_info"],
-			$row["user_file_clear_info"],
-			$row["conversation_clear_info"],
-		);
+		return Struct_Db_CompanyConversation_ConversationDynamic::fromArray($row);
 	}
 }

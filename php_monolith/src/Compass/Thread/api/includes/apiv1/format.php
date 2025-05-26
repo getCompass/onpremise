@@ -90,8 +90,15 @@ class Apiv1_Format {
 		return (string) self::_THREAD_PARENT_TYPE_SCHEMA[$parent_type];
 	}
 
-	// мета треда
-	// при изменении обязательно добавь изменения в apiv2
+	/**
+	 * Подготовить мету треда
+	 *
+	 * @param array                                 $prepared_thread_meta
+	 * @param Struct_Db_CompanyThread_ThreadDynamic $thread_dynamic
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 */
 	public static function threadMeta(array $prepared_thread_meta):array {
 
 		$output = self::_makeThreadMeta($prepared_thread_meta);
@@ -171,6 +178,41 @@ class Apiv1_Format {
 			$output[] = (int) $item;
 		}
 		return $output;
+	}
+
+	/**
+	 * Подготовить ответ для last_read_message
+	 *
+	 * @param Struct_Db_CompanyThread_ThreadDynamic_LastReadMessage|null $last_read_message
+	 *
+	 * @return array
+	 */
+	public static function _prepareLastReadMessage(Struct_Db_CompanyThread_ThreadDynamic_LastReadMessage|null $last_read_message):array {
+
+		if (is_null($last_read_message)) {
+
+			return [
+				"message_map"                 => "",
+				"thread_message_index"        => 0,
+				"read_participants_count"     => 0,
+				"first_read_participant_list" => [],
+			];
+		}
+
+		// сортируем по дате прочтения в порядке возрастания
+		uasort($last_read_message->read_participants, static function(int $a, int $b) {
+
+			return $a <=> $b;
+		});
+
+		$read_user_id_list = array_keys($last_read_message->read_participants);
+
+		return [
+			"message_map"                 => (string) $last_read_message->message_map,
+			"conversation_message_index"  => (int) $last_read_message->thread_message_index,
+			"read_participants_count"     => (int) count($last_read_message->read_participants),
+			"first_read_participant_list" => (array) array_slice($read_user_id_list, 0, 5),
+		];
 	}
 
 	// сообщение из тредов
@@ -370,10 +412,23 @@ class Apiv1_Format {
 				break;
 
 			case "mass_quote":
-			case "system_bot_remind":
 
 				$data = [
 					"quoted_message_list" => (array) [],
+				];
+
+				foreach ($prepared_message["data"]["quoted_message_list"] as $v) {
+					$data["quoted_message_list"][] = (object) self::threadMessage($v);
+				}
+				$data["quoted_message_count"] = (int) $prepared_message["data"]["quoted_message_count"];
+
+				break;
+
+			case "system_bot_remind":
+
+				$data = [
+					"quoted_message_list"    => (array) [],
+					"remind_creator_user_id" => (int) $prepared_message["data"]["remind_creator_user_id"]
 				];
 
 				foreach ($prepared_message["data"]["quoted_message_list"] as $v) {

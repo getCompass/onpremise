@@ -163,10 +163,44 @@ class Gateway_Sms_Provider_Vonage extends Gateway_Sms_Provider_Abstract {
 		// получаем креды
 		$credentials = self::_getConfig()["credential"];
 
+		// берем дефолтный from
+		$credential_from = $credentials["from"];
+
+		// если from_code_list не пустой, проверяем совпадение кодов
+		if (isset($request_parameters["to"]) && !empty($credentials["from_code_list"])) {
+
+			$matched_from = false;
+			$max_length   = 0;
+			$phone_number = "+" . $request_parameters["to"];
+
+			// проходимся по списку отправителей
+			foreach ($credentials["from_code_list"] as $from => $code_list) {
+
+				foreach ($code_list as $code) {
+
+					// проверяем, совпадает ли начало номера с кодом
+					if (str_starts_with($phone_number, $code)) {
+
+						// если совпадение по коду длиннее предыдущего, обновляем найденный результат
+						if (mb_strlen($code) > $max_length) {
+
+							$max_length   = mb_strlen($code);
+							$matched_from = $from;
+						}
+					}
+				}
+			}
+
+			// если найден подходящий код, используем его
+			if ($matched_from) {
+				$credential_from = $matched_from;
+			}
+		}
+
 		$required_parameters = [
 			"api_key"    => $credentials["api_key"],
 			"api_secret" => $credentials["api_secret"],
-			"from"       => $credentials["from"],
+			"from"       => $credential_from,
 		];
 
 		return "{$credentials["gateway_url"]}$act?" . http_build_query(array_merge($required_parameters, $request_parameters));

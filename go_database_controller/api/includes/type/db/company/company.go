@@ -225,8 +225,12 @@ func GrantPermissionsOnDatabase(ctx context.Context, credentials *sharding.DbCre
 // инициализировать базу
 func CreateIfNotExistDatabase(ctx context.Context, credentials *sharding.DbCredentials, rootCredentials *sharding.DbCredentials, dbKey string) (bool, error) {
 
-	// выдаем права на базу
+	// проверяем входные параметры
+	if credentials == nil {
+		return false, fmt.Errorf("credentials cannot be nil")
+	}
 
+	// выдаем права на базу
 	err := GrantPermissionsOnDatabase(ctx, credentials, rootCredentials, dbKey)
 	if err != nil {
 		return false, err

@@ -3,7 +3,6 @@
 namespace Compass\Thread;
 
 use BaseFrame\Exception\Domain\ReturnFatalException;
-use BaseFrame\Exception\Request\ParamException;
 
 /**
  * содержит вспомогательные функции для парсинга ссылок
@@ -37,9 +36,7 @@ class Type_Preview_Parser_Helper {
 	protected static function _getType(string $html):string {
 
 		// получаем type из pattern
-		$type = self::_tryGetMatchFromPatternList($html, self::_TYPE_PATTERN_LIST);
-
-		return $type;
+		return self::_tryGetMatchFromPatternList($html, self::_TYPE_PATTERN_LIST);
 	}
 
 	// ресурс типа profile
@@ -192,7 +189,7 @@ class Type_Preview_Parser_Helper {
 	// список регулярных выражений для поиска ссылки на картинку
 	protected const _IMAGE_PATTERN_LIST = [
 		0 => [
-			"pattern"   => "/<meta[^>]+property=['\"]og:image['\"][^>]+content=['\"](.*?)['\"].*?>/ui",
+			"pattern"   => "/<meta[^>]+property=['\"]og:image['\"][^>]+content=['\"]?(.*?)['\" ].*?>/ui",
 			"match_num" => 1,
 		],
 		1 => [
@@ -205,14 +202,13 @@ class Type_Preview_Parser_Helper {
 	protected static function _tryDownloadImage(int $user_id, string $domain, string $html, string $protocol = "http"):string {
 
 		$image_url = self::_getImageUrl($html);
+
 		if (mb_strlen($image_url) < 1) {
 			return "";
 		}
 
-		$image_url      = self::_prepareContentUrl($image_url, $domain, $protocol);
-		$image_file_map = self::_tryDownloadFile($user_id, $image_url);
-
-		return $image_file_map;
+		$image_url = self::_prepareContentUrl($image_url, $domain, $protocol);
+		return self::_tryDownloadFile($user_id, $image_url);
 	}
 
 	// получить ссылку на preview image
@@ -251,10 +247,9 @@ class Type_Preview_Parser_Helper {
 
 		$favicon_url = self::_getFaviconUrl($html, $domain);
 
-		$favicon_url      = self::_prepareContentUrl($favicon_url, $domain, $protocol);
-		$favicon_file_map = self::_tryDownloadFile($user_id, $favicon_url);
+		$favicon_url = self::_prepareContentUrl($favicon_url, $domain, $protocol);
 
-		return $favicon_file_map;
+		return self::_tryDownloadFile($user_id, $favicon_url);
 	}
 
 	// получить favicon
@@ -283,12 +278,8 @@ class Type_Preview_Parser_Helper {
 	/**
 	 * получить ссылку на preview video
 	 *
-	 * @param string $html
-	 * @param string $domain
-	 *
-	 * @return false|string
 	 */
-	protected static function _getVideoUrl(string $html, string $domain):bool|string {
+	protected static function _getVideoUrl(string $html, string $domain):string|false {
 
 		$video_url = self::_tryGetMatchFromPatternList($html, self::_VIDEO_PATTERN_LIST);
 		if (mb_strlen($video_url) < 1) {
@@ -298,7 +289,17 @@ class Type_Preview_Parser_Helper {
 		return self::_prepareContentUrl($video_url, $domain);
 	}
 
-	// скачиваем файл
+	/**
+	 * скачиваем файл
+	 *
+	 * @param int    $user_id
+	 * @param string $file_url
+	 *
+	 * @return string
+	 * @throws \paramException
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
 	protected static function _tryDownloadFile(int $user_id, string $file_url):string {
 
 		$node_socket_url    = self::_getNodeForDownload();
@@ -310,7 +311,14 @@ class Type_Preview_Parser_Helper {
 			"company_id"  => COMPANY_ID,
 			"company_url" => $company_socket_url,
 		];
-		[$status, $response] = Gateway_Socket_FileNode::doCall($node_socket_url . "api/socket/", "previews.doImageDownload", $ar_post, $user_id);
+
+		try {
+			// если по какой-то причине отвалились по таймауту(например сервер долго отдает картинку)
+			// то делаем вид что картинки нет, не падаем
+			[$status, $response] = Gateway_Socket_FileNode::doCall($node_socket_url . "api/socket/", "previews.doImageDownload", $ar_post, $user_id);
+		} catch (\cs_SocketRequestIsFailed) {
+			return "";
+		}
 
 		if ($status != "ok") {
 
@@ -326,13 +334,7 @@ class Type_Preview_Parser_Helper {
 			throw new ReturnFatalException(__CLASS__ . ": request return unknown error");
 		}
 
-		try {
-			$file_map = \CompassApp\Pack\File::doDecrypt($response["file_key"]);
-		} catch (\cs_DecryptHasFailed $e) {
-			throw new ParamException($e->getMessage());
-		}
-
-		return $file_map;
+		return \CompassApp\Pack\File::tryDecrypt($response["file_key"]);
 	}
 
 	// получаем ссылку на ноду для сохранения файла
@@ -342,7 +344,7 @@ class Type_Preview_Parser_Helper {
 		[$status, $response] = Gateway_Socket_FileBalancer::doCall("previews.getNodeForDownload", []);
 
 		// если статус ответа не ок
-		if ($status != "ok") {
+		if ($status !== "ok") {
 			throw new ReturnFatalException(__CLASS__ . ": request return call not 'ok'");
 		}
 
@@ -394,7 +396,7 @@ class Type_Preview_Parser_Helper {
 
 			// убираем лишние пробелы и заменяем последнее слово или пробел на многоточие
 			$text = trim($text);
-			$text = preg_replace("/[\s][^\s]*$/u", "...", $text);
+			$text = preg_replace("/\s\S*$/u", "...", $text);
 		}
 
 		if (mb_strlen($text) < 1) {
@@ -420,10 +422,10 @@ class Type_Preview_Parser_Helper {
 		$image_url = htmlspecialchars_decode($image_url);
 
 		// если ссылка начинается на "//", добавляем протокол
-		$image_url = preg_replace("/^(\\/\\/)/u", "{$protocol}://", $image_url);
+		$image_url = preg_replace("~^(//)~u", "{$protocol}://", $image_url);
 
 		// если ссылка относительная
-		$image_url = preg_replace("/^(\\/|[.]\\/)/u", "{$protocol}://" . $domain . "/", $image_url);
+		$image_url = preg_replace("~^(/|[.]/)~u", "{$protocol}://" . $domain . "/", $image_url);
 
 		// если указан только файл
 		if (!preg_match("/^{$protocol}/u", $image_url)) {

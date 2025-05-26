@@ -198,6 +198,7 @@ class Apiv1_Format {
 					"members_count" => (int) $data["member_count"],
 					"role"          => (string) self::getUserRole($data["role"]),
 					"subtype"       => (string) self::getConversationSubtype($type),
+					"is_channel"    => (int) $data["is_channel"],
 				];
 
 				// добавляем к ответу avatar_file_key если он есть
@@ -212,6 +213,7 @@ class Apiv1_Format {
 				$output = [
 					"name"          => (string) $data["name"],
 					"members_count" => (int) $data["member_count"],
+					"is_channel"    => (int) $data["is_channel"],
 				];
 
 				// добавляем к ответу avatar_file_key если он есть
@@ -226,6 +228,7 @@ class Apiv1_Format {
 					"name"          => (string) $data["name"],
 					"members_count" => (int) $data["member_count"],
 					"role"          => (string) self::getUserRole($data["role"]),
+					"is_channel"    => (int) $data["is_channel"],
 				];
 
 				// добавляем к ответу avatar_file_key если он есть
@@ -697,10 +700,26 @@ class Apiv1_Format {
 				];
 
 			case "mass_quote":
-			case "system_bot_remind":
 
 				$data = [
 					"quoted_message_list" => (array) [],
+				];
+
+				// проходимся по каждому сообщению из цитаты
+				foreach ($prepared_message["data"]["quoted_message_list"] as $v) {
+					$data["quoted_message_list"][] = (object) self::conversationMessage($v);
+				}
+
+				// добавляем количество сообщений, который имеет в себе цитата
+				$data["quoted_message_count"] = (int) $prepared_message["data"]["quoted_message_count"];
+
+				return $data;
+
+			case "system_bot_remind":
+
+				$data = [
+					"quoted_message_list"    => (array) [],
+					"remind_creator_user_id" => (int) $prepared_message["data"]["remind_creator_user_id"]
 				];
 
 				// проходимся по каждому сообщению из цитаты
@@ -933,30 +952,24 @@ class Apiv1_Format {
 	// форматируем extra системного сообщения на основе его типа
 	protected static function _formatSystemMessageExtra(string $system_message_type, array $extra):array {
 
-		switch ($system_message_type) {
-
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_INVITED_TO_GROUP:
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_JOINED_TO_GROUP:
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_DECLINED_INVITE:
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_LEFT_GROUP:
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_LEFT_COMPANY:
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_KICKED_FROM_GROUP:
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_PROMOTED_TO_ADMIN:
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_DEMOTED_TO_USER:
-				return [
-					"user_id" => (int) $extra["user_id"],
-				];
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_ADD_GROUP:
-				return self::_formatSystemMessageUserAddGroupExtra($extra);
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_RENAMED_GROUP:
-				return self::_formatSystemMessageAdminRenamedGroupExtra($extra);
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_CHANGED_GROUP_DESCRIPTION:
-				return self::_formatSystemMessageAdminChangedGroupDescriptionExtra($extra);
-			case Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_CHANGED_GROUP_AVATAR:
-				return self::_formatSystemMessageAdminChangedGroupAvatarExtra($extra);
-			default:
-				throw new ParseFatalException("Unsupported system message type '{$system_message_type}' in " . __METHOD__);
-		}
+		return match ($system_message_type) {
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_INVITED_TO_GROUP,
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_JOINED_TO_GROUP,
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_DECLINED_INVITE,
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_LEFT_GROUP,
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_LEFT_COMPANY,
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_KICKED_FROM_GROUP,
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_PROMOTED_TO_ADMIN,
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_DEMOTED_TO_USER           => [
+				"user_id" => (int) $extra["user_id"],
+			],
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_USER_ADD_GROUP                  => self::_formatSystemMessageUserAddGroupExtra($extra),
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_RENAMED_GROUP             => self::_formatSystemMessageAdminRenamedGroupExtra($extra),
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_CHANGED_GROUP_DESCRIPTION => self::_formatSystemMessageAdminChangedGroupDescriptionExtra($extra),
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_CHANGED_GROUP_AVATAR      => self::_formatSystemMessageAdminChangedGroupAvatarExtra($extra),
+			Type_Conversation_Message_Handler_Default::SYSTEM_MESSAGE_ADMIN_CHANGED_CHANNEL_OPTION    => self::_formatSystemMessageAdminChangedChannelOptionExtra($extra),
+			default                                                                                   => throw new ParseFatalException("Unsupported system message type '{$system_message_type}' in " . __METHOD__),
+		};
 	}
 
 	/**
@@ -1008,6 +1021,15 @@ class Apiv1_Format {
 		return [
 			"user_id"  => (int) $extra["user_id"],
 			"file_map" => (string) $extra["file_map"],
+		];
+	}
+
+	// форматируем extra системного сообщения типа admin_changed_channel_option
+	protected static function _formatSystemMessageAdminChangedChannelOptionExtra(array $extra):array {
+
+		return [
+			"user_id"    => (int) $extra["user_id"],
+			"is_channel" => (int) $extra["is_channel"],
 		];
 	}
 
@@ -1107,14 +1129,14 @@ class Apiv1_Format {
 
 		// разбираем по типам сделал повторояющийся код отдельными функциями потому что так будет выглядеть лучше и читабельнее :pray:
 		return match ($type) {
-			PREVIEW_TYPE_SITE => self::_makePreviewSiteData($data, $prepared_url_preview),
-			PREVIEW_TYPE_IMAGE => self::_makePreviewImageData($data, $prepared_url_preview),
-			PREVIEW_TYPE_SIMPLE => [],
-			PREVIEW_TYPE_PROFILE => self::_makePreviewProfileData($data, $prepared_url_preview),
-			PREVIEW_TYPE_CONTENT => self::_makePreviewContentData($data, $prepared_url_preview),
+			PREVIEW_TYPE_SITE                                  => self::_makePreviewSiteData($data, $prepared_url_preview),
+			PREVIEW_TYPE_IMAGE                                 => self::_makePreviewImageData($data, $prepared_url_preview),
+			PREVIEW_TYPE_SIMPLE                                => [],
+			PREVIEW_TYPE_PROFILE                               => self::_makePreviewProfileData($data, $prepared_url_preview),
+			PREVIEW_TYPE_CONTENT                               => self::_makePreviewContentData($data, $prepared_url_preview),
 			PREVIEW_TYPE_RESOURCE, PREVIEW_TYPE_COMPASS_INVITE => self::_makePreviewResourceData($data, $prepared_url_preview),
-			PREVIEW_TYPE_VIDEO => self::_makePreviewVideoData($data, $prepared_url_preview),
-			default => throw new ParseFatalException("preview type {$type} is not available"),
+			PREVIEW_TYPE_VIDEO                                 => self::_makePreviewVideoData($data, $prepared_url_preview),
+			default                                            => throw new ParseFatalException("preview type {$type} is not available"),
 		};
 	}
 

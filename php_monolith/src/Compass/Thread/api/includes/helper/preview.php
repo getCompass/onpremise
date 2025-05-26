@@ -890,7 +890,13 @@ class Helper_Preview {
 			"company_id"  => COMPANY_ID,
 			"company_url" => $company_socket_url,
 		];
-		[$status, $response] = Gateway_Socket_FileNode::doCall($node_socket_url . "api/socket/", "previews.doImageDownload", $ar_post, $user_id);
+		try {
+			// если по какой-то причине отвалились по таймауту(например сервер долго отдает картинку)
+			// то делаем вид что картинки нет, не падаем
+			[$status, $response] = Gateway_Socket_FileNode::doCall($node_socket_url . "api/socket/", "previews.doImageDownload", $ar_post, $user_id);
+		} catch (\cs_SocketRequestIsFailed) {
+			return "";
+		}
 
 		if ($status !== "ok") {
 

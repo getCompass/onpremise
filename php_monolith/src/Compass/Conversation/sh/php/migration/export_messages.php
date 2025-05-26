@@ -202,7 +202,7 @@ class Migration_Export_Messages {
 	 */
 	protected function _getMessageBlocks(string $conversation_map, array $dynamic_row, array $block_id_list = []):array {
 
-		$dynamic_row = new Struct_Db_CompanyConversation_ConversationDynamic(...$dynamic_row);
+		$dynamic_row = Struct_Db_CompanyConversation_ConversationDynamic::fromArray($dynamic_row);
 
 		if (count($block_id_list) < 1) {
 

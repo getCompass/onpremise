@@ -62,14 +62,12 @@ class Domain_MemberManagement_Scenario_Api {
 			$data = [
 				"invited_comment" => Domain_HiringRequest_Entity_Request::getComment($request->extra),
 			];
-			if (isset($user_info_list[$request->candidate_user_id])) {
 
-				$data["candidate_user_info"] = [
-					"full_name"       => $user_info_list[$request->candidate_user_id]->full_name,
-					"avatar_file_key" => $user_info_list[$request->candidate_user_id]->avatar_file_key,
-					"avatar_color_id" => $user_info_list[$request->candidate_user_id]->avatar_color_id,
-				];
-			}
+			$data["candidate_user_info"] = [
+				"full_name"       => $user_info_list[$request->candidate_user_id]->full_name ?? "",
+				"avatar_file_key" => $user_info_list[$request->candidate_user_id]->avatar_file_key ?? "",
+				"avatar_color_id" => $user_info_list[$request->candidate_user_id]->avatar_color_id ?? 0,
+			];
 
 			$formatted_request_list[] = Apiv2_Format::joinRequest($request, $data);
 		}

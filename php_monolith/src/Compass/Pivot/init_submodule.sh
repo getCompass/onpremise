@@ -1,13 +1,9 @@
 #!/bin/bash
 
-iteration_count=0
-timeout=100
-
 envsubst < /app/src/Compass/Pivot/private/custom.local.php > /app/src/Compass/Pivot/private/custom.php
 envsubst < /app/src/Compass/Pivot/private/main.local.php > /app/src/Compass/Pivot/private/main.php
 
-while ! mysqladmin ping -h "${MYSQL_HOST}" -P ${MYSQL_PORT} --silent; do
-
+while ! mariadb-admin ping -h "${MYSQL_HOST}" -P "${MYSQL_PORT}" --silent --skip-ssl; do
     echo "Ждем mysql host ${MYSQL_HOST} port ${MYSQL_PORT}"
     sleep 1
     iteration_count=$((iteration_count+1))

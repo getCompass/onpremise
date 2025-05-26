@@ -127,8 +127,10 @@ func (client) Connect(data *dataStruct) {
 	onSuccessConnection(data.connection, isolation)
 
 	// записываем активность
+	// обязательно проверяем channel, т.к на онпремайзе единый go_sender в монолитном деплое, и мы считаем онлайн в том числе по анонсам/компании
+	// из-за этого у ios возникает баг, когда пользователю звонят, у него подключаются ws анонсов и компании и он появляется онлайн
 	config, err = conf.GetConfig()
-	if config.Role == "pivot" || config.CurrentServer == "monolith" {
+	if (config.Role == "pivot" || config.CurrentServer == "monolith") && data.connection.Channel == "pivot" {
 
 		err := activitycache.AddActivity(data.connection.UserId, functions.GetCurrentTimeStamp(), data.connection.SessionUniq)
 		if err != nil {
@@ -356,8 +358,10 @@ func (client) Ping(data *dataStruct) {
 	})
 
 	// записываем активность
+	// обязательно проверяем channel, т.к на онпремайзе единый go_sender в монолитном деплое, и мы считаем онлайн в том числе по анонсам/компании
+	// из-за этого у ios возникает баг, когда пользователю звонят, у него подключаются ws анонсов и компании и он появляется онлайн
 	config, err := conf.GetConfig()
-	if config.Role == "pivot" || config.CurrentServer == "monolith" {
+	if (config.Role == "pivot" || config.CurrentServer == "monolith") && data.connection.Channel == "pivot" {
 
 		err := activitycache.AddActivity(data.connection.UserId, functions.GetCurrentTimeStamp(), data.connection.SessionUniq)
 		if err != nil {

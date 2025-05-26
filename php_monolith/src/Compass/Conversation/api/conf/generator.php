@@ -52,6 +52,24 @@ $CONFIG["GENERATOR"] = [
 		],
 		"event_data"        => [],
 	],
+
+	/**
+	 * Воркер для удаления старых прочитавших участников
+	 */
+	"clear_expired_conversation_message_read_participants_worker" => [
+		"period"            => DAY1,
+		"subscription_item" => [
+			"trigger_type" => 5,
+			"event"        => Type_Event_Conversation_ClearExpiredMessageReadParticipants::EVENT_TYPE,
+			"extra"        => [
+				"type"        => 2,
+				"module"      => "php_conversation",
+				"group"       => Type_Attribute_EventListener::SLOW_GROUP,
+				"error_limit" => 0
+			],
+		],
+		"event_data"        => [],
+	],
 ];
 
 return $CONFIG;

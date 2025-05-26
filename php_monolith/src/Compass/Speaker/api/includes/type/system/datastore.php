@@ -12,7 +12,7 @@ class Type_System_Datastore {
 
 	protected const _CONF = [
 		"mysql" => [
-			"host" => MYSQL_SYSTEM_HOST,
+			"host" => MYSQL_SYSTEM_HOST . ":" . MYSQL_SYSTEM_PORT,
 			"user" => MYSQL_SYSTEM_USER,
 			"pass" => MYSQL_SYSTEM_PASS,
 			"ssl"  => false,

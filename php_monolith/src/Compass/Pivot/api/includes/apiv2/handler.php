@@ -187,9 +187,15 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 		} catch (cs_AnswerCommand $e) {
 
 			// если вдруг поймали команду
-			return [
-				"command" => Type_Api_Command::work($e->getCommandName(), $e->getCommandExtra()),
-			];
+			$response  = ["command" => Type_Api_Command::work($e->getCommandName(), $e->getCommandExtra())];
+			$auth_data = \BaseFrame\Http\Authorization\Data::inst();
+
+			// если данные авторизации не менялись, то ничего не делаем
+			if ($auth_data->hasChanges()) {
+				$response["actions"][] = ["type" => "authorization", "data" => $auth_data->get()];
+			}
+
+			return $response;
 		} catch (cs_PlatformNotFound) {
 			throw new ParamException("Platform not found");
 		} catch (\cs_DecryptHasFailed) {

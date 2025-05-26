@@ -78,7 +78,7 @@ class Domain_Group_Action_CompanyDefaultCreate {
 
 			// для чата Heroes при создании включаем коммит из этого чата
 			if ($group_key_name === Domain_Company_Entity_Config::HEROES_CONVERSATION_KEY_NAME) {
-				Helper_Groups::doChangeOptions($meta_row["conversation_map"], $meta_row, ["is_can_commit_worked_hours" => true]);
+				Helper_Groups::doChangeOptions($creator_user_id, $meta_row["conversation_map"], $meta_row, ["is_can_commit_worked_hours" => true]);
 			}
 		}
 	}

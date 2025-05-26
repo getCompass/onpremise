@@ -3,6 +3,8 @@
 namespace Compass\Thread;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
 
 /**
  * класс-интерфейс к таблице cloud_thread_{Year}.thread_dynamic
@@ -39,15 +41,31 @@ class Gateway_Db_CompanyThread_ThreadDynamic extends Gateway_Db_CompanyThread_Ma
 
 	/**
 	 * Возвращает все динамические данные для тредов.
+	 *
+	 * @param array $thread_map_list
+	 * @param bool  $is_assoc
+	 *
 	 * @return Struct_Db_CompanyThread_ThreadDynamic[]
+	 * @throws ParseFatalException
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
 	 */
-	public static function getAll(array $thread_map_list):array {
+	public static function getAll(array $thread_map_list, bool $is_assoc = false):array {
 
 		// EXPLAIN INDEX PRIMARY
 		$query  = "SELECT * FROM `?p` WHERE `thread_map` IN (?a) LIMIT ?i";
 		$result = ShardingGateway::database(self::_getDbKey())->getAll($query, self::_getTable(), $thread_map_list, count($thread_map_list));
 
-		return array_map(static fn(array $row) => self::_rowToObject($row), $result);
+		if (!$is_assoc) {
+			return array_map(static fn(array $row) => self::_rowToObject($row), $result);
+		}
+
+		$assoc_result = [];
+		foreach ($result as $row) {
+			$assoc_result[$row["thread_map"]] = self::_rowToObject($row);
+		}
+
+		return $assoc_result;
 	}
 
 	// метод для получения записи на обновление
@@ -148,23 +166,7 @@ class Gateway_Db_CompanyThread_ThreadDynamic extends Gateway_Db_CompanyThread_Ma
 		// приводим запись бд к формату
 		$row = self::_formatRow($row);
 
-		foreach ($row as $field => $_) {
-
-			if (!property_exists(Struct_Db_CompanyThread_ThreadDynamic::class, $field)) {
-				throw new ParseFatalException("send unknown field '$field'");
-			}
-		}
-
-		return new Struct_Db_CompanyThread_ThreadDynamic(
-			$row["thread_map"],
-			$row["is_locked"],
-			$row["last_block_id"],
-			$row["start_block_id"],
-			$row["created_at"],
-			$row["updated_at"],
-			$row["user_mute_info"],
-			$row["user_hide_list"],
-		);
+		return Struct_Db_CompanyThread_ThreadDynamic::fromArray($row);
 	}
 
 	// приводим к формату запись из таблицы
@@ -172,8 +174,9 @@ class Gateway_Db_CompanyThread_ThreadDynamic extends Gateway_Db_CompanyThread_Ma
 
 		if (isset($row["thread_map"])) {
 
-			$row["user_mute_info"] = fromJson($row["user_mute_info"]);
-			$row["user_hide_list"] = fromJson($row["user_hide_list"]);
+			$row["user_mute_info"]    = fromJson($row["user_mute_info"]);
+			$row["user_hide_list"]    = fromJson($row["user_hide_list"]);
+			$row["last_read_message"] = fromJson($row["last_read_message"]);
 		}
 
 		return $row;

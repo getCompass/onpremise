@@ -27,6 +27,7 @@ class Struct_User_Company {
 	 * @param int    $created_at
 	 * @param int    $updated_at
 	 * @param string $url
+	 * @param string $redirect_url
 	 * @param int    $order
 	 * @param string $avatar_file_map
 	 * @param array  $data
@@ -43,6 +44,7 @@ class Struct_User_Company {
 		public int    $created_at,
 		public int    $updated_at,
 		public string $url,
+		public string $redirect_url,
 		public int    $order,
 		public string $avatar_file_map,
 		public array  $data
@@ -91,6 +93,7 @@ class Struct_User_Company {
 			$company->created_at,
 			$company->updated_at,
 			$company->url,
+			$company->getPublicRedirectUrl(),
 			$order,
 			$company->avatar_file_map,
 			$data

@@ -560,6 +560,19 @@ class Type_Thread_Message_Handler_Default {
 		return $message["data"]["conference_id"];
 	}
 
+	// получает opponent_user_id, прикрепленного к сообщению
+	public static function getConferenceOpponentId(array $message):int {
+
+		self::_checkVersion($message);
+
+		// если сообщение не типа звонок
+		if ($message["type"] != CONVERSATION_MESSAGE_TYPE_MEDIA_CONFERENCE) {
+			throw new ParseFatalException("Trying to get opponent_user_id of message, which is not TYPE_MEDIA_CONFERENCE");
+		}
+
+		return $message["data"]["opponent_user_id"] ?? 0;
+	}
+
 	// получает статус конференции, прикрепленного к сообщению
 	public static function getConferenceAcceptStatus(array $message):string {
 

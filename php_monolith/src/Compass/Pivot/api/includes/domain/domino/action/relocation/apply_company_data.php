@@ -49,7 +49,7 @@ class Domain_Domino_Action_Relocation_ApplyCompanyData {
 			Domain_Domino_Action_Port_Unbind::run($domino, $service_port, "applyCompanyData");
 		} catch (\Exception $e) {
 
-			Domain_Domino_Action_Port_Invalidate::run($domino, $service_port->port, "error on begin data applying");
+			Domain_Domino_Action_Port_Invalidate::run($domino, $service_port, "error on begin data applying");
 			Domain_Domino_Action_Port_Unlock::run($domino, $common_port);
 
 			throw $e;

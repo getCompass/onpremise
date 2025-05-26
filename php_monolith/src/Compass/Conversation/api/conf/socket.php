@@ -79,10 +79,12 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"userbot.addReaction",
 			"userbot.removeReaction",
 			"intercom.addMessageFromSupportBot",
+			"intercom.addFileMessageFromSupportBot",
 			"search.tryReindex",
 			"groups.createRespectConversation",
 			"groups.addMembersToRespectConversation",
 			"conversations.checkIsAllowedForCall",
+			"conversations.checkIsUserMember",
 		],
 	],
 	"thread"        => [
@@ -123,6 +125,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"conversations.attachPreview",
 			"conversations.deletePreviewList",
 			"conversations.hidePreviewList",
+			"conversations.getConversationTypeList",
 		],
 	],
 	"speaker"       => [

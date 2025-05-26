@@ -12,6 +12,7 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 
 	public const ALLOW_METHODS = [
 		"addMessageFromSupportBot",
+		"addFileMessageFromSupportBot",
 	];
 
 	/**
@@ -45,6 +46,24 @@ class Socket_Intercom extends \BaseFrame\Controller\Socket {
 
 		// отправляем сообщение
 		Gateway_Socket_Conversation::addMessageFromSupportBot($receiver_user_id, $text);
+
+		return $this->ok();
+	}
+
+	/**
+	 * Отправляем сообщение с файлом в чат поддержки от имени бота
+	 *
+	 * @return array
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \BaseFrame\Exception\Request\ParamException
+	 */
+	public function addFileMessageFromSupportBot():array {
+
+		$receiver_user_id = $this->post(\Formatter::TYPE_INT, "receiver_user_id");
+		$file_key         = $this->post(\Formatter::TYPE_STRING, "file_key");
+
+		// отправляем сообщение
+		Gateway_Socket_Conversation::addFileMessageFromSupportBot($receiver_user_id, $file_key);
 
 		return $this->ok();
 	}

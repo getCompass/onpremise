@@ -18,8 +18,6 @@ class Type_Api_Filter {
 	protected const _MAX_REASON_LENGTH            = 256;  // максимальная длина reason
 	protected const _MAX_FILE_NAME_LENGTH         = 255;  // максимальная длина названия файла
 	protected const _MAX_GROUP_DESCRIPTION_LENGTH = 500; // максимальная длина описания группы
-	// регулярка для фильтрации названия группы
-	protected const _GROUP_NAME_REGEXP = "/[^а-яёa-z0-9[:punct:] œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñ¿¡ЎўІі]|[<>]/ui";
 
 	// список неподдерживаемых символов
 	protected const _NOT_ALLOW_CHARS = [
@@ -87,7 +85,14 @@ class Type_Api_Filter {
 		$group_name = mb_substr($group_name, 0, self::_MAX_GROUP_NAME_LENGTH);
 
 		// удаляем лишнее
-		return trim(preg_replace([self::_GROUP_NAME_REGEXP, "/[ ]{2,}/u"], ["", " "], $group_name));
+		return trim(preg_replace([
+			\BaseFrame\System\Character::EMOJI_REGEX,
+			\BaseFrame\System\Character::COMMON_FORBIDDEN_CHARACTER_REGEX,
+			\BaseFrame\System\Character::ANGLE_BRACKET_REGEX,
+			\BaseFrame\System\Character::FANCY_TEXT_REGEX,
+			\BaseFrame\System\Character::DOUBLE_SPACE_REGEX,
+			\BaseFrame\System\Character::NEWLINE_REGEX,
+		], ["", "", "", "", " ", ""], $group_name));
 	}
 
 	/**
@@ -103,7 +108,10 @@ class Type_Api_Filter {
 		$status = self::replaceEmojiWithShortName($description);
 
 		// удаляем лишнее
-		$status = trim(preg_replace("/([\r\n\f\v]){3,}/", "\n\n", $status));
+		$status = trim(preg_replace([
+			\BaseFrame\System\Character::COMMON_FORBIDDEN_CHARACTER_REGEX,
+			"/([\r\n\f\v]){3,}/",
+		], ["", "\n\n"], $status));
 
 		// обрезаем
 		return mb_substr($status, 0, self::_MAX_GROUP_DESCRIPTION_LENGTH);
@@ -244,16 +252,16 @@ class Type_Api_Filter {
 		try {
 			return match ($substitution) {
 
-				"general_group_name" => Domain_Group_Entity_Company::getDefaultGroupNameByKey(
+				"general_group_name"   => Domain_Group_Entity_Company::getDefaultGroupNameByKey(
 					Domain_Company_Entity_Config::GENERAL_CONVERSATION_KEY_NAME, Locale::getLocale()),
 
-				"heroes_group_name" => Domain_Group_Entity_Company::getDefaultGroupNameByKey(
+				"heroes_group_name"    => Domain_Group_Entity_Company::getDefaultGroupNameByKey(
 					Domain_Company_Entity_Config::HEROES_CONVERSATION_KEY_NAME, Locale::getLocale()),
 
 				"challenge_group_name" => Domain_Group_Entity_Company::getDefaultGroupNameByKey(
 					Domain_Company_Entity_Config::CHALLENGE_CONVERSATION_KEY_NAME, Locale::getLocale()),
 
-				default => "Unknown",
+				default                => "Unknown",
 			};
 		} catch (LocaleTextNotFound) {
 			throw new ParseFatalException("cant find group default name");

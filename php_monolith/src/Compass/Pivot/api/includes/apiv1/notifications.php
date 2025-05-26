@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * контроллер для технических методов клиента
  */
@@ -19,6 +21,7 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 		"setSnoozedEvent",
 		"setSoundType",
 		"unsetSnoozedEvent",
+		"confirmPushReceiving",
 	];
 
 	// -------------------------------------------------------
@@ -208,6 +211,25 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 		} catch (cs_IncorrectNotificationToggleData) {
 			return $this->error(352, "Unsupported snoozed event type");
 		}
+
+		return $this->ok();
+	}
+
+	/**
+	 * Подтверждаем получение пушей
+	 *
+	 * @throws \BaseFrame\Exception\Request\ParamException
+	 */
+	public function confirmPushReceiving():array {
+
+		$uuid_list = $this->post(\Formatter::TYPE_ARRAY, "uuid_list");
+
+		// на онпремайзе нет коллектора, так что разворачиваем
+		if (ServerProvider::isOnPremise()) {
+			return $this->ok();
+		}
+
+		Domain_Notifications_Scenario_Api::confirmPushReceiving($uuid_list);
 
 		return $this->ok();
 	}

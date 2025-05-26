@@ -1,0 +1,127 @@
+syntax = "proto3";
+package kuberGrpc;
+option go_package = "kuber/";
+
+// сервис, который описывает все метод go_kuber
+service kuber {
+
+  rpc CompanyAdd(CompanyAddRequestStruct) returns (CompanyAddResponseStruct) {}
+  rpc CompanyGetList(CompanyGetListRequestStruct) returns (CompanyGetListResponseStruct) {}
+  rpc CompanyDelete(CompanyDeleteRequestStruct) returns (CompanyDeleteResponseStruct) {}
+  rpc CompanyUpdate(CompanyUpdateRequestStruct) returns (CompanyUpdateResponseStruct) {}
+
+  rpc SystemStatus(SystemStatusRequestStruct) returns (SystemStatusResponseStruct) {}
+  rpc SystemTraceGoroutine(SystemTraceGoroutineRequestStruct) returns (SystemTraceGoroutineResponseStruct) {}
+  rpc SystemTraceMemory(SystemTraceMemoryRequestStruct) returns (SystemTraceMemoryResponseStruct) {}
+  rpc SystemCpuProfile(SystemCpuProfileRequestStruct) returns (SystemCpuProfileResponseStruct) {}
+  rpc SystemReloadConfig(SystemReloadConfigRequestStruct) returns (SystemReloadConfigResponseStruct) {}
+  rpc SystemReloadSharding(SystemReloadShardingRequestStruct) returns (SystemReloadShardingResponseStruct) {}
+  rpc SystemCheckSharding(SystemCheckShardingRequestStruct) returns (SystemCheckShardingResponseStruct) {}
+}
+
+// формат запроса для company.Add
+message CompanyAddRequestStruct {
+  int64 company_stack_id = 1;
+  string namespace = 2;
+  string chart_values = 3;
+}
+
+// формат ответа для company.Add
+message CompanyAddResponseStruct {}
+
+message ReleaseStruct {
+  string name = 1;
+  string namespace = 2;
+  int64 created_at = 3;
+  int64 updated_at = 4;
+  int64 version = 5;
+  string status = 6;
+  string description = 7;
+}
+
+// формат запроса для company.GetList
+message CompanyGetListRequestStruct {
+  string namespace = 1;
+}
+
+// формат ответа для company.GetList
+message CompanyGetListResponseStruct {
+  repeated ReleaseStruct company_list = 1;
+}
+
+// формат запроса для company.Delete
+message CompanyDeleteRequestStruct {
+  int64 company_stack_id = 1;
+  string namespace = 2;
+}
+
+// формат ответа для company.Delete
+message CompanyDeleteResponseStruct {}
+
+// формат запроса для company.Update
+message CompanyUpdateRequestStruct {
+  int64 company_stack_id = 1;
+  string namespace = 2;
+  string chart_values = 3;
+}
+
+// формат ответа для company.Update
+message CompanyUpdateResponseStruct {}
+
+// формат запроса для system.status
+message SystemStatusRequestStruct {}
+
+// формат ответа для system.status
+message SystemStatusResponseStruct {
+  string name = 1;
+  int64 goroutines = 2;
+  int64 memory = 3;
+  string memory_kb = 4;
+  string memory_mb = 5;
+  int32 uptime = 6;
+}
+
+// формат запроса для system.traceGoroutine
+message SystemTraceGoroutineRequestStruct {}
+
+// формат ответа для system.traceGoroutine
+message SystemTraceGoroutineResponseStruct {}
+
+// формат запроса для system.traceMemory
+message SystemTraceMemoryRequestStruct {}
+
+// формат ответа для system.traceMemory
+message SystemTraceMemoryResponseStruct {}
+
+// формат запроса для system.cpuProfile
+message SystemCpuProfileRequestStruct {
+  int64 time = 1;
+}
+
+// формат ответа для system.cpuProfile
+message SystemCpuProfileResponseStruct {}
+
+// формат запроса для system.reloadConfig
+message SystemReloadConfigRequestStruct {}
+
+// формат ответа для system.reloadConfig
+message SystemReloadConfigResponseStruct {
+  int32 logging_level = 1;
+  string server_type = 2;
+  int64 tcp_port = 3;
+  int64 grpc_port = 4;
+  string rabbit_queue = 5;
+  string rabbit_exchange = 6;
+}
+
+// формат запроса для system.reloadSharding
+message SystemReloadShardingRequestStruct {}
+
+// формат ответа для system.reloadSharding
+message SystemReloadShardingResponseStruct {}
+
+// формат запроса для system.checkSharding
+message SystemCheckShardingRequestStruct {}
+
+// формат ответа для system.checkSharding
+message SystemCheckShardingResponseStruct {}

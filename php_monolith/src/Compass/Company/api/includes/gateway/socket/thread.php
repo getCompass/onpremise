@@ -246,6 +246,33 @@ class Gateway_Socket_Thread extends Gateway_Socket_Default {
 		}
 	}
 
+	/**
+	 * Метод для проверки является ли пользователь участником треда
+	 *
+	 * @param int    $user_id
+	 * @param string $thread_key
+	 *
+	 * @return bool
+	 */
+	public static function checkIsUserMember(int $user_id, string $thread_key):bool {
+
+		$request = [
+			"user_id"    => $user_id,
+			"thread_key" => $thread_key,
+		];
+
+		[$status, $response] = self::doCall("threads.checkIsUserMember", $request, $user_id);
+		if ($status !== "ok") {
+
+			// сокет-запрос вернул код ошибки?
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException(__CLASS__ . ": request return call not \"ok\"");
+			}
+		}
+
+		return $response["is_member"];
+	}
+
 	// -------------------------------------------------------
 	// UTILS
 	// -------------------------------------------------------

@@ -197,14 +197,15 @@ func getCountUserDayListByInterval(ctx context.Context, dbConn *company_data.DbC
 	query := fmt.Sprintf("SELECT user_id, day_start, is_disabled_alias, created_at, updated_at, data FROM `%s` USE INDEX (`day_start`) WHERE `day_start` >= ? AND `day_start` <= ? ORDER BY `day_start`, `is_disabled_alias` ASC LIMIT %d OFFSET %d", tableName, maxCount, offset)
 
 	queryCtx, cancel := context.WithTimeout(ctx, mysql.QueryTimeout)
+	defer cancel()
 
 	results, err := dbConn.Conn.QueryContext(queryCtx, query, fromDateAt, toDateAt)
-
-	defer func() { _ = results.Close(); defer cancel() }()
 
 	if err != nil {
 		return nil, 0, err
 	}
+
+	defer results.Close()
 
 	count := 0
 	for results.Next() {

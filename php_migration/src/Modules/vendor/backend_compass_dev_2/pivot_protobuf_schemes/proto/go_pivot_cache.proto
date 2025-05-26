@@ -1,0 +1,171 @@
+syntax = "proto3";
+package pivotCacheGrpc;
+option go_package = "pivot_cache/";
+
+// сервис, который описывает все метод go_pivot_cache
+service pivotCache {
+
+  rpc SessionGetInfo(SessionGetInfoRequestStruct) returns (SessionGetInfoResponseStruct) {}
+  rpc SessionDeleteByUserId(SessionDeleteByUserIdRequestStruct) returns (SessionDeleteByUserIdResponseStruct) {}
+  rpc SessionDeleteBySessionUniq(SessionDeleteBySessionUniqRequestStruct) returns (SessionDeleteBySessionUniqResponseStruct) {}
+  rpc SessionDeleteUserInfo(SessionDeleteUserInfoRequestStruct) returns (SessionDeleteUserInfoResponseStruct) {}
+
+  rpc SystemStatus(SystemStatusRequestStruct) returns (SystemStatusResponseStruct) {}
+  rpc SystemTraceGoroutine(SystemTraceGoroutineRequestStruct) returns (SystemTraceGoroutineResponseStruct) {}
+  rpc SystemTraceMemory(SystemTraceMemoryRequestStruct) returns (SystemTraceMemoryResponseStruct) {}
+  rpc SystemCpuProfile(SystemCpuProfileRequestStruct) returns (SystemCpuProfileResponseStruct) {}
+  rpc SystemReloadConfig(SystemReloadConfigRequestStruct) returns (SystemReloadConfigResponseStruct) {}
+  rpc SystemReloadSharding(SystemReloadShardingRequestStruct) returns (SystemReloadShardingResponseStruct) {}
+  rpc SystemCheckSharding(SystemCheckShardingRequestStruct) returns (SystemCheckShardingResponseStruct) {}
+
+  rpc UserGetInfo(UsersGetInfoRequestStruct) returns (UsersGetInfoResponseStruct) {}
+  rpc UserGetInfoList(UsersGetInfoListRequestStruct) returns (UsersGetInfoListResponseStruct) {}
+
+  rpc UserResetCache(UserResetCacheRequestStruct) returns (UserResetCacheResponseStruct) {}
+  rpc SessionResetCache(SessionResetCacheRequestStruct) returns (SessionResetCacheResponseStruct) {}
+}
+
+// формат запроса для session.getInfo
+message SessionGetInfoRequestStruct {
+  string shard_id = 1;
+  string table_id = 2;
+  string session_uniq = 3;
+}
+
+// формат ответа для session.getInfo
+message SessionGetInfoResponseStruct {
+  int64 user_id = 1;
+  int32 refreshed_at = 2;
+}
+
+// формат запроса для session.deleteByUserId
+message SessionDeleteByUserIdRequestStruct {
+  int64 user_id = 1;
+}
+
+// формат ответа для session.deleteByUserId
+message SessionDeleteByUserIdResponseStruct {}
+
+// формат запроса для session.deleteBySessionUniq
+message SessionDeleteBySessionUniqRequestStruct {
+  string session_uniq = 1;
+}
+
+// формат ответа для session.deleteBySessionUniq
+message SessionDeleteBySessionUniqResponseStruct {}
+
+// формат запроса для session.deleteUserInfo
+message SessionDeleteUserInfoRequestStruct {
+  int64 user_id = 1;
+}
+
+// формат ответа для session.deleteUserInfo
+message SessionDeleteUserInfoResponseStruct {}
+
+// формат запроса для system.status
+message SystemStatusRequestStruct {}
+
+// формат ответа для system.status
+message SystemStatusResponseStruct {
+  string name = 1;
+  int64 goroutines = 2;
+  int64 memory = 3;
+  string memory_kb = 4;
+  string memory_mb = 5;
+  int32 uptime = 6;
+}
+
+// формат запроса для system.traceGoroutine
+message SystemTraceGoroutineRequestStruct {}
+
+// формат ответа для system.traceGoroutine
+message SystemTraceGoroutineResponseStruct {}
+
+// формат запроса для system.traceMemory
+message SystemTraceMemoryRequestStruct {}
+
+// формат ответа для system.traceMemory
+message SystemTraceMemoryResponseStruct {}
+
+// формат запроса для system.cpuProfile
+message SystemCpuProfileRequestStruct {
+  int64 time = 1;
+}
+
+// формат ответа для system.cpuProfile
+message SystemCpuProfileResponseStruct {}
+
+// формат запроса для system.reloadConfig
+message SystemReloadConfigRequestStruct {}
+
+// формат ответа для system.reloadConfig
+message SystemReloadConfigResponseStruct {
+  int32 logging_level = 1;
+  string server_type = 2;
+  int64 tcp_port = 3;
+  int64 grpc_port = 4;
+  string rabbit_queue = 5;
+  string rabbit_exchange = 6;
+}
+
+// формат запроса для system.reloadSharding
+message SystemReloadShardingRequestStruct {}
+
+// формат ответа для system.reloadSharding
+message SystemReloadShardingResponseStruct {}
+
+// формат запроса для system.checkSharding
+message SystemCheckShardingRequestStruct {}
+
+// формат ответа для system.checkSharding
+message SystemCheckShardingResponseStruct {}
+
+// формат запроса для user.getInfo
+message UsersGetInfoRequestStruct {
+  int64 user_id = 1;
+}
+
+// формат ответа для user.getInfo
+message UsersGetInfoResponseStruct {
+  int64  user_id = 1;
+  int32  npc_type = 2;
+  int64  invited_by_partner_id = 3;
+  int64  last_active_day_start_at = 4;
+  int64  invited_by_user_id = 5;
+  int64  created_at = 6;
+  int64  updated_at = 7;
+  int64  full_name_updated_at = 8;
+  string country_code = 9;
+  string full_name = 10;
+  string avatar_file_map = 11;
+  string extra = 12;
+}
+
+// формат запроса для user.getInfoList
+message UsersGetInfoListRequestStruct {
+  repeated int64 user_id_list = 1;
+}
+
+// формат ответа для user.getInfoList
+message UsersGetInfoListResponseStruct {
+  repeated UsersGetInfoResponseStruct userList = 1;
+}
+
+// запрос на очистку всего кэша пользователей
+message ResetCacheRequestStruct {}
+// rpc resetCache(ResetCacheRequestStruct) returns (ResetCacheResponseStruct) {}
+
+// ответа на запрос на очистку всего кэша пользователей
+message ResetCacheResponseStruct {}
+
+// запрос на очистку всего кэша пользователей
+message UserResetCacheRequestStruct {}
+
+// ответа на запрос на очистку всего кэша пользователей
+message UserResetCacheResponseStruct {}
+
+// запрос на очистку всего кэша пользователей
+message SessionResetCacheRequestStruct {}
+
+// ответа на запрос на очистку всего кэша пользователей
+message SessionResetCacheResponseStruct {}

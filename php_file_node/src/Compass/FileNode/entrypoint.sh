@@ -27,12 +27,12 @@ envsubst < "${SCRIPT_PATH}/private/custom.local.php" > "${SCRIPT_PATH}/private/c
 bash "/app/wait-services.sh" || die "service waiting failed"
 
 # приступаем к миграциям
-mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P "$MYSQL_SYSTEM_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_node.sql"
+mariadb --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P "$MYSQL_SYSTEM_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_node.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/file_node" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/file_node?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/file_node" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/file_node?tls=false version
 
-mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P "$MYSQL_SYSTEM_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
+mariadb --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P "$MYSQL_SYSTEM_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/system_file_node" -database mysql://${MYSQL_SYSTEM_USER}:${MYSQL_SYSTEM_PASS}@tcp\(${MYSQL_SYSTEM_HOST}:${MYSQL_SYSTEM_PORT}\)/system_file_node?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/system_file_node" -database mysql://${MYSQL_SYSTEM_USER}:${MYSQL_SYSTEM_PASS}@tcp\(${MYSQL_SYSTEM_HOST}:${MYSQL_SYSTEM_PORT}\)/system_file_node?tls=false version

@@ -53,7 +53,6 @@ class Domain_Conversation_Entity_Message_MentionUsers {
 			$badge_text = mb_strtolower($mention_text);
 
 			// ищем совпадение по баджу среди участников чата
-			$mention_user_id_list = [];
 			foreach ($member_list as $member) {
 
 				// если упоминание из текста для гостя, то получаем участников с ролью гостя

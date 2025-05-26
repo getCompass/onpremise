@@ -30,12 +30,20 @@ class Socket_Company_Userbot extends \BaseFrame\Controller\Socket {
 	 */
 	public function create():array {
 
-		$userbot_name     = $this->post(\Formatter::TYPE_STRING, "userbot_name");
-		$avatar_id        = $this->post(\Formatter::TYPE_INT, "avatar_id");
-		$is_react_command = $this->post(\Formatter::TYPE_INT, "is_react_command", 0);
-		$webhook          = $this->post(\Formatter::TYPE_STRING, "webhook", "");
-		$role             = $this->post(\Formatter::TYPE_INT, "role");
-		$permissions      = $this->post(\Formatter::TYPE_INT, "permissions");
+		$userbot_name             = $this->post(\Formatter::TYPE_STRING, "userbot_name");
+		$avatar_color_id          = $this->post(\Formatter::TYPE_INT, "avatar_id"); // deprecated
+		$avatar_file_key          = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
+		$is_react_command         = $this->post(\Formatter::TYPE_INT, "is_react_command", 0);
+		$webhook                  = $this->post(\Formatter::TYPE_STRING, "webhook", "");
+		$is_smart_app             = $this->post(\Formatter::TYPE_INT, "is_smart_app", 0);
+		$smart_app_name           = $this->post(\Formatter::TYPE_STRING, "smart_app_name", "");
+		$smart_app_url            = $this->post(\Formatter::TYPE_STRING, "smart_app_url", "");
+		$is_smart_app_sip         = $this->post(\Formatter::TYPE_INT, "is_smart_app_sip", 0);
+		$is_smart_app_mail        = $this->post(\Formatter::TYPE_INT, "is_smart_app_mail", 0);
+		$smart_app_default_width  = $this->post(\Formatter::TYPE_INT, "smart_app_default_width", 414);
+		$smart_app_default_height = $this->post(\Formatter::TYPE_INT, "smart_app_default_height", 896);
+		$role                     = $this->post(\Formatter::TYPE_INT, "role");
+		$permissions              = $this->post(\Formatter::TYPE_INT, "permissions");
 
 		try {
 
@@ -46,7 +54,10 @@ class Socket_Company_Userbot extends \BaseFrame\Controller\Socket {
 				$secret_key,
 				$avatar_file_key,
 				$npc_type,
-			] = Domain_Userbot_Scenario_Socket::create($this->company_id, $userbot_name, $avatar_id, $is_react_command, $webhook, $role, $permissions);
+			] = Domain_Userbot_Scenario_Socket::create($this->company_id, $userbot_name, $avatar_color_id, $avatar_file_key, $is_react_command, $webhook,
+				$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height,
+				$role, $permissions
+			);
 		} catch (Domain_Userbot_Exception_IncorrectParam) {
 			return $this->error(1434001, "incorrect avatar for userbot");
 		} catch (cs_CompanyIncorrectCompanyId|cs_DamagedActionException|\cs_DecryptHasFailed|\BaseFrame\Exception\Domain\InvalidPhoneNumber) {
@@ -76,16 +87,27 @@ class Socket_Company_Userbot extends \BaseFrame\Controller\Socket {
 	 */
 	public function edit():array {
 
-		$userbot_id         = $this->post(\Formatter::TYPE_STRING, "userbot_id");
-		$token              = $this->post(\Formatter::TYPE_STRING, "token");
-		$client_launch_uuid = $this->post(\Formatter::TYPE_STRING, "client_launch_uuid");
-		$userbot_name       = $this->post(\Formatter::TYPE_STRING, "userbot_name", false);
-		$webhook            = $this->post(\Formatter::TYPE_STRING, "webhook", false);
-		$is_react_command   = $this->post(\Formatter::TYPE_INT, "is_react_command", false);
-		$avatar_color_id    = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
+		$userbot_id               = $this->post(\Formatter::TYPE_STRING, "userbot_id");
+		$token                    = $this->post(\Formatter::TYPE_STRING, "token");
+		$client_launch_uuid       = $this->post(\Formatter::TYPE_STRING, "client_launch_uuid");
+		$userbot_name             = $this->post(\Formatter::TYPE_STRING, "userbot_name", false);
+		$is_react_command         = $this->post(\Formatter::TYPE_INT, "is_react_command", false);
+		$webhook                  = $this->post(\Formatter::TYPE_STRING, "webhook", false);
+		$is_smart_app             = $this->post(\Formatter::TYPE_INT, "is_smart_app", false);
+		$smart_app_name           = $this->post(\Formatter::TYPE_STRING, "smart_app_name", false);
+		$smart_app_url            = $this->post(\Formatter::TYPE_STRING, "smart_app_url", false);
+		$is_smart_app_sip         = $this->post(\Formatter::TYPE_INT, "is_smart_app_sip", false);
+		$is_smart_app_mail        = $this->post(\Formatter::TYPE_INT, "is_smart_app_mail", false);
+		$smart_app_default_width  = $this->post(\Formatter::TYPE_INT, "smart_app_default_width", false);
+		$smart_app_default_height = $this->post(\Formatter::TYPE_INT, "smart_app_default_height", false);
+		$avatar_color_id          = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false); // deprecated
+		$avatar_file_key          = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
 
 		try {
-			Domain_Userbot_Scenario_Socket::edit($userbot_id, $token, $userbot_name, $webhook, $is_react_command, $avatar_color_id, $client_launch_uuid);
+			Domain_Userbot_Scenario_Socket::edit($userbot_id, $token, $userbot_name, $is_react_command, $webhook,
+				$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height,
+				$avatar_color_id, $avatar_file_key, $client_launch_uuid
+			);
 		} catch (\cs_RowIsEmpty) {
 			return $this->error(1434003, "userbot or token is not found");
 		}

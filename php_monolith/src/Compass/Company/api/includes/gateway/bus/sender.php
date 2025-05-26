@@ -177,9 +177,16 @@ class Gateway_Bus_Sender {
 			$client_launch_uuid = generateUUID();
 		}
 
-		self::_sendEventToAll([
-			Gateway_Bus_Sender_Event_MemberProfileUpdated_V1::makeEvent(\CompassApp\Domain\Member\Entity\Member::formatMember($user_info), $client_launch_uuid),
+		// отправляем администраторам участника с правами
+		$owner_id_list = self::_sendEventToAllOwners([
+			Gateway_Bus_Sender_Event_MemberProfileUpdated_V1::makeEvent(
+				Member::formatMember($user_info, true), $client_launch_uuid),
 		]);
+
+		// отправляем всем остальным участника без прав
+		self::_sendEventToAll([
+			Gateway_Bus_Sender_Event_MemberProfileUpdated_V1::makeEvent(Member::formatMember($user_info), $client_launch_uuid),
+		], exclude_user_id_list: $owner_id_list);
 	}
 
 	/**
@@ -709,6 +716,32 @@ class Gateway_Bus_Sender {
 		]);
 	}
 
+	/**
+	 * Послать ws событие, когда переключили значение настройки ограничения редактирования сообщений
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function unlimitedMessagesEditingChanged(int $is_unlimited_messages_editing_enabled):void {
+
+		self::_sendEventToAll([
+			Gateway_Bus_Sender_Event_UnlimitedMessagesEditingChanged_V1::makeEvent($is_unlimited_messages_editing_enabled),
+		]);
+	}
+
+	/**
+	 * послать ws событие, когда переключили значение настройки об показе статуса прочтения сообщений
+	 *
+	 * @param int $is_add_to_general_chat_on_hiring
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function showMessageReadStatusConfigChanged(int $show_message_read_status):void {
+
+		self::_sendEventToAll([
+			Gateway_Bus_Sender_Event_ShowMessageReadStatusConfigChanged_V1::makeEvent($show_message_read_status),
+		]);
+	}
+
 	// -------------------------------------------------------
 	// region Userbot
 	// -------------------------------------------------------
@@ -770,6 +803,28 @@ class Gateway_Bus_Sender {
 		self::_sendEvent([
 			Gateway_Bus_Sender_Event_UserbotCreated_V1::makeEvent($userbot),
 		], $talking_user_list, ws_users: [$userbot_as_user_id]);
+	}
+
+	/**
+	 * ws-событие, когда был обновлён smart app
+	 *
+	 * @param string $userbot_id
+	 * @param array  $userbot
+	 * @param array  $user_id_list
+	 *
+	 */
+	public static function userbotSmartAppUpdated(string $userbot_id, array $smart_app, array $user_id_list):void {
+
+		// формируем список пользователей на отправку ws
+		$talking_user_list = [];
+		foreach ($user_id_list as $v) {
+			$talking_user_list[] = self::makeTalkingUserItem($v, false);
+		}
+
+		// отправляем событие
+		self::_sendEvent([
+			Gateway_Bus_Sender_Event_UserbotSmartAppUpdated_V1::makeEvent($userbot_id, $smart_app),
+		], $talking_user_list);
 	}
 
 	// endregion Userbot
@@ -884,10 +939,11 @@ class Gateway_Bus_Sender {
 	 * @param int   $type
 	 * @param array $push_data
 	 *
+	 * @return array
 	 * @throws ParseFatalException
 	 * @long
 	 */
-	protected static function _sendEventToAllOwners(array $event_version_list, int $exclude_receiver_id = 0, int $type = 0, array $push_data = []):void {
+	protected static function _sendEventToAllOwners(array $event_version_list, int $exclude_receiver_id = 0, int $type = 0, array $push_data = []):array {
 
 		// проверяем что прислали корректные параметры
 		self::_assertSendEventParameters($event_version_list);
@@ -911,7 +967,7 @@ class Gateway_Bus_Sender {
 			: Domain_User_Action_Member_GetUserRoleList::do([Member::ROLE_ADMINISTRATOR]);
 
 		$talking_user_list = [];
-
+		$owner_id_list     = [];
 		foreach ($owner_list as $member) {
 
 			// если нужно не слать ивент пользователю
@@ -939,11 +995,14 @@ class Gateway_Bus_Sender {
 				$need_push = false;
 			}
 
+			$owner_id_list[]     = $member->user_id;
 			$talking_user_list[] = Gateway_Bus_Sender::makeTalkingUserItem($member->user_id, $need_push);
 		}
 
 		// отправляем событие
 		self::_sendEventRequest($event_name, $talking_user_list, $converted_event_version_list, push_data: $push_data);
+
+		return $owner_id_list;
 	}
 
 	/**
@@ -957,7 +1016,7 @@ class Gateway_Bus_Sender {
 	 *
 	 * @throws ParseFatalException
 	 */
-	protected static function _sendEventToAll(array $event_version_list, array $ws_user_list = [], array $push_data = [], string $routine_key = "", int $is_need_push = 0):void {
+	protected static function _sendEventToAll(array $event_version_list, array $ws_user_list = [], array $push_data = [], string $routine_key = "", int $is_need_push = 0, array $exclude_user_id_list = []):void {
 
 		// проверяем что прислали корректные параметры
 		self::_assertSendEventParameters($event_version_list);
@@ -975,7 +1034,7 @@ class Gateway_Bus_Sender {
 			];
 		}
 
-		self::_sendEventToAllRequest($event_name, $converted_event_version_list, $ws_user_list, $push_data, $routine_key, $is_need_push);
+		self::_sendEventToAllRequest($event_name, $converted_event_version_list, $ws_user_list, $push_data, $routine_key, $is_need_push, $exclude_user_id_list);
 	}
 
 	/**
@@ -1056,35 +1115,39 @@ class Gateway_Bus_Sender {
 	 * @param array  $push_data
 	 * @param string $routine_key
 	 * @param int    $is_need_push
+	 * @param array  $exclude_user_id_list
 	 *
 	 * @throws ParseFatalException
+	 * @long
 	 */
-	protected static function _sendEventToAllRequest(string $event, array $event_version_list, array $ws_user_list = [], array $push_data = [], string $routine_key = "", int $is_need_push = 0):void {
+	protected static function _sendEventToAllRequest(string $event, array $event_version_list, array $ws_user_list = [], array $push_data = [], string $routine_key = "", int $is_need_push = 0, array $exclude_user_id_list = []):void {
 
 		// формируем параметры задачи для rabbitMq
 		$params = [
-			"method"             => (string) "sender.sendEventToAll",
-			"event"              => (string) $event,
-			"event_version_list" => (array) $event_version_list,
-			"push_data"          => (object) $push_data,
-			"uuid"               => (string) generateUUID(),
-			"ws_users"           => (array) $ws_user_list,
-			"routine_key"        => (string) $routine_key,
-			"is_need_push"       => (int) $is_need_push,
-			"channel"            => (string) self::_WS_CHANNEL,
+			"method"               => (string) "sender.sendEventToAll",
+			"event"                => (string) $event,
+			"event_version_list"   => (array) $event_version_list,
+			"push_data"            => (object) $push_data,
+			"uuid"                 => (string) generateUUID(),
+			"ws_users"             => (array) $ws_user_list,
+			"routine_key"          => (string) $routine_key,
+			"is_need_push"         => (int) $is_need_push,
+			"channel"              => (string) self::_WS_CHANNEL,
+			"exclude_user_id_list" => (array) $exclude_user_id_list,
 		];
 		$params = self::_prepareParams($params);
 
 		$converted_event_version_list = self::_convertEventVersionListToGrpcStructure($params["event_version_list"]);
 		$grpc_request                 = new \SenderGrpc\SenderSendEventToAllRequestStruct([
-			"event"              => $params["event"],
-			"event_version_list" => $converted_event_version_list,
-			"push_data"          => toJson($params["push_data"]),
-			"uuid"               => $params["uuid"],
-			"ws_users"           => isset($params["ws_users"]) ? toJson($params["ws_users"]) : "",
-			"is_need_push"       => $is_need_push,
-			"company_id"         => COMPANY_ID,
-			"channel"            => (string) self::_WS_CHANNEL,
+			"event"                => $params["event"],
+			"event_version_list"   => $converted_event_version_list,
+			"push_data"            => toJson($params["push_data"]),
+			"uuid"                 => $params["uuid"],
+			"ws_users"             => isset($params["ws_users"]) ? toJson($params["ws_users"]) : "",
+			"is_need_push"         => $is_need_push,
+			"company_id"           => COMPANY_ID,
+			"channel"              => (string) self::_WS_CHANNEL,
+			"exclude_user_id_list" => (array) $exclude_user_id_list,
 		]);
 
 		self::_sendRequestWrap("SenderSendEventToAll", $grpc_request, $params);

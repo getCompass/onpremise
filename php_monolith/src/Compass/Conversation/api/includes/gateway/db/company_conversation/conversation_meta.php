@@ -41,7 +41,7 @@ class Gateway_Db_CompanyConversation_ConversationMeta extends Gateway_Db_Company
 	 * @param array $conversation_map_list
 	 * @param bool  $assoc_list
 	 *
-	 * @return array
+	 * @return Struct_Db_CompanyConversation_ConversationMeta[]
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \cs_UnpackHasFailed
 	 */

@@ -9,9 +9,10 @@ import (
 	"go_company/api/includes/type/db/company_conversation"
 	"go_company/api/includes/type/db/company_data"
 	"go_company/api/includes/type/db/company_thread"
-	"go_company/api/includes/type/global_isolation"
+	GlobalIsolation "go_company/api/includes/type/global_isolation"
 	"go_company/api/includes/type/rating"
 	reactionStorage "go_company/api/includes/type/reaction_storage"
+	readMessageStorage "go_company/api/includes/type/read_message_storage"
 	"go_company/api/includes/type/storage"
 	"go_company/api/includes/type/timer"
 	"sync"
@@ -37,7 +38,7 @@ func MakeCompanyEnvList() *CompanyEnvList {
 // инициализирует новую среду для компании
 // если сервис больше не может вмещать в себя компании, возвращает ошибку
 func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64, companyConfig *conf.CompanyConfigStruct, capacityLimit int, mysqlMaxConn int,
-	globalIsolation *GlobalIsolation.GlobalIsolation) (*Isolation, context.Context) {
+	globalIsolation *GlobalIsolation.GlobalIsolation) (*Isolation, context.Context, error) {
 
 	companyEnv.mutex.Lock()
 	_, exists := companyEnv.envList[companyId]
@@ -49,17 +50,17 @@ func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64,
 			companyEnv.stopEnv(companyId)
 		}
 
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	if exists {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	if len(companyEnv.envList) >= capacityLimit {
 
 		log.Errorf("service capacity limit reached")
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	companyContext, cancel := context.WithCancel(ctx)
@@ -67,7 +68,9 @@ func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64,
 	// генерируем новый контекст исполнения для сервиса
 	isolation, err := MakeIsolation(companyContext, companyId, companyConfig, cancel, mysqlMaxConn, globalIsolation)
 	if err != nil {
-		return nil, nil
+
+		log.Errorf("Failed to create isolation for %d. Error: %d", companyId, err)
+		return nil, nil, err
 	}
 
 	// добавляешь в хранилище
@@ -76,7 +79,7 @@ func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64,
 	companyEnv.mutex.Unlock()
 
 	log.Infof("added isolation for company %d", companyId)
-	return isolation, companyContext
+	return isolation, companyContext, nil
 }
 
 // останавливает среду исполнения компании
@@ -138,6 +141,7 @@ type Isolation struct {
 	companyConfig           *conf.CompanyConfigStruct
 	RatingStore             *rating.Store
 	ReactionStore           *reactionStorage.ReactionQueueStruct
+	ReadMessageStore        *readMessageStorage.ReadMessageQueueStruct
 	TimerStore              *timer.Store
 	Cancel                  context.CancelFunc
 	Context                 context.Context
@@ -205,6 +209,7 @@ func MakeIsolation(ctx context.Context, companyId int64, companyConfig *conf.Com
 		UserRatingByDays:        rating.MakeUserRatingByDaysStore(),
 		TimerStore:              timer.MakeStore(),
 		ReactionStore:           reactionStorage.MakeReactionStore(),
+		ReadMessageStore:        readMessageStorage.MakeReadMessageStore(),
 		MainStorage:             storage.MakeMainStorage(),
 	}
 

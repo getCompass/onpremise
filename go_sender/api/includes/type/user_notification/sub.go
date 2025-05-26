@@ -2,6 +2,7 @@ package user_notification
 
 import (
 	"context"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_sender/api/includes/type/db/company_data"
 	"sync"
 )
@@ -47,6 +48,7 @@ func (userNotificationSubStore *SubStorage) doSubUserListOnChanList(ctx context.
 
 	go func() {
 
+		log.Errorf("companyDataDbConn %v", companyDataDbConn)
 		store.addUserNotificationListToMainStore(ctx, needFetchUserIdList, companyDataDbConn)
 		userNotificationSubStore.closeChannelList(needFetchUserIdList)
 	}()

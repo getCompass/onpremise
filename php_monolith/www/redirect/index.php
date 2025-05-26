@@ -1,6 +1,6 @@
 <?php
 
-use Compass\Conversation\Type_Preview_Main;
+use Compass\Conversation\Type_Preview_Config;
 
 require_once __DIR__ . "/../../start.php";
 
@@ -36,7 +36,7 @@ if (is_null($domain)) {
 	exit();
 }
 
-if (Type_Preview_Main::isBlackDomain($domain)) {
+if (Type_Preview_Config::isDomainInRedirectBlackList($domain)) {
 
 	include "error.tpl";
 	exit();

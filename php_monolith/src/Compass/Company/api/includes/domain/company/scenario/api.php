@@ -23,7 +23,7 @@ class Domain_Company_Scenario_Api {
 	 * @param string $name
 	 *
 	 * @return string
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
+	 * @throws ActionNotAllowed
 	 * @throws cs_CompanyIncorrectName
 	 * @throws \parseException
 	 * @throws \returnException
@@ -48,7 +48,7 @@ class Domain_Company_Scenario_Api {
 	 * @param int $permissions
 	 * @param int $avatar_color_id
 	 *
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
+	 * @throws ActionNotAllowed
 	 * @throws cs_CompanyIncorrectAvatarColorId
 	 * @throws \parseException
 	 */
@@ -73,7 +73,7 @@ class Domain_Company_Scenario_Api {
 	 *
 	 * @return array
 	 * @throws ParamException
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
+	 * @throws ActionNotAllowed
 	 * @throws cs_CompanyIncorrectAvatarColorId
 	 * @throws cs_CompanyIncorrectName
 	 * @throws \parseException
@@ -113,8 +113,8 @@ class Domain_Company_Scenario_Api {
 	 * @param int $permissions
 	 * @param int $value
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
+	 * @throws ParseFatalException
+	 * @throws ActionNotAllowed
 	 * @throws cs_InvalidConfigValue
 	 * @throws \queryException
 	 */
@@ -129,7 +129,7 @@ class Domain_Company_Scenario_Api {
 	 * Сценарий получения настройки отображения сообщения в пуше
 	 *
 	 * @return int
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 * @throws \queryException
 	 */
 	public static function getPushBodyDisplayConfig():int {
@@ -148,9 +148,9 @@ class Domain_Company_Scenario_Api {
 	 * @param int $permissions
 	 * @param int $is_enabled
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
+	 * @throws ActionNotAllowed
 	 * @throws cs_InvalidConfigValue
 	 * @throws \parseException
 	 * @throws \queryException
@@ -221,7 +221,7 @@ class Domain_Company_Scenario_Api {
 	 * @param int $permissions
 	 *
 	 * @return void
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
+	 * @throws ActionNotAllowed
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
@@ -241,8 +241,8 @@ class Domain_Company_Scenario_Api {
 	 * @param int $value
 	 *
 	 * @return void
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
+	 * @throws ParseFatalException
+	 * @throws ActionNotAllowed
 	 * @throws cs_InvalidConfigValue
 	 * @throws \queryException
 	 */
@@ -267,8 +267,8 @@ class Domain_Company_Scenario_Api {
 	 * @param int $value
 	 *
 	 * @return void
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
+	 * @throws ParseFatalException
+	 * @throws ActionNotAllowed
 	 * @throws cs_InvalidConfigValue
 	 * @throws \queryException
 	 */
@@ -286,6 +286,35 @@ class Domain_Company_Scenario_Api {
 	}
 
 	/**
+	 * Сценарий смены настройки показывать статус просмотра сообщения
+	 *
+	 * @param int $role
+	 * @param int $permissions
+	 * @param int $value
+	 *
+	 * @return void
+	 * @throws ParseFatalException
+	 * @throws ActionNotAllowed
+	 * @throws cs_InvalidConfigValue
+	 * @throws \queryException
+	 */
+	public static function setShowMessageReadStatus(int $role, int $permissions, int $value):void {
+
+		$is_edited = Domain_Company_Entity_Config::edit(
+			$role, $permissions, Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS, $value);
+
+		if (!$is_edited) {
+			return;
+		}
+
+		// чистим кеш для ключа
+		Gateway_Bus_CompanyCache::clearConfigCacheByKey(Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS);
+
+		// отправляем событие о переключении настройки
+		Gateway_Bus_Sender::showMessageReadStatusConfigChanged($value);
+	}
+
+	/**
 	 * Получить данные активной компании
 	 *
 	 * @param int $user_id
@@ -293,7 +322,7 @@ class Domain_Company_Scenario_Api {
 	 * @param int $permissions
 	 *
 	 * @return Struct_Domain_Company_ActivityData
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 * @throws \returnException
 	 */
 	public static function getActivityData(int $user_id, int $role, int $permissions):Struct_Domain_Company_ActivityData {
@@ -439,5 +468,26 @@ class Domain_Company_Scenario_Api {
 		\CompassApp\Domain\Member\Entity\Member::assertUserAdministrator($user_role);
 
 		Domain_Member_Action_ReadNotifications::do($user_id, $type_list);
+	}
+
+	/**
+	 * Сценарий смены настроек ограничений сообщений в чате
+	 *
+	 * @throws ParseFatalException
+	 * @throws ActionNotAllowed
+	 * @throws cs_InvalidConfigValue
+	 * @throws \queryException
+	 */
+	public static function setUnlimitedMessagesEditing(int $role, int $permissions, int $value):void {
+
+		$is_edited = Domain_Company_Entity_Config::edit(
+			$role, $permissions, Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING, $value);
+
+		if (!$is_edited) {
+			return;
+		}
+
+		// отправляем событие о переключении настройки
+		Gateway_Bus_Sender::unlimitedMessagesEditingChanged($value);
 	}
 }

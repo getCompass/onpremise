@@ -1,0 +1,26 @@
+{
+	"name": "backend_compass_dev_2/pivot_protobuf_schemes",
+	"type": "library",
+	"description": "php_pivot_protobuf_schemes",
+	"autoload": {
+		"psr-4": {
+			"PivotCacheGrpc\\": ["grpc/PivotCacheGrpc", "php/PivotCacheGrpc"],
+			"ActivityGrpc\\": ["grpc/ActivityGrpc", "php/ActivityGrpc"],
+			"UserbotCacheGrpc\\": ["grpc/UserbotCacheGrpc", "php/UserbotCacheGrpc"],
+			"KuberGrpc\\": ["grpc/KuberGrpc", "php/KuberGrpc"],
+			"PusherGrpc\\": ["grpc/PusherGrpc", "php/PusherGrpc"],
+			"PivotSenderGrpc\\": ["grpc/PivotSenderGrpc", "php/PivotSenderGrpc"],
+			"SenderBalancerGrpc\\": ["grpc/SenderBalancerGrpc", "php/SenderBalancerGrpc"],
+			"TestGrpc\\": ["grpc/TestGrpc", "php/TestGrpc"],
+			"DatabaseControllerGrpc\\": ["grpc/DatabaseControllerGrpc", "php/DatabaseControllerGrpc"],
+			"EventGrpc\\": ["grpc/EventGrpc", "php/EventGrpc"],
+			"GPBMetadata\\": "php/GPBMetadata"
+		}
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/pivot_protobuf_schemes"
+		}
+	]
+}

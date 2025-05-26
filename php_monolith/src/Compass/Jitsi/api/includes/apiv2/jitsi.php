@@ -168,7 +168,8 @@ class Apiv2_Jitsi extends \BaseFrame\Controller\Api {
 		Domain_Jitsi_Exception_ConferenceLink_IncorrectLink|
 		Domain_Jitsi_Exception_Conference_NotFound|
 		Domain_Jitsi_Exception_Conference_WrongPassword|
-		Domain_Jitsi_Exception_Node_NotFound) {
+		Domain_Jitsi_Exception_Node_NotFound|
+		Domain_Jitsi_Exception_PermanentConference_ConferenceIsDeleted) {
 			throw new CaseException(1219006, "no active conference");
 		}
 

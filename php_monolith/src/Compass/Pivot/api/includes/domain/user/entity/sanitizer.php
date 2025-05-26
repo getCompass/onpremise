@@ -9,9 +9,6 @@ class Domain_User_Entity_Sanitizer {
 
 	protected const _MAX_FULL_NAME_LENGTH = 40;    // максимальная длина имени пользователя
 
-	// регулярка для имени пользователя
-	protected const _PROFILE_NAME_REGEXP = "/[^а-яёa-z0-9'\- œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñЎўІі]|[<>]/ui";
-
 	/**
 	 * Очистка имени от лишних символов
 	 *
@@ -28,7 +25,7 @@ class Domain_User_Entity_Sanitizer {
 		}
 
 		// удаляем лишнее
-		$full_name = trim(preg_replace([self::_PROFILE_NAME_REGEXP, "/[ ]{2,}/u"], ["", " "], $full_name));
+		$full_name = \BaseFrame\System\Character::sanitizeFullForbiddenCharacterRegex($full_name);
 
 		// обрезаем
 		return mb_substr($full_name, 0, self::_MAX_FULL_NAME_LENGTH);

@@ -26,7 +26,7 @@ envsubst < "${SCRIPT_PATH}/private/custom.local.php" > "${SCRIPT_PATH}/private/c
 # возможно это стоит делать отдельным шагом инициализации
 bash "/app/wait-services.sh" || die "service waiting failed"
 
-mysql --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P "$MYSQL_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
+mariadb --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P "$MYSQL_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/system_compass_company" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/system_compass_company" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false version

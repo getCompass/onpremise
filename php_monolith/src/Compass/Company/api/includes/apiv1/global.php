@@ -31,8 +31,8 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	public function doStart():array {
 
 		$permissions_output_version = match ($this->method_version) {
-			1       => 1,
-			2       => 2,
+			1 => 1,
+			2 => 2,
 			default => \CompassApp\Domain\Member\Entity\Permission::CURRENT_PERMISSIONS_OUTPUT_SCHEMA_VERSION,
 		};
 
@@ -57,7 +57,9 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 			"is_push_body_display"                     => (int) $config["is_push_body_display"],
 			"is_extended_employee_card_enabled"        => (int) $config["is_extended_employee_card_enabled"],
 			"is_general_chat_notification_enabled"     => (int) $config["is_general_chat_notification_enabled"],
+			"is_unlimited_messages_editing_enabled"    => (int) $config["is_unlimited_messages_editing_enabled"],
 			"is_add_to_general_chat_on_hiring_enabled" => (int) $config["is_add_to_general_chat_on_hiring"],
+			"show_message_read_status"                 => (int) $config["show_message_read_status"],
 			"ws_connection_info"                       => (object) Apiv1_Format::wsConnectionInfo($ws_connection_info),
 			"notification_preferences"                 => (object) $notification_preferences,
 			"member_permission_list"                   => (object) $member_permission_list,

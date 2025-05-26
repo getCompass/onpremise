@@ -102,9 +102,27 @@ class Apiv2_Format {
 			"userbot_id"      => (string) $userbot->userbot_id,
 			"status"          => (int) $userbot->status_alias,
 			"avatar_color_id" => (int) Domain_Userbot_Entity_Userbot::getAvatarColorId($userbot->extra),
+			"avatar_file_key" => (string) Domain_Userbot_Entity_Userbot::getAvatarFileKey($userbot->extra),
 			"command_list"    => (array) $command_list,
 			"disabled_at"     => (int) Domain_Userbot_Entity_Userbot::getDisabledAt($userbot->extra),
 			"deleted_at"      => (int) Domain_Userbot_Entity_Userbot::getDeletedAt($userbot->extra),
+			"smart_app"       => (object) self::smartApp($userbot),
+		];
+	}
+
+	/**
+	 * приводим к формату данные о smart app
+	 */
+	public static function smartApp(Struct_Db_CloudCompany_Userbot $userbot):array {
+
+		return [
+			"is_enabled"     => (int) Domain_Userbot_Entity_Userbot::getFlagSmartApp($userbot->extra),
+			"name"           => (string) $userbot->smart_app_name,
+			"url"            => (string) Domain_Userbot_Entity_Userbot::getSmartAppUrl($userbot->extra),
+			"is_sip"         => (int) Domain_Userbot_Entity_Userbot::getFlagSmartAppSip($userbot->extra),
+			"is_mail"        => (int) Domain_Userbot_Entity_Userbot::getFlagSmartAppMail($userbot->extra),
+			"default_width"  => (int) Domain_Userbot_Entity_Userbot::getSmartAppDefaultWidth($userbot->extra),
+			"default_height" => (int) Domain_Userbot_Entity_Userbot::getSmartAppDefaultHeight($userbot->extra),
 		];
 	}
 
@@ -114,12 +132,14 @@ class Apiv2_Format {
 	public static function userbotSensitiveData(Struct_Domain_Userbot_SensitiveData $sensitive_data):array {
 
 		return [
-			"token"            => (string) $sensitive_data->token,
-			"secret_key"       => (string) $sensitive_data->secret_key,
-			"is_react_command" => (int) $sensitive_data->is_react_command,
-			"webhook"          => (string) $sensitive_data->webhook,
-			"group_info_list"  => (array) $sensitive_data->group_info_list,
-			"avatar_color_id"  => (int) $sensitive_data->avatar_color_id,
+			"token"                => (string) $sensitive_data->token,
+			"secret_key"           => (string) $sensitive_data->secret_key,
+			"is_react_command"     => (int) $sensitive_data->is_react_command,
+			"webhook"              => (string) $sensitive_data->webhook,
+			"group_info_list"      => (array) $sensitive_data->group_info_list,
+			"avatar_color_id"      => (int) $sensitive_data->avatar_color_id,
+			"avatar_file_key"      => (string) $sensitive_data->avatar_file_key,
+			"smart_app_public_key" => (string) $sensitive_data->smart_app_public_key,
 		];
 	}
 
@@ -322,14 +342,11 @@ class Apiv2_Format {
 			"invited_comment" => (string) $data["invited_comment"],
 		];
 
-		if (isset($data["candidate_user_info"])) {
-
-			$formatted_data["candidate_user_info"] = (object) [
-				"full_name"       => (string) $data["candidate_user_info"]["full_name"],
-				"avatar_file_key" => (string) $data["candidate_user_info"]["avatar_file_key"],
-				"avatar_color"    => (string) \BaseFrame\Domain\User\Avatar::getColorOutput($data["candidate_user_info"]["avatar_color_id"]),
-			];
-		}
+		$formatted_data["candidate_user_info"] = (object) [
+			"full_name"       => (string) $data["candidate_user_info"]["full_name"],
+			"avatar_file_key" => (string) $data["candidate_user_info"]["avatar_file_key"],
+			"avatar_color"    => (string) \BaseFrame\Domain\User\Avatar::getColorOutput($data["candidate_user_info"]["avatar_color_id"]),
+		];
 		return $formatted_data;
 	}
 

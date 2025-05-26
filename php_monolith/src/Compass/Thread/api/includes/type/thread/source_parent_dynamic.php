@@ -35,7 +35,15 @@ class Type_Thread_SourceParentDynamic {
 	public const CONVERSATION_TYPE_GROUP  = "conversation_group";  // групповой диалог
 	public const CONVERSATION_TYPE_PUBLIC = "conversation_public"; // публичный диалог
 
-	// получаем source_parent_rel_dynamic на основе source_parent_rel из thread_meta
+	/**
+	 * Получаем source_parent_rel_dynamic на основе source_parent_rel из thread_meta
+	 * @param array $source_parent_rel
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
+	 * @throws \parseException
+	 */
 	public static function get(array $source_parent_rel):array {
 
 		$source_parent_map  = Type_Thread_SourceParentRel::getMap($source_parent_rel);

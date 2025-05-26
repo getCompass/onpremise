@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
  * Class Domain_User_Entity_Antispam_Auth
  */
@@ -15,7 +17,7 @@ class Domain_User_Entity_Antispam_Auth {
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
 	 */
-	public static function checkIpAddressBlocksBeforeStartAuth(string|false $grecaptcha_response, bool $is_from_web):int {
+	public static function checkIpAddressBlocksBeforeStartAuth(string|false $grecaptcha_response, bool $is_from_web):array {
 
 		return Type_Antispam_Ip::incrementAndAssertRecaptchaIfBlocked(
 			Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::getAuthLimitsByServer()),
@@ -60,7 +62,7 @@ class Domain_User_Entity_Antispam_Auth {
 			self::_isPhoneNumberInWhiteList($phone_number_hash)
 		);
 
-		self::_authBlocks($phone_number_hash, $is_need_check_ip, $grecaptcha_response, $is_from_web);
+		self::_authBlocks($phone_number_hash, $phone_number, $is_need_check_ip, $grecaptcha_response, $is_from_web);
 	}
 
 	/**
@@ -97,7 +99,7 @@ class Domain_User_Entity_Antispam_Auth {
 			self::_isPhoneNumberInWhiteList($phone_number_hash)
 		);
 
-		self::_authBlocks($phone_number_hash, $is_need_check_ip, $grecaptcha_response, $is_from_web);
+		self::_authBlocks($phone_number_hash, $phone_number, $is_need_check_ip, $grecaptcha_response, $is_from_web);
 	}
 
 	/**
@@ -137,6 +139,7 @@ class Domain_User_Entity_Antispam_Auth {
 			Type_Hash_PhoneNumber::makeHash($phone_number),
 			Type_Antispam_Leveled_Phone::getBlockRule(Type_Antispam_Leveled_Phone::DYNAMIC_AUTH_BLOCK),
 		);
+		Domain_Antispam_Entity_SuspectIp::delete();
 	}
 
 	/**
@@ -148,13 +151,22 @@ class Domain_User_Entity_Antispam_Auth {
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
 	 */
-	private static function _checkCaptchaForCaptchaListIfNeed(string $phone_number_hash, string $grecaptcha_response, bool $is_from_web = false):bool {
+	private static function _checkCaptchaForCaptchaListIfNeed(string $phone_number_hash, string|false $grecaptcha_response, bool $is_from_web = false):bool {
 
 		if (Type_Antispam_User::needCheckIsBlocked()) {
 			return true;
 		}
 
 		if (Type_List_CaptchaList::isPhoneHashInCaptchaList($phone_number_hash)) {
+
+			Type_Captcha_Main::assertCaptcha($grecaptcha_response, $is_from_web);
+
+			// капча была проверена
+			return true;
+		}
+
+		// если подозрительная подсеть
+		if (Type_List_CaptchaList::isSuspectSubnet(getIp())) {
 
 			Type_Captcha_Main::assertCaptcha($grecaptcha_response, $is_from_web);
 
@@ -182,12 +194,13 @@ class Domain_User_Entity_Antispam_Auth {
 	/**
 	 * Блокировки аутентификации
 	 *
+	 * @throws ParseFatalException
 	 * @throws cs_AuthIsBlocked
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_WrongRecaptcha
 	 */
-	private static function _authBlocks(string $phone_number_hash, bool $is_need_check_ip, string|false $grecaptcha_response, bool $is_from_web = false):void {
+	private static function _authBlocks(string $phone_number_hash, string $phone_number, bool $is_need_check_ip, string|false $grecaptcha_response, bool $is_from_web = false):void {
 
 		// проверяем блокировки по телефону (не инкрементим сразу, чтобы еще проверить капчу, если требуется)
 		$auth_dynamic_block_row = Type_Antispam_Phone::check(
@@ -202,11 +215,13 @@ class Domain_User_Entity_Antispam_Auth {
 		// проверяем капчу
 		if ($is_need_check_ip) {
 
-			Type_Antispam_Ip::incrementAndAssertRecaptchaIfBlocked(
+			[$_, $is_already_checked] = Type_Antispam_Ip::incrementAndAssertRecaptchaIfBlocked(
 				Type_Antispam_Leveled_Ip::getBlockRule(Type_Antispam_Leveled_Ip::getAuthLimitsByServer()),
 				$grecaptcha_response,
 				$is_from_web
 			);
+			$is_already_checked = Domain_Antispam_Entity_SuspectIp::checkIpLimit($grecaptcha_response, $phone_number, $is_from_web, $is_already_checked);
+			Domain_Antispam_Entity_SuspectIp::checkIp($grecaptcha_response, $is_from_web, $is_already_checked);
 		}
 
 		// инкрементим уже проверенные блокировки по телефону

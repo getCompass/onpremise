@@ -65,10 +65,6 @@ class Domain_Company_Action_ServiceTask_Hibernate implements Domain_Company_Acti
 		$log_text = "В компании {$company_row->company_id} опубликован анонс о гибернации компании";
 		$log->addText($log_text);
 
-		if (!isTestServer()) {
-			Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_SERVICE, $log_text);
-		}
-
 		// помечаем в реестре и в списке компанию как компанию во сне
 		Gateway_Db_PivotCompanyService_CompanyRegistry::set($company_row->domino_id, $company_row->company_id, [
 			"is_hibernated" => 1,

@@ -30,7 +30,7 @@ class Helper_Groups {
 	 * @throws BusFatalException
 	 */
 	public static function create(int $user_id, string $group_name, string $file_map = "", string $description = "",
-						int $group_type = CONVERSATION_TYPE_GROUP_DEFAULT, bool $is_favorite = false, bool $is_mentioned = false):array {
+						int $group_type = CONVERSATION_TYPE_GROUP_DEFAULT, bool $is_favorite = false, bool $is_mentioned = false, bool $is_channel = false):array {
 
 		// если пришел неадекватный тип диалога для группы
 		if (!Type_Conversation_Meta::isSubtypeOfGroup($group_type)) {
@@ -38,7 +38,7 @@ class Helper_Groups {
 		}
 
 		// создаем групповой диалог
-		$meta_row = Type_Conversation_Group::add($user_id, $group_name, $group_type, $is_favorite, $is_mentioned, $file_map, $description);
+		$meta_row = Type_Conversation_Group::add($user_id, $group_name, $group_type, $is_favorite, $is_mentioned, $file_map, $description, is_channel: $is_channel);
 
 		// отправляем событие пользователю, что добавлен диалог в левом меню
 		Gateway_Bus_Sender::conversationAdded($user_id, $meta_row["conversation_map"]);
@@ -582,10 +582,11 @@ class Helper_Groups {
 	}
 
 	// устанавливаем опции диалога
-	public static function doChangeOptions(string $conversation_map, array $meta_row, array $modifiable_options):void {
+	public static function doChangeOptions(int $user_id, string $conversation_map, array $meta_row, array $modifiable_options):void {
 
 		// обновляем extra
-		$extra = self::_updateExtraOnChangeOptions($meta_row["extra"], $modifiable_options);
+		$is_channel_before = Type_Conversation_Meta_Extra::isChannel($meta_row["extra"]) ? 1 : 0;
+		$extra             = self::_updateExtraOnChangeOptions($meta_row["extra"], $modifiable_options);
 
 		// обновляем мету
 		Type_Conversation_Group::setOptions($conversation_map, $extra);
@@ -601,14 +602,25 @@ class Helper_Groups {
 			"is_need_show_system_message_on_invite_and_join"  => Type_Conversation_Meta_Extra::isNeedShowSystemMessageOnInviteAndJoin($extra) ? 1 : 0,
 			"is_need_show_system_message_on_leave_and_kicked" => Type_Conversation_Meta_Extra::isNeedShowSystemMessageOnLeaveAndKicked($extra) ? 1 : 0,
 			"is_need_show_system_deleted_message"             => Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($extra) ? 1 : 0,
+			"is_reactions_enabled"                            => Type_Conversation_Meta_Extra::isReactionsEnabled($extra) ? 1 : 0,
+			"is_comments_enabled"                             => Type_Conversation_Meta_Extra::isCommentsEnabled($extra) ? 1 : 0,
+			"is_channel"                                      => Type_Conversation_Meta_Extra::isChannel($extra) ? 1 : 0,
 		];
 
 		// отправляем событие участникам
 		Gateway_Bus_Sender::conversationGroupChangedOptions($talking_user_list, $conversation_map, $actual_option_list);
 
-		// если была выключена опцию is_need_show_system_deleted_message, актуализируем левое меню если необходимо
-		if (Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($meta_row["extra"]) && !Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($extra)) {
-			Type_Phphooker_Main::doDisableSystemDeletedMessageConversation($conversation_map, $meta_row["users"]);
+		// если была изменена опция is_need_show_system_deleted_message, актуализируем левое меню если необходимо
+		$is_need_show_system_deleted_message = Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($extra);
+		if (Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($meta_row["extra"]) !== $is_need_show_system_deleted_message) {
+			Type_Phphooker_Main::doChangeSystemDeletedMessageConversation($conversation_map, $is_need_show_system_deleted_message, $meta_row["users"]);
+		}
+
+		// если меняли опцию канала
+		if (isset($modifiable_options["is_channel"]) && ($is_channel_before != $actual_option_list["is_channel"])) {
+
+			Type_Phphooker_Main::doChangeChannelOption($conversation_map, $actual_option_list["is_channel"], $meta_row["users"]);
+			self::_sendSystemMessagesAfterChangeChannelGroupOption($user_id, $actual_option_list["is_channel"], $meta_row);
 		}
 	}
 
@@ -626,11 +638,26 @@ class Helper_Groups {
 				"is_need_show_system_message_on_invite_and_join"  => Type_Conversation_Meta_Extra::setFlagNeedShowSystemMessageOnInviteAndJoin($extra, $new_value),
 				"is_need_show_system_message_on_leave_and_kicked" => Type_Conversation_Meta_Extra::setFlagNeedShowSystemMessageOnLeaveAndKicked($extra, $new_value),
 				"is_need_show_system_deleted_message"             => Type_Conversation_Meta_Extra::setFlagNeedShowSystemDeletedMessage($extra, $new_value),
+				"is_reactions_enabled"                            => Type_Conversation_Meta_Extra::setFlagIsReactionsEnabled($extra, $new_value),
+				"is_comments_enabled"                             => Type_Conversation_Meta_Extra::setFlagIsCommentsEnabled($extra, $new_value),
+				"is_channel"                                      => Type_Conversation_Meta_Extra::setFlagIsChannel($extra, $new_value),
 				default                                           => throw new ParseFatalException(__METHOD__ . ": unhandled option"),
 			};
 		}
 
 		return $extra;
+	}
+
+	/**
+	 * Отправляем системные сообщения после смены статуса группы на диалог и обратно
+	 */
+	protected static function _sendSystemMessagesAfterChangeChannelGroupOption(int $user_id, int $is_channel, array $meta_row):void {
+
+		$system_message_list[] = Type_Conversation_Message_Main::getLastVersionHandler()::makeSystemChannelOptionChanged(
+			$user_id,
+			$is_channel,
+		);
+		Helper_Conversations::addMessageList($meta_row["conversation_map"], $system_message_list, $meta_row["users"], $meta_row["type"], $meta_row["conversation_name"], $meta_row["extra"]);
 	}
 
 	// -------------------------------------------------------

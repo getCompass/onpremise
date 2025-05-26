@@ -58,6 +58,8 @@ class Apiv1_Pivot_Auth extends \BaseFrame\Controller\Api {
 			return $this->error(105, "action not available");
 		} catch (cs_PlatformNotFound) {
 			throw new \BaseFrame\Exception\Request\ParamException("passed unknown platform");
+		} catch (Domain_User_Exception_UserBanned|Domain_User_Exception_PhoneBanned) {
+			return $this->error(1905, "action not available");
 		}
 
 		// пишем статистику об успешной регистрации авторизации пользователя
@@ -114,6 +116,8 @@ class Apiv1_Pivot_Auth extends \BaseFrame\Controller\Api {
 				"available_attempts" => $e->getAvailableAttempts(),
 				"next_attempt"       => $e->getNextAttempt(),
 			]);
+		} catch (Domain_User_Exception_UserBanned|Domain_User_Exception_PhoneBanned) {
+			return $this->error(1905, "action not available");
 		}
 
 		$this->action->profile($user_id);

@@ -115,7 +115,7 @@ class Type_Thread_Followers {
 		$follower_list   = array_keys($follower_row["follower_list"]);
 		$unfollower_list = array_keys($follower_row["unfollower_list"]);
 
-		return array_diff($follower_list, $unfollower_list);
+		return array_values(array_diff($follower_list, $unfollower_list));
 	}
 
 	// метод для получения записи из follower_list

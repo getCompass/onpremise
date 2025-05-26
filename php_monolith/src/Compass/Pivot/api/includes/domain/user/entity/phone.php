@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * Класс для взаимодействия с номерами телефонов.
@@ -91,6 +92,11 @@ class Domain_User_Entity_Phone {
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
 	public static function assertUserWasNotRegisteredBySso(int $user_id):void {
+
+		// на saas данная проверка не требуется
+		if (ServerProvider::isSaas()) {
+			return;
+		}
 
 		if (Gateway_Socket_Federation::hasSsoUserRelationship($user_id) && !Domain_User_Entity_Auth_Config::isAuthorizationAlternativeEnabled()) {
 			throw new Domain_User_Exception_Security_UserWasRegisteredBySso();

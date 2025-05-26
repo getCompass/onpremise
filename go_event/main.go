@@ -88,7 +88,7 @@ func start() {
 	flags.SetFlags()
 	flags.Parse()
 
-	log.SetLoggingLevel(conf.GetConfig().LoggingLevel)
+	log.SetLoggingLevel(config.LoggingLevel)
 
 	// подписка на свои события
 	EventBroker.OnStart(ctx)

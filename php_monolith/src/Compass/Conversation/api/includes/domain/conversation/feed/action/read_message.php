@@ -2,8 +2,10 @@
 
 namespace Compass\Conversation;
 
-use AnalyticUtils\Domain\Counter\Entity\Partner;
-use AnalyticUtils\Domain\Counter\Entity\User as UserCounter;
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use CompassApp\Pack\Message\Conversation;
 
 /**
  * Экшен для прочтения одного непрочитанного сообщения диалога
@@ -14,16 +16,22 @@ class Domain_Conversation_Feed_Action_ReadMessage {
 	 * Читаем одно непрочитанное сообщение диалога
 	 *
 	 * @param int    $user_id
+	 * @param int    $member_role
+	 * @param int    $member_permissions
 	 * @param string $conversation_map
 	 * @param string $message_map
 	 *
 	 * @return array
+	 * @throws BusFatalException
 	 * @throws Domain_Conversation_Exception_Message_IsNotRead
 	 * @throws Domain_Conversation_Exception_User_IsNotMember
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \busException
 	 * @throws \cs_UnpackHasFailed
-	 * @throws \returnException
+	 * @throws \parseException
 	 */
-	public static function run(int $user_id, string $conversation_map, string $message_map):array {
+	public static function run(int $user_id, int $member_role, int $member_permissions, string $conversation_map, string $message_map):array {
 
 		Gateway_Db_CompanyConversation_Main::beginTransaction();
 
@@ -43,7 +51,7 @@ class Domain_Conversation_Feed_Action_ReadMessage {
 			throw new Domain_Conversation_Exception_Message_IsNotRead("Conversation message is not read");
 		}
 
-		$need_read_message_index = \CompassApp\Pack\Message\Conversation::getConversationMessageIndex($message_map);
+		$need_read_message_index = Conversation::getConversationMessageIndex($message_map);
 		$last_read_message_index = self::_getLastReadMessageIndex($left_menu_row);
 
 		// если индекс пришедшего сообщения меньше либо равно индексу текущего прочитанного, то выходим
@@ -57,6 +65,12 @@ class Domain_Conversation_Feed_Action_ReadMessage {
 		$left_menu_row = self::setConversationAsRead($user_id, $message_map, $left_menu_row);
 
 		Gateway_Db_CompanyConversation_Main::commitTransaction();
+
+		// добавляем прочитавшего участника
+		$block_row = Gateway_Db_CompanyConversation_MessageBlock::getOne($conversation_map, Conversation::getBlockId($message_map));
+		$message   = Domain_Conversation_Entity_Message_Block_Message::get($message_map, $block_row);
+		Domain_Conversation_Action_Message_AddReadParticipant::do($left_menu_row, $message, $user_id, $member_role, $member_permissions);
+
 		return $left_menu_row;
 	}
 

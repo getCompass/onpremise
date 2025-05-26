@@ -43,7 +43,7 @@ func startAnnouncementObserver(ctx context.Context, globalIsolation *GlobalIsola
 		return
 	}
 
-	global_observer.WorkAnnouncementObserver(ctx, globalIsolation, companyContextList)
+	global_observer.WorkPivotObserver(ctx, globalIsolation, companyContextList)
 }
 
 // isPivot проверяет, содержится ли 'pivot' в строке role

@@ -65,6 +65,28 @@ class Gateway_Socket_Conversation extends Gateway_Socket_Default {
 	}
 
 	/**
+	 * Отправляем сообщение с файлом от имени бота поддержки в чат поддержки
+	 *
+	 * @param int    $receiver_user_id
+	 * @param string $file_key
+	 *
+	 * @throws ReturnFatalException
+	 */
+	public static function addFileMessageFromSupportBot(int $receiver_user_id, string $file_key):void {
+
+		$ar_post = [
+			"receiver_user_id" => $receiver_user_id,
+			"file_key"         => $file_key,
+		];
+		[$status,] = self::doCall("intercom.addFileMessageFromSupportBot", $ar_post);
+
+		// если вернулась ошибка при удалении
+		if ($status != "ok") {
+			throw new ReturnFatalException(__METHOD__ . ": request to socket method is failed");
+		}
+	}
+
+	/**
 	 * коммитим автоматические рабочие часы
 	 *
 	 * @param array $user_id_list
@@ -1252,6 +1274,34 @@ class Gateway_Socket_Conversation extends Gateway_Socket_Default {
 		}
 
 		return $response["conversation_map"];
+	}
+
+	/**
+	 * Метод для проверки является ли пользователь участником диалога
+	 *
+	 * @param int    $user_id
+	 * @param string $conversation_key
+	 *
+	 * @return bool
+	 */
+	public static function checkIsUserMember(int $user_id, string $conversation_key):bool {
+
+		$request = [
+			"user_id"          => $user_id,
+			"conversation_key" => $conversation_key,
+		];
+
+		[$status, $response] = self::doCall("conversations.checkIsUserMember", $request, $user_id);
+
+		if ($status !== "ok") {
+
+			// сокет-запрос вернул код ошибки?
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException(__CLASS__ . ": request return call not \"ok\"");
+			}
+		}
+
+		return $response["is_member"];
 	}
 
 	// -------------------------------------------------------

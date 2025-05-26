@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_company/api/conf"
-	"go_company/api/includes/type/db/company"
-	"go_company/api/includes/type/db/company/message_block_reaction_list"
+	dbCloud "go_company/api/includes/type/db/company"
+	dbCloudMessageBlockReactionList "go_company/api/includes/type/db/company/message_block_reaction_list"
+	dbConversationDynamic "go_company/api/includes/type/db/company_conversation/conversation_dynamic"
 	"go_company/api/includes/type/define"
 	Isolation "go_company/api/includes/type/isolation"
-	"go_company/api/includes/type/reaction_storage"
+	reactionStorage "go_company/api/includes/type/reaction_storage"
 	"go_company/api/includes/type/sender"
 	"go_company/api/includes/type/structures"
 	"sync"
@@ -156,7 +157,7 @@ func doUpdateReaction(isolation *Isolation.Isolation, entityMap string, entityTy
 	if entityType == reactionStorage.ConversationEntityType {
 
 		// получаем dynamic-запись на обновление
-		dynamicRow, err := isolation.CompanyConversationConn.GetOneForUpdate(isolation.Context, transactionItem, entityMap)
+		dynamicRow, err := dbConversationDynamic.GetOneForUpdate(isolation.Context, isolation.CompanyConversationConn, transactionItem, entityMap)
 		if err != nil {
 
 			log.Errorf(err.Error())
@@ -165,7 +166,7 @@ func doUpdateReaction(isolation *Isolation.Isolation, entityMap string, entityTy
 
 		// обновляем временную метку и версию обновления реакций
 		reactionsUpdatedVersion = dynamicRow.ReactionsUpdatedVersion + 1
-		err = isolation.CompanyConversationConn.UpdateReactionsUpdatedData(isolation.Context, entityMap, reactionsUpdatedVersion)
+		err = dbConversationDynamic.UpdateReactionsUpdatedData(isolation.Context, isolation.CompanyConversationConn, entityMap, reactionsUpdatedVersion)
 		if err != nil {
 			return err
 		}

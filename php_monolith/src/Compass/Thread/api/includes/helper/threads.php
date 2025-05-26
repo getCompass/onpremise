@@ -56,10 +56,16 @@ class Helper_Threads {
 	/**
 	 * получение меты, если пользователь является участником меты сущности диалога
 	 *
+	 * @param array  $meta_row
+	 * @param string $thread_map
+	 * @param int    $user_id
+	 * @param bool   $is_need_unfollow_if_no_access
+	 *
+	 * @return array
+	 * @throws ParseFatalException
 	 * @throws cs_Conversation_IsBlockedOrDisabled
 	 * @throws cs_Message_HaveNotAccess
 	 * @throws cs_Thread_UserNotMember
-	 * @throws \parseException
 	 */
 	protected static function _getMetaIfUserMemberForConversation(array $meta_row, string $thread_map, int $user_id, bool $is_need_unfollow_if_no_access):array {
 

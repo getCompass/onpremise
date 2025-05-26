@@ -319,10 +319,25 @@ const CreateProfileDialogContentDesktop = () => {
 									onChange={(changeEvent) => {
 										const value = changeEvent.target.value ?? "";
 										if (isNeedShowTooltip) {
+
+											// регулярка для эмодзи
+											const emojiRegex = /(?:\p{Emoji_Presentation}|\u{FE0F}|(?:[\u{0023}\u{002A}\u{0030}-\u{0039}]\u{FE0F}?\u{20E3}))/u;
+
+											// регулярка для общезапрещенных спецсимволова
+											const commonForbiddenCharacterRegex = /([\u{2000}-\u{200F}]|[\u{202C}-\u{202D}]|[\u{2060}-\u{206F}]|[\u{FFF0}-\u{FFFF}])/u;
+
+											// регулярка для отдельного списка запрещенных спецсимволов
+											const specialCharacterRegex = /[!"#$%&()*+,.\/:;=?@\[\\\]_`{|}~<>]/u;
+
+											// регулярка для поиска fancy текста
+											const fancyTextRegex = /([\u{1D400}-\u{1D7FF}]|[\u{FF00}-\u{FFEF}]|[\u{2100}-\u{214F}]|[\u{2460}-\u{24FF}])/u;
+
 											const isTooltipNotSavedSymbolsVisible =
-												/[^а-яА-яёЁa-zA-Z0-9ẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñœ\-' ]/.test(
-													value
-												);
+												emojiRegex.test(value) ||
+												commonForbiddenCharacterRegex.test(value) ||
+												specialCharacterRegex.test(value) ||
+												fancyTextRegex.test(value);
+
 											if (isTooltipNotSavedSymbolsVisible) {
 												setIsToolTipVisible(isTooltipNotSavedSymbolsVisible);
 												setTooltipText(langStringCreateProfileDialogNotSavedSymbolsTooltip);
@@ -331,7 +346,9 @@ const CreateProfileDialogContentDesktop = () => {
 													setIsNeedShowTooltip(false);
 												}
 											} else {
-												const isToolTipIncorrectNameVisible = /[^а-яА-яёЁ0-9\-' ]/.test(value);
+
+												// разрешаем любые буквы, цифры, дефис, апостроф и пробел
+												const isToolTipIncorrectNameVisible = /[^\p{L}0-9\-' ]/u.test(value);
 												setIsToolTipVisible(isToolTipIncorrectNameVisible);
 												setTooltipText(langStringCreateProfileDialogIncorrectNameTooltip);
 												setTooltipType("default");
@@ -349,10 +366,7 @@ const CreateProfileDialogContentDesktop = () => {
 										if (event.key === "Enter") {
 											onClickHandler(
 												name
-													.replace(
-														/[^а-яА-яёЁa-zA-Z0-9ẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñœ\-' ]/g,
-														""
-													)
+													.replace(/[^\p{L}0-9\-' ]/gu, "")
 													.trim()
 											);
 										}
@@ -466,10 +480,7 @@ const CreateProfileDialogContentDesktop = () => {
 						onClick={() =>
 							onClickHandler(
 								name
-									.replace(
-										/[^а-яА-яёЁa-zA-Z0-9ẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñœ\-' ]/g,
-										""
-									)
+									.replace(/[^\p{L}0-9\-' ]/gu, "")
 									.trim()
 							)
 						}
@@ -691,10 +702,25 @@ const CreateProfileDialogContentMobile = () => {
 									onChange={(changeEvent) => {
 										const value = changeEvent.target.value ?? "";
 										if (isNeedShowTooltip) {
+
+											// регулярка для эмодзи
+											const emojiRegex = /(?:\p{Emoji_Presentation}|\u{FE0F}|(?:[\u{0023}\u{002A}\u{0030}-\u{0039}]\u{FE0F}?\u{20E3}))/u;
+
+											// регулярка для общезапрещенных спецсимволова
+											const commonForbiddenCharacterRegex = /([\u{2000}-\u{200F}]|[\u{202C}-\u{202D}]|[\u{2060}-\u{206F}]|[\u{FFF0}-\u{FFFF}])/u;
+
+											// регулярка для отдельного списка запрещенных спецсимволов
+											const specialCharacterRegex = /[!"#$%&()*+,.\/:;=?@\[\\\]_`{|}~<>]/u;
+
+											// регулярка для поиска fancy текста
+											const fancyTextRegex = /([\u{1D400}-\u{1D7FF}]|[\u{FF00}-\u{FFEF}]|[\u{2100}-\u{214F}]|[\u{2460}-\u{24FF}])/u;
+
 											const isTooltipNotSavedSymbolsVisible =
-												/[^а-яА-яёЁa-zA-Z0-9ẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñœ\-' ]/.test(
-													value
-												);
+												emojiRegex.test(value) ||
+												commonForbiddenCharacterRegex.test(value) ||
+												specialCharacterRegex.test(value) ||
+												fancyTextRegex.test(value);
+
 											if (isTooltipNotSavedSymbolsVisible) {
 												setIsToolTipVisible(isTooltipNotSavedSymbolsVisible);
 												setTooltipText(langStringCreateProfileDialogNotSavedSymbolsTooltip);
@@ -703,7 +729,9 @@ const CreateProfileDialogContentMobile = () => {
 													setIsNeedShowTooltip(false);
 												}
 											} else {
-												const isToolTipIncorrectNameVisible = /[^а-яА-яёЁ0-9\-' ]/.test(value);
+
+												// разрешаем любые буквы, цифры, дефис, апостроф и пробел
+												const isToolTipIncorrectNameVisible = /[^\p{L}0-9\-' ]/u.test(value);
 												setIsToolTipVisible(isToolTipIncorrectNameVisible);
 												setTooltipText(langStringCreateProfileDialogIncorrectNameTooltip);
 												setTooltipType("default");
@@ -720,10 +748,7 @@ const CreateProfileDialogContentMobile = () => {
 										if (event.key === "Enter") {
 											onClickHandler(
 												name
-													.replace(
-														/[^а-яА-яёЁa-zA-Z0-9ẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñœ\-' ]/g,
-														""
-													)
+													.replace(/[^\p{L}0-9\-' ]/gu, "")
 													.trim()
 											);
 										}
@@ -782,10 +807,7 @@ const CreateProfileDialogContentMobile = () => {
 							onClick={() =>
 								onClickHandler(
 									name
-										.replace(
-											/[^а-яА-яёЁa-zA-Z0-9ẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñœ\-' ]/g,
-											""
-										)
+										.replace(/[^\p{L}0-9\-' ]/gu, "")
 										.trim()
 								)
 							}

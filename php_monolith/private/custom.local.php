@@ -307,6 +307,9 @@ define("ONPREMISE_VERSION"                , "${ONPREMISE_VERSION}");
 
 define("CA_CERTIFICATE"                			, "${CA_CERTIFICATE}");
 
+// нужно ли подсчитывать прочтение пользователям
+define("IS_MESSAGE_READ_PARTICIPANTS_ENABLED"         , ${IS_MESSAGE_READ_PARTICIPANTS_ENABLED});
+
 // -------------------------------------------------------
 // SENTRY DSN
 // -------------------------------------------------------
@@ -315,9 +318,10 @@ define("SENTRY_DSN_KEY_ELECTRON"				, "${SENTRY_DSN_KEY_ELECTRON}");
 define("SENTRY_DSN_KEY_ANDROID"				, "${SENTRY_DSN_KEY_ANDROID}");
 define("SENTRY_DSN_KEY_IOS"					, "${SENTRY_DSN_KEY_IOS}");
 
-
 // максимальный размер загружаемого файла
 define("MAX_FILE_SIZE_MB"                        	, ${MAX_FILE_SIZE_MB});
+
+define("IS_RECENTLY_LOGIN_SESSION_ENABLED"		, ${IS_RECENTLY_LOGIN_SESSION_ENABLED});
 
 // включены ли звонки на сервере
 define("IS_PORTABLE_CALLS_DISABLED"				, ${IS_PORTABLE_CALLS_DISABLED});

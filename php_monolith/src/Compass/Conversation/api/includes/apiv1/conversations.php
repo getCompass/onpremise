@@ -4,6 +4,7 @@ namespace Compass\Conversation;
 
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
@@ -166,7 +167,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * добавить переписку в избранное
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
@@ -224,7 +225,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * удалить переписку из избранных
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
@@ -297,7 +298,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * выключить уведомления в диалоге
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
@@ -353,7 +354,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * включить уведомления в диалоге
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
@@ -414,7 +415,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 		try {
 
 			[$local_date, $local_time, $_] = getLocalClientTime();
-			Domain_Conversation_Scenario_Api::doRead($this->user_id, $conversation_map, $message_map, $local_date, $local_time);
+			Domain_Conversation_Scenario_Api::doRead($this->user_id, $this->role, $this->permissions, $conversation_map, $message_map, $local_date, $local_time);
 		} catch (cs_LeftMenuRowIsNotExist) {
 			throw new ParamException("action is not allowed");
 		}
@@ -475,7 +476,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * очистить сообщения в диалоге для данного пользователя
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
@@ -505,7 +506,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * убрать диалог из левого меню пользователя
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
@@ -980,7 +981,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * поднимает диалог в левом меню
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
@@ -1025,6 +1026,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Отправить сообщение в диалог
+	 * Версия метода 3
 	 *
 	 * @return array
 	 * @throws ParamException
@@ -1072,6 +1074,15 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 			Gateway_Bus_Statholder::inc("messages", "row5");
 			return $this->error(501, "User is not conversation member");
+		}
+
+		try {
+			// проверяем опции группы если версия метода >= 3
+			if ($this->method_version >= 3) {
+				Domain_Group_Entity_Options::checkChannelRestrictionByMetaRow($this->user_id, $meta_row);
+			}
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2118002, "not enough right");
 		}
 
 		return $this->_addMessageListIfAllowed($meta_row, $raw_message_list);
@@ -1310,14 +1321,17 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * пытается отредактировать сообщение
+	 * Пытаемся отредактировать сообщение
+	 * версия метода 2
 	 *
-	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
+	 * @throws BusFatalException
 	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws ControllerMethodNotFoundException
 	 * @throws \cs_UnpackHasFailed
-	 * @throws \paramException
 	 * @throws \parseException
+	 * @throws \returnException
 	 */
 	public function tryEditMessage():array {
 
@@ -1348,12 +1362,18 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 		try {
 			Helper_Conversations::checkIsAllowed($meta_row["conversation_map"], $meta_row, $this->user_id);
+
+			if ($this->method_version >= 2) {
+				Domain_Group_Entity_Options::checkChannelRestrictionByMetaRow($this->user_id, $meta_row);
+			}
 		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
 
 			$error = Helper_Conversations::getCheckIsAllowedError($e);
 			return $this->error($error["error_code"], $error["message"]);
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2118002, "not enough right");
 		}
 
 		return $this->_editMessageText($conversation_map, $message_map, $text, $mention_user_id_list, $meta_row);
@@ -1399,17 +1419,15 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * пытаемся удалить сразу несколько сообщений
+	 * Пытаемся удалить сразу несколько сообщений
+	 * версия метода 2
 	 *
-	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
 	 * @throws ParamException
-	 * @throws \apiAccessException
-	 * @throws \blockException
-	 * @throws \busException
+	 * @throws ParseFatalException
 	 * @throws \cs_UnpackHasFailed
-	 * @throws \paramException
-	 * @throws \parseException
 	 * @throws \returnException
 	 */
 	public function tryDeleteMessageList():array {
@@ -1433,12 +1451,18 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 		// проверяем allow_status пользователей
 		try {
 			Helper_Conversations::checkIsAllowed($conversation_map, $meta_row, $this->user_id);
+
+			if ($this->method_version >= 2) {
+				Domain_Group_Entity_Options::checkChannelRestrictionByMetaRow($this->user_id, $meta_row);
+			}
 		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
 
 			$error = Helper_Conversations::getCheckIsAllowedError($e, true);
 			return $this->error($error["error_code"], $error["message"]);
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2118002, "not enough right");
 		}
 
 		return $this->_doDeleteMessageList($conversation_map, $meta_row["type"], $message_map_list, $meta_row);
@@ -1469,7 +1493,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * метод для скрытия списка сообщений
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
@@ -1516,13 +1540,15 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * поставить реакцию на сообщение
+	 * Поставить реакцию на сообщение
+	 * версия метода 2
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws PaymentRequiredException
 	 * @throws \cs_UnpackHasFailed
-	 * @throws \paramException
 	 * @throws \parseException
 	 */
 	public function addMessageReaction():array {
@@ -1535,6 +1561,9 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 		try {
 
+			if ($this->method_version >= 2) {
+				Domain_Group_Entity_Options::checkReactionRestrictionByConversationMessageMap($this->user_id, $message_map);
+			}
 			Domain_Conversation_Scenario_Api::addReaction($message_map, $reaction_name, $this->user_id, $this->extra["space"]["is_restricted_access"]);
 		} catch (cs_Conversation_MemberIsDisabled) {
 			return $this->error(532, "You can't add reaction to this conversation because your opponent is blocked in our system");
@@ -1558,19 +1587,22 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			throw new PaymentRequiredException(PaymentRequiredException::RESTRICTED_ERROR_CODE, "need to pay tariff");
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 
 		return $this->ok();
 	}
 
 	/**
-	 * убрать реакцию сообщения
+	 * Убрать реакцию сообщения
+	 * Версия метода 2
 	 *
-	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws PaymentRequiredException
 	 * @throws \cs_UnpackHasFailed
-	 * @throws \paramException
 	 * @throws \parseException
 	 */
 	public function tryRemoveMessageReaction():array {
@@ -1583,6 +1615,9 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 		try {
 
+			if ($this->method_version >= 2) {
+				Domain_Group_Entity_Options::checkReactionRestrictionByConversationMessageMap($this->user_id, $message_map);
+			}
 			Domain_Conversation_Scenario_Api::removeReaction($message_map, $reaction_name, $this->user_id, $this->extra["space"]["is_restricted_access"]);
 		} catch (cs_Message_IsDeleted) {
 			return $this->error(549, "message is deleted");
@@ -1602,6 +1637,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			throw new PaymentRequiredException(PaymentRequiredException::RESTRICTED_ERROR_CODE, "need to pay tariff");
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough rights");
 		}
 
 		return $this->ok();
@@ -1609,10 +1646,9 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Процитировать сообщение(я)
+	 * Версия метода 3
 	 *
-	 * @return array
 	 * @throws ParamException
-	 * @throws \paramException
 	 */
 	public function addQuote():array {
 
@@ -1658,12 +1694,18 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 		try {
 			Helper_Conversations::checkIsAllowed($conversation_map, $meta_row, $this->user_id);
+
+			if ($this->method_version >= 3) {
+				Domain_Group_Entity_Options::checkChannelRestrictionByMetaRow($this->user_id, $meta_row);
+			}
 		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
 
 			$error = Helper_Conversations::getCheckIsAllowedError($e, true);
 			return $this->error($error["error_code"], $error["message"]);
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2118002, "not enough right");
 		}
 
 		// сортируем message_map_list по порядку в диалоге
@@ -1714,7 +1756,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * Позволяет зарепостить сообщение
+	 * Позволяет переслать сообщение
+	 * Версия метода 3
 	 *
 	 * @return array
 	 * @throws ParamException
@@ -1808,12 +1851,15 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			Gateway_Bus_Statholder::inc("messages", "row171");
 			return $this->error(501, "User is not receiver-conversation member");
 		}
-
 		$mention_user_id_list = Helper_Conversations::getMentionUserIdListFromText($meta_row, $text);
 
 		// проверяем, может ли пользователь писать в диалог
 		try {
 			Helper_Conversations::checkIsAllowed($meta_row["conversation_map"], $meta_row, $this->user_id);
+
+			if ($this->method_version >= 3) {
+				Domain_Group_Entity_Options::checkChannelRestrictionByMetaRow($this->user_id, $meta_row);
+			}
 		} catch (cs_Conversation_MemberIsDisabled) {
 			return $this->error(532, "You can't write to this conversation because your opponent is blocked in our system");
 		} catch (Domain_Conversation_Exception_User_IsAccountDeleted) {
@@ -1824,6 +1870,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			return $this->error(2134002, "You can't write to this conversation because userbot is deleted");
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2118002, "not enough right");
 		}
 
 		return $this->_addRepostV2($conversation_map, $message_map_list, $text, $client_message_id, $meta_row, $mention_user_id_list);
@@ -1873,7 +1921,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * пожаловаться на сообщение пользователя
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
@@ -2286,7 +2334,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * устанавливаем сообщение последним в левом меню
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
@@ -2365,7 +2413,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * фиксируем затраченное время сотрудника
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
@@ -2823,7 +2871,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * отправить собеседнику контакты на пользователей
 	 *
 	 * @return array
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \busException
 	 * @throws \paramException
@@ -3024,7 +3072,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @long - множество условий
 	 */
-	protected function _doFormatLeftMenuList(array $left_menu_list, array $filter_client_npc_type = []):array {
+	protected function _doFormatLeftMenuList(array $left_menu_list, array $filter_client_npc_type = [], array $meta_list = []):array {
 
 		$opponent_list   = [];
 		$filter_npc_type = [];

@@ -62,7 +62,9 @@ class Domain_PhpJitsi_Scenario_Event {
 			$opponent_conference_member->status = Domain_Jitsi_Entity_ConferenceMember::updateOnIgnored(
 				$opponent_conference_member->member_type, $opponent_conference_member->member_id, $conference->conference_id);
 
-			Domain_Pivot_Entity_Event_AddMediaConferenceMessage::create($conference, $opponent_conference_member);
+			Domain_Pivot_Entity_Event_AddMediaConferenceMessage::create(
+				$conference, $opponent_conference_member, Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveId($opponent_conference_member->member_id)
+			);
 
 			// отправляем ws, что звонок проигнорировали
 			Gateway_Bus_SenderBalancer::conferenceAcceptStatusUpdated(

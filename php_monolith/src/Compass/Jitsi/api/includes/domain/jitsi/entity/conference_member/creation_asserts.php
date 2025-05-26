@@ -28,8 +28,9 @@ class Domain_Jitsi_Entity_ConferenceMember_CreationAsserts {
 	/**
 	 * участники конференции не являются участниками пространства
 	 *
-	 * @param array $user_id_list
-	 * @param int   $space_id
+	 * @param int $creator_user_id
+	 * @param int $opponent_user_id
+	 * @param int $space_id
 	 *
 	 * @throws Domain_Jitsi_Exception_Conference_UsersAreNotMembersOfSpace
 	 * @throws ParseFatalException

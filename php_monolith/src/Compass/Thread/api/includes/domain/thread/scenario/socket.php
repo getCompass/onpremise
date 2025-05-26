@@ -244,7 +244,7 @@ class Domain_Thread_Scenario_Socket {
 
 		// формируем сообщение-Напоминание
 		$remind_message = Type_Thread_Message_Main::getLastVersionHandler()::makeSystemBotRemind(
-			$sender_user_id, $comment, generateUUID(), [$message], $recipient_message_sender_id
+			$sender_user_id, $comment, generateUUID(), [$message], $recipient_message_sender_id, $creator_user_id
 		);
 
 		// добавляем упомянутых к сообщению
@@ -364,5 +364,28 @@ class Domain_Thread_Scenario_Socket {
 		]);
 
 		Gateway_Db_CompanyThread_Main::commitTransaction();
+	}
+
+	/**
+	 * Проверяем есть ли у пользователя доступ к треду
+	 *
+	 * @throws ParamException
+	 */
+	public static function checkIsUserMember(int $user_id, string $thread_key):bool {
+
+		try {
+			$thread_map = \CompassApp\Pack\Thread::tryDecrypt($thread_key);
+		} catch (\Exception) {
+			return false;
+		}
+
+		try {
+
+			Helper_Threads::getMetaIfUserMember($thread_map, $user_id);
+		} catch (cs_Thread_UserNotMember|cs_Message_HaveNotAccess|cs_Message_IsDeleted|cs_Conversation_IsBlockedOrDisabled) {
+			return false;
+		}
+
+		return true;
 	}
 }

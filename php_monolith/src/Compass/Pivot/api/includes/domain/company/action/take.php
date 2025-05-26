@@ -267,7 +267,7 @@ class Domain_Company_Action_Take {
 			Gateway_Db_PivotCompanyService_Main::commitTransaction();
 
 			$message = ":exclamation: Получили exception при добавлении создателя компании. Клиент получил 500";
-			Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_KEY, $message);
+			Gateway_Notice_Sender::sendGroup(LEGACY_NOTICE_PROVIDER_CHANNEL_KEY, $message);
 
 			throw $e;
 		}

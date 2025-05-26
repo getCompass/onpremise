@@ -7,7 +7,7 @@ namespace Application\System;
  */
 class Datastore {
 
-	protected const _DB_KEY    = "system_compass_company";
+	protected const _DB_KEY    = "system_file_node";
 	protected const _TABLE_KEY = "datastore";
 
 	protected const _CONF = [

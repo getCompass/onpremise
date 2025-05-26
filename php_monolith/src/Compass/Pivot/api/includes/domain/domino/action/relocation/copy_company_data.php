@@ -132,7 +132,7 @@ class Domain_Domino_Action_Relocation_CopyCompanyData {
 			// если не выйдет — инвалидируем
 			Domain_Domino_Action_Port_Unlock::run($target_domino, $target_common_port);
 		} catch (\Exception) {
-			Domain_Domino_Action_Port_Invalidate::run($target_domino, $target_common_port->port, "error on unlock target_common_port");
+			Domain_Domino_Action_Port_Invalidate::run($target_domino, $target_common_port, "error on unlock target_common_port");
 		}
 
 		// при переезде в рамках одного домино этот порт будет одинаковый
@@ -144,11 +144,11 @@ class Domain_Domino_Action_Relocation_CopyCompanyData {
 				// аналогично с предыдущим действием
 				Domain_Domino_Action_Port_Unlock::run($target_domino, $target_service_port);
 			} catch (\Exception) {
-				Domain_Domino_Action_Port_Invalidate::run($target_domino, $target_service_port->port, "error on unlock target_service_port");
+				Domain_Domino_Action_Port_Invalidate::run($target_domino, $target_service_port, "error on unlock target_service_port");
 			}
 		}
 
 		// а вот сервисный порт нужно инвалидировать в любом случае, и глянуть, что с ним не так пошло
-		Domain_Domino_Action_Port_Invalidate::run($source_domino, $source_service_port->port, "error on unlock source_service_port");
+		Domain_Domino_Action_Port_Invalidate::run($source_domino, $source_service_port, "error on unlock source_service_port");
 	}
 }

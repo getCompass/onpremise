@@ -96,4 +96,17 @@ class Gateway_Db_JitsiData_ConferenceList extends Gateway_Db_JitsiData_Main {
 		$query = "UPDATE `?p` SET ?u WHERE `conference_id` = ?s LIMIT ?i";
 		return ShardingGateway::database(self::_DB_KEY)->update($query, self::_TABLE_NAME, $set, $conference_id, 1);
 	}
+
+	/**
+	 * Возвращаем кол-во записей, созданных за период
+	 *
+	 * @return int
+	 * @throws ParseFatalException
+	 */
+	public static function getCountByPeriod(int $from_date, int $to_date):int {
+
+		// SERVICE QUERY, NO EXPLAIN
+		$query = "SELECT COUNT(*) as `count` FROM `?p` WHERE `created_at` >= ?i AND `created_at` <= ?i LIMIT ?i";
+		return ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_NAME, $from_date, $to_date, 1)["count"] ?? 0;
+	}
 }

@@ -1,0 +1,37 @@
+syntax = "proto3";
+package userbotCacheGrpc;
+option go_package = "userbot_cache/";
+
+// сервис, который описывает все метод go_userbot_cache
+service userbotCache {
+
+  rpc UserbotGetOne(UserbotGetOneRequestStruct) returns (UserbotGetOneResponseStruct) {}
+  rpc UserbotClear(UserbotClearRequestStruct) returns (UserbotClearResponseStruct) {}
+}
+
+// формат запроса для userbot.GetOne
+message UserbotGetOneRequestStruct{
+  string token = 1;
+}
+
+// формат ответа для userbot.GetOne
+message UserbotGetOneResponseStruct{
+  string userbot_id = 1;
+  string token = 2;
+  int64 status = 3;
+  string company_url = 4;
+  string secret_key = 5;
+  int64 is_react_command = 6;
+  int64 userbot_user_id = 7;
+  string extra = 8;
+  int64 company_id = 9;
+  string domino_entrypoint = 10;
+}
+
+// формат запроса для userbot.Clear
+message UserbotClearRequestStruct{
+  string token = 1;
+}
+
+// формат ответа для userbot.Clear
+message UserbotClearResponseStruct{}

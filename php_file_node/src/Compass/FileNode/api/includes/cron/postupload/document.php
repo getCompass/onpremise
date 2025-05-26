@@ -147,9 +147,14 @@ class Cron_Postupload_Document extends \Cron_Default {
 			// исключение залогируется привычным образом и не потеряется
 
 			// логируем исключение
-			$exception_message = \BaseFrame\Exception\ExceptionUtils::makeMessage($e, 0);
-			\BaseFrame\Exception\ExceptionUtils::writeExceptionToLogs($e, $exception_message);
+			if (IS_NEED_LOG_POST_UPLOAD_DOCUMENTS) {
 
+				$exception_message = \BaseFrame\Exception\ExceptionUtils::makeMessage($e, 0);
+				\BaseFrame\Exception\ExceptionUtils::writeExceptionToLogs($e, $exception_message);
+			}
+
+			// удаляем из очереди, как показала практика - тот что не смог спарситься уже не спарсится
+			$this->_deleteQueue($task["queue_id"]);
 			return;
 		}
 

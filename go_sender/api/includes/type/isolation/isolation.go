@@ -16,7 +16,7 @@ import (
 	"sync"
 )
 
-type companyDataProvider func() *company_data.DbConn
+type CompanyDataProvider func() *company_data.DbConn
 
 type CompanyEnvList struct {
 	mutex   sync.Mutex
@@ -37,7 +37,8 @@ func MakeCompanyEnvList() *CompanyEnvList {
 
 // инициализирует новую среду для компании
 // если сервис больше не может вмещать в себя компании, возвращает ошибку
-func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64, companyConfig *conf.CompanyConfigStruct, capacityLimit int, globalIsolation *GlobalIsolation.GlobalIsolation, companyDataConnProvider companyDataProvider, pusherConn *pusher.Conn) (*Isolation, context.Context) {
+// @long
+func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64, companyConfig *conf.CompanyConfigStruct, capacityLimit int, globalIsolation *GlobalIsolation.GlobalIsolation, companyDataConnProvider CompanyDataProvider, pusherConn *pusher.Conn) (*Isolation, context.Context, error) {
 
 	companyEnv.mutex.Lock()
 	isolation, exists := companyEnv.EnvList[companyId]
@@ -51,13 +52,13 @@ func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64,
 			companyEnv.StopEnv(companyId)
 		}
 
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	if len(companyEnv.EnvList) >= capacityLimit {
 
 		log.Errorf("service capacity limit reached")
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	companyDataConn := companyDataConnProvider()
@@ -66,7 +67,9 @@ func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64,
 	// генерируем новый контекст исполнения для сервиса
 	isolation, err := MakeIsolation(companyContext, companyId, companyConfig, cancel, globalIsolation, companyDataConn, pusherConn)
 	if err != nil {
-		return nil, nil
+
+		log.Errorf("Failed to create isolation for %d. Error: %d", companyId, err)
+		return nil, nil, err
 	}
 
 	// добавляешь в хранилище
@@ -75,7 +78,7 @@ func (companyEnv *CompanyEnvList) StartEnv(ctx context.Context, companyId int64,
 	companyEnv.mutex.Unlock()
 
 	log.Infof("added isolation for company %d", companyId)
-	return isolation, companyContext
+	return isolation, companyContext, nil
 }
 
 // останавливает среду исполнения компании
@@ -202,7 +205,7 @@ func MakeIsolation(ctx context.Context, companyId int64, companyConfig *conf.Com
 		TokenStore:              token.MakeStore(),
 	}
 
-	if companyId < 1 {
+	if companyId == 0 {
 		isolation.UserConnectionStore = ws.MakeUserConnectionStore(globalIsolation.BalancerConn)
 	} else {
 		isolation.UserConnectionStore = ws.MakeUserConnectionStore(globalIsolation.EmptyBalancerConn)

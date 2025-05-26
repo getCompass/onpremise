@@ -410,7 +410,8 @@ class Domain_Jitsi_Scenario_Api {
 			$conference_member         = Domain_Jitsi_Entity_ConferenceMember::getForCompassUser($conference_id, $user_id);
 			$conference_member->status = Domain_Jitsi_Entity_ConferenceMember_Status::REJECTED;
 			$conference->status        = Domain_Jitsi_Entity_Conference::STATUS_FINISHED;
-			Domain_Pivot_Entity_Event_AddMediaConferenceMessage::create($conference, $conference_member);
+			$opponent_user_id          = Domain_Jitsi_Entity_Conference_Data::getOpponentUserId($conference->data);
+			Domain_Pivot_Entity_Event_AddMediaConferenceMessage::create($conference, $conference_member, $user_id == $opponent_user_id ? 0 : $opponent_user_id);
 		}
 	}
 
@@ -568,13 +569,7 @@ class Domain_Jitsi_Scenario_Api {
 		$rejected_conference_member = null;
 		foreach ($conference_member_list as $conference_member) {
 
-			// бросаем ошибку только если мы уже в разговоре и мы же пытаемся отклонить
 			$conference_member_user_id = (int) Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveId($conference_member->member_id);
-			if ($conference_member->status === Domain_Jitsi_Entity_ConferenceMember_Status::SPEAKING
-				&& $user_id === $conference_member_user_id) {
-				throw new Domain_Jitsi_Exception_ConferenceMember_IsSpeaking();
-			}
-
 			if ($user_id === $conference_member_user_id) {
 				$rejected_conference_member = $conference_member;
 			}
@@ -588,7 +583,9 @@ class Domain_Jitsi_Scenario_Api {
 
 			$rejected_conference_member->status = Domain_Jitsi_Entity_ConferenceMember::updateOnRejected(
 				$rejected_conference_member->member_type, $rejected_conference_member->member_id, $conference->conference_id);
-			Domain_Pivot_Entity_Event_AddMediaConferenceMessage::create($conference, $rejected_conference_member);
+			$opponent_user_id                   = ($is_opponent_user_have_active_conference || $conference->creator_user_id == $user_id)
+				? $opponent_user_id : 0;
+			Domain_Pivot_Entity_Event_AddMediaConferenceMessage::create($conference, $rejected_conference_member, $opponent_user_id);
 
 			// отправляем ws о том, что изменился статус принятия звонка у участника конференции
 			$conference_user_id_list = $is_opponent_user_have_active_conference ? array_diff($conference_user_id_list, [$user_id]) : $conference_user_id_list;
@@ -669,9 +666,13 @@ class Domain_Jitsi_Scenario_Api {
 			);
 		} catch (Domain_Jitsi_Exception_Node_RequestFailed $e) {
 
-			// логируем ошибку и больше ничего не делаем
-			$exception_message = \BaseFrame\Exception\ExceptionUtils::makeMessage($e, HTTP_CODE_500);
-			\BaseFrame\Exception\ExceptionUtils::writeExceptionToLogs($e, $exception_message);
+			// 404 возвращается в случае если конференция уже удалена, не сыпем логами просто так
+			if ($e->getResponseHttpCode() !== 404) {
+
+				// логируем ошибку и больше ничего не делаем
+				$exception_message = \BaseFrame\Exception\ExceptionUtils::makeMessage($e, HTTP_CODE_500);
+				\BaseFrame\Exception\ExceptionUtils::writeExceptionToLogs($e, $exception_message);
+			}
 		}
 
 		// покидаем конференцию

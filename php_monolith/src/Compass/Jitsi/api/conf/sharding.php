@@ -142,6 +142,11 @@ $CONFIG["SHARDING_GO"] = [
 		"host" => GO_EVENT_HOST,
 		"port" => GO_EVENT_PORT,
 	],
+	"collector_agent" => [
+		"protocol" => GO_COLLECTOR_AGENT_PROTOCOL,
+		"host"     => GO_COLLECTOR_AGENT_HOST,
+		"port"     => GO_COLLECTOR_AGENT_HTTP_PORT,
+	],
 ];
 
 $CONFIG["SHARDING_MCACHE"] = [

@@ -14,6 +14,7 @@ use CompassApp\Domain\Member\Entity\Member;
 use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Exception\AccountDeleted;
 use CompassApp\Domain\Member\Exception\IsLeft;
+use CompassApp\Domain\Member\Struct\Short;
 
 /**
  * API-сценарии домена «диалоги».
@@ -35,19 +36,21 @@ class Domain_Conversation_Scenario_Apiv2 {
 	 * @throws cs_IncorrectConversationMapList
 	 * @long разделение диалогов по разрешенным/не разрешенным
 	 */
-	public static function get(int $user_id, array $conversation_map_list, bool $is_restricted_access):array {
+	public static function get(int $user_id, array $conversation_map_list, bool $is_restricted_access, int $user_role, int $user_permissions):array {
 
 		$conversation_map_list = Domain_Conversation_Entity_Sanitizer::sanitizeConversationMapList($conversation_map_list);
 
 		/** @var Struct_Db_CompanyConversation_ConversationMeta[] $conversation_meta_list */
 		$conversation_meta_list = Gateway_Db_CompanyConversation_ConversationMeta::getAll($conversation_map_list, true);
 
-		$users                             = [];
-		$allowed_conversation_map_list     = [];
-		$temp_allowed_conversation_list    = [];
-		$not_allowed_conversation_map_list = [];
+		$users                                         = [];
+		$allowed_conversation_map_list                 = [];
+		$temp_allowed_conversation_list                = [];
+		$not_allowed_conversation_map_list             = [];
+		$need_grant_admin_rights_conversation_map_list = [];
 
 		// сначала проверяем все диалоги по isMember
+		$is_have_group_administrator_rights = Permission::isGroupAdministrator($user_role, $user_permissions);
 		foreach ($conversation_meta_list as $item) {
 
 			// запросить можно только группу поддержки, если доступ ограничен
@@ -61,6 +64,14 @@ class Domain_Conversation_Scenario_Apiv2 {
 
 				$not_allowed_conversation_map_list[] = $item->conversation_map;
 				continue;
+			}
+
+			// если есть права "админ во всех группах"
+			// и это группа и пользователь не является админом в ней, то добавляем в массив на выдачу прав админа в этой группе
+			if ($is_have_group_administrator_rights
+				&& Type_Conversation_Meta::isSubtypeOfGroup($item->type) && !Type_Conversation_Meta_Users::isGroupAdmin($user_id, $item->users)) {
+
+				$need_grant_admin_rights_conversation_map_list[] = $item->conversation_map;
 			}
 			$temp_allowed_conversation_list[$item->conversation_map] = $item;
 		}
@@ -93,20 +104,33 @@ class Domain_Conversation_Scenario_Apiv2 {
 
 		$prepared_conversation_meta_list = [];
 		$dynamic_list                    = Gateway_Db_CompanyConversation_ConversationDynamic::getAll($allowed_conversation_map_list, true);
+
+		// готовим последние сообщения
+		$last_read_messages = Domain_Conversation_Action_PrepareLastReadMessages::do($dynamic_list);
+
 		foreach ($allowed_conversation_map_list as $conversation_map) {
 
 			$meta = $conversation_meta_list[$conversation_map];
 
-			$prepared_conversation_meta_list[] = Domain_Conversation_Entity_ConversationMeta::prepareForFrontend(
-				$user_id, $meta, $dynamic_list[$conversation_map]
+			$prepared_conversation_meta = Domain_Conversation_Entity_ConversationMeta::prepareForFrontend(
+				$user_id, $meta, $dynamic_list[$conversation_map], $last_read_messages[$conversation_map]
 			);
+
+			// последних просмотревших надо также приклеить в users, они вполне могли выйти из чата
+			$users                             = array_merge($users, $last_read_messages[$conversation_map]->first_read_participant_list);
+			$prepared_conversation_meta_list[] = $prepared_conversation_meta;
+		}
+
+		// делаем пользователя админом в тех группах, в которых у него нет админ прав
+		if (count($need_grant_admin_rights_conversation_map_list) > 0) {
+			Type_Phphooker_Main::grantAdminRightsForConversationList($user_id, $user_role, $user_permissions, $need_grant_admin_rights_conversation_map_list);
 		}
 
 		return [$prepared_conversation_meta_list, $not_allowed_conversation_map_list, $users];
 	}
 
 	/**
-	 * получаем общие с пользователем групповые диалоги
+	 * Получаем общие с пользователем групповые диалоги
 	 *
 	 * @throws cs_IncorrectUserId
 	 */

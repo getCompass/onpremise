@@ -13,5 +13,8 @@
 	"capacity_limit": 10000,
 	"world_config_path": "/config",
 	"server_tag_list": ${SERVER_TAG_LIST},
-	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC}
+	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC},
+	"is_isolation_create_repeat": ${IS_ISOLATION_CREATE_REPEAT},
+	"encrypt_iv_action": "${ENCRYPT_IV_ACTION}",
+	"encrypt_passphrase_action": "${ENCRYPT_PASSPHRASE_ACTION}"
 }

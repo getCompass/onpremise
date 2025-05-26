@@ -16,13 +16,8 @@ class Domain_Remind_Scenario_Api {
 	/**
 	 * Сценарий создания Напоминания
 	 *
-	 * @param int    $user_id
-	 * @param string $message_map
-	 * @param int    $remind_at
-	 * @param string $comment
-	 * @param bool   $is_parent
-	 *
-	 * @return array
+	 * @throws CaseException
+	 * @throws Domain_Group_Exception_NotEnoughRights
 	 * @throws Domain_Remind_Exception_AlreadyExist
 	 * @throws Domain_Remind_Exception_RemindAtBeforeCurrentTime
 	 * @throws Domain_Thread_Exception_Message_NotAllowForRemind
@@ -44,7 +39,7 @@ class Domain_Remind_Scenario_Api {
 	 * @throws cs_Message_IsTooLong
 	 * @throws cs_Thread_UserNotMember
 	 */
-	public static function create(int $user_id, string $message_map, int $remind_at, string $comment, bool $is_parent):array {
+	public static function create(int $user_id, string $message_map, int $remind_at, string $comment, bool $is_parent, int $method_version):array {
 
 		// проверяем, что не вылезли за 2038 год (фатально для mysql)
 		if (!isValidTimestamp($remind_at)) {
@@ -63,6 +58,10 @@ class Domain_Remind_Scenario_Api {
 		if ($is_parent) {
 
 			try {
+				if ($method_version >= 2) {
+					Domain_Group_Entity_Options::checkCommentRestrictionByConversationMessageMap($user_id, $message_map);
+				}
+
 				$remind_id = Gateway_Socket_Conversation::createRemindOnConversationMessage($user_id, $message_map, $remind_at, $comment);
 			} catch (Domain_Thread_Exception_Guest_AttemptInitialThread) {
 				throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "guest attempt to initial thread");
@@ -78,7 +77,12 @@ class Domain_Remind_Scenario_Api {
 
 		$thread_map = \CompassApp\Pack\Message\Thread::getThreadMap($message_map);
 		$meta_row   = Helper_Threads::getMetaIfUserMember($thread_map, $user_id, false);
-		$remind     = Domain_Thread_Action_Message_AddRemind::do($message_map, $thread_map, $meta_row, $comment, $remind_at, $user_id);
+
+		if ($method_version >= 2) {
+			Domain_Group_Entity_Options::checkCommentRestrictionByThreadMeta($user_id, $meta_row);
+		}
+
+		$remind = Domain_Thread_Action_Message_AddRemind::do($message_map, $thread_map, $meta_row, $comment, $remind_at, $user_id);
 
 		return [$remind->remind_id, $comment];
 	}

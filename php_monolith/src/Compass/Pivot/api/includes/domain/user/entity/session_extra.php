@@ -42,6 +42,8 @@ class Domain_User_Entity_SessionExtra {
 	public const DELETE_ACCOUNT_INVALIDATE_REASON = 10;
 	public const CHANGE_PHONE_INVALIDATE_REASON   = 11;
 
+	public const LOGIN_SESSION_TIMEOUT_FOR_INVALIDATION = 24 * 60 * 60; // время таймаута для логина сессии, позволяющая инвалидировать другие сессии
+
 	/** Типы устройств пользователя */
 	protected const _MOBILE_DEVICE_TYPE         = 1; // mobile
 	protected const _ELECTRON_DEVICE_TYPE       = 2; // desktop

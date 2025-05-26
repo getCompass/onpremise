@@ -11,6 +11,7 @@ use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use CompassApp\Domain\Member\Entity\Member;
 use CompassApp\Domain\Member\Entity\Permission;
+use CompassApp\Domain\User\Exception\NotAllowedType;
 use JetBrains\PhpStorm\ArrayShape;
 use BaseFrame\Exception\Request\ParamException;
 
@@ -31,31 +32,28 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * Получить левое меню
 	 *
-	 * @param int    $user_id
-	 * @param int    $limit
-	 * @param int    $offset
-	 * @param string $search_query
-	 * @param int    $filter_favorite
-	 * @param int    $filter_unread
-	 * @param int    $filter_single
-	 * @param int    $filter_unblocked
-	 * @param int    $filter_owner
-	 * @param int    $filter_system
-	 * @param int    $is_mentioned_first
-	 * @param int    $filter_blocked_time
-	 * @param int    $filter_support
-	 *
-	 * @return array
-	 * @throws ParseFatalException
 	 * @throws BusFatalException
 	 * @throws ControllerMethodNotFoundException
-	 * @throws \cs_RowIsEmpty
+	 * @throws NotAllowedType
 	 * @throws \parseException
 	 * @long
 	 */
-	public static function getLeftMenu(int $user_id, int $limit, int $offset, string $search_query = "", int $filter_favorite = 0,
-						     int $filter_unread = 0, int $filter_single = 0, int $filter_unblocked = 0, int $filter_owner = 0,
-						     int $filter_system = 0, int $is_mentioned_first = 0, int $filter_blocked_time = 0, int $filter_support = 0, array $filter_npc_type = []):array {
+	public static function getLeftMenu(
+		int    $user_id,
+		int    $limit,
+		int    $offset,
+		string $search_query = "",
+		int    $filter_favorite = 0,
+		int    $filter_unread = 0,
+		int    $filter_single = 0,
+		int    $filter_unblocked = 0,
+		int    $filter_owner = 0,
+		int    $filter_system = 0,
+		int    $is_mentioned_first = 0,
+		int    $filter_blocked_time = 0,
+		int    $filter_support = 0,
+		array  $filter_npc_type = []
+	):array {
 
 		// проверяем что переданы правильные типы пользователей
 		Type_User_Main::assertUserTypeList($filter_npc_type);
@@ -182,8 +180,10 @@ class Domain_Conversation_Scenario_Api {
 
 			$dismissed_at = $user->left_at;
 
-			if (Member::isDisabledProfile($user->role)
-				&& $dismissed_at < $not_added_dismissed_user_timestamp && $dismissed_at !== 0) {
+			if (
+				Member::isDisabledProfile($user->role)
+				&& $dismissed_at < $not_added_dismissed_user_timestamp && $dismissed_at !== 0
+			) {
 
 				$not_added_dismissed_user_id_list[] = $user->user_id;
 			}
@@ -322,6 +322,8 @@ class Domain_Conversation_Scenario_Api {
 	 * Прочитать чат
 	 *
 	 * @param int    $user_id
+	 * @param int    $member_role
+	 * @param int    $member_permissions
 	 * @param string $conversation_map
 	 * @param string $message_map
 	 * @param string $local_date
@@ -331,12 +333,16 @@ class Domain_Conversation_Scenario_Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
+	 * @throws \busException
 	 * @throws \cs_UnpackHasFailed
+	 * @throws \parseException
 	 * @throws cs_LeftMenuRowIsNotExist
 	 */
-	public static function doRead(int $user_id, string $conversation_map, string $message_map, string $local_date, string $local_time):void {
+	public static function doRead(int $user_id, int $member_role, int $member_permissions, string $conversation_map, string $message_map, string $local_date, string $local_time):void {
 
-		if (mb_strlen($message_map) > 0) {
+		$message = [];
+
+		if ($message_map !== "") {
 
 			$block_id  = \CompassApp\Pack\Message\Conversation::getBlockId($message_map);
 			$block_row = Gateway_Db_CompanyConversation_MessageBlock::getOne($conversation_map, $block_id);
@@ -349,29 +355,30 @@ class Domain_Conversation_Scenario_Api {
 			}
 		}
 
-		[$left_menu_row, $was_unread] = Domain_Conversation_Action_SetAsRead::do($user_id, $conversation_map, $message_map);
+		[$left_menu_row, $was_unread] = Domain_Conversation_Action_SetAsRead::do($user_id, $member_role, $member_permissions, $conversation_map, $message);
 
-		// обновляем badge с непрочитанными для пользователя
-		$extra = Gateway_Bus_Company_Timer::getExtraForUpdateBadge($user_id, [$conversation_map], true);
-		Gateway_Bus_Company_Timer::setTimeout(Gateway_Bus_Company_Timer::UPDATE_BADGE, (string) $user_id, [], $extra);
+		if ($was_unread) {
 
-		// приводим левое меню к формату под клиентов
-		$temp                   = Type_Conversation_Utils::prepareLeftMenuForFormat($left_menu_row);
-		$prepared_left_menu_row = Apiv1_Format::leftMenu($temp);
+			// обновляем badge с непрочитанными для пользователя
+			$extra = Gateway_Bus_Company_Timer::getExtraForUpdateBadge($user_id, [$conversation_map], true);
+			Gateway_Bus_Company_Timer::setTimeout(Gateway_Bus_Company_Timer::UPDATE_BADGE, (string) $user_id, [], $extra);
 
-		// получаем мету левого меню, откуда мы получае количество непрочитанных чатов и сообщений
-		$left_menu_meta = Domain_User_Action_Conversation_GetLeftMenuMeta::do($user_id);
+			// приводим левое меню к формату под клиентов
+			$temp                   = Type_Conversation_Utils::prepareLeftMenuForFormat($left_menu_row);
+			$prepared_left_menu_row = Apiv1_Format::leftMenu($temp);
 
-		// отправляем ws ивент о прочтении
-		Gateway_Bus_Sender::conversationRead($user_id, $message_map, $prepared_left_menu_row, $left_menu_meta);
+			// получаем мету левого меню, откуда мы получае количество непрочитанных чатов и сообщений
+			$left_menu_meta = Domain_User_Action_Conversation_GetLeftMenuMeta::do($user_id);
+
+			// отправляем ws ивент о прочтении
+			Gateway_Bus_Sender::conversationRead($user_id, $message_map, $prepared_left_menu_row, $left_menu_meta);
+
+			// инкрементим действия
+			Domain_User_Action_IncActionCount::incConversationRead($user_id, $conversation_map);
+		}
 
 		// добавляем пользователю экранное время
 		Domain_User_Action_AddScreenTime::do($user_id, $local_date, $local_time);
-
-		// если прочитали, то инкрементим действия
-		if ($was_unread) {
-			Domain_User_Action_IncActionCount::incConversationRead($user_id, $conversation_map);
-		}
 	}
 
 	/**
@@ -525,7 +532,12 @@ class Domain_Conversation_Scenario_Api {
 		// отправляем сообщение с контактами в диалог
 		$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeSharedMember($user_id, $share_user_id_list, Type_Api_Platform::getPlatform());
 		$message = Helper_Conversations::addMessage(
-			$meta_row["conversation_map"], $message, $meta_row["users"], (int) $meta_row["type"], $meta_row["conversation_name"], $meta_row["extra"]
+			$meta_row["conversation_map"],
+			$message,
+			$meta_row["users"],
+			(int) $meta_row["type"],
+			$meta_row["conversation_name"],
+			$meta_row["extra"]
 		);
 
 		return Type_Conversation_Message_Main::getHandler($message)::prepareForFormatLegacy($message, $user_id);

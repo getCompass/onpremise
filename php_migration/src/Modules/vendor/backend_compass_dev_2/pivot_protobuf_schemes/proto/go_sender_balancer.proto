@@ -1,0 +1,174 @@
+syntax = "proto3";
+package senderBalancerGrpc;
+option go_package = "/sender_balancer";
+
+// сервис, который описывает все метод go_sender_balancer
+service go_sender_balancer {
+
+  rpc SenderBalancerSetToken(SenderBalancerSetTokenRequestStruct) returns (SenderBalancerSetTokenResponseStruct) {}
+  rpc SenderBalancerSendEvent(SenderBalancerSendEventRequestStruct) returns (SenderBalancerSendEventResponseStruct) {}
+  rpc SenderBalancerBroadcastEvent(SenderBalancerBroadcastEventRequestStruct) returns (SenderBalancerBroadcastEventResponseStruct) {}
+  rpc SenderBalancerGetOnlineConnectionsByUserId(SenderBalancerGetOnlineConnectionsByUserIdRequestStruct) returns (SenderBalancerGetOnlineConnectionsByUserIdResponseStruct) {}
+  rpc SenderBalancerCloseConnectionsByUserId(SenderBalancerCloseConnectionsByUserIdRequestStruct) returns (SenderBalancerCloseConnectionsByUserIdResponseStruct) {}
+  rpc SenderBalancerGetOnlineUsers(SenderBalancerGetOnlineUsersRequestStruct) returns (SenderBalancerGetOnlineUsersResponseStruct) {}
+
+  rpc SystemStatus(SystemStatusRequestStruct) returns (SystemStatusResponseStruct) {}
+  rpc SystemTraceGoroutine(SystemTraceGoroutineRequestStruct) returns (SystemTraceGoroutineResponseStruct) {}
+  rpc SystemTraceMemory(SystemTraceMemoryRequestStruct) returns (SystemTraceMemoryResponseStruct) {}
+  rpc SystemCpuProfile(SystemCpuProfileRequestStruct) returns (SystemCpuProfileResponseStruct) {}
+  rpc SystemReloadConfig(SystemReloadConfigRequestStruct) returns (SystemReloadConfigResponseStruct) {}
+  rpc SystemReloadSharding(SystemReloadShardingRequestStruct) returns (SystemReloadShardingResponseStruct) {}
+}
+
+message UserStruct {
+  int64 user_id = 1;
+}
+
+message ConnectionInfoStruct{
+  int64 sender_node_id = 2;
+  int64 connection_id = 3;
+  int64 user_id = 4;
+  string ip_address = 5;
+  int64 connected_at = 6;
+  string user_agent = 7;
+  string platform = 8;
+  int64 is_focused = 9;
+}
+
+// формат запроса для senderBalancer.SetToken
+message SenderBalancerSetTokenRequestStruct{
+  string token = 1;
+  string platform = 2;
+  string device_id = 3;
+  int64 user_id = 4;
+  int64 expire = 5;
+}
+
+// формат ответа для senderBalancer.SetToken
+message SenderBalancerSetTokenResponseStruct{
+  int64 node = 1;
+}
+
+message EventUserStruct {
+  int64 user_id = 1;
+}
+
+// формат структуры версии события
+message EventVersionItem {
+  int32 version = 1;
+  bytes data = 2;
+}
+
+// формат запроса для senderBalancer.SendEvent
+message SenderBalancerSendEventRequestStruct {
+  repeated EventUserStruct user_list = 1;
+  string event = 2;
+  repeated EventVersionItem event_version_list = 3;
+  string push_data = 4;
+  string ws_users = 5;
+  string uuid = 6;
+  string routine_key = 7;
+}
+
+// формат ответа для senderBalancer.SendEvent
+message SenderBalancerSendEventResponseStruct {}
+
+// формат запроса для senderBalancer.BroadcastEvent
+message SenderBalancerBroadcastEventRequestStruct {
+  string event = 2;
+  repeated EventVersionItem event_version_list = 3;
+  string push_data = 4;
+  string ws_users = 5;
+  string uuid = 6;
+  string routine_key = 7;
+}
+
+// формат ответа для senderBalancer.BroadcastEvent
+message SenderBalancerBroadcastEventResponseStruct {}
+
+// формат запроса для senderBalancer.GetOnlineConnectionsByUserId
+message SenderBalancerGetOnlineConnectionsByUserIdRequestStruct {
+  int64 user_id = 1;
+}
+
+// формат ответа для senderBalancer.GetOnlineConnectionsByUserId
+message SenderBalancerGetOnlineConnectionsByUserIdResponseStruct {
+  repeated ConnectionInfoStruct online_connection_list = 1;
+}
+
+// формат запроса для senderBalancer.CloseConnectionsByUserId
+message SenderBalancerCloseConnectionsByUserIdRequestStruct {
+  int64 user_id = 1;
+}
+
+// формат ответа для senderBalancer.CloseConnectionsByUserId
+message SenderBalancerCloseConnectionsByUserIdResponseStruct {}
+
+// формат запроса для senderBalancer.SenderBalancerGetOnlineUsersRequestStruct
+message SenderBalancerGetOnlineUsersRequestStruct {
+  repeated int64 user_list = 1;
+}
+
+// формат ответа для senderBalancer.GetOnlineUsers
+message SenderBalancerGetOnlineUsersResponseStruct {
+  repeated int64 online_user_list = 1;
+  repeated int64 offline_user_list = 2;
+}
+
+// формат запроса для system.status
+message SystemStatusRequestStruct {}
+
+// формат ответа для system.status
+message SystemStatusResponseStruct {
+  string name = 1;
+  int64 goroutines = 2;
+  int64 memory = 3;
+  string memory_kb = 4;
+  string memory_mb = 5;
+  int64 uptime = 6;
+}
+
+// формат запроса для system.traceGoroutine
+message SystemTraceGoroutineRequestStruct {}
+
+// формат ответа для system.traceGoroutine
+message SystemTraceGoroutineResponseStruct {}
+
+// формат запроса для system.traceMemory
+message SystemTraceMemoryRequestStruct {}
+
+// формат ответа для system.traceMemory
+message SystemTraceMemoryResponseStruct {}
+
+// формат запроса для system.cpuProfile
+message SystemCpuProfileRequestStruct {
+  int64 time = 1;
+}
+
+// формат ответа для system.cpuProfile
+message SystemCpuProfileResponseStruct {}
+
+// формат запроса для system.reloadConfig
+message SystemReloadConfigRequestStruct {}
+
+// формат ответа для system.reloadConfig
+message SystemReloadConfigResponseStruct {
+  int32 logging_level = 1;
+  string server_type = 2;
+  int64 tcp_port = 4;
+  int64 grpc_port = 5;
+  string rabbit_queue = 6;
+  string rabbit_exchange = 7;
+}
+
+// формат запроса для system.reloadSharding
+message SystemReloadShardingRequestStruct {}
+
+// формат ответа для system.reloadSharding
+message SystemReloadShardingResponseStruct {}
+
+// формат запроса для system.checkSharding
+message SystemCheckShardingRequestStruct {}
+
+// формат ответа для system.checkSharding
+message SystemCheckShardingResponseStruct {}

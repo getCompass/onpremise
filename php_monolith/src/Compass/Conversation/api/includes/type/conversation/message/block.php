@@ -371,6 +371,12 @@ class Type_Conversation_Message_Block {
 		// проверяем что пользователь не админ/создатель группы и время редактирования сообщения истекло
 		if (!self::_isUserAdmin($user_role) && !Type_Conversation_Message_Main::getHandler($message)::isTimeAllowToEdit($message, $is_worked_hours_message)) {
 
+			// если разрешено безлимитное редактирование сообщений
+			$is_unlimited_messages_editing_enabled = Type_Company_Config::init()->get(Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING)["value"];
+			if ($is_unlimited_messages_editing_enabled) {
+				return;
+			}
+
 			Gateway_Db_CompanyConversation_MessageBlock::rollback();
 
 			if ($is_new_errors) {

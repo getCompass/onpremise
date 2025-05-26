@@ -1,0 +1,49 @@
+{
+	"require": {
+		"nikic/php-parser": "v4.13.0",
+		"service/php_base_frame": "v1.1.23",
+		"backend_compass_dev_2/pivot_protobuf_schemes": "v1.1.13"
+	},
+	"scripts": {
+		"post-update-cmd": ["echo Delete all .git directories in vendor.", "rm -rf vendor/**/**/.git"],
+		"post-install-cmd": ["echo Delete all .git directories in vendor.", "rm -rf vendor/**/**/.git"]
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php_base_frame.git"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/pivot_protobuf_schemes"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php_analytic_utils"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/PHP-Parser"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/php-amqplib"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/phpseclib"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/grpc-php"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/constant_time_encoding"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/getCompassUtils/random_compat"
+		}
+	]
+}

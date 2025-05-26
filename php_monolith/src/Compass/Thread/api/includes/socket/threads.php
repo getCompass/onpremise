@@ -40,6 +40,7 @@ class Socket_Threads extends \BaseFrame\Controller\Socket {
 		"addThreadForDismissalRequest",
 		"sendRemindMessage",
 		"actualizeTestRemindForMessage",
+		"checkIsUserMember",
 	];
 
 	// -------------------------------------------------------
@@ -555,5 +556,22 @@ class Socket_Threads extends \BaseFrame\Controller\Socket {
 		Domain_Thread_Scenario_Socket::actualizeTestRemindForMessage($message_map);
 
 		return $this->ok();
+	}
+
+	/**
+	 * Проверяем есть ли у пользователя доступ к треду
+	 *
+	 * @throws ParamException
+	 */
+	public function checkIsUserMember():array {
+
+		$user_id    = $this->post(\Formatter::TYPE_INT, "user_id");
+		$thread_key = $this->post(\Formatter::TYPE_STRING, "thread_key");
+
+		$is_member = Domain_Thread_Scenario_Socket::checkIsUserMember($user_id, $thread_key);
+
+		return $this->ok([
+			"is_member" => (int) $is_member,
+		]);
 	}
 }

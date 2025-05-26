@@ -16,4 +16,5 @@ if [[ "${IS_LOCAL}" == "true" ]]; then
   cd /app && go build -o pusher -mod vendor main.go
 fi
 
+ln -sf /dev/stdout /app/logs/main.log
 /app/pusher -confdir=/app/api/conf -logsdir=/app/logs/ -executabledir=/app

@@ -26,7 +26,7 @@ type userbotClearRequestStruct struct {
 }
 
 // очистить бота из кэша
-func (userbotHandler) clear(requestBytes []byte) []byte {
+func (userbotHandler) clear(requestBytes []byte) ResponseStruct {
 
 	request := userbotClearRequestStruct{}
 	err := json.Unmarshal(requestBytes, &request)

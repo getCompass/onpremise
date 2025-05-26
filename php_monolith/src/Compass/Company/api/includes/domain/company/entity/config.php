@@ -23,9 +23,11 @@ class Domain_Company_Entity_Config {
 	public const MODULE_EXTENDED_EMPLOYEE_CARD_KEY           = "module_extended_employee_card";
 	public const POSTMODERATION                              = "postmoderation";
 	public const GENERAL_CHAT_NOTIFICATIONS                  = "general_chat_notifications";
+	public const UNLIMITED_MESSAGES_EDITING                  = "unlimited_messages_editing";
 	public const PREMIUM_PAYMENT_REQUESTING_KEY              = "is_premium_payment_requesting_enabled";
 	public const PERMISSIONS_VERSION                         = "permissions_version";
 	public const ADD_TO_GENERAL_CHAT_ON_HIRING               = "is_add_to_general_chat_on_hiring";
+	public const SHOW_MESSAGE_READ_STATUS                    = "show_message_read_status";
 	public const ROOT_USER_ID                                = "root_user_id";
 
 	public const GENERAL_CONVERSATION_KEY_NAME     = "general_conversation_key";
@@ -43,6 +45,8 @@ class Domain_Company_Entity_Config {
 		self::MODULE_EXTENDED_EMPLOYEE_CARD_KEY           => [0, 1],
 		self::POSTMODERATION                              => [0, 1],
 		self::GENERAL_CHAT_NOTIFICATIONS                  => [0, 1],
+		self::SHOW_MESSAGE_READ_STATUS                    => [0, 1],
+		self::UNLIMITED_MESSAGES_EDITING                  => [0, 1],
 		self::ADD_TO_GENERAL_CHAT_ON_HIRING               => [0, 1],
 		self::PREMIUM_PAYMENT_REQUESTING_KEY              => [0, 1],
 		self::PERMISSIONS_VERSION                         => "integer",
@@ -66,7 +70,9 @@ class Domain_Company_Entity_Config {
 		self::IS_PIN_REQUIRED                             => 0,
 		self::PUSH_BODY_DISPLAY_KEY                       => 0, // для безопасности, если по какой-то причине потеряли в базе конфиг
 		self::GENERAL_CHAT_NOTIFICATIONS                  => 0,
+		self::UNLIMITED_MESSAGES_EDITING                  => 0,
 		self::ADD_TO_GENERAL_CHAT_ON_HIRING               => 1,
+		self::SHOW_MESSAGE_READ_STATUS                    => 1,
 		self::PREMIUM_PAYMENT_REQUESTING_KEY              => 1,
 		self::HIRE_AND_DISMISS_REQUEST_ALLOWED_TO_ALL_KEY => 0,
 		self::MODULE_EXTENDED_EMPLOYEE_CARD_KEY           => 0,
@@ -93,7 +99,9 @@ class Domain_Company_Entity_Config {
 		self::PUSH_BODY_DISPLAY_KEY                => 1,
 		self::MODULE_EXTENDED_EMPLOYEE_CARD_KEY    => 0,
 		self::GENERAL_CHAT_NOTIFICATIONS           => 0,
+		self::UNLIMITED_MESSAGES_EDITING           => 0,
 		self::ADD_TO_GENERAL_CHAT_ON_HIRING        => 1,
+		self::SHOW_MESSAGE_READ_STATUS             => 1,
 		self::PREMIUM_PAYMENT_REQUESTING_KEY       => 1,
 		self::PERMISSIONS_VERSION                  => 3,
 		Permission::IS_DOWNLOAD_VIDEO_ENABLED      => 1,

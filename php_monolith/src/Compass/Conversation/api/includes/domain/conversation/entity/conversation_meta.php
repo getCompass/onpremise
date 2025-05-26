@@ -18,8 +18,8 @@ class Domain_Conversation_Entity_ConversationMeta {
 	 *
 	 * @return array
 	 */
-	#[ArrayShape(["conversation_map" => "mixed", "created_at" => "mixed", "total_action_count" => "int", "messages_updated_at" => "int", "reactions_updated_at" => "int", "threads_updated_at" => "int", "messages_updated_version" => "int", "reactions_updated_version" => "int", "threads_updated_version" => "int", "type" => "mixed", "users" => "array", "talking_hash" => "string", "data" => "array"])]
-	public static function prepareForFrontend(int $user_id, Struct_Db_CompanyConversation_ConversationMeta $meta_row, Struct_Db_CompanyConversation_ConversationDynamic $dynamic):array {
+	#[ArrayShape(["conversation_map" => "mixed", "created_at" => "mixed", "total_action_count" => "int", "messages_updated_at" => "int", "reactions_updated_at" => "int", "threads_updated_at" => "int", "messages_updated_version" => "int", "reactions_updated_version" => "int", "threads_updated_version" => "int", "type" => "mixed", "users" => "array", "talking_hash" => "string", "last_read_message" => "array", "data" => "array"])]
+	public static function prepareForFrontend(int $user_id, Struct_Db_CompanyConversation_ConversationMeta $meta_row, Struct_Db_CompanyConversation_ConversationDynamic $dynamic, Struct_Conversation_LastReadMessage $last_read_message):array {
 
 		// получаем юзеров отсортированных по дате вступления
 		$user_id_list = Type_Conversation_Meta_Users::getUserIdListSortedByJoinTime($meta_row->users);
@@ -28,7 +28,7 @@ class Domain_Conversation_Entity_ConversationMeta {
 			CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT, CONVERSATION_TYPE_SINGLE_DEFAULT =>
 			self::_getSingleConversationFields($user_id, $meta_row),
 			CONVERSATION_TYPE_GROUP_DEFAULT, CONVERSATION_TYPE_GROUP_RESPECT, CONVERSATION_TYPE_GROUP_GENERAL, CONVERSATION_TYPE_GROUP_HIRING,
-			CONVERSATION_TYPE_SINGLE_NOTES, CONVERSATION_TYPE_GROUP_SUPPORT =>
+			CONVERSATION_TYPE_SINGLE_NOTES, CONVERSATION_TYPE_GROUP_SUPPORT            =>
 			self::_getGroupConversationFields($user_id, $meta_row),
 		};
 
@@ -45,6 +45,7 @@ class Domain_Conversation_Entity_ConversationMeta {
 			"messages_updated_version"  => $dynamic->messages_updated_version,
 			"reactions_updated_version" => $dynamic->reactions_updated_version,
 			"threads_updated_version"   => $dynamic->threads_updated_version,
+			"last_read_message"         => $last_read_message->toArray(),
 			"type"                      => $meta_row->type,
 			"users"                     => $user_id_list,
 			"talking_hash"              => Type_Conversation_Utils::getTalkingHash($user_id_list),
@@ -115,6 +116,9 @@ class Domain_Conversation_Entity_ConversationMeta {
 			"is_need_show_system_message_on_invite_and_join"  => (int) Type_Conversation_Meta_Extra::isNeedShowSystemMessageOnInviteAndJoin($extra) ? 1 : 0,
 			"is_need_show_system_message_on_leave_and_kicked" => (int) Type_Conversation_Meta_Extra::isNeedShowSystemMessageOnLeaveAndKicked($extra) ? 1 : 0,
 			"is_need_show_system_deleted_message"             => (int) Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($extra) ? 1 : 0,
+			"is_reactions_enabled"                            => (int) Type_Conversation_Meta_Extra::isReactionsEnabled($extra) ? 1 : 0,
+			"is_comments_enabled"                             => (int) Type_Conversation_Meta_Extra::isCommentsEnabled($extra) ? 1 : 0,
+			"is_channel"                                      => (int) Type_Conversation_Meta_Extra::isChannel($extra) ? 1 : 0,
 		];
 	}
 
@@ -136,6 +140,7 @@ class Domain_Conversation_Entity_ConversationMeta {
 			"owner_user_id"   => $owner_user_id,
 			"role"            => $role,
 			"group_options"   => $group_options,
+			"is_channel"      => (int) Type_Conversation_Meta_Extra::isChannel($meta_row->extra) ? 1 : 0,
 		];
 	}
 }

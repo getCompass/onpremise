@@ -160,9 +160,41 @@ class Gateway_Sms_Provider_Twilio extends Gateway_Sms_Provider_Abstract {
 		// получаем креды
 		$credentials = self::_getConfig()["credential"];
 
-		// подготавливаем url запроса
+		// берем дефолтный from
 		$ar_post["From"] = $credentials["from"];
-		$url             = self::_prepareRequestUrl($credentials["gateway_url"], $action, $credentials["account_sid"]);
+
+		// если from_code_list не пустой, проверяем совпадение кодов
+		if (isset($ar_post["To"]) && !empty($credentials["from_code_list"])) {
+
+			$matched_from = false;
+			$max_length   = 0;
+
+			// проходимся по списку отправителей
+			foreach ($credentials["from_code_list"] as $from => $code_list) {
+
+				foreach ($code_list as $code) {
+
+					// проверяем, совпадает ли начало номера с кодом
+					if (str_starts_with($ar_post["To"], $code)) {
+
+						// если совпадение по коду длиннее предыдущего, обновляем найденный результат
+						if (mb_strlen($code) > $max_length) {
+
+							$max_length   = mb_strlen($code);
+							$matched_from = $from;
+						}
+					}
+				}
+			}
+
+			// если найден подходящий код, используем его
+			if ($matched_from) {
+				$ar_post["From"] = $matched_from;
+			}
+		}
+
+		// подготавливаем url запроса
+		$url = self::_prepareRequestUrl($credentials["gateway_url"], $action, $credentials["account_sid"]);
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::PROVIDER_TIMEOUT);

@@ -30,6 +30,7 @@ class Type_Task_Handler {
 		Domain_System_Scenario_Event::class,
 		Domain_Member_Scenario_Event::class,
 		Domain_Search_Scenario_Task::class,
+		Domain_Conversation_Scenario_Task::class,
 	];
 
 	/** @var \ReflectionMethod[][] список слушателей событий string */

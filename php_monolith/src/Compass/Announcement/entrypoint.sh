@@ -26,7 +26,7 @@ bash "/app/wait-services.sh" || die "service waiting failed"
 # грязные мерзкие хаки, но почему-то без них не заводится подключение
 migrate -path "${SCRIPT_PATH}/sql/announcement_service" -database mysql://${MYSQL_ROOT_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/hax?tls=false up
 
-cat "${SCRIPT_PATH}/sql/init.sql" | mysql --user="${MYSQL_ROOT_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" --skip-ssl
+cat "${SCRIPT_PATH}/sql/init.sql" | mariadb --user="${MYSQL_ROOT_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" --skip-ssl
 
 migrate -path "${SCRIPT_PATH}/sql/announcement_main" -database mysql://${MYSQL_ROOT_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/announcement_main?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/announcement_user_10m" -database mysql://${MYSQL_ROOT_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/announcement_user_10m?tls=false up

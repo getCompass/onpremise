@@ -20,17 +20,14 @@ class Domain_Analytic_Action_SendAccountStatusLog {
 			return;
 		}
 
-		// получаем всех пользователей в приложении
-		$user_count = Gateway_Db_PivotUser_UserList::getUserCount();
-		$user_list  = Gateway_Db_PivotUser_UserList::getAll($user_count, 0);
+		$offset = 0;
+		do {
 
-		// разбиваем на 100 пользователей, чтобы не убить коллектор
-		$chunk_user_list = array_chunk($user_list, self::_COMPANY_USER_LIST_CHUNK);
+			// разбиваем на 10 пользователей, чтобы не убить коллектор
+			$user_list = Gateway_Db_PivotUser_UserList::getAll(self::_COMPANY_USER_LIST_CHUNK, $offset);
+			$offset    += count($user_list);
 
-		// для каждых 100 пользователей
-		foreach ($chunk_user_list as $chunk) {
-
-			foreach ($chunk as $user) {
+			foreach ($user_list as $user) {
 
 				try {
 
@@ -41,6 +38,6 @@ class Domain_Analytic_Action_SendAccountStatusLog {
 			}
 
 			usleep(0.2 * 1000 * 1000);
-		}
+		} while (count($user_list) > 0);
 	}
 }

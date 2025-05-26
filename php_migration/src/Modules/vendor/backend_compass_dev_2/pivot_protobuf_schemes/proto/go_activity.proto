@@ -1,0 +1,108 @@
+syntax = "proto3";
+package activityGrpc;
+option go_package = "activity/";
+
+// сервис, который описывает все метод go_pivot_cache
+service activity {
+
+  rpc SystemStatus(SystemStatusRequestStruct) returns (SystemStatusResponseStruct) {}
+  rpc SystemTraceGoroutine(SystemTraceGoroutineRequestStruct) returns (SystemTraceGoroutineResponseStruct) {}
+  rpc SystemTraceMemory(SystemTraceMemoryRequestStruct) returns (SystemTraceMemoryResponseStruct) {}
+  rpc SystemCpuProfile(SystemCpuProfileRequestStruct) returns (SystemCpuProfileResponseStruct) {}
+  rpc SystemReloadConfig(SystemReloadConfigRequestStruct) returns (SystemReloadConfigResponseStruct) {}
+  rpc SystemReloadSharding(SystemReloadShardingRequestStruct) returns (SystemReloadShardingResponseStruct) {}
+  rpc SystemCheckSharding(SystemCheckShardingRequestStruct) returns (SystemCheckShardingResponseStruct) {}
+
+  rpc UserGetActivity(UserGetActivityRequestStruct) returns (UserGetActivityResponseStruct) {}
+  rpc UserGetActivityList(UserGetActivityListRequestStruct) returns (UserGetActivityListResponseStruct) {}
+
+  rpc UserResetCache(UserResetCacheRequestStruct) returns (UserResetCacheResponseStruct) {}
+}
+
+// формат запроса для system.status
+message SystemStatusRequestStruct {}
+
+// формат ответа для system.status
+message SystemStatusResponseStruct {
+  string name = 1;
+  int64 goroutines = 2;
+  int64 memory = 3;
+  string memory_kb = 4;
+  string memory_mb = 5;
+  int32 uptime = 6;
+}
+
+// формат запроса для system.traceGoroutine
+message SystemTraceGoroutineRequestStruct {}
+
+// формат ответа для system.traceGoroutine
+message SystemTraceGoroutineResponseStruct {}
+
+// формат запроса для system.traceMemory
+message SystemTraceMemoryRequestStruct {}
+
+// формат ответа для system.traceMemory
+message SystemTraceMemoryResponseStruct {}
+
+// формат запроса для system.cpuProfile
+message SystemCpuProfileRequestStruct {
+  int64 time = 1;
+}
+
+// формат ответа для system.cpuProfile
+message SystemCpuProfileResponseStruct {}
+
+// формат запроса для system.reloadConfig
+message SystemReloadConfigRequestStruct {}
+
+// формат ответа для system.reloadConfig
+message SystemReloadConfigResponseStruct {
+  int32 logging_level = 1;
+  string server_type = 2;
+  int64 tcp_port = 3;
+  int64 grpc_port = 4;
+  string rabbit_queue = 5;
+  string rabbit_exchange = 6;
+}
+
+// формат запроса для system.reloadSharding
+message SystemReloadShardingRequestStruct {}
+
+// формат ответа для system.reloadSharding
+message SystemReloadShardingResponseStruct {}
+
+// формат запроса для system.checkSharding
+message SystemCheckShardingRequestStruct {}
+
+// формат ответа для system.checkSharding
+message SystemCheckShardingResponseStruct {}
+
+// формат запроса для user.getActivity
+message UserGetActivityRequestStruct {
+  int64 user_id = 1;
+}
+
+// формат запроса для user.getActivityList
+message UserGetActivityListRequestStruct {
+  map<string, int64> user_id_list = 1;
+}
+
+// формат ответа для user.getActivity
+message UserGetActivityResponseStruct {
+  int64  user_id = 1;
+  int32  status = 2;
+  int64  created_at = 3;
+  int64  updated_at = 4;
+  int64  last_ws_ping_at = 5;
+}
+
+// Описание массива структур
+message UserGetActivityListResponseStruct {
+  repeated UserGetActivityResponseStruct activity_list = 1; // Список активностей пользователей
+}
+
+// запрос на очистку всего кэша пользователей
+message UserResetCacheRequestStruct {}
+
+// ответа на запрос на очистку всего кэша пользователей
+message UserResetCacheResponseStruct {}

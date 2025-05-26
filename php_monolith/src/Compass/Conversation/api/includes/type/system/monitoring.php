@@ -2,6 +2,8 @@
 
 namespace Compass\Conversation;
 
+use Application\System\Datastore;
+
 /**
  * модель для отслеживания возникающих exceptions
  */
@@ -81,7 +83,7 @@ class Type_System_Monitoring {
 	protected static function _getCursor(string $file_hash, false|int $actual_file_size):int|false {
 
 		// получаем информацию из базы
-		$file_info = Type_System_Datastore::get($file_hash);
+		$file_info = Datastore::get($file_hash);
 
 		// получаем курсор
 		$cursor = $file_info["cursor"] ?? 0;
@@ -169,7 +171,7 @@ class Type_System_Monitoring {
 	protected static function _updateCursor(string $file_hash, int $actual_file_size):void {
 
 		// обновляем актуальные данные в `datastore`
-		Type_System_Datastore::set($file_hash, [
+		Datastore::set($file_hash, [
 			"cursor" => $actual_file_size,
 		]);
 	}

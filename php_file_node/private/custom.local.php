@@ -65,6 +65,8 @@ define("SOCKET_KEY_THREAD"		      , "${SOCKET_KEY_THREAD}");
 define("SOCKET_KEY_FILE_BALANCER"		, "${SOCKET_KEY_FILE_BALANCER}");
 define("SOCKET_KEY_INTERCOM"			, "${SOCKET_KEY_INTERCOM}");
 
+define("INTERCOM_PROXY"				, "${INTERCOM_PROXY}");
+
 // -------------------------------------------------------
 // NODE
 // -------------------------------------------------------
@@ -72,6 +74,7 @@ define("SOCKET_KEY_INTERCOM"			, "${SOCKET_KEY_INTERCOM}");
 define("NODE_ID"                          , "${NODE_ID}");
 define("NODE_URL"                         , "${NODE_URL}");
 define("CDN_URL"                          , "${CDN_URL}");
+define("IS_NEED_LOG_POST_UPLOAD_DOCUMENTS" , ${IS_NEED_LOG_POST_UPLOAD_DOCUMENTS});
 
 // путь до access-лога nginx
 define("LOG_FILE_PATH"				, PATH_LOGS . "nginx/access.log");

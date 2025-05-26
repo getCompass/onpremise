@@ -46,6 +46,37 @@ class Gateway_Bus_Company_Rating extends Gateway_Bus_Company_Main {
 	}
 
 	/**
+	 * инкрементим определенный день в году для пользователя
+	 *
+	 * @param string $event
+	 * @param int    $user_id
+	 * @param int    $year
+	 * @param int    $day
+	 * @param int    $inc_value
+	 *
+	 * @throws BusFatalException
+	 * @throws \busException
+	 * @throws \parseException
+	 */
+	public static function incDayForUser(string $event, int $user_id, int $year, int $day, int $inc_value = 1):void {
+
+		$request = new \CompanyGrpc\RatingIncDayRatingEventCountForUserRequestStruct([
+			"user_id"    => $user_id,
+			"year"       => $year,
+			"day"        => $day,
+			"event"      => $event,
+			"inc"        => $inc_value,
+			"company_id" => COMPANY_ID,
+
+		]);
+
+		[, $status] = self::_doCallGrpc("RatingIncDayRatingEventCountForUser", $request);
+		if ($status->code !== \Grpc\STATUS_OK) {
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
+		}
+	}
+
+	/**
 	 * декремент статистики после удаления сущности
 	 *
 	 * @param string $event
@@ -464,6 +495,48 @@ class Gateway_Bus_Company_Rating extends Gateway_Bus_Company_Main {
 			default:
 				throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
 		}
+	}
+
+	/**
+	 * Инкремент статистики за указанную неделю
+	 *
+	 * @param int    $year
+	 * @param int    $week
+	 * @param string $event
+	 * @param int    $user_id
+	 * @param int    $value
+	 *
+	 * @throws BusFatalException
+	 * @throws \busException
+	 * @throws \parseException
+	 */
+	public static function incPreviousWeek(int $year, int $week, string $event, int $user_id, int $value = 1):void {
+
+		$date = new \DateTime();
+		$date->setTime(12, 0);
+
+		// устанавливаем неделю и год
+		$date->setISODate($year, $week);
+
+		// получаем день для инкремента
+		$day = intval($date->format("z")) + 1;
+
+		self::incDayForUser($event, $user_id, $year, $day, $value);
+	}
+
+	/**
+	 * Чистим всю статистику
+	 */
+	public static function doClearAllStatistic(int $year):void {
+
+		// формируем массив для запроса
+		$ar_post = [
+			"method" => "backdoor.doClearAllStatistic",
+			"year"   => $year,
+		];
+
+		// отправляем задачу в очередь
+		Gateway_Bus_Rabbit::sendMessageToExchange(self::_EXCHANGE_NAME, $ar_post);
 	}
 
 	/**

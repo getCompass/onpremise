@@ -1,0 +1,12 @@
+version: '3.3'
+
+services:
+
+  proto_generator:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /home/proto
+    volumes:
+      - .:/home/proto

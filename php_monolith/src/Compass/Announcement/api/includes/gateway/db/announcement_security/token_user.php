@@ -42,6 +42,45 @@ class Gateway_Db_AnnouncementSecurity_TokenUser extends Gateway_Db_AnnouncementS
 
 		return self::_makeStructFromRow($insert_row);
 	}
+	/**
+	 * Вставка или обновление записи
+	 *
+	 * @param string $token
+	 * @param int    $user_id
+	 * @param string $bound_session_key
+	 * @param int    $expires_at
+	 *
+	 * @return Struct_Db_AnnouncementSecurity_TokenUser
+	 * @throws \queryException
+	 */
+	public static function insertOrUpdate(string $token, int $user_id, string $bound_session_key, int $expires_at):Struct_Db_AnnouncementSecurity_TokenUser {
+
+		// получаем ключ базы данных
+		$shard_key = self::_getDataBaseKey();
+
+		// получаем название таблицы
+		$table_name = self::_getTableName($user_id);
+
+		$insert_row = [
+			"token"             => $token,
+			"user_id"           => $user_id,
+			"bound_session_key" => $bound_session_key,
+			"created_at"        => time(),
+			"updated_at"        => time(),
+			"expires_at"        => $expires_at,
+		];
+
+		$set = [
+			"token"             => $token,
+			"updated_at"        => time(),
+			"expires_at"        => $expires_at,
+		];
+
+		// осуществляем запрос
+		ShardingGateway::database($shard_key)->insertOrUpdate($table_name, $insert_row, $set);
+
+		return self::_makeStructFromRow($insert_row);
+	}
 
 	/**
 	 * Получения записи

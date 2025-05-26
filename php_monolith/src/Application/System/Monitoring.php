@@ -178,7 +178,7 @@ class Monitoring {
 	// получаем провайдера для отправки исключений
 	protected static function _provideExceptionSener():?ProviderInterface {
 
-		if (!defined("EXCEPTION_NOTICE_PROVIDER")) {
+		if (!defined(EXCEPTION_NOTICE_PROVIDER)) {
 			return null;
 		}
 

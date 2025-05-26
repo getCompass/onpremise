@@ -11,19 +11,20 @@ class Domain_Member_Entity_Sanitizer {
 	protected const _MAX_STATUS_LENGTH        = 500;
 	protected const _MAX_BADGE_CONTENT_LENGTH = 8;
 	protected const _MBTI_TYPE_PER_QUERY      = 100;  // максимальное количество результатов в getListByMBTI
-	protected const _DESCRIPTION_REGEXP       = "/[^а-яёa-z0-9[:punct:]'\- œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñЎўІі¿¡<>]/ui";
-	protected const _BADGE_REGEXP             = "/[^а-яёa-z0-9 œẞßÄäÜüÖöÀàÈèÉéÌìÍíÎîÒòÓóÙùÚúÂâÊêÔôÛûËëÏïŸÿÇçÑñЎўІі:~@#%&_={},;.'^*()+$\/\-\[\]\"\\\\]/uism";
 
 	/**
 	 * Очистка short_description пользователя
 	 */
 	public static function sanitizeDescription(string $description):string {
 
-		// удаляем лишие символы
-		$description = trim(preg_replace([self::_DESCRIPTION_REGEXP, "/[ ]{2,}/u"], ["", " "], $description));
-
-		// удаляем лишние пробелы
-		$description = trim(preg_replace("/[ ]{2,}/", " ", $description));
+		// удаляем лишние символы
+		$description = trim(preg_replace([
+			\BaseFrame\System\Character::EMOJI_REGEX,
+			\BaseFrame\System\Character::COMMON_FORBIDDEN_CHARACTER_REGEX,
+			\BaseFrame\System\Character::FANCY_TEXT_REGEX,
+			\BaseFrame\System\Character::DOUBLE_SPACE_REGEX,
+			\BaseFrame\System\Character::NEWLINE_REGEX,
+		], ["", "", "", " ", ""], $description));
 
 		// обрезаем
 		return mb_substr($description, 0, self::_MAX_DESCRIPTION_LENGTH);
@@ -38,7 +39,10 @@ class Domain_Member_Entity_Sanitizer {
 		$status = Type_Api_Filter::replaceEmojiWithShortName($status);
 
 		// удаляем лишнее
-		$status = trim(preg_replace("/([\r\n\f\v]){3,}/", "\n\n", $status));
+		$status = trim(preg_replace([
+			"/([\r\n\f\v]){3,}/",
+			\BaseFrame\System\Character::COMMON_FORBIDDEN_CHARACTER_REGEX,
+		], ["\n\n", ""], $status));
 
 		// обрезаем
 		return mb_substr($status, 0, self::_MAX_STATUS_LENGTH);
@@ -50,7 +54,12 @@ class Domain_Member_Entity_Sanitizer {
 	public static function sanitizeBadgeContent(string $content):string {
 
 		// удаляем лишнее
-		$content = preg_replace(self::_BADGE_REGEXP, "", $content);
+		$content = preg_replace([
+			\BaseFrame\System\Character::EMOJI_REGEX,
+			\BaseFrame\System\Character::COMMON_FORBIDDEN_CHARACTER_REGEX,
+			\BaseFrame\System\Character::FANCY_TEXT_REGEX,
+			"/\s*\R\s*/u",
+		], ["", "", "", " "], $content);
 
 		// обрезаем
 		return mb_substr(trim($content), 0, self::_MAX_BADGE_CONTENT_LENGTH);

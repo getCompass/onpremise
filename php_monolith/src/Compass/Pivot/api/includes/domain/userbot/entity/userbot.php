@@ -18,16 +18,24 @@ class Domain_Userbot_Entity_Userbot {
 	public const LAST_WEBHOOK_VERSION = 3;
 
 	// !!! структура schema и версия webhook также продублирована в php_userbot
-	protected const _USERBOT_EXTRA_VERSION = 2; // версия упаковщика
+	protected const _USERBOT_EXTRA_VERSION = 3; // версия упаковщика
 	protected const _USERBOT_EXTRA_SCHEMA  = [  // схема extra
 
 		1 => [
 			"command_list"    => [],
 			"avatar_color_id" => 0,
 		],
+
 		2 => [
 			"command_list"    => [],
 			"avatar_color_id" => 0,
+			"webhook_version" => 1, // по умолчанию считаем, что у бота 1я версия, чтобы не сломать текущих ботов
+		],
+
+		3 => [
+			"command_list"    => [],
+			"avatar_color_id" => 0,
+			"avatar_file_key" => "",
 			"webhook_version" => 1, // по умолчанию считаем, что у бота 1я версия, чтобы не сломать текущих ботов
 		],
 	];
@@ -78,10 +86,11 @@ class Domain_Userbot_Entity_Userbot {
 	 * @throws cs_RowDuplication
 	 * @throws \queryException
 	 */
-	public static function create(string $userbot_id, int $user_id, int $company_id, int $avatar_color_id, int $created_at):void {
+	public static function create(string $userbot_id, int $user_id, int $company_id, int $avatar_color_id, string $avatar_file_key, int $created_at):void {
 
 		$extra = self::initUserbotExtra();
 		$extra = self::setAvatarColorId($extra, $avatar_color_id);
+		$extra = self::setAvatarFileKey($extra, $avatar_file_key);
 		$extra = self::setWebhookVersion($extra, self::LAST_WEBHOOK_VERSION);
 
 		Gateway_Db_PivotUserbot_UserbotList::insert($userbot_id, $user_id, $company_id, self::STATUS_ENABLE, $created_at, $extra);
@@ -126,6 +135,25 @@ class Domain_Userbot_Entity_Userbot {
 
 		$extra = self::_getExtra($extra);
 		return $extra["extra"]["avatar_color_id"];
+	}
+
+	/**
+	 * устанавливаем avatar_file_key
+	 */
+	public static function setAvatarFileKey(array $extra, string $avatar_file_key):array {
+
+		$extra                             = self::_getExtra($extra);
+		$extra["extra"]["avatar_file_key"] = $avatar_file_key;
+		return $extra;
+	}
+
+	/**
+	 * достаём avatar_file_key
+	 */
+	public static function getAvatarFileKey(array $extra):string {
+
+		$extra = self::_getExtra($extra);
+		return $extra["extra"]["avatar_file_key"];
 	}
 
 	/**

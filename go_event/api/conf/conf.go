@@ -36,6 +36,8 @@ type ConfigStruct struct {
 
 	ServerTagList                       []string      `json:"server_tag_list"`
 	ForceCompanyConfigUpdateIntervalSec time.Duration `json:"force_company_config_update_interval_sec"`
+
+	CaCertificate string `json:"ca_certificate"`
 }
 
 // переменная содержащая конфигурацию

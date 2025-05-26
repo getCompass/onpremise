@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
  * Класс для получения общей аналитики в приложении
  * @package Compass\Pivot
@@ -137,6 +139,95 @@ class Domain_Analytic_Entity_General {
 		$revenue_list_by_day = Gateway_Socket_Billing::getRevenueStat($from_date, $to_date);
 
 		return self::_formatRevenueSum($revenue_list_by_day);
+	}
+
+	/**
+	 * Получаем метрики по конференциям
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 */
+	public static function getConferenceMetrics(int $from_date, int $to_date):array {
+
+		$temporary_conference_row_data = Gateway_Socket_CollectorServer::getRowByDate("jitsi", "row0", "day", $from_date, $to_date);
+		$single_conference_row_data    = Gateway_Socket_CollectorServer::getRowByDate("jitsi", "row1", "day", $from_date, $to_date);
+		$permanent_conference_row_data = Gateway_Socket_CollectorServer::getRowByDate("jitsi", "row2", "day", $from_date, $to_date);
+
+		return [
+			self::_sumRowValues($temporary_conference_row_data),
+			self::_sumRowValues($single_conference_row_data),
+			self::_sumRowValues($permanent_conference_row_data),
+		];
+	}
+
+	/**
+	 * Получаем метрики по конференциям
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 */
+	public static function getTotalConferenceMetricsChartData(int $from_date, int $to_date):array {
+
+		$output = [];
+
+		// здесь будут сырые данные по метрикам, которые нужно будет просуммировать и объединить в один график
+		$row_data_list = [
+			Gateway_Socket_CollectorServer::getRowByDate("jitsi", "row0", "day", $from_date, $to_date), // temporary конференции
+			Gateway_Socket_CollectorServer::getRowByDate("jitsi", "row1", "day", $from_date, $to_date), // single конференции
+			Gateway_Socket_CollectorServer::getRowByDate("jitsi", "row2", "day", $from_date, $to_date), // permanent конференции
+		];
+
+		// пробегаемся по каждой сырой метрике и формируем данные для графика
+		foreach ($row_data_list as $raw_data) {
+
+			// сортируем временные метки по убыванию
+			usort($raw_data, function(array $a, array $b) {
+
+				return $b["date"] <=> $a["date"];
+			});
+
+			// складываем все это в output по дням
+			foreach ($raw_data as $graph) {
+
+				// если в output еще нет информации по этому дню, то инициализируем
+				if (!isset($output[$graph["date"]])) {
+					$output[$graph["date"]] = [$graph["date"], 0];
+				}
+
+				// получаем из output информацию по этому дню
+				[$date, $value] = $output[$graph["date"]];
+
+				// суммируем value
+				$value += $graph["value"];
+
+				// сохраняем в output
+				$output[$date] = [$date, $value];
+			}
+		}
+
+		// возвращаем только значения, без ключа
+		return array_values($output);
+	}
+
+	/**
+	 * Суммируем value полученной статистики
+	 *
+	 * @return int
+	 * @throws ParseFatalException
+	 */
+	protected static function _sumRowValues(array $row_data):int {
+
+		$sum = 0;
+		foreach ($row_data as $row) {
+
+			if (!isset($row["value"])) {
+				throw new ParseFatalException("incorrect input data");
+			}
+
+			$sum += $row["value"];
+		}
+
+		return $sum;
 	}
 
 	/**

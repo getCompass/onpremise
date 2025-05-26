@@ -27,7 +27,10 @@ Reg: *{registered_users_count}*, Cnew: *{unique_space_creators_count} ({unique_s
 RegAtr: *{attr_app_registered_user_count} ({attr_app_registered_user_conversion}%)*, CaddAtr: *{attr_app_total_enter_space_count} ({attr_app_total_enter_space_conversion}%)*
 
 _Пространства:_
-New: *{created_spaces_count}*, Add: *{space_joining_count}*, Rev: *{revenue_sum}*";
+New: *{created_spaces_count}*, Add: *{space_joining_count}*, Rev: *{revenue_sum}*
+
+_Смс провайдеры:_
+Sms-agent: *{sms_agent_balance}*, Vonage: *{vonage_balance}*, Twilio: *{twilio_balance}*";
 
 		$report_metrics = self::countReportMetricsByInterval($from_date, $to_date);
 		$text           = format($message_template, $report_metrics->toArray());
@@ -40,6 +43,8 @@ New: *{created_spaces_count}*, Add: *{space_joining_count}*, Rev: *{revenue_sum}
 	 * Отправляем большой отчет за отчетный день ($reporting_day_start)/неделю отчетного дня/месяц отчетного дня
 	 *
 	 * @param int $reporting_day_start Время начала дня для которого отправляется отчет. Неделя и месяц высчитываются относительно отчетного дня
+	 *
+	 * @long
 	 */
 	public static function sendBigReport(int $reporting_day_start):void {
 
@@ -53,7 +58,10 @@ CaddAtr: *{day_attr_app_total_enter_space_count} ({day_attr_app_total_enter_spac
 _Пространства:_
 New: *{day_created_spaces_count}*, *{week_created_spaces_count}*, *{month_created_spaces_count}*
 Add: *{day_space_joining_count}*, *{week_space_joining_count}*, *{month_space_joining_count}*
-Rev: *{day_revenue_sum}*, *{week_revenue_sum}*, *{month_revenue_sum}*";
+Rev: *{day_revenue_sum}*, *{week_revenue_sum}*, *{month_revenue_sum}*
+
+_Смс провайдеры:_
+Sms-agent: *{day_sms_agent_balance}*, Vonage: *{day_vonage_balance}*, Twilio: *{day_twilio_balance}*";
 
 		// сюда сложим все реплейсменты, которые должны подставиться в шаблон выше
 		$metrics_format_replacement = [];
@@ -91,6 +99,7 @@ Rev: *{day_revenue_sum}*, *{week_revenue_sum}*, *{month_revenue_sum}*";
 	 * @throws \parseException
 	 * @throws \returnException
 	 * @throws cs_UserNotFound
+	 * @long
 	 */
 	public static function countReportMetricsByInterval(int $from_date, int $to_date):Struct_Analytic_BusinessReportMetrics {
 
@@ -110,6 +119,27 @@ Rev: *{day_revenue_sum}*, *{week_revenue_sum}*, *{month_revenue_sum}*";
 		// получаем выручку
 		$revenue_sum = Domain_Analytic_Entity_General::getRevenueSumText($from_date, $to_date);
 
+		// получаем балансы провайдеров
+		try {
+			$sms_agent_balance = floor(Gateway_Sms_Provider_SmsAgent::getBalance()->body) . " руб";
+		} catch (\Exception|\Error) {
+			$sms_agent_balance = "[\"@\"|160744|\"Не смогли получить\"]";
+		}
+		try {
+			$vonage_balance = floor(Gateway_Sms_Provider_Vonage::getBalance()->body["value"]) . "€";
+		} catch (\Exception|\Error) {
+			$vonage_balance = "[\"@\"|160744|\"Не смогли получить\"]";
+		}
+		try {
+			$twilio_balance = floor(fromJson((Gateway_Sms_Provider_Twilio::getBalance()->body))["balance"]) . "$";
+		} catch (\Exception|\Error) {
+			$twilio_balance = "[\"@\"|160744|\"Не смогли получить\"]";
+		}
+
+		// получаем статистику по конференциям
+		[$temporary_conference_row_data, $single_conference_row_data, $permanent_conference_row_data] = Domain_Analytic_Entity_General
+			::getConferenceMetrics($from_date, $to_date);
+
 		return new Struct_Analytic_BusinessReportMetrics(
 			$registered_users_count,
 			$unique_space_creators_count,
@@ -123,6 +153,12 @@ Rev: *{day_revenue_sum}*, *{week_revenue_sum}*, *{month_revenue_sum}*";
 			$created_spaces_count,
 			$space_joining_count,
 			$revenue_sum,
+			$sms_agent_balance,
+			$vonage_balance,
+			$twilio_balance,
+			$temporary_conference_row_data,
+			$single_conference_row_data,
+			$permanent_conference_row_data
 		);
 	}
 

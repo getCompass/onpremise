@@ -46,10 +46,6 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 
 		$hibernate_at = $company_row->updated_at;
 
-		if (!isTestServer() && !isStageServer()) {
-			Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_SERVICE, "Пробую пробудить компанию {$company_row->company_id}");
-		}
-
 		try {
 			$domino_registry_row = Gateway_Db_PivotCompanyService_DominoRegistry::getOne($company_row->domino_id);
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
@@ -61,7 +57,6 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 		if ($company_row->status !== Domain_Company_Entity_Company::COMPANY_STATUS_HIBERNATED || !$company_registry->is_hibernated) {
 
 			$log_text = "Компания {$company_row->company_id} не была в гибернации";
-			Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_SERVICE, $log_text);
 			return $log->addText($log_text);
 		}
 
@@ -95,10 +90,6 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 			0,
 			Domain_Company_Entity_Tier::initExtra()
 		);
-
-		if (!isTestServer() && !isStageServer()) {
-			Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_SERVICE, "Успешно пробудил компанию {$company_row->company_id}");
-		}
 
 		return self::_writeLog($company_row->company_id, $company_row->domino_id, $log);
 	}

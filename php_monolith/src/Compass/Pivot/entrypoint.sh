@@ -30,7 +30,7 @@ bash "/app/wait-services.sh" || die "service waiting failed"
 php "${SCRIPT_PATH}/sh/php/update/fix_migration.php"
 
 # приступаем к миграциям
-mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" --skip-ssl < "${SCRIPT_PATH}/sql/init_pivot.sql"
+mariadb --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" --skip-ssl < "${SCRIPT_PATH}/sql/init_pivot.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/pivot_phone" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_phone?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/pivot_phone" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_phone?tls=false version
@@ -119,7 +119,7 @@ migrate -path "${SCRIPT_PATH}/sql/pivot_history_logs_2027" -database mysql://${M
 migrate -path "${SCRIPT_PATH}/sql/pivot_history_logs_2028" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_history_logs_2028?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/pivot_history_logs_2028" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/pivot_history_logs_2028?tls=false version
 
-mysql --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_SYSTEM_PASS}" --host="$MYSQL_SYSTEM_HOST" --port="$MYSQL_SYSTEM_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
+mariadb --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_SYSTEM_PASS}" --host="$MYSQL_SYSTEM_HOST" --port="$MYSQL_SYSTEM_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/pivot_system" -database mysql://${MYSQL_SYSTEM_USER}:${MYSQL_SYSTEM_PASS}@tcp\(${MYSQL_SYSTEM_HOST}:${MYSQL_SYSTEM_PORT}\)/pivot_system?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/pivot_system" -database mysql://${MYSQL_SYSTEM_USER}:${MYSQL_SYSTEM_PASS}@tcp\(${MYSQL_SYSTEM_HOST}:${MYSQL_SYSTEM_PORT}\)/pivot_system?tls=false version

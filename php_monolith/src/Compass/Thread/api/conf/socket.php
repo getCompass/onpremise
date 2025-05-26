@@ -106,6 +106,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"threads.actualizeTestRemindForMessage",
 			"system.execCompanyUpdateScript",
 			"threads.setParentMessageIsDeletedByThreadMapList",
+			"threads.checkIsUserMember",
 			"system.setCompanyStatus",
 			"userbot.sendMessageToThread",
 		],

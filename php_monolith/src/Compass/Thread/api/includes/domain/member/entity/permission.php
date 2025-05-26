@@ -5,6 +5,7 @@ namespace Compass\Thread;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
+use CompassApp\Domain\Member\Entity\Member;
 use CompassApp\Domain\Member\Exception\IsNotAdministrator;
 use const Compass\Conversation\FILE_TYPE_VOICE;
 
@@ -40,6 +41,34 @@ class Domain_Member_Entity_Permission {
 				throw new Domain_Member_Exception_ActionNotAllowed("Action not allowed");
 			}
 		}
+	}
+
+	/**
+	 * Получить значение права
+	 *
+	 * @param int    $user_id
+	 * @param string $permission_key
+	 *
+	 * @return bool
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
+	 * @throws \cs_RowIsEmpty
+	 */
+	public static function get(int $user_id, string $permission_key):bool {
+
+		$member = Gateway_Bus_CompanyCache::getMember($user_id);
+
+		try {
+
+			// проверяем роль пользователя
+			Member::assertUserAdministrator($member->role);
+		} catch (IsNotAdministrator) {
+
+			$member_permission = Gateway_Bus_CompanyCache::getConfigKey($permission_key);
+			return (bool) $member_permission->value["value"];
+		}
+
+		return true;
 	}
 
 	/**

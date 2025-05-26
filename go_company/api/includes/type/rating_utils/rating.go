@@ -19,24 +19,30 @@ func InitYearParamsList(fromDateAt int, toDateAt int) map[int]map[string]int {
 	endDay := functions.GetDaysCountByTimestamp(int64(toDateAt), toYear)
 
 	// формируем данные для получения рейтинга
-	yearListData := map[int]map[string]int{
-		fromYear: {
-			"startDay": startDay,
-			"endDay":   endDay,
-		},
+	yearListData := map[int]map[string]int{}
+	for year := fromYear; year <= toYear; year++ {
+
+		switch year {
+		case fromYear:
+			yearListData[year] = map[string]int{
+				"startDay": startDay,
+				"endDay":   endDay,
+			}
+		case toYear:
+			yearListData[year] = map[string]int{
+				"startDay": 1,
+				"endDay":   endDay,
+			}
+		default:
+			yearListData[year] = map[string]int{
+				"startDay": 1,
+				"endDay":   366,
+			}
+		}
 	}
 
-	// если нужно брать рейтинг за два разных года
 	if fromYear != toYear {
-
-		// то для первого года устанавливаем последний день в году
 		yearListData[fromYear]["endDay"] = 366
-
-		// для следующего года от первого дня и до запрашиваемой даты
-		yearListData[toYear] = map[string]int{
-			"startDay": 1,
-			"endDay":   endDay,
-		}
 	}
 
 	return yearListData

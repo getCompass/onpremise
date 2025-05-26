@@ -57,27 +57,49 @@ class Domain_User_Scenario_Api_Security_Device {
 	 * Инвалидируем устройство пользователя
 	 *
 	 * @throws Domain_User_Exception_Security_Device_IncorrectSessionId
+	 * @throws Domain_User_Exception_Security_Device_RecentlyLoginSession
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \cs_RowIsEmpty
+	 * @throws \BaseFrame\Exception\Gateway\DBShardingNotFoundException
+	 * @throws \BaseFrame\Exception\Gateway\QueryFatalException
 	 * @throws \parseException
 	 */
-	public static function invalidate(int $user_id, string $public_session_id):void {
+	public static function invalidate(int $user_id, string $current_session_uniq, string $public_session_id):void {
 
 		$session_uniq = Domain_User_Action_Security_Device_GetSessionId::doDecrypt($public_session_id);
 
-		$session_active = Gateway_Db_PivotUser_SessionActiveList::getOne($user_id, $session_uniq);
+		$session_active_list = Gateway_Db_PivotUser_SessionActiveList::getList($user_id, [$current_session_uniq, $session_uniq]);
+
+		$session_for_logout = null;
+		foreach ($session_active_list as $session) {
+
+			// для текущей сессии проверяем, что сессия была авторизована давно
+			if ($session->session_uniq == $current_session_uniq) {
+
+				if (Domain_User_Action_Security_Device_IsRecentlyLoginSession::do($session->login_at)) {
+					throw new Domain_User_Exception_Security_Device_RecentlyLoginSession("current used session is recently login");
+				}
+				continue;
+			}
+
+			$session_for_logout = $session;
+		}
+
+		if (is_null($session_for_logout)) {
+			return;
+		}
 
 		// разлогиниваем сессию устройства пользователя
-		Type_Session_Main::doLogoutDevice($user_id, $session_uniq);
+		Type_Session_Main::doLogoutDevice($user_id, $session_for_logout->session_uniq);
 
 		// отправляем ws-событие с device_id устройства
-		$device_id = Domain_User_Entity_SessionExtra::getDeviceId($session_active->extra);
+		$device_id = Domain_User_Entity_SessionExtra::getDeviceId($session_for_logout->extra);
 		mb_strlen($device_id) > 0 && Gateway_Bus_SenderBalancer::authenticatedDeviceLogout($user_id, [$device_id]);
 	}
 
 	/**
 	 * Инвалидировать остальные устройства пользователя.
 	 *
+	 * @throws Domain_User_Exception_Security_Device_RecentlyLoginSession
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException
@@ -94,6 +116,11 @@ class Domain_User_Scenario_Api_Security_Device {
 
 			// если сессия принадлежит текущей сессии пользователя - пропускаем
 			if ($session_active->session_uniq == $current_session_uniq) {
+
+				if (Domain_User_Action_Security_Device_IsRecentlyLoginSession::do($session_active->login_at)) {
+					throw new Domain_User_Exception_Security_Device_RecentlyLoginSession("current used session is recently login");
+				}
+
 				continue;
 			}
 

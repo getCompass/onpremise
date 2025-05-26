@@ -10,4 +10,6 @@ sh wait-services.sh 100
 if [[ "${IS_LOCAL}" == "true" ]]; then
   cd /app && go build -o sender -mod vendor main.go
 fi
+
+ln -sf /dev/stdout /app/logs/main.log
 /app/sender -confdir=/app/api/conf -logsdir=/app/logs -executabledir=/app

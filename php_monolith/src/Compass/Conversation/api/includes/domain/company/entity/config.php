@@ -14,6 +14,8 @@ class Domain_Company_Entity_Config {
 	public const MODULE_EXTENDED_EMPLOYEE_CARD_KEY = "module_extended_employee_card";
 	public const PUSH_BODY_DISPLAY_KEY             = "is_display_push_body";
 	public const ADD_TO_GENERAL_CHAT_ON_HIRING     = "is_add_to_general_chat_on_hiring";
+	public const SHOW_MESSAGE_READ_STATUS          = "show_message_read_status";
+	public const UNLIMITED_MESSAGES_EDITING        = "unlimited_messages_editing";
 
 	public const GENERAL_CONVERSATION_KEY_NAME      = "general_conversation_key";
 	public const HEROES_CONVERSATION_KEY_NAME       = "heroes_conversation_key";
@@ -30,5 +32,7 @@ class Domain_Company_Entity_Config {
 		self::MODULE_EXTENDED_EMPLOYEE_CARD_KEY => 0,
 		self::PUSH_BODY_DISPLAY_KEY             => 0, // для безопасности, если по какой-то причине потеряли в базе конфиг
 		self::ADD_TO_GENERAL_CHAT_ON_HIRING     => 1,
+		self::SHOW_MESSAGE_READ_STATUS          => 1,
+		self::UNLIMITED_MESSAGES_EDITING        => 0,
 	];
 }

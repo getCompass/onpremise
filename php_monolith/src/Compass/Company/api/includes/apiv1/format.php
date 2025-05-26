@@ -2,6 +2,7 @@
 
 namespace Compass\Company;
 
+use CompassApp\Domain\Member\Entity\Member;
 use CompassApp\Domain\Member\Entity\Permission;
 
 /**
@@ -107,11 +108,13 @@ class Apiv1_Format {
 	 *
 	 * @param \CompassApp\Domain\Member\Struct\Main[] $member_list
 	 */
-	public static function memberList(array $member_list):array {
+	public static function memberList(int $user_id, int $user_role, array $member_list):array {
 
 		$output = [];
 		foreach ($member_list as $member) {
-			$output[] = \CompassApp\Domain\Member\Entity\Member::formatMember($member);
+
+			$can_get_permissions = $user_role === Member::ROLE_ADMINISTRATOR || $user_id === $member->user_id;
+			$output[]            = Member::formatMember($member, $can_get_permissions);
 		}
 
 		return $output;

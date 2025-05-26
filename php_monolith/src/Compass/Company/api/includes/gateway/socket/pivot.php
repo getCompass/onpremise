@@ -656,21 +656,58 @@ class Gateway_Socket_Pivot {
 	 * @throws \returnException
 	 * @long - switch..case для кодов ошибок
 	 */
-	public static function createUserbot(string $userbot_name, int $avatar_id, int|false $is_react_command, string|false $webhook, int $role, int $permissions):array {
+	public static function createUserbot(string    $userbot_name, int $avatar_color_id, string|false $avatar_file_key,
+							 int|false $is_react_command, string|false $webhook,
+							 int|false $is_smart_app, string|false $smart_app_name, string|false $smart_app_url,
+							 int|false $is_smart_app_sip, int|false $is_smart_app_mail,
+							 int|false $smart_app_default_width, int|false $smart_app_default_height,
+							 int       $role, int $permissions):array {
 
 		$ar_post = [
 			"userbot_name" => $userbot_name,
-			"avatar_id"    => $avatar_id,
+			"avatar_id"    => $avatar_color_id,
 			"role"         => $role,
 			"permissions"  => $permissions,
 		];
 
+		if ($avatar_file_key !== false) {
+			$ar_post["avatar_file_key"] = $avatar_file_key;
+		}
+
 		if ($is_react_command !== false) {
-			$ar_post["is_react_command"] = $is_react_command;
+			$ar_post["is_react_command"] = (int) $is_react_command;
 		}
 
 		if ($webhook !== false) {
 			$ar_post["webhook"] = $webhook;
+		}
+
+		if ($is_smart_app !== false) {
+			$ar_post["is_smart_app"] = (int) $is_smart_app;
+		}
+
+		if ($smart_app_name !== false) {
+			$ar_post["smart_app_name"] = $smart_app_name;
+		}
+
+		if ($smart_app_url !== false) {
+			$ar_post["smart_app_url"] = $smart_app_url;
+		}
+
+		if ($is_smart_app_sip !== false) {
+			$ar_post["is_smart_app_sip"] = (int) $is_smart_app_sip;
+		}
+
+		if ($is_smart_app_mail !== false) {
+			$ar_post["is_smart_app_mail"] = (int) $is_smart_app_mail;
+		}
+
+		if ($smart_app_default_width !== false) {
+			$ar_post["smart_app_default_width"] = (int) $smart_app_default_width;
+		}
+
+		if ($smart_app_default_height !== false) {
+			$ar_post["smart_app_default_height"] = (int) $smart_app_default_height;
 		}
 
 		[$status, $response] = self::_call("company.userbot.create", $ar_post, 0);
@@ -709,7 +746,12 @@ class Gateway_Socket_Pivot {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function editUserbot(string $userbot_id, string $token, string|false $userbot_name, int|false $avatar_color_id, int|false $is_react_command, string|false $webhook):void {
+	public static function editUserbot(string    $userbot_id, string $token, string|false $userbot_name,
+						     int|false $avatar_color_id, string|false $avatar_file_key,
+						     int|false $is_react_command, string|false $webhook,
+						     int|false $is_smart_app, string|false $smart_app_name, string|false $smart_app_url,
+						     int|false $is_smart_app_sip, int|false $is_smart_app_mail,
+						     int|false $smart_app_default_width, int|false $smart_app_default_height):void {
 
 		$ar_post = [
 			"userbot_id"         => $userbot_id,
@@ -722,15 +764,45 @@ class Gateway_Socket_Pivot {
 		}
 
 		if ($webhook !== false) {
-			$ar_post["webhook"] = $webhook;
+
+			$ar_post["webhook"]          = $webhook;
+			$ar_post["is_react_command"] = (int) $is_react_command;
 		}
 
-		if ($webhook !== false) {
-			$ar_post["is_react_command"] = (int) $is_react_command;
+		if ($smart_app_name !== false) {
+
+			$ar_post["smart_app_name"] = $smart_app_name;
+			$ar_post["is_smart_app"]   = (int) $is_smart_app;
+		}
+
+		if ($smart_app_url !== false) {
+
+			$ar_post["smart_app_url"] = $smart_app_url;
+			$ar_post["is_smart_app"]  = (int) $is_smart_app;
 		}
 
 		if ($avatar_color_id !== false) {
 			$ar_post["avatar_color_id"] = (int) $avatar_color_id;
+		}
+
+		if ($avatar_file_key !== false) {
+			$ar_post["avatar_file_key"] = (string) $avatar_file_key;
+		}
+
+		if ($is_smart_app_sip !== false) {
+			$ar_post["is_smart_app_sip"] = (int) $is_smart_app_sip;
+		}
+
+		if ($is_smart_app_mail !== false) {
+			$ar_post["is_smart_app_mail"] = (int) $is_smart_app_mail;
+		}
+
+		if ($smart_app_default_width !== false) {
+			$ar_post["smart_app_default_width"] = (int) $smart_app_default_width;
+		}
+
+		if ($smart_app_default_height !== false) {
+			$ar_post["smart_app_default_height"] = (int) $smart_app_default_height;
 		}
 
 		// делаем запрос
@@ -1251,9 +1323,9 @@ class Gateway_Socket_Pivot {
 	protected static function _throwExceptionByStatusCode(int $http_status_code, \Throwable $default_exception):void {
 
 		match ($http_status_code) {
-			490     => throw new \BaseFrame\Exception\Request\CompanyIsHibernatedException("company is hibernation"),
-			491     => throw new \BaseFrame\Exception\Request\CompanyIsRelocatingException("company is relocation"),
-			404     => throw new \BaseFrame\Exception\Request\CompanyNotServedException("company is not served"),
+			490 => throw new \BaseFrame\Exception\Request\CompanyIsHibernatedException("company is hibernation"),
+			491 => throw new \BaseFrame\Exception\Request\CompanyIsRelocatingException("company is relocation"),
+			404 => throw new \BaseFrame\Exception\Request\CompanyNotServedException("company is not served"),
 			default => throw $default_exception,
 		};
 	}

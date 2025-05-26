@@ -3,6 +3,17 @@
 namespace Compass\Conversation;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
+use BaseFrame\Exception\Request\ParamException;
+use BaseFrame\Server\ServerProvider;
+use CompassApp\Domain\Member\Entity\Member;
+use CompassApp\Domain\Member\Entity\Permission;
+use CompassApp\Domain\Member\Exception\ActionNotAllowed;
+use CompassApp\Domain\Member\Exception\UserIsGuest;
+use CompassApp\Pack\Message\Conversation;
 
 /**
  * API-сценарии домена «диалоги».
@@ -307,17 +318,21 @@ class Domain_Conversation_Feed_Scenario_Api {
 	 * Читаем одно непрочитанное сообщение диалога
 	 *
 	 * @param int    $user_id
+	 * @param int    $member_role
+	 * @param int    $member_permissions
 	 * @param string $message_map
 	 *
+	 * @throws BusFatalException
 	 * @throws Domain_Conversation_Exception_Message_IsNotFromConversation
 	 * @throws Domain_Conversation_Exception_Message_IsNotRead
 	 * @throws Domain_Conversation_Exception_User_IsNotMember
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \busException
 	 * @throws \cs_UnpackHasFailed
-	 * @throws \paramException
 	 * @throws \parseException
-	 * @throws \returnException
 	 */
-	public static function readMessage(int $user_id, string $message_map):void {
+	public static function readMessage(int $user_id, int $member_role, int $member_permissions, string $message_map):void {
 
 		// проверяем что сообщение из диалога
 		if (!\CompassApp\Pack\Message::isFromConversation($message_map)) {
@@ -325,7 +340,7 @@ class Domain_Conversation_Feed_Scenario_Api {
 		}
 
 		$conversation_map = \CompassApp\Pack\Message\Conversation::getConversationMap($message_map);
-		$left_menu_row    = Domain_Conversation_Feed_Action_ReadMessage::run($user_id, $conversation_map, $message_map);
+		$left_menu_row    = Domain_Conversation_Feed_Action_ReadMessage::run($user_id, $member_role, $member_permissions, $conversation_map, $message_map);
 
 		// обновляем badge с непрочитанными для пользователя
 		$extra = Gateway_Bus_Company_Timer::getExtraForUpdateBadge($user_id, [$conversation_map], true);
@@ -340,5 +355,96 @@ class Domain_Conversation_Feed_Scenario_Api {
 
 		// отправляем ws ивент о прочтении
 		Gateway_Bus_Sender::conversationRead($user_id, $message_map, $prepared_left_menu_row, $left_menu_meta);
+	}
+
+	/**
+	 * Получить список просмотревших сообщение
+	 *
+	 * @param int    $user_id
+	 * @param string $message_map
+	 * @param int    $user_role
+	 *
+	 * @return array
+	 * @throws ActionNotAllowed
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
+	 * @throws Domain_Conversation_Exception_Message_ExpiredForGetReadParticipants
+	 * @throws Domain_Conversation_Exception_Message_IsNotFromConversation
+	 * @throws Domain_Conversation_Exception_User_IsNotMember
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws QueryFatalException
+	 * @throws UserIsGuest
+	 * @throws \cs_DecryptHasFailed
+	 * @throws \cs_RowIsEmpty
+	 * @throws \cs_UnpackHasFailed
+	 */
+	public static function getMessageReadParticipants(int $user_id, string $message_map, int $user_role, int $method_version):array {
+
+		// проверяем, включен ли в команде просмотр статуса для прочитанных
+		$can_show_message_read_status = Domain_Company_Action_Config_GetShowMessageReadStatus::do();
+		!$can_show_message_read_status && throw new ActionNotAllowed("action not allowed");
+
+		// проверяем что сообщение из диалога
+		if (!\CompassApp\Pack\Message::isFromConversation($message_map)) {
+			throw new Domain_Conversation_Exception_Message_IsNotFromConversation("Message is not from conversation");
+		}
+
+		// проверяем, что пользователь является участником чата
+		$conversation_map = Conversation::getConversationMap($message_map);
+		$meta_row         = Domain_Conversation_Action_GetMeta::do($conversation_map);
+
+		if (!Type_Conversation_Meta_Users::isMember($user_id, $meta_row["users"])) {
+			throw new Domain_Conversation_Exception_User_IsNotMember("User is not conversation member");
+		}
+
+		$can_get_read_participants = true;
+
+		// в сингле всегда можно посмотреть, кто прочитал, так как человек всегда один
+		if (!Type_Conversation_Meta::isSubtypeOfSingle($meta_row["type"])) {
+
+			// если запрещено смотреть участников группы - завершаем выполнение
+			if (!Type_Conversation_Meta_Users::isOwnerMember($user_id, $meta_row["users"])) {
+				$can_get_read_participants = Domain_Member_Entity_Permission::get($user_id, Permission::IS_SHOW_GROUP_MEMBER_ENABLED);
+			}
+
+			// у гостя никогда нет прав получать участников группы
+			if ($user_role === Member::ROLE_GUEST) {
+				$can_get_read_participants = false;
+			}
+		}
+
+		// до второй версии метода возвращаем ошибку прав
+		if (!$can_get_read_participants && $method_version < 2) {
+			throw new ActionNotAllowed("action not allowed");
+		}
+
+		// получаем прочитавших участников
+		$read_participants = Domain_Conversation_Action_GetMessageReadParticipants::do($meta_row, $message_map);
+
+		return self::_formatReadParticipants($read_participants, $can_get_read_participants);
+	}
+
+	/**
+	 * Отформатировать список прочитавших
+	 *
+	 * @param Struct_Db_CompanyConversation_MessageReadParticipant_Participant[] $read_participants
+	 * @param bool                                                         $can_get_read_participants
+	 *
+	 * @return array
+	 */
+	protected static function _formatReadParticipants(array $read_participants, bool $can_get_read_participants):array {
+
+		$formatted_read_participants = [];
+
+		if ($can_get_read_participants) {
+
+			// форматируем ответ
+			$formatted_read_participants = array_map(
+				fn(Struct_Db_CompanyConversation_MessageReadParticipant_Participant $a) => Apiv2_Format::messageReadParticipant($a),
+				$read_participants);
+		}
+
+		return [$formatted_read_participants, count($read_participants)];
 	}
 }

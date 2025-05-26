@@ -148,7 +148,7 @@ class Do_Logout_Unknown_Device_User_Session {
 		foreach ($user_session_uniq_list_to_delete as $uniq) {
 			$log_text .= "- {$uniq}\n";
 		}
-		
+
 		console("Удалили сессии пользователя {$user_id}");
 		$this->_logImportant($log_text);
 	}

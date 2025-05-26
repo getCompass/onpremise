@@ -377,11 +377,13 @@ class Domain_Thread_Scenario_Api {
 		// получаем только доступные треды
 		$allowed_thread_map_list = array_column($meta_list, "thread_map");
 
+		$dynamic_list = Type_Thread_Dynamic::getList($allowed_thread_map_list);
+
 		// получаем конкретные записи из меню, игнорируя скрытые
 		$menu_list = Type_Thread_Menu::getMenuItems($user_id, $allowed_thread_map_list);
 
 		// формируем ответ
-		[$frontend_thread_meta_list, $action_user_id_list] = self::_makeGetMetaBatchingOutput($user_id, $meta_list);
+		[$frontend_thread_meta_list, $action_user_id_list] = self::_makeGetMetaBatchingOutput($user_id, $meta_list, $dynamic_list);
 
 		$frontend_thread_menu_list = [];
 		foreach ($menu_list as $item) {
@@ -397,8 +399,9 @@ class Domain_Thread_Scenario_Api {
 	/**
 	 * метод для формироывния ответа для списка мет тредов
 	 *
-	 * @param int   $user_id
-	 * @param array $thread_meta_list
+	 * @param int                                     $user_id
+	 * @param array                                   $thread_meta_list
+	 * @param Struct_Db_CompanyThread_ThreadDynamic[] $dynamic_list
 	 *
 	 * @return array
 	 * @throws \parseException
@@ -496,6 +499,8 @@ class Domain_Thread_Scenario_Api {
 	 * Прочитать тред
 	 *
 	 * @param int    $user_id
+	 * @param int    $member_role
+	 * @param int    $member_permissions
 	 * @param string $message_map
 	 * @param string $local_date
 	 * @param string $local_time
@@ -506,13 +511,13 @@ class Domain_Thread_Scenario_Api {
 	 * @throws ReturnFatalException
 	 * @throws \parseException
 	 */
-	public static function doRead(int $user_id, string $message_map, string $local_date, string $local_time):void {
+	public static function doRead(int $user_id, int $member_role, int $member_permissions, string $message_map, string $local_date, string $local_time):void {
 
 		// распаковываем message_map и получаем thread_map
 		$thread_map = \CompassApp\Pack\Message\Thread::getThreadMap($message_map);
 
 		// помечаем тред прочтенным
-		$was_unread = Domain_Thread_Action_DoRead::do($user_id, $thread_map, $message_map);
+		$was_unread = Domain_Thread_Action_DoRead::do($user_id, $member_role, $member_permissions, $thread_map, $message_map);
 
 		// если пользователь не существует - отдаем количество непрочитанных = 0
 		$total_unread_count = Domain_Thread_Action_GetTotalUnreadCount::do($user_id);
@@ -525,6 +530,10 @@ class Domain_Thread_Scenario_Api {
 		$meta_row                = Type_Thread_Meta::getOne($thread_map);
 		$parent_conversation_map = Type_Thread_SourceParentRel::getMap($meta_row["source_parent_rel"]);
 
+		// добавляем пользователю экранное время
+		Domain_User_Action_AddScreenTime::do($user_id, $local_date, $local_time);
+
+		// инкрементим статистику если был непрочитанным
 		if ($was_unread) {
 			$threads_updated_version = Gateway_Socket_Conversation::updateThreadsUpdatedData($parent_conversation_map);
 		} else {
@@ -534,13 +543,6 @@ class Domain_Thread_Scenario_Api {
 		// отправляем ивент
 		Gateway_Bus_Sender::threadRead($user_id, $thread_map, $message_map, $parent_conversation_map, $total_unread_count, $threads_updated_version);
 
-		// добавляем пользователю экранное время
-		Domain_User_Action_AddScreenTime::do($user_id, $local_date, $local_time);
-
-		// инкрементим статистику если был непрочитанным
-		if ($was_unread) {
-			Domain_User_Action_IncActionCount::incThreadRead($user_id, $parent_conversation_map);
-		}
 	}
 
 	/**
@@ -565,18 +567,15 @@ class Domain_Thread_Scenario_Api {
 	/**
 	 * Добавляем реакцию к сообщению
 	 *
-	 * @param string $message_map
-	 * @param string $reaction_name
-	 * @param int    $user_id
-	 *
+	 * @throws CaseException
+	 * @throws Domain_Group_Exception_NotEnoughRights
 	 * @throws ParamException
-	 * @throws \paramException
 	 * @throws \parseException
 	 * @throws cs_Conversation_IsBlockedOrDisabled
 	 * @throws cs_Message_HaveNotAccess
 	 * @throws cs_Thread_UserNotMember
 	 */
-	public static function addReaction(string $message_map, string $reaction_name, int $user_id):void {
+	public static function addReaction(string $message_map, string $reaction_name, int $user_id, int $method_version):void {
 
 		if (!\CompassApp\Pack\Message::isFromThread($message_map)) {
 			throw new ParamException("the message is not from thread");
@@ -589,24 +588,25 @@ class Domain_Thread_Scenario_Api {
 
 		$thread_map = \CompassApp\Pack\Message\Thread::getThreadMap($message_map);
 		$meta_row   = Helper_Threads::getMetaIfUserMember($thread_map, $user_id, false);
+
+		if ($method_version >= 2) {
+			Domain_Group_Entity_Options::checkReactionRestrictionByThreadMeta($user_id, $meta_row);
+		}
 		Domain_Thread_Action_Message_AddReaction::do($message_map, $meta_row["thread_map"], $meta_row, $reaction_name, $user_id);
 	}
 
 	/**
 	 * Удаляем реакцию с сообщения
 	 *
-	 * @param string $message_map
-	 * @param string $reaction_name
-	 * @param int    $user_id
-	 *
+	 * @throws CaseException
+	 * @throws Domain_Group_Exception_NotEnoughRights
 	 * @throws ParamException
-	 * @throws \paramException
 	 * @throws \parseException
 	 * @throws cs_Conversation_IsBlockedOrDisabled
 	 * @throws cs_Message_HaveNotAccess
 	 * @throws cs_Thread_UserNotMember
 	 */
-	public static function removeReaction(string $message_map, string $reaction_name, int $user_id):void {
+	public static function removeReaction(string $message_map, string $reaction_name, int $user_id, int $method_version):void {
 
 		if (!\CompassApp\Pack\Message::isFromThread($message_map)) {
 			throw new ParamException("the message is not from thread");
@@ -619,6 +619,9 @@ class Domain_Thread_Scenario_Api {
 		$thread_map = \CompassApp\Pack\Message\Thread::getThreadMap($message_map);
 		$meta_row   = Helper_Threads::getMetaIfUserMember($thread_map, $user_id, false);
 
+		if ($method_version >= 2) {
+			Domain_Group_Entity_Options::checkReactionRestrictionByThreadMeta($user_id, $meta_row);
+		}
 		Domain_Thread_Action_Message_RemoveReaction::do($message_map, $meta_row["thread_map"], $reaction_name, $user_id, $meta_row["users"]);
 	}
 
@@ -851,16 +854,16 @@ class Domain_Thread_Scenario_Api {
 
 		try {
 
-			$result =  match ($parent_entity_type) {
+			$result = match ($parent_entity_type) {
 
 				// создаем тред у сообщения диалога
 				PARENT_ENTITY_TYPE_CONVERSATION_MESSAGE => Domain_Thread_Action_AddToConversationMessage::do($user_id, $parent_entity_id, $is_thread_hidden_for_all_users),
 
 				// создаем тред у заявки найма/увольнения
-				PARENT_ENTITY_TYPE_HIRING_REQUEST => Domain_Thread_Action_AddToHiringRequest::do($user_id, $parent_entity_id, true),
-				PARENT_ENTITY_TYPE_DISMISSAL_REQUEST => Domain_Thread_Action_AddToDismissalRequest::do($user_id, $parent_entity_id, true),
+				PARENT_ENTITY_TYPE_HIRING_REQUEST       => Domain_Thread_Action_AddToHiringRequest::do($user_id, $parent_entity_id, true),
+				PARENT_ENTITY_TYPE_DISMISSAL_REQUEST    => Domain_Thread_Action_AddToDismissalRequest::do($user_id, $parent_entity_id, true),
 
-				default => throw new ParamException(__METHOD__ . " Type not found"),
+				default                                 => throw new ParamException(__METHOD__ . " Type not found"),
 			};
 		} catch (Domain_Thread_Exception_Guest_AttemptInitialThread) {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "guest attempt to initial thread");

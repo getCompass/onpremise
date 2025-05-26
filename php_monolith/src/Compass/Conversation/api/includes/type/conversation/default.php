@@ -96,13 +96,16 @@ abstract class Type_Conversation_Default {
 	// -------------------------------------------------------
 
 	// создаем записи в таблицах юзера
-	protected static function _createUserCloudData(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, string $conversation_name = "", string $avatar_file_map = "", bool $is_favorite = false, bool $is_mentioned = false, int $opponent_user_id = 0, bool $is_hidden = false, bool $is_migration_muted = false):void {
+	protected static function _createUserCloudData(int  $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias,
+								     int  $member_count, string $conversation_name = "", string $avatar_file_map = "", bool $is_favorite = false,
+								     bool $is_mentioned = false, int $opponent_user_id = 0, bool $is_hidden = false, bool $is_migration_muted = false,
+								     bool $is_channel = false):void {
 
 		Gateway_Db_CompanyConversation_Main::beginTransaction();
 
 		$created_at = time();
 		self::_doUserLeftMenuInsert($user_id, $conversation_map, $user_role, $conversation_type, $allow_status_alias, $member_count, $created_at,
-			$opponent_user_id, $conversation_name, $avatar_file_map, $is_favorite, $is_mentioned, $is_hidden, $is_migration_muted);
+			$opponent_user_id, $conversation_name, $avatar_file_map, $is_favorite, $is_mentioned, $is_hidden, $is_migration_muted, $is_channel);
 
 		// создаем запись в dynamic пользователя
 		self::_doUserDynamicInsert($user_id, $created_at);
@@ -111,14 +114,16 @@ abstract class Type_Conversation_Default {
 	}
 
 	// создаем запись в left_menu
-	private static function _doUserLeftMenuInsert(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted = fales):void {
+	private static function _doUserLeftMenuInsert(int  $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias,
+								    int  $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map,
+								    bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted = false, bool $is_channel = false):void {
 
 		$left_menu_row = self::_makeInsertDataLeftMenuRow(
 			$user_id, $conversation_map, $user_role,
 			$conversation_type, $allow_status_alias,
 			$member_count, $created_at, $opponent_user_id,
 			$conversation_name,
-			$avatar_file_map, $is_favorite, $is_mentioned, $is_hidden, $is_migration_muted
+			$avatar_file_map, $is_favorite, $is_mentioned, $is_hidden, $is_migration_muted, $is_channel
 		);
 
 		Gateway_Db_CompanyConversation_UserLeftMenu::insert($left_menu_row);
@@ -126,7 +131,7 @@ abstract class Type_Conversation_Default {
 
 	// формируем данные для вставки в левое меню
 	// @long - большая структура
-	protected static function _makeInsertDataLeftMenuRow(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted = false):array {
+	protected static function _makeInsertDataLeftMenuRow(int $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias, int $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map, bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted = false, bool $is_channel = false):array {
 
 		$muted_until = $is_migration_muted ? time() : 0;
 
@@ -139,6 +144,7 @@ abstract class Type_Conversation_Default {
 			"muted_until"           => $muted_until,
 			"is_hidden"             => $is_hidden ? 1 : 0,
 			"allow_status_alias"    => $allow_status_alias,
+			"is_channel_alias"      => $is_channel ? 1 : 0,
 			"is_leaved"             => 0,
 			"role"                  => $user_role,
 			"type"                  => $conversation_type,

@@ -124,6 +124,36 @@ class Domain_SpaceTariff_Plan_MemberCount_Showcase {
 	public const PAGE_980  = 980;
 	public const PAGE_990  = 990;
 	public const PAGE_1000 = 1000;
+	public const PAGE_1050 = 1050;
+	public const PAGE_1100 = 1100;
+	public const PAGE_1150 = 1150;
+	public const PAGE_1200 = 1200;
+	public const PAGE_1250 = 1250;
+	public const PAGE_1300 = 1300;
+	public const PAGE_1350 = 1350;
+	public const PAGE_1400 = 1400;
+	public const PAGE_1450 = 1450;
+	public const PAGE_1500 = 1500;
+	public const PAGE_1550 = 1550;
+	public const PAGE_1600 = 1600;
+	public const PAGE_1650 = 1650;
+	public const PAGE_1700 = 1700;
+	public const PAGE_1750 = 1750;
+	public const PAGE_1800 = 1800;
+	public const PAGE_1850 = 1850;
+	public const PAGE_1900 = 1900;
+	public const PAGE_1950 = 1950;
+	public const PAGE_2000 = 2000;
+	public const PAGE_2100 = 2100;
+	public const PAGE_2200 = 2200;
+	public const PAGE_2300 = 2300;
+	public const PAGE_2400 = 2400;
+	public const PAGE_2500 = 2500;
+	public const PAGE_2600 = 2600;
+	public const PAGE_2700 = 2700;
+	public const PAGE_2800 = 2800;
+	public const PAGE_2900 = 2900;
+	public const PAGE_3000 = 3000;
 
 	public const SLOT_30  = 30;
 	public const SLOT_60  = 60;
@@ -235,9 +265,9 @@ class Domain_SpaceTariff_Plan_MemberCount_Showcase {
 
 			$output[$action] = match ($action) {
 				static::ACTION_ACTIVATE => static::_fillActivateAction($customer_user_id, $space, $action_page_list, $plan),
-				static::ACTION_PROLONG  => static::_fillProlongAction($customer_user_id, $space, $action_page_list, $plan),
-				static::ACTION_CHANGE   => static::_fillChangeAction($customer_user_id, $space, $action_page_list, $plan),
-				default                 => throw new \BaseFrame\Exception\Domain\ParseFatalException("passed unknown action type")
+				static::ACTION_PROLONG => static::_fillProlongAction($customer_user_id, $space, $action_page_list, $plan),
+				static::ACTION_CHANGE => static::_fillChangeAction($customer_user_id, $space, $action_page_list, $plan),
+				default => throw new \BaseFrame\Exception\Domain\ParseFatalException("passed unknown action type")
 			};
 		}
 
@@ -424,12 +454,12 @@ class Domain_SpaceTariff_Plan_MemberCount_Showcase {
 	protected static function _convertToClientShowcaseItem(Struct_SpaceTariff_MemberCount_ShowcaseItem $showcase_item):array {
 
 		$client_action = match ($showcase_item->alteration->availability->availability) {
-			\Tariff\Plan\AlterationAvailability::UNAVAILABLE_SAME          => "current",
+			\Tariff\Plan\AlterationAvailability::UNAVAILABLE_SAME => "current",
 			\Tariff\Plan\AlterationAvailability::AVAILABLE_FREE,
 			\Tariff\Plan\AlterationAvailability::AVAILABLE_DETACHED,
-			\Tariff\Plan\AlterationAvailability::AVAILABLE_WHILE_TRIAL     => "free",
+			\Tariff\Plan\AlterationAvailability::AVAILABLE_WHILE_TRIAL => "free",
 			\Tariff\Plan\AlterationAvailability::AVAILABLE_REASON_REQUIRED => "sell",
-			default                                                        => "unavailable",
+			default => "unavailable",
 		};
 
 		return [

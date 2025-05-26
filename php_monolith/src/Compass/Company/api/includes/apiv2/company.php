@@ -2,7 +2,10 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CaseException;
+use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Member;
 
 /**
@@ -16,6 +19,7 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 		"clearAvatar",
 		"setGeneralChatNotifications",
 		"getActivityData",
+		"setUnlimitedMessagesEditing",
 	];
 
 	// список запрещенных методов по ролям
@@ -26,6 +30,7 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 			"changeInfo",
 			"clearAvatar",
 			"setGeneralChatNotifications",
+			"setUnlimitedMessagesEditing",
 		],
 	];
 
@@ -104,5 +109,31 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 		$activity_data = Domain_Company_Scenario_Api::getActivityData($this->user_id, $this->role, $this->permissions);
 
 		return $this->ok(Apiv2_Format::activityData($activity_data));
+	}
+
+	/**
+	 * Изменяем настройки ограничения редактирования сообщений
+	 *
+	 * @throws CaseException
+	 * @throws ParseFatalException
+	 * @throws BlockException
+	 * @throws ParamException
+	 * @throws \queryException
+	 */
+	public function setUnlimitedMessagesEditing():array {
+
+		$is_unlimited_messages_editing_enabled = $this->post(\Formatter::TYPE_INT, "is_unlimited_messages_editing_enabled");
+
+		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::COMPANY_SET_UNLIMITED_MESSAGES_EDITING);
+
+		try {
+			Domain_Company_Scenario_Api::setUnlimitedMessagesEditing($this->role, $this->permissions, $is_unlimited_messages_editing_enabled);
+		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
+			throw new CaseException(2235001, "User is not a company owner");
+		} catch (cs_InvalidConfigValue) {
+			throw new ParamException("Incorrect params");
+		}
+
+		return $this->ok();
 	}
 }

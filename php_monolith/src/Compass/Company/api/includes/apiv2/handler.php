@@ -34,6 +34,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 		"userbot.developer",
 		"company",
 		"userbot",
+		"smartapp",
 		"space.config",
 		"member",
 		"notifications",

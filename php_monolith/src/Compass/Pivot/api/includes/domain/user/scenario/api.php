@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\InvalidPhoneNumber;
+use BaseFrame\Exception\Domain\LocaleTextNotFound;
 use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
@@ -29,22 +31,26 @@ class Domain_User_Scenario_Api {
 	 * @param string|false $grecaptcha_response
 	 *
 	 * @return Struct_User_Auth_Info
-	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
-	 * @throws \BaseFrame\Exception\Domain\LocaleTextNotFound
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws InvalidPhoneNumber
+	 * @throws LocaleTextNotFound
 	 * @throws \blockException
+	 * @throws \queryException
+	 * @throws cs_ActionNotAvailable
+	 * @throws cs_AuthIsBlocked
+	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_UserAlreadyLoggedIn
 	 * @throws cs_WrongRecaptcha
-	 * @throws \queryException
-	 * @throws \returnException
-	 * @throws cs_AuthIsBlocked
-	 * @throws cs_ActionNotAvailable
 	 */
 	public static function startAuth(int $user_id, string $phone_number, string|false $grecaptcha_response):Struct_User_Auth_Info {
 
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
+		Domain_User_Entity_Validator::assertBanned($user_id);
 		$phone_number = (new \BaseFrame\System\PhoneNumber($phone_number))->number();
+		Domain_Phone_Entity_Validator::assertBanned($phone_number);
 
 		try {
 
@@ -60,6 +66,7 @@ class Domain_User_Scenario_Api {
 
 				// получаем user_id по номеру
 				$user_id = Domain_User_Entity_Phone::getUserIdByPhone($phone_number);
+				Domain_User_Entity_Validator::assertBanned($user_id);
 				Domain_User_Entity_Antispam_Auth::checkBlocksBeforeStartLoginByPhoneNumber($phone_number, $grecaptcha_response);
 				$auth_story = Domain_User_Action_Auth_PhoneNumber::beginLogin($user_id, $phone_number);
 			} catch (cs_PhoneNumberNotFound) {
@@ -82,34 +89,37 @@ class Domain_User_Scenario_Api {
 	 * @param string $code
 	 *
 	 * @return int
+	 * @throws Domain_User_Exception_Mail_BelongAnotherUser
 	 * @throws Domain_User_Exception_PhoneNumberBinding
-	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws InvalidPhoneNumber
+	 * @throws ParseFatalException
 	 * @throws \busException
-	 * @throws cs_AnswerCommand
-	 * @throws cs_AuthAlreadyFinished
-	 * @throws cs_AuthIsExpired
-	 * @throws cs_DamagedActionException
-	 * @throws cs_IncorrectSaltVersion
-	 * @throws cs_InvalidConfirmCode
-	 * @throws cs_InvalidHashStruct
-	 * @throws cs_AuthIsBlocked
-	 * @throws cs_UserAlreadyLoggedIn
-	 * @throws cs_WrongAuthKey
-	 * @throws cs_WrongCode
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws \returnException
 	 * @throws \userAccessException
+	 * @throws cs_AnswerCommand
+	 * @throws cs_AuthAlreadyFinished
+	 * @throws cs_AuthIsBlocked
+	 * @throws cs_AuthIsExpired
+	 * @throws cs_DamagedActionException
+	 * @throws cs_InvalidConfirmCode
+	 * @throws cs_UserAlreadyLoggedIn
+	 * @throws cs_WrongAuthKey
+	 * @throws cs_WrongCode
 	 * @long
 	 */
 	public static function tryConfirmAuth(int $user_id, string $auth_map, string $code):int {
 
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
 		Domain_User_Entity_Validator::assertValidConfirmCode($code);
+		Domain_User_Entity_Validator::assertBanned($user_id);
 
 		// получаем story по ключу
-		$story = Domain_User_Entity_AuthStory::getByMap($auth_map);
+		$story        = Domain_User_Entity_AuthStory::getByMap($auth_map);
+		$phone_number = $story->getAuthPhoneHandler()->getPhoneNumber();
+		Domain_User_Entity_Validator::assertBanned($story->getUserId());
+		Domain_Phone_Entity_Validator::assertBanned($phone_number);
 
 		try {
 
@@ -348,6 +358,9 @@ class Domain_User_Scenario_Api {
 		// получаем время сервера и часовую зону
 		$server_time = time();
 		$time_zone   = intval(date("Z", time()));
+
+		// добавляем ip в список на проверку
+		Domain_Subnet_Action_AddIpToCheckList::do(getIp());
 
 		return [
 			$app_config,

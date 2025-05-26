@@ -526,6 +526,27 @@ class Gateway_Socket_Conversation extends Gateway_Socket_Default {
 	}
 
 	/**
+	 * Получить типы чатов
+	 *
+	 * @param array $conversation_map_list
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 */
+	public static function getConversationTypeList(array $conversation_map_list):array {
+
+		[$status, $response] = self::doCall("conversations.getConversationTypeList", [
+			"conversation_map_list" => $conversation_map_list,
+		]);
+
+		if ($status === "error") {
+			throw new ParseFatalException("error get conversation types");
+		}
+		return $response["conversation_type_list"];
+	}
+
+	/**
 	 * Добавить тред к сообщению
 	 *
 	 * @param int    $user_id

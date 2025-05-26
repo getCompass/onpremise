@@ -15,10 +15,6 @@ class Type_System_Monitoring {
 		"__php_error.log",
 		"__php_critical.log",
 		"__admin.log",
-		"BaseFrame\Exception\Domain\ReturnFatalException.log",
-		"BaseFrame\Exception\Domain\RowNotFoundException.log",
-		"BaseFrame\Exception\Domain\ParseFatalException.log",
-		"BaseFrame\Exception\Gateway\BusFatalException.log",
 	];
 
 	// список директорий в которых ищутся файлы

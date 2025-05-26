@@ -154,6 +154,9 @@ class Type_Conversation_Utils {
 			"is_need_show_system_message_on_invite_and_join"  => (int) Type_Conversation_Meta_Extra::isNeedShowSystemMessageOnInviteAndJoin($extra) ? 1 : 0,
 			"is_need_show_system_message_on_leave_and_kicked" => (int) Type_Conversation_Meta_Extra::isNeedShowSystemMessageOnLeaveAndKicked($extra) ? 1 : 0,
 			"is_need_show_system_deleted_message"             => (int) Type_Conversation_Meta_Extra::isNeedShowSystemDeletedMessage($extra) ? 1 : 0,
+			"is_reactions_enabled"                            => (int) Type_Conversation_Meta_Extra::isReactionsEnabled($extra) ? 1 : 0,
+			"is_comments_enabled"                             => (int) Type_Conversation_Meta_Extra::isCommentsEnabled($extra) ? 1 : 0,
+			"is_channel"                                      => (int) Type_Conversation_Meta_Extra::isChannel($extra) ? 1 : 0,
 		];
 	}
 
@@ -172,6 +175,7 @@ class Type_Conversation_Utils {
 			"role"            => $left_menu_row["role"] ?? Type_Conversation_Meta_Users::ROLE_DEFAULT,
 			"group_options"   => $group_options,
 			"subtype"         => $meta_row["type"],
+			"is_channel"      => Type_Conversation_Meta_Extra::isChannel($meta_row["extra"]) ? 1 : 0,
 		];
 	}
 
@@ -248,6 +252,7 @@ class Type_Conversation_Utils {
 			"member_count"    => $left_menu_row["member_count"],
 			"name"            => $left_menu_row["conversation_name"],
 			"role"            => $left_menu_row["role"],
+			"is_channel"      => $left_menu_row["is_channel_alias"],
 		];
 	}
 
@@ -295,13 +300,13 @@ class Type_Conversation_Utils {
 
 		return match ($allow_status) {
 
-			ALLOW_STATUS_GREEN_LIGHT => self::ALLOW_STATUS_OK,
-			ALLOW_STATUS_NEED_CHECK => self::_doAllowStatusCheck($opponent_user_info),
-			ALLOW_STATUS_MEMBER_DISABLED => self::ALLOW_STATUS_MEMBER_IS_DISABLED,
-			ALLOW_STATUS_MEMBER_DELETED => self::ALLOW_STATUS_MEMBER_IS_DELETED,
+			ALLOW_STATUS_GREEN_LIGHT      => self::ALLOW_STATUS_OK,
+			ALLOW_STATUS_NEED_CHECK       => self::_doAllowStatusCheck($opponent_user_info),
+			ALLOW_STATUS_MEMBER_DISABLED  => self::ALLOW_STATUS_MEMBER_IS_DISABLED,
+			ALLOW_STATUS_MEMBER_DELETED   => self::ALLOW_STATUS_MEMBER_IS_DELETED,
 			ALLOW_STATUS_USERBOT_DISABLED => self::ALLOW_STATUS_USERBOT_IS_DISABLED,
-			ALLOW_STATUS_USERBOT_DELETED => self::ALLOW_STATUS_USERBOT_IS_DELETED,
-			default => throw new ParseFatalException("Undefined allow_status=$allow_status in " . toJson($extra)),
+			ALLOW_STATUS_USERBOT_DELETED  => self::ALLOW_STATUS_USERBOT_IS_DELETED,
+			default                       => throw new ParseFatalException("Undefined allow_status=$allow_status in " . toJson($extra)),
 		};
 	}
 

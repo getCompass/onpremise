@@ -8,7 +8,7 @@ namespace Compass\Conversation;
 class Type_Conversation_Meta_Extra {
 
 	// версия упаковщика
-	protected const _EXTRA_VERSION = 7;
+	protected const _EXTRA_VERSION = 8;
 
 	// схема extra
 	protected const _EXTRA_SCHEMA = [
@@ -65,7 +65,7 @@ class Type_Conversation_Meta_Extra {
 			"is_need_show_system_message_on_invite_and_join"  => 1,  // флаг отключения системных сообщений о приглашении и вступлении в групповой диалог
 			"is_need_show_system_message_on_leave_and_kicked" => 1,  // флаг отключения системных сообщений о покидании группового диалога
 			"userbot_id_list"                                 => [], // список с userbot_id пользовательских ботов
-			"description"						  => "", // описание группы
+			"description"                                     => "", // описание группы
 		],
 		7 => [
 			"bot_id_list"                                     => [],
@@ -80,6 +80,48 @@ class Type_Conversation_Meta_Extra {
 			"userbot_id_list"                                 => [], // список с userbot_id пользовательских ботов
 			"description"                                     => "", // описание группы
 		],
+		8 => [
+			"bot_id_list"                                     => [],
+			"blocked_by"                                      => [], // структура user_id = time()
+			"is_show_history_for_new_members"                 => 1,  // флаг 0/1, нужно ли показывать историю группового диалога при вступлении в него новых участников
+			"is_can_commit_worked_hours"                      => 0,  // флаг 0/1, можно ли зафиксировать отработанные часы из этого диалога
+			"need_system_message_on_dismissal"                => 1,  // флаг 0/1, нужно ли показывать системное сообщение, что пользователь покинул компанию
+			"clear_until_for_all"                             => 0,  // время очистки диалога у всех пользователей
+			"is_need_show_system_message_on_invite_and_join"  => 1,  // флаг отключения системных сообщений о приглашении и вступлении в групповой диалог
+			"is_need_show_system_message_on_leave_and_kicked" => 1,  // флаг отключения системных сообщений о покидании группового диалога
+			"is_need_show_system_deleted_message"             => 1,  // флаг отключения системных удалённых сообщений
+			"is_reactions_enabled"                            => 1,  // флаг отключения возможности ставить реакции
+			"is_comments_enabled"                             => 1,  // флаг отключения возможности комментировать
+			"is_channel"                                      => 0,  // флаг отключения функционала канала
+			"userbot_id_list"                                 => [], // список с userbot_id пользовательских ботов
+			"description"                                     => "", // описание группы
+		],
+	];
+
+	// геттеры для настроек группы
+	protected const _OPTIONS_GET_FUNCTIONS = [
+		"is_show_history_for_new_members"                 => "isShowHistoryForNewMembers",
+		"is_can_commit_worked_hours"                      => "isCanCommitWorkedHours",
+		"need_system_message_on_dismissal"                => "isNeedSystemMessageOnDismissal",
+		"is_need_show_system_message_on_invite_and_join"  => "isNeedShowSystemMessageOnInviteAndJoin",
+		"is_need_show_system_message_on_leave_and_kicked" => "isNeedShowSystemMessageOnLeaveAndKicked",
+		"is_need_show_system_deleted_message"             => "isNeedShowSystemDeletedMessage",
+		"is_reactions_enabled"                            => "isReactionsEnabled",
+		"is_comments_enabled"                             => "isCommentsEnabled",
+		"is_channel"                                      => "isChannel",
+	];
+
+	// сеттеры для настроек группы
+	protected const _OPTIONS_SET_FUNCTIONS = [
+		"is_show_history_for_new_members"                 => "setFlagShowHistoryForNewMembers",
+		"is_can_commit_worked_hours"                      => "setFlagCanCommitWorkedHours",
+		"need_system_message_on_dismissal"                => "setFlagNeedSystemMessageOnDismissal",
+		"is_need_show_system_message_on_invite_and_join"  => "setFlagNeedShowSystemMessageOnInviteAndJoin",
+		"is_need_show_system_message_on_leave_and_kicked" => "setFlagNeedShowSystemMessageOnLeaveAndKicked",
+		"is_need_show_system_deleted_message"             => "setFlagNeedShowSystemDeletedMessage",
+		"is_reactions_enabled"                            => "setFlagIsReactionsEnabled",
+		"is_comments_enabled"                             => "setFlagIsCommentsEnabled",
+		"is_channel"                                      => "setFlagIsChannel",
 	];
 
 	// добавить пользователя в массив blocked_by
@@ -353,8 +395,140 @@ class Type_Conversation_Meta_Extra {
 	 */
 	public static function setDescription(array $extra, string $description):array {
 
-		$extra = self::_getExtra($extra);
+		$extra                         = self::_getExtra($extra);
 		$extra["extra"]["description"] = $description;
+
+		return $extra;
+	}
+
+	/**
+	 * Возвращаем опцию — отключено ли возможность ставить реакции
+	 *
+	 * @param array $extra
+	 *
+	 * @return bool
+	 */
+	public static function isReactionsEnabled(array $extra):bool {
+
+		$extra = self::_getExtra($extra);
+
+		return $extra["extra"]["is_reactions_enabled"] == 1;
+	}
+
+	/**
+	 * Устанавливаем опцию — отключено ли возможность ставить реакции
+	 *
+	 * @param array $extra
+	 * @param bool  $value
+	 *
+	 * @return array
+	 */
+	public static function setFlagIsReactionsEnabled(array $extra, bool $value):array {
+
+		$extra                                  = self::_getExtra($extra);
+		$extra["extra"]["is_reactions_enabled"] = $value ? 1 : 0;
+
+		return $extra;
+	}
+
+	/**
+	 * Возвращаем опцию — отключено ли возможность комментировать
+	 *
+	 * @param array $extra
+	 *
+	 * @return bool
+	 */
+	public static function isCommentsEnabled(array $extra):bool {
+
+		$extra = self::_getExtra($extra);
+
+		return $extra["extra"]["is_comments_enabled"] == 1;
+	}
+
+	/**
+	 * Устанавливаем опцию — отключено ли возможность комментировать
+	 *
+	 * @param array $extra
+	 * @param bool  $value
+	 *
+	 * @return array
+	 */
+	public static function setFlagIsCommentsEnabled(array $extra, bool $value):array {
+
+		$extra                                 = self::_getExtra($extra);
+		$extra["extra"]["is_comments_enabled"] = $value ? 1 : 0;
+
+		return $extra;
+	}
+
+	/**
+	 * Возвращаем опцию — влючен ли канал
+	 *
+	 * @param array $extra
+	 *
+	 * @return bool
+	 */
+	public static function isChannel(array $extra):bool {
+
+		$extra = self::_getExtra($extra);
+
+		return $extra["extra"]["is_channel"] == 1;
+	}
+
+	/**
+	 * Устанавливаем опцию — канал-группа
+	 *
+	 * @param array $extra
+	 * @param bool  $value
+	 *
+	 * @return array
+	 */
+	public static function setFlagIsChannel(array $extra, bool $value):array {
+
+		$extra                        = self::_getExtra($extra);
+		$extra["extra"]["is_channel"] = $value ? 1 : 0;
+
+		return $extra;
+	}
+
+	/**
+	 * Возвращаем опцию — отключено ли возможность комментировать
+	 *
+	 * @param array $extra
+	 *
+	 * @return array
+	 */
+	public static function getOptions(array $extra):array {
+
+		$extra = self::_getExtra($extra);
+
+		return array_map(function($fn) use ($extra) {
+
+			return self::$fn($extra);
+		}, self::_OPTIONS_GET_FUNCTIONS);
+	}
+
+	/**
+	 * Устанавливаем настройки для группы пачкой
+	 *
+	 * @param array $extra
+	 * @param array $options
+	 *
+	 * @return array
+	 */
+	public static function setOptions(array $extra, array $options):array {
+
+		foreach ($options as $option => $value) {
+
+			// если сеттера для настройки нет, не выполняем ее
+			if (!isset(self::_OPTIONS_SET_FUNCTIONS[$option])) {
+				continue;
+			}
+
+			// исполняем сеттер
+			$fn    = self::_OPTIONS_SET_FUNCTIONS[$option];
+			$extra = self::$fn($extra, $value);
+		}
 
 		return $extra;
 	}

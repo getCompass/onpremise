@@ -1328,7 +1328,6 @@ class Gateway_Bus_Sender {
 	 */
 	protected static function _generateToken():string {
 
-		// nosemgrep
 		return self::_WS_CHANNEL . ":" . COMPANY_ID . ":" . sha1(uniqid() . time());
 	}
 }

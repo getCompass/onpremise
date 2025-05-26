@@ -44,6 +44,34 @@ class Domain_Member_Entity_Permission {
 	}
 
 	/**
+	 * Получить значение права
+	 *
+	 * @param int    $user_id
+	 * @param string $permission_key
+	 *
+	 * @return bool
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
+	 * @throws \cs_RowIsEmpty
+	 */
+	public static function get(int $user_id, string $permission_key):bool {
+
+		$member = Gateway_Bus_CompanyCache::getMember($user_id);
+
+		try {
+
+			// проверяем роль пользователя
+			Member::assertUserAdministrator($member->role);
+		} catch (IsNotAdministrator) {
+
+			$member_permission = Gateway_Bus_CompanyCache::getConfigKey($permission_key);
+			return (bool) $member_permission->value["value"];
+		}
+
+		return true;
+	}
+
+	/**
 	 * Проверяем разрешение
 	 *
 	 * @param int    $user_id

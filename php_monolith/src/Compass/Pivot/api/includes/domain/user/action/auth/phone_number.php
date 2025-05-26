@@ -54,6 +54,7 @@ class Domain_User_Action_Auth_PhoneNumber {
 
 		// отправляем задачу на отправку sms
 		Type_Sms_Queue::send($phone_number, $sms_text, Type_Sms_Analytics_Story::STORY_TYPE_AUTH, $auth_story->getAuthInfo()->auth_map, $sms_id);
+		Domain_Antispam_Entity_SuspectIp::add($phone_number);
 
 		// логируем в аналитику
 		Type_Sms_Analytics_Story::onStart(
@@ -99,6 +100,7 @@ class Domain_User_Action_Auth_PhoneNumber {
 
 		// отправляем задачу в sms сервис
 		Type_Sms_Queue::send($phone_number, $sms_text, Type_Sms_Analytics_Story::STORY_TYPE_AUTH, $auth_story->getAuthInfo()->auth_map, $sms_id);
+		Domain_Antispam_Entity_SuspectIp::add($phone_number);
 
 		// логируем в аналитику
 		Type_Sms_Analytics_Story::onStart(

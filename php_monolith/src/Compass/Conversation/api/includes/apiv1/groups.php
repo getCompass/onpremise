@@ -17,7 +17,7 @@ use CompassApp\Domain\Member\Exception\UserIsGuest;
  */
 class Apiv1_Groups extends \BaseFrame\Controller\Api {
 
-	protected const _GET_MANAGED_COUNT      = 1000; // количество возвращаемых диалогов в getManaged
+	protected const _GET_MANAGED_COUNT = 1000; // количество возвращаемых диалогов в getManaged
 
 	// поддерживаемые методы. Регистр не имеет значение */
 	public const ALLOW_METHODS = [
@@ -293,7 +293,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 
 		try {
 			$member_id_list = Domain_Conversation_Scenario_Api::getInvited($this->user_id, $this->role, $this->method_version, $conversation_map);
-		} catch (Domain_Member_Exception_ActionNotAllowed | UserIsGuest) {
+		} catch (Domain_Member_Exception_ActionNotAllowed|UserIsGuest) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		}
 
@@ -586,15 +586,13 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * установить опции для группового диалога
+	 * Установить опции для группового диалога
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \blockException
 	 * @throws \paramException
 	 * @throws \parseException
-	 * @throws ParseFatalException
 	 */
 	public function setOptions():array {
 
@@ -606,17 +604,22 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 		$is_need_show_system_message_on_invite_and_join  = $this->post(\Formatter::TYPE_INT, "is_need_show_system_message_on_invite_and_join", false);
 		$is_need_show_system_message_on_leave_and_kicked = $this->post(\Formatter::TYPE_INT, "is_need_show_system_message_on_leave_and_kicked", false);
 		$is_need_show_system_deleted_message             = $this->post(\Formatter::TYPE_INT, "is_need_show_system_deleted_message", false);
+		$is_reactions_enabled                            = $this->post(\Formatter::TYPE_INT, "is_reactions_enabled", false);
+		$is_comments_enabled                             = $this->post(\Formatter::TYPE_INT, "is_comments_enabled", false);
+		$is_channel                                      = $this->post(\Formatter::TYPE_INT, "is_channel", false);
 
 		// проверяем и подготавливаем изменяемые опции
 		$modifiable_options = self::_checkAndPrepareModifiableOptions(
 			$is_show_history_for_new_members, $is_can_commit_worked_hours, $need_system_message_on_dismissal,
-			$is_need_show_system_message_on_invite_and_join, $is_need_show_system_message_on_leave_and_kicked, $is_need_show_system_deleted_message
+			$is_need_show_system_message_on_invite_and_join, $is_need_show_system_message_on_leave_and_kicked, $is_need_show_system_deleted_message,
+			$is_reactions_enabled, $is_comments_enabled, $is_channel
 		);
 
 		// инкрементим блокировку
 		$this->_throwIfBlocked(
 			$is_show_history_for_new_members, $is_can_commit_worked_hours, $need_system_message_on_dismissal,
-			$is_need_show_system_message_on_invite_and_join, $is_need_show_system_message_on_leave_and_kicked, $is_need_show_system_deleted_message
+			$is_need_show_system_message_on_invite_and_join, $is_need_show_system_message_on_leave_and_kicked, $is_need_show_system_deleted_message,
+			$is_reactions_enabled, $is_comments_enabled, $is_channel
 		);
 
 		// получаем мету диалога
@@ -636,7 +639,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 		}
 
 		// меняем опции группы
-		Helper_Groups::doChangeOptions($conversation_map, $meta_row, $modifiable_options);
+		Helper_Groups::doChangeOptions($this->user_id, $conversation_map, $meta_row, $modifiable_options);
 		return $this->ok();
 	}
 
@@ -656,7 +659,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 */
 	protected function _throwIfBlocked(int|false $is_show_history_for_new_members, int|false $is_can_commit_worked_hours, int|false $need_system_message_on_dismissal,
 						     int|false $is_need_show_system_message_on_invite_and_join, int|false $is_need_show_system_message_on_leave_and_kicked,
-						     int|false $is_need_show_system_deleted_message):void {
+						     int|false $is_need_show_system_deleted_message, int|false $is_reactions_enabled, int|false $is_comments_enabled, int|false $is_channel):void {
 
 		if ($is_show_history_for_new_members !== false) {
 			Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::GROUPS_SETOPTIONS_IS_SHOW_HISTORY, "groups", "row525");
@@ -668,6 +671,18 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 
 		if ($need_system_message_on_dismissal !== false) {
 			Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::GROUPS_SETOPTIONS_IS_SHOW_SYSTEM_MESSAGE, "groups", "row525");
+		}
+
+		if ($is_reactions_enabled !== false) {
+			Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::GROUPS_SETOPTIONS_IS_REACTIONS_ENABLED, "groups", "row525");
+		}
+
+		if ($is_comments_enabled !== false) {
+			Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::GROUPS_SETOPTIONS_IS_COMMENTS_ENABLED, "groups", "row525");
+		}
+
+		if ($is_channel !== false) {
+			Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::GROUPS_SETOPTIONS_IS_CHANNEL, "groups", "row525");
 		}
 
 		if ($is_need_show_system_message_on_invite_and_join !== false) {
@@ -758,7 +773,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 */
 	protected static function _checkAndPrepareModifiableOptions(int|false $is_show_history_for_new_members, int|false $is_for_worked_hours,
 											int|false $need_system_message_on_dismissal, int|false $is_need_show_system_message_on_invite_and_join,
-											int|false $is_need_show_system_message_on_leave_and_kicked, int|false $is_need_show_system_deleted_message):array {
+											int|false $is_need_show_system_message_on_leave_and_kicked, int|false $is_need_show_system_deleted_message,
+											int|false $is_reactions_enabled, int|false $is_comments_enabled, int|false $is_channel):array {
 
 		// временно сложим их сюда
 		$temp = [
@@ -768,6 +784,9 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 			"is_need_show_system_message_on_invite_and_join"  => $is_need_show_system_message_on_invite_and_join,
 			"is_need_show_system_message_on_leave_and_kicked" => $is_need_show_system_message_on_leave_and_kicked,
 			"is_need_show_system_deleted_message"             => $is_need_show_system_deleted_message,
+			"is_reactions_enabled"                            => $is_reactions_enabled,
+			"is_comments_enabled"                             => $is_comments_enabled,
+			"is_channel"                                      => $is_channel,
 		];
 
 		// проходимся по каждой опции и собираем массив с только лишь измененными опциями

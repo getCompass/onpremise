@@ -15,5 +15,6 @@
 	"current_server": "${CURRENT_SERVER}",
 	"service_role_set": "${SERVICE_ROLE_SET}",
 	"server_tag_list": ${SERVER_TAG_LIST},
-	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC}
+	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC},
+	"ca_certificate": "${CA_CERTIFICATE}"
 }

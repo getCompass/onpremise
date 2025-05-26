@@ -46,8 +46,17 @@ class Update_Fix_Migration {
 
 		// получаем запись в версией миграции
 		// EXPLAIN: INDEX PRIMARY
-		$query = "SELECT * FROM `?p` WHERE `version` = ?i LIMIT ?i";
-		$row   = ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_KEY, self::_MIGRATION_VERSION, 1);
+		try {
+
+			$query = "SELECT * FROM `?p` WHERE `version` = ?i LIMIT ?i";
+			$row   = ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_KEY, self::_MIGRATION_VERSION, 1);
+		} catch (\PDOException) {
+
+			// значит миграции нет такой еще не было, выходим
+			console("No migration found to fix");
+			console("Exit");
+			return;
+		}
 
 		if (!isset($row["version"])) {
 

@@ -51,15 +51,16 @@ type SendEventRequestStruct struct {
 
 // структура запроса на отправку события всем юзерам для go_sender
 type SendEventToAllRequestStruct struct {
-	Event            string                       `json:"event"`
-	EventVersionList []SendEventVersionItemStruct `json:"event_version_list"`
-	PushData         push.PushDataStruct          `json:"push_data,omitempty"`
-	WSUsers          interface{}                  `json:"ws_users,omitempty"`
-	Uuid             string                       `json:"uuid"`
-	RoutineKey       string                       `json:"routine_key"`
-	IsNeedPush       int                          `json:"is_need_push"`
-	ServerTime       int64                        `json:"server_time"`
-	Channel          string                       `json:"channel"`
+	Event             string                       `json:"event"`
+	EventVersionList  []SendEventVersionItemStruct `json:"event_version_list"`
+	PushData          push.PushDataStruct          `json:"push_data,omitempty"`
+	WSUsers           interface{}                  `json:"ws_users,omitempty"`
+	Uuid              string                       `json:"uuid"`
+	RoutineKey        string                       `json:"routine_key"`
+	IsNeedPush        int                          `json:"is_need_push"`
+	ServerTime        int64                        `json:"server_time"`
+	Channel           string                       `json:"channel"`
+	ExcludeUserIdList []int64                      `json:"exclude_user_id_list"`
 }
 
 type SendPushRequestStruct struct {

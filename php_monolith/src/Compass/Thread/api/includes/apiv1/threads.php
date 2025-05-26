@@ -101,23 +101,21 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Метод для создания треда
+	 * Версия метода 3
 	 *
-	 * @return array
 	 * @throws BlockException
+	 * @throws BusFatalException
+	 * @throws ControllerMethodNotFoundException
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
-	 * @throws BusFatalException
-	 * @throws ControllerMethodNotFoundException
 	 * @throws \busException
 	 * @throws \cs_RowIsEmpty
-	 * @throws \paramException
+	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 * @throws \returnException
-	 * @throws cs_DecryptHasFailed
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_Thread_ParentEntityNotFound
-	 * @long
 	 */
 	public function add():array {
 
@@ -127,6 +125,10 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		$parent_entity_id    = $this->_getParentEntityId($parent_entity_type);
 
 		try {
+
+			if ($this->method_version >= 3 && $parent_entity_type == PARENT_ENTITY_TYPE_CONVERSATION_MESSAGE) {
+				Domain_Group_Entity_Options::checkCommentRestrictionByConversationMessageMap($this->user_id, $parent_entity_id);
+			}
 
 			Domain_Member_Entity_Permission::checkVoice($this->user_id, $this->method_version, Permission::IS_VOICE_MESSAGE_ENABLED, $client_message_list);
 			[$message_list, $thread_meta] = Domain_Thread_Scenario_Api::add($client_message_list, $parent_entity_id, $parent_entity_type, $this->user_id, $is_quote);
@@ -164,6 +166,8 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 			throw new ParamException("incorrect param client_message_list");
 		} catch (Domain_Member_Exception_ActionNotAllowed) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 
 		return $this->ok([
@@ -186,11 +190,9 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * получаем параметр id родительского сущности треда
+	 * Получаем параметр id родительского сущности треда
 	 *
-	 * @throws cs_DecryptHasFailed
-	 * @throws \paramException
-	 * @throws \parseException
+	 * @throws ParamException
 	 */
 	protected function _getParentEntityId(int $parent_entity_type):mixed {
 
@@ -686,15 +688,16 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		$this->_throwIfMessageMapIsNotFromThread($message_map);
 
 		[$local_date, $local_time, $_] = getLocalClientTime();
-		Domain_Thread_Scenario_Api::doRead($this->user_id, $message_map, $local_date, $local_time);
+		Domain_Thread_Scenario_Api::doRead($this->user_id, $this->role, $this->permissions, $message_map, $local_date, $local_time);
 
 		return $this->ok();
 	}
 
 	/**
-	 * отправить сообщение в тред
+	 * Отправить сообщение в тред
+	 * версия метода 3
 	 *
-	 * @throws cs_DecryptHasFailed
+	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
@@ -748,12 +751,18 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 
 			// юзер является участником существующего треда
 			$meta_row = Helper_Threads::getMetaIfUserMember($thread_map, $this->user_id);
+
+			if ($this->method_version >= 3) {
+				Domain_Group_Entity_Options::checkCommentRestrictionByThreadMeta($this->user_id, $meta_row);
+			}
 		} catch (cs_Thread_UserNotMember|cs_Message_HaveNotAccess) {
 			return $this->error(530, "You are not allow to do this action");
 		} catch (cs_Message_IsDeleted) {
 			return $this->error(549, "Message is deleted");
 		} catch (cs_Conversation_IsBlockedOrDisabled $e) {
 			return $this->_returnErrorOnOpponentIsBlockedOrDisabled($e->getAllowStatus());
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 
 		// готовим к работе список сообщений
@@ -771,13 +780,16 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * метод изменения сообщения
+	 * Метод изменения сообщения
+	 * версия метода 2
 	 *
-	 * @throws \blockException
-	 * @throws cs_DecryptHasFailed
+	 * @throws BlockException
+	 * @throws CaseException
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
 	 * @throws \paramException
 	 * @throws \parseException
-	 * @throws \returnException
 	 */
 	public function tryEditMessage():array {
 
@@ -802,6 +814,10 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		// пытаемся получить мету треда, проверяем права доступа
 		try {
 			$meta_row = Helper_Threads::getMetaIfUserMember($thread_map, $this->user_id);
+
+			if ($this->method_version >= 2) {
+				Domain_Group_Entity_Options::checkCommentRestrictionByThreadMeta($this->user_id, $meta_row);
+			}
 		} catch (cs_Message_HaveNotAccess|cs_Message_IsDeleted) {
 			return $this->_returnError530();
 		} catch (cs_Thread_UserNotMember) {
@@ -812,6 +828,8 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 				return $this->_returnErrorOnOpponentIsBlockedOrDisabled($e->getAllowStatus());
 			}
 			$meta_row = $e->getMetaRow();
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 		$mention_user_id_list = Helper_Threads::getMentionUserIdListFromText($meta_row, $text);
 		$follower_row         = Helper_Threads::attachUsersToThread($meta_row, $mention_user_id_list);
@@ -854,12 +872,15 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * метод удаления сообщений
+	 * Метод удаления сообщений
+	 * версия метода 2
 	 *
-	 * @throws \blockException
-	 * @throws \paramException
+	 * @throws BlockException
+	 * @throws CaseException
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
 	 * @throws \parseException
-	 * @throws \returnException
 	 */
 	public function tryDeleteMessageList():array {
 
@@ -880,6 +901,10 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		// пробуем получить мета треда
 		try {
 			$meta_row = Helper_Threads::getMetaIfUserMember($thread_map, $this->user_id, false);
+
+			if ($this->method_version >= 2) {
+				Domain_Group_Entity_Options::checkCommentRestrictionByThreadMeta($this->user_id, $meta_row);
+			}
 		} catch (cs_Message_HaveNotAccess) {
 			return $this->error(530, "this user is not member of thread");
 		} catch (cs_Thread_UserNotMember) {
@@ -890,6 +915,8 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 				return $this->_returnErrorOnOpponentIsBlockedOrDisabled($e->getAllowStatus());
 			}
 			$meta_row = $e->getMetaRow();
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 
 		// удаляем сообщения
@@ -959,13 +986,15 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * поставить реакцию на сообщение
+	 * Поставить реакцию на сообщение
+	 * версия метода 2
 	 *
-	 * @throws \blockException
-	 * @throws cs_DecryptHasFailed
+	 * @throws BlockException
+	 * @throws CaseException
+	 * @throws ParamException
+	 * @throws ReturnFatalException
 	 * @throws \paramException
 	 * @throws \parseException
-	 * @throws \returnException
 	 */
 	public function addMessageReaction():array {
 
@@ -976,7 +1005,7 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::THREADS_SETREACTION);
 
 		try {
-			Domain_Thread_Scenario_Api::addReaction($message_map, $reaction_name, $this->user_id);
+			Domain_Thread_Scenario_Api::addReaction($message_map, $reaction_name, $this->user_id, $this->method_version);
 		} catch (cs_Thread_UserNotMember) {
 			return $this->_returnErrorIfUserNotMemberOfThread();
 		} catch (cs_Message_HaveNotAccess) {
@@ -991,19 +1020,23 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 			return $this->error(545, "message has max count reactions");
 		} catch (cs_ThreadIsReadOnly) {
 			return $this->error(533, "thread is read only");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 
 		return $this->ok();
 	}
 
 	/**
-	 * убрать реакцию сообщения
+	 * Убрать реакцию сообщения
+	 * Версия метода 2
 	 *
-	 * @throws \blockException
-	 * @throws cs_DecryptHasFailed
+	 * @throws BlockException
+	 * @throws CaseException
+	 * @throws ParamException
+	 * @throws ReturnFatalException
 	 * @throws \paramException
 	 * @throws \parseException
-	 * @throws \returnException
 	 */
 	public function tryRemoveMessageReaction():array {
 
@@ -1014,7 +1047,7 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::THREADS_SETREACTION);
 
 		try {
-			Domain_Thread_Scenario_Api::removeReaction($message_map, $reaction_name, $this->user_id);
+			Domain_Thread_Scenario_Api::removeReaction($message_map, $reaction_name, $this->user_id, $this->method_version);
 		} catch (cs_Thread_UserNotMember) {
 			return $this->error(530, "this user is not member of thread");
 		} catch (cs_Message_HaveNotAccess) {
@@ -1027,14 +1060,18 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 			throw new ParamException("Trying to remove reaction on message, which not allow to do this action");
 		} catch (cs_ThreadIsReadOnly) {
 			return $this->error(533, "thread is read only");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough rights");
 		}
+
 		return $this->ok();
 	}
 
 	/**
-	 * цитируем сообщение
+	 * Цитируем сообщение
+	 * версия метода 2
 	 *
-	 * @throws \parseException|\paramException
+	 * @throws ParamException
 	 */
 	public function addQuote():array {
 
@@ -1083,12 +1120,18 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 		try {
 
 			$meta_row = Helper_Threads::getMetaIfUserMember($thread_map, $this->user_id);
+
+			if ($this->method_version >= 2) {
+				Domain_Group_Entity_Options::checkCommentRestrictionByThreadMeta($this->user_id, $meta_row);
+			}
 		} catch (cs_Thread_UserNotMember) {
 			return $this->_returnErrorIfUserNotMemberOfThread();
 		} catch (cs_Message_HaveNotAccess) {
 			return $this->error(530, "this user does not have access to this thread");
 		} catch (cs_Conversation_IsBlockedOrDisabled $e) {
 			return $this->_returnErrorOnOpponentIsBlockedOrDisabled($e->getAllowStatus());
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 
 		$mention_user_id_list = Helper_Threads::getMentionUserIdListFromText($meta_row, $text);
@@ -1658,12 +1701,18 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api {
 
 		try {
 			$meta_row = Helper_Threads::getMetaIfUserMember($thread_map, $this->user_id);
+
+			if ($this->method_version >= 3) {
+				Domain_Group_Entity_Options::checkChannelRestrictionByConversationMap($this->user_id, $conversation_map);
+			}
 		} catch (cs_Message_HaveNotAccess|cs_Message_IsDeleted) {
 			return $this->_returnError530();
 		} catch (cs_Thread_UserNotMember) {
 			return $this->_returnErrorIfUserNotMemberOfThread();
 		} catch (cs_Conversation_IsBlockedOrDisabled $e) {
 			$meta_row = $e->getMetaRow();
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2118002, "not enough right");
 		}
 
 		$dynamic_obj = Type_Thread_Dynamic::get($thread_map);

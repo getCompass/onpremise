@@ -17,7 +17,8 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 	];
 
 	/**
-	 * создать Напоминание для сообщения треда
+	 * Создать Напоминание для сообщения треда
+	 * версия метода 2
 	 *
 	 * @throws ParamException
 	 * @throws ReturnFatalException
@@ -42,7 +43,7 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 
 		// создаём Напоминание
 		try {
-			[$remind_id, $comment] = Domain_Remind_Scenario_Api::create($this->user_id, $message_map, $remind_at, $comment, $is_parent);
+			[$remind_id, $comment] = Domain_Remind_Scenario_Api::create($this->user_id, $message_map, $remind_at, $comment, $is_parent, $this->method_version);
 		} catch (cs_Message_IsTooLong|Gateway_Socket_Exception_Conversation_MessageTextIsTooLong) {
 			throw new CaseException(2218005, "Comment text is too long");
 		} catch (cs_Message_IsDeleted|Gateway_Socket_Exception_Conversation_MessageIsDeleted) {
@@ -63,6 +64,8 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 			throw new CaseException(2218007, "Message is not exist");
 		} catch (Domain_Remind_Exception_RemindAtBeforeCurrentTime) {
 			throw new CaseException(2229001, "Time before current");
+		} catch (Domain_Group_Exception_NotEnoughRights) {
+			return $this->error(2129003, "not enough right");
 		}
 
 		Type_User_ActionAnalytics::send($this->user_id, Type_User_ActionAnalytics::ADD_REMIND);

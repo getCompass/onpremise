@@ -281,6 +281,7 @@ class Type_Call_Config {
 		if (count($node_list) == 0) {
 			$node_list = self::_getEnabledNodes($config_node_list, self::_PERFECT_NODE_INDEX);
 		}
+
 		return $node_list;
 	}
 

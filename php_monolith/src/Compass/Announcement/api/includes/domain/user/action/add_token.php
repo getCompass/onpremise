@@ -61,12 +61,11 @@ class Domain_User_Action_AddToken {
 		$secret_key        = bin2hex(random_bytes(32));
 		$bound_session_key = $device_id;
 
-		Gateway_Db_AnnouncementSecurity_TokenUser::delete($user_id, $bound_session_key);
-		$tokes_user = Gateway_Db_AnnouncementSecurity_TokenUser::insert($secret_key, $user_id, $bound_session_key, $expires_at);
+		$token_user = Gateway_Db_AnnouncementSecurity_TokenUser::insertOrUpdate($secret_key, $user_id, $bound_session_key, $expires_at);
 
 		$payload = [
 			"id"  => $user_id,
-			"iat" => $tokes_user->created_at,
+			"iat" => $token_user->created_at,
 		];
 
 		return Type_Jwt_Main::generate($secret_key, $payload);

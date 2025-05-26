@@ -1028,12 +1028,13 @@ class Type_Thread_Message_Handler_Default {
 	}
 
 	// создать сообщение тип "сообщение от Напоминания"
-	public static function makeSystemBotRemind(int $sender_user_id, string $text, string $client_message_id, array $quoted_message_list, int $recipient_message_sender_id):array {
+	public static function makeSystemBotRemind(int $sender_user_id, string $text, string $client_message_id, array $quoted_message_list, int $recipient_message_sender_id, int $remind_creator_user_id):array {
 
 		$message                  = self::_getDefaultStructure(THREAD_MESSAGE_TYPE_SYSTEM_BOT_REMIND, $sender_user_id, $client_message_id, self::SYSTEM_PLATFORM);
 		$message["data"]["text"]  = $text;
 		$message["data"]["extra"] = [
 			"recipient_message_sender_id" => $recipient_message_sender_id,
+			"remind_creator_user_id"      => $remind_creator_user_id,
 		];
 
 		// добавляем дополнительные поля
@@ -1291,6 +1292,19 @@ class Type_Thread_Message_Handler_Default {
 		self::_checkVersion($message);
 
 		return $message["platform"] ?? self::WITHOUT_PLATFORM;
+	}
+
+	/**
+	 * достаём создателя Напоминания
+	 */
+	public static function getRemindCreatorUserId(array $message):int {
+
+		// если это не сообщение-Напоминание
+		if (!self::isSystemBotRemind($message)) {
+			return 0;
+		}
+
+		return (int) ($message["data"]["extra"]["remind_creator_user_id"] ?? 0);
 	}
 
 	/**
@@ -1787,6 +1801,9 @@ class Type_Thread_Message_Handler_Default {
 
 		// регулярка чтобы заменить ["@"|160593|"Имя"] -> "Имя"
 		$new_text = preg_replace("/\[\"(@)\"\|\d*\|\"(.*)\"]/mU", "$1$2", $text);
+
+		// регулярка чтобы заменить [smart_app <любые параметры>]отправить письмо[/smart_app] -> отправить письмо
+		$new_text = preg_replace("/\[smart_app[^]]*](.*?)\[\/smart_app]/mU", "$1", $new_text);
 
 		// если не смогли преобразовать то отдаем обычный текст
 		if ($new_text === false || is_array($new_text)) {
@@ -2558,8 +2575,23 @@ class Type_Thread_Message_Handler_Default {
 				$output["data"]["quoted_message"] = Type_Thread_Message_Main::getHandler($quoted_message)::prepareForFormat($quoted_message);
 				break;
 
-			case THREAD_MESSAGE_TYPE_MASS_QUOTE:
 			case THREAD_MESSAGE_TYPE_SYSTEM_BOT_REMIND:
+
+				$output["text"] = $message["data"]["text"];
+
+				// если имеется родительское сообщение
+				$output = self::_addParentMessageFromConversation($output, $message);
+
+				$quoted_message_list = $message["data"]["quoted_message_list"];
+				foreach ($quoted_message_list as $v) {
+					$output["data"]["quoted_message_list"][] = Type_Thread_Message_Main::getHandler($v)::prepareForFormat($v);
+				}
+				$output["data"]["quoted_message_count"]   = self::getRepostedAndQuotedMessageCount($quoted_message_list);
+				$output["data"]["remind_creator_user_id"] = Type_Thread_Message_Main::getHandler($message)::getRemindCreatorUserId($message);
+
+				break;
+
+			case THREAD_MESSAGE_TYPE_MASS_QUOTE:
 
 				$output["text"] = $message["data"]["text"];
 

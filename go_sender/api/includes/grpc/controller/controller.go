@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	pb "github.com/getCompassUtils/company_protobuf_schemes/go/sender"
-	"go_sender/api/includes/methods/sender"
+	talking "go_sender/api/includes/methods/sender"
 	"go_sender/api/includes/methods/system"
 	Isolation "go_sender/api/includes/type/isolation"
 	"go_sender/api/includes/type/push"
@@ -72,25 +72,46 @@ func (s *Server) SenderSendEvent(_ context.Context, in *pb.SenderSendEventReques
 		return &pb.SenderSendEventResponseStruct{}, status.Error(503, "isolation not found")
 	}
 
+	err := sendEvent(isolation, in.GetEvent(), in.GetUuid(), in.GetRoutineKey(), in.GetPushData(), in.GetUserList(), in.GetEventVersionList(), in.GetWsUsers(), in.GetChannel())
+	return &pb.SenderSendEventResponseStruct{}, err
+}
+
+// метод отправки ивентов батчингом
+func (s *Server) SenderSendEventBatching(_ context.Context, in *pb.SenderSendEventBatchingRequestStruct) (*pb.SenderSendEventBatchingResponseStruct, error) {
+
+	isolation := s.CompanyEnvList.GetEnv(in.GetCompanyId())
+	if isolation == nil {
+		return &pb.SenderSendEventBatchingResponseStruct{}, status.Error(503, "isolation not found")
+	}
+
+	for _, e := range in.GetEventList() {
+		sendEvent(isolation, e.GetEvent(), e.GetUuid(), e.GetRoutineKey(), e.GetPushData(), e.GetUserList(), e.GetEventVersionList(), e.GetWsUsers(), e.GetChannel())
+	}
+
+	return &pb.SenderSendEventBatchingResponseStruct{}, nil
+}
+
+func sendEvent(isolation *Isolation.Isolation, event string, uuid string, routineKey string, pushDataStr string, requestUserList []*pb.EventUserStruct, eventVersionList []*pb.EventVersionItem, wsUsersStr string, channel string) error {
+
 	// коневртируем строки в интерфейсы для grpc
 	var WsUsers interface{}
 	var PushData push.PushDataStruct
-	err := json.Unmarshal([]byte(in.GetPushData()), &PushData)
+	err := json.Unmarshal([]byte(pushDataStr), &PushData)
 	if err != nil {
-		return nil, status.Error(105, "bad json in request")
+		return status.Error(105, "bad json in request")
 	}
 
-	if in.GetWsUsers() != "" {
+	if wsUsersStr != "" {
 
-		err = json.Unmarshal([]byte(in.GetWsUsers()), &WsUsers)
+		err = json.Unmarshal([]byte(wsUsersStr), &WsUsers)
 		if err != nil {
-			return nil, status.Error(105, "bad json in request")
+			return status.Error(105, "bad json in request")
 		}
 	}
 
 	// коневртируем массив структур для grpc
 	var userList []structures.SendEventUserStruct
-	for _, s := range in.GetUserList() {
+	for _, s := range requestUserList {
 
 		var userStruct structures.SendEventUserStruct
 		userStruct.UserId = s.GetUserId()
@@ -100,11 +121,11 @@ func (s *Server) SenderSendEvent(_ context.Context, in *pb.SenderSendEventReques
 	}
 
 	// конвертируем полученные версии события в более удобный формат
-	eventListByVersion := sender.ConvertProtobufEventVersionList(in.GetEventVersionList())
+	eventListByVersion := sender.ConvertProtobufEventVersionList(eventVersionList)
 
-	talking.SendEvent(isolation, userList, in.GetEvent(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetRoutineKey(), in.GetChannel())
+	talking.SendEvent(isolation, userList, event, eventListByVersion, PushData, WsUsers, uuid, routineKey, channel)
 
-	return &pb.SenderSendEventResponseStruct{}, nil
+	return nil
 }
 
 func (s *Server) SenderSendEventToAll(_ context.Context, in *pb.SenderSendEventToAllRequestStruct) (*pb.SenderSendEventToAllResponseStruct, error) {
@@ -133,7 +154,7 @@ func (s *Server) SenderSendEventToAll(_ context.Context, in *pb.SenderSendEventT
 	// конвертируем полученные версии события в более удобный формат
 	eventListByVersion := sender.ConvertProtobufEventVersionList(in.GetEventVersionList())
 
-	talking.SendEventToAll(isolation, in.GetEvent(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetRoutineKey(), int(in.GetIsNeedPush()), in.GetChannel())
+	talking.SendEventToAll(isolation, in.GetEvent(), eventListByVersion, PushData, WsUsers, in.GetUuid(), in.GetRoutineKey(), int(in.GetIsNeedPush()), in.GetChannel(), in.GetExcludeUserIdList())
 
 	return &pb.SenderSendEventToAllResponseStruct{}, nil
 }

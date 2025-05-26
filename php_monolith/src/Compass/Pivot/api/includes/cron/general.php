@@ -149,22 +149,35 @@ class Cron_General_Utils {
 		ShardingGateway::database("pivot_system")->insertOrUpdate(self::$_company_count_by_day_table_name, $insert);
 
 		// количество действий
-		$company_list = Gateway_Db_PivotCompany_CompanyList::getActiveList(10000);
 		$action_count = 0;
-		foreach ($company_list as $company_row) {
+		$limit_count  = 10000;
+		$offset       = 0;
+		while (true) {
 
-			if ($company_row->status != Domain_Company_Entity_Company::COMPANY_STATUS_ACTIVE) {
-				continue;
+			$company_list  = Gateway_Db_PivotCompany_CompanyList::getActiveList($limit_count, $offset);
+			$company_count = count($company_list);
+			$offset        += $company_count;
+
+			foreach ($company_list as $company_row) {
+
+				if ($company_row->status != Domain_Company_Entity_Company::COMPANY_STATUS_ACTIVE) {
+					continue;
+				}
+
+				// отправляем сокет запрос в компанию на удаление
+				$private_key = Domain_Company_Entity_Company::getPrivateKey($company_row->extra);
+				try {
+					$action_count += Gateway_Socket_Company::getActionCount($company_row->company_id, $company_row->domino_id, $private_key);
+				} catch (Gateway_Socket_Exception_CompanyIsNotServed|\cs_SocketRequestIsFailed|cs_CompanyIsHibernate) {
+					continue;
+				}
 			}
 
-			// отправляем сокет запрос в компанию на удаление
-			$private_key = Domain_Company_Entity_Company::getPrivateKey($company_row->extra);
-			try {
-				$action_count += Gateway_Socket_Company::getActionCount($company_row->company_id, $company_row->domino_id, $private_key);
-			} catch (Gateway_Socket_Exception_CompanyIsNotServed|\cs_SocketRequestIsFailed|cs_CompanyIsHibernate) {
-				continue;
+			if ($company_count < $limit_count) {
+				break;
 			}
 		}
+
 		$insert = [
 			"day_at" => $day_start,
 			"count"  => $action_count,
@@ -183,11 +196,12 @@ class Cron_General_Utils {
 			return;
 		}
 
-		$company_id                  = 2;
-		$created_company_count_chart = self::_getStatByDay(self::$_company_count_by_day_table_name, $day_start);
-		$active_company_count_chart  = self::_getActiveSpaceChartData($day_start - DAY14, $day_start);
-		$user_count_chart            = self::_getOnlineUsersStatByDay($day_start);
-		$action_count_chart          = self::_getStatByDay(self::$_action_count_by_day_table_name, $day_start);
+		$company_id                   = 2;
+		$created_company_count_chart  = self::_getStatByDay(self::$_company_count_by_day_table_name, $day_start);
+		$active_company_count_chart   = self::_getActiveSpaceChartData($day_start - DAY14, $day_start);
+		$user_count_chart             = self::_getOnlineUsersStatByDay($day_start);
+		$action_count_chart           = self::_getStatByDay(self::$_action_count_by_day_table_name, $day_start);
+		$total_conference_count_chart = Domain_Analytic_Entity_General::getTotalConferenceMetricsChartData($day_start - DAY14, $day_start);
 
 		$free_count = Gateway_Db_PivotCompanyService_CompanyInitRegistry::getVacantCount();
 		$params     = [
@@ -200,6 +214,8 @@ class Cron_General_Utils {
 			"total_company_count"         => $created_company_count_chart[0][1] + $free_count,
 			"user_count"                  => $user_count_chart[0][1],
 			"action_count"                => $action_count_chart[0][1],
+			"conference_count"            => $total_conference_count_chart[0][1],
+			"conference_count_chart"      => toJson($total_conference_count_chart),
 		];
 
 		// генерим картинку

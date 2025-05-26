@@ -2,6 +2,8 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\System\File;
+
 /**
  * Системный файл — не менять!
  */
@@ -214,7 +216,7 @@ class baseExceptionHandler {
 	protected static function _writeExceptionToLogs(object $exception, string $message, bool $is_error):void {
 
 		// заносим в логи exception
-		file_put_contents(CONFIG_LOG_EXCEPTION_PATH . (get_class($exception)) . ".log", $message . "\n", FILE_APPEND);
+		File::init(CONFIG_LOG_EXCEPTION_PATH,  (get_class($exception)) . ".log")->write($message . "\n", true);
 
 		// пишем критические логи
 		if (!$is_error && (!defined(get_class($exception) . "::DONT_WRITE_CRITICAL_LOG") || $exception::DONT_WRITE_CRITICAL_LOG !== true)) {

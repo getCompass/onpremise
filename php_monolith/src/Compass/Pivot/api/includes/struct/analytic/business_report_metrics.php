@@ -45,6 +45,24 @@ class Struct_Analytic_BusinessReportMetrics {
 
 		/** spaces -> Rev */
 		public string $revenue_sum,
+
+		/** Sms-Agent */
+		public string $sms_agent_balance,
+
+		/** Vonage */
+		public string $vonage_balance,
+
+		/** Twilio */
+		public string $twilio_balance,
+
+		/** кол-во созданных temporary конференций */
+		public string $temporary_conference_row_data,
+
+		/** кол-во созданных single конференций */
+		public string $single_conference_row_data,
+
+		/** кол-во созданных permanent конференций */
+		public string $permanent_conference_row_data,
 	) {
 	}
 
@@ -68,6 +86,12 @@ class Struct_Analytic_BusinessReportMetrics {
 			"created_spaces_count"                  => $this->created_spaces_count,
 			"space_joining_count"                   => $this->space_joining_count,
 			"revenue_sum"                           => $this->revenue_sum,
+			"sms_agent_balance"                     => $this->sms_agent_balance,
+			"vonage_balance"                        => $this->vonage_balance,
+			"twilio_balance"                        => $this->twilio_balance,
+			"temporary_conference_row_data"         => $this->temporary_conference_row_data,
+			"single_conference_row_data"            => $this->single_conference_row_data,
+			"permanent_conference_row_data"         => $this->permanent_conference_row_data,
 		];
 	}
 }

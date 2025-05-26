@@ -51,17 +51,12 @@ func SendActionThreadMessageReactionRemoved(companyId int64, wsUserList interfac
 	send(companyId, requestMap, senderConfig)
 }
 
-type eventVersionItemStruct struct {
-	Version int         `json:"version"`
-	Data    interface{} `json:"data"`
-}
-
 // формируем базовый requestMap
 // @long
 func makeConversationReactionActionRequestMap(wsUserList interface{}, wsEventVersionList []structures.WsEventVersionItemStruct, reactionCount int, reactionIndex int, reactionsUpdatedVersion int) map[string]interface{} {
 
 	// пробегаемся по каждой версии события
-	var modifiedEventVersionList = []eventVersionItemStruct{}
+	var modifiedEventVersionList = []EventVersionItemStruct{}
 	for _, eventVersionItem := range wsEventVersionList {
 
 		var parsedEventData interface{}
@@ -78,7 +73,7 @@ func makeConversationReactionActionRequestMap(wsUserList interface{}, wsEventVer
 		parsedEventData.(map[string]interface{})["reactions_updated_version"] = reactionsUpdatedVersion
 
 		// запаковываем в структуру для отправки в sender
-		modifiedEventVersionItem := eventVersionItemStruct{
+		modifiedEventVersionItem := EventVersionItemStruct{
 			Version: eventVersionItem.Version,
 			Data:    parsedEventData,
 		}
@@ -100,7 +95,7 @@ func makeConversationReactionActionRequestMap(wsUserList interface{}, wsEventVer
 func makeThreadReactionActionRequestMap(wsUserList interface{}, wsEventVersionList []structures.WsEventVersionItemStruct, reactionCount int, reactionIndex int) map[string]interface{} {
 
 	// пробегаемся по каждой версии события
-	var modifiedEventVersionList = []eventVersionItemStruct{}
+	var modifiedEventVersionList = []EventVersionItemStruct{}
 	for _, eventVersionItem := range wsEventVersionList {
 
 		var parsedEventData interface{}
@@ -116,7 +111,7 @@ func makeThreadReactionActionRequestMap(wsUserList interface{}, wsEventVersionLi
 		parsedEventData.(map[string]interface{})["reaction_index"] = reactionIndex
 
 		// запаковываем в структуру для отправки в sender
-		modifiedEventVersionItem := eventVersionItemStruct{
+		modifiedEventVersionItem := EventVersionItemStruct{
 			Version: eventVersionItem.Version,
 			Data:    parsedEventData,
 		}
@@ -151,7 +146,7 @@ func send(companyId int64, requestMap map[string]interface{}, config conf.GoShar
 // отправить запрос в go_sender для отправки события
 func call(requestMap map[string]interface{}, config conf.GoShardingStruct) (result bool, err error) {
 
-	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%s", config.Host, config.Port))
+	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%s", config.Host, config.TcpPort))
 	if err != nil {
 		return false, fmt.Errorf("failed to establish connection with go_sender")
 	}

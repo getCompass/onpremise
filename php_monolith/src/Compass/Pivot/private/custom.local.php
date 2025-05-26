@@ -196,7 +196,19 @@ define(__NAMESPACE__ . "\BITRIX_TEST_USER_NAME"                        , "${BITR
 # endregion
 ##########################################################
 
+##########################################################
+# region subnet checker
+##########################################################
+
+define(__NAMESPACE__ . "\SUBNET_CHECKER_BATCH_REQUEST_URL"        	, "${SUBNET_CHECKER_BATCH_REQUEST_URL}");
+define(__NAMESPACE__ . "\SUBNET_CHECKER_API_KEY"                        , "${SUBNET_CHECKER_API_KEY}");
+
+# endregion
+##########################################################
+
 // промежуток времени с момента регистрации пользователя, за который выбираем /join/ посещения для поиска совпадений
 define(__NAMESPACE__ . "\ATTRIBUTION_JOIN_SPACE_VISITS_MATCHING_PERIOD"      , ${ATTRIBUTION_JOIN_SPACE_VISITS_MATCHING_PERIOD});
 
 define(__NAMESPACE__ . "\DATABASE_DRIVER"                               , "${DATABASE_DRIVER}");
+
+define(__NAMESPACE__ . "\LAST_CLIENT_FORCE_RELOAD_AT"      			, ${LAST_CLIENT_FORCE_RELOAD_AT});

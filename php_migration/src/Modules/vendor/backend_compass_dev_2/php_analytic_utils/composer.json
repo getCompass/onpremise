@@ -1,0 +1,10 @@
+{
+	"name": "backend_compass_dev_2/php_analytic_utils",
+	"type": "library",
+	"autoload": {
+		"psr-4": {
+			"AnalyticUtils\\": "src/"
+		}
+	},
+	"require": {}
+}

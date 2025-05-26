@@ -8,15 +8,13 @@ import (
 	"go_sender/api/includes/type/db/company_data"
 	"go_sender/api/includes/type/push"
 	"go_sender/api/includes/type/user_notification"
-	"time"
 )
-
-const getPivotSocketKeyLimit = 3 // лимит для получения сокета пивота
 
 type Conn struct {
 	pivotSocketKey string
 	companyId      int64
 	currentServer  string
+	socketKeyMe    string
 }
 
 func MakePusherConn(currentServer string, socketKeyMe string, companyId int64) *Conn {
@@ -25,13 +23,7 @@ func MakePusherConn(currentServer string, socketKeyMe string, companyId int64) *
 
 	// если это pivot, ничего не делаем
 	if currentServer == "domino" || currentServer == "monolith" {
-
 		pivotSocketKey = gatewayPhpCompany.GetPivotSocketKey(companyId, socketKeyMe)
-
-		// если по какой-то причине не смогли с первого раза получить ключ для сокета
-		if pivotSocketKey == "" {
-			pivotSocketKey = waitForGetPivotSocketKey(socketKeyMe, companyId)
-		}
 	}
 
 	return &Conn{
@@ -41,27 +33,23 @@ func MakePusherConn(currentServer string, socketKeyMe string, companyId int64) *
 	}
 }
 
-// ждём для повтора получения сокет-ключа pivot
-func waitForGetPivotSocketKey(socketKeyMe string, companyId int64) string {
+// вернуть pivot socket key
+func (conn *Conn) GetPivotSocketKey() string {
 
-	pivotSocketKey := ""
-	errorCount := 0
-
-	for pivotSocketKey == "" && errorCount <= getPivotSocketKeyLimit {
-
-		log.Infof("не смогли получить ключ pivot-сокета for company %v, пробуем ещё раз. error_count: %v", companyId, errorCount)
-		errorCount++
-
-		time.Sleep(1 * time.Second)
-		pivotSocketKey = gatewayPhpCompany.GetPivotSocketKey(companyId, socketKeyMe)
+	// если мы его уже получили - отдаем
+	if conn.pivotSocketKey != "" {
+		return conn.pivotSocketKey
 	}
 
-	// если в итоге не смогли заполучить ключ
-	if pivotSocketKey == "" {
-		panic("not passed pivot socket key from company")
+	// пытаемся получить его, если вдруг у нас нет его
+	conn.pivotSocketKey = gatewayPhpCompany.GetPivotSocketKey(conn.companyId, conn.socketKeyMe)
+
+	if conn.pivotSocketKey == "" {
+		log.Error("Не смогли получить сокет ключ пивота")
 	}
 
-	return pivotSocketKey
+	// все равно отдаем, чтобы не выдать панику
+	return conn.pivotSocketKey
 }
 
 // SendPush идея что пуши отправляются только локально
@@ -95,7 +83,7 @@ func (conn *Conn) SendPush(uuid string, pushData push.PushDataStruct, userNotifi
 	if len(userNotificationStructList) > 0 {
 
 		var NeedForcePush = 0
-		gatewayPhpPivot.SendPush(userNotificationStructList, pushData, uuid, conn.companyId, conn.pivotSocketKey, NeedForcePush)
+		gatewayPhpPivot.SendPush(userNotificationStructList, pushData, uuid, conn.companyId, conn.GetPivotSocketKey(), NeedForcePush)
 	}
 
 	var userForceNotificationStructList []user_notification.UserNotificationStruct
@@ -121,7 +109,7 @@ func (conn *Conn) SendPush(uuid string, pushData push.PushDataStruct, userNotifi
 	if len(userForceNotificationStructList) > 0 {
 
 		var NeedForcePush = 1
-		gatewayPhpPivot.SendPush(userForceNotificationStructList, pushData, uuid, conn.companyId, conn.pivotSocketKey, NeedForcePush)
+		gatewayPhpPivot.SendPush(userForceNotificationStructList, pushData, uuid, conn.companyId, conn.GetPivotSocketKey(), NeedForcePush)
 	}
 }
 
@@ -134,7 +122,7 @@ func (conn *Conn) SendVoIP(userNotificationRow *company_data.NotificationRow, pu
 
 	userNotificationStruct := prepareUserNotificationStruct(userNotificationRow.UserId, userNotificationRow.SnoozedUntil, userNotificationRow.Token, userNotificationRow.DeviceList, user_notification.ExtraField{}, 0)
 
-	gatewayPhpPivot.SendVoipPush(userNotificationStruct, pushData, uuid, timeToLive, sentDeviceList, conn.companyId, conn.pivotSocketKey)
+	gatewayPhpPivot.SendVoipPush(userNotificationStruct, pushData, uuid, timeToLive, sentDeviceList, conn.companyId, conn.GetPivotSocketKey())
 }
 
 // подготовить структуру записи уведомления пользователя
@@ -157,11 +145,9 @@ func prepareUserNotificationStruct(userId int64, snoozedUntil int64, token strin
 // отправляем на локальный go_pusher задачу для отправки VoIP для Jitsi
 func (conn *Conn) SendJitsiVoIP(userId int64, pushData interface{}, uuid string, timeToLive int64, sentDeviceList []string) {
 
-	log.Errorf("отправляем voip Jitsi: %v, %v", conn.currentServer, pushData)
 	if conn.currentServer != "pivot" && conn.currentServer != "monolith" {
 		return
 	}
 
 	gatewayPhpPivot.SendJitsiVoipPush(userId, pushData, uuid, timeToLive, sentDeviceList)
-	log.Error("отправили voip Jitsi")
 }

@@ -68,10 +68,6 @@ class Domain_Company_Action_ServiceTask_StopDatabase implements Domain_Company_A
 
 		Type_Phphooker_Main::onCountCompany(time());
 
-		if (!isTestServer()) {
-			Gateway_Notice_Sender::sendGroup(NOTICE_CHANNEL_SERVICE, "Компания {$port->company_id} успешно гибернировала с порта {$port->port}");
-		}
-
 		return $log->addText("Остановлена база данных в мире {$company_row->domino_id} под портом {$port->port} для компании {$port->company_id}");
 	}
 }

@@ -20,12 +20,12 @@ sh wait-services.sh 100
 # накатываем миграции на базу данных
 if [[ "${CURRENT_SERVER}" == "pivot" ]] || [[ "${CURRENT_SERVER}" == "monolith" ]]; then
 
-  cat /app/sql/init_pivot.sql | mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P ${MYSQL_PORT} --skip-ssl
+  cat /app/sql/init_pivot.sql | mariadb --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P ${MYSQL_PORT} --skip-ssl
 fi;
 
 if [[ "${CURRENT_SERVER}" == "domino" ]] || [[ "${CURRENT_SERVER}" == "monolith" ]]; then
 
-  cat /app/sql/init_domino.sql | mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P ${MYSQL_PORT} --skip-ssl
+  cat /app/sql/init_domino.sql | mariadb --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P ${MYSQL_PORT} --skip-ssl
   migrate -path /app/sql/company_system -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/company_system?tls=false up
   migrate -path /app/sql/company_system -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/company_system?tls=false version >logs/main.log
 fi;
@@ -34,4 +34,5 @@ if [[ "${IS_LOCAL}" == "true" ]]; then
   cd /app && go build -o event -mod vendor main.go
 fi
 
+ln -sf /dev/stdout /app/logs/main.log
 /app/event -confdir=/app/api/conf -logsdir=/app/logs -executabledir=/app

@@ -1,0 +1,9 @@
+{
+	"logging_level": ${LOGGING_LEVEL},
+	"server_type": "${SERVER_TYPE}",
+	"tcp_port": ${TCP_PORT},
+	"grpc_port": ${GRPC_PORT},
+	"socket_key_me": "${SOCKET_KEY_GO_FILE_AUTH}",
+	"token_encrypt_key": "${ENCRYPT_KEY_DOWNLOAD_TOKEN}",
+	"trusted_entrypoint_list": "${TRUSTED_ENTRYPOINT_LIST}"
+}

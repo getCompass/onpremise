@@ -2,6 +2,10 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\ParamException;
+
 /**
  * Socket методы для работы с LDAP
  */
@@ -12,6 +16,7 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 		"kickUserFromAllCompanies",
 		"unblockUserAuthentication",
 		"isLdapAuthAvailable",
+		"getUserInfo",
 	];
 
 	/**
@@ -87,6 +92,28 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 
 		return $this->ok([
 			"is_available" => (int) $is_ldap_auth_available,
+		]);
+	}
+
+	/**
+	 * Получаем данные по пользователю для мапинга
+	 *
+	 * @throws ParseFatalException
+	 * @throws BusFatalException
+	 * @throws ParamException
+	 */
+	public function getUserInfo():array {
+
+		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
+
+		try {
+			$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
+		} catch (cs_UserNotFound) {
+			return $this->error(1315001, "user not found");
+		}
+
+		return $this->ok([
+			"user_info" => (array) $user_info,
 		]);
 	}
 }

@@ -44,18 +44,18 @@ bash "/app/src/Compass/Jitsi/init_submodule.sh" "Jitsi" || exit 1;
 # раздаем права, инициализируем пустые директории
 cd /app && sh install.sh
 
-cat /app/sql/init_system.sql | mysql --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P $MYSQL_PORT
+cat /app/sql/init_system.sql | mysql --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P $MYSQL_PORT --skip-ssl
 migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false up
 migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false version
 
 # инициализируем модули
-bash /app/src/Compass/_entrypoint.sh || exit 1;
+bash /app/src/Compass/_entrypoint.sh || die "entrypoint.sh unsuccessful";
 
 # инициализируем подписки
-bash /app/src/Compass/_init_subscriptions.sh || exit 1;
+bash /app/src/Compass/_init_subscriptions.sh || die "_init_subscriptions.sh unsuccessful";
 
 # запускаем кроны
-bash /app/sh/cron/start_cron.sh || exit 1;
+bash /app/sh/cron/start_cron.sh || die "start_cron.sh unsuccessful";
 
 echo "ready to serve" > status
 

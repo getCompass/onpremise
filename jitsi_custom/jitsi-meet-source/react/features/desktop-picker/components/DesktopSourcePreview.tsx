@@ -170,7 +170,7 @@ class DesktopSourcePreview extends Component<IProps, IState> {
     _onClick() {
         const { source } = this.props;
 
-        this.props.onClick(source.id, source.type);
+        this.props.onClick(source.id, source.type, source.dimensions);
     }
 
     /**
@@ -181,7 +181,7 @@ class DesktopSourcePreview extends Component<IProps, IState> {
     _onDoubleClick() {
         const { source } = this.props;
 
-        this.props.onDoubleClick(source.id, source.type);
+        this.props.onDoubleClick(source.id, source.type, source.dimensions);
     }
 
     _onErrorLoadThumbnailImage() {

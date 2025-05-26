@@ -80,7 +80,7 @@ const useStyles = makeStyles()((theme: Theme) => {
             alignItems: 'flex-start',
             flex: 1,
             maxWidth: '100%',
-            paddingTop: '2px',
+            paddingTop: '0px',
             paddingBottom: '4px',
         },
 
@@ -155,7 +155,7 @@ const useStyles = makeStyles()((theme: Theme) => {
             width: '100%',
 
             '&:not(:empty)': {
-                padding: '6px 0px 8px 0px',
+                padding: '6px 0px 0px 0px',
                 gap: '8px',
 
                 '&.is-mobile': {
@@ -176,7 +176,13 @@ const useStyles = makeStyles()((theme: Theme) => {
             padding: '3px 8px',
             cursor: 'pointer',
             userSelect: 'none',
+            marginTop: '4px',
             '-webkit-tap-highlight-color': 'transparent',
+
+            '&.info': {
+                color: 'rgba(255, 255, 255, 1)',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            },
 
             '&.primary': {
                 color: 'rgba(4, 164, 90, 1)',

@@ -459,55 +459,57 @@ function _updateReceiverVideoConstraints({ getState }: IStore) {
                 receiverConstraints.constraints[sourceName] = { 'maxHeight': maxFrameHeightForVerticalFilmstrip };
             });
         }
+    }
 
-        if (getCurrentLayout(state) === LAYOUTS.STAGE_FILMSTRIP_VIEW && activeParticipantsSources.length > 0) {
-            const selectedSources: string[] = [];
-            const onStageSources: string[] = [];
+    // Доминантного спикера показываем вне зависимости от того, есть ли сейчас режим спикера
+    // т.к. на десктопе это видео должно быть чтобы показываться в миниокне
+    if (getCurrentLayout(state) === LAYOUTS.STAGE_FILMSTRIP_VIEW && activeParticipantsSources.length > 0) {
+        const selectedSources: string[] = [];
+        const onStageSources: string[] = [];
 
-            // If more than one video source is pinned to the stage filmstrip, they need to be added to the
-            // 'selectedSources' so that the bridge can allocate bandwidth for all the sources as opposed to doing
-            // greedy allocation for the sources (which happens when they are added to 'onStageSources').
-            if (activeParticipantsSources.length > 1) {
-                selectedSources.push(...activeParticipantsSources);
-            } else {
-                onStageSources.push(activeParticipantsSources[0]);
-            }
-
-            activeParticipantsSources.forEach(sourceName => {
-                const isScreenSharing = remoteScreenShares.includes(sourceName);
-                const quality
-                    = isScreenSharing && preferredVideoQuality >= MAX_VIDEO_QUALITY
-                    ? VIDEO_QUALITY_UNLIMITED : maxFrameHeightForStageFilmstrip;
-
-                receiverConstraints.constraints[sourceName] = { 'maxHeight': quality };
-            });
-
-            if (screenshareFilmstripParticipantId) {
-                onStageSources.push(screenshareFilmstripParticipantId);
-                receiverConstraints.constraints[screenshareFilmstripParticipantId]
-                    = {
-                    'maxHeight':
-                        preferredVideoQuality >= MAX_VIDEO_QUALITY
-                            ? VIDEO_QUALITY_UNLIMITED : maxFrameHeightForScreenSharingFilmstrip
-                };
-            }
-
-            receiverConstraints.onStageSources = onStageSources;
-            receiverConstraints.selectedSources = selectedSources;
-        } else if (largeVideoSourceName) {
-            let quality = VIDEO_QUALITY_UNLIMITED;
-
-            if (preferredVideoQuality < MAX_VIDEO_QUALITY
-                || !remoteScreenShares.find(id => id === largeVideoParticipantId)) {
-                quality = maxFrameHeightForLargeVideo;
-            }
-            if (isParticipantModerator(largeVideoParticipant)) {
-                quality = qualityGroup.VIDEO_QUALITY_T1;
-            }
-
-            receiverConstraints.constraints[largeVideoSourceName] = { 'maxHeight': quality };
-            receiverConstraints.onStageSources = [ largeVideoSourceName ];
+        // If more than one video source is pinned to the stage filmstrip, they need to be added to the
+        // 'selectedSources' so that the bridge can allocate bandwidth for all the sources as opposed to doing
+        // greedy allocation for the sources (which happens when they are added to 'onStageSources').
+        if (activeParticipantsSources.length > 1) {
+            selectedSources.push(...activeParticipantsSources);
+        } else {
+            onStageSources.push(activeParticipantsSources[0]);
         }
+
+        activeParticipantsSources.forEach(sourceName => {
+            const isScreenSharing = remoteScreenShares.includes(sourceName);
+            const quality
+                = isScreenSharing && preferredVideoQuality >= MAX_VIDEO_QUALITY
+                ? VIDEO_QUALITY_UNLIMITED : maxFrameHeightForStageFilmstrip;
+
+            receiverConstraints.constraints[sourceName] = { 'maxHeight': quality };
+        });
+
+        if (screenshareFilmstripParticipantId) {
+            onStageSources.push(screenshareFilmstripParticipantId);
+            receiverConstraints.constraints[screenshareFilmstripParticipantId]
+                = {
+                'maxHeight':
+                    preferredVideoQuality >= MAX_VIDEO_QUALITY
+                        ? VIDEO_QUALITY_UNLIMITED : maxFrameHeightForScreenSharingFilmstrip
+            };
+        }
+
+        receiverConstraints.onStageSources = onStageSources;
+        receiverConstraints.selectedSources = selectedSources;
+    } else if (largeVideoSourceName) {
+        let quality = VIDEO_QUALITY_UNLIMITED;
+
+        if (preferredVideoQuality < MAX_VIDEO_QUALITY
+            || !remoteScreenShares.find(id => id === largeVideoParticipantId)) {
+            quality = maxFrameHeightForLargeVideo;
+        }
+        if (isParticipantModerator(largeVideoParticipant)) {
+            quality = qualityGroup.VIDEO_QUALITY_T1;
+        }
+
+        receiverConstraints.constraints[largeVideoSourceName] = { 'maxHeight': quality };
+        receiverConstraints.onStageSources = [ largeVideoSourceName ];
     }
 
     try {

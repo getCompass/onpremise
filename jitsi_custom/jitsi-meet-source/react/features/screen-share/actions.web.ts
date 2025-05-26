@@ -120,9 +120,10 @@ export function startScreenShareFlow(enabled: boolean) {
         const isLocalParticipantModerator = isParticipantModerator(localParticipant);
         const isScreenshareModerationEnabled = isEnabledFromState(MEDIA_TYPE.SCREENSHARE, state);
         const hasPermissions = isLocalParticipantModerator || (!isLocalParticipantModerator && !isScreenshareModerationEnabled);
+        const screenSharing = isScreenVideoShared(state);
 
-        // если скриншейринг запрещен модератором
-        if (!hasPermissions) {
+        // если скриншейринг запрещен модератором и не включен в данный момент
+        if (!hasPermissions && !screenSharing) {
 
             dispatch(showNotification({
                 titleKey: 'screenshare.no_permissions_notification.title',

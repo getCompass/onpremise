@@ -231,6 +231,11 @@ MiddlewareRegistry.register(store => next => action => {
             }
         }
 
+        // если кто-то шейрит экран, то при подключении ставим режим плитки
+        if (isScreenSharePlaying(store.getState())) {
+            store.dispatch(setTileView(true));
+        }
+
         return result;
     }
 
@@ -304,10 +309,13 @@ MiddlewareRegistry.register(store => next => action => {
         const { remoteParticipants } = store.getState()['features/filmstrip'];
         store.dispatch(setHorizontalViewDimensions(Math.min((remoteParticipants?.length ?? 0), HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE)));
 
-        // если кто-то шейрит экран, то при подключении ставим режим плитки
-        if (isScreenSharePlaying(store.getState())) {
+        // если кто-то включает шейринг экрана, то ставим режим плитки
+        if (isScreenSharePlaying(store.getState())
+            && action.participant.fakeParticipant !== undefined
+            && (action.participant.fakeParticipant === "RemoteScreenShare" || action.participant.fakeParticipant === "LocalScreenShare")) {
             store.dispatch(setTileView(true));
         }
+
         return result;
     }
 

@@ -1632,5 +1632,10 @@
             "heading": "Whiteboard"
         },
         "screenTitle": "Whiteboard"
+    },
+    "minimizeWindowAlert": {
+        "title": "Das Fenster während der Aufnahme minimieren?",
+        "text": "Die Konferenz wird in der Aufzeichnung nicht angezeigt, wenn das Fenster minimiert wird.",
+        "minimizeButton": "Minimieren"
     }
 }

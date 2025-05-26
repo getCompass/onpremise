@@ -43,6 +43,7 @@ import { setFilmstripVisible, setTopPanelVisible } from "../../../filmstrip/acti
 import { setTileView } from "../../../video-layout/actions.any";
 import CompassToolbox from "../../../toolbox/components/web/CompassToolbox";
 import Toolbox from "../../../toolbox/components/web/Toolbox";
+import FontPreload from "./FontPreload";
 
 /**
  * DOM events for when full screen mode has changed. Different browsers need
@@ -308,6 +309,7 @@ class Conference extends AbstractConference<IProps, any> {
                 <Chat />
                 <ParticipantsPane />
                 <ReactionAnimations />
+                <FontPreload />
             </div>
         );
     }

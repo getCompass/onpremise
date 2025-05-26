@@ -34,6 +34,17 @@ export const HIDE_NOTIFICATION = 'HIDE_NOTIFICATION';
 export const SHOW_NOTIFICATION = 'SHOW_NOTIFICATION';
 
 /**
+ * The type of (redux) action which signals that a notification close timer should
+ * be reset.
+ *
+ * {
+ *     type: RESET_NOTIFICATION,
+ *     uid: string
+ * }
+ */
+export const RESET_NOTIFICATION = 'RESET_NOTIFICATION';
+
+/**
  * The type of (redux) action which signals that notifications should not
  * display.
  *

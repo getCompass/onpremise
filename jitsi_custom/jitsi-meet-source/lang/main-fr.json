@@ -1619,5 +1619,10 @@
             "heading": "Tableau blanc"
         },
         "screenTitle": "Tableau blanc"
+    },
+    "minimizeWindowAlert": {
+        "title": "Minimiser la fenêtre pendant l'enregistrement ?",
+        "text": "La conférence n'apparaît pas dans l'enregistrement lorsque la fenêtre est minimisée.",
+        "minimizeButton": "Minimiser"
     }
 }

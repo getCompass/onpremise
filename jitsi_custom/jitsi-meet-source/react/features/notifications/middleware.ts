@@ -19,7 +19,7 @@ import { PARTICIPANTS_PANE_OPEN } from '../participants-pane/actionTypes';
 
 import {
     CLEAR_NOTIFICATIONS,
-    HIDE_NOTIFICATION,
+    HIDE_NOTIFICATION, RESET_NOTIFICATION,
     SHOW_NOTIFICATION
 } from './actionTypes';
 import {
@@ -112,6 +112,17 @@ MiddlewareRegistry.register(store => next => action => {
 
         createTimeoutId(action, dispatch);
         break;
+    }
+    case RESET_NOTIFICATION: {
+        if (timers.has(action.uid)) {
+            const timer = timers.get(action.uid);
+
+            clearTimeout(timer);
+            timers.delete(action.uid);
+        }
+
+        createTimeoutId(action, dispatch);
+        return;
     }
     case HIDE_NOTIFICATION: {
         const timer = timers.get(action.uid);

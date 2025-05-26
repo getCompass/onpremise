@@ -1650,5 +1650,10 @@
             "heading": "Whiteboard"
         },
         "screenTitle": "Whiteboard"
+    },
+    "minimizeWindowAlert": {
+        "title": "Minimize the window while recording?",
+        "text": "The conference will not be shown in the recording when the window is minimized.",
+        "minimizeButton": "Minimize"
     }
 }

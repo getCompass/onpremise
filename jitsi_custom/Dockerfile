@@ -1,4 +1,4 @@
-FROM alpine:3.20
+FROM alpine:3.21
 
 RUN apk add --no-cache --virtual .build-deps npm build-base git
 
@@ -9,7 +9,7 @@ RUN \
 	--mount=type=cache,target=/root/.npm,sharing=locked \
     cd jitsi-meet-source \
     && npm install \
-    && make all \
+    && make clean \
     && make source-package
 
 # копируем исходники и удаляем зависимости билда

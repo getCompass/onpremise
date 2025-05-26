@@ -2,6 +2,7 @@ let audioCtx;
 let audioDest;
 let recorder;
 let app_title;
+let notificationUid;
 
 if (navigator.mediaDevices.getDisplayMedia) {
     window.addEventListener("message", baseHandler);
@@ -75,6 +76,9 @@ function baseHandler(event) {
             case "recorder_stop":
                 stopRecording();
 
+                break;
+            case "show_notification_minimize_when_recording":
+                showWarningNotificationWhenMinimizeApp();
                 break;
         }
     }
@@ -185,7 +189,13 @@ async function startRecording(videoStreamPromise, isExternalSave) {
             }
         };
         recorder.start(1000);
-        window.parent.postMessage({ type: "recorder_start", data: app_title }, "*");
+        window.parent.postMessage({ type: 'recorder_start',
+            data: {
+                // eslint-disable-next-line camelcase
+                app_title,
+                // eslint-disable-next-line camelcase
+                is_disable_minimize_window: true
+            } }, '*');
 
         APP.store.dispatch({
             type: "SET_SCREENSHOT_CAPTURE",
@@ -284,4 +294,47 @@ function createSilentAudio(time, freq = 44100) {
         view.setUint32(pos, data, true);
         pos += 4;
     }
+}
+
+function showWarningNotificationWhenMinimizeApp() {
+    if (notificationUid) {
+        const store = APP.store.getState()['features/notifications']
+        const isShown = store?.notifications?.some(item => item.uid === notificationUid);
+
+        if (isShown) {
+            APP.store.dispatch({
+                type: 'RESET_NOTIFICATION',
+                uid: notificationUid,
+                timeout: 10000
+            });
+
+            return;
+        }
+    }
+    notificationUid = Date.now().toString();
+    APP.store.dispatch({
+        type: 'SHOW_NOTIFICATION',
+        uid: notificationUid,
+        timeout: 10000,
+        props: {
+            descriptionKey: 'minimizeWindowAlert.text',
+            titleKey: 'minimizeWindowAlert.title',
+            icon: 'recording',
+            customActionType: [ 'info', 'destructive' ],
+            customActionNameKey: [ 'dialog.Cancel', 'minimizeWindowAlert.minimizeButton' ],
+            customActionHandler: [ () => {
+                hideNotifications();
+            }, () => {
+                window.parent.postMessage({ type: 'force_minimize_window' }, '*');
+                hideNotifications();
+            } ]
+        }
+    });
+}
+
+function hideNotifications() {
+    notificationUid && APP.store.dispatch({
+        type: 'HIDE_NOTIFICATION',
+        uid: notificationUid
+    });
 }

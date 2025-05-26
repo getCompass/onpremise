@@ -10,7 +10,7 @@ sh wait-services.sh 60
 mkdir -p /app/logs && cd /app && go build -gcflags "all=-N -l" -o database_controller -mod vendor main.go && ln -sf /dev/stdout /app/logs/main.log
 
 # приступаем к миграциям
-mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" < "${SCRIPT_PATH}/sql/init.sql"
+mysql --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" --skip-ssl < "${SCRIPT_PATH}/sql/init.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/domino_service" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/domino_service?tls=false up
 migrate -path "${SCRIPT_PATH}/sql/domino_service" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/domino_service?tls=false version

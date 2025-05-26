@@ -1,4 +1,4 @@
-FROM docker.getcompass.ru/service/go:1.23.2-1
+FROM docker.getcompass.ru/service/go:1.23.6
 
 RUN apk add mysql mysql-client
 

@@ -1431,5 +1431,10 @@
         "startMeeting": "Inizia riunione",
         "terms": "Termini di utilizzo",
         "title": "Il sistema di videoconferenza sicuro, funzionale e completamente gratuito."
+    },
+    "minimizeWindowAlert": {
+        "title": "Ridurre a icona la finestra durante la registrazione?",
+        "text": "La conferenza non viene mostrata nella registrazione quando la finestra viene ridotta a icona.",
+        "minimizeButton": "Riduci"
     }
 }

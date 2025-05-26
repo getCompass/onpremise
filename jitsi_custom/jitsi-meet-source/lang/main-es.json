@@ -1533,5 +1533,10 @@
         "accessibilityLabel": {
             "heading": "Pizarra"
         }
+    },
+    "minimizeWindowAlert": {
+        "title": "¿Minimizar la ventana durante la grabación?",
+        "text": "La conferencia no se mostrará en la grabación cuando se minimice la ventana.",
+        "minimizeButton": "Minimizar"
     }
 }

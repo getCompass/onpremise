@@ -8,7 +8,6 @@ import { translate } from '../../base/i18n/functions';
 import Dialog from '../../base/ui/components/web/Dialog';
 import { THUMBNAIL_SIZE } from '../constants';
 import { isAudioScreenSharingSupported, obtainDesktopSources, stopObtainDesktopSources } from '../functions';
-import logger from '../logger';
 
 import DesktopPickerPane from './DesktopPickerPane';
 import Checkbox from "../../base/ui/components/web/Checkbox";
@@ -19,7 +18,7 @@ import { setScreenshareFramerate } from "../../screen-share/actions.any";
 import DesktopPickerQualityButton from "./DesktopPickerQualityButton";
 import { NOTIFICATION_TIMEOUT_TYPE } from "../../notifications/constants";
 import { handleScreenSharingError } from "../../base/tracks/actions.web";
-
+import {screenDimensions} from "../types";
 /**
  * The sources polling interval in ms.
  *
@@ -270,7 +269,8 @@ class DesktopPicker extends PureComponent<IProps, IState> {
 
             return {
                 id: sources[0].id,
-                type: sources[0].type
+                type: sources[0].type,
+                dimensions: sources[0].dimensions
             };
         }
 
@@ -293,14 +293,15 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * @param {boolean} screenShareAudio - Whether or not to add system audio to
      * screen sharing session.
      * @param screenShareHint
+     * @param dimensions - размеры экрана
      * @returns {void}
      */
-    _onCloseModal(id = '', type?: string, screenShareAudio = this.props._isAudioSharingEnabled, screenShareHint = this.state.screenShareHint) {
+    _onCloseModal(id = '', type?: string, screenShareAudio = this.props._isAudioSharingEnabled, screenShareHint = this.state.screenShareHint, dimensions?: screenDimensions) {
         if (!isAudioScreenSharingSupported()) {
             screenShareAudio = false;
         }
         this.props.dispatch(setScreenshareFramerate(screenShareHint === "motion" ? 30 : 5));
-        this.props.onSourceChoose(id, type, screenShareAudio, screenShareHint);
+        this.props.onSourceChoose(id, type, screenShareAudio, screenShareHint, dimensions);
         this.props.dispatch(hideDialog());
     }
 
@@ -309,14 +310,16 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      *
      * @param {string} id - The id of DesktopCapturerSource.
      * @param {string} type - The type of DesktopCapturerSource.
+     * @param {object} dimensions - размеры экрана
      * @returns {void}
      */
-    _onPreviewClick(id: string, type: string) {
+    _onPreviewClick(id: string, type: string, dimensions: screenDimensions) {
 
         this.setState({
             selectedSource: {
                 id,
-                type
+                type,
+                dimensions
             }
         });
         this._saveScreenParams(type, id);
@@ -338,8 +341,8 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * @returns {void}
      */
     _onSubmit() {
-        const { selectedSource: { id, type } } = this.state;
-        this._onCloseModal(id, type, this.props._isAudioSharingEnabled, this.state.screenShareHint);
+        const { selectedSource: { id, type, dimensions } } = this.state;
+        this._onCloseModal(id, type, this.props._isAudioSharingEnabled, this.state.screenShareHint, dimensions);
     }
 
     /**

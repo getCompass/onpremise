@@ -3,6 +3,7 @@
 namespace Compass\Federation;
 
 use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\RowNotFoundException;
 
 /**
  * Класс-интерфейс для общения с pivot.
@@ -88,6 +89,33 @@ class Gateway_Socket_Pivot extends Gateway_Socket_Default {
 		}
 
 		return boolval($response["is_available"]);
+	}
+
+	/**
+	 * Получаем информацию по пользователям
+	 *
+	 * @throws RowNotFoundException
+	 * @throws \parseException
+	 * @throws \returnException
+	 * @throws ReturnFatalException
+	 */
+	public static function getUserInfo(int $user_id):array {
+
+		$ar_post = [
+			"user_id" => $user_id,
+		];
+		$method  = "pivot.ldap.getUserInfo";
+		[$status, $response] = self::_doCall(self::_getUrl(), $method, $ar_post, SOCKET_KEY_FEDERATION);
+
+		if ($status != "ok") {
+
+			if (isset($response["error_code"]) && $response["error_code"] == 1315001) {
+				throw new RowNotFoundException("user not found");
+			}
+			throw new ReturnFatalException("passed unknown error_code");
+		}
+
+		return $response["user_info"];
 	}
 
 	// -------------------------------------------------------

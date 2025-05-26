@@ -6,3 +6,5 @@ export type ElectronWindowType = {
         isScreenSharingSupported: Function;
     } ;
 } & typeof window;
+
+export type screenDimensions = { width: string, height: string }

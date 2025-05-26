@@ -1,4 +1,4 @@
-FROM docker.getcompass.ru/service/php-8:8.2.25-3
+FROM docker.getcompass.ru/service/php-8:8.2.27
 
 RUN apk update && apk add --no-cache wget libxslt-dev curl-dev vips vips-dev memcached php82-pecl-vips imagemagick imagemagick-dev php82-pecl-imagick libtool \
 ffmpeg ffmpeg-libavformat ffmpeg-libavfilter ffmpeg-libavcodec ffmpeg-libswscale ffmpeg-libavutil ffmpeg-libavdevice ffmpeg-libpostproc ffmpeg-libswresample

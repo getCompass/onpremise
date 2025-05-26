@@ -2,6 +2,8 @@
 
 namespace Compass\Federation;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+
 /**
  * класс для получения данных об учетной записи
  * @package Compass\Federation
@@ -33,6 +35,11 @@ class Domain_Ldap_Entity_AccountData implements Domain_Sso_Entity_CompassMapping
 	}
 
 	/**
+	 * Спарсить обычное поле
+	 *
+	 * @param mixed  $data
+	 * @param string $attribute
+	 *
 	 * @return string
 	 */
 	public static function parseField(mixed $data, string $attribute):string {
@@ -40,5 +47,47 @@ class Domain_Ldap_Entity_AccountData implements Domain_Sso_Entity_CompassMapping
 		// переводим в нижний регистр, из-за особенностей ldap
 		$attribute = mb_strtolower($attribute);
 		return Domain_Ldap_Entity_Utils::getAttribute($data, $attribute);
+	}
+
+	/**
+	 * Спарсить выражение присваивания
+	 *
+	 * @param mixed  $data
+	 * @param string $assignment
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 */
+	public static function parseAssignment(mixed $data, string $assignment):array {
+
+
+		// ищем выражение вида manager:distinguishedName='{manager}' где
+		// manager - ключ, к которому будет присвоен сторонний объект LDAP
+		// distinguishedName - атрибут, по которому будем искать в LDAP
+		// '{manager}' - значение атрибута, по которому ищем в LDAP. Значение может состоять из нескольких {атрибутов} текущего пользователя
+		preg_match("/(\w+):(\w+)='([\s\S]+)'/", $assignment, $matches);
+
+		if (count($matches) === 0) {
+			return [];
+		}
+
+		$assign_key            = trim($matches[1], " \n\r\t\v\0'");
+		$ldap_unique_attribute = trim($matches[2], " \n\r\t\v\0'");
+		$ldap_search_key       = trim($matches[3], " \n\r\t\v\0'");
+
+		// убираем экранирование ', которое мог оставить пользователь
+		$ldap_search_key = str_replace("\'", "'", $ldap_search_key);
+
+		// парсим значение атрибута для поиска, подставляя значения от текущего пользователя
+		$ldap_search_value = Domain_Sso_Entity_CompassMapping_Parser::parseFieldContent($ldap_search_key, $data, new self());
+
+		// ищем стороннего пользователя
+		try {
+			$search_entity_data = Domain_Ldap_Action_Search::do($ldap_unique_attribute, $ldap_search_value);
+		} catch (Domain_Ldap_Exception_ProtocolError_InvalidCredentials) {
+			return [];
+		}
+
+		return [$assign_key => $search_entity_data];
 	}
 }

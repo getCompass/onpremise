@@ -6,4 +6,6 @@ namespace Compass\Federation;
 interface Domain_Sso_Entity_CompassMapping_ParserInterface {
 
 	public static function parseField(mixed $data, string $attribute):string;
+
+	public static function parseAssignment(mixed $data, string $assignment):array;
 }

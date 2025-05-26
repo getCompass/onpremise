@@ -61,6 +61,7 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		"lockouttime",
 		"objectcategory",
 		"mail",
+		"manager"
 	];
 
 	public function __construct(string $host, int $port, bool $use_ssl, int $require_cert_strategy, int $timeout) {

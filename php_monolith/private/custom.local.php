@@ -318,4 +318,7 @@ define("SENTRY_DSN_KEY_IOS"					, "${SENTRY_DSN_KEY_IOS}");
 
 // максимальный размер загружаемого файла
 define("MAX_FILE_SIZE_MB"                        	, ${MAX_FILE_SIZE_MB});
+
+// включены ли звонки на сервере
+define("IS_PORTABLE_CALLS_DISABLED"				, ${IS_PORTABLE_CALLS_DISABLED});
 // @formatter:on

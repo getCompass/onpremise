@@ -361,7 +361,6 @@ class Type_Preview_Main {
 			}
 
 			$path = mb_substr($word, $pos + mb_strlen($domain) + mb_strlen($port));
-			$path = self::_removeEmojiAndStringAfterFromPath($path);
 
 			$end_link_pos = $pos + mb_strlen($domain) + mb_strlen($port) + self::_getEndLinkPos($path, $word);
 			return mb_substr($word, $start_link_pos, $end_link_pos - $start_link_pos);
@@ -457,42 +456,6 @@ class Type_Preview_Main {
 		return false;
 	}
 
-	// убираем эмодзи и строку после эмодзи из пути, если он был поставлен сразу после ссылки
-	protected static function _removeEmojiAndStringAfterFromPath(string $path):string {
-
-		// если путь меньше 3 символов, то в нем точно нет эмодзи
-		if (mb_strlen($path) < 3) {
-			return $path;
-		}
-
-		// подбираем строки, похожие на эмодзи
-		preg_match_all("/:.+?:/", $path, $emojis_from_path_match);
-
-		// если совпадений нет, то пропускаем остальные проверки
-		if (count($emojis_from_path_match[0]) === 0) {
-			return $path;
-		}
-
-		// получаем все шортнеймы эмодзи
-		$emojis = array_merge(
-			array_values(\BaseFrame\Conf\Emoji::EMOJI_FLAG_LIST),
-			array_values(\BaseFrame\Conf\Emoji::EMOJI_LIST),
-			array_keys(\BaseFrame\Conf\Emoji::EMOJI_ALIAS_SHORT_NAME_LIST),
-		);
-
-		foreach ($emojis_from_path_match[0] as $emoji_from_path) {
-
-			// проверяем, является ли строка эмодзи
-			if (in_array($emoji_from_path, $emojis)) {
-
-				// обрезаем строку по этому эмодзи
-				return mb_substr($path, 0, mb_strpos($path, $emoji_from_path));
-			}
-		}
-
-		return $path;
-	}
-
 	// получаем позицию на которой ссылка заканчивается
 	protected static function _getEndLinkPos(string $path, string $word):int {
 
@@ -550,6 +513,27 @@ class Type_Preview_Main {
 
 		// проверяем символ
 		if (isset(self::_NOT_ALLOWED_FOR_END_LINK_CHAR_LIST[$last_char]) || isset(self::_NOT_ALLOWED_FOR_END_LINK_CHAR_LIST[mb_substr($path, -1, 2)])) {
+
+			// проверка для двоеточия — не трогаем, если это шортнейм эмодзи
+			if ($last_char === ":") {
+
+				// пытаемся найти последний шортнейм вида :smile: на конце строки
+				if (preg_match("/:([a-zA-Z0-9_+\-]+):$/u", $path, $matches)) {
+
+					$emoji_candidate = $matches[0];
+
+					// перепроверяем по списку эмодзи
+					$emoji_list = array_merge(
+						array_values(\BaseFrame\Conf\Emoji::EMOJI_FLAG_LIST),
+						array_values(\BaseFrame\Conf\Emoji::EMOJI_LIST),
+						array_keys(\BaseFrame\Conf\Emoji::EMOJI_ALIAS_SHORT_NAME_LIST),
+					);
+
+					if (in_array($emoji_candidate, $emoji_list, true)) {
+						return $pos;
+					}
+				}
+			}
 
 			$path = mb_substr($path, 0, -1);
 			$pos  = self::_getLastCharPosFromLink($path, $word);

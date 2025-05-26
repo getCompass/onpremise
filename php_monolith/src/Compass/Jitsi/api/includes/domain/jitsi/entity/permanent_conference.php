@@ -9,7 +9,7 @@ use BaseFrame\Exception\Gateway\RowNotFoundException;
 /** Класс для работы с сущностью постоянной конференции */
 class Domain_Jitsi_Entity_PermanentConference {
 
-	protected const _PERMANENT_CONFERENCE_LIMIT = 10;
+	protected const _PERMANENT_CONFERENCE_LIMIT = 30;
 
 	/**
 	 * Создаем постоянную конференцию

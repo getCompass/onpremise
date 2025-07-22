@@ -143,6 +143,14 @@ MiddlewareRegistry.register(store => next => action => {
 
                 // размьючиваем только если видео было включено до демонстрации экрана
                 !videoWasMutedBeforeScreensharing && store.dispatch(setVideoMuted(false));
+
+                // нужно чтобы не зависала плашка что происходит шейринг
+                // когда отключают через попап модерации "участники могут включать видео"
+                const screensharingDetails: { sourceType?: string; } = {};
+                if (typeof action.track?.muted !== "undefined") {
+                    screensharingDetails.sourceType = action.track?.sourceType;
+                }
+                APP.API.notifyScreenSharingStatusChanged(false, screensharingDetails);
             } else if (typeof action.track?.videoStarted !== 'undefined' && action.track?.videoStarted) {
 
                 // сохраняем состояние видео перед отключением

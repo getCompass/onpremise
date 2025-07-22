@@ -1,0 +1,15 @@
+import BaseIcon, { IconProps } from "../components/desktop/BaseIcon.tsx";
+
+const DesktopIcon = ({ size }: IconProps) => {
+	return (
+		<BaseIcon size = {size} icon = {
+			<svg width = "22" height = "22" viewBox = "0 0 22 22" fill = "none" xmlns = "http://www.w3.org/2000/svg">
+				<path fillRule = "evenodd" clipRule = "evenodd"
+					  d = "M11.5007 15.9998H16.334C17.0704 15.9998 17.6673 15.4029 17.6673 14.6665V7.99984C17.6673 7.26346 17.0704 6.6665 16.334 6.6665H5.66732C4.93094 6.6665 4.33398 7.26346 4.33398 7.99984V14.6665C4.33398 15.4029 4.93094 15.9998 5.66732 15.9998H10.5007V17.6665H7.00065C6.72451 17.6665 6.50065 17.8904 6.50065 18.1665C6.50065 18.4426 6.72451 18.6665 7.00065 18.6665H11.0007H15.0007C15.2768 18.6665 15.5007 18.4426 15.5007 18.1665C15.5007 17.8904 15.2768 17.6665 15.0007 17.6665H11.5007V15.9998Z"
+					  fill = "#DCDCDC" />
+			</svg>
+		} />
+	);
+};
+
+export default DesktopIcon;

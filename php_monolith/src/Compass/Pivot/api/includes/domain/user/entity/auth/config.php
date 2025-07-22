@@ -31,6 +31,17 @@ class Domain_User_Entity_Auth_Config {
 	}
 
 	/**
+	 * получаем список доступных способов аутентификации
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 */
+	public static function getAvailableGuestMethodList():array {
+
+		return self::_getConfig(self::_KEY_AUTH_MAIN)["available_guest_method_list"];
+	}
+
+	/**
 	 * получаем кол-во попыток аутентификации, после которых запрашивается разгадывание капчи
 	 *
 	 * @return int

@@ -262,7 +262,8 @@ function MeetingParticipantItem({
             participantID = { _participantID }
             raisedHand = { _raisedHand }
             youText = { youText }
-            isLobbyParticipantRequest = { false }>
+            isLobbyParticipantRequest = { false }
+            isVisitor = { false }>
 
             {!overflowDrawer && !_participant?.fakeParticipant
                 && <>

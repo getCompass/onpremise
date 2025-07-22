@@ -1,6 +1,6 @@
-import { useAtomValue } from "jotai";
-import { langState } from "../api/_stores.ts";
-import { Lang } from "../api/_types.ts";
+import {useAtomValue} from "jotai";
+import {langState} from "../api/_stores.ts";
+import {Lang} from "../api/_types.ts";
 
 type LangConfig = {
 	[K in Lang]?: Record<string, any>;
@@ -19,13 +19,18 @@ const LANG_CONFIG: LangConfig = {
 		email_phone_number_dialog: {
 			title: "Привет",
 			desc_email: "Для авторизации введите email:",
+			desc_email_guest: "Для авторизации в гостевой аккаунт введите email:",
 			desc_phone_number: "Для авторизации введите номер телефона:",
+			desc_phone_number_guest: "Для авторизации в гостевой аккаунт введите номер телефона:",
 			desc_email_phone_number: "Для авторизации введите email или номер телефона:",
+			desc_email_phone_number_guest: "Для авторизации в гостевой аккаунт введите email или номер телефона:",
 			desc_sso: "Для авторизации нажмите\nкнопку ниже:",
+			desc_sso_guest: "Для авторизации в гостевой аккаунт нажмите кнопку ниже:",
 			input_placeholder_email: "Email",
 			input_placeholder_phone_number: "Телефон",
 			input_placeholder_email_phone_number: "Email или телефон",
 			confirm_button: "Продолжить",
+			open_guest_auth_methods_button: "Войти в гостевой аккаунт",
 			prohibited_symbols_tooltip: "Эмодзи, пробелы и специальные символы не поддерживаются",
 		},
 		email_register_dialog: {
@@ -134,20 +139,6 @@ const LANG_CONFIG: LangConfig = {
 				desc_pt2_desktop: " если его нет на вашем компьютере.",
 				button_mobile: "Установить",
 				button_desktop: "Скачать",
-			},
-			mobile_stores: {
-				appstore: "Перейти в App Store",
-				google_play: "Перейти в Google Play",
-				app_gallery: "Перейти в AppGallery",
-			},
-			desktop_builds: {
-				macos_download: "Скачать для MacOS",
-				intel_version: "Intel",
-				m1m2_version: "Apple Silicon",
-				windows_download: "Скачать для Windows",
-				linux_download: "Скачать для Linux",
-				deb_version: ".deb",
-				tar_version: ".tar",
 			},
 		},
 		page_invite: {
@@ -265,6 +256,30 @@ const LANG_CONFIG: LangConfig = {
 		one_minute: " минуту",
 		two_minutes: " минуты",
 		five_minutes: " минут",
+		download_compass: {
+			desktop_builds: {
+				macos_download: "Скачать для MacOS",
+				intel_version: "Intel",
+				arm_version: "M1 и новее",
+				windows_download: "Скачать для Windows",
+				windows_10: "Windows 10 и выше",
+				windows_7: "Windows 7 и 8",
+				exe_version: ".exe",
+				msi_version: ".msi",
+				linux_download: "Скачать для Linux",
+				linux_astra_download: "Скачать для Astra Linux",
+				deb_version: ".deb",
+				tar_version: ".tar",
+				rpm_version: ".rpm",
+				astra_version: ".deb",
+				another_platforms: "Другие платформы",
+			},
+			mobile_stores: {
+				appstore: "Перейти в App Store",
+				google_play: "Перейти в Google Play",
+				app_gallery: "Перейти в AppGallery",
+			},
+		},
 		install_page: {
 			desktop: {
 				logo: {
@@ -274,20 +289,6 @@ const LANG_CONFIG: LangConfig = {
 				page: {
 					title: "Скачайте приложение Compass On-premise",
 					desc: "Актуальные версии приложения для любого устройства.",
-					download_mac: {
-						desc: "Скачать для MacOS",
-						platform_intel: "Intel",
-						platform_apple: "Apple Silicon",
-					},
-					download_win: {
-						desc: "Скачать для Windows",
-						platform_exe: ".exe",
-					},
-					download_linux: {
-						desc: "Скачать для Linux",
-						platform_deb: ".deb",
-						platform_tar: ".tar",
-					},
 					download_ios: {
 						desc: "Установить на iPhone",
 						platform_app_store: "App Store",
@@ -299,14 +300,6 @@ const LANG_CONFIG: LangConfig = {
 					download_huawei: {
 						desc: "Установить на Huawei",
 						platform_app_gallery: "AppGallery",
-					},
-					builds: {
-						macos_download: "Скачать для MacOS",
-						intel_version: "Intel",
-						m1m2_version: "Apple Silicon",
-						linux_download: "Скачать для Linux",
-						deb_version: ".deb",
-						tar_version: ".tar",
 					},
 					support_block: {
 						title: "Возникли проблемы с установкой?",

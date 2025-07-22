@@ -126,6 +126,8 @@
         },
         "noMessagesMessage": "Es gibt noch keine Nachricht in dieser Konferenz. Starten Sie hier eine Unterhaltung!",
         "privateNotice": "Sie → {{recipient}}",
+        "privateNoticeForYou": "Nachricht an Sie",
+        "privateMessageReply": "Antworten",
         "sendButton": "Senden",
         "smileysPanel": "Emoji-Auswahl",
         "systemDisplayName": "System",
@@ -148,7 +150,10 @@
         "title": "Konferenz",
         "one_member": "teilnehmer",
         "two_members": "teilnehmer",
-        "five_members": "teilnehmer"
+        "five_members": "teilnehmer",
+        "one_visitor": "Zuschauer",
+        "two_visitors": "Zuschauer",
+        "five_visitors": "Zuschauer"
     },
     "connectingOverlay": {
         "joiningRoom": "Eine Verbindung zu Ihrem Meeting wird hergestellt…"
@@ -789,6 +794,8 @@
         "localRecordingStarted": "{{name}} hat eine lokale Aufzeichnung gestartet.",
         "localRecordingStopped": "{{name}} hat eine lokale Aufzeichnung gestoppt.",
         "me": "Ich",
+        "messageIsNotDeliveredTitle": "Diese Aktion ist nicht verfügbar",
+        "messageIsNotDelivered": "Der Benutzer hat die Konferenz verlassen oder ist ein Zuschauer.",
         "moderationInEffectCSDescription": "Bitte melden um ein Video zu teilen",
         "moderationInEffectCSTitle": "Die Videofreigabe ist von der Moderation gesperrt",
         "moderationInEffectDescription": "Bitte melden um zu sprechen",
@@ -815,6 +822,11 @@
         "oldElectronClientDescription1": "Sie scheinen eine alte Version des Jitsi-Meet-Clients zu nutzen. Diese hat bekannte Schwachstellen. Bitte aktualisieren Sie auf unsere ",
         "oldElectronClientDescription2": "aktuelle Version",
         "oldElectronClientDescription3": "!",
+        "visitorWantsToJoinTitle": "{{participantName}} will zu Wort kommen",
+        "visitorWantsToJoin": "Um die Zustimmung zum Einschalten des Mikrofons zu geben, machen Sie den Zuschauer zum Teilnehmer.",
+        "visitorsWantToJoin": "Um die Zustimmung zum Einschalten des Mikrofons zu geben, machen Sie den Zuschauer zum Teilnehmer.",
+        "visitorJoinRejectedTitle": "Ihre Wortmeldung wurde vom Moderator abgelehnt",
+        "visitorJoinRejected": "Schreiben Sie Ihre Frage in den Konferenz-Chat, um eine Antwort vom Veranstalter der Konferenz zu erhalten.",
         "participantWantsToJoin": "Möchte an der Konferenz teilnehmen",
         "participantsWantToJoin": "Möchten an der Konferenz teilnehmen",
         "passwordRemovedRemotely": "$t(lockRoomPasswordUppercase) von einer anderen Person entfernt",
@@ -844,7 +856,11 @@
         "videoUnmuteBlockedTitle": "Kamera und Bildschirmfreigabe kann nicht aktiviert werden!",
         "viewLobby": "Lobby ansehen",
         "viewParticipants": "Personen anzeigen",
-        "viewVisitors": "Gäste anzeigen",
+        "viewVisitors": "Teilnehmerliste öffnen",
+        "oneVisitor": "Zuschauer",
+        "twoVisitors": "Zuschauer",
+        "fiveVisitors": "Zuschauer",
+        "raisedHandVisitors": "{{raisedHandVisitors}} wollen zu Wort kommen",
         "waitingParticipants": "{{waitingParticipants}} Personen",
         "waitingVisitors": "In der Lobby wartende Gäste: {{waitingVisitors}}",
         "waitingVisitorsTitle": "Die Konferenz wurde noch nicht gestartet!",
@@ -853,10 +869,13 @@
     },
     "participantsPane": {
         "actions": {
-            "admit": "Zulassen",
-            "admitAll": "Alle zulassen",
+            "promoteVisitorAdmit": "Zum Teilnehmer machen",
+            "promoteVisitorReject": "Ablehnen",
+            "admit": "Akzeptieren",
+            "admitAll": "Alle akzeptieren",
             "allow": "Anwesenden erlauben:",
             "allowVideo": "Kamera einschalten",
+            "askUnmuteParticipantPane": "Mikrofon anfordern",
             "askUnmute": "Anfragen, Stummschaltung aufzuheben",
             "audioModeration": "Für sich selbst die Stummschaltung aufzuheben",
             "blockEveryoneMicCamera": "Kamera und Mikrofon von allen sperren",
@@ -882,11 +901,16 @@
             "lobby": "Lobby ({{count}})",
             "participantsList": "Teilnehmer ({{count}})",
             "visitorInQueue": " (Wartende Gäste {{count}})",
-            "visitorRequests": " (Anfragen {{count}})",
-            "visitors": "Gäste ({{count}})",
+            "visitorRequests": "wollen zu Wort kommen ({{count}})",
+            "visitors": "Spettator ({{count}})",
+            "visitorTooltip": "Benutzer, die als Zuschauer an der Konferenz teilnehmen. Sie können alle Teilnehmer des Meetings sehen und hören und im Chat schreiben. Um ein Mikrofon oder eine Kamera einzuschalten, müssen die Zuschauer die Hand heben und auf die Zustimmung des Moderators warten.",
+            "visitorTooltipTitleMobile": "Zuschauer",
+            "visitorTooltipMobile": "Benutzer, die alle Teilnehmer des Meetings sehen und hören und im Chat schreiben können. Um ein Mikrofon oder eine Kamera einzuschalten, müssen die Zuschauer die Hand heben und auf die Zustimmung des Moderators warten.",
             "waitingLobby": "In der Lobby ({{count}})"
         },
         "search": "Suche Teilnehmer",
+        "lobbyRequest": "Beitrittsantrag",
+        "visitor": "Zuschauer",
         "title": "Teilnehmer"
     },
     "passwordDigitsOnly": "Bis zu {{number}} Ziffern",
@@ -978,6 +1002,7 @@
         "initiated": "Anruf gestartet",
         "joinAudioByPhone": "Per Telefon teilnehmen",
         "joinMeeting": "Konferenz beitreten",
+        "joinMeetingAsGuest": "Compass-Konferenz",
         "joinMeetingInLowBandwidthMode": "Konferenz im Datensparmodus beitreten",
         "joinWithoutAudio": "Ohne Ton beitreten",
         "keyboardShortcuts": "Tastaturkurzbefehle aktivieren",
@@ -1110,6 +1135,7 @@
     "settings": {
         "audio": "Audio",
         "audioNoPermissions": "Kein Zugriff auf Audio",
+        "audioOutputChangeNotSupported": "Ihr Browser unterstützt die Auswahl von Audiogeräten nicht",
         "buttonLabel": "Einstellungen",
         "calendar": {
             "about": "Die Kalenderintegration von {{appName}} wird verwendet, um ein sicheres Zugreifen auf Ihren Kalender und Auslesen der bevorstehenden Termine zu ermöglichen.",
@@ -1240,6 +1266,10 @@
         "surprised": "Überrascht"
     },
     "startupoverlay": {
+        "requestPermissions": {
+            "desktop": "Um an der Compass-Videokonferenz teilzunehmen, erlauben Sie bitte den Zugriff auf Ihre Kamera und Ihr Mikrofon.",
+            "mobile": "Um an der Compass-Videokonferenz teilzunehmen, erlauben Sie bitte den Zugriff auf Ihre Kamera und Ihr Mikrofon."
+        },
         "genericTitle": "Die Konferenz muss Ihr Mikrofon und Ihre Kamera verwenden.",
         "policyText": " ",
         "title": "{{app}} benötigt Kamera und Mikrofon."
@@ -1503,7 +1533,7 @@
     },
     "videothumbnail": {
         "connectionInfo": "Verbindungsinformationen",
-        "demote": "Zu Gästen verschieben",
+        "demote": "Zum Zuschauer machen",
         "domute": "Stummschalten",
         "domuteOthers": "Alle anderen stummschalten",
         "domuteVideo": "Kamera ausschalten",
@@ -1558,19 +1588,23 @@
     "visitors": {
         "chatIndicator": "(Gast)",
         "joinMeeting": {
-            "description": "Sie beobachten derzeit diese Konferenz.",
-            "raiseHand": "Hand heben",
-            "title": "Konferenz wird beigetreten",
-            "wishToSpeak": "Wenn Sie sprechen möchten, heben Sie bitte unten Ihre Hand und warten Sie auf die Zustimmung der Moderation"
+            "title": "Sie nehmen als Zuschauer an der Konferenz teil",
+            "description": "Um Ihr Mikrofon oder Ihre Kamera einzuschalten und zu Wort zu kommen, heben Sie die Hand und warten Sie auf die Zustimmung des Moderators des Meetings.",
+            "descriptionMobile": "Um Ihr Mikrofon oder Ihre Kamera einzuschalten und zu Wort zu kommen, heben Sie die Hand und warten Sie auf die Zustimmung des Moderators des Meetings.",
+            "button": "OK"
+        },
+        "audioSettings": {
+            "title": "Die Mikrofoneinstellung ist nicht verfügbar",
+            "desc": "Um das Mikrofon einzuschalten, heben Sie die Hand und warten auf die Zustimmung des Moderators"
         },
         "labelTooltip": "Anzahl Gäste: {{count}}",
         "notification": {
-            "demoteDescription": "Hierhin verschoben von {{actor}}, bitte melden Sie sich um teilzunehmen",
+            "title": "Der Moderator hat Sie zum Zuschauer gemacht",
+            "demoteDescription": "Um Ihr Mikrofon oder Ihre Kamera einzuschalten und zu Wort zu kommen, heben Sie die Hand und warten Sie auf die Zustimmung des Moderators des Meetings.",
             "noMainParticipantsDescription": "Eine Person muss die Konferenz starten. Bitte versuchen Sie es gleich noch einmal.",
             "noMainParticipantsTitle": "Diese Konferenz wurde noch nicht gestartet.",
             "noVisitorLobby": "Sie können nicht teilnehmen, solange die Lobby für diese Konferenz aktiviert ist.",
-            "notAllowedPromotion": "Eine Person muss Ihre Anfrage erst erlauben.",
-            "title": "Sie sind Gast in der Konferenz"
+            "notAllowedPromotion": "Eine Person muss Ihre Anfrage erst erlauben."
         },
         "waitingMessage": "Sie werden der Konferenz beitreten, sobald sie gestartet ist!"
     },
@@ -1637,5 +1671,10 @@
         "title": "Das Fenster während der Aufnahme minimieren?",
         "text": "Die Konferenz wird in der Aufzeichnung nicht angezeigt, wenn das Fenster minimiert wird.",
         "minimizeButton": "Minimieren"
+    },
+    "recordReminder": {
+        "title": "Die Konferenz wird aufgezeichnet",
+        "description": "Für eine qualitativ hochwertige Aufzeichnung sollten Sie das Fenster nicht minimieren.",
+        "button": "OK"
     }
 }

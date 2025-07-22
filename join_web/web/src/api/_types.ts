@@ -8,32 +8,47 @@ export const CAPTCHA_PROVIDER_ENTERPRISE_GOOGLE = "enterprise_google";
 export const CAPTCHA_PROVIDER_YANDEX = "yandex_cloud";
 export const CAPTCHA_PROVIDER_DEFAULT = CAPTCHA_PROVIDER_ENTERPRISE_GOOGLE;
 
-export const APP_LINK_DESKTOP_MAC_OS_INTEL = "apps/compass-on-premise-mac.dmg";
-export const APP_LINK_DESKTOP_MAC_OS_INTEL_BY_VERSION =
-	"$VERSION/mac/Compass%20On-premise-$VERSION.dmg";
+export const APP_LINK_DESKTOP_MAC_OS_INTEL = "https://getcompass.ru/on-premise/app/macos-intel";
+export const APP_LINK_DESKTOP_MAC_OS_INTEL_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_mac_x64.dmg";
 export const APP_LINK_DESKTOP_MAC_OS_ARM =
-	"apps/compass-on-premise-mac-arm64.dmg";
-export const APP_LINK_DESKTOP_MAC_OS_ARM_BY_VERSION =
-	"$VERSION/mac/Compass%20On-premise-$VERSION-arm64.dmg";
-export const APP_LINK_DESKTOP_WINDOWS = "apps/compass-on-premise-win.exe";
-export const APP_LINK_DESKTOP_WINDOWS_BY_VERSION =
-	"$VERSION/win/Compass%20On-premise%20Setup%20$VERSION.exe";
-export const APP_LINK_DESKTOP_LINUX_DEB = "apps/compass-on-premise-linux.deb";
-export const APP_LINK_DESKTOP_LINUX_DEB_BY_VERSION =
-	"linux/CompassOnPremise_$VERSION_amd64.deb";
-export const APP_LINK_DESKTOP_LINUX_TAR = "apps/compass-on-premise-linux.tar";
-export const APP_LINK_DESKTOP_LINUX_TAR_BY_VERSION =
-	"linux/compass-linux.tar";
+	"https://getcompass.ru/on-premise/app/macos-silicon";
+export const APP_LINK_DESKTOP_MAC_OS_ARM_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_mac_arm64.dmg";
+
+export const APP_LINK_DESKTOP_WINDOWS_10_EXE = "https://getcompass.ru/on-premise/app/windows-10-exe";
+export const APP_LINK_DESKTOP_WINDOWS_10_EXE_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_win.exe";
+export const APP_LINK_DESKTOP_WINDOWS_10_MSI = "https://getcompass.ru/on-premise/app/windows-10-msi";
+export const APP_LINK_DESKTOP_WINDOWS_10_MSI_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_win_x64.msi";
+export const APP_LINK_DESKTOP_WINDOWS_7_EXE = "https://getcompass.ru/on-premise/app/windows-7-exe";
+export const APP_LINK_DESKTOP_WINDOWS_7_EXE_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_win.exe";
+export const APP_LINK_DESKTOP_WINDOWS_7_MSI = "https://getcompass.ru/on-premise/app/windows-7-msi";
+export const APP_LINK_DESKTOP_WINDOWS_7_MSI_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_win_x64.msi";
+
+export const APP_LINK_DESKTOP_LINUX_DEB = "https://getcompass.ru/on-premise/app/linux-deb";
+export const APP_LINK_DESKTOP_LINUX_DEB_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_linux_amd64.deb";
+export const APP_LINK_DESKTOP_LINUX_TAR = "https://getcompass.ru/on-premise/app/linux-tar";
+export const APP_LINK_DESKTOP_LINUX_TAR_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_linux.tar";
+export const APP_LINK_DESKTOP_LINUX_RPM = "https://getcompass.ru/on-premise/app/linux-rpm";
+export const APP_LINK_DESKTOP_LINUX_RPM_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_linux_x86_64.rpm";
+export const APP_LINK_DESKTOP_LINUX_ASTRA = "https://getcompass.ru/on-premise/app/linux-astra";
+export const APP_LINK_DESKTOP_LINUX_ASTRA_BY_VERSION = "$ELECTRON_VERSION/$VERSION/compass_linux_amd64.deb";
+
 export const APP_LINK_MOBILE_APP_STORE = "https://apps.apple.com/app/id6469516890";
+
 export const APP_LINK_MOBILE_GOOGLE_PLAY =
 	"https://play.google.com/store/apps/details?id=com.getcompass.android.enterprise";
+
 export const APP_LINK_MOBILE_APP_GALLERY = "https://appgallery.huawei.com/app/C109414583";
 
 export const DESKTOP_PLATFORM_MAC_OS_INTEL = "mac_os_intel";
 export const DESKTOP_PLATFORM_MAC_OS_ARM = "mac_os_arm";
-export const DESKTOP_PLATFORM_WINDOWS = "windows";
+export const DESKTOP_PLATFORM_WINDOWS_10_EXE = "windows_10_exe";
+export const DESKTOP_PLATFORM_WINDOWS_10_MSI = "windows_10_msi";
+export const DESKTOP_PLATFORM_WINDOWS_7_EXE = "windows_7_exe";
+export const DESKTOP_PLATFORM_WINDOWS_7_MSI = "windows_7_msi";
 export const DESKTOP_PLATFORM_LINUX_DEB = "linux_deb";
 export const DESKTOP_PLATFORM_LINUX_TAR = "linux_tar";
+export const DESKTOP_PLATFORM_LINUX_RPM = "linux_rpm";
+export const DESKTOP_PLATFORM_LINUX_ASTRA = "linux_astra";
 export const MOBILE_PLATFORM_IOS = "ios";
 export const MOBILE_PLATFORM_ANDROID = "android";
 export const MOBILE_PLATFORM_HUAWEI = "huawei";
@@ -51,6 +66,8 @@ export const AUTH_MAIL_STAGE_FINISHED = "finished";
 export type AUTH_MAIL_STAGE_ENTERING_PASSWORD = "entering_password";
 export type AUTH_MAIL_STAGE_ENTERING_CODE = "entering_code";
 export type AUTH_MAIL_STAGE_FINISHED = "finished";
+
+export const JOIN_LINK_ROLE_GUEST = "guest";
 
 const LANG_MAP: Record<Lang, string> = {
 	ru: "Русский",
@@ -180,6 +197,11 @@ export type AuthSsoInfo = {
 		signature: string;
 	};
 };
+
+export const ELECTRON_VERSION_22 = "22";
+export const ELECTRON_VERSION_30 = "30";
+
+export type ClientVersionMap = Record<string, ClientVersionItem>;
 
 export type ClientVersionItem = {
 	max_version: string;

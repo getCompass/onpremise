@@ -9,7 +9,7 @@ import Avatar from '../../../base/avatar/components/Avatar';
 import { isIosMobileBrowser, isMobileBrowser } from '../../../base/environment/utils';
 import { MEDIA_TYPE } from '../../../base/media/constants';
 import { PARTICIPANT_ROLE } from '../../../base/participants/constants';
-import {getLocalParticipant, getParticipantCount, isParticipantModerator} from '../../../base/participants/functions';
+import { getLocalParticipant, getParticipantCount, isParticipantModerator } from '../../../base/participants/functions';
 import { IParticipant } from '../../../base/participants/types';
 import { isParticipantAudioMuted, isParticipantVideoMuted } from '../../../base/tracks/functions.any';
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
@@ -23,7 +23,7 @@ import { getQuickActionButtonType, isForceMuted } from '../../../participants-pa
 import { requestRemoteControl, stopController } from '../../../remote-control/actions';
 import { getParticipantMenuButtonsWithNotifyClick, showOverflowDrawer } from '../../../toolbox/functions.web';
 import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
-import { iAmVisitor } from '../../../visitors/functions';
+import { getVisitorsCount, iAmVisitor } from '../../../visitors/functions';
 import { PARTICIPANT_MENU_BUTTONS as BUTTONS } from '../../constants';
 
 import AskToUnmuteButton from './AskToUnmuteButton';
@@ -43,7 +43,7 @@ import VerifyParticipantButton from './VerifyParticipantButton';
 import VolumeSlider from './VolumeSlider';
 import VolumeSliderMobile from "./VolumeSliderMobile";
 import { isNeedShowElectronOnlyElements } from "../../../base/environment/utils_web";
-import {toState} from "../../../base/redux/functions";
+import { toState } from "../../../base/redux/functions";
 
 interface IProps {
 
@@ -215,7 +215,9 @@ const ParticipantContextMenu = ({
         = useSelector((state: IReduxState) => state['features/base/config']);
     const visitorsMode = useSelector((state: IReduxState) => iAmVisitor(state));
     const visitorsSupported = useSelector((state: IReduxState) => state['features/visitors'].supported);
+    const visitorsCount = useSelector(getVisitorsCount);
     const { disableDemote, disableKick, disableGrantModerator, disablePrivateChat } = remoteVideoMenu;
+    const { lobbyEnabled } = useSelector((state: IReduxState) => state['features/lobby']);
     const { participantsVolume } = useSelector((state: IReduxState) => state['features/filmstrip']);
     const _volume = (participant?.local ?? true ? undefined
         : participant?.id ? participantsVolume[participant?.id] : undefined) ?? 1;
@@ -343,7 +345,7 @@ const ParticipantContextMenu = ({
                                                 className = {styles.contextItem} />);
         }
 
-        if (!disableDemote && visitorsSupported && _isModerator) {
+        if (!disableDemote && visitorsSupported && _isModerator && !lobbyEnabled && visitorsCount > 0) {
             buttons2.push(<DemoteToVisitorButton {...getButtonProps(BUTTONS.DEMOTE)}
                                                  className = {styles.contextItem} />);
         }

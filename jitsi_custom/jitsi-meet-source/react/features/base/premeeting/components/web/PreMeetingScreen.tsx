@@ -326,8 +326,14 @@ const PreMeetingScreen = ({
                                     size = {120} />
                             )}
                             {children}
-                            {isLobby && _lobbyKnocking ? <></> : (_buttons.length &&
-                                <Toolbox toolbarButtons = {_buttons} />)}
+                            {isLobby && _lobbyKnocking
+                                ? <></>
+                                : (
+                                    _buttons.length
+                                        ? <Toolbox toolbarButtons = {_buttons} />
+                                        : <></>
+                                )
+                            }
                             {skipPrejoinButton}
                             {showUnsafeRoomWarning && <UnsafeRoomWarning />}
                             {showDeviceStatus && <DeviceStatus />}

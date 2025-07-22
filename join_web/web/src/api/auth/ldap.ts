@@ -1,20 +1,17 @@
-import { useGetResponse } from "../_index.ts";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-	ApiUserInfoData,
-	ONPREMISE_LDAP_LOGIN_TYPE,
-} from "../_types.ts";
+import {useGetResponse} from "../_index.ts";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {ApiUserInfoData, ONPREMISE_LDAP_LOGIN_TYPE,} from "../_types.ts";
 import {
 	authenticationSessionTimeLeftState,
 	authState,
+	deviceLoginTypeState,
 	firstAuthState,
 	isRegistrationState,
 	userInfoDataState,
-	deviceLoginTypeState,
 } from "../_stores.ts";
-import { useSetAtom } from "jotai";
+import {useSetAtom} from "jotai";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
-import { useNavigateDialog, useNavigatePage } from "../../components/hooks.ts";
+import {useNavigateDialog, useNavigatePage} from "../../components/hooks.ts";
 
 export type ApiFederationLdapAuthTryAuthenticateArgs = {
 	username: string;

@@ -33,6 +33,8 @@ import { InviteButton } from "./InviteButton";
 import { isButtonEnabled } from "../../../toolbox/functions.web";
 import { isMobileBrowser } from "../../../base/environment/utils";
 import { isNeedShowElectronOnlyElements } from "../../../base/environment/utils_web";
+import Tooltip from "../../../base/tooltip/components/Tooltip";
+import { getVisitorsCount } from "../../../visitors/functions";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -129,6 +131,36 @@ const useStyles = makeStyles()(theme => {
             }
         },
 
+        headerVisitorsContainer: {
+            padding: "0px 16px 0px 20px",
+            width: "fit-content",
+        },
+
+        headerVisitors: {
+            fontFamily: 'Lato Regular',
+            fontWeight: 'normal' as const,
+            fontSize: '12px',
+            lineHeight: '18px',
+            paddingBottom: "1px",
+            color: 'rgba(255, 255, 255, 0.6)',
+            letterSpacing: '-0.24px',
+            borderBottom: "1px dashed rgba(255, 255, 255, 0.4)",
+
+            '&:hover': {
+                color: 'rgba(255, 255, 255, 0.8)',
+                borderBottom: "1px dashed rgba(255, 255, 255, 0.8)",
+            }
+        },
+
+        tooltipContainer: {
+            maxWidth: "255px",
+        },
+        tooltipContent: {
+            backgroundColor: "rgba(63, 62, 62, 0.95)",
+            borderRadius: "5px",
+            textAlign: "center",
+        },
+
         headerInviteButtonContainer: {
             marginTop: '14px',
             marginBottom: '19px',
@@ -185,6 +217,7 @@ const ParticipantsPane = () => {
     const isMobile = isMobileBrowser();
     const { is_in_picture_in_picture_mode } = useSelector((state: IReduxState) => state['features/picture-in-picture']);
 
+    const visitorsCount = useSelector(getVisitorsCount);
     const participantsCount = sortedParticipantIds.length;
     const showInviteButton = shouldRenderInviteButton(state) && isButtonEnabled('invite', state);
 
@@ -238,6 +271,25 @@ const ParticipantsPane = () => {
                         icon = {IconCloseLarge}
                         onClick = {onClosePane} />
                 </div>
+                {visitorsCount > 0 && (
+                    <div className = {classes.headerVisitorsContainer}>
+                        <div className = {classes.headerVisitors}>
+                            <Tooltip
+                                tooltipContainerClassName = {classes.tooltipContainer}
+                                tooltipContentClassName = {classes.tooltipContent}
+                                content = {t("participantsPane.headings.visitorTooltip")}
+                                tail = {
+                                    <svg width = "9" height = "5" viewBox = "0 0 9 5" fill = "none"
+                                         xmlns = "http://www.w3.org/2000/svg">
+                                        <path d = "M8.5 5L4.5 0L0.5 5L8.5 5Z" fill = "#3F3E3E" fill-opacity = "0.95" />
+                                    </svg>
+                                }
+                                position = "bottom">
+                                {t("participantsPane.headings.visitors", { count: visitorsCount })}
+                            </Tooltip>
+                        </div>
+                    </div>
+                )}
                 {isNeedShowElectronOnlyElements() && (
                     <div className = {classes.headerInviteButtonContainer}>
                         {showInviteButton && <InviteButton />}

@@ -74,31 +74,31 @@ export const COMPASS_THRESHOLDS = [
 export const COMPASS_THRESHOLDS_MOBILE = [
     {
         width: 565,
-        order: [ 'camera', 'microphone' ]
+        order: [ 'camera', 'microphone', 'visitor-camera', 'visitor-microphone' ]
     },
     {
         width: 520,
-        order: [ 'camera', 'microphone' ]
+        order: [ 'camera', 'microphone', 'visitor-camera', 'visitor-microphone' ]
     },
     {
         width: 470,
-        order: [ 'camera', 'microphone' ]
+        order: [ 'camera', 'microphone', 'visitor-camera', 'visitor-microphone' ]
     },
     {
         width: 420,
-        order: [ 'camera', 'microphone' ]
+        order: [ 'camera', 'microphone', 'visitor-camera', 'visitor-microphone' ]
     },
     {
         width: 370,
-        order: [ 'camera', 'microphone' ]
+        order: [ 'camera', 'microphone', 'visitor-camera', 'visitor-microphone' ]
     },
     {
         width: 225,
-        order: [ 'camera', 'microphone' ]
+        order: [ 'camera', 'microphone', 'visitor-camera', 'visitor-microphone' ]
     },
     {
         width: 200,
-        order: [ 'camera', 'microphone' ]
+        order: [ 'camera', 'microphone', 'visitor-camera', 'visitor-microphone' ]
     }
 ];
 
@@ -130,7 +130,9 @@ export const MAIN_TOOLBAR_BUTTONS_PRIORITY = [
  */
 export const MAIN_COMPASS_TOOLBAR_BUTTONS_PRIORITY = [
     'microphone',
+    'visitor-microphone',
     'camera',
+    'visitor-camera',
     'participants-pane',
     'chat',
     'chat-mobile',
@@ -200,13 +202,17 @@ export const TOOLBAR_BUTTONS: ToolbarButton[] = [
     'whiteboard',
     'premeeting-microphone',
     'premeeting-camera',
-    'premeeting-select-background'
+    'premeeting-select-background',
+    'visitor-microphone',
+    'visitor-camera',
 ];
 
 /**
  * The toolbar buttons to show when in visitors mode.
  */
 export const VISITORS_MODE_BUTTONS: ToolbarButton[] = [
+    'visitor-microphone',
+    'visitor-camera',
     'chat',
     'chat-mobile',
     'closedcaptions',
@@ -216,5 +222,23 @@ export const VISITORS_MODE_BUTTONS: ToolbarButton[] = [
     'tileview',
     'fullscreen',
     'stats',
-    'videoquality'
+    'videoquality',
+    'premeeting-microphone',
+    'premeeting-camera',
+    'premeeting-select-background',
+];
+
+/**
+ * The toolbar buttons to show when in visitors mode.
+ */
+export const VISITORS_MODE_BUTTONS_MOBILE: ToolbarButton[] = [
+    'visitor-camera',
+    'visitor-microphone',
+    'camera',
+    'microphone',
+    'chat-mobile',
+    'hangup',
+    'raisehand',
+    'premeeting-camera',
+    'premeeting-microphone',
 ];

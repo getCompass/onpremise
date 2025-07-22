@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IReduxState } from "../../../app/types";
 import { getLocalParticipant, getParticipantById } from "../../../base/participants/functions";
 import { close as closeParticipantsPane } from "../../../participants-pane/actions.any";
+import { iAmVisitor } from "../../../visitors/functions";
 
 interface IProps {
 
@@ -123,15 +124,17 @@ const ChatMessageGroup = ({ className = '', messages }: IProps) => {
     const { classes, cx } = useStyles();
     const messagesLength = messages.length;
     const dispatch = useDispatch();
-    const participant = useSelector((state: IReduxState) => getParticipantById(state, messages[0].participantId));
+    const senderParticipant = useSelector((state: IReduxState) => getParticipantById(state, messages[0].participantId));
     const localParticipant = useSelector((state: IReduxState) => getLocalParticipant(state));
     const isParticipantPaneOpen = useSelector((state: IReduxState) => state['features/participants-pane'].isOpen);
     const isMobile = isMobileBrowser();
+    const isVisitor = useSelector((state: IReduxState) => iAmVisitor(state));
+    const isCanSendPrivateMessages = !isVisitor && senderParticipant !== undefined
+        && (localParticipant !== undefined && localParticipant.id !== messages[0].participantId);
 
     const handleClick = useCallback(() => {
 
-        // на себя клик не должен срабатывать
-        if (localParticipant === undefined || localParticipant.id === messages[0].participantId) {
+        if (!isCanSendPrivateMessages) {
             return;
         }
 
@@ -142,7 +145,7 @@ const ChatMessageGroup = ({ className = '', messages }: IProps) => {
             if (isParticipantPaneOpen) {
                 dispatch(closeParticipantsPane());
             }
-            dispatch(openChat(participant));
+            dispatch(openChat(senderParticipant));
         }
     }, []);
 
@@ -155,7 +158,7 @@ const ChatMessageGroup = ({ className = '', messages }: IProps) => {
             <div className = {clsx(classes.groupContainer, className, isMobile && 'is-mobile')}>
                 <div className = {classes.avatarContainer} onClick = {() => handleClick()}>
                     <Avatar
-                        className = {clsx(classes.avatar, 'avatar', (localParticipant !== undefined && localParticipant.id !== messages[0].participantId) && 'clickable')}
+                        className = {clsx(classes.avatar, 'avatar', isCanSendPrivateMessages && 'clickable')}
                         participantId = {messages[0].participantId}
                         size = {36}
                     />
@@ -163,12 +166,13 @@ const ChatMessageGroup = ({ className = '', messages }: IProps) => {
                 <div className = {`${classes.messageGroup} chat-message-group ${className}`}>
                     {messages.map((message, i) => (
                         <ChatMessage
-                            key = { i }
-                            message = { message }
-                            shouldDisplayChatMessageMenu = { false }
-                            showDisplayName = { i === 0 }
-                            showTimestamp = { i === messages.length - 1 }
-                            type = { className } />
+                            key = {i}
+                            message = {message}
+                            isCanSendPrivateMessages = {isCanSendPrivateMessages}
+                            shouldDisplayChatMessageMenu = {false}
+                            showDisplayName = {i === 0}
+                            showTimestamp = {i === messages.length - 1}
+                            type = {className} />
                     ))}
                 </div>
             </div>

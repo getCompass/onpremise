@@ -117,6 +117,7 @@ abstract class Domain_User_Entity_Confirmation_Main {
 		}
 
 		// выясняем, какие методы нам доступны и выбираем первый по приоритету
+		// гостевые не добавляем, если гость регался по почте/номеру, то его эти способы будут в $available_user_method_list
 		$confirmation_method_list = array_intersect(self::_AUTH_METHOD_ORDER, $available_method_list, $available_user_method_list);
 
 		if ($confirmation_method_list === []) {
@@ -129,13 +130,24 @@ abstract class Domain_User_Entity_Confirmation_Main {
 				Domain_User_Entity_Phone::assertAlreadyExistPhoneNumber($user_security);
 			}
 
+			// в конце проверяем, возможно это гость и у него есть или почта или номер, fatal не кидаем
+			if (Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_MAIL)
+				|| Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)) {
+
+				try {
+					Domain_User_Entity_Phone::assertAlreadyExistPhoneNumber($user_security);
+				} catch (cs_UserPhoneSecurityNotFound) {
+					Domain_User_Entity_Mail::assertAlreadyExistMail($user_security);
+				}
+			}
+
 			throw new ParseFatalException("cant find confirmation methods");
 		}
 
 		$confirmation_method = reset($confirmation_method_list);
 
 		match ($confirmation_method) {
-			Domain_User_Entity_Auth_Method::METHOD_MAIL         => Domain_User_Entity_Confirmation_Mail_Mail::handle(
+			Domain_User_Entity_Auth_Method::METHOD_MAIL => Domain_User_Entity_Confirmation_Mail_Mail::handle(
 				$user_security->user_id, $session_uniq, $action_type, $mail_confirmation_key),
 			Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER => Domain_User_Entity_Confirmation_TwoFa_TwoFa::handle(
 				$user_security->user_id, $action_type, $two_fa_key, $company_id)

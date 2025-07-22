@@ -29,10 +29,7 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	];
 
 	// методы, которые запрещены на on-premise
-	public const NOT_ALLOWED_METHODS_FOR_ON_PREMISE = [
-		"threads.doCommitWorkedHours",
-		"threads.tryExacting",
-	];
+	public const NOT_ALLOWED_METHODS_FOR_ON_PREMISE = [];
 
 	/**
 	 * Возвращает обслуживаемые методы.

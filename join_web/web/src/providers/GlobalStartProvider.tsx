@@ -4,7 +4,7 @@ import {
 	activeDialogIdState,
 	authInputState,
 	authSsoState,
-	authState,
+	authState, isGuestAuthState,
 	isLoadedState,
 	isNeedShowCreateProfileDialogAfterLdapRegistrationState,
 	isNeedShowCreateProfileDialogAfterSsoRegistrationState,
@@ -29,7 +29,7 @@ import {
 	APIAuthTypeRegisterByPhoneNumber,
 	APIAuthTypeResetPasswordByMail,
 	AUTH_MAIL_STAGE_ENTERING_CODE,
-	AUTH_MAIL_STAGE_ENTERING_PASSWORD,
+	AUTH_MAIL_STAGE_ENTERING_PASSWORD, JOIN_LINK_ROLE_GUEST,
 	LIMIT_ERROR_CODE,
 	PrepareJoinLinkErrorAlreadyMemberData,
 	PrepareJoinLinkErrorLimitData,
@@ -52,10 +52,11 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 	const { activeDialog, navigateToDialog } = useNavigateDialog();
 	const setLoading = useSetAtom(loadingState);
 	const setJoinLink = useSetAtom(joinLinkState);
-	const [isLoaded, setIsLoaded] = useAtom(isLoadedState);
+	const setIsGuestAuth = useSetAtom(isGuestAuthState);
+	const [ isLoaded, setIsLoaded ] = useAtom(isLoadedState);
 	const authInput = useAtomValue(authInputState);
 	const auth = useAtomValue(authState);
-	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
+	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
 	const { is_authorized, need_fill_profile } = useAtomValue(profileState);
 	const isNeedShowCreateProfileDialogAfterSsoRegistration = useAtomValue(
 		isNeedShowCreateProfileDialogAfterSsoRegistrationState
@@ -69,10 +70,10 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 	const apiPivotAuthSsoBegin = useApiPivotAuthSsoBegin();
 
 	const isJoinLink = useIsJoinLink();
-	const rawJoinLink = useMemo(() => (isJoinLink ? window.location.href : ""), [window.location.href]);
+	const rawJoinLink = useMemo(() => (isJoinLink ? window.location.href : ""), [ window.location.href ]);
 	const apiJoinLinkPrepare = useApiJoinLinkPrepare(rawJoinLink);
-	const [toastText, setToastText] = useState("");
-	const [toastStatus, setToastStatus] = useState("");
+	const [ toastText, setToastText ] = useState("");
+	const [ toastStatus, setToastStatus ] = useState("");
 
 	const activeDialogId = useAtomValue(activeDialogIdState);
 	const showToast = useShowToast(activeDialogId);
@@ -85,7 +86,7 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 	const langStringOneMinute = useLangString("one_minute");
 	const langStringTwoMinutes = useLangString("two_minutes");
 	const langStringFiveMinutes = useLangString("five_minutes");
-	const [prevIsAuthorized, setPrevIsAuthorized] = useState<boolean | null>(null);
+	const [ prevIsAuthorized, setPrevIsAuthorized ] = useState<boolean | null>(null);
 
 	useEffect(() => {
 		// обновляем prevActivePage перед изменением activePage
@@ -95,17 +96,17 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 
 		// вызываем handlePageChange при изменении activePage
 		handlePageChange();
-	}, [is_authorized]);
+	}, [ is_authorized ]);
 
 	const authInputValue = useMemo(() => {
-		const [authValue, expiresAt] = authInput.split("__|__") || ["", 0];
+		const [ authValue, expiresAt ] = authInput.split("__|__") || [ "", 0 ];
 
 		if (parseInt(expiresAt) < dayjs().unix()) {
 			return "";
 		}
 
 		return authValue;
-	}, [authInput]);
+	}, [ authInput ]);
 
 	/**
 	 * Продолжаем попытку аутентификации через SSO, если она имеется
@@ -288,50 +289,53 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 		showToast(toastText, toastStatus);
 		setToastText("");
 		setToastStatus("");
-	}, [toastText, toastStatus, activeDialogId]);
+	}, [ toastText, toastStatus, activeDialogId ]);
 
 	useEffect(() => {
 		continueAuthSsoAttemptIfExists();
-	}, [authSso]);
+	}, [ authSso ]);
 
 	useEffect(() => {
 		if (isJoinLink) {
 			if (apiJoinLinkPrepare.data?.validation_result !== undefined) {
 				setJoinLink(apiJoinLinkPrepare.data.validation_result);
+				if (apiJoinLinkPrepare.data.validation_result !== null && apiJoinLinkPrepare.data.validation_result.role === JOIN_LINK_ROLE_GUEST) {
+					setIsGuestAuth(true);
+				}
 			} else {
 				setJoinLink(null);
 			}
 
 			if (apiJoinLinkPrepare.isError && apiJoinLinkPrepare.error instanceof ApiError) {
 				switch (apiJoinLinkPrepare.error.error_code) {
-					case ALREADY_MEMBER_ERROR_CODE:
-						setPrepareJoinLinkError({
-							error_code: apiJoinLinkPrepare.error.error_code,
-							data: {
-								company_id: apiJoinLinkPrepare.error.company_id,
-								inviter_user_id: apiJoinLinkPrepare.error.inviter_user_id,
-								inviter_full_name: apiJoinLinkPrepare.error.inviter_full_name,
-								is_postmoderation: apiJoinLinkPrepare.error.is_postmoderation,
-								is_waiting_for_postmoderation: apiJoinLinkPrepare.error.is_waiting_for_postmoderation,
-								role: apiJoinLinkPrepare.error.role,
-								was_member_before: apiJoinLinkPrepare.error.was_member_before,
-								join_link_uniq: apiJoinLinkPrepare.error.join_link_uniq,
-							} as PrepareJoinLinkErrorAlreadyMemberData,
-						});
-						break;
+				case ALREADY_MEMBER_ERROR_CODE:
+					setPrepareJoinLinkError({
+						error_code: apiJoinLinkPrepare.error.error_code,
+						data: {
+							company_id: apiJoinLinkPrepare.error.company_id,
+							inviter_user_id: apiJoinLinkPrepare.error.inviter_user_id,
+							inviter_full_name: apiJoinLinkPrepare.error.inviter_full_name,
+							is_postmoderation: apiJoinLinkPrepare.error.is_postmoderation,
+							is_waiting_for_postmoderation: apiJoinLinkPrepare.error.is_waiting_for_postmoderation,
+							role: apiJoinLinkPrepare.error.role,
+							was_member_before: apiJoinLinkPrepare.error.was_member_before,
+							join_link_uniq: apiJoinLinkPrepare.error.join_link_uniq,
+						} as PrepareJoinLinkErrorAlreadyMemberData,
+					});
+					break;
 
-					case LIMIT_ERROR_CODE:
-						setPrepareJoinLinkError({
-							error_code: apiJoinLinkPrepare.error.error_code,
-							data: {
-								expires_at: apiJoinLinkPrepare.error.expires_at,
-							} as PrepareJoinLinkErrorLimitData,
-						});
-						break;
+				case LIMIT_ERROR_CODE:
+					setPrepareJoinLinkError({
+						error_code: apiJoinLinkPrepare.error.error_code,
+						data: {
+							expires_at: apiJoinLinkPrepare.error.expires_at,
+						} as PrepareJoinLinkErrorLimitData,
+					});
+					break;
 
-					default:
-						setPrepareJoinLinkError({ error_code: apiJoinLinkPrepare.error.error_code });
-						break;
+				default:
+					setPrepareJoinLinkError({ error_code: apiJoinLinkPrepare.error.error_code });
+					break;
 				}
 			} else {
 				setPrepareJoinLinkError(null);
@@ -454,7 +458,7 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 				navigateToDialog("auth_email_phone_number");
 			}
 		}
-	}, [prevIsAuthorized, is_authorized]);
+	}, [ prevIsAuthorized, is_authorized ]);
 
 	return <>{children}</>;
 }

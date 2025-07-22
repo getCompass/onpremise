@@ -55,6 +55,7 @@ export const NOTIFICATION_ICON = {
     POLL: 'poll',
     RECORDING: 'recording',
     SCREENSHARE: 'screenshare',
+    WARNING_STOP_HAND: 'warning_stop_hand',
     WARNING: 'warning',
 };
 
@@ -115,11 +116,25 @@ export const SALESFORCE_LINK_NOTIFICATION_ID = 'SALESFORCE_LINK_NOTIFICATION';
 export const VISITORS_PROMOTION_NOTIFICATION_ID = 'VISITORS_PROMOTION_NOTIFICATION';
 
 /**
+ * The identifier of the visitors promotion rejected notification.
+ *
+ * @type {string}
+ */
+export const VISITORS_PROMOTION_REJECTED_NOTIFICATION_ID = 'VISITORS_PROMOTION_REJECTED_NOTIFICATION';
+
+/**
  * The identifier of the visitors notification indicating the meeting is not live.
  *
  * @type {string}
  */
 export const VISITORS_NOT_LIVE_NOTIFICATION_ID = 'VISITORS_NOT_LIVE_NOTIFICATION_ID';
+
+/**
+ * The identifier of the message is not delivered.
+ *
+ * @type {string}
+ */
+export const MESSAGE_NOT_DELIVERED_NOTIFICATION_ID = 'MESSAGE_NOT_DELIVERED_NOTIFICATION_ID';
 
 /**
  * The identifier of the screenshare notification indicating the participant is not have permission.

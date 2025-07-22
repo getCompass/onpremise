@@ -126,6 +126,8 @@
         },
         "noMessagesMessage": "В конференции пока нет никаких сообщений. Начните разговор!",
         "privateNotice": "Вы → {{recipient}}",
+        "privateNoticeForYou": "Сообщение вам",
+        "privateMessageReply": "Ответить",
         "sendButton": "Отправить",
         "smileysPanel": "Emoji панель",
         "tabs": {
@@ -147,7 +149,10 @@
         "title": "Конференция",
         "one_member": "участник",
         "two_members": "участника",
-        "five_members": "участников"
+        "five_members": "участников",
+        "one_visitor": "зритель",
+        "two_visitors": "зрителя",
+        "five_visitors": "зрителей"
     },
     "connectingOverlay": {
         "joiningRoom": "Пытаемся присоединиться к вашей конференции..."
@@ -782,6 +787,8 @@
         "localRecordingStarted": "{{name}} начал локальную запись.",
         "localRecordingStopped": "{{name}} остановил локальную запись.",
         "me": "Вы",
+        "messageIsNotDeliveredTitle": "Действие недоступно",
+        "messageIsNotDelivered": "Пользователь покинул конференцию или является зрителем.",
         "moderationInEffectCSDescription": "Пожалуйста, поднимите руку, если вы хотите поделиться своим экраном.",
         "moderationInEffectCSTitle": "Демонстрация экрана заблокирована модератором",
         "moderationInEffectDescription": "Пожалуйста, поднимите руку, если хотите высказаться.",
@@ -807,6 +814,11 @@
         "oldElectronClientDescription1": "Похоже, вы используете старую версию клиента {{app}}, которая имеет известные уязвимости в системе безопасности. Убедитесь, что вы обновили до нашей ",
         "oldElectronClientDescription2": "последней версии",
         "oldElectronClientDescription3": " сейчас!",
+        "visitorWantsToJoinTitle": "{{participantName}} хочет выступить",
+        "visitorWantsToJoin": "Чтобы дать разрешение включить микрофон, сделайте зрителя участником.",
+        "visitorsWantToJoin": "Чтобы дать разрешение включить микрофон, сделайте зрителя участником.",
+        "visitorJoinRejectedTitle": "Ваш запрос на выступление отклонён модератором",
+        "visitorJoinRejected": "Напишите вопрос в чат конференции, чтобы получить ответ от ведущего встречи.",
         "participantWantsToJoin": "Хочет присоединиться к встрече",
         "participantsWantToJoin": "Хотят присоединиться к встрече",
         "passwordRemovedRemotely": "$t(lockRoomPasswordUppercase) удален другим участником.",
@@ -835,13 +847,19 @@
         "videoUnmuteBlockedDescription": "Включение звука камеры и совместное использование рабочего стола временно заблокированы из-за системных ограничений.",
         "videoUnmuteBlockedTitle": "Включение камеры и общий доступ к рабочему столу заблокированы!",
         "viewLobby": "Смотреть лобби",
-        "viewVisitors": "Просмотр посетителей",
+        "viewVisitors": "Открыть список участников",
+        "oneVisitor": "зритель",
+        "twoVisitors": "зрителя",
+        "fiveVisitors": "зрителей",
+        "raisedHandVisitors": "{{raisedHandVisitors}} хотят выступить",
         "waitingParticipants": "{{waitingParticipants}} люди",
         "whiteboardLimitDescription": "Пожалуйста, сохраните свои изменения, так как скоро будет достигнут лимит пользователей, и интерактивная доска будет закрыта.",
         "whiteboardLimitTitle": "Использование интерактивной доски"
     },
     "participantsPane": {
         "actions": {
+            "promoteVisitorAdmit": "Сделать участником",
+            "promoteVisitorReject": "Отклонить",
             "admit": "Принять",
             "admitAll": "Принять всех",
             "allow": "Разрешить",
@@ -871,12 +889,17 @@
             "lobbyMobile": "Зал ожидания",
             "participantsList": "Участники ({{count}})",
             "connected": "Подключённые",
-            "visitorRequests": " (запросы {{count}})",
-            "visitors": "Посетители {{count}}",
+            "visitorRequests": "хотят выступить ({{count}})",
+            "visitors": "Зрители ({{count}})",
             "visitorsMobile": "Посетители",
+            "visitorTooltip": "Пользователи, которые подключились к конференции в качестве зрителей. Они видят и слышат всех участников встречи и могут писать в чат. Чтобы включить микрофон или камеру, зрителям необходимо поднять руку и подождать одобрение модератора.",
+            "visitorTooltipTitleMobile": "Зрители",
+            "visitorTooltipMobile": "Пользователи, которые видят и слышат всех участников встречи и могут писать в чат. Чтобы включить микрофон или камеру, зрителям необходимо поднять руку и подождать одобрение модератора.",
             "waitingLobby": "Ожидают в лобби ({{count}})"
         },
         "search": "Поиск участников",
+        "lobbyRequest": "Заявка на вступление",
+        "visitor": "Зритель",
         "title": "Участники"
     },
     "passwordDigitsOnly": "До {{number}} цифр",
@@ -964,6 +987,7 @@
         "initiated": "Вызов инициирован",
         "joinAudioByPhone": "Подключиться с телефонной связью",
         "joinMeeting": "Присоединиться к встрече",
+        "joinMeetingAsGuest": "Конференция<br>Compass",
         "joinMeetingInLowBandwidthMode": "Присоединиться без видео",
         "joinWithoutAudio": "Присоединиться без звука",
         "keyboardShortcuts": "Включить сочетания клавиш",
@@ -1096,6 +1120,7 @@
     "settings": {
         "audio": "Звук",
         "audioNoPermissions": "Нет доступа к звуку",
+        "audioOutputChangeNotSupported": "Ваш браузер не поддерживает выбор звуковых устройств",
         "buttonLabel": "Настройки",
         "calendar": {
             "about": "Интеграция с календарем {{appName}} используется для безопасного доступа к вашему календарю и синхронизации запланированных мероприятий.",
@@ -1227,6 +1252,10 @@
         "surprised": "Удивлен"
     },
     "startupoverlay": {
+        "requestPermissions": {
+            "desktop": "Для подключения к видеоконференции Compass\nразрешите доступ к вашей камере и микрофону.",
+            "mobile": "Для подключения к видеоконференции Compass разрешите доступ к вашей камере и микрофону."
+        },
         "genericTitle": "На совещании необходимо использовать микрофон и камеру.",
         "policyText": " ",
         "title": "{{app}} требуется доступ к микрофону и камере."
@@ -1491,7 +1520,7 @@
     },
     "videothumbnail": {
         "connectionInfo": "Информация о соединении",
-        "demote": "Переместить к посетителям",
+        "demote": "Сделать зрителем",
         "domute": "Выключить звук",
         "domuteOthers": "Выключить звук остальным",
         "domuteVideo": "Остановить видео",
@@ -1545,12 +1574,26 @@
     },
     "visitors": {
         "chatIndicator": "(посетитель)",
+        "joinMeeting": {
+            "title": "Вы подключились к конференции в качестве зрителя",
+            "description": "Чтобы включить микрофон или камеру и выступить, поднимите руку и подождите одобрение модератора встречи.",
+            "descriptionMobile": "Чтобы включить микрофон или камеру и выступить, поднимите руку и подождите одобрение модератора встречи.",
+            "button": "Хорошо"
+        },
+        "audioSettings": {
+            "title": "Настройка микрофона недоступна",
+            "desc": "Чтобы включить микрофон, поднимите руку и подождите одобрение модератора"
+        },
         "labelTooltip": "Количество посетителей: {{count}}",
         "notification": {
-            "demoteDescription": "Перемещён сюда пользователем {{actor}}, поднимите руку, чтобы участвовать",
-            "description": "Чтобы участвовать, поднимите руку",
-            "title": "Вы посетитель на встрече"
-        }
+            "title": "Модератор сделал вас зрителем",
+            "demoteDescription": "Чтобы включить микрофон или камеру и выступить, поднимите руку и подождите одобрение модератора встречи.",
+            "noMainParticipantsDescription": "A participant needs to start the meeting. Please try again in a bit.",
+            "noMainParticipantsTitle": "This meeting hasn’t started yet.",
+            "noVisitorLobby": "You cannot join while there is a lobby enabled for the meeting.",
+            "notAllowedPromotion": "A participant needs to allow your request first."
+        },
+        "waitingMessage": "You'll join the meeting as soon as it is live!"
     },
     "volumeSlider": "Ползунок громкости",
     "welcomepage": {
@@ -1615,5 +1658,10 @@
         "title": "Свернуть окно при записи?",
         "text": "Конференция не отобразится в записи, пока окно свёрнуто.",
         "minimizeButton": "Свернуть"
+    },
+    "recordReminder": {
+        "title": "Конференция записывается",
+        "description": "Для качественной записи не сворачивайте окно встречи.",
+        "button": "Хорошо"
     }
 }

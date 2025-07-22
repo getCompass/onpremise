@@ -12,7 +12,7 @@ import {
 	authState,
 	captchaProviderState,
 	firstAuthState,
-	deviceLoginTypeState,
+	deviceLoginTypeState, isGuestAuthState,
 } from "../_stores.ts";
 import {useNavigateDialog, useNavigatePage} from "../../components/hooks.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
@@ -83,6 +83,7 @@ export function useApiAuthPhoneNumberConfirm() {
 	const {navigateToPage} = useNavigatePage();
 	const setSessionTimeLeft = useSetAtom(authenticationSessionTimeLeftState);
 	const setDeviceLoginType = useSetAtom(deviceLoginTypeState);
+	const setIsGuestAuth = useSetAtom(isGuestAuthState);
 
 	return useMutation({
 
@@ -112,6 +113,7 @@ export function useApiAuthPhoneNumberConfirm() {
 			}
 
 			setAuth(null);
+			setIsGuestAuth(false);
 			setAuthInput("");
 			setSessionTimeLeft(60 * 15);
 			setDeviceLoginType(ONPREMISE_SMS_LOGIN_TYPE);

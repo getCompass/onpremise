@@ -3,8 +3,9 @@ import VideoLayout from '../../../modules/UI/videolayout/VideoLayout';
 import { IStore } from '../app/types';
 
 import { OPEN_CHAT } from './actionTypes';
-import { closeChat } from './actions.any';
+import { closeChat, setIsPollsTabFocused } from './actions.any';
 import { close as closeParticipantsPane } from "../participants-pane/actions.any";
+import { iAmVisitor } from "../visitors/functions";
 
 export * from './actions.any';
 
@@ -34,8 +35,14 @@ export function openChat(participant?: Object, _disablePolls?: boolean) {
  */
 export function toggleChat() {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        const isOpen = getState()['features/chat'].isOpen;
+        const { isOpen, isPollsTabFocused } = getState()['features/chat'];
         const isParticipantPaneOpen = getState()['features/participants-pane'].isOpen;
+        const imVisitor = iAmVisitor(getState());
+
+        // переключаем на чат, если стали зрителем (опросы недоступны зрителю)
+        if (isPollsTabFocused && imVisitor) {
+            dispatch(setIsPollsTabFocused(false));
+        }
 
         if (isOpen) {
             dispatch(closeChat());

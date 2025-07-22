@@ -8,13 +8,8 @@ import JitsiMeetJS, { JitsiConferenceEvents, JitsiRecordingConstants } from '../
 import { MEDIA_TYPE } from '../base/media/constants';
 import { PARTICIPANT_UPDATED } from '../base/participants/actionTypes';
 import { updateLocalRecordingStatus } from '../base/participants/actions';
-import { PARTICIPANT_ROLE } from '../base/participants/constants';
-import {
-    getLocalParticipant,
-    getParticipantById,
-    getParticipantDisplayName,
-    isParticipantModerator
-} from '../base/participants/functions';
+import { COMMAND_PARTICIPANT_JOINED_INFO, PARTICIPANT_ROLE } from '../base/participants/constants';
+import { getLocalParticipant, getParticipantDisplayName, isParticipantModerator } from '../base/participants/functions';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import { playSound, stopSound } from '../base/sounds/actions';
@@ -57,14 +52,13 @@ import {
 } from './constants';
 import {
     getResourceId,
-    getSessionById, isRecordingRunning,
+    getSessionById,
+    isRecordingRunning,
     registerRecordingAudioFiles,
     unregisterRecordingAudioFiles,
     updateUserRecordingCount
 } from './functions';
 import logger from './logger';
-import { IParticipant } from '../base/participants/types';
-import { setReducerQuality } from "../quality-control/actions";
 import { userRecordingCountUpdates } from "./actions.any";
 
 /**
@@ -137,6 +131,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                 payload: true,
             });
 
+            updateUserRecordingCount(conference, LOCAL_USER_RECORDING_COUNT_ACTION_INC);
         } catch (err: any) {
             logger.error("Capture failed", err);
 
@@ -193,6 +188,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                         true, 'local', undefined, isRecorderTranscriptionsRunning(getState()));
                 }
 
+                updateUserRecordingCount(conference, LOCAL_USER_RECORDING_COUNT_ACTION_INC);
             })
             .catch(err => {
                 logger.error('Capture failed', err);
@@ -240,6 +236,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         });
 
 
+        updateUserRecordingCount(conference, LOCAL_USER_RECORDING_COUNT_ACTION_DEC);
         break;
     }
 
@@ -258,6 +255,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                     false, 'local', undefined, isRecorderTranscriptionsRunning(getState()));
             }
 
+            updateUserRecordingCount(conference, LOCAL_USER_RECORDING_COUNT_ACTION_DEC);
         }
         break;
     }
@@ -390,6 +388,15 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     }
 
     case NON_PARTICIPANT_MESSAGE_RECEIVED: {
+        const { json: data } = action;
+
+        if (data.type === COMMAND_USER_RECORDING_COUNT) {
+            dispatch(userRecordingCountUpdates(data.value));
+        }
+
+        if (data.type === COMMAND_PARTICIPANT_JOINED_INFO) {
+            dispatch(userRecordingCountUpdates(data.event_list[COMMAND_USER_RECORDING_COUNT]?.value));
+        }
         break;
     }
 

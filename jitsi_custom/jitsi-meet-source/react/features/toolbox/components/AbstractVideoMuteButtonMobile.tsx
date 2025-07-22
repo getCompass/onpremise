@@ -7,6 +7,9 @@ import BaseVideoMuteButtonMobile from '../../base/toolbox/components/BaseVideoMu
 import { isLocalTrackMuted } from '../../base/tracks/functions';
 import { handleToggleVideoMuted } from '../actions.any';
 import { isVideoMuteButtonDisabled } from '../functions';
+import { iAmVisitor } from "../../visitors/functions";
+import { openDialog } from "../../base/dialog/actions";
+import { JoinMeetingDialog } from "../../visitors/components/index.web";
 
 /**
  * The type of the React {@code Component} props of {@link AbstractVideoMuteButtonMobile}.
@@ -22,6 +25,8 @@ export interface IProps extends AbstractButtonProps {
      * Whether video is currently muted or not.
      */
     _videoMuted: boolean;
+
+    _isVisitor?: boolean;
 }
 
 /**
@@ -66,6 +71,12 @@ export default class AbstractVideoMuteButtonMobile<P extends IProps> extends Bas
      * @returns {void}
      */
     _setVideoMuted(videoMuted: boolean) {
+        if (this.props._isVisitor) {
+
+            this.props.dispatch(openDialog(JoinMeetingDialog));
+            return;
+        }
+
         this.props.dispatch(handleToggleVideoMuted(videoMuted, true, true));
     }
 }
@@ -83,10 +94,12 @@ export default class AbstractVideoMuteButtonMobile<P extends IProps> extends Bas
 export function mapStateToProps(state: IReduxState) {
     const tracks = state['features/base/tracks'];
     const enabledFlag = getFeatureFlag(state, VIDEO_MUTE_BUTTON_ENABLED, true);
+    const _isVisitor = iAmVisitor(state);
 
     return {
         _videoDisabled: isVideoMuteButtonDisabled(state),
         _videoMuted: isLocalTrackMuted(tracks, MEDIA_TYPE.VIDEO),
+        _isVisitor,
         visible: enabledFlag
     };
 }

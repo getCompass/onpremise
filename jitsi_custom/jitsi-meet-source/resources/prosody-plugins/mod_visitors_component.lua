@@ -177,12 +177,14 @@ end
 local function disconnect_vnode_received(room, vnode)
     module:context(muc_domain_base):fire_event('jitsi-disconnect-vnode', { room = room; vnode = vnode; });
 
-    room._connected_vnodes:set(vnode..'.meet.jitsi', nil);
+    if room._connected_vnodes then
+        room._connected_vnodes:set(vnode..'.meet.jitsi', nil);
 
-    if room._connected_vnodes:count() == 0 then
-        visitors_promotion_map[room.jid] = nil;
-        visitors_promotion_requests[room.jid] = nil;
-        room._connected_vnodes = nil;
+        if room._connected_vnodes:count() == 0 then
+            visitors_promotion_map[room.jid] = nil;
+            visitors_promotion_requests[room.jid] = nil;
+            room._connected_vnodes = nil;
+        end
     end
 end
 

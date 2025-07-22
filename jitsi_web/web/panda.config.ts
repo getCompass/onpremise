@@ -57,6 +57,7 @@ export default defineConfig({
 					"665ebe": { value: "#665ebe" },
 					"665ebe.hover": { value: "#4f46ae" },
 					"677380": { value: "#677380" },
+					b4b4b4: { value: "#b4b4b4" },
 					e6e6e6: { value: "#e6e6e6" },
 					f8f8f8: { value: "#f8f8f8" },
 					"103115128.01": { value: "rgba(103, 115, 128, 0.1)" },

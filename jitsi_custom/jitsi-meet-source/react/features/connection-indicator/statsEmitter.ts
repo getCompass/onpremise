@@ -137,6 +137,7 @@ const statsEmitter = {
         && this._updateLocalCodecs(modifiedLocalStats.codec);
 
         this._emitStatsUpdate(localUserId, modifiedLocalStats);
+        // APP.store.dispatch(sendUpdatedStats(modifiedLocalStats));
 
         // Get all the unique user ids from the framerate and resolution stats
         // and update remote user stats as needed.

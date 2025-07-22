@@ -15,7 +15,6 @@ class Domain_System_Action_GetStartDataV2 {
 
 	// ключи видеоонбордингов
 	protected const _ONBOARDING_VIDEO_KEY_LIST = [
-		"hiring_conversation_welcome_video",
 		"general_conversation_welcome_video",
 		"threads_welcome_video",
 	];
@@ -49,7 +48,8 @@ class Domain_System_Action_GetStartDataV2 {
 		$output_data = self::_getAppConfigListIfNeed($need_data_list, $user_id, $output_data);
 
 		// получаем список доступных способов аутентификации
-		$output_data["available_auth_method_list"] = Domain_User_Entity_Auth_Config::getAvailableMethodList();
+		$output_data["available_auth_method_list"]       = Domain_User_Entity_Auth_Config::getAvailableMethodList();
+		$output_data["available_auth_guest_method_list"] = Domain_User_Entity_Auth_Config::getAvailableGuestMethodList();
 
 		// получаем конфиг с фичами для приложения
 		return self::_getFeatureListIfNeed($need_data_list, $user_id, $output_data);

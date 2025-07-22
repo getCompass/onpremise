@@ -18,6 +18,9 @@ class Type_File_Video_Process {
 		// получаем file_path
 		$file_path = Type_File_Utils::getFilePathFromPartPath($part_path);
 
+		// перемещаем метаданные в начало
+		Type_Extension_File::moveMetadataToStart($file_path);
+
 		// получаем информацию об оригинальном видео
 		$original_video_item = self::_getOriginalItemInfo($file_path);
 

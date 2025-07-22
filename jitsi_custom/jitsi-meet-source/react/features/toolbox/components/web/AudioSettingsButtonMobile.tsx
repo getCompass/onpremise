@@ -1,15 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
-
-import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
-import { sendAnalytics } from '../../../analytics/functions';
 import { IReduxState } from '../../../app/types';
 import { translate } from '../../../base/i18n/functions';
-import { IconVideo, IconVolumeUp } from '../../../base/icons/svg';
+import { IconVolumeUp } from '../../../base/icons/svg';
 import AbstractButton, { IProps as AbstractButtonProps } from '../../../base/toolbox/components/AbstractButton';
-import { closeOverflowMenuIfOpen } from '../../../toolbox/actions.web';
-
-import { isMobileBrowser } from "../../../base/environment/utils";
 import { openSettingsDialog } from "../../../settings/actions.web";
 import { SETTINGS_TABS } from "../../../settings/constants";
 

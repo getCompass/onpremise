@@ -26,6 +26,7 @@ import { isInBreakoutRoom } from '../breakout-rooms/functions';
 
 import { MEDIA_STATE, QUICK_ACTION_BUTTON, REDUCER_KEY } from './constants';
 import { isNeedShowElectronOnlyElements } from "../base/environment/utils_web";
+import { iAmVisitor } from "../visitors/functions";
 
 /**
  * Checks if a participant is force muted.
@@ -132,7 +133,7 @@ export const getParticipantsPaneConfig = (stateful: IStateful) => {
  * @param {IReduxState} state - Global state.
  * @returns {boolean} Is the participants pane open.
  */
-export const getParticipantsPaneOpen = (state: IReduxState) => Boolean(getState(state)?.isOpen);
+export const getParticipantsPaneOpen = (state: IReduxState) => Boolean(getState(state)?.isOpen) && !iAmVisitor(state);
 
 /**
  * Returns the type of quick action button to be displayed for a participant.

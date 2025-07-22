@@ -17,6 +17,7 @@ import {
 	activeDialogIdState,
 	authInputState,
 	authState,
+	isGuestAuthState,
 	isLoginCaptchaRenderedState,
 	joinLinkState,
 	needShowForgotPasswordButtonState,
@@ -25,10 +26,15 @@ import {
 import CreateNewPasswordDialogContent from "./CreateNewPasswordDialogContent.tsx";
 import { useApiAuthMailCancel } from "../../api/auth/mail.ts";
 import { Property } from "../../../styled-system/types/csstype";
-import { ALREADY_MEMBER_ERROR_CODE, INACTIVE_LINK_ERROR_CODE, INCORRECT_LINK_ERROR_CODE } from "../../api/_types.ts";
+import {
+	ALREADY_MEMBER_ERROR_CODE,
+	INACTIVE_LINK_ERROR_CODE,
+	INCORRECT_LINK_ERROR_CODE,
+	JOIN_LINK_ROLE_GUEST
+} from "../../api/_types.ts";
 import { ApiError, NetworkError, ServerError } from "../../api/_index.ts";
 import { useShowToast } from "../../lib/Toast.tsx";
-import { useAtom, useSetAtom } from "jotai/index";
+import { useAtom } from "jotai/index";
 import { useApiSecurityMailTryResetPassword } from "../../api/security/mail.ts";
 import AuthLdapDialogContent from "./AuthLdapDialogContent.tsx";
 
@@ -39,10 +45,10 @@ function Auth() {
 	const isMobile = useIsMobile();
 	const apiAuthMailCancel = useApiAuthMailCancel();
 	const { activeDialog, navigateToDialog } = useNavigateDialog();
-	const [auth, setAuth] = useAtom(authState);
+	const [ auth, setAuth ] = useAtom(authState);
 	const needShowForgotPasswordButton = useAtomValue(needShowForgotPasswordButtonState);
-	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
-	const setJoinLink = useSetAtom(joinLinkState);
+	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
+	const [ joinLink, setJoinLink ] = useAtom(joinLinkState);
 	const authInput = useAtomValue(authInputState);
 	const isLoginCaptchaRendered = useAtomValue(isLoginCaptchaRenderedState);
 	const activeDialogId = useAtomValue(activeDialogIdState);
@@ -51,12 +57,14 @@ function Auth() {
 	const forgotPasswordButtonRef = useRef<HTMLButtonElement>(null);
 	const backButtonRef = useRef<HTMLButtonElement>(null);
 	const apiSecurityMailTryResetPassword = useApiSecurityMailTryResetPassword();
+	const isGuestJoinLink = useMemo(() => joinLink !== null && joinLink.role === JOIN_LINK_ROLE_GUEST, [ joinLink ]);
+	const [ isGuestAuth, setIsGuestAuth ] = useAtom(isGuestAuthState);
 
 	const email = useMemo(() => {
-		const [authValue, _] = authInput.split("__|__") || ["", 0];
+		const [ authValue, _ ] = authInput.split("__|__") || [ "", 0 ];
 
 		return authValue;
-	}, [authInput]);
+	}, [ authInput ]);
 
 	const langStringEmailLoginDialogBackButton = useLangString("email_login_dialog.back_button");
 	const langStringEmailLoginDialogForgotPasswordButton = useLangString("email_login_dialog.forgot_password_button");
@@ -139,7 +147,7 @@ function Auth() {
 				}
 			}
 		}
-	}, [email, prepareJoinLinkError, apiSecurityMailTryResetPassword, window.location.href]);
+	}, [ email, prepareJoinLinkError, apiSecurityMailTryResetPassword, window.location.href ]);
 
 	const forgotPasswordButtonMt = useMemo<Property.MarginTop>(() => {
 		if (dialogRef.current === null || forgotPasswordButtonRef.current === null) {
@@ -174,17 +182,33 @@ function Auth() {
 		isLoginCaptchaRendered,
 	]);
 
+	const isNeedGuestBackButton = useMemo(() => {
+
+		return isGuestAuth && !isGuestJoinLink
+			&& activeDialog !== "auth_email_login" && activeDialog !== "auth_email_register"
+			&& activeDialog !== "auth_email_confirm_code" && activeDialog !== "auth_forgot_password"
+			&& activeDialog !== "auth_sso_ldap" && activeDialog !== "auth_phone_number_confirm_code"
+	}, [ isGuestAuth, isGuestJoinLink, activeDialog ]);
+
 	const onBackButtonClicked = useCallback(() => {
+		if (isNeedGuestBackButton) {
+
+			setIsGuestAuth(false);
+			return;
+		}
+
 		if (activeDialog === "auth_sso_ldap") {
+
 			navigateToDialog("auth_email_phone_number");
 			return;
 		}
 
 		if (auth !== null) {
+
 			apiAuthMailCancel.mutate({ auth_key: auth.auth_key });
 			return;
 		}
-	}, [auth, activeDialog]);
+	}, [ auth, activeDialog, isNeedGuestBackButton ]);
 
 	const content = useMemo(() => {
 		if (activeDialog === "auth_email_phone_number") {
@@ -224,13 +248,13 @@ function Auth() {
 		}
 
 		return <></>;
-	}, [activeDialog]);
+	}, [ activeDialog ]);
 
 	if (isMobile) {
 		return (
 			<>
 				{/*<OpenLangMenuButton/>*/}
-				<DialogMobile content={content} overflow="hidden" isNeedExtraPaddingBottom={false} />
+				<DialogMobile content = {content} overflow = "hidden" isNeedExtraPaddingBottom = {false} />
 			</>
 		);
 	}
@@ -247,16 +271,16 @@ function Auth() {
 			{/*>*/}
 			{/*	<LangMenuSelectorDesktop/>*/}
 			{/*</HStack>*/}
-			<DialogDesktop dialogRef={dialogRef} content={content} overflow="hidden" />
+			<DialogDesktop dialogRef = {dialogRef} content = {content} overflow = "hidden" />
 			{activeDialog === "auth_email_login" && needShowForgotPasswordButton && (
 				<Button
-					ref={forgotPasswordButtonRef}
-					position="absolute"
-					size="px0py0"
-					color="f8f8f8_30"
-					textSize="lato_13_18_400"
-					onClick={() => onForgotPasswordButtonClick()}
-					style={{
+					ref = {forgotPasswordButtonRef}
+					position = "absolute"
+					size = "px0py0"
+					color = "f8f8f8_30"
+					textSize = "lato_13_18_400"
+					onClick = {() => onForgotPasswordButtonClick()}
+					style = {{
 						marginTop: forgotPasswordButtonMt,
 					}}
 				>
@@ -266,18 +290,19 @@ function Auth() {
 			{(activeDialog === "auth_email_login" ||
 				activeDialog === "auth_email_register" ||
 				activeDialog === "auth_forgot_password" ||
-				activeDialog === "auth_sso_ldap") && (
+				activeDialog === "auth_sso_ldap" ||
+				isNeedGuestBackButton) && (
 				<Button
-					ref={backButtonRef}
-					position="absolute"
-					mt="575px"
-					size="pl12pr14py6"
-					color="ffffff_opacity30"
-					letterSpacing="-0.15px"
-					textSize="lato_14_20_400"
-					rounded="30px"
-					onClick={() => onBackButtonClicked()}
-					style={{
+					ref = {backButtonRef}
+					position = "absolute"
+					mt = "575px"
+					size = "pl12pr14py6"
+					color = "ffffff_opacity30"
+					letterSpacing = "-0.15px"
+					textSize = "lato_14_20_400"
+					rounded = "30px"
+					onClick = {() => onBackButtonClicked()}
+					style = {{
 						marginTop: backButtonMt,
 					}}
 				>

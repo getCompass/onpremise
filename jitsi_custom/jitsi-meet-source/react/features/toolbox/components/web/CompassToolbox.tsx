@@ -25,6 +25,7 @@ import HangupMenuButton from './HangupMenuButton';
 import { LeaveConferenceButton } from './LeaveConferenceButton';
 import OverflowMenuButton from './OverflowMenuButton';
 import Separator from './Separator';
+import { iAmVisitor } from "../../../visitors/functions";
 
 /**
  * The type of the React {@code Component} props of {@link Toolbox}.
@@ -123,6 +124,9 @@ export default function CompassToolbox({
     const compassMainToolbarButtonsThresholds
         = useSelector((state: IReduxState) => state['features/toolbox'].compassMainToolbarButtonsThresholds);
     const allButtons = useCompassToolboxButtons(customToolbarButtons);
+    const isVisitor = useSelector((state: IReduxState) => iAmVisitor(state));
+    const { joiningInProgress } = useSelector((state: IReduxState) => state['features/prejoin']);
+    const forcedBooleanJoiningInProgress: boolean = !!joiningInProgress;
 
     useKeyboardShortcuts(toolbarButtonsToUse);
 
@@ -243,7 +247,8 @@ export default function CompassToolbox({
     const leftSideButtons = getCompassLeftSideButtons({
         allButtons,
         toolbarButtons: toolbarButtonsToUse,
-        jwtDisabledButtons
+        jwtDisabledButtons,
+        isVisitor
     });
 
     const { mainMenuButtons, overflowMenuButtons } = getCompassVisibleButtons({
@@ -252,7 +257,9 @@ export default function CompassToolbox({
         toolbarButtons: toolbarButtonsToUse,
         clientWidth,
         jwtDisabledButtons,
-        mainToolbarButtonsThresholds: compassMainToolbarButtonsThresholds
+        mainToolbarButtonsThresholds: compassMainToolbarButtonsThresholds,
+        isVisitor,
+        joiningInProgress: forcedBooleanJoiningInProgress
     });
     const raiseHandInOverflowMenu = overflowMenuButtons.some(({ key }) => key === 'raisehand');
     const showReactionsInOverflowMenu = _shouldDisplayReactionsButtons

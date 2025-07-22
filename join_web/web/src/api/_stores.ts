@@ -1,17 +1,19 @@
-import { atom, useAtomValue } from "jotai";
+import {atom, useAtomValue} from "jotai";
 import {
 	APIAuthInfo,
+	ApiGlobalStartDictionaryData,
 	APIJoinLinkInfo,
+	ApiUserInfoData,
+	AuthSsoInfo,
+	ClientVersionMap,
+	ELECTRON_VERSION_22,
+	ELECTRON_VERSION_30,
 	Lang,
 	PrepareJoinLinkErrorInfo,
-	AuthSsoInfo,
-	ApiGlobalStartDictionaryData,
-	ApiUserInfoData,
-	ClientVersionItem,
 } from "./_types.ts";
-import { atomWithStorage } from "jotai/utils";
-import { atomWithImmer } from "jotai-immer";
-import { useMemo } from "react";
+import {atomWithStorage} from "jotai/utils";
+import {atomWithImmer} from "jotai-immer";
+import {useMemo} from "react";
 
 export const profileState = atomWithImmer<{
 	is_authorized: boolean | null;
@@ -32,15 +34,27 @@ export const authenticationTokenState = atom("");
 
 export const downloadAppUrlState = atom<string>("");
 export const availableAuthMethodListState = atom<string[]>([]);
+export const availableAuthGuestMethodListState = atom<string[]>([]);
 export const ssoProtocolState = atom("");
 export const serverVersionState = atom("");
-export const electronVersionState = atom<ClientVersionItem>({
-	max_version: "",
-	max_version_code: 0,
-	min_version: "",
-	min_version_code: 0,
+export const electronVersionState = atom<ClientVersionMap>({
+	[ELECTRON_VERSION_22]: {
+		max_version: "",
+		max_version_code: 0,
+		min_version: "",
+		min_version_code: 0,
+	},
+	[ELECTRON_VERSION_30]: {
+		max_version: "",
+		max_version_code: 0,
+		min_version: "",
+		min_version_code: 0,
+	},
 });
-export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({ auth_sso_start_button_text: "Войти через корп. портал (SSO LDAP)", auth_sso_ldap_description_text: "Для авторизации введите username и пароль от вашей корпоративной учётной записи LDAP:" });
+export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({
+	auth_sso_start_button_text: "Войти через корп. портал (SSO LDAP)",
+	auth_sso_ldap_description_text: "Для авторизации введите username и пароль от вашей корпоративной учётной записи LDAP:"
+});
 
 export const userInfoDataState = atomWithImmer<ApiUserInfoData | null>(null);
 
@@ -50,6 +64,7 @@ export const firstAuthState = atom(false);
 export const loadingState = atom(true);
 
 export const langState = atom<Lang>("ru");
+export const authenticationTokenExpiresAtState = atom(0);
 export const authenticationTokenTimeLeftState = atom(0);
 export const authenticationSessionTimeLeftState = atomWithStorage<number | null>(
 	"authentication_web_session_time_left",
@@ -89,7 +104,8 @@ export const needShowForgotPasswordButtonState = atom(true);
 export const isNeedShowCreateProfileDialogAfterSsoRegistrationState = atom(false);
 export const isNeedShowCreateProfileDialogAfterLdapRegistrationState = atom(false);
 
-export const joinLinkState = atomWithImmer<APIJoinLinkInfo | null>(null);
+export const joinLinkState = atomWithImmer<APIJoinLinkInfo | null >(null);
+export const isGuestAuthState = atom(false);
 export const prepareJoinLinkErrorState = atom<PrepareJoinLinkErrorInfo | null>(null);
 
 export const authState = atomWithStorage<APIAuthInfo | null>(

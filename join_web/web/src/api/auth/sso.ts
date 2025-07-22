@@ -1,20 +1,17 @@
-import { useGetResponse } from "../_index.ts";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSetAtom } from "jotai/index";
+import {useGetResponse} from "../_index.ts";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useSetAtom} from "jotai/index";
 import {
 	authenticationSessionTimeLeftState,
 	authSsoState,
 	authState,
+	deviceLoginTypeState,
 	firstAuthState,
 	isRegistrationState,
 	userInfoDataState,
-	deviceLoginTypeState,
 } from "../_stores.ts";
-import { useNavigateDialog, useNavigatePage } from "../../components/hooks.ts";
-import {
-	ApiUserInfoData,
-	ONPREMISE_SSO_LOGIN_TYPE,
-} from "../_types.ts";
+import {useNavigateDialog, useNavigatePage} from "../../components/hooks.ts";
+import {ApiUserInfoData, ONPREMISE_SSO_LOGIN_TYPE,} from "../_types.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
 
 /* параметры api-метода federation/api/onpremiseweb/sso/auth/begin */

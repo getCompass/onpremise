@@ -350,83 +350,42 @@ function occupant_joined(event)
         body = json.encode(payload);
     })
 
-    -- отправляем сообщение пользователю о текущем качестве видео
-    local quality_level_data = {
-        type = "quality-level",
-        value = quality_level,
-    };
-    local quality_level_json_msg_str, quality_level_error = json.encode(quality_level_data);
-    if not quality_level_json_msg_str then
-        module:log('error', 'Error encoding data room:%s error:%s', room.jid, quality_level_error);
-    end
-    local quality_level_stanza = st.message({
-        from = room.jid,
-        to = event.occupant.jid
-    })
-                                   :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
-                                   :text(quality_level_json_msg_str)
-                                   :up();
-    room:route_stanza(quality_level_stanza);
-
-    -- отправляем сообщение пользователю о текущем количесве записывающих пользователей
-    local recording_data = {
-        type = "user-recording-count",
-        value = #user_recording_users,
-    };
-    local recording_json_msg_str, recording_error = json.encode(recording_data);
-    if not recording_json_msg_str then
-        module:log('error', 'Error encoding data room:%s error:%s', room.jid, recording_error);
-    end
-    local recording_stanza = st.message({
-        from = room.jid,
-        to = event.occupant.jid
-    })
-                               :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
-                               :text(recording_json_msg_str)
-                               :up();
-    room:route_stanza(recording_stanza);
-
-    -- отправляем сообщение участнику о времени подключения
-    local participant_joined_at_data = {
-        type = "participant-joined-at",
-        nick = room._jid_nick[occupant_jid],
-        joined_at = occupant_data.joined_at,
-    };
-    local participant_joined_at_json_msg_str, participant_joined_at_error = json.encode(participant_joined_at_data);
-    if not participant_joined_at_json_msg_str then
-        module:log('error', 'Error encoding data room:%s error:%s', room.jid, participant_joined_at_error);
-    end
-    for _, _occupant_data in pairs(event.room._occupants) do
-        local participant_joined_at_stanza = st.message({
-            from = room.jid,
-            to = _occupant_data.jid
-        })
-                                               :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
-                                               :text(participant_joined_at_json_msg_str)
-                                               :up();
-        room:route_stanza(participant_joined_at_stanza);
-    end
-
+    -- собираем «универсальный» ивент для отправки
+    -- по мере необходимости можно добавлять новые поля
     local participants_map = build_active_participants_map(room);
+    local universal_data = {
+        -- тип события
+        type = "participant-joined-info",
 
-    -- отправляем сообщение пользователю о текущем качестве видео
-    local active_participants_info_data = {
-        type = "active-participants-info",
-        participants = participants_map
-    };
-    local active_participants_info_json_msg_str, active_participants_info_error = json.encode(active_participants_info_data);
-    if not active_participants_info_json_msg_str then
-        module:log('error', 'Error encoding data room:%s error:%s', room.jid, active_participants_info_error);
+        -- список событий
+        event_list = {
+            ["quality-level"] = {
+                value = quality_level
+            },
+            ["user-recording-count"] = {
+                value = #user_recording_users
+            },
+            ["active-participants-info"] = {
+                participants = participants_map
+            }
+        }
+    }
+
+    local universal_data_json, encode_error = json.encode(universal_data);
+    if not universal_data_json then
+        module:log('error', 'Error encoding universal_data for room:%s, error:%s', room.jid, encode_error);
+        return ;
     end
-    local active_participants_info_stanza = st.message({
-        from = room.jid,
-        to = event.occupant.jid
-    })
-                                              :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
-                                              :text(active_participants_info_json_msg_str)
-                                              :up();
-    room:route_stanza(active_participants_info_stanza);
 
+    -- отправляем
+    local universal_stanza = st.message({
+        from = room.jid,
+        to = occupant_jid
+    })                         :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
+                               :text(universal_data_json)
+                               :up();
+
+    room:route_stanza(universal_stanza);
 end
 
 --- Callback when an occupant has left room
@@ -466,31 +425,54 @@ function occupant_left(event)
     room.user_recording_users = user_recording_users;
 
     -- обновляем массив записывающих пользователей
+    local changed_recording = false;
     for i, recording_jid in ipairs(user_recording_users) do
         if recording_jid == occupant_jid then
             table.remove(user_recording_users, i);
+            changed_recording = true;
             break ;
         end
     end
 
-    -- отправляем сообщение другим пользователям о текущем количесве записывающих пользователей
-    local recording_data = {
-        type = "user-recording-count",
-        value = #user_recording_users,
-    };
-    local recording_json_msg_str, recording_error = json.encode(recording_data);
-    if not recording_json_msg_str then
-        module:log('error', 'Error encoding data room:%s error:%s', room.jid, recording_error);
+    -- собираем «универсальный» ивент для отправки
+    -- по мере необходимости можно добавлять новые поля
+    local universal_data = {
+        -- тип события
+        type = "participant-joined-info",
+
+        -- список событий
+        event_list = {}
+    }
+
+    -- если список user_recording_users реально изменился,
+    -- добавляем информацию о его новом размере
+    if changed_recording then
+        universal_data.event_list["user-recording-count"] = {
+            value = #user_recording_users
+        }
     end
+
+    -- если data всё ещё пустая (ничего не изменилось),
+    -- то не отправляем событие
+    if next(universal_data.event_list) == nil then
+        return ;
+    end
+
+    local universal_data_json, encode_error = json.encode(universal_data);
+    if not universal_data_json then
+        module:log('error', 'Error encoding universal_data for room:%s, error:%s', room.jid, encode_error);
+        return ;
+    end
+
+    -- отправляем
     for _, _occupant_data in pairs(event.room._occupants) do
-        local recording_stanza = st.message({
+        local universal_stanza = st.message({
             from = room.jid,
             to = _occupant_data.jid
-        })
-                                   :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
-                                   :text(recording_json_msg_str)
+        })                         :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
+                                   :text(universal_data_json)
                                    :up();
-        room:route_stanza(recording_stanza);
+        room:route_stanza(universal_stanza);
     end
 end
 
@@ -674,11 +656,14 @@ function occupant_groupchat(event)
                 end
                 local collector_body = table.concat(collector_parts, "&");
 
-                async_http_request(URL_COLLECTOR_ENDPOINT, {
-                    headers = collector_headers;
-                    method = "POST";
-                    body = collector_body;
-                })
+                -- Делаем HTTP-запрос только если URL_COLLECTOR_ENDPOINT указан и не пуст
+                if URL_COLLECTOR_ENDPOINT and URL_COLLECTOR_ENDPOINT ~= "" then
+                    async_http_request(URL_COLLECTOR_ENDPOINT, {
+                        headers = collector_headers;
+                        method = "POST";
+                        body = collector_body;
+                    })
+                end
             end
 
             if data.type == 'update-user-recording' then

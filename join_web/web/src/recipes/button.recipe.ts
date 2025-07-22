@@ -81,6 +81,23 @@ export const button = defineRecipe({
 					opacity: "30%",
 				},
 			},
+			"007aff_white": {
+				bgColor: "white",
+				border: "1px solid #007aff",
+				color: "#007aff",
+				_enabled: {
+					_active: {
+						border: "1px solid #0066d6",
+						color: "#0066d6",
+					},
+					["@media (hover: hover) and (pointer: fine)"]: {
+						"&:hover": {
+							border: "1px solid #0066d6",
+							color: "#0066d6",
+						}
+					},
+				},
+			},
 			"05c46b": {
 				bgColor: "05c46b",
 				color: "white",
@@ -229,7 +246,7 @@ export const button = defineRecipe({
 			px12py6full: {w: "100%", px: "12px", py: "6px"},
 			px16py9full: {w: "100%", px: "16px", py: "9px"},
 			// ниже deprecated
-			full: {w: "100%", px: "16px", py: "9px", minHeight: "44px"},
+			full: {w: "100%", px: "16px", py: "8px", minHeight: "44px"},
 			full_desktop: {w: "100%", px: "16px", py: "6px", minHeight: "35px"},
 			fullPy12: {w: "100%", px: "16px", py: "12px"},
 			px21py6: {px: "21px", py: "6px"},

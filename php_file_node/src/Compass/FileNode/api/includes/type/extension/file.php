@@ -22,6 +22,41 @@ class Type_Extension_File {
 		return ffmpeg_exec("-i", $file_path, "-frames:v", "1", $preview_screen_file_path);
 	}
 
+	/**
+	 * Переместить метаданные в начало
+	 * @param string $file_path
+	 * @return void
+	 */
+	public static function moveMetadataToStart(string $file_path):void {
+
+		$dir_path      = dirname($file_path);
+		$file_name     = basename($file_path);
+		$tmp_file_path = "$dir_path/tmp.$file_name";
+
+		$is_encoded = ffmpeg_exec("-y",
+			"-i", $file_path,                                        // входной файл
+			"-threads", VIDEO_PROCESS_THREAD_COUNT,                  // количество потоков (обычно равно количеству ядер процессора
+			"-c", "copy",                                            // параметры для аудио кодека пока не устанавливаем
+			"-movflags", "+faststart",                               // перемещаем флаг moov_atom в начало
+			$tmp_file_path                                           // выходное видео
+		);
+
+		// если не получилось переместить
+		if (!$is_encoded) {
+
+			// удаляем выходной файл, ffmpeg мог создать болванку для записи
+			unlink($tmp_file_path);
+			return;
+		}
+
+		// заменяем оригинальное видео новым
+		// [from https://www.php.net/manual/en/function.rename.php]
+		// If renaming a file and to exists, it will be overwritten
+		rename($tmp_file_path, $file_path);
+
+		return;
+	}
+
 	// ресайзит видео в нужный размер
 	public static function doVideoResize(string $file_path, string $output_file_path, int $width, int $height, bool $is_hdr):bool {
 

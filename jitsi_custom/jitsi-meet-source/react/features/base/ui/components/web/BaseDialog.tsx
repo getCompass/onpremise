@@ -57,6 +57,10 @@ const useStyles = makeStyles()(theme => {
             '&.is-mobile': {
                 animation: 'none',
             },
+
+            '&.position-center': {
+                alignItems: 'center',
+            },
         },
 
         backdrop: {
@@ -71,6 +75,17 @@ const useStyles = makeStyles()(theme => {
             '&.is-mobile': {
                 opacity: 0.9,
             },
+        },
+
+        mobileContainer: {
+            position: "absolute",
+            left: 0,
+            bottom: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
         },
 
         modal: {
@@ -92,6 +107,12 @@ const useStyles = makeStyles()(theme => {
                     margin-top: 64px
                 }
             `} 0.2s forwards ease-out`,
+
+            '&.mediumMobile': {
+                width: '350px !important',
+                position: 'relative',
+                borderRadius: '12px',
+            },
 
             '&.medium': {
                 width: '360px'
@@ -118,6 +139,11 @@ const useStyles = makeStyles()(theme => {
                         margin-top: 40px
                     }
                 `} 0.15s forwards ease-in`
+            },
+
+            '&.position-center': {
+                marginTop: '0px',
+                animation: 'none',
             },
 
             '@media (max-width: 448px)': {
@@ -169,11 +195,12 @@ export interface IProps {
     disableEnter?: boolean;
     disableEscape?: boolean;
     onClose?: () => void;
-    size?: 'xxl' |'large' | 'xl' | 'medium';
+    size?: 'xxl' | 'large' | 'xl' | 'medium' | 'mediumMobile';
     submit?: () => void;
     testId?: string;
     title?: string;
     titleKey?: string;
+    position?: '' | 'center';
 }
 
 const BaseDialog = ({
@@ -188,7 +215,8 @@ const BaseDialog = ({
     submit,
     testId,
     title,
-    titleKey
+    titleKey,
+    position = ''
 }: IProps) => {
     const { classes, cx } = useStyles();
     const dispatch = useDispatch();
@@ -244,9 +272,46 @@ const BaseDialog = ({
         dispatch(hideDialog());
     };
 
+    if (position === "center" && isMobile) {
+
+        return (
+            <div
+                className = {cx(classes.container, isUnmounting && 'unmount', isMobile && 'is-mobile', position && `position-${position}`)}
+                data-testid = {testId}>
+                <div className = {cx(classes.backdrop, isMobile && 'is-mobile')} />
+                <div className = {classes.mobileContainer}>
+                    <FocusOn
+                        className = {classes.focusLock}
+                        onClickOutside = {onBackdropClick}
+                        returnFocus = {
+
+                            // If we return the focus to an element outside the viewport the page will scroll to
+                            // this element which in our case is undesirable and the element is outside of the
+                            // viewport on purpose (to be hidden). For example if we return the focus to the toolbox
+                            // when it is hidden the whole page will move up in order to show the toolbox. This is
+                            // usually followed up with displaying the toolbox (because now it is on focus) but
+                            // because of the animation the whole scenario looks like jumping large video.
+                            isElementInTheViewport
+                        }>
+                        <div
+                            aria-description = {description}
+                            aria-label = {title ?? t(titleKey ?? '')}
+                            aria-modal = {true}
+                            className = {cx(classes.modal, isUnmounting && 'unmount', size, className, position && `position-${position}`)}
+                            data-autofocus = {true}
+                            role = 'dialog'
+                            tabIndex = {-1}>
+                            {children}
+                        </div>
+                    </FocusOn>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div
-            className = {cx(classes.container, isUnmounting && 'unmount', isMobile && 'is-mobile')}
+            className = {cx(classes.container, isUnmounting && 'unmount', isMobile && 'is-mobile', position !== '' && `position-${position}`)}
             data-testid = {testId}>
             <div className = {cx(classes.backdrop, isMobile && 'is-mobile')} />
             <FocusOn
@@ -266,7 +331,7 @@ const BaseDialog = ({
                     aria-description = {description}
                     aria-label = {title ?? t(titleKey ?? '')}
                     aria-modal = {true}
-                    className = {cx(classes.modal, isUnmounting && 'unmount', size, className)}
+                    className = {cx(classes.modal, isUnmounting && 'unmount', size, className, position !== '' && `position-${position}`)}
                     data-autofocus = {true}
                     role = 'dialog'
                     tabIndex = {-1}>

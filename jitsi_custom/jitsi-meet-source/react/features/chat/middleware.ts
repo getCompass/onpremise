@@ -17,8 +17,12 @@ import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import { playSound, registerSound, unregisterSound } from '../base/sounds/actions';
 import { addGif } from '../gifs/actions';
 import { extractGifURL, getGifDisplayMode, isGifEnabled, isGifMessage } from '../gifs/function.any';
-import { showMessageNotification } from '../notifications/actions';
-import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
+import { showMessageNotification, showNotification } from '../notifications/actions';
+import {
+    MESSAGE_NOT_DELIVERED_NOTIFICATION_ID,
+    NOTIFICATION_ICON,
+    NOTIFICATION_TIMEOUT_TYPE
+} from '../notifications/constants';
 import { resetNbUnreadPollsMessages } from '../polls/actions';
 import { ADD_REACTION_MESSAGE } from '../reactions/actionTypes';
 import { pushReactions } from '../reactions/actions.any';
@@ -45,6 +49,7 @@ import {
 } from './constants';
 import { getUnreadCount } from './functions';
 import { INCOMING_MSG_SOUND_FILE } from './sounds';
+import { isMobileBrowser } from "../base/environment/utils";
 
 /**
  * Timeout for when to show the privacy notice after a private message was received.
@@ -67,6 +72,19 @@ MiddlewareRegistry.register(store => next => action => {
 
     switch (action.type) {
     case ADD_MESSAGE:
+
+        // на сообщение о том, что пользователь не в комнате/зритель показываем уведомление
+        if (action.messageType === MESSAGE_TYPE_ERROR && action.message === "Recipient not in room") {
+
+            dispatch(showNotification({
+                titleKey: 'notify.messageIsNotDeliveredTitle',
+                descriptionKey: 'notify.messageIsNotDelivered',
+                uid: MESSAGE_NOT_DELIVERED_NOTIFICATION_ID,
+                icon: NOTIFICATION_ICON.WARNING
+            }, isMobileBrowser() ? NOTIFICATION_TIMEOUT_TYPE.MEDIUM : NOTIFICATION_TIMEOUT_TYPE.LONG));
+            break;
+        }
+
         unreadCount = getUnreadCount(getState());
         if (action.isReaction) {
             action.hasRead = false;
@@ -501,7 +519,7 @@ function _handleReceivedMessage({ dispatch, getState }: IStore,
         && !hasRead && !isReaction && !timestamp;
 
     if (isGuest) {
-        displayNameToShow = `${displayNameToShow} ${i18next.t('visitors.chatIndicator')}`;
+        displayNameToShow = `${displayNameToShow}`;
     }
 
     dispatch(addMessage({

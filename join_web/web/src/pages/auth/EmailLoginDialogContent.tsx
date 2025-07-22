@@ -97,7 +97,7 @@ const EmailLoginDialogContentDesktop = ({
 	const captchaProvider = useAtomValue(captchaProviderState);
 	const setNeedShowForgotPasswordButton = useSetAtom(needShowForgotPasswordButtonState);
 	const auth = useAtomValue(authState);
-	const [password, setPassword] = useAtom(passwordInputState);
+	const [ password, setPassword ] = useAtom(passwordInputState);
 	const setIsLoginCaptchaRendered = useSetAtom(isLoginCaptchaRenderedState);
 	const { navigateToDialog } = useNavigateDialog();
 	const showToast = useShowToast(activeDialogId);
@@ -105,26 +105,27 @@ const EmailLoginDialogContentDesktop = ({
 	const apiAuthMailConfirmFullAuthPassword = useApiAuthMailConfirmFullAuthPassword();
 
 	const passwordInputRef = useRef<HTMLInputElement>(null);
-	const [isAuthBlocked, setIsAuthBlocked] = useState(false);
-	const [nextAttempt, setNextAttempt] = useState(0);
-	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
-	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
-	const [isError, setIsError] = useState(false);
-	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-	const [widgetId, setWidgetId] = useState("");
+	const [ isAuthBlocked, setIsAuthBlocked ] = useState(false);
+	const [ nextAttempt, setNextAttempt ] = useState(0);
+	const [ isNeedShowTooltip, setIsNeedShowTooltip ] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
+	const [ isToolTipVisible, setIsToolTipVisible ] = useState(false); // видно ли тултип прям сейчас
+	const [ isError, setIsError ] = useState(false);
+	const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
+	const [ widgetId, setWidgetId ] = useState("");
 
 	useEffect(() => setIsLoginCaptchaRendered(false), []);
 
 	useEffect(() => {
 		setNeedShowForgotPasswordButton(!isAuthBlocked);
-	}, [isAuthBlocked]);
+	}, [ isAuthBlocked ]);
 
 	const captchaContainerRef = useCallback(
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
 					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
-				} catch (error) {}
+				} catch (error) {
+				}
 
 				setShowCaptchaState("rendered");
 
@@ -135,7 +136,7 @@ const EmailLoginDialogContentDesktop = ({
 				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
-		[showCaptchaState, captchaPublicKey]
+		[ showCaptchaState, captchaPublicKey ]
 	);
 
 	const onLoginClickHandler = useCallback(async () => {
@@ -326,31 +327,39 @@ const EmailLoginDialogContentDesktop = ({
 	}
 
 	return (
-		<VStack w="100%" gap="0px">
-			<VStack gap="0px" mt="20px">
+		<VStack w = "100%" gap = "0px">
+			<VStack gap = "0px" mt = "20px">
 				<KeyIcon80 />
 
-				<Text mt="16px" style="lato_18_24_900" ls="-02">
+				<Text mt = "16px" style = "lato_18_24_900" ls = "-02">
 					{langStringEmailLoginDialogTitle}
 				</Text>
 
-				<Text mt="6px" textAlign="center" style="lato_14_20_400" ls="-015" maxW="328px" overflow="wrapEllipsis">
+				<Text
+					mt = "6px"
+					textAlign = "center"
+					style = "lato_14_20_400"
+					ls = "-015"
+					maxW = "328px"
+					overflow = "wrapEllipsis"
+					userSelect = "text"
+				>
 					{langStringEmailLoginDialogDesc}
-					<styled.span fontFamily="lato_bold">
+					<styled.span fontFamily = "lato_bold">
 						«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
 				</Text>
 
 				{isAuthBlocked ? (
 					<Text
-						mt="20px"
-						px="16px"
-						py="10px"
-						w="100%"
-						bgColor="255106100.01"
-						textAlign="center"
-						rounded="8px"
-						style="lato_13_18_400"
+						mt = "20px"
+						px = "16px"
+						py = "10px"
+						w = "100%"
+						bgColor = "255106100.01"
+						textAlign = "center"
+						rounded = "8px"
+						style = "lato_13_18_400"
 					>
 						{langStringEmailLoginDialogAuthBlocked.replace(
 							"$MINUTES",
@@ -365,46 +374,46 @@ const EmailLoginDialogContentDesktop = ({
 				) : (
 					<>
 						<PasswordInput
-							isDisabled={
+							isDisabled = {
 								apiAuthMailConfirmShortAuthPassword.isLoading ||
 								apiAuthMailConfirmFullAuthPassword.isLoading
 							}
-							mt="20px"
-							autoFocus={true}
-							password={password}
-							setPassword={setPassword}
-							inputPlaceholder={langStringEmailLoginDialogPasswordInputPlaceholder}
-							isToolTipVisible={isToolTipVisible}
-							setIsToolTipVisible={setIsToolTipVisible}
-							isNeedShowTooltip={isNeedShowTooltip}
-							setIsNeedShowTooltip={setIsNeedShowTooltip}
-							isError={isError}
-							setIsError={setIsError}
-							onEnterClick={onLoginClickHandler}
-							inputRef={passwordInputRef}
-							isPasswordVisible={isPasswordVisible}
-							setIsPasswordVisible={setIsPasswordVisible}
+							mt = "20px"
+							autoFocus = {true}
+							password = {password}
+							setPassword = {setPassword}
+							inputPlaceholder = {langStringEmailLoginDialogPasswordInputPlaceholder}
+							isToolTipVisible = {isToolTipVisible}
+							setIsToolTipVisible = {setIsToolTipVisible}
+							isNeedShowTooltip = {isNeedShowTooltip}
+							setIsNeedShowTooltip = {setIsNeedShowTooltip}
+							isError = {isError}
+							setIsError = {setIsError}
+							onEnterClick = {onLoginClickHandler}
+							inputRef = {passwordInputRef}
+							isPasswordVisible = {isPasswordVisible}
+							setIsPasswordVisible = {setIsPasswordVisible}
 						/>
 
 						<Box
-							ref={captchaContainerRef}
-							id="path_to_captcha"
-							mt="12px"
-							style={{
+							ref = {captchaContainerRef}
+							id = "path_to_captcha"
+							mt = "12px"
+							style = {{
 								display: showCaptchaState === "rendered" ? "block" : "none",
 							}}
 						/>
 
 						<Button
-							mt="12px"
-							size="px12py6full"
-							textSize="lato_15_23_600"
-							disabled={password.length < 1}
-							onClick={() => onLoginClickHandler()}
+							mt = "12px"
+							size = "px12py6full"
+							textSize = "lato_15_23_600"
+							disabled = {password.length < 1}
+							onClick = {() => onLoginClickHandler()}
 						>
 							{apiAuthMailConfirmShortAuthPassword.isLoading ||
 							apiAuthMailConfirmFullAuthPassword.isLoading ? (
-								<Box py="3.5px">
+								<Box py = "3.5px">
 									<Preloader16 />
 								</Box>
 							) : (
@@ -466,10 +475,10 @@ const EmailLoginDialogContentMobile = ({
 	const authInput = useAtomValue(authInputState);
 	const activeDialogId = useAtomValue(activeDialogIdState);
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
-	const [auth, setAuth] = useAtom(authState);
+	const [ auth, setAuth ] = useAtom(authState);
 	const setJoinLink = useSetAtom(joinLinkState);
-	const [password, setPassword] = useAtom(passwordInputState);
-	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
+	const [ password, setPassword ] = useAtom(passwordInputState);
+	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
 	const { navigateToDialog } = useNavigateDialog();
 	const apiAuthMailConfirmShortAuthPassword = useApiAuthMailConfirmShortAuthPassword();
 	const apiAuthMailConfirmFullAuthPassword = useApiAuthMailConfirmFullAuthPassword();
@@ -477,25 +486,25 @@ const EmailLoginDialogContentMobile = ({
 	const apiSecurityMailTryResetPassword = useApiSecurityMailTryResetPassword();
 
 	const email = useMemo(() => {
-		const [authValue, _] = authInput.split("__|__") || ["", 0];
+		const [ authValue, _ ] = authInput.split("__|__") || [ "", 0 ];
 
 		return authValue;
-	}, [authInput]);
+	}, [ authInput ]);
 
 	const showToast = useShowToast(activeDialogId);
 
 	const passwordInputRef = useRef<HTMLInputElement>(null);
-	const [isAuthBlocked, setIsAuthBlocked] = useState(false);
-	const [nextAttempt, setNextAttempt] = useState(0);
-	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
-	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
-	const [isError, setIsError] = useState(false);
-	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-	const [widgetId, setWidgetId] = useState("");
+	const [ isAuthBlocked, setIsAuthBlocked ] = useState(false);
+	const [ nextAttempt, setNextAttempt ] = useState(0);
+	const [ isNeedShowTooltip, setIsNeedShowTooltip ] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
+	const [ isToolTipVisible, setIsToolTipVisible ] = useState(false); // видно ли тултип прям сейчас
+	const [ isError, setIsError ] = useState(false);
+	const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
+	const [ widgetId, setWidgetId ] = useState("");
 	const captchaProvider = useAtomValue(captchaProviderState);
 	const setIsLoginCaptchaRendered = useSetAtom(isLoginCaptchaRenderedState);
 
-	const screenWidth = useMemo(() => document.body.clientWidth, [document.body.clientWidth]);
+	const screenWidth = useMemo(() => document.body.clientWidth, [ document.body.clientWidth ]);
 
 	useEffect(() => setIsLoginCaptchaRendered(false), []);
 
@@ -504,7 +513,8 @@ const EmailLoginDialogContentMobile = ({
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
 					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
-				} catch (error) {}
+				} catch (error) {
+				}
 
 				setShowCaptchaState("rendered");
 
@@ -515,7 +525,7 @@ const EmailLoginDialogContentMobile = ({
 				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
-		[showCaptchaState, captchaPublicKey]
+		[ showCaptchaState, captchaPublicKey ]
 	);
 
 	const onLoginClickHandler = useCallback(async () => {
@@ -778,7 +788,7 @@ const EmailLoginDialogContentMobile = ({
 				}
 			}
 		}
-	}, [email, prepareJoinLinkError, apiSecurityMailTryResetPassword, window.location.href]);
+	}, [ email, prepareJoinLinkError, apiSecurityMailTryResetPassword, window.location.href ]);
 
 	if (auth === null) {
 		navigateToDialog("auth_email_phone_number");
@@ -787,46 +797,47 @@ const EmailLoginDialogContentMobile = ({
 
 	return (
 		<>
-			<VStack w="100%" gap="0px">
-				<Box w="100%">
+			<VStack w = "100%" gap = "0px">
+				<Box w = "100%">
 					<Button
-						color="2574a9"
-						textSize="lato_16_22_400"
-						size="px0py0"
-						onClick={() => apiAuthMailCancel.mutate({ auth_key: auth.auth_key })}
+						color = "2574a9"
+						textSize = "lato_16_22_400"
+						size = "px0py0"
+						onClick = {() => apiAuthMailCancel.mutate({ auth_key: auth.auth_key })}
 					>
 						{langStringEmailLoginDialogBackButton}
 					</Button>
 				</Box>
-				<VStack gap="0px" mt="-6px">
+				<VStack gap = "0px" mt = "-6px">
 					<KeyIcon80 />
 
-					<Text mt="16px" style="lato_20_28_700" ls="-03">
+					<Text mt = "16px" style = "lato_20_28_700" ls = "-03">
 						{langStringEmailLoginDialogTitle}
 					</Text>
 
 					<Text
-						mt="4px"
-						textAlign="center"
-						style="lato_16_22_400"
-						maxW={screenWidth <= 390 ? "326px" : "350px"}
-						overflow="wrapEllipsis"
+						mt = "4px"
+						textAlign = "center"
+						style = "lato_16_22_400"
+						maxW = {screenWidth <= 390 ? "326px" : "350px"}
+						overflow = "wrapEllipsis"
+						userSelect = "text"
 					>
 						{langStringEmailLoginDialogDesc}
-						<styled.span fontFamily="lato_bold">
+						<styled.span fontFamily = "lato_bold">
 							«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 						</styled.span>
 					</Text>
 
 					{isAuthBlocked ? (
 						<Text
-							mt="20px"
-							p="12px"
-							w="100%"
-							bgColor="255106100.01"
-							textAlign="center"
-							rounded="8px"
-							style="lato_16_22_400"
+							mt = "20px"
+							p = "12px"
+							w = "100%"
+							bgColor = "255106100.01"
+							textAlign = "center"
+							rounded = "8px"
+							style = "lato_16_22_400"
 						>
 							{langStringEmailLoginDialogAuthBlocked.replace(
 								"$MINUTES",
@@ -841,46 +852,46 @@ const EmailLoginDialogContentMobile = ({
 					) : (
 						<>
 							<PasswordInput
-								isDisabled={
+								isDisabled = {
 									apiAuthMailConfirmShortAuthPassword.isLoading ||
 									apiAuthMailConfirmFullAuthPassword.isLoading
 								}
-								mt="24px"
-								autoFocus={true}
-								password={password}
-								setPassword={setPassword}
-								inputPlaceholder={langStringEmailLoginDialogPasswordInputPlaceholder}
-								isToolTipVisible={isToolTipVisible}
-								setIsToolTipVisible={setIsToolTipVisible}
-								isNeedShowTooltip={isNeedShowTooltip}
-								setIsNeedShowTooltip={setIsNeedShowTooltip}
-								isError={isError}
-								setIsError={setIsError}
-								onEnterClick={onLoginClickHandler}
-								inputRef={passwordInputRef}
-								isPasswordVisible={isPasswordVisible}
-								setIsPasswordVisible={setIsPasswordVisible}
+								mt = "24px"
+								autoFocus = {true}
+								password = {password}
+								setPassword = {setPassword}
+								inputPlaceholder = {langStringEmailLoginDialogPasswordInputPlaceholder}
+								isToolTipVisible = {isToolTipVisible}
+								setIsToolTipVisible = {setIsToolTipVisible}
+								isNeedShowTooltip = {isNeedShowTooltip}
+								setIsNeedShowTooltip = {setIsNeedShowTooltip}
+								isError = {isError}
+								setIsError = {setIsError}
+								onEnterClick = {onLoginClickHandler}
+								inputRef = {passwordInputRef}
+								isPasswordVisible = {isPasswordVisible}
+								setIsPasswordVisible = {setIsPasswordVisible}
 							/>
 
 							<Box
-								ref={captchaContainerRef}
-								id="path_to_captcha"
-								mt="12px"
-								style={{
+								ref = {captchaContainerRef}
+								id = "path_to_captcha"
+								mt = "12px"
+								style = {{
 									display: showCaptchaState === "rendered" ? "block" : "none",
 								}}
 							/>
 
 							<Button
-								mt="12px"
-								size="px16py9full"
-								textSize="lato_17_26_600"
-								disabled={password.length < 1}
-								onClick={() => onLoginClickHandler()}
+								mt = "12px"
+								size = "px16py9full"
+								textSize = "lato_17_26_600"
+								disabled = {password.length < 1}
+								onClick = {() => onLoginClickHandler()}
 							>
 								{apiAuthMailConfirmShortAuthPassword.isLoading ||
 								apiAuthMailConfirmFullAuthPassword.isLoading ? (
-									<Box py="5px">
+									<Box py = "5px">
 										<Preloader16 />
 									</Box>
 								) : (
@@ -889,11 +900,11 @@ const EmailLoginDialogContentMobile = ({
 							</Button>
 
 							<Button
-								mt="16px"
-								size="px0py0"
-								color="2574a9_opacity70"
-								textSize="lato_16_22_400"
-								onClick={() => onForgotPasswordButtonClick()}
+								mt = "16px"
+								size = "px0py0"
+								color = "2574a9_opacity70"
+								textSize = "lato_16_22_400"
+								onClick = {() => onForgotPasswordButtonClick()}
 							>
 								{langStringEmailLoginDialogForgotPasswordButton}
 							</Button>
@@ -910,33 +921,33 @@ type ShowGrecaptchaState = null | "need_render" | "rendered";
 const EmailLoginDialogContent = () => {
 	const isMobile = useIsMobile();
 
-	const [showCaptchaState, setShowCaptchaState] = useState<ShowGrecaptchaState>(null);
-	const [grecaptchaResponse, setGrecaptchaResponse] = useState("");
+	const [ showCaptchaState, setShowCaptchaState ] = useState<ShowGrecaptchaState>(null);
+	const [ grecaptchaResponse, setGrecaptchaResponse ] = useState("");
 
 	const inputRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		if (inputRef.current) {
 			inputRef.current.focus();
 		}
-	}, [inputRef]);
+	}, [ inputRef ]);
 
 	if (isMobile) {
 		return (
 			<EmailLoginDialogContentMobile
-				showCaptchaState={showCaptchaState}
-				setShowCaptchaState={setShowCaptchaState}
-				grecaptchaResponse={grecaptchaResponse}
-				setGrecaptchaResponse={setGrecaptchaResponse}
+				showCaptchaState = {showCaptchaState}
+				setShowCaptchaState = {setShowCaptchaState}
+				grecaptchaResponse = {grecaptchaResponse}
+				setGrecaptchaResponse = {setGrecaptchaResponse}
 			/>
 		);
 	}
 
 	return (
 		<EmailLoginDialogContentDesktop
-			showCaptchaState={showCaptchaState}
-			setShowCaptchaState={setShowCaptchaState}
-			grecaptchaResponse={grecaptchaResponse}
-			setGrecaptchaResponse={setGrecaptchaResponse}
+			showCaptchaState = {showCaptchaState}
+			setShowCaptchaState = {setShowCaptchaState}
+			grecaptchaResponse = {grecaptchaResponse}
+			setGrecaptchaResponse = {setGrecaptchaResponse}
 		/>
 	);
 };

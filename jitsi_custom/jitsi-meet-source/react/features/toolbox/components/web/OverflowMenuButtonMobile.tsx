@@ -40,6 +40,9 @@ interface IProps {
 const useStyles = makeStyles<{ overflowDrawer: boolean; reactionsMenuHeight: number; }>()(
     (_theme, { reactionsMenuHeight, overflowDrawer }) => {
         return {
+            mt12: {
+                marginTop: "12px",
+            },
             overflowMenuDrawer: {
                 overflowY: 'scroll',
                 maxHeight: `calc(${DRAWER_MAX_HEIGHT})`
@@ -168,7 +171,7 @@ const OverflowMenuButtonMobile = ({
     const groupsJSX = (
         <>
             {headerContent}
-            <ContextMenuItemGroup key = {`group-0`}>
+            <ContextMenuItemGroup className = {classes.mt12} key = {`group-0`}>
                 {buttons.map((buttonGroup: any) => (
                     buttonGroup
                         .map(({ key, Content, ...rest }: { Content: React.ElementType; key: string; }) => {

@@ -18,6 +18,7 @@ import AudioInputPreview from './AudioInputPreview';
 import DeviceSelector from './DeviceSelector.web';
 import { IconMicFilled, IconVolumeHighFilled } from "../../base/icons/svg";
 import { isMobileBrowser } from "../../base/environment/utils";
+import Icon from "../../base/icons/components/Icon";
 
 /**
  * The type of the React {@code Component} props of {@link AudioDevicesSelection}.
@@ -154,7 +155,39 @@ const styles = (theme: Theme) => {
 
         noiseSuppressionContainer: {
             marginBottom: theme.spacing(5)
-        }
+        },
+
+        changeNotSupportedContainer: {
+            padding: 0,
+            display: 'flex',
+        },
+
+        changeNotSupportedIcon: {
+            padding: '16px 12px 16px 16px',
+
+            '& svg': {
+                fill: 'rgba(255, 255, 255, 0.3) !important'
+            }
+        },
+
+        changeNotSupportedItem: {
+            alignItems: 'center',
+            cursor: 'pointer',
+            display: 'flex',
+            width: '100%',
+            padding: 0,
+            boxSizing: 'border-box' as const,
+        },
+
+        changeNotSupportedText: {
+            width: '100%',
+            fontFamily: 'Lato Regular',
+            fontWeight: 'normal' as const,
+            fontSize: '17px',
+            lineHeight: '22px',
+            padding: '16px 16px 16px 0',
+            color: 'rgba(255, 255, 255, 0.7)',
+        },
     };
 };
 
@@ -255,19 +288,36 @@ class AudioDevicesSelection extends AbstractDialogTab<IProps, IState> {
 
         return (
             <div className = {classes.container}>
-                {!iAmVisitor && <div
-                    aria-live = 'polite'
-                    className = {classes.inputContainer}>
-                    {this._renderSelector(audioInput)}
-                </div>}
-                {!hideAudioInputPreview && hasAudioPermission && !iAmVisitor && !isMobile
-                    && <AudioInputPreview
-                        track = {this.state.previewAudioTrack} />}
-                <div
-                    aria-live = 'polite'
-                    className = {isMobile ? classes.outputContainerMobile : classes.outputContainer}>
-                    {this._renderSelector(audioOutput)}
-                </div>
+                {iAmVisitor && this.props.hideAudioOutputSelect ? (
+                    <div className = {classes.changeNotSupportedContainer}>
+                        <Icon
+                            className = {classes.changeNotSupportedIcon}
+                            size = {22}
+                            src = {IconVolumeHighFilled}
+                        />
+                        <div className = {classes.changeNotSupportedItem}>
+                            <div className = {classes.changeNotSupportedText}>
+                                {t('settings.audioOutputChangeNotSupported')}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {!iAmVisitor && <div
+                            aria-live = 'polite'
+                            className = {classes.inputContainer}>
+                            {this._renderSelector(audioInput)}
+                        </div>}
+                        {!hideAudioInputPreview && hasAudioPermission && !iAmVisitor && !isMobile
+                            && <AudioInputPreview
+                                track = {this.state.previewAudioTrack} />}
+                        <div
+                            aria-live = 'polite'
+                            className = {isMobile ? classes.outputContainerMobile : classes.outputContainer}>
+                            {this._renderSelector(audioOutput)}
+                        </div>
+                    </>
+                )}
             </div>
         );
     }

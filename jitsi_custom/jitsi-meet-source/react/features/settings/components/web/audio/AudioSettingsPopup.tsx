@@ -84,6 +84,8 @@ interface IProps {
      * Used to set a new output device as the current one.
      */
     setAudioOutputDevice: Function;
+
+    isVisitorButton?: boolean;
 }
 
 const useStyles = makeStyles()(() => {
@@ -111,7 +113,8 @@ function AudioSettingsPopup({
     outputDevices,
     popupPlacement,
     measureAudioLevels,
-    className
+    className,
+    isVisitorButton
 }: IProps) {
     const { classes, cx } = useStyles();
 
@@ -120,6 +123,7 @@ function AudioSettingsPopup({
             <Popover
                 allowClick = {true}
                 content = {<AudioSettingsContent
+                    isVisitorButton={isVisitorButton}
                     currentMicDeviceId = {currentMicDeviceId}
                     currentOutputDeviceId = {currentOutputDeviceId}
                     measureAudioLevels = {measureAudioLevels}

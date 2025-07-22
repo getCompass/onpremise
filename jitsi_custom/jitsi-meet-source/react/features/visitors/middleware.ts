@@ -30,7 +30,7 @@ import {
     NOTIFICATION_ICON,
     NOTIFICATION_TIMEOUT_TYPE,
     VISITORS_NOT_LIVE_NOTIFICATION_ID,
-    VISITORS_PROMOTION_NOTIFICATION_ID
+    VISITORS_PROMOTION_NOTIFICATION_ID, VISITORS_PROMOTION_REJECTED_NOTIFICATION_ID
 } from '../notifications/constants';
 import { INotificationProps } from '../notifications/types';
 import { open as openParticipantsPane } from '../participants-pane/actions';
@@ -53,6 +53,7 @@ import { JoinMeetingDialog } from './components';
 import { getPromotionRequests, getVisitorsCount, getVisitorsInQueueCount } from './functions';
 import logger from './logger';
 import { WebsocketClient } from './websocket-client';
+import { plural } from "../base/compass/functions";
 
 MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     switch (action.type) {
@@ -79,9 +80,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                 const notificationParams: INotificationProps = {
                     titleKey: 'visitors.notification.title',
                     descriptionKey: 'visitors.notification.demoteDescription',
-                    descriptionArguments: {
-                        actor: demoteActorDisplayName
-                    }
+                    icon: NOTIFICATION_ICON.WARNING,
                 };
 
                 batch(() => {
@@ -100,7 +99,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         }
 
         conference.on(JitsiConferenceEvents.VISITORS_MESSAGE, (
-                msg: { action: string; actor: string; from: string; id: string; nick: string; on: boolean; }) => {
+            msg: { action: string; actor: string; from: string; id: string; nick: string; on: boolean; }) => {
 
             if (msg.action === 'demote-request') {
                 // we need it before the disconnect
@@ -142,6 +141,14 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         });
 
         conference.on(JitsiConferenceEvents.VISITORS_REJECTION, () => {
+
+            dispatch(showNotification({
+                titleKey: 'notify.visitorJoinRejectedTitle',
+                descriptionKey: 'notify.visitorJoinRejected',
+                uid: VISITORS_PROMOTION_REJECTED_NOTIFICATION_ID,
+                icon: NOTIFICATION_ICON.WARNING
+            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+
             dispatch(raiseHand(false));
         });
 
@@ -332,7 +339,7 @@ function _subscribeQueueStats(stateful: IStateful, dispatch: IStore['dispatch'])
  * @returns {void}
  */
 function _handlePromotionNotification(
-        { dispatch, getState }: { dispatch: IStore['dispatch']; getState: IStore['getState']; }) {
+    { dispatch, getState }: { dispatch: IStore['dispatch']; getState: IStore['getState']; }) {
     const requests = getPromotionRequests(getState());
 
     if (requests.length === 0) {
@@ -351,27 +358,29 @@ function _handlePromotionNotification(
     if (requests.length === 1) {
         const firstRequest = requests[0];
 
-        descriptionKey = 'notify.participantWantsToJoin';
-        notificationTitle = firstRequest.nick;
-        icon = NOTIFICATION_ICON.PARTICIPANT;
-        customActionNameKey = [ 'participantsPane.actions.admit', 'participantsPane.actions.reject' ];
+        descriptionKey = 'notify.visitorWantsToJoin';
+        notificationTitle = i18n.t('notify.visitorWantsToJoinTitle', {
+            participantName: firstRequest.nick
+        });
+        icon = NOTIFICATION_ICON.WARNING_STOP_HAND;
+        customActionNameKey = [ 'participantsPane.actions.promoteVisitorAdmit', 'participantsPane.actions.promoteVisitorReject' ];
         customActionType = [ BUTTON_TYPES.PRIMARY, BUTTON_TYPES.DESTRUCTIVE ];
         customActionHandler = [ () => batch(() => {
             dispatch(hideNotification(VISITORS_PROMOTION_NOTIFICATION_ID));
             dispatch(approveRequest(firstRequest));
         }),
-        () => batch(() => {
-            dispatch(hideNotification(VISITORS_PROMOTION_NOTIFICATION_ID));
-            dispatch(denyRequest(firstRequest));
-        }) ];
+            () => batch(() => {
+                dispatch(hideNotification(VISITORS_PROMOTION_NOTIFICATION_ID));
+                dispatch(denyRequest(firstRequest));
+            }) ];
     } else {
-        descriptionKey = 'notify.participantsWantToJoin';
-        notificationTitle = i18n.t('notify.waitingParticipants', {
-            waitingParticipants: requests.length
+        descriptionKey = 'notify.visitorsWantToJoin';
+        notificationTitle = i18n.t('notify.raisedHandVisitors', {
+            raisedHandVisitors: `${requests.length} ${plural(requests.length, i18n.t('notify.oneVisitor'), i18n.t('notify.twoVisitors'), i18n.t('notify.fiveVisitors'))}`
         });
-        icon = NOTIFICATION_ICON.PARTICIPANTS;
+        icon = NOTIFICATION_ICON.WARNING_STOP_HAND;
         customActionNameKey = [ 'notify.viewVisitors' ];
-        customActionType = [ BUTTON_TYPES.PRIMARY ];
+        customActionType = [ BUTTON_TYPES.DESTRUCTIVE_GRAY ];
         customActionHandler = [ () => batch(() => {
             dispatch(hideNotification(VISITORS_PROMOTION_NOTIFICATION_ID));
             dispatch(openParticipantsPane());

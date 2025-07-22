@@ -5,21 +5,18 @@ import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
 import { translate } from '../../../base/i18n/functions';
-import { getParticipantDisplayName } from '../../../base/participants/functions';
+import { getParticipantById, getParticipantDisplayName } from '../../../base/participants/functions';
 import Popover from '../../../base/popover/components/Popover.web';
 import Message from '../../../base/react/components/web/Message';
 import { getFormattedTimestamp, getMessageText } from '../../functions';
 import { IChatMessageProps } from '../../types';
 import { handleLobbyChatInitialized } from "../../actions.any";
 import { openChat } from "../../actions.web";
-import { getLocalParticipant, getParticipantById } from "../../../base/participants/functions";
-
-import MessageMenu from './MessageMenu';
-import ReactButton from './ReactButton';
 import { close as closeParticipantsPane } from "../../../participants-pane/actions.any";
 
 interface IProps extends IChatMessageProps {
     shouldDisplayChatMessageMenu: boolean;
+    isCanSendPrivateMessages: boolean;
     state?: IReduxState;
     type: string;
 }
@@ -174,6 +171,7 @@ const ChatMessage = ({
     showDisplayName,
     type,
     shouldDisplayChatMessageMenu,
+    isCanSendPrivateMessages,
     knocking,
     t
 }: IProps) => {
@@ -205,12 +203,10 @@ const ChatMessage = ({
     function _renderDisplayName() {
         const dispatch = useDispatch();
         const participant = useSelector((state: IReduxState) => getParticipantById(state, message.participantId));
-        const localParticipant = useSelector((state: IReduxState) => getLocalParticipant(state));
-        const isParticipantPaneOpen = useSelector((state:IReduxState) => state['features/participants-pane'].isOpen);
+        const isParticipantPaneOpen = useSelector((state: IReduxState) => state['features/participants-pane'].isOpen);
         const handleClick = useCallback(() => {
 
-            // на себя клик не должен срабатывать
-            if (localParticipant === undefined || localParticipant.id === message.participantId) {
+            if (!isCanSendPrivateMessages) {
                 return;
             }
 
@@ -228,7 +224,7 @@ const ChatMessage = ({
         return (
             <div
                 aria-hidden = {true}
-                className = {cx('display-name', classes.displayName, (localParticipant !== undefined && localParticipant.id !== message.participantId) && 'clickable')}
+                className = {cx('display-name', classes.displayName, isCanSendPrivateMessages && 'clickable')}
                 onClick = {() => handleClick()}>
                 {message.displayName}
             </div>
@@ -380,12 +376,12 @@ const ChatMessage = ({
  * @param {Object} state - The Redux state.
  * @returns {IProps}
  */
-function _mapStateToProps(state: IReduxState, { message }: IProps) {
+function _mapStateToProps(state: IReduxState, { message, isCanSendPrivateMessages }: IProps) {
     const { knocking } = state['features/lobby'];
     const localParticipantId = state['features/base/participants'].local?.id;
 
     return {
-        shouldDisplayChatMessageMenu: message.participantId !== localParticipantId,
+        shouldDisplayChatMessageMenu: isCanSendPrivateMessages && message.participantId !== localParticipantId,
         knocking,
         state
     };

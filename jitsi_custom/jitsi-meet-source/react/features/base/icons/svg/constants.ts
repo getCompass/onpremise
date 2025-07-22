@@ -12,6 +12,7 @@ import { default as IconArrowUpCustom } from './arrow-up-custom.svg';
 import { default as IconBell } from './bell.svg';
 import { default as IconBluetooth } from './bluetooth.svg';
 import { default as IconCalendar } from './calendar.svg';
+import { default as IconCameraRecord } from './camera-record.svg';
 import { default as IconCameraRefresh } from './camera-refresh.svg';
 import { default as IconCar } from './car.svg';
 import { default as IconChatUnread } from './chat-unread.svg';
@@ -137,6 +138,9 @@ import { default as IconVirtualBackgroundDelete } from './virtual-background-del
 import { default as IconVideo } from './video.svg';
 import { default as IconVideoMobile } from './video-mobile.svg';
 import { default as IconAudioOnlyOff } from './visibility-off.svg';
+import { default as IconVisitors } from './visitors.svg';
+import { default as IconVisitorInfo } from './visitor-info.svg';
+import { default as IconVisitorInfoMobile } from './visitor-info-mobile.svg';
 import { default as IconAudioOnly } from './visibility.svg';
 import { default as IconVolumeEmpty } from './volume-empty.svg';
 import { default as IconVolumeOff } from './volume-off.svg';
@@ -156,6 +160,7 @@ import { default as IconErrorLoadImg } from './error-load-image.svg';
 import { default as IconCircleWarning } from './circle-warning.svg';
 import { default as IconQuestionCircle } from './questions.svg';
 import { default as IconWarningColor } from './warning-color.svg';
+import { default as IconWarningStopHandNotification } from './warning-stop-hand-notification.svg';
 /**
  * Map containing the default icons.
  */
@@ -171,10 +176,13 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconArrowUpLarge,
     IconAudioOnly,
     IconAudioOnlyOff,
+    IconVisitorInfo,
+    IconVisitorInfoMobile,
     IconBluetooth,
     IconBell,
     IconCalendar,
     IconCameraRefresh,
+    IconCameraRecord,
     IconCar,
     IconChatUnread,
     IconCheck,
@@ -297,6 +305,7 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconVideoMobile,
     IconVideoThin,
     IconVirtualBackgroundDelete,
+    IconVisitors,
     IconVideoOff,
     IconVideoOffMobile,
     IconVideoOffThin,
@@ -317,5 +326,6 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconErrorLoadImg,
     IconCircleWarning,
     IconQuestionCircle,
-    IconWarningColor
+    IconWarningColor,
+    IconWarningStopHandNotification
 };

@@ -20,10 +20,14 @@ class Domain_User_Scenario_OnPremiseWeb {
 	public static function start(int $user_id):array {
 
 		// доступные способы аутентификации
-		$available_auth_method_list = Domain_User_Entity_Auth_Config::getAvailableMethodList();
+		$available_auth_method_list       = Domain_User_Entity_Auth_Config::getAvailableMethodList();
+		$available_auth_guest_method_list = Domain_User_Entity_Auth_Config::getAvailableGuestMethodList();
 
 		// протокол SSO
-		$sso_protocol = Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO) ? Domain_User_Entity_Auth_Config::getSsoProtocol() : "";
+		$sso_protocol = (
+			Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
+			|| Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
+		) ? Domain_User_Entity_Auth_Config::getSsoProtocol() : "";
 
 		// собираем словарь
 		$dictionary = self::_prepareStartDictionary();
@@ -33,13 +37,13 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		// если пользователь не авторизован
 		if ($user_id === 0) {
-			return [false, null, false, $dictionary, $available_auth_method_list, $sso_protocol, $restrictions];
+			return [false, null, false, $dictionary, $available_auth_method_list, $available_auth_guest_method_list, $sso_protocol, $restrictions];
 		}
 
 		// получаем информацию о пользователе
 		$user_info = Type_User_Main::get($user_id);
 
-		return [true, $user_info, Domain_User_Entity_User::isEmptyProfile($user_info), $dictionary, $available_auth_method_list, $sso_protocol, $restrictions];
+		return [true, $user_info, Domain_User_Entity_User::isEmptyProfile($user_info), $dictionary, $available_auth_method_list, $available_auth_guest_method_list, $sso_protocol, $restrictions];
 	}
 
 	/**

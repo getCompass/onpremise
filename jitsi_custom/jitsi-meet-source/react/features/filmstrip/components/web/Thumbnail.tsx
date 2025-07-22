@@ -320,7 +320,7 @@ const defaultStyles = (theme: Theme) => {
             display: 'flex',
             flexShrink: 0,
             alignItems: 'center',
-            maxWidth: 'calc(100% - 48px)',
+            maxWidth: 'calc(100% - 78px)',
             overflow: 'hidden',
 
             '&:not(:empty)': {

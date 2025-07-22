@@ -127,16 +127,36 @@ class Gateway_Socket_Pivot extends Gateway_Socket_Default {
 	 */
 	public static function actualizeProfileData(int $user_id, array $ldap_account_data):void {
 
+		// если передан аватар
+		if (isset($ldap_account_data["avatar"]) && self::_isStringContainsBinary($ldap_account_data["avatar"])) {
+
+			// если он в бинарном формате, конвертируем к base_64
+			$ldap_account_data["avatar"] = base64_encode($ldap_account_data["avatar"]);
+		}
+
 		$ar_post = [
 			"user_id"           => (int) $user_id,
 			"ldap_account_data" => (array) $ldap_account_data,
 		];
-		$method  = "pivot.ldap.actualizeProfileData";
+
+		$method = "pivot.ldap.actualizeProfileData";
 		[$status, $response] = self::_doCall(self::_getUrl(), $method, $ar_post, SOCKET_KEY_FEDERATION);
 
 		if ($status !== "ok") {
 			throw new ReturnFatalException("unexpected response");
 		}
+	}
+
+	/**
+	 * Если аватар пришел в binary формате
+	 */
+	protected static function _isStringContainsBinary($data):bool {
+
+		return (
+			is_string($data) &&
+			!ctype_print($data) &&
+			preg_match("/[^\x20-\x7E\t\r\n]/", $data)
+		);
 	}
 
 	// -------------------------------------------------------

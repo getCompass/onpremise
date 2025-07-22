@@ -30,6 +30,7 @@ func MakePusherConn(currentServer string, socketKeyMe string, companyId int64) *
 		pivotSocketKey: pivotSocketKey,
 		currentServer:  currentServer,
 		companyId:      companyId,
+		socketKeyMe:    socketKeyMe,
 	}
 }
 

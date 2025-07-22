@@ -120,9 +120,6 @@ var interfaceConfig = {
      */
     RECENT_LIST_ENABLED: true,
 
-    /**
-     * 16 / 9
-     */
     REMOTE_THUMBNAIL_RATIO: 16 / 9,
 
     SETTINGS_SECTIONS: [ 'devices', 'language', 'moderator', 'profile', 'calendar', 'sounds', 'more' ],

@@ -23,8 +23,9 @@ export default class LargeContainer {
      * @param {number} containerWidth available width
      * @param {number} containerHeight available height
      * @param {boolean} animate if container should animate it's resize process
+     * @param {boolean} useVideoAspectRatio use the proportions of the video.
      */
-    resize(containerWidth, containerHeight, animate) {
+    resize(containerWidth, containerHeight, animate, useVideoAspectRatio) {
     }
 
     /**

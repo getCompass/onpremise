@@ -521,7 +521,7 @@ export default class LargeVideoManager {
     resizeContainer(type, animate = false) {
         const container = this.getContainer(type);
 
-        container.resize(this.width, this.height, animate);
+        container.resize(this.width, this.height, animate, true);
     }
 
     /**

@@ -46,20 +46,21 @@ const containerEvents = [ 'abort', 'canplaythrough', 'ended', 'error', 'stalled'
  * @param videoHeight the height of the video to position
  * @param videoSpaceWidth the width of the available space
  * @param videoSpaceHeight the height of the available space
+ * @param aspectRatio default 16/9
  * @return an array with 2 elements, the video width and the video height
  */
 function computeDesktopVideoSize( // eslint-disable-line max-params
         videoWidth,
         videoHeight,
         videoSpaceWidth,
-        videoSpaceHeight
+        videoSpaceHeight,
+        aspectRatio = interfaceConfig.REMOTE_THUMBNAIL_RATIO
 ) {
     if (videoSpaceWidth === 0 || videoSpaceHeight === 0) {
         // Avoid division by 0.
         return [ 0, 0 ];
     }
 
-    const aspectRatio = interfaceConfig.REMOTE_THUMBNAIL_RATIO;
 
     let height = videoSpaceHeight;
     let width = height * aspectRatio;
@@ -294,16 +295,19 @@ export class VideoContainer extends LargeContainer {
      * Calculate optimal video size for specified container size.
      * @param {number} containerWidth container width
      * @param {number} containerHeight container height
+     * @param {number} aspectRatio
      * @returns {{availableWidth, availableHeight}}
      */
-    _getVideoSize(containerWidth, containerHeight) {
+    _getVideoSize(containerWidth, containerHeight, aspectRatio) {
         const { width, height } = this.getStreamSize();
 
         if (this.stream && this.isScreenSharing()) {
+
             return computeDesktopVideoSize(width,
                 height,
                 containerWidth,
-                containerHeight);
+                containerHeight,
+                aspectRatio);
         }
 
         return computeCameraVideoSize(width,
@@ -386,7 +390,7 @@ export class VideoContainer extends LargeContainer {
     /**
      *
      */
-    resize(containerWidth, tempContainerHeight, animate = false) {
+    resize(containerWidth, tempContainerHeight, animate = false, useVideoAspectRatio = false) {
         // XXX Prevent TypeError: undefined is not an object when the Web
         // browser does not support WebRTC (yet).
         if (!this.video) {
@@ -410,7 +414,9 @@ export class VideoContainer extends LargeContainer {
 
         this.positionRemoteStatusMessages();
 
-        const [ width, height ] = this._getVideoSize(containerWidth, containerHeight);
+        const aspectRatio = useVideoAspectRatio ? containerWidth / containerHeight
+            : interfaceConfig.REMOTE_THUMBNAIL_RATIO;
+        const [ width, height ] = this._getVideoSize(containerWidth, containerHeight, aspectRatio);
 
         if (width === 0 || height === 0) {
             // We don't need to set 0 for width or height since the visibility is controlled by the visibility css prop

@@ -10,6 +10,10 @@ $CONFIG["GENERATOR"] = [
 	// генератор механизма автоматической блокировки пользователей Compass
 	// связанных с LDAP учетными записями
 	Type_Generator_Ldap_AccountChecker::class,
+
+	// генератор механизма автоматической актуализации профиля пользователей Compass
+	// связанных с LDAP учетными записями
+	Type_Generator_Ldap_ProfileUpdater::class,
 ];
 
 return $CONFIG;

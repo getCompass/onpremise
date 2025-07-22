@@ -154,6 +154,8 @@ Component '{{ $VISITORS_MUC_PREFIX }}.v{{ $VISITOR_INDEX }}.{{ $VISITORS_XMPP_DO
         "muc_hide_all";
         "muc_meeting_id";
         'fmuc';
+        's2s_bidi';
+        's2s_whitelist';
         's2sout_override';
         {{ if $ENABLE_SUBDOMAINS -}}
         "muc_domain_mapper";

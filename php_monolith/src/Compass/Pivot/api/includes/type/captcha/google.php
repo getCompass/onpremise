@@ -40,8 +40,15 @@ class Type_Captcha_Google extends Type_Captcha_Main {
 
 		try {
 			$response = $this->_makeRequest($ar_post);
-		} catch (\cs_CurlError) {
+		} catch (\cs_CurlError $e) {
+
+			Type_System_Admin::log("google_captcha_error", ["Получили ошибку запроса", $e->getMessage()]);
 			return false;
+		}
+
+		// логируем
+		if (!isset($response["success"])) {
+			Type_System_Admin::log("google_captcha_error", ["Не вернулось ожидаемое поле", $response]);
 		}
 
 		// если запрос не вернул ok

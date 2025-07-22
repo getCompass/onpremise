@@ -3,6 +3,7 @@
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\ParamException;
 
@@ -17,6 +18,7 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 		"unblockUserAuthentication",
 		"isLdapAuthAvailable",
 		"getUserInfo",
+		"actualizeProfileData",
 	];
 
 	/**
@@ -115,5 +117,29 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 		return $this->ok([
 			"user_info" => (array) $user_info,
 		]);
+	}
+
+	/**
+	 * Актуализируем данные пользователя
+	 *
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws BusFatalException
+	 * @throws ParamException
+	 * @throws \busException
+	 * @throws \cs_CurlError
+	 * @throws \cs_RowIsEmpty
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws cs_FileIsNotImage
+	 */
+	public function actualizeProfileData():array {
+
+		$user_id           = $this->post(\Formatter::TYPE_INT, "user_id");
+		$ldap_account_data = $this->post(\Formatter::TYPE_ARRAY, "ldap_account_data");
+
+		Domain_User_Scenario_Socket::actualizeProfileData($user_id, Struct_User_Auth_Ldap_AccountData::arrayToStruct($ldap_account_data));
+
+		return $this->ok();
 	}
 }

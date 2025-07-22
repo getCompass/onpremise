@@ -61,7 +61,51 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		"lockouttime",
 		"objectcategory",
 		"mail",
-		"manager"
+		"manager",
+		"mobile",
+		"otherTelephone",
+		"homePhone",
+		"co",
+		"l",
+		"facsimileTelephoneNumber",
+		"profilePath",
+		"scriptPath",
+		"physicalDeliveryOfficeName",
+		"userClass",
+		"employeeNumber",
+		"employeeType",
+		"ou",
+		"extensionAttribute",
+		"extensionAttribute1",
+		"extensionAttribute2",
+		"extensionAttribute3",
+		"extensionAttribute4",
+		"extensionAttribute5",
+		"extensionAttribute6",
+		"extensionAttribute7",
+		"extensionAttribute8",
+		"extensionAttribute9",
+		"extensionAttribute10",
+		"extensionAttribute11",
+		"extensionAttribute12",
+		"extensionAttribute13",
+		"extensionAttribute14",
+		"extensionAttribute15",
+		"st",
+		"postalCode",
+		"postOfficeBox",
+		"initials",
+		"info",
+		"otherPager",
+		"streetAddress",
+		"otherHomePhone",
+		"wWWHomePage",
+		"otherFacsimileTelephoneNumber",
+		"otherMobile",
+		"ipPhone",
+		"otherIpPhone",
+		"url",
+		"pager",
 	];
 
 	public function __construct(string $host, int $port, bool $use_ssl, int $require_cert_strategy, int $timeout) {
@@ -71,7 +115,7 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 
 		// создаем соединение с правильным форматированием URL
 		if ($use_ssl) {
-			$uri = "ldaps://" . $host . ":" . $port;
+			$uri                   = "ldaps://" . $host . ":" . $port;
 			$this->ldap_connection = ldap_connect($uri);
 		} else {
 			$this->ldap_connection = ldap_connect($host, $port);

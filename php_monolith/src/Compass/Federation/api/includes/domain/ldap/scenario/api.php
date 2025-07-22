@@ -107,6 +107,11 @@ class Domain_Ldap_Scenario_Api {
 					continue;
 				}
 
+				// если это ссылка, то пропускаем
+				if (mb_strpos($entry_field_values[$i], "http") === 0) {
+					continue;
+				}
+
 				// кодируем в base64
 				$entry[$entry_field][$i] = base64_encode($entry_field_values[$i]);
 			}

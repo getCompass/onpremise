@@ -241,16 +241,10 @@ class LargeVideo extends Component<IProps> {
                 containerHeight = containerHeight - COMPASS_HORIZONTAL_FILMSTRIP_HEIGHT + onlyLocalParticipantMarginTop;
             }
 
-            const aspectRatio = 16 / 9;
 
-            let videoWidth = containerWidth - 16; // паддинг
-            let videoHeight = containerWidth / aspectRatio;
-
-            // Если высота видео больше высоты контейнера, уменьшаем ширину
-            if (videoHeight > containerHeight) {
-                videoHeight = containerHeight;
-                videoWidth = containerHeight * aspectRatio;
-            }
+            // REMARK Всегда растягиваем на весь экран, чтобы видео уже подстраивалось под максимальное разрешение
+            const videoWidth = containerWidth - 16; // паддинг
+            const videoHeight = containerHeight;
 
             this._wrapperContainerRef.current.style.width = `${videoWidth}px`;
             this._wrapperContainerRef.current.style.height = `${videoHeight}px`;

@@ -316,6 +316,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"pivot.ldap.unblockUserAuthentication",
 			"pivot.ldap.isLdapAuthAvailable",
 			"pivot.ldap.getUserInfo",
+			"pivot.ldap.actualizeProfileData",
 		],
 	],
 	"sender"           => [

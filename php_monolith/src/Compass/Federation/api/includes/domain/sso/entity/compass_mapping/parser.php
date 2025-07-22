@@ -121,7 +121,7 @@ class Domain_Sso_Entity_CompassMapping_Parser {
 
 	protected static function _parseAssignments(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser):array {
 
-		// получаем все ыыражения, которые нужно спарсить из учетной записи SSO
+		// получаем все выражения, которые нужно спарсить из учетной записи SSO
 		preg_match_all(self::_PARSE_ASSIGMENT_REGEX, $field_content, $assignment_matches);
 
 		$assignment_map = [];

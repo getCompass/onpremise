@@ -155,7 +155,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		if (Domain_User_Entity_Auth_Config::isProfileDataActualizationEnabled()) {
 
 			// актуализируем информацию
-			self::_actualizeProfileData($user_id, $ldap_account_data);
+			self::actualizeProfileData($user_id, $ldap_account_data);
 		}
 
 		return [$user_id, null];
@@ -201,7 +201,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		Type_Phphooker_Main::sendUserAccountLog($user->user_id, Type_User_Analytics::REGISTERED);
 
 		// актуализируем информацию
-		self::_actualizeProfileData($user->user_id, $ldap_account_data);
+		self::actualizeProfileData($user->user_id, $ldap_account_data);
 
 		return [$user->user_id, $integration_response];
 	}
@@ -219,7 +219,7 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	 * @throws \queryException
 	 * @throws cs_FileIsNotImage
 	 */
-	protected static function _actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data):void {
+	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data):void {
 
 		/**
 		 * подготавливаем параметры для обновления аватара пользователя

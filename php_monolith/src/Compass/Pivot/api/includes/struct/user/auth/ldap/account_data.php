@@ -28,10 +28,10 @@ class Struct_User_Auth_Ldap_AccountData {
 
 		return new self(
 			$array["name"],
-			$array["avatar"],
-			$array["badge"],
-			$array["role"],
-			$array["bio"],
+			$array["avatar"] ?? null,
+			$array["badge"] ?? null,
+			$array["role"] ?? null,
+			$array["bio"] ?? null,
 			$array["uid"],
 			$array["username"],
 		);

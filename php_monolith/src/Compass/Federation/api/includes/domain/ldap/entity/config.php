@@ -157,7 +157,7 @@ class Domain_Ldap_Entity_Config {
 	}
 
 	/**
-	 * временной интервал между проверками мониторинга блокировки пользователя LDAP
+	 * Временной интервал между проверками мониторинга блокировки пользователя LDAP
 	 *
 	 * @return string
 	 */
@@ -168,7 +168,18 @@ class Domain_Ldap_Entity_Config {
 	}
 
 	/**
-	 * лимит неудачных попыток аутентификации, по достижению которых ip адрес пользователя получает блокировку на 15 минут
+	 * Включен ли мониторинг обновления учетной записи LDAP для запуска автоматического обновления связанного пользователя в Compass
+	 *
+	 * @return bool
+	 */
+	public static function isProfileUpdateEnabled():bool {
+
+		$config = getConfig(self::_KEY);
+		return $config["profile_update_enabled"];
+	}
+
+	/**
+	 * Лимит неудачных попыток аутентификации, по достижению которых ip адрес пользователя получает блокировку на 15 минут
 	 *
 	 * @return int
 	 */
@@ -177,4 +188,16 @@ class Domain_Ldap_Entity_Config {
 		$config = getConfig(self::_KEY);
 		return $config["limit_of_incorrect_auth_attempts"];
 	}
+
+	/**
+	 * Временной интервал между проверками мониторинга обновления пользователя LDAP
+	 *
+	 * @return string
+	 */
+	public static function getProfileUpdateInterval():string {
+
+		$config = getConfig(self::_KEY);
+		return $config["profile_update_interval"];
+	}
+
 }

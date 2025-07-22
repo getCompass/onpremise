@@ -118,6 +118,27 @@ class Gateway_Socket_Pivot extends Gateway_Socket_Default {
 		return $response["user_info"];
 	}
 
+	/**
+	 * Актуализируем данные пользователя
+	 *
+	 * @throws ReturnFatalException
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
+	public static function actualizeProfileData(int $user_id, array $ldap_account_data):void {
+
+		$ar_post = [
+			"user_id"           => (int) $user_id,
+			"ldap_account_data" => (array) $ldap_account_data,
+		];
+		$method  = "pivot.ldap.actualizeProfileData";
+		[$status, $response] = self::_doCall(self::_getUrl(), $method, $ar_post, SOCKET_KEY_FEDERATION);
+
+		if ($status !== "ok") {
+			throw new ReturnFatalException("unexpected response");
+		}
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------

@@ -37,8 +37,15 @@ class Type_Captcha_YandexCloud extends Type_Captcha_Main {
 
 		try {
 			$response = $this->_makeRequest(self::_URL, $this->_getRequestData($captcha));
-		} catch (\cs_CurlError) {
+		} catch (\cs_CurlError $e) {
+
+			Type_System_Admin::log("yandex_cloud_captcha_error", ["Получили ошибку запроса", $e->getMessage()]);
 			return false;
+		}
+
+		// логируем
+		if (!isset($response["status"]) || $response["status"] != "ok") {
+			Type_System_Admin::log("yandex_cloud_captcha_error", ["Не вернулось ожидаемое поле", $response]);
 		}
 
 		return $response["status"] == "ok";

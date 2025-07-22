@@ -35,8 +35,15 @@ class Type_Captcha_EnterpriseGoogle extends Type_Captcha_Main {
 
 		try {
 			$response = $this->_makeRequest($this->_getRequestUrl(), $ar_post);
-		} catch (\cs_CurlError) {
+		} catch (\cs_CurlError $e) {
+
+			Type_System_Admin::log("enterprise_google_captcha_error", ["Получили ошибку запроса", $e->getMessage()]);
 			return false;
+		}
+
+		// логируем
+		if (!isset($response["tokenProperties"]["valid"])) {
+			Type_System_Admin::log("enterprise_google_captcha_error", ["Не вернулось ожидаемое поле", $response]);
 		}
 
 		// если запрос не вернул ok

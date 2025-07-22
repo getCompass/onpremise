@@ -1,6 +1,6 @@
-import { useAtomValue } from "jotai";
-import { langState } from "../api/_stores.ts";
-import { Lang } from "../api/_types.ts";
+import {useAtomValue} from "jotai";
+import {langState} from "../api/_stores.ts";
+import {Lang} from "../api/_types.ts";
 
 type LangConfig = {
 	[K in Lang]?: Record<string, any>;
@@ -18,14 +18,21 @@ const LANG_CONFIG: LangConfig = {
 			download_compass: {
 				button: "Скачать Compass",
 				builds: {
-					another_platforms: "Другие платформы",
 					macos_download: "Скачать для MacOS",
 					intel_version: "Intel",
-					m1m2_version: "Apple Silicon",
+					arm_version: "M1 и новее",
 					windows_download: "Скачать для Windows",
+					windows_10: "Windows 10 и выше",
+					windows_7: "Windows 7 и 8",
+					exe_version: ".exe",
+					msi_version: ".msi",
 					linux_download: "Скачать для Linux",
+					linux_astra_download: "Скачать для Astra Linux",
 					deb_version: ".deb",
 					tar_version: ".tar",
+					rpm_version: ".rpm",
+					astra_version: ".deb",
+					another_platforms: "Другие платформы",
 				},
 			},
 			join_public_conference_content: {

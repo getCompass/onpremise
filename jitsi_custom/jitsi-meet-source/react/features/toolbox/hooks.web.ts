@@ -51,6 +51,10 @@ import AudioSettingsButtonMobile from "./components/web/AudioSettingsButtonMobil
 import VideoSettingsButtonMobile from "./components/web/VideoSettingsButtonMobile";
 import RaiseHandButtonMobile from "./components/web/RaiseHandButtonMobile";
 import ChatButtonMobile from "../chat/components/web/ChatButtonMobile";
+import VisitorAudioSettingsButton from "./components/web/VisitorAudioSettingsButton";
+import VisitorVideoSettingsButton from "./components/web/VisitorVideoSettingsButton";
+import VisitorAudioSettingsButtonMobile from "./components/web/VisitorAudioSettingsButtonMobile";
+import VisitorVideoSettingsButtonMobile from "./components/web/VisitorVideoSettingsButtonMobile";
 
 const microphone = {
     key: 'microphone',
@@ -76,6 +80,18 @@ const premeetingMicrophone = {
     group: 0
 };
 
+const visitorMicrophone = {
+    key: 'visitor-microphone',
+    Content: VisitorAudioSettingsButton,
+    group: 0
+};
+
+const visitorMicrophoneMobile = {
+    key: 'visitor-microphone',
+    Content: VisitorAudioSettingsButtonMobile,
+    group: 0
+};
+
 const camera = {
     key: 'camera',
     Content: VideoSettingsButton,
@@ -97,6 +113,18 @@ const cameraSettingsMobile = {
 const premeetingCamera = {
     key: 'premeeting-camera',
     Content: PremeetingVideoMuteButton,
+    group: 0
+};
+
+const visitorCamera = {
+    key: 'visitor-camera',
+    Content: VisitorVideoSettingsButton,
+    group: 0
+};
+
+const visitorCameraMobile = {
+    key: 'visitor-camera',
+    Content: VisitorVideoSettingsButtonMobile,
     group: 0
 };
 
@@ -220,6 +248,32 @@ function getModeratorSettingsButton() {
 }
 
 /**
+ * A hook that returns the visitor microphone button if it is enabled and undefined otherwise.
+ *
+ *  @returns {Object | undefined}
+ */
+function getVisitorMicrophoneButton() {
+    if (isMobileBrowser()) {
+        return visitorMicrophoneMobile;
+    }
+
+    return visitorMicrophone;
+}
+
+/**
+ * A hook that returns the visitor camera button if it is enabled and undefined otherwise.
+ *
+ *  @returns {Object | undefined}
+ */
+function getVisitorCameraButton() {
+    if (isMobileBrowser()) {
+        return visitorCameraMobile;
+    }
+
+    return visitorCamera;
+}
+
+/**
  * Returns all buttons that could be rendered.
  *
  * @param {Object} _customToolbarButtons - An array containing custom buttons objects.
@@ -234,16 +288,22 @@ export function useCompassToolboxButtons(
     const microphone = getCompassMicrophoneButton();
     const camera = getCompassCameraButton();
     const _moderatorSettings = getModeratorSettingsButton();
+    const _visitorMicrophone = getVisitorMicrophoneButton();
+    const _visitorCamera = getVisitorCameraButton();
 
     let buttons: { [key in ToolbarButton]?: IToolboxButton; };
     if (isMobileBrowser()) {
         buttons = {
             camera,
             microphone,
+            'visitor-camera': _visitorCamera,
+            'visitor-microphone': _visitorMicrophone,
         };
     } else {
         buttons = {
             microphone,
+            'visitor-microphone': _visitorMicrophone,
+            'visitor-camera': _visitorCamera,
             camera,
             chat,
             raisehand,
@@ -284,7 +344,7 @@ export function useCompassToolboxButtons(
  *
  * @returns {Object} The button maps mainMenuButtons and overflowMenuButtons.
  */
-export function useCompassOverflowMenuButtons(participantsPaneEnabled: boolean, remoteParticipantsLength: number): IToolboxButton[] {
+export function useCompassOverflowMenuButtons(participantsPaneEnabled: boolean, remoteParticipantsLength: number, isVisitor: boolean): IToolboxButton[] {
     const participants = getParticipantPaneButton();
 
     let buttons: { [key in ToolbarButton]?: IToolboxButton; } = {
@@ -300,7 +360,13 @@ export function useCompassOverflowMenuButtons(participantsPaneEnabled: boolean, 
             'microphone': microphoneSettingsMobile,
         };
     }
-    if (remoteParticipantsLength > 1) {
+    if (isVisitor) {
+        buttons = {
+            'chat-mobile': chatMobile,
+            'microphone': microphoneSettingsMobile,
+        };
+    }
+    if (remoteParticipantsLength > 1 || isVisitor) {
         buttons['raisehand'] = raiseHandMobile;
     }
     const buttonKeys = Object.keys(buttons) as ToolbarButton[];

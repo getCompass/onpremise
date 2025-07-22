@@ -17,10 +17,11 @@ import {
     SET_TOOLBOX_TIMEOUT
 } from './actionTypes';
 import { setCompassMainToolbarThresholds, setMainToolbarThresholds } from './actions.web';
-import { TOOLBAR_BUTTONS, VISITORS_MODE_BUTTONS } from './constants';
+import { TOOLBAR_BUTTONS, VISITORS_MODE_BUTTONS, VISITORS_MODE_BUTTONS_MOBILE } from './constants';
 import { NOTIFY_CLICK_MODE } from './types';
 
 import './subscriber.web';
+import { isMobileBrowser } from "../base/environment/utils";
 
 /**
  * Middleware which intercepts Toolbox actions to handle changes to the
@@ -148,26 +149,26 @@ function _setFullScreen(next: Function, action: AnyAction) {
  * @returns {Array}
  */
 function _buildButtonsArray(
-        buttonsWithNotifyClick?: NotifyClickButton[],
-        customButtons?: {
-            icon: string;
-            id: string;
-            text: string;
-        }[]
+    buttonsWithNotifyClick?: NotifyClickButton[],
+    customButtons?: {
+        icon: string;
+        id: string;
+        text: string;
+    }[]
 ): Map<string, NOTIFY_CLICK_MODE> {
     const customButtonsWithNotifyClick = customButtons?.map(
-        ({ id }) => ([ id, NOTIFY_CLICK_MODE.ONLY_NOTIFY ]) as [string, NOTIFY_CLICK_MODE]) ?? [];
+        ({ id }) => ([ id, NOTIFY_CLICK_MODE.ONLY_NOTIFY ]) as [ string, NOTIFY_CLICK_MODE ]) ?? [];
     const buttons = (Array.isArray(buttonsWithNotifyClick) ? buttonsWithNotifyClick : [])
         .filter(button => typeof button === 'string' || (typeof button === 'object' && typeof button.key === 'string'))
         .map(button => {
             if (typeof button === 'string') {
-                return [ button, NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY ] as [string, NOTIFY_CLICK_MODE];
+                return [ button, NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY ] as [ string, NOTIFY_CLICK_MODE ];
             }
 
             return [
                 button.key,
                 button.preventExecution ? NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY : NOTIFY_CLICK_MODE.ONLY_NOTIFY
-            ] as [string, NOTIFY_CLICK_MODE];
+            ] as [ string, NOTIFY_CLICK_MODE ];
         });
 
     return new Map([ ...customButtonsWithNotifyClick, ...buttons ]);
@@ -183,9 +184,12 @@ function _getToolbarButtons(state: IReduxState): Array<string> {
     const { toolbarButtons, customToolbarButtons } = state['features/base/config'];
     const customButtons = customToolbarButtons?.map(({ id }) => id);
     let buttons = Array.isArray(toolbarButtons) ? toolbarButtons : TOOLBAR_BUTTONS;
+    const isMobile = isMobileBrowser();
 
     if (iAmVisitor(state)) {
-        buttons = VISITORS_MODE_BUTTONS.filter(button => buttons.indexOf(button) > -1);
+        buttons = isMobile
+            ? VISITORS_MODE_BUTTONS_MOBILE.filter(button => buttons.indexOf(button) > -1)
+            : VISITORS_MODE_BUTTONS.filter(button => buttons.indexOf(button) > -1);
     }
 
     if (customButtons) {

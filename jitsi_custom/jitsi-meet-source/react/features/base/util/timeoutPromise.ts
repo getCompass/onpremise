@@ -13,8 +13,8 @@
  * milliseconds.
  */
 export function timeoutPromise<T>(
-        promise: Promise<T>,
-        timeout: number
+    promise: Promise<T>,
+    timeout: number
 ): Promise<T> {
     return new Promise((resolve, reject) => {
         // const timeoutID

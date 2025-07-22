@@ -126,8 +126,8 @@
         },
         "noMessagesMessage": "There are no messages in the meeting yet. Start a conversation here!",
         "privateNotice": "You → {{recipient}}",
-        "privateNoticeForYou": "Сообщение вам",
-        "privateMessageReply": "Ответить",
+        "privateNoticeForYou": "Message to you",
+        "privateMessageReply": "Reply",
         "sendButton": "Send",
         "smileysPanel": "Emoji panel",
         "systemDisplayName": "System",
@@ -150,7 +150,10 @@
         "title": "Conference",
         "one_member": "participant",
         "two_members": "participants",
-        "five_members": "participants"
+        "five_members": "participants",
+        "one_visitor": "viewer",
+        "two_visitors": "viewers",
+        "five_visitors": "viewers"
     },
     "connectingOverlay": {
         "joiningRoom": "Connecting you to your meeting..."
@@ -321,8 +324,8 @@
         "contactSupport": "Contact support",
         "copied": "Copied",
         "copy": "Copy",
-        "demoteParticipantDialog": "Are you sure you want to move this participant to visitor?",
-        "demoteParticipantTitle": "Move to visitor",
+        "demoteParticipantDialog": "Are you sure you want to move this participant to viewer?",
+        "demoteParticipantTitle": "Move to viewer",
         "dismiss": "Dismiss",
         "displayNameRequired": "Hi! What’s your name?",
         "done": "Done",
@@ -792,6 +795,8 @@
         "localRecordingStarted": "{{name}} has started a local recording.",
         "localRecordingStopped": "{{name}} has stopped a local recording.",
         "me": "Me",
+        "messageIsNotDeliveredTitle": "This action is not available",
+        "messageIsNotDelivered": "The user has left the conference or is a viewer.",
         "moderationInEffectCSDescription": "Please raise hand if you want to share your screen.",
         "moderationInEffectCSTitle": "Screen sharing is blocked by the moderator",
         "moderationInEffectDescription": "Please raise hand if you want to speak.",
@@ -818,6 +823,11 @@
         "oldElectronClientDescription1": "You appear to be using an old version of the Jitsi Meet client which has known security vulnerabilities. Please make sure you update to our ",
         "oldElectronClientDescription2": "latest build",
         "oldElectronClientDescription3": " now!",
+        "visitorWantsToJoinTitle": "{{participantName}} would like to speak",
+        "visitorWantsToJoin": "Set the viewer as participant to allow them to turn on the microphone.",
+        "visitorsWantToJoin": "Set the viewer as participant to allow them to turn on the microphone.",
+        "visitorJoinRejectedTitle": "Your request to join has been declined by the moderator",
+        "visitorJoinRejected": "Ask your question in the conference chat to get the answer from the meeting host.",
         "participantWantsToJoin": "Wants to join the meeting",
         "participantsWantToJoin": "Want to join the meeting",
         "passwordRemovedRemotely": "$t(lockRoomPasswordUppercase) removed by another participant",
@@ -847,20 +857,26 @@
         "videoUnmuteBlockedTitle": "Camera unmute and desktop sharing blocked!",
         "viewLobby": "View lobby",
         "viewParticipants": "View participants",
-        "viewVisitors": "View visitors",
+        "viewVisitors": "Open participants list",
+        "oneVisitor": "viewer",
+        "twoVisitors": "viewers",
+        "fiveVisitors": "viewers",
+        "raisedHandVisitors": "{{raisedHandVisitors}} would like to speak",
         "waitingParticipants": "{{waitingParticipants}} people",
-        "waitingVisitors": "Visitors waiting in queue: {{waitingVisitors}}",
+        "waitingVisitors": "Viewers waiting in queue: {{waitingVisitors}}",
         "waitingVisitorsTitle": "The meeting is not live yet!",
         "whiteboardLimitDescription": "Please save your progress, as the user limit will soon be reached and the whiteboard will close.",
         "whiteboardLimitTitle": "Whiteboard usage"
     },
     "participantsPane": {
         "actions": {
-            "admit": "Admit",
-            "admitAll": "Admit all",
+            "promoteVisitorAdmit": "Set as participant",
+            "promoteVisitorReject": "Decline",
+            "admit": "Accept",
+            "admitAll": "Accept all",
             "allow": "Allow attendees to:",
             "allowVideo": "Allow video",
-            "askUnmuteParticipantPane": "Попросить вкл. звук",
+            "askUnmuteParticipantPane": "Ask to turn on mic",
             "askUnmute": "Ask to unmute",
             "audioModeration": "Unmute themselves",
             "blockEveryoneMicCamera": "Block everyone's mic and camera",
@@ -889,13 +905,17 @@
             "participantsList": "Meeting participants ({{count}})",
             "visitorInQueue": " (waiting {{count}})",
             "connected": "Connected",
-            "visitorRequests": " (requests {{count}})",
-            "visitors": "Visitors {{count}}",
-            "visitorsMobile": "Visitors",
+            "visitorRequests": "would like to speak ({{count}})",
+            "visitors": "Viewers {{count}}",
+            "visitorsMobile": "Viewers",
+            "visitorTooltip": "Users joined the conference as viewers. They can see and hear everyone in the meeting and send messages in the chat. Viewers need to raise their hand and wait for the moderator to allow them to turn on their microphone or camera.",
+            "visitorTooltipTitleMobile": "Viewers",
+            "visitorTooltipMobile": "Users who can see and hear everyone in the meeting and send messages in the chat. Viewers need to raise their hand and wait for the moderator to allow them to turn on their microphone or camera.",
             "waitingLobby": "Waiting in lobby ({{count}})"
         },
         "search": "Search participants",
-        "lobbyRequest": "Заявка на вступление",
+        "lobbyRequest": "Request to join",
+        "visitor": "Viewer",
         "title": "Participants"
     },
     "passwordDigitsOnly": "Up to {{number}} digits",
@@ -987,7 +1007,7 @@
         "initiated": "Call initiated",
         "joinAudioByPhone": "Join with phone audio",
         "joinMeeting": "Join meeting",
-        "joinMeetingAsGuest": "Конференция<br>Compass",
+        "joinMeetingAsGuest": "Compass<br>Conference",
         "joinMeetingInLowBandwidthMode": "Join in low bandwidth mode",
         "joinWithoutAudio": "Join without audio",
         "keyboardShortcuts": "Enable Keyboard shortcuts",
@@ -1076,8 +1096,8 @@
         "noMicPermission": "Microphone track could not be created. Please grant permission to use the microphone.",
         "noModeratorPermission": "Failed to start recording. Please request moderator rights to start recording.",
         "noStreams": "No audio or video stream detected.",
-         "saveInDownloads": "Saved in the \"Downloads\" folder",
-         "pushTitle": "Conference recording",
+        "saveInDownloads": "Saved in the \"Downloads\" folder",
+        "pushTitle": "Conference recording",
         "off": "Recording stopped",
         "offBy": "{{name}} stopped the recording",
         "on": "Recording started",
@@ -1120,6 +1140,7 @@
     "settings": {
         "audio": "Audio",
         "audioNoPermissions": "No access to audio",
+        "audioOutputChangeNotSupported": "Your browser does not support selecting audio devices",
         "buttonLabel": "Settings",
         "calendar": {
             "about": "The {{appName}} calendar integration is used to securely access your calendar so it can read upcoming events.",
@@ -1253,8 +1274,8 @@
     },
     "startupoverlay": {
         "requestPermissions": {
-            "desktop": "Для подключения к видеоконференции Compass\nразрешите доступ к вашей камере и микрофону.",
-            "mobile": "Для подключения к видеоконференции Compass разрешите доступ к вашей камере и микрофону."
+            "desktop": "To join the Compass videoconference, please allow access to your camera and microphone.",
+            "mobile": "To join the Compass videoconference, please allow access to your camera and microphone."
         },
         "genericTitle": "The meeting needs to use your microphone and camera.",
         "policyText": " ",
@@ -1521,7 +1542,7 @@
     },
     "videothumbnail": {
         "connectionInfo": "Connection Info",
-        "demote": "Move to visitor",
+        "demote": "Set as viewer",
         "domute": "Mute",
         "domuteOthers": "Mute everyone else",
         "domuteVideo": "Disable camera",
@@ -1576,19 +1597,23 @@
     "visitors": {
         "chatIndicator": "(visitor)",
         "joinMeeting": {
-            "description": "You're currently an observer in this conference.",
-            "raiseHand": "Raise your hand",
-            "title": "Joining meeting",
-            "wishToSpeak": "If you wish to speak, please raise your hand below and wait for the moderator's approval."
+            "title": "You have joined the conference as a viewer",
+            "description": "Please raise your hand and wait for the moderator of the conference to allow you to turn on your microphone or camera and speak.",
+            "descriptionMobile": "Please raise your hand and wait for the moderator of the conference to allow you to turn on your microphone or camera and speak.",
+            "button": "OK"
+        },
+        "audioSettings": {
+            "title": "Microphone setup is not available",
+            "desc": "Please raise your hand and wait for the moderator to allow you to turn on your microphone"
         },
         "labelTooltip": "Number of visitors: {{count}}",
         "notification": {
-            "demoteDescription": "Sent here by {{actor}}, raise your hand to participate",
+            "title": "The moderator set you as viewer",
+            "demoteDescription": "Please raise your hand and wait for the moderator of the conference to allow you to turn on your microphone or camera and speak.",
             "noMainParticipantsDescription": "A participant needs to start the meeting. Please try again in a bit.",
             "noMainParticipantsTitle": "This meeting hasn’t started yet.",
             "noVisitorLobby": "You cannot join while there is a lobby enabled for the meeting.",
-            "notAllowedPromotion": "A participant needs to allow your request first.",
-            "title": "You are a visitor in the meeting"
+            "notAllowedPromotion": "A participant needs to allow your request first."
         },
         "waitingMessage": "You'll join the meeting as soon as it is live!"
     },
@@ -1655,5 +1680,10 @@
         "title": "Minimize the window while recording?",
         "text": "The conference will not be shown in the recording when the window is minimized.",
         "minimizeButton": "Minimize"
+    },
+    "recordReminder": {
+        "title": "Recording in progress",
+        "description": "For a quality recording, please do not minimize the meeting window.",
+        "button": "OK"
     }
 }

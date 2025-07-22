@@ -482,7 +482,9 @@ class Domain_User_Scenario_Api {
 
 		// если это on-premise пользователь пытается сменить имя, но включена аутентификация через SSO и пользователь зарегистрирован через SSO, то выбрасываем ошибку
 		// об ограничении на это действие
-		if (ServerProvider::isOnPremise() && $name !== false && Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
+		if (ServerProvider::isOnPremise() && $name !== false
+			&& (Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
+				|| Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO))
 			&& Gateway_Socket_Federation::hasSsoUserRelationship($user_id)) {
 			throw new ActionRestrictedException("action is restricted");
 		}
@@ -1196,7 +1198,13 @@ class Domain_User_Scenario_Api {
 				throw new Domain_User_Exception_Mail_NotFoundOnSso("sso user");
 			}
 
-			if (Domain_User_Entity_Auth_Method::isSingleAuthMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_SSO)) {
+			if (Domain_User_Entity_Auth_Method::isSingleAuthMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_SSO)
+				|| (
+					Domain_User_Entity_Auth_Method::isSingleAuthGuestMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_SSO)
+					&& !Domain_User_Entity_Auth_Method::isSingleAuthGuestMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)
+					&& !Domain_User_Entity_Auth_Method::isSingleAuthGuestMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL)
+				)) {
+
 				throw new Domain_User_Exception_Mail_NotFoundOnSso("sso user");
 			}
 
@@ -1279,12 +1287,15 @@ class Domain_User_Scenario_Api {
 		}
 
 		// если аутентификация через номер телефона, и удаляемся через телефон, то проверяем что есть номер телефона
-		if (($two_fa_key !== false) && Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)) {
+		if (($two_fa_key !== false) && (Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)
+				|| Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER))) {
+
 			Domain_User_Entity_Phone::getPhoneByUserId($user_id);
 		}
 
 		// если аутентификация через почту, и удаляемся через почту, то проверяем что у пользователя установлена почта
-		if (($confirm_mail_password_story_key !== false) && Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_MAIL)) {
+		if (($confirm_mail_password_story_key !== false) && (Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_MAIL)
+				|| Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_MAIL))) {
 			Domain_User_Entity_Mail::assertAlreadyExistMail($user_security);
 		}
 	}

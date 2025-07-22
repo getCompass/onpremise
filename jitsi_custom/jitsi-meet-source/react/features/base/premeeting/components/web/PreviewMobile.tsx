@@ -72,6 +72,13 @@ function PreviewMobile(props: IProps) {
 
     useEffect(() => {
         const updateVideoHeight = () => {
+
+            if (videoMuted && videoRef.current) {
+
+                videoRef.current.style.height = 'unset';
+                return;
+            }
+
             if (videoRef.current) {
 
                 // устанавливаем высоту в зависимости от ширины и соотношения 16:9
@@ -106,6 +113,7 @@ function PreviewMobile(props: IProps) {
                     _lobbyKnocking ? (
                         <div className = 'premeeting-screen-avatar is-mobile'
                              style = {{
+                                 height: "unset !important",
                                  display: 'flex',
                                  flexDirection: 'column',
                                  alignItems: 'center',

@@ -18,7 +18,7 @@ import MeetingParticipantContextMenu from './MeetingParticipantContextMenu';
 import MeetingParticipantItems from './MeetingParticipantItems';
 import { isMobileBrowser } from "../../../base/environment/utils";
 import { getKnockingParticipants, getLobbyEnabled } from "../../../lobby/functions";
-import { getVisitorsCount, getVisitorsInQueueCount, isVisitorsLive } from "../../../visitors/functions";
+import { getPromotionRequests, getVisitorsCount } from "../../../visitors/functions";
 import { isNeedShowElectronOnlyElements } from "../../../base/environment/utils_web";
 
 const useStyles = makeStyles()(theme => {
@@ -127,10 +127,9 @@ function MeetingParticipants({
     const isLobbyParticipantsVisible = lobbyEnabled && lobbyParticipants.length > 0;
 
     const visitorsCount = useSelector(getVisitorsCount);
-    const visitorsInQueueCount = useSelector(getVisitorsInQueueCount);
-    const isLive = useSelector(isVisitorsLive);
-    const showVisitorsInQueue = visitorsInQueueCount > 0 && isLive === false;
-    const isVisitorListVisible = visitorsCount > 0 && showVisitorsInQueue;
+    const visitorsPromotionRequests = useSelector(getPromotionRequests);
+    const showVisitorsPromotions = visitorsPromotionRequests.length > 0;
+    const isVisitorListVisible = visitorsCount > 0 && showVisitorsPromotions;
 
     const { classes, cx } = useStyles();
 

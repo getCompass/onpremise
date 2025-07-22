@@ -116,6 +116,8 @@
         },
         "noMessagesMessage": "No hay mensajes en la reunión. ¡Inicie una conversación!",
         "privateNotice": "Usted → {{recipient}}",
+        "privateNoticeForYou": "Mensaje para usted",
+        "privateMessageReply": "Responder",
         "sendButton": "Enviar",
         "smileysPanel": "Panel de Emojis",
         "tabs": {
@@ -137,7 +139,10 @@
         "title": "Conferencia",
         "one_member": "participante",
         "two_members": "participantes",
-        "five_members": "participantes"
+        "five_members": "participantes",
+        "one_visitor": "espectador",
+        "two_visitors": "espectadores",
+        "five_visitors": "espectadores"
     },
     "connectingOverlay": {
         "joiningRoom": "Conectándose a la reunión…"
@@ -728,6 +733,8 @@
         "localRecordingStarted": "{{name}} ha iniciado una grabación local.",
         "localRecordingStopped": "{{name}} ha detenido una grabación local.",
         "me": "Yo",
+        "messageIsNotDeliveredTitle": "Acción no disponible",
+        "messageIsNotDelivered": "El usuario ha salido de la conferencia o es un espectador.",
         "moderationInEffectCSDescription": "Por favor, levante la mano si quiere compartir su pantalla.",
         "moderationInEffectCSTitle": "La pantalla compartida está bloqueada por el moderador",
         "moderationInEffectDescription": "Por favor, levanten la mano si quieren hablar.",
@@ -754,6 +761,11 @@
         "oldElectronClientDescription1": "Estás usando una versión vieja de la aplicación de Jitsi Meet que tiene problemas de seguridad. ¡Por favor, actualiza a la ",
         "oldElectronClientDescription2": "versión más reciente",
         "oldElectronClientDescription3": " YA!",
+        "visitorWantsToJoinTitle": "{{participantName}} desea intervenir",
+        "visitorWantsToJoin": "Para dar permiso a encender el micrófono, convierta al espectador en miembro.",
+        "visitorsWantToJoin": "Para dar permiso a encender el micrófono, convierta al espectador en miembro.",
+        "visitorJoinRejectedTitle": "Su petición para intervenir fue rechazada por el moderador",
+        "visitorJoinRejected": "Escriba una pregunta en el chat de la conferencia para obtener una respuesta del presentador del encuentro.",
         "participantWantsToJoin": "Quiere unirse a la reunión",
         "participantsWantToJoin": "Quieren unirse a la reunión",
         "passwordRemovedRemotely": "$t(lockRoomPasswordUppercase) eliminada por otro participante",
@@ -779,14 +791,22 @@
         "videoUnmuteBlockedDescription": "Las operaciones de desactivar la cámara y compartir pantalla hansido bloqueadas temporalmente debido a límites del sistema.",
         "videoUnmuteBlockedTitle": "¡Desactivar cámara y compartir pantalla bloqueados!",
         "viewLobby": "Ver lobby",
+        "viewVisitors": "Abrir la lista de participantes",
+        "oneVisitor": "espectador",
+        "twoVisitors": "espectadores",
+        "fiveVisitors": "espectadores",
+        "raisedHandVisitors": "{{raisedHandVisitors}} desean intervenir",
         "waitingParticipants": "{{waitingParticipants}} personas"
     },
     "participantsPane": {
         "actions": {
-            "admit": "Admitir",
-            "admitAll": "Admitir todo",
+            "promoteVisitorAdmit": "Hacer miembro",
+            "promoteVisitorReject": "Rechazar",
+            "admit": "Aceptar",
+            "admitAll": "Aceptar todo",
             "allow": "Permitir a los asistentes:",
             "allowVideo": "Permitir vídeo",
+            "askUnmuteParticipantPane": "Pedir micrófono",
             "askUnmute": "Pida que le quiten el silencio",
             "audioModeration": "Desmutearse a sí mismos",
             "blockEveryoneMicCamera": "Bloquear el micrófono y la cámara de todos.",
@@ -807,10 +827,16 @@
         "headings": {
             "lobby": "Vestíbulo ({{count}})",
             "participantsList": "Participantes en la reunión ({{count}})",
-            "visitors": "Visitantes ({{count}})",
+            "visitorRequests": "desean intervenir ({{count}})",
+            "visitors": "Espectadores ({{count}})",
+            "visitorTooltip": "Usuarios que se conectaron a la conferencia como espectadores. Pueden ver y oír a todos los miembros del encuentro y pueden participar en el chat. Para encender el micrófono o la cámara, los espectadores deben levantar la mano y esperar la aprobación del moderador.",
+            "visitorTooltipTitleMobile": "Espectadores",
+            "visitorTooltipMobile": "Usuarios que pueden ver y oír a todos los miembros del encuentro y pueden participar en el chat. Para encender el micrófono o la cámara, los espectadores deben levantar la mano y esperar la aprobación del moderador.",
             "waitingLobby": "Esperando en el vestíbulo ({{count}})"
         },
         "search": "Buscar participantes",
+        "lobbyRequest": "Solicitud de ingreso",
+        "visitor": "Espectador",
         "title": "Participantes"
     },
     "passwordDigitsOnly": "Hasta {{number}} cifras",
@@ -898,6 +924,7 @@
         "initiated": "Llamada iniciada",
         "joinAudioByPhone": "Entrar con audio de llamada telefónica",
         "joinMeeting": "Entrar a la reunión",
+        "joinMeetingAsGuest": "Conferencia<br>de Compass",
         "joinMeetingInLowBandwidthMode": "Entrar en modo de ancho de banda bajo",
         "joinWithoutAudio": "Entrar sin sonido",
         "keyboardShortcuts": "Activar los atajos de teclado",
@@ -986,8 +1013,8 @@
         "noMicPermission": "No se pudo crear la pista de micrófono. Por favor otorgue permiso para usar el micrófono.",
         "noModeratorPermission": "No se pudo iniciar la grabación. Solicite derechos de moderador para comenzar a grabar.",
         "noStreams": "",
-         "saveInDownloads": "Guardado en la carpeta \"Descargas\"",
-         "pushTitle": "Grabación de la conferencia",
+        "saveInDownloads": "Guardado en la carpeta \"Descargas\"",
+        "pushTitle": "Grabación de la conferencia",
         "off": "Grabación detenida",
         "offBy": "{{name}} detuvo la grabación",
         "on": "Grabando",
@@ -1028,6 +1055,7 @@
     "settings": {
         "audio": "Audio",
         "audioNoPermissions": "Sin acceso al audio",
+        "audioOutputChangeNotSupported": "Su navegador no admite la selección de dispositivos de audio",
         "buttonLabel": "Ajustes",
         "calendar": {
             "about": "La integración del calendario de {{appName}} se usa para acceder al calendario de manera segura para que puedas estar al tanto de los próximos eventos.",
@@ -1155,6 +1183,10 @@
         "surprised": "Sorprendido"
     },
     "startupoverlay": {
+        "requestPermissions": {
+            "desktop": "Para unirse a la videoconferencia de Compass, permita el acceso a su cámara y micrófono.",
+            "mobile": "Para unirse a la videoconferencia de Compass, permita el acceso a su cámara y micrófono."
+        },
         "genericTitle": "La reunión debe utilizar su micrófono y su cámara.",
         "policyText": " ",
         "title": "{{app}} necesita usar el micrófono y la cámara."
@@ -1421,6 +1453,7 @@
     },
     "videothumbnail": {
         "connectionInfo": "Información de conexión",
+        "demote": "Convertir en espectador",
         "domute": "Silenciar",
         "domuteOthers": "Silenciar a todos los demás",
         "domuteVideo": "Desactivar la cámara",
@@ -1470,11 +1503,26 @@
     },
     "visitors": {
         "chatIndicator": "(visitante)",
+        "joinMeeting": {
+            "title": "Se unió a la conferencia como espectador",
+            "description": "Para encender el micrófono o la cámara e intervenir, levante la mano y espere la aprobación del moderador del encuentro.",
+            "descriptionMobile": "Para encender el micrófono o la cámara e intervenir, levante la mano y espere la aprobación del moderador del encuentro.",
+            "button": "Bien"
+        },
+        "audioSettings": {
+            "title": "Configuración del micrófono no disponible",
+            "desc": "Para encender el micrófono, levante la mano y espere la aprobación del moderador"
+        },
         "labelTooltip": "Cantidad de visitantes: {{count}}",
         "notification": {
-            "description": "Levanta la mano para participar",
-            "title": "Eres un visitante en la reunión"
-        }
+            "title": "El moderador le convirtió en espectador",
+            "demoteDescription": "Para encender el micrófono o la cámara e intervenir, levante la mano y espere la aprobación del moderador del encuentro.",
+            "noMainParticipantsDescription": "Un participant doit démarrer la réunion. Veuillez réessayer dans un moment.",
+            "noMainParticipantsTitle": "Cette réunion n'a pas encore commencé.",
+            "noVisitorLobby": "Vous ne pouvez pas rejoindre tant qu'une salle d'attente est activée pour la réunion.",
+            "notAllowedPromotion": "Un participant doit d'abord autoriser votre demande."
+        },
+        "waitingMessage": "Vous rejoindrez la réunion dès qu'elle sera en direct !"
     },
     "volumeSlider": "Deslizador de volumen",
     "welcomepage": {
@@ -1538,5 +1586,10 @@
         "title": "¿Minimizar la ventana durante la grabación?",
         "text": "La conferencia no se mostrará en la grabación cuando se minimice la ventana.",
         "minimizeButton": "Minimizar"
+    },
+    "recordReminder": {
+        "title": "Grabación en curso",
+        "description": "Para obtener una grabación de calidad, no minimice la ventana de la reunión.",
+        "button": "OK"
     }
 }

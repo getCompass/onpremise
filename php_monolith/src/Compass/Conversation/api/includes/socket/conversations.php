@@ -1332,10 +1332,6 @@ class Socket_Conversations extends \BaseFrame\Controller\Socket {
 		$parent_message_data   = $this->post("?a", "parent_message_data", []);
 		$worked_hours          = $this->post("?f", "worked_hours");
 
-		if (ServerProvider::isOnPremise()) {
-			throw new \ParseException("action not allowed on on-premise environment");
-		}
-
 		// создаем объект worked_hours
 		$worked_hours_data = Type_Conversation_Public_WorkedHours::doCommit($this->user_id, $worked_hours);
 

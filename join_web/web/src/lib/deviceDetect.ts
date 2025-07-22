@@ -1,29 +1,59 @@
+import { useState, useEffect } from "react";
 import UAParser from "ua-parser-js";
 
-const parser = new UAParser(window.navigator.userAgent);
+// Функция инициализации парсера
+const useDeviceDetect = () => {
+	const [deviceInfo, setDeviceInfo] = useState({
+		isMobile: false,
+		isAndroid: false,
+		isIPad: false,
+		isMobileHuawei: false,
+		isMobileApple: false,
+		isMobileAndroid: false,
+		isSafariDesktop: false,
+		os: "",
+		isDesktopMacOs: false,
+		isDesktopWindows: false,
+		isDesktopLinux: false,
+		isBrowserFirefox: false,
+	});
 
-export function isMobile(): boolean {
+	useEffect(() => {
+		const parser = new UAParser(navigator.userAgent);
 
-	const device = parser.getDevice().type;
-	return device === "mobile" || device === "tablet";
-}
+		const device = parser.getDevice();
+		const os = parser.getOS()?.name?.toLowerCase() ?? "";
+		const browserName = parser.getBrowser()?.name;
 
-export function isMobileHuawei(): boolean {
-	return isMobile() && parser.getDevice().vendor === "Huawei";
-}
+		const isMobile = device.type === "mobile" || device.type === "tablet";
+		const isAndroid = os === "android";
+		const isIPad = device.model?.includes("iPad") ?? false;
+		const isMobileHuawei = isMobile && device.vendor === "Huawei";
+		const isMobileApple = isMobile && device.vendor === "Apple";
+		const isMobileAndroid = isMobile && !isMobileHuawei && isAndroid;
+		const isSafariDesktop = !isMobile && browserName === "Safari";
+		const isDesktopMacOs = !isMobile && os.includes("mac os");
+		const isDesktopWindows = !isMobile && os.includes("window");
+		const isDesktopLinux = !isMobile && !isDesktopWindows && !isDesktopMacOs;
+		const isBrowserFirefox = browserName === "Firefox";
 
-export function isMobileApple(): boolean {
-	return isMobile() && parser.getDevice().vendor === "Apple";
-}
+		setDeviceInfo({
+			isMobile,
+			isAndroid,
+			isIPad,
+			isMobileHuawei,
+			isMobileApple,
+			isMobileAndroid,
+			isSafariDesktop,
+			os,
+			isDesktopMacOs,
+			isDesktopWindows,
+			isDesktopLinux,
+			isBrowserFirefox,
+		});
+	}, []);
 
-export function isMobileAndroid(): boolean {
-	return isMobile() && !isMobileHuawei() && parser.getOS().name === "Android";
-}
+	return deviceInfo;
+};
 
-export function isSafariDesktop(): boolean {
-	return !isMobile() && parser.getBrowser()?.name === "Safari";
-}
-
-export function hasVendor(): boolean {
-	return !!parser.getBrowser()?.name;
-}
+export default useDeviceDetect;

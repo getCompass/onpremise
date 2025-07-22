@@ -16,7 +16,7 @@ import {
 	confirmPasswordState,
 	firstAuthState,
 	passwordInputState,
-	deviceLoginTypeState,
+	deviceLoginTypeState, isGuestAuthState,
 } from "../_stores.ts";
 import useIsJoinLink from "../../lib/useIsJoinLink.ts";
 import { useNavigateDialog, useNavigatePage } from "../../components/hooks.ts";
@@ -201,6 +201,7 @@ export function useApiAuthMailConfirmFullAuthCode() {
 	const captchaProvider = useAtomValue(captchaProviderState);
 	const setDeviceLoginType = useSetAtom(deviceLoginTypeState);
 	const setSessionTimeLeft = useSetAtom(authenticationSessionTimeLeftState);
+	const setIsGuestAuth = useSetAtom(isGuestAuthState);
 
 	return useMutation({
 		retry: false,
@@ -238,6 +239,7 @@ export function useApiAuthMailConfirmFullAuthCode() {
 			}
 
 			setAuth(null);
+			setIsGuestAuth(false);
 			setAuthInput("");
 			setPasswordInput("");
 			setConfirmPassword("");

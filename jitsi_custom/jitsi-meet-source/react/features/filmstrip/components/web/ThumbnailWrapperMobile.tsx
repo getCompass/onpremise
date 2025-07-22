@@ -198,8 +198,9 @@ function _mapStateToProps(state: IReduxState, ownProps: {
         let horizontalOffset, thumbnailWidth;
         const { iAmRecorder, disableTileEnlargement } = state['features/base/config'];
         const { localScreenShare } = state['features/base/participants'];
+        const disableSelfView = getHideSelfView(state);
         const isFirstPage = ownProps.data?.startIndex === 0;
-        const localParticipantsLength = localScreenShare ? 2 : 1;
+        const localParticipantsLength = (!disableSelfView ? 1 : 0) + (localScreenShare ? 1 : 0);
         const adjustedIndex = ownProps.data?.startIndex + (ownProps.rowIndex * columns) + ownProps.columnIndex;
 
         let participantID = null;

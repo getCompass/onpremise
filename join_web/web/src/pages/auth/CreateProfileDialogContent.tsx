@@ -9,7 +9,7 @@ import {
 	activeDialogIdState,
 	authInputState,
 	authState,
-	confirmPasswordState, isNeedShowCreateProfileDialogAfterLdapRegistrationState,
+	confirmPasswordState, isGuestAuthState, isNeedShowCreateProfileDialogAfterLdapRegistrationState,
 	isNeedShowCreateProfileDialogAfterSsoRegistrationState,
 	nameInputState,
 	passwordInputState,
@@ -216,6 +216,7 @@ const CreateProfileDialogContentDesktop = () => {
 	const setPasswordInput = useSetAtom(passwordInputState);
 	const setConfirmPassword = useSetAtom(confirmPasswordState);
 	const setAuth = useSetAtom(authState);
+	const setIsGuestAuth = useSetAtom(isGuestAuthState);
 	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
 	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
 	const [tooltipText, setTooltipText] = useState("");
@@ -278,6 +279,7 @@ const CreateProfileDialogContentDesktop = () => {
 		setPasswordInput("");
 		setConfirmPassword("");
 		setAuth(null);
+		setIsGuestAuth(false);
 	}, []);
 
 	return (
@@ -573,6 +575,7 @@ const CreateProfileDialogContentMobile = () => {
 	const setPasswordInput = useSetAtom(passwordInputState);
 	const setConfirmPassword = useSetAtom(confirmPasswordState);
 	const setAuth = useSetAtom(authState);
+	const setIsGuestAuth = useSetAtom(isGuestAuthState);
 	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
 	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
 	const [tooltipText, setTooltipText] = useState("");
@@ -615,6 +618,7 @@ const CreateProfileDialogContentMobile = () => {
 		setPasswordInput("");
 		setConfirmPassword("");
 		setAuth(null);
+		setIsGuestAuth(false);
 	}, []);
 	const apiAuthLogout = useApiAuthLogout();
 

@@ -70,6 +70,24 @@ export const text = defineRecipe({
 				fontFamily: "inter_regular",
 				fontWeight: "normal",
 			},
+			inter_14_21_500: {
+				fontSize: "14px",
+				lineHeight: "21px",
+				fontFamily: "lato_medium",
+				fontWeight: "normal",
+			},
+			inter_16_20_400: {
+				fontSize: "16px",
+				lineHeight: "20px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
+			inter_16_24_400: {
+				fontSize: "16px",
+				lineHeight: "24px",
+				fontFamily: "inter_regular",
+				fontWeight: "normal",
+			},
 			inter_18_22_400: {
 				fontSize: "18px",
 				lineHeight: "22px",
@@ -116,6 +134,9 @@ export const text = defineRecipe({
 			},
 			"677380": {
 				color: "677380",
+			},
+			"b4b4b4": {
+				color: "b4b4b4",
 			},
 		},
 	},

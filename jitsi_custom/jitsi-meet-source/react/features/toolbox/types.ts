@@ -50,6 +50,8 @@ export type ToolbarButton = 'camera' |
     'premeeting-microphone' |
     'premeeting-camera' |
     'premeeting-select-background' |
+    'visitor-camera' |
+    'visitor-microphone' |
     '__end';
 
 export enum NOTIFY_CLICK_MODE {

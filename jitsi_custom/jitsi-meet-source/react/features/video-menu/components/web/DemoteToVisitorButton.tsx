@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import { openDialog } from '../../../base/dialog/actions';
-import { IconUsers } from '../../../base/icons/svg';
+import { IconUsers, IconVisitors } from '../../../base/icons/svg';
 import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
 import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 import { IButtonProps } from '../../types';
@@ -12,6 +12,7 @@ import DemoteToVisitorDialog from './DemoteToVisitorDialog';
 import { makeStyles } from "tss-react/mui";
 import Icon from "../../../base/icons/components/Icon";
 import { isMobileBrowser } from "../../../base/environment/utils";
+import { demoteRequest } from "../../../visitors/actions";
 
 const useStyles = makeStyles()(theme => {
     return {};
@@ -57,7 +58,7 @@ export default function DemoteToVisitorButton({
         if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
             return;
         }
-        dispatch(openDialog(DemoteToVisitorDialog, { participantID }));
+        dispatch(demoteRequest(participantID));
     }, [ dispatch, notifyClick, notifyMode, participantID ]);
 
     return (
@@ -68,7 +69,7 @@ export default function DemoteToVisitorButton({
             customIcon = {noIcon ? undefined : <Icon
                 className = {isMobile ? 'is-mobile' : ''}
                 size = {isMobile ? 22 : 18}
-                src = {IconUsers}
+                src = {IconVisitors}
                 color = {'rgba(255, 255, 255, 0.3)'} />}
             id = {`demotelink_${participantID}`}
             onClick = {handleClick}

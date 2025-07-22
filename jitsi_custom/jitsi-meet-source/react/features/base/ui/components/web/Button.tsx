@@ -162,14 +162,14 @@ const useStyles = makeStyles()(theme => {
             },
 
             '&.is-mobile': {
-                backgroundColor: 'rgba(255, 79, 71, 1)',
+                backgroundColor: 'rgba(255, 79, 71, 0.1)',
 
                 '&:hover': {
-                    backgroundColor: 'rgba(255, 49, 41, 1)'
+                    backgroundColor: 'rgba(255, 79, 71, 0.1)'
                 },
 
                 '&:active': {
-                    backgroundColor: 'rgba(255, 49, 41, 1)'
+                    backgroundColor: 'rgba(255, 79, 71, 0.1)'
                 },
             }
         },

@@ -89,8 +89,10 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 	 */
 	public function isLdapAuthAvailable():array {
 
-		$is_ldap_auth_available = Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO) &&
-			Domain_User_Entity_Auth_Config::getSsoProtocol() == Domain_User_Entity_Auth_Method::SSO_PROTOCOL_LDAP;
+		$is_ldap_auth_available = (
+				Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
+				|| Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
+			) && Domain_User_Entity_Auth_Config::getSsoProtocol() == Domain_User_Entity_Auth_Method::SSO_PROTOCOL_LDAP;
 
 		return $this->ok([
 			"is_available" => (int) $is_ldap_auth_available,

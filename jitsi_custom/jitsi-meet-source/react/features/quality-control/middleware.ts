@@ -7,6 +7,7 @@ import { getNumberOfPartipantsForTileView } from "../filmstrip/functions.web";
 import { getCurrentConference } from "../base/conference/functions";
 import { isLocalTrackMuted } from "../base/tracks/functions.any";
 import { MEDIA_TYPE } from "../base/media/constants";
+import { COMMAND_PARTICIPANT_JOINED_INFO } from "../base/participants/constants";
 
 MiddlewareRegistry.register(store => next => action => {
     const { dispatch } = store;
@@ -25,6 +26,10 @@ MiddlewareRegistry.register(store => next => action => {
         if (data.type === COMMAND_QUALITY_LEVEL) {
             dispatch(setReducerQuality(data.value));
         }
+
+        if (data.type === COMMAND_PARTICIPANT_JOINED_INFO) {
+            dispatch(setReducerQuality(data.event_list[COMMAND_QUALITY_LEVEL]?.value));
+        }
         break;
     }
 
@@ -33,6 +38,10 @@ MiddlewareRegistry.register(store => next => action => {
 
         if (data.type === COMMAND_QUALITY_LEVEL) {
             dispatch(setReducerQuality(data.value));
+        }
+
+        if (data.type === COMMAND_PARTICIPANT_JOINED_INFO) {
+            dispatch(setReducerQuality(data.event_list[COMMAND_QUALITY_LEVEL]?.value));
         }
         break;
     }

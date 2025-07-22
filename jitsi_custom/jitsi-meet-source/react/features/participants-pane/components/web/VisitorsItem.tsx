@@ -23,7 +23,7 @@ interface IProps {
 const useStyles = makeStyles()(theme => {
     return {
         acceptButton: {
-            fontFamily: 'Inter Semibold !important',
+            fontFamily: 'Lato Semibold !important',
             fontWeight: 'normal' as const,
             backgroundColor: 'rgba(4, 164, 90, 0.1)',
             padding: '7px 14px 7px 16px',
@@ -77,7 +77,8 @@ export const VisitorsItem = ({
             raisedHand = {true}
             videoMediaState = {MEDIA_STATE.NONE}
             youText = {t('chat.you')}
-            isLobbyParticipantRequest = {false}>
+            isLobbyParticipantRequest = {false}
+            isVisitor = {true}>
 
             <>
                 <Button

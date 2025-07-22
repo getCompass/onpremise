@@ -1,4 +1,4 @@
-import { CAPTCHA_PROVIDER_ENTERPRISE_GOOGLE, CAPTCHA_PROVIDER_YANDEX } from "./../api/_types.ts";
+import {CAPTCHA_PROVIDER_ENTERPRISE_GOOGLE, CAPTCHA_PROVIDER_YANDEX} from "./../api/_types.ts";
 
 export function doCaptchaRender(
 	node: HTMLDivElement | null,
@@ -88,4 +88,9 @@ export function doCaptchaReady(captchaProvider: string, setIsLoginCaptchaRendere
 			}, 350);
 			break;
 	}
+}
+
+export function arraysEqual(a: string[], b: string[]): boolean {
+	if (a.length !== b.length) return false;
+	return a.every((value, index) => value === b[index]);
 }

@@ -89,6 +89,8 @@ export interface IProps {
      * Function to toggle noise suppression.
      */
     toggleSuppression: () => void;
+
+    isVisitorButton?: boolean;
 }
 
 const useStyles = makeStyles()(theme => {
@@ -140,6 +142,23 @@ const useStyles = makeStyles()(theme => {
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
             height: '1px'
         },
+
+        visitorContainer: {
+            padding: "6px 24px",
+        },
+
+        visitorContent: {
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            borderRadius: "5px",
+            padding: "12px",
+            fontFamily: 'Lato Regular',
+            fontWeight: 'normal' as const,
+            fontSize: '14px',
+            lineHeight: '20px',
+            color: 'rgba(255, 255, 255, 0.75)',
+            userSelect: 'none',
+            letterSpacing: '-0.15px',
+        }
     };
 });
 
@@ -153,7 +172,8 @@ const AudioSettingsContent = ({
     prejoinVisible,
     setAudioInputDevice,
     setAudioOutputDevice,
-    toggleSuppression
+    toggleSuppression,
+    isVisitorButton
 }: IProps) => {
     const _componentWasUnmounted = useRef(false);
     const microphoneHeaderId = 'microphone_settings_header';
@@ -310,20 +330,26 @@ const AudioSettingsContent = ({
             tabIndex = {-1}>
             <ContextMenuItemGroup>
                 <ContextMenuItem
-                    accessibilityLabel = {t('settings.microphones')}
+                    accessibilityLabel = {isVisitorButton ? t('visitors.audioSettings.title') : t('settings.microphones')}
                     className = {classes.header}
                     icon = {IconMic}
                     id = {microphoneHeaderId}
-                    text = {t('settings.microphones')} />
-                <ul
-                    aria-labelledby = {microphoneHeaderId}
-                    className = {classes.list}
-                    role = 'radiogroup'
-                    tabIndex = {-1}>
-                    {audioTracks.map((data, i) =>
-                        _renderMicrophoneEntry(data, i, audioTracks.length)
-                    )}
-                </ul>
+                    text = {isVisitorButton ? t('visitors.audioSettings.title') : t('settings.microphones')} />
+                {isVisitorButton ? (
+                    <div className = {classes.visitorContainer}>
+                        <div className = {classes.visitorContent}>{t('visitors.audioSettings.desc')}</div>
+                    </div>
+                ) : (
+                    <ul
+                        aria-labelledby = {microphoneHeaderId}
+                        className = {classes.list}
+                        role = 'radiogroup'
+                        tabIndex = {-1}>
+                        {audioTracks.map((data, i) =>
+                            _renderMicrophoneEntry(data, i, audioTracks.length)
+                        )}
+                    </ul>
+                )}
             </ContextMenuItemGroup>
             {outputDevices.length > 0 && (
                 <>

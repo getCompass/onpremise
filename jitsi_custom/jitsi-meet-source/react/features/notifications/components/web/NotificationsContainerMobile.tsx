@@ -9,6 +9,7 @@ import { INotificationProps } from '../../types';
 import NotificationsTransition from '../NotificationsTransition';
 
 import Notification from './Notification';
+import { MESSAGE_NOT_DELIVERED_NOTIFICATION_ID } from "../../constants";
 
 interface IProps {
 
@@ -153,7 +154,10 @@ function _mapStateToProps(state: IReduxState) {
     return {
         _iAmSipGateway: Boolean(iAmSipGateway),
         _isChatOpen: isChatOpen,
-        _notifications: _visible ? notifications.reverse() : []
+        _notifications: _visible ? notifications
+                .filter(n => n.uid !== MESSAGE_NOT_DELIVERED_NOTIFICATION_ID)
+                .reverse()
+            : []
     };
 }
 

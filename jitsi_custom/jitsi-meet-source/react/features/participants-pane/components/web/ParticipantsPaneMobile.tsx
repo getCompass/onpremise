@@ -4,28 +4,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
-import { openDialog } from '../../../base/dialog/actions';
 import { IconCloseLarge } from '../../../base/icons/svg';
-import {
-    getParticipantById,
-    isLocalParticipantModerator,
-    isScreenShareParticipant
-} from '../../../base/participants/functions';
+import { getParticipantById, isScreenShareParticipant } from '../../../base/participants/functions';
 import ClickableIcon from '../../../base/ui/components/web/ClickableIcon';
 import { findAncestorByClass } from '../../../base/ui/functions.web';
-import MuteEveryoneDialog from '../../../video-menu/components/web/MuteEveryoneDialog';
 import { close } from '../../actions.web';
-import {
-    getParticipantsPaneOpen,
-    getSortedParticipantIds,
-    isMoreActionsVisible,
-    isMuteAllVisible,
-    shouldRenderInviteButton
-} from '../../functions';
+import { getParticipantsPaneOpen, getSortedParticipantIds } from '../../functions';
 import LobbyParticipants from './LobbyParticipants';
 import MeetingParticipants from './MeetingParticipants';
-import VisitorsList from './VisitorsList';
-import { isButtonEnabled } from "../../../toolbox/functions.web";
+import VisitorsListMobile from "./VisitorsListMobile";
+import { getVisitorsCount } from "../../../visitors/functions";
+import { openDialog } from "../../../base/dialog/actions";
+import VisitorsTooltipDialog from "../../../visitors/components/web/VisitorsTooltipDialog";
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -36,11 +26,7 @@ const useStyles = makeStyles()(theme => {
             top: 0,
             left: 0,
             backgroundColor: 'rgba(0, 0, 0, 1)',
-            opacity: 0.8,
-
-            '&.is-mobile': {
-                opacity: 0.9,
-            },
+            opacity: 0.9,
         },
 
         participantsPane: {
@@ -75,14 +61,10 @@ const useStyles = makeStyles()(theme => {
             flex: 1,
             overflowY: 'auto',
             position: 'relative',
-            padding: '0 16px',
+            padding: 0,
 
             '&::-webkit-scrollbar': {
                 display: 'none'
-            },
-
-            '&.is-mobile': {
-                padding: 0,
             },
 
             '& > div': {
@@ -91,9 +73,7 @@ const useStyles = makeStyles()(theme => {
 
                     '&:last-child': {
                         '& > .list-item-details-container': {
-                            '&.is-mobile': {
-                                borderBottom: '0.5px solid transparent',
-                            },
+                            borderBottom: '0.5px solid transparent',
                         },
                     },
                 },
@@ -111,7 +91,7 @@ const useStyles = makeStyles()(theme => {
             alignItems: 'center',
             boxSizing: 'border-box',
             display: 'flex',
-            padding: '16px 16px 14px 16px',
+            padding: '16px 16px 4px 16px',
             justifyContent: 'space-between',
         },
 
@@ -123,10 +103,19 @@ const useStyles = makeStyles()(theme => {
             letterSpacing: '-0.3px',
         },
 
-        headerInviteButtonContainer: {
-            marginTop: '14px',
-            marginBottom: '19px',
-            padding: '0px 16px'
+        headerVisitorsContainer: {
+            padding: "0px 16px 6px 16px",
+            width: "fit-content",
+        },
+
+        headerVisitors: {
+            fontFamily: 'Lato Regular',
+            fontWeight: 'normal' as const,
+            fontSize: '13px',
+            lineHeight: '16px',
+            paddingBottom: "3px",
+            color: 'rgba(255, 255, 255, 0.75)',
+            borderBottom: "1px dashed rgba(255, 255, 255, 0.4)",
         },
 
         antiCollapse: {
@@ -147,11 +136,7 @@ const useStyles = makeStyles()(theme => {
             padding: '2px 16px 16px 16px',
 
             '& > *:not(:last-child)': {
-                marginRight: '8px',
-
-                '&.is-mobile': {
-                    marginRight: '12px',
-                }
+                marginRight: '12px',
             }
         },
 
@@ -164,9 +149,6 @@ const useStyles = makeStyles()(theme => {
 const ParticipantsPaneMobile = () => {
     const { classes, cx } = useStyles();
     const paneOpen = useSelector(getParticipantsPaneOpen);
-    const showFooter = useSelector(isLocalParticipantModerator);
-    const showMuteAllButton = useSelector(isMuteAllVisible);
-    const showMoreActionsButton = useSelector(isMoreActionsVisible);
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
     const { t } = useTranslation();
@@ -178,8 +160,8 @@ const ParticipantsPaneMobile = () => {
     });
     const { is_in_picture_in_picture_mode } = useSelector((state: IReduxState) => state['features/picture-in-picture']);
 
+    const visitorsCount = useSelector(getVisitorsCount);
     const participantsCount = sortedParticipantIds.length;
-    const showInviteButton = shouldRenderInviteButton(state) && isButtonEnabled('invite', state);
 
     const [ contextOpen, setContextOpen ] = useState(false);
     const [ searchString, setSearchString ] = useState('');
@@ -202,16 +184,8 @@ const ParticipantsPaneMobile = () => {
         dispatch(close());
     }, []);
 
-    const onDrawerClose = useCallback(() => {
-        setContextOpen(false);
-    }, []);
-
-    const onMuteAll = useCallback(() => {
-        dispatch(openDialog(MuteEveryoneDialog));
-    }, []);
-
-    const onToggleContext = useCallback(() => {
-        setContextOpen(open => !open);
+    const onVisitorsTitleClick = useCallback(() => {
+        dispatch(openDialog(VisitorsTooltipDialog));
     }, []);
 
     // ловим событие "назад" и закрываем участников
@@ -250,10 +224,10 @@ const ParticipantsPaneMobile = () => {
 
     return (
         <>
-            <div className = {cx(classes.backdrop, 'is-mobile')} />
+            <div className = {cx(classes.backdrop)} />
             <div className = {cx('participants_pane', classes.participantsPane)}>
-                <div className = {cx(classes.header, 'is-mobile')}>
-                    <div className = {cx(classes.headerTitle, 'is-mobile')}>
+                <div className = {cx(classes.header)}>
+                    <div className = {cx(classes.headerTitle)}>
                         {t('participantsPane.headings.participantsList', { count: participantsCount })}
                     </div>
                     <ClickableIcon
@@ -261,8 +235,15 @@ const ParticipantsPaneMobile = () => {
                         icon = {IconCloseLarge}
                         onClick = {onClosePane} />
                 </div>
-                <div className = {cx(classes.container, 'is-mobile')}>
-                    <VisitorsList />
+                {visitorsCount > 0 && (
+                    <div className = {classes.headerVisitorsContainer}>
+                        <div className = {classes.headerVisitors} onClick={() => onVisitorsTitleClick()}>
+                            {t("participantsPane.headings.visitors", { count: visitorsCount })}
+                        </div>
+                    </div>
+                )}
+                <div className = {cx(classes.container)}>
+                    <VisitorsListMobile />
                     <LobbyParticipants />
                     <MeetingParticipants
                         searchString = {searchString}

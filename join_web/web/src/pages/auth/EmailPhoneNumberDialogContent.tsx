@@ -12,7 +12,7 @@ import {
 	captchaProviderState,
 	captchaPublicKeyState,
 	confirmPasswordState,
-	dictionaryDataState,
+	dictionaryDataState, isGuestAuthState,
 	isPasswordChangedState,
 	isRegistrationState,
 	joinLinkState,
@@ -35,17 +35,17 @@ import {
 	APIAuthTypeRegisterByPhoneNumber,
 	INACTIVE_LINK_ERROR_CODE,
 	INCORRECT_LINK_ERROR_CODE,
-	isValidEmail,
+	isValidEmail, JOIN_LINK_ROLE_GUEST,
 	LIMIT_ERROR_CODE,
 	SSO_PROTOCOL_OIDC,
 } from "../../api/_types.ts";
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "../../components/tooltip.tsx";
 import { Portal } from "@ark-ui/react";
-import useAvailableAuthMethodList from "../../lib/useAvailableAuthMethodList.ts";
+import useAvailableAuthMethodList, { useAvailableAuthGuestMethodList } from "../../lib/useAvailableAuthMethodList.ts";
 import { useApiAuthPhoneNumberBegin } from "../../api/auth/phonenumber.ts";
 import { useApiAuthMailBegin } from "../../api/auth/mail.ts";
 import { useApiFederationSsoAuthBegin } from "../../api/auth/sso.ts";
-import { doCaptchaRender, doCaptchaReset } from "../../lib/functions.ts";
+import { arraysEqual, doCaptchaRender, doCaptchaReset } from "../../lib/functions.ts";
 
 type EmailPhoneNumberDialogContentProps = {
 	onAuthBeginClickHandler: (value: string) => void;
@@ -86,11 +86,20 @@ const EmailPhoneNumberDialogContentDesktop = ({
 	const langStringEmailPhoneNumberDialogDescEmailPhoneNumber = useLangString(
 		"email_phone_number_dialog.desc_email_phone_number"
 	);
+	const langStringEmailPhoneNumberDialogDescEmailPhoneNumberGuest = useLangString(
+		"email_phone_number_dialog.desc_email_phone_number_guest"
+	);
 	const langStringEmailPhoneNumberDialogDescEmail = useLangString("email_phone_number_dialog.desc_email");
+	const langStringEmailPhoneNumberDialogDescEmailGuest = useLangString("email_phone_number_dialog.desc_email_guest");
 	const langStringEmailPhoneNumberDialogDescPhoneNumber = useLangString(
 		"email_phone_number_dialog.desc_phone_number"
 	);
+	const langStringEmailPhoneNumberDialogDescPhoneNumberGuest = useLangString(
+		"email_phone_number_dialog.desc_phone_number_guest"
+	);
 	const langStringEmailPhoneNumberDialogDescSso = useLangString("email_phone_number_dialog.desc_sso");
+	const langStringEmailPhoneNumberDialogDescSsoGuest = useLangString("email_phone_number_dialog.desc_sso_guest");
+	const langStringEmailPhoneNumberDialogOpenGuestAuthMethodsButton = useLangString("email_phone_number_dialog.open_guest_auth_methods_button");
 	const langStringEmailPhoneNumberDialogInputPlaceholderEmail = useLangString(
 		"email_phone_number_dialog.input_placeholder_email"
 	);
@@ -106,10 +115,23 @@ const EmailPhoneNumberDialogContentDesktop = ({
 	);
 	const ssoButtonCustomText = useAtomValue(dictionaryDataState).auth_sso_start_button_text;
 
+	const joinLink = useAtomValue(joinLinkState);
+	const [ isGuestAuth, setIsGuestAuth ] = useAtom(isGuestAuthState);
+	const isGuestJoinLink = useMemo(() => joinLink !== null && joinLink.role === JOIN_LINK_ROLE_GUEST, [ joinLink ]);
+	const isGuest = useMemo(() => isGuestJoinLink || isGuestAuth, [ isGuestJoinLink, isGuestAuth ]);
+	const availableAuthGuestMethodList = useAvailableAuthGuestMethodList();
 	const availableAuthMethodList = useAvailableAuthMethodList();
+	const authMethodList = useMemo(() => {
 
-	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
-	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
+		if (isGuest) {
+			return availableAuthGuestMethodList;
+		}
+
+		return availableAuthMethodList;
+	}, [ isGuest, availableAuthGuestMethodList, availableAuthMethodList ]);
+
+	const [ isNeedShowTooltip, setIsNeedShowTooltip ] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
+	const [ isToolTipVisible, setIsToolTipVisible ] = useState(false); // видно ли тултип прям сейчас
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
 	const captchaProvider = useAtomValue(captchaProviderState);
 
@@ -117,14 +139,15 @@ const EmailPhoneNumberDialogContentDesktop = ({
 		if (isToolTipVisible) {
 			setTimeout(() => setIsToolTipVisible(false), 5000);
 		}
-	}, [isToolTipVisible]);
+	}, [ isToolTipVisible ]);
 
 	const captchaContainerRef = useCallback(
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
 					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
-				} catch (error) {}
+				} catch (error) {
+				}
 
 				setShowCaptchaState("rendered");
 			}
@@ -133,58 +156,86 @@ const EmailPhoneNumberDialogContentDesktop = ({
 				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
-		[showCaptchaState, captchaPublicKey]
+		[ showCaptchaState, captchaPublicKey ]
 	);
 
+	const onGuestButtonClick = useCallback(() => {
+		setIsGuestAuth(true);
+	}, [])
+
+	const renderedGuestButton = useMemo(() => {
+
+		// @ts-ignore
+		if (((isGuestJoinLink && !isGuestAuth) || joinLink === null || joinLink == "null") && !arraysEqual(authMethodList.getMethodList(), availableAuthGuestMethodList.getMethodList())) {
+			return <Button
+				mt = "12px"
+				size = "full_desktop"
+				textSize = "xl_desktop"
+				color = "007aff_white"
+				onClick = {() => onGuestButtonClick()}
+			>
+				{langStringEmailPhoneNumberDialogOpenGuestAuthMethodsButton}
+			</Button>;
+		}
+
+		return <></>;
+	}, [
+		isGuestJoinLink,
+		isGuestAuth,
+		joinLink,
+		authMethodList,
+		availableAuthGuestMethodList,
+	]);
+
 	return (
-		<VStack w="100%" gap="20px">
-			<VStack px="4px" mt="20px" gap="16px" w="100%">
+		<VStack w = "100%" gap = "20px">
+			<VStack px = "4px" mt = "20px" gap = "16px" w = "100%">
 				<IconLogo />
-				<VStack gap="6px" w="100%">
-					<Text fs="18" lh="24" font="bold" ls="-02">
+				<VStack gap = "6px" w = "100%">
+					<Text fs = "18" lh = "24" font = "bold" ls = "-02">
 						{langStringEmailPhoneNumberDialogTitle}
 					</Text>
-					<Text fs="14" lh="20" textAlign="center" font="regular">
-						{availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()
-							? langStringEmailPhoneNumberDialogDescEmailPhoneNumber
-							: availableAuthMethodList.isAuthMethodMailEnabled()
-							? langStringEmailPhoneNumberDialogDescEmail
-							: availableAuthMethodList.isAuthMethodSsoEnabled() &&
-							  !availableAuthMethodList.isAuthMethodMailEnabled() &&
-							  !availableAuthMethodList.isAuthMethodPhoneNumberEnabled()
-							? langStringEmailPhoneNumberDialogDescSso
-									.split("\n")
-									.map((line, index) => <div key={index}>{line}</div>)
-							: langStringEmailPhoneNumberDialogDescPhoneNumber}
+					<Text fs = "14" lh = "20" textAlign = "center" font = "regular">
+						{authMethodList.isAuthMethodPhoneNumberMailEnabled()
+							? (isGuestAuth ? langStringEmailPhoneNumberDialogDescEmailPhoneNumberGuest : langStringEmailPhoneNumberDialogDescEmailPhoneNumber)
+							: authMethodList.isAuthMethodMailEnabled()
+								? (isGuestAuth ? langStringEmailPhoneNumberDialogDescEmailGuest : langStringEmailPhoneNumberDialogDescEmail)
+								: authMethodList.isAuthMethodSsoEnabled() &&
+								!authMethodList.isAuthMethodMailEnabled() &&
+								!authMethodList.isAuthMethodPhoneNumberEnabled()
+									? (isGuestAuth ? langStringEmailPhoneNumberDialogDescSsoGuest : langStringEmailPhoneNumberDialogDescSso)
+										.split("\n")
+										.map((line, index) => <div key = {index}>{line}</div>)
+									: (isGuestAuth ? langStringEmailPhoneNumberDialogDescPhoneNumberGuest : langStringEmailPhoneNumberDialogDescPhoneNumber)}
 					</Text>
 				</VStack>
 			</VStack>
-			<VStack w="100%" gap="0px">
-				{(availableAuthMethodList.isAuthMethodMailEnabled() ||
-					availableAuthMethodList.isAuthMethodPhoneNumberEnabled()) && (
+			<VStack w = "100%" gap = "0px">
+				{(authMethodList.isAuthMethodMailEnabled() ||
+					authMethodList.isAuthMethodPhoneNumberEnabled()) && (
 					<>
 						<TooltipProvider>
 							<Tooltip
-								open={isToolTipVisible}
-								onOpenChange={() => null}
-								style="desktop"
-								type="warning_desktop"
+								open = {isToolTipVisible}
+								onOpenChange = {() => null}
+								style = "desktop"
+								type = "warning_desktop"
 							>
-								<VStack w="100%" gap="0px">
+								<VStack w = "100%" gap = "0px">
 									<TooltipTrigger
-										style={{
+										style = {{
 											width: "100%",
 											height: "0px",
 											opacity: "0%",
 										}}
 									/>
 									<Input
-										ref={inputRef}
-										type="search"
-										autoComplete="nope"
-										value={authInput}
-										autoCapitalize="none"
-										onChange={(changeEvent) => {
+										ref = {inputRef}
+										type = "search"
+										autoComplete = "nope"
+										value = {authInput}
+										autoCapitalize = "none"
+										onChange = {(changeEvent) => {
 											const value = changeEvent.target.value ?? "";
 											if (isNeedShowTooltip) {
 												const isTooltipNotSavedSymbolsVisible =
@@ -200,44 +251,44 @@ const EmailPhoneNumberDialogContentDesktop = ({
 											setAuthInput(value);
 											setIsError(false);
 										}}
-										maxLength={80}
-										placeholder={
-											availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()
+										maxLength = {80}
+										placeholder = {
+											authMethodList.isAuthMethodPhoneNumberMailEnabled()
 												? langStringEmailPhoneNumberDialogInputPlaceholderEmailPhoneNumber
-												: availableAuthMethodList.isAuthMethodMailEnabled()
-												? langStringEmailPhoneNumberDialogInputPlaceholderEmail
-												: langStringEmailPhoneNumberDialogInputPlaceholderPhoneNumber
+												: authMethodList.isAuthMethodMailEnabled()
+													? langStringEmailPhoneNumberDialogInputPlaceholderEmail
+													: langStringEmailPhoneNumberDialogInputPlaceholderPhoneNumber
 										}
-										size="default_desktop"
-										onKeyDown={(event: React.KeyboardEvent) => {
+										size = "default_desktop"
+										onKeyDown = {(event: React.KeyboardEvent) => {
 											if (event.key === "Enter") {
 												onAuthBeginClickHandler(authInput);
 											}
 										}}
-										input={isError ? "error_default" : "default"}
+										input = {isError ? "error_default" : "default"}
 									/>
 								</VStack>
 								<Portal>
 									<TooltipContent
-										onClick={() => setIsToolTipVisible(false)}
-										onEscapeKeyDown={() => setIsToolTipVisible(false)}
-										onPointerDownOutside={() => setIsToolTipVisible(false)}
-										sideOffset={4}
-										avoidCollisions={false}
-										style={{
+										onClick = {() => setIsToolTipVisible(false)}
+										onEscapeKeyDown = {() => setIsToolTipVisible(false)}
+										onPointerDownOutside = {() => setIsToolTipVisible(false)}
+										sideOffset = {4}
+										avoidCollisions = {false}
+										style = {{
 											maxWidth: "256px",
 											width: "var(--radix-tooltip-trigger-width)",
 										}}
 									>
-										<TooltipArrow width="8px" height="5px" asChild>
+										<TooltipArrow width = "8px" height = "5px" asChild>
 											<svg
-												width="8"
-												height="5"
-												viewBox="0 0 8 5"
-												fill="none"
-												xmlns="http://www.w3.org/2000/svg"
+												width = "8"
+												height = "5"
+												viewBox = "0 0 8 5"
+												fill = "none"
+												xmlns = "http://www.w3.org/2000/svg"
 											>
-												<path d="M0 0L4 5L8 0H0Z" fill="#FF8A00" />
+												<path d = "M0 0L4 5L8 0H0Z" fill = "#FF8A00" />
 											</svg>
 										</TooltipArrow>
 										{langStringEmailPhoneNumberDialogProhibitedSymbolsTooltip}
@@ -246,52 +297,53 @@ const EmailPhoneNumberDialogContentDesktop = ({
 							</Tooltip>
 						</TooltipProvider>
 						<Box
-							ref={captchaContainerRef}
-							id="path_to_captcha"
-							style={{
+							ref = {captchaContainerRef}
+							id = "path_to_captcha"
+							style = {{
 								display: showCaptchaState === "rendered" ? "block" : "none",
 								marginTop: showCaptchaState === "rendered" ? "12px" : "0px",
 							}}
 						/>
 						<Button
-							mt="12px"
-							size="full_desktop"
-							textSize="xl_desktop"
-							onClick={() => onAuthBeginClickHandler(authInput)}
-							disabled={authInput.replace(/[^а-яА-яёЁa-zA-Z0-9@+\-._']/g, "").trim().length < 1}
+							mt = "12px"
+							size = "full_desktop"
+							textSize = "xl_desktop"
+							onClick = {() => onAuthBeginClickHandler(authInput)}
+							disabled = {authInput.replace(/[^а-яА-яёЁa-zA-Z0-9@+\-._']/g, "").trim().length < 1}
 						>
 							{isLoadingPhoneMailBtn ? <Preloader16 /> : langStringEmailPhoneNumberDialogConfirmButton}
 						</Button>
 					</>
 				)}
 				{/* если включена аутентификация через SSO */}
-				{availableAuthMethodList.isAuthMethodSsoEnabled() && (
+				{authMethodList.isAuthMethodSsoEnabled() && (
 					<Button
-						mt={
-							!availableAuthMethodList.isAuthMethodMailEnabled() &&
-							!availableAuthMethodList.isAuthMethodPhoneNumberEnabled()
+						mt = {
+							!authMethodList.isAuthMethodMailEnabled() &&
+							!authMethodList.isAuthMethodPhoneNumberEnabled()
 								? "0px"
 								: "12px"
 						}
-						size="full_desktop"
-						textSize="xl_desktop"
-						color={
-							!availableAuthMethodList.isAuthMethodMailEnabled() &&
-							!availableAuthMethodList.isAuthMethodPhoneNumberEnabled()
+						size = "full_desktop"
+						textSize = "xl_desktop"
+						color = {
+							!authMethodList.isAuthMethodMailEnabled() &&
+							!authMethodList.isAuthMethodPhoneNumberEnabled()
 								? "007aff"
 								: "d05dbd"
 						}
-						onClick={() => onSsoAuthBeginClickHandler(setIsSsoAuthBtnPreloader)}
+						onClick = {() => onSsoAuthBeginClickHandler(setIsSsoAuthBtnPreloader)}
 					>
 						{isLoadingSsoBtn ? (
 							<Preloader16 />
 						) : (
-							<styled.span whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
+							<styled.span whiteSpace = "nowrap" overflow = "hidden" textOverflow = "ellipsis">
 								{ssoButtonCustomText}
 							</styled.span>
 						)}
 					</Button>
 				)}
+				{renderedGuestButton}
 			</VStack>
 		</VStack>
 	);
@@ -318,11 +370,20 @@ const EmailPhoneNumberDialogContentMobile = ({
 	const langStringEmailPhoneNumberDialogDescEmailPhoneNumber = useLangString(
 		"email_phone_number_dialog.desc_email_phone_number"
 	);
+	const langStringEmailPhoneNumberDialogDescEmailPhoneNumberGuest = useLangString(
+		"email_phone_number_dialog.desc_email_phone_number_guest"
+	);
 	const langStringEmailPhoneNumberDialogDescEmail = useLangString("email_phone_number_dialog.desc_email");
+	const langStringEmailPhoneNumberDialogDescEmailGuest = useLangString("email_phone_number_dialog.desc_email_guest");
 	const langStringEmailPhoneNumberDialogDescPhoneNumber = useLangString(
 		"email_phone_number_dialog.desc_phone_number"
 	);
+	const langStringEmailPhoneNumberDialogDescPhoneNumberGuest = useLangString(
+		"email_phone_number_dialog.desc_phone_number_guest"
+	);
 	const langStringEmailPhoneNumberDialogDescSso = useLangString("email_phone_number_dialog.desc_sso");
+	const langStringEmailPhoneNumberDialogDescSsoGuest = useLangString("email_phone_number_dialog.desc_sso_guest");
+	const langStringEmailPhoneNumberDialogOpenGuestAuthMethodsButton = useLangString("email_phone_number_dialog.open_guest_auth_methods_button");
 	const langStringEmailPhoneNumberDialogInputPlaceholderEmail = useLangString(
 		"email_phone_number_dialog.input_placeholder_email"
 	);
@@ -333,8 +394,22 @@ const EmailPhoneNumberDialogContentMobile = ({
 		"email_phone_number_dialog.input_placeholder_email_phone_number"
 	);
 	const langStringEmailPhoneNumberDialogConfirmButton = useLangString("email_phone_number_dialog.confirm_button");
+	const langStringEmailLoginDialogBackButton = useLangString("email_login_dialog.back_button");
 
+	const joinLink = useAtomValue(joinLinkState);
+	const [ isGuestAuth, setIsGuestAuth ] = useAtom(isGuestAuthState);
+	const isGuestJoinLink = useMemo(() => joinLink !== null && joinLink.role === JOIN_LINK_ROLE_GUEST, [ joinLink ]);
+	const isGuest = useMemo(() => isGuestJoinLink || isGuestAuth, [ isGuestJoinLink, isGuestAuth ]);
+	const availableAuthGuestMethodList = useAvailableAuthGuestMethodList();
 	const availableAuthMethodList = useAvailableAuthMethodList();
+	const authMethodList = useMemo(() => {
+
+		if (isGuest) {
+			return availableAuthGuestMethodList;
+		}
+
+		return availableAuthMethodList;
+	}, [ isGuest, availableAuthGuestMethodList, availableAuthMethodList ]);
 
 	const ssoButtonCustomText = useAtomValue(dictionaryDataState).auth_sso_start_button_text;
 
@@ -342,8 +417,8 @@ const EmailPhoneNumberDialogContentMobile = ({
 		"email_phone_number_dialog.prohibited_symbols_tooltip"
 	);
 
-	const [isNeedShowTooltip, setIsNeedShowTooltip] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
-	const [isToolTipVisible, setIsToolTipVisible] = useState(false); // видно ли тултип прям сейчас
+	const [ isNeedShowTooltip, setIsNeedShowTooltip ] = useState(true); // нужно ли показывать тултип(показываем всего 1 раз)
+	const [ isToolTipVisible, setIsToolTipVisible ] = useState(false); // видно ли тултип прям сейчас
 	const captchaPublicKey = useAtomValue(captchaPublicKeyState);
 	const captchaProvider = useAtomValue(captchaProviderState);
 
@@ -351,14 +426,15 @@ const EmailPhoneNumberDialogContentMobile = ({
 		if (isToolTipVisible) {
 			setTimeout(() => setIsToolTipVisible(false), 5000);
 		}
-	}, [isToolTipVisible]);
+	}, [ isToolTipVisible ]);
 
 	const captchaContainerRef = useCallback(
 		(node: HTMLDivElement | null) => {
 			if (node !== null && showCaptchaState === "need_render") {
 				try {
 					setWidgetId(doCaptchaRender(node, captchaPublicKey, captchaProvider, setGrecaptchaResponse));
-				} catch (error) {}
+				} catch (error) {
+				}
 
 				setShowCaptchaState("rendered");
 			}
@@ -367,154 +443,197 @@ const EmailPhoneNumberDialogContentMobile = ({
 				doCaptchaReset(captchaProvider, widgetId);
 			}
 		},
-		[showCaptchaState, captchaPublicKey]
+		[ showCaptchaState, captchaPublicKey ]
 	);
 
+	const onGuestButtonClick = useCallback(() => {
+		setIsGuestAuth(true);
+	}, [])
+
+	const renderedGuestButton = useMemo(() => {
+
+		// @ts-ignore
+		if (((isGuestJoinLink && !isGuestAuth) || joinLink === null || joinLink == "null") && !arraysEqual(authMethodList.getMethodList(), availableAuthGuestMethodList.getMethodList())) {
+			return <Button
+				color = "007aff_white"
+				onClick = {() => onGuestButtonClick()}
+			>
+				{langStringEmailPhoneNumberDialogOpenGuestAuthMethodsButton}
+			</Button>;
+		}
+
+		return <></>;
+	}, [
+		isGuestJoinLink,
+		isGuestAuth,
+		joinLink,
+		authMethodList,
+		availableAuthGuestMethodList,
+	]);
+
 	return (
-		<VStack w="100%" gap="24px">
-			<VStack mt="16px" gap="16px" w="100%">
-				<IconLogo />
-				<VStack gap="4px" w="100%">
-					<Text fs="20" lh="28" font="bold" ls="-03">
-						{langStringEmailPhoneNumberDialogTitle}
-					</Text>
-					<Text fs="16" lh="22" textAlign="center" font="regular">
-						{availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()
-							? langStringEmailPhoneNumberDialogDescEmailPhoneNumber
-							: availableAuthMethodList.isAuthMethodMailEnabled()
-							? langStringEmailPhoneNumberDialogDescEmail
-							: availableAuthMethodList.isAuthMethodSsoEnabled() &&
-							  !availableAuthMethodList.isAuthMethodMailEnabled() &&
-							  !availableAuthMethodList.isAuthMethodPhoneNumberEnabled()
-							? langStringEmailPhoneNumberDialogDescSso
-									.split("\n")
-									.map((line, index) => <div key={index}>{line}</div>)
-							: langStringEmailPhoneNumberDialogDescPhoneNumber}
-					</Text>
+		<>
+			<VStack w = "100%" gap = "0px">
+				{(isGuestAuth && !isGuestJoinLink) && (
+					<Box w = "100%">
+						<Button
+							color = "2574a9"
+							textSize = "lato_16_22_400"
+							size = "px0py0"
+							onClick = {() => setIsGuestAuth(false)}
+						>
+							{langStringEmailLoginDialogBackButton}
+						</Button>
+					</Box>
+				)}
+				<VStack w = "100%" gap = "24px">
+					<VStack mt = {isGuestAuth ? "-6px" : "16px"} gap = "16px" w = "100%">
+						<IconLogo />
+						<VStack gap = "4px" w = "100%">
+							<Text fs = "20" lh = "28" font = "bold" ls = "-03">
+								{langStringEmailPhoneNumberDialogTitle}
+							</Text>
+							<Text fs = "16" lh = "22" textAlign = "center" font = "regular">
+								{authMethodList.isAuthMethodPhoneNumberMailEnabled()
+									? (isGuestAuth ? langStringEmailPhoneNumberDialogDescEmailPhoneNumberGuest : langStringEmailPhoneNumberDialogDescEmailPhoneNumber)
+									: authMethodList.isAuthMethodMailEnabled()
+										? (isGuestAuth ? langStringEmailPhoneNumberDialogDescEmailGuest : langStringEmailPhoneNumberDialogDescEmail)
+										: authMethodList.isAuthMethodSsoEnabled() &&
+										!authMethodList.isAuthMethodMailEnabled() &&
+										!authMethodList.isAuthMethodPhoneNumberEnabled()
+											? (isGuestAuth ? langStringEmailPhoneNumberDialogDescSsoGuest : langStringEmailPhoneNumberDialogDescSso)
+												.split("\n")
+												.map((line, index) => <div key = {index}>{line}</div>)
+											: (isGuestAuth ? langStringEmailPhoneNumberDialogDescPhoneNumberGuest : langStringEmailPhoneNumberDialogDescPhoneNumber)}
+							</Text>
+						</VStack>
+					</VStack>
+					<VStack w = "100%" gap = {showCaptchaState === "rendered" ? "16px" : "12px"}>
+						{(authMethodList.isAuthMethodMailEnabled() ||
+							authMethodList.isAuthMethodPhoneNumberEnabled()) && (
+							<>
+								<TooltipProvider>
+									<Tooltip
+										open = {isToolTipVisible}
+										onOpenChange = {() => null}
+										style = "mobile"
+										type = "warning_mobile"
+									>
+										<VStack w = "100%" gap = "0px">
+											<TooltipTrigger
+												style = {{
+													width: "100%",
+													height: "0px",
+													opacity: "0%",
+												}}
+											/>
+											<Input
+												ref = {inputRef}
+												type = "search"
+												autoComplete = "nope"
+												value = {authInput}
+												autoCapitalize = "none"
+												onChange = {(changeEvent) => {
+													const value = changeEvent.target.value ?? "";
+													if (isNeedShowTooltip) {
+														const isTooltipNotSavedSymbolsVisible =
+															/[^а-яА-яёЁa-zA-Z0-9@+\-._ ']/.test(value);
+														if (isTooltipNotSavedSymbolsVisible) {
+															setIsToolTipVisible(isTooltipNotSavedSymbolsVisible);
+															if (isTooltipNotSavedSymbolsVisible) {
+																setIsNeedShowTooltip(false);
+															}
+														}
+													}
+
+													setAuthInput(value.slice(0, 80));
+													setIsError(false);
+												}}
+												maxLength = {80}
+												placeholder = {
+													authMethodList.isAuthMethodPhoneNumberMailEnabled()
+														? langStringEmailPhoneNumberDialogInputPlaceholderEmailPhoneNumber
+														: authMethodList.isAuthMethodMailEnabled()
+															? langStringEmailPhoneNumberDialogInputPlaceholderEmail
+															: langStringEmailPhoneNumberDialogInputPlaceholderPhoneNumber
+												}
+												onKeyDown = {(event: React.KeyboardEvent) => {
+													if (event.key === "Enter") {
+														onAuthBeginClickHandler(authInput);
+													}
+												}}
+												input = {isError ? "error_default" : "default"}
+											/>
+										</VStack>
+										<Portal>
+											<TooltipContent
+												onClick = {() => setIsToolTipVisible(false)}
+												onEscapeKeyDown = {() => setIsToolTipVisible(false)}
+												onPointerDownOutside = {() => setIsToolTipVisible(false)}
+												sideOffset = {4}
+												avoidCollisions = {false}
+												style = {{
+													maxWidth: "256px",
+													width: "var(--radix-tooltip-trigger-width)",
+												}}
+											>
+												<TooltipArrow width = "8px" height = "5px" asChild>
+													<svg
+														width = "8"
+														height = "5"
+														viewBox = "0 0 8 5"
+														fill = "none"
+														xmlns = "http://www.w3.org/2000/svg"
+													>
+														<path d = "M0 0L4 5L8 0H0Z" fill = "#FF8A00" />
+													</svg>
+												</TooltipArrow>
+												{langStringEmailPhoneNumberDialogProhibitedSymbolsTooltip}
+											</TooltipContent>
+										</Portal>
+									</Tooltip>
+								</TooltipProvider>
+								<Box
+									ref = {captchaContainerRef}
+									id = "path_to_captcha"
+									style = {{
+										display: showCaptchaState === "rendered" ? "block" : "none",
+									}}
+								/>
+								<Button
+									onClick = {() => onAuthBeginClickHandler(authInput)}
+									disabled = {authInput.replace(/[^а-яА-яёЁa-zA-Z0-9@+\-._']/g, "").trim().length < 1}
+								>
+									{isLoadingPhoneMailBtn ?
+										<Preloader16 /> : langStringEmailPhoneNumberDialogConfirmButton}
+								</Button>
+							</>
+						)}
+						{/* если включена аутентификация через SSO */}
+						{authMethodList.isAuthMethodSsoEnabled() && (
+							<Button
+								color = {
+									!authMethodList.isAuthMethodMailEnabled() &&
+									!authMethodList.isAuthMethodPhoneNumberEnabled()
+										? "007aff"
+										: "d05dbd"
+								}
+								onClick = {() => onSsoAuthBeginClickHandler(setIsSsoAuthBtnPreloader)}
+							>
+								{isLoadingSsoBtn ? (
+									<Preloader16 />
+								) : (
+									<styled.span whiteSpace = "nowrap" overflow = "hidden" textOverflow = "ellipsis">
+										{ssoButtonCustomText}
+									</styled.span>
+								)}
+							</Button>
+						)}
+						{renderedGuestButton}
+					</VStack>
 				</VStack>
 			</VStack>
-			<VStack w="100%" gap={showCaptchaState === "rendered" ? "16px" : "12px"}>
-				{(availableAuthMethodList.isAuthMethodMailEnabled() ||
-					availableAuthMethodList.isAuthMethodPhoneNumberEnabled()) && (
-					<>
-						<TooltipProvider>
-							<Tooltip
-								open={isToolTipVisible}
-								onOpenChange={() => null}
-								style="mobile"
-								type="warning_mobile"
-							>
-								<VStack w="100%" gap="0px">
-									<TooltipTrigger
-										style={{
-											width: "100%",
-											height: "0px",
-											opacity: "0%",
-										}}
-									/>
-									<Input
-										ref={inputRef}
-										type="search"
-										autoComplete="nope"
-										value={authInput}
-										autoCapitalize="none"
-										onChange={(changeEvent) => {
-											const value = changeEvent.target.value ?? "";
-											if (isNeedShowTooltip) {
-												const isTooltipNotSavedSymbolsVisible =
-													/[^а-яА-яёЁa-zA-Z0-9@+\-._ ']/.test(value);
-												if (isTooltipNotSavedSymbolsVisible) {
-													setIsToolTipVisible(isTooltipNotSavedSymbolsVisible);
-													if (isTooltipNotSavedSymbolsVisible) {
-														setIsNeedShowTooltip(false);
-													}
-												}
-											}
-
-											setAuthInput(value.slice(0, 80));
-											setIsError(false);
-										}}
-										maxLength={80}
-										placeholder={
-											availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()
-												? langStringEmailPhoneNumberDialogInputPlaceholderEmailPhoneNumber
-												: availableAuthMethodList.isAuthMethodMailEnabled()
-												? langStringEmailPhoneNumberDialogInputPlaceholderEmail
-												: langStringEmailPhoneNumberDialogInputPlaceholderPhoneNumber
-										}
-										onKeyDown={(event: React.KeyboardEvent) => {
-											if (event.key === "Enter") {
-												onAuthBeginClickHandler(authInput);
-											}
-										}}
-										input={isError ? "error_default" : "default"}
-									/>
-								</VStack>
-								<Portal>
-									<TooltipContent
-										onClick={() => setIsToolTipVisible(false)}
-										onEscapeKeyDown={() => setIsToolTipVisible(false)}
-										onPointerDownOutside={() => setIsToolTipVisible(false)}
-										sideOffset={4}
-										avoidCollisions={false}
-										style={{
-											maxWidth: "256px",
-											width: "var(--radix-tooltip-trigger-width)",
-										}}
-									>
-										<TooltipArrow width="8px" height="5px" asChild>
-											<svg
-												width="8"
-												height="5"
-												viewBox="0 0 8 5"
-												fill="none"
-												xmlns="http://www.w3.org/2000/svg"
-											>
-												<path d="M0 0L4 5L8 0H0Z" fill="#FF8A00" />
-											</svg>
-										</TooltipArrow>
-										{langStringEmailPhoneNumberDialogProhibitedSymbolsTooltip}
-									</TooltipContent>
-								</Portal>
-							</Tooltip>
-						</TooltipProvider>
-						<Box
-							ref={captchaContainerRef}
-							id="path_to_captcha"
-							style={{
-								display: showCaptchaState === "rendered" ? "block" : "none",
-							}}
-						/>
-						<Button
-							onClick={() => onAuthBeginClickHandler(authInput)}
-							disabled={authInput.replace(/[^а-яА-яёЁa-zA-Z0-9@+\-._']/g, "").trim().length < 1}
-						>
-							{isLoadingPhoneMailBtn ? <Preloader16 /> : langStringEmailPhoneNumberDialogConfirmButton}
-						</Button>
-					</>
-				)}
-				{/* если включена аутентификация через SSO */}
-				{availableAuthMethodList.isAuthMethodSsoEnabled() && (
-					<Button
-						color={
-							!availableAuthMethodList.isAuthMethodMailEnabled() &&
-							!availableAuthMethodList.isAuthMethodPhoneNumberEnabled()
-								? "007aff"
-								: "d05dbd"
-						}
-						onClick={() => onSsoAuthBeginClickHandler(setIsSsoAuthBtnPreloader)}
-					>
-						{isLoadingSsoBtn ? (
-							<Preloader16 />
-						) : (
-							<styled.span whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
-								{ssoButtonCustomText}
-							</styled.span>
-						)}
-					</Button>
-				)}
-			</VStack>
-		</VStack>
+		</>
 	);
 };
 
@@ -536,32 +655,43 @@ const EmailPhoneNumberDialogContent = () => {
 	const langStringTwoMinutes = useLangString("two_minutes");
 	const langStringFiveMinutes = useLangString("five_minutes");
 
+	const [ joinLink, setJoinLink ] = useAtom(joinLinkState);
+	const isGuestAuth = useAtomValue(isGuestAuthState);
+	const isGuest = (joinLink !== null && joinLink.role === JOIN_LINK_ROLE_GUEST) || isGuestAuth;
+	const availableAuthGuestMethodList = useAvailableAuthGuestMethodList();
 	const availableAuthMethodList = useAvailableAuthMethodList();
+	const authMethodList = useMemo(() => {
+
+		if (isGuest) {
+			return availableAuthGuestMethodList;
+		}
+
+		return availableAuthMethodList;
+	}, [ isGuest, availableAuthGuestMethodList, availableAuthMethodList ]);
 	const isMobile = useIsMobile();
 
-	const [showCaptchaState, setShowCaptchaState] = useState<ShowGrecaptchaState>(null);
-	const [grecaptchaResponse, setGrecaptchaResponse] = useState("");
+	const [ showCaptchaState, setShowCaptchaState ] = useState<ShowGrecaptchaState>(null);
+	const [ grecaptchaResponse, setGrecaptchaResponse ] = useState("");
 	const { navigateToDialog } = useNavigateDialog();
 	const { navigateToPage } = useNavigatePage();
 	const apiAuthPhoneNumberBegin = useApiAuthPhoneNumberBegin();
 	const apiAuthMailBegin = useApiAuthMailBegin();
 	const apiFederationSsoAuthBegin = useApiFederationSsoAuthBegin();
 	const setAuth = useSetAtom(authState);
-	const setJoinLink = useSetAtom(joinLinkState);
 	const activeDialogId = useAtomValue(activeDialogIdState);
 	const showToast = useShowToast(activeDialogId);
-	const [isError, setIsError] = useState(false);
-	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
-	const [authInput, setAuthInput] = useAtom(authInputState);
+	const [ isError, setIsError ] = useState(false);
+	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
+	const [ authInput, setAuthInput ] = useAtom(authInputState);
 	const setIsRegistration = useSetAtom(isRegistrationState);
 	const setPasswordInput = useSetAtom(passwordInputState);
 	const setIsPasswordChanged = useSetAtom(isPasswordChangedState);
 	const setConfirmPassword = useSetAtom(confirmPasswordState);
 	const setAuthSso = useSetAtom(authSsoState);
 	const ssoProtocol = useAtomValue(ssoProtocolState);
-	const [isEmailPhoneNumberAuthBtnPreloader, setEmailPhoneNumberAuthBtnPreloader] = useState(false);
-	const [isSsoAuthBtnPreloader, setIsSsoAuthBtnPreloader] = useState(false);
-	const [widgetId, setWidgetId] = useState("");
+	const [ isEmailPhoneNumberAuthBtnPreloader, setEmailPhoneNumberAuthBtnPreloader ] = useState(false);
+	const [ isSsoAuthBtnPreloader, setIsSsoAuthBtnPreloader ] = useState(false);
+	const [ widgetId, setWidgetId ] = useState("");
 	const captchaProvider = useAtomValue(captchaProviderState);
 
 	// сбрасываем
@@ -575,14 +705,14 @@ const EmailPhoneNumberDialogContent = () => {
 	}, []);
 
 	const authInputValue = useMemo(() => {
-		const [authValue, expiresAt] = authInput.split("__|__") || ["", 0];
+		const [ authValue, expiresAt ] = authInput.split("__|__") || [ "", 0 ];
 
 		if (parseInt(expiresAt) < dayjs().unix()) {
 			return "";
 		}
 
 		return authValue;
-	}, [authInput]);
+	}, [ authInput ]);
 
 	const setAuthInputValue = useCallback((value: string) => {
 		setAuthInput(`${value}__|__${dayjs().unix() + 60 * 10}`);
@@ -593,7 +723,7 @@ const EmailPhoneNumberDialogContent = () => {
 		if (inputRef.current) {
 			inputRef.current.focus();
 		}
-	}, [inputRef]);
+	}, [ inputRef ]);
 
 	const onAuthBeginClickHandler = useCallback(
 		async (value: string) => {
@@ -602,7 +732,7 @@ const EmailPhoneNumberDialogContent = () => {
 				return;
 			}
 
-			if (availableAuthMethodList.isAuthMethodPhoneNumberEnabled() && !isValidEmail(editedPhoneNumberOrEmail)) {
+			if (authMethodList.isAuthMethodPhoneNumberEnabled() && !isValidEmail(editedPhoneNumberOrEmail)) {
 				if (editedPhoneNumberOrEmail.startsWith("89")) {
 					editedPhoneNumberOrEmail =
 						"+79" + editedPhoneNumberOrEmail.substring(2, editedPhoneNumberOrEmail.length);
@@ -615,7 +745,7 @@ const EmailPhoneNumberDialogContent = () => {
 			}
 
 			try {
-				if (availableAuthMethodList.isAuthMethodMailEnabled() && isValidEmail(editedPhoneNumberOrEmail)) {
+				if (authMethodList.isAuthMethodMailEnabled() && isValidEmail(editedPhoneNumberOrEmail)) {
 					const response = await apiAuthMailBegin.mutateAsync({
 						mail: editedPhoneNumberOrEmail,
 						join_link:
@@ -640,7 +770,7 @@ const EmailPhoneNumberDialogContent = () => {
 					} else {
 						navigateToDialog("auth_email_login");
 					}
-				} else if (availableAuthMethodList.isAuthMethodPhoneNumberEnabled()) {
+				} else if (authMethodList.isAuthMethodPhoneNumberEnabled()) {
 					const response = await apiAuthPhoneNumberBegin.mutateAsync({
 						phone_number: editedPhoneNumberOrEmail,
 						join_link:
@@ -663,9 +793,9 @@ const EmailPhoneNumberDialogContent = () => {
 					navigateToDialog("auth_phone_number_confirm_code");
 				} else {
 					setIsError(true);
-					if (availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()) {
+					if (authMethodList.isAuthMethodPhoneNumberMailEnabled()) {
 						showToast(langStringErrorsPhoneNumberEmailIncorrectPhoneEmailError, "warning");
-					} else if (availableAuthMethodList.isAuthMethodMailEnabled()) {
+					} else if (authMethodList.isAuthMethodMailEnabled()) {
 						showToast(langStringErrorsEmailIncorrectEmailError, "warning");
 					} else {
 						showToast(langStringErrorsPhoneNumberIncorrectPhoneError, "warning");
@@ -709,7 +839,7 @@ const EmailPhoneNumberDialogContent = () => {
 						try {
 							setPrepareJoinLinkError({ error_code: ALREADY_MEMBER_ERROR_CODE });
 							if (
-								availableAuthMethodList.isAuthMethodMailEnabled() &&
+								authMethodList.isAuthMethodMailEnabled() &&
 								isValidEmail(editedPhoneNumberOrEmail)
 							) {
 								const response = await apiAuthMailBegin.mutateAsync({
@@ -719,7 +849,7 @@ const EmailPhoneNumberDialogContent = () => {
 								setAuth(response.auth_info);
 								setJoinLink(response.join_link_info);
 								navigateToDialog("auth_email_login");
-							} else if (availableAuthMethodList.isAuthMethodPhoneNumberEnabled()) {
+							} else if (authMethodList.isAuthMethodPhoneNumberEnabled()) {
 								const response = await apiAuthPhoneNumberBegin.mutateAsync({
 									phone_number: editedPhoneNumberOrEmail,
 									grecaptcha_response: grecaptchaResponse.length < 1 ? undefined : grecaptchaResponse,
@@ -729,9 +859,9 @@ const EmailPhoneNumberDialogContent = () => {
 								navigateToDialog("auth_phone_number_confirm_code");
 							} else {
 								setIsError(true);
-								if (availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()) {
+								if (authMethodList.isAuthMethodPhoneNumberMailEnabled()) {
 									showToast(langStringErrorsPhoneNumberEmailIncorrectPhoneEmailError, "warning");
-								} else if (availableAuthMethodList.isAuthMethodMailEnabled()) {
+								} else if (authMethodList.isAuthMethodMailEnabled()) {
 									showToast(langStringErrorsEmailIncorrectEmailError, "warning");
 								} else {
 									showToast(langStringErrorsPhoneNumberIncorrectPhoneError, "warning");
@@ -780,7 +910,7 @@ const EmailPhoneNumberDialogContent = () => {
 								}
 
 								if (error.error_code === LIMIT_ERROR_CODE) {
-									if (availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()) {
+									if (authMethodList.isAuthMethodPhoneNumberMailEnabled()) {
 										showToast(
 											langStringErrorsPhoneNumberEmailLimitError.replace(
 												"$MINUTES",
@@ -796,7 +926,7 @@ const EmailPhoneNumberDialogContent = () => {
 										return;
 									}
 
-									if (availableAuthMethodList.isAuthMethodMailEnabled()) {
+									if (authMethodList.isAuthMethodMailEnabled()) {
 										showToast(
 											langStringErrorsEmailLimitError.replace(
 												"$MINUTES",
@@ -812,7 +942,7 @@ const EmailPhoneNumberDialogContent = () => {
 										return;
 									}
 
-									if (availableAuthMethodList.isAuthMethodPhoneNumberEnabled()) {
+									if (authMethodList.isAuthMethodPhoneNumberEnabled()) {
 										showToast(
 											langStringErrorsPhoneNumberLimitError.replace(
 												"$MINUTES",
@@ -831,7 +961,7 @@ const EmailPhoneNumberDialogContent = () => {
 								}
 
 								if (error.error_code === 1708399) {
-									if (availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()) {
+									if (authMethodList.isAuthMethodPhoneNumberMailEnabled()) {
 										showToast(
 											langStringErrorsPhoneNumberEmailLimitError.replace(
 												"$MINUTES",
@@ -847,7 +977,7 @@ const EmailPhoneNumberDialogContent = () => {
 										return;
 									}
 
-									if (availableAuthMethodList.isAuthMethodMailEnabled()) {
+									if (authMethodList.isAuthMethodMailEnabled()) {
 										showToast(
 											langStringErrorsEmailLimitError.replace(
 												"$MINUTES",
@@ -863,7 +993,7 @@ const EmailPhoneNumberDialogContent = () => {
 										return;
 									}
 
-									if (availableAuthMethodList.isAuthMethodPhoneNumberEnabled()) {
+									if (authMethodList.isAuthMethodPhoneNumberEnabled()) {
 										showToast(
 											langStringErrorsPhoneNumberLimitError.replace(
 												"$MINUTES",
@@ -882,9 +1012,9 @@ const EmailPhoneNumberDialogContent = () => {
 								}
 
 								setIsError(true);
-								if (availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()) {
+								if (authMethodList.isAuthMethodPhoneNumberMailEnabled()) {
 									showToast(langStringErrorsPhoneNumberEmailIncorrectPhoneEmailError, "warning");
-								} else if (availableAuthMethodList.isAuthMethodMailEnabled()) {
+								} else if (authMethodList.isAuthMethodMailEnabled()) {
 									showToast(langStringErrorsEmailIncorrectEmailError, "warning");
 								} else {
 									showToast(langStringErrorsPhoneNumberIncorrectPhoneError, "warning");
@@ -910,7 +1040,7 @@ const EmailPhoneNumberDialogContent = () => {
 					}
 
 					if (error.error_code === LIMIT_ERROR_CODE) {
-						if (availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()) {
+						if (authMethodList.isAuthMethodPhoneNumberMailEnabled()) {
 							showToast(
 								langStringErrorsPhoneNumberEmailLimitError.replace(
 									"$MINUTES",
@@ -926,7 +1056,7 @@ const EmailPhoneNumberDialogContent = () => {
 							return;
 						}
 
-						if (availableAuthMethodList.isAuthMethodMailEnabled()) {
+						if (authMethodList.isAuthMethodMailEnabled()) {
 							showToast(
 								langStringErrorsEmailLimitError.replace(
 									"$MINUTES",
@@ -942,7 +1072,7 @@ const EmailPhoneNumberDialogContent = () => {
 							return;
 						}
 
-						if (availableAuthMethodList.isAuthMethodPhoneNumberEnabled()) {
+						if (authMethodList.isAuthMethodPhoneNumberEnabled()) {
 							showToast(
 								langStringErrorsPhoneNumberLimitError.replace(
 									"$MINUTES",
@@ -961,7 +1091,7 @@ const EmailPhoneNumberDialogContent = () => {
 					}
 
 					if (error.error_code === 1708399) {
-						if (availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()) {
+						if (authMethodList.isAuthMethodPhoneNumberMailEnabled()) {
 							showToast(
 								langStringErrorsPhoneNumberEmailLimitError.replace(
 									"$MINUTES",
@@ -977,7 +1107,7 @@ const EmailPhoneNumberDialogContent = () => {
 							return;
 						}
 
-						if (availableAuthMethodList.isAuthMethodMailEnabled()) {
+						if (authMethodList.isAuthMethodMailEnabled()) {
 							showToast(
 								langStringErrorsEmailLimitError.replace(
 									"$MINUTES",
@@ -993,7 +1123,7 @@ const EmailPhoneNumberDialogContent = () => {
 							return;
 						}
 
-						if (availableAuthMethodList.isAuthMethodPhoneNumberEnabled()) {
+						if (authMethodList.isAuthMethodPhoneNumberEnabled()) {
 							showToast(
 								langStringErrorsPhoneNumberLimitError.replace(
 									"$MINUTES",
@@ -1012,9 +1142,9 @@ const EmailPhoneNumberDialogContent = () => {
 					}
 
 					setIsError(true);
-					if (availableAuthMethodList.isAuthMethodPhoneNumberMailEnabled()) {
+					if (authMethodList.isAuthMethodPhoneNumberMailEnabled()) {
 						showToast(langStringErrorsPhoneNumberEmailIncorrectPhoneEmailError, "warning");
-					} else if (availableAuthMethodList.isAuthMethodMailEnabled()) {
+					} else if (authMethodList.isAuthMethodMailEnabled()) {
 						showToast(langStringErrorsEmailIncorrectEmailError, "warning");
 					} else {
 						showToast(langStringErrorsPhoneNumberIncorrectPhoneError, "warning");
@@ -1022,7 +1152,7 @@ const EmailPhoneNumberDialogContent = () => {
 				}
 			}
 		},
-		[apiAuthPhoneNumberBegin, apiAuthMailBegin, navigateToDialog, navigateToPage, setAuth, prepareJoinLinkError]
+		[ apiAuthPhoneNumberBegin, apiAuthMailBegin, navigateToDialog, navigateToPage, setAuth, prepareJoinLinkError ]
 	);
 
 	const onSsoAuthBeginClickHandler = useCallback(
@@ -1033,7 +1163,7 @@ const EmailPhoneNumberDialogContent = () => {
 
 			return navigateToDialog("auth_sso_ldap");
 		},
-		[apiFederationSsoAuthBegin.isLoading, showToast]
+		[ apiFederationSsoAuthBegin.isLoading, showToast ]
 	);
 
 	const startSsoOIDCAuth = useCallback(
@@ -1073,54 +1203,54 @@ const EmailPhoneNumberDialogContent = () => {
 			}
 			setTimeout(() => btn_loader_ref(false), 4000);
 		},
-		[apiFederationSsoAuthBegin.isLoading, showToast]
+		[ apiFederationSsoAuthBegin.isLoading, showToast ]
 	);
 
 	if (isMobile) {
 		return (
 			<EmailPhoneNumberDialogContentMobile
-				onAuthBeginClickHandler={onAuthBeginClickHandler}
-				onSsoAuthBeginClickHandler={onSsoAuthBeginClickHandler}
-				authInput={authInputValue}
-				setAuthInput={setAuthInputValue}
-				isLoadingPhoneMailBtn={
+				onAuthBeginClickHandler = {onAuthBeginClickHandler}
+				onSsoAuthBeginClickHandler = {onSsoAuthBeginClickHandler}
+				authInput = {authInputValue}
+				setAuthInput = {setAuthInputValue}
+				isLoadingPhoneMailBtn = {
 					isEmailPhoneNumberAuthBtnPreloader ||
 					apiAuthPhoneNumberBegin.isLoading ||
 					apiAuthMailBegin.isLoading
 				}
-				isLoadingSsoBtn={isSsoAuthBtnPreloader}
-				setIsError={setIsError}
-				isError={isError}
-				inputRef={inputRef}
-				showCaptchaState={showCaptchaState}
-				setShowCaptchaState={setShowCaptchaState}
-				setGrecaptchaResponse={setGrecaptchaResponse}
-				setIsSsoAuthBtnPreloader={setIsSsoAuthBtnPreloader}
-				widgetId={widgetId}
-				setWidgetId={setWidgetId}
+				isLoadingSsoBtn = {isSsoAuthBtnPreloader}
+				setIsError = {setIsError}
+				isError = {isError}
+				inputRef = {inputRef}
+				showCaptchaState = {showCaptchaState}
+				setShowCaptchaState = {setShowCaptchaState}
+				setGrecaptchaResponse = {setGrecaptchaResponse}
+				setIsSsoAuthBtnPreloader = {setIsSsoAuthBtnPreloader}
+				widgetId = {widgetId}
+				setWidgetId = {setWidgetId}
 			/>
 		);
 	}
 
 	return (
 		<EmailPhoneNumberDialogContentDesktop
-			onAuthBeginClickHandler={onAuthBeginClickHandler}
-			onSsoAuthBeginClickHandler={onSsoAuthBeginClickHandler}
-			authInput={authInputValue}
-			setAuthInput={setAuthInputValue}
-			isLoadingPhoneMailBtn={
+			onAuthBeginClickHandler = {onAuthBeginClickHandler}
+			onSsoAuthBeginClickHandler = {onSsoAuthBeginClickHandler}
+			authInput = {authInputValue}
+			setAuthInput = {setAuthInputValue}
+			isLoadingPhoneMailBtn = {
 				isEmailPhoneNumberAuthBtnPreloader || apiAuthPhoneNumberBegin.isLoading || apiAuthMailBegin.isLoading
 			}
-			isLoadingSsoBtn={isSsoAuthBtnPreloader}
-			setIsError={setIsError}
-			isError={isError}
-			inputRef={inputRef}
-			showCaptchaState={showCaptchaState}
-			setShowCaptchaState={setShowCaptchaState}
-			setGrecaptchaResponse={setGrecaptchaResponse}
-			setIsSsoAuthBtnPreloader={setIsSsoAuthBtnPreloader}
-			widgetId={widgetId}
-			setWidgetId={setWidgetId}
+			isLoadingSsoBtn = {isSsoAuthBtnPreloader}
+			setIsError = {setIsError}
+			isError = {isError}
+			inputRef = {inputRef}
+			showCaptchaState = {showCaptchaState}
+			setShowCaptchaState = {setShowCaptchaState}
+			setGrecaptchaResponse = {setGrecaptchaResponse}
+			setIsSsoAuthBtnPreloader = {setIsSsoAuthBtnPreloader}
+			widgetId = {widgetId}
+			setWidgetId = {setWidgetId}
 		/>
 	);
 };

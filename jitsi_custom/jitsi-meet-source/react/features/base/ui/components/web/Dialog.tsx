@@ -105,6 +105,7 @@ interface IDialogProps extends IBaseDialogProps {
     };
     onCancel?: () => void;
     onSubmit?: () => void;
+    position?: '' | 'center';
 }
 
 const Dialog = ({
@@ -131,7 +132,8 @@ const Dialog = ({
     size,
     testId,
     title,
-    titleKey
+    titleKey,
+    position
 }: IDialogProps) => {
     const { classes, cx } = useStyles();
     const { t } = useTranslation();
@@ -177,21 +179,24 @@ const Dialog = ({
             submit = {submit}
             testId = {testId}
             title = {title}
-            titleKey = {titleKey}>
-            <div className = {cx(classes.header, classNameHeader, isMobile && 'is-mobile')}>
-                <h1
-                    className = {cx(classes.title, classNameHeaderTitle, isMobile && 'is-mobile')}
-                    id = 'dialog-title'>
-                    {title ?? t(titleKey ?? '')}
-                </h1>
-                {!hideCloseButton && (
-                    <ClickableIcon
-                        accessibilityLabel = {t('dialog.accessibilityLabel.close')}
-                        icon = {IconCloseLarge}
-                        id = 'modal-header-close-button'
-                        onClick = {onClose} />
-                )}
-            </div>
+            titleKey = {titleKey}
+            position = {position}>
+            {(title !== undefined || titleKey !== undefined || !hideCloseButton) && (
+                <div className = {cx(classes.header, classNameHeader, isMobile && 'is-mobile')}>
+                    <h1
+                        className = {cx(classes.title, classNameHeaderTitle, isMobile && 'is-mobile')}
+                        id = 'dialog-title'>
+                        {title ?? t(titleKey ?? '')}
+                    </h1>
+                    {!hideCloseButton && (
+                        <ClickableIcon
+                            accessibilityLabel = {t('dialog.accessibilityLabel.close')}
+                            icon = {IconCloseLarge}
+                            id = 'modal-header-close-button'
+                            onClick = {onClose} />
+                    )}
+                </div>
+            )}
             <div
                 className = {cx(classes.content, classNameContent, isMobile && 'is-mobile')}
                 data-autofocus-inside = 'true'>

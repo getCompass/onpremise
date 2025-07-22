@@ -13,7 +13,6 @@ import Avatar from "../../../avatar/components/Avatar";
 import i18n from "i18next";
 import PreviewMobile from "./PreviewMobile";
 import CompassToolboxMobile from "../../../../toolbox/components/web/CompassToolboxMobile";
-import DeviceStatus from "../../../../prejoin/components/web/preview/DeviceStatus";
 import DeviceStatusMobile from "../../../../prejoin/components/web/preview/DeviceStatusMobile";
 
 interface IProps {
@@ -191,7 +190,7 @@ const useStyles = makeStyles()(theme => {
             },
 
             // mobile phone landscape
-            '@media (max-width: 430px)': {
+            '@media (max-width: 510px)': {
                 padding: '32px 16px 0px 16px',
                 width: '100%'
             },
@@ -214,7 +213,7 @@ const useStyles = makeStyles()(theme => {
             marginBottom: "40px",
             textAlign: 'center',
 
-            '@media (max-width: 430px)': {
+            '@media (max-width: 510px)': {
                 display: 'none'
             }
         },
@@ -235,7 +234,7 @@ const useStyles = makeStyles()(theme => {
             borderRadius: '0 !important',
             marginBottom: "16px",
 
-            '@media (max-width: 430px)': {
+            '@media (max-width: 510px)': {
                 display: 'none'
             }
         },
@@ -330,8 +329,14 @@ const PreMeetingScreenMobile = ({
                                     size = {120} />
                             )}
                             {children}
-                            {isLobby && _lobbyKnocking ? <></> : (_buttons.length &&
-                                <CompassToolboxMobile toolbarButtons = {_buttons} />)}
+                            {isLobby && _lobbyKnocking
+                                ? <></>
+                                : (
+                                    _buttons.length
+                                        ? <CompassToolboxMobile toolbarButtons = {_buttons} />
+                                        : <></>
+                                )
+                            }
                             {skipPrejoinButton}
                         </div>
                     </div>

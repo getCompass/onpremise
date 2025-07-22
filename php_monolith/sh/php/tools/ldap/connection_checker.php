@@ -18,16 +18,13 @@ $use_ssl                 = Domain_Ldap_Entity_Config::getUseSslFlag();
 $require_cert_strategy   = Domain_Ldap_Entity_Client_RequireCertStrategy::convertStringToConst(Domain_Ldap_Entity_Config::getRequireCertStrategy());
 
 // определяем протокол
-$protocol = $use_ssl ? "ldaps" : "ldap";
+if ($use_ssl) {
+	$uri  = "ldaps://" . $server_host . ":" . $server_port;
+	$conn = ldap_connect($uri);
+} else {
+	$conn = ldap_connect($server_host, $server_port);
+}
 
-// устанавливаем соединение с сервером
-// устанавливаем повышенный уровень дебага
-// устанавливаем уровень верификации сертификата в зависимости от параметра из конфига
-$conn = ldap_connect(sprintf("%s://%s", $protocol, $server_host), $server_port);
-ldap_set_option(null, LDAP_OPT_DEBUG_LEVEL, 7);
-ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, $require_cert_strategy);
-
-// если не удалось установить соединение
 if (!$conn) {
 
 	$err = sprintf("could not connect to ldap server [%s]", ldap_error($conn));
@@ -35,8 +32,10 @@ if (!$conn) {
 	throw new Exception($err);
 }
 
+ldap_set_option(null, LDAP_OPT_DEBUG_LEVEL, 7);
 ldap_set_option($conn, LDAP_OPT_REFERRALS, false);
 ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+ldap_set_option($conn, LDAP_OPT_X_TLS_REQUIRE_CERT, $require_cert_strategy);
 
 // пытаемся аутентифицировать клиента на сервере ldap
 try {

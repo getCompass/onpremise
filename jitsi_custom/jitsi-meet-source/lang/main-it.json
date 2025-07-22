@@ -104,6 +104,8 @@
         },
         "noMessagesMessage": "Non ci sono ancora messaggi nella riunione. Comincia una conversazione, qui!",
         "privateNotice": "Lei → {{recipient}}",
+        "privateNoticeForYou": "Messaggio per Lei",
+        "privateMessageReply": "Rispondere",
         "sendButton": "Invia",
         "smileysPanel": "Pannello emoji",
         "tabs": {
@@ -125,7 +127,10 @@
         "title": "Conferenza",
         "one_member": "partecipante",
         "two_members": "partecipanti",
-        "five_members": "partecipanti"
+        "five_members": "partecipanti",
+        "one_visitor": "spettatore",
+        "two_visitors": "spettatori",
+        "five_visitors": "spettatori"
     },
     "connectingOverlay": {
         "joiningRoom": "Collegamento alla riunione in corso..."
@@ -687,6 +692,8 @@
         "localRecordingStarted": "{{name}} ha cominciato a registrare.",
         "localRecordingStopped": "{{name}} ha smesso di registrare.",
         "me": "Io",
+        "messageIsNotDeliveredTitle": "Azione non disponibile",
+        "messageIsNotDelivered": "L'utente ha lasciato la conferenza o è un spettatore.",
         "moderationInEffectCSDescription": "Alza la mano, se vuoi condividere lo schermo, per favore.",
         "moderationInEffectCSTitle": "La condivisione schermo è stata bloccata dal moderatore",
         "moderationInEffectDescription": "Alza la mano, se vuoi prender la parola, per favore.",
@@ -713,6 +720,11 @@
         "oldElectronClientDescription1": "Sembri stare usando una versione obsoleta del client Jitsi Meet che ha dei problemi di sicurezza noti. Assicurati di aggiornarla presso il nostro ",
         "oldElectronClientDescription2": "ultima build",
         "oldElectronClientDescription3": " ora!",
+        "visitorWantsToJoinTitle": "{{participantName}} vuole partecipare",
+        "visitorWantsToJoin": "Per dare il permesso di accendere il microfono, accetta lo spettatore come partecipante.",
+        "visitorsWantToJoin": "Per dare il permesso di accendere il microfono, accetta lo spettatore come partecipante.",
+        "visitorJoinRejectedTitle": "La tua richiesta di parola è stata respinta dal moderatore.",
+        "visitorJoinRejected": "Scrivi la tua domanda nella chat della conferenza per ricevere una risposta dal coordinatore della riunione.",
         "participantWantsToJoin": "Vuole unirsi alla riunione",
         "participantsWantToJoin": "Vogliono unirsi alla riunione",
         "passwordRemovedRemotely": "$t(lockRoomPasswordUppercase) è stata tolta da un altro partecipante",
@@ -736,14 +748,22 @@
         "videoUnmuteBlockedDescription": "Riattivazione video e condivisione schermo sono state momentaneamente bloccate per limiti di sistema.",
         "videoUnmuteBlockedTitle": "Riattivazione video e condivisione schermo bloccate!",
         "viewLobby": "Vedi sala d'attesa",
+        "viewVisitors": "Aprire l'elenco dei partecipanti",
+        "oneVisitor": "spettatore",
+        "twoVisitors": "spettatori",
+        "fiveVisitors": "spettatori",
+        "raisedHandVisitors": "{{raisedHandVisitors}} vogliono partecipare",
         "waitingParticipants": "{{waitingParticipants}} persone"
     },
     "participantsPane": {
         "actions": {
-            "admit": "Ammetti",
-            "admitAll": "Ammetti tutti",
+            "promoteVisitorAdmit": "Rendi partecipante",
+            "promoteVisitorReject": "Rifiuta",
+            "admit": "Accetta",
+            "admitAll": "Accetta tutti",
             "allow": "Permetti ai partecipanti di:",
             "allowVideo": "Autorizza video",
+            "askUnmuteParticipantPane": "Chiedere microfono",
             "askUnmute": "Chiedi di accendere microfono",
             "audioModeration": "Riattivare audio",
             "blockEveryoneMicCamera": "Blocca audio e video a tutti",
@@ -764,9 +784,16 @@
         "headings": {
             "lobby": "Sala d'attesa ({{count}})",
             "participantsList": "Partecipanti alla riunione ({{count}})",
+            "visitorRequests": "vogliono partecipare ({{count}})",
+            "visitors": "Spettatori ({{count}})",
+            "visitorTooltip": "Utenti che partecipano alla conferenza come spettatori. Possono vedere e sentire tutti i partecipanti alla riunione e scrivere nella chat. Per accendere il microfono o la telecamera, gli spettatori devono alzare la mano e attendere l'approvazione del moderatore.",
+            "visitorTooltipTitleMobile": "Spettatori",
+            "visitorTooltipMobile": "Utenti che possono vedere e sentire tutti i partecipanti alla riunione e possono scrivere nella chat. Per accendere il microfono o la telecamera, gli spettatori devono alzare la mano e attendere l'approvazione del moderatore.",
             "waitingLobby": "In attesa ({{count}})"
         },
         "search": "Cerca partecipanti",
+        "lobbyRequest": "Richiesta di ingresso",
+        "visitor": "Spettatore",
         "title": "Partecipanti"
     },
     "passwordDigitsOnly": "Fino a {{number}} cifre",
@@ -853,6 +880,7 @@
         "initiated": "Chiamata avviata",
         "joinAudioByPhone": "Collegati usando un telefono, per parlare",
         "joinMeeting": "Collegati alla riunione",
+        "joinMeetingAsGuest": "Conferenza<br>Compass",
         "joinMeetingInLowBandwidthMode": "Entra in modalità banda limitata",
         "joinWithoutAudio": "Collegati senza poter parlare mai",
         "keyboardShortcuts": "Attiva le scorciatoie da tastiera",
@@ -977,6 +1005,7 @@
     },
     "settings": {
         "audioNoPermissions": "Nessun accesso all'audio",
+        "audioOutputChangeNotSupported": "Il Suo browser non supporta la selezione dei dispositivi audio",
         "buttonLabel": "Impostazioni",
         "calendar": {
             "about": "L’integrazione del calendario con {{appName}} è usata per accedere in sicurezza al proprio calendario e poter leggere i prossimi appuntamenti ",
@@ -1100,6 +1129,10 @@
         "surprised": "Sorpreso"
     },
     "startupoverlay": {
+        "requestPermissions": {
+            "desktop": "Per partecipare alla videoconferenza di Compass, consenti l’accesso alla tua fotocamera e al microfono.",
+            "mobile": "Per partecipare alla videoconferenza di Compass, consenti l’accesso alla tua fotocamera e al microfono."
+        },
         "genericTitle": "Per la riunione devono essere usati il tuo microfono e la tua videocamera.",
         "policyText": " ",
         "title": "{{app}} ha bisogno di usare il tuo microfono e la tua videocamera."
@@ -1337,6 +1370,7 @@
     },
     "videothumbnail": {
         "connectionInfo": "Info connessione",
+        "demote": "Rendi spettatore",
         "domute": "Silenzia",
         "domuteOthers": "Disattiva audio di tutti gli altri",
         "domuteVideo": "Disattiva video",
@@ -1381,6 +1415,29 @@
         "uploadedImage": "Carica immagine {{index}}",
         "webAssemblyWarning": "Il WebAssembly non è supportato",
         "webAssemblyWarningDescription": "Il WebAssembly è disabilitato o non è supportato da questo browser"
+    },
+    "visitors": {
+        "chatIndicator": "(visitor)",
+        "joinMeeting": {
+            "title": "Stai partecipando alla conferenza come spettatore",
+            "description": "Per accendere il microfono o la telecamera e parlare, alza la mano e attendi l'approvazione del moderatore della riunione.",
+            "descriptionMobile": "Per accendere il microfono o la telecamera e parlare, alza la mano e attendi l'approvazione del moderatore della riunione.",
+            "button": "OK"
+        },
+        "audioSettings": {
+            "title": "Impostazioni del microfono non disponibili",
+            "desc": "Per attivare il microfono, alza la mano e attendi l'approvazione del moderatore"
+        },
+        "labelTooltip": "Number of visitors: {{count}}",
+        "notification": {
+            "title": "Il moderatore ti ha reso spettatore",
+            "demoteDescription": "Per accendere il microfono o la telecamera e parlare, alza la mano e attendi l'approvazione del moderatore della riunione.",
+            "noMainParticipantsDescription": "A participant needs to start the meeting. Please try again in a bit.",
+            "noMainParticipantsTitle": "This meeting hasn’t started yet.",
+            "noVisitorLobby": "You cannot join while there is a lobby enabled for the meeting.",
+            "notAllowedPromotion": "A participant needs to allow your request first."
+        },
+        "waitingMessage": "You'll join the meeting as soon as it is live!"
     },
     "volumeSlider": "Sbarra volume",
     "welcomepage": {
@@ -1436,5 +1493,10 @@
         "title": "Ridurre a icona la finestra durante la registrazione?",
         "text": "La conferenza non viene mostrata nella registrazione quando la finestra viene ridotta a icona.",
         "minimizeButton": "Riduci"
+    },
+    "recordReminder": {
+        "title": "Registrazione in corso",
+        "description": "Per una registrazione di qualità, non ridurre a icona la finestra della riunione.",
+        "button": "OK"
     }
 }

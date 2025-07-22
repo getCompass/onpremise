@@ -3,7 +3,13 @@ import React, { isValidElement, useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { keyframes } from 'tss-react';
 import { makeStyles } from 'tss-react/mui';
-import { IconPoll, IconRecordingNotification, IconScreenshareNotification, IconWarningColor } from '../../../base/icons/svg';
+import {
+    IconPoll,
+    IconRecordingNotification,
+    IconScreenshareNotification,
+    IconWarningColor,
+    IconWarningStopHandNotification
+} from '../../../base/icons/svg';
 import Message from '../../../base/react/components/web/Message';
 import { NOTIFICATION_ICON, NOTIFICATION_TYPE } from '../../constants';
 import { INotificationProps } from '../../types';
@@ -194,6 +200,11 @@ const useStyles = makeStyles()((theme: Theme) => {
                 backgroundColor: 'rgba(255, 79, 71, 0.1)',
             },
 
+            '&.destructive_gray': {
+                color: 'rgba(255, 255, 255, 1)',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            },
+
             '&.is-mobile': {
                 padding: '3.5px 8px',
                 fontSize: '14px',
@@ -291,16 +302,18 @@ const Notification = ({
         }
     }, [ appearance, onDismiss, customActionHandler, customActionNameKey, hideErrorSupportLink ]);
 
-    const iconPathByIconName: {[p: string]: string} = {
+    const iconPathByIconName: { [p: string]: string } = {
         [NOTIFICATION_ICON.POLL]: IconPoll,
         [NOTIFICATION_ICON.RECORDING]: IconRecordingNotification,
         [NOTIFICATION_ICON.SCREENSHARE]: IconScreenshareNotification,
+        [NOTIFICATION_ICON.WARNING_STOP_HAND]: IconWarningStopHandNotification,
         [NOTIFICATION_ICON.WARNING]: IconWarningColor,
     };
 
-    const iconPathByAppearance: {[p: string]: string} = {
+    const iconPathByAppearance: { [p: string]: string } = {
         [NOTIFICATION_ICON.POLL]: IconPoll,
         [NOTIFICATION_ICON.RECORDING]: IconRecordingNotification,
+        [NOTIFICATION_ICON.WARNING_STOP_HAND]: IconWarningStopHandNotification,
     };
 
     const getIcon = (iconName = '', appearance = ''): string | null => {
@@ -320,17 +333,17 @@ const Notification = ({
         >
             <div className = {classes.content}>
                 <div className = {cx(classes.avatarContainer, isMobile && 'is-mobile')}>
-                    { (iconPath ?
-                                <Avatar
-                                    className = {cx(classes.avatar, 'avatar')}
-                                    iconClassName = 'custom-notification-icon'
-                                    url = {iconPath}
-                                    size = {36} />
+                    {(iconPath ?
+                            <Avatar
+                                className = {cx(classes.avatar, 'avatar')}
+                                iconClassName = 'custom-notification-icon'
+                                url = {iconPath}
+                                size = {36} />
                             :
-                                <Avatar
-                                    className = {cx(classes.avatar, 'avatar')}
-                                    participantId = {participantId ?? "0"}
-                                    size = {36} />
+                            <Avatar
+                                className = {cx(classes.avatar, 'avatar')}
+                                participantId = {participantId ?? "0"}
+                                size = {36} />
                     )
                     }
                 </div>

@@ -182,7 +182,8 @@ export const CollapsibleRoom = ({
                         openDrawerForParticipant = { raiseParticipantMenu }
                         overflowDrawer = { overflowDrawer }
                         participantID = { p.jid }
-                        isLobbyParticipantRequest = { false }>
+                        isLobbyParticipantRequest = { false }
+                        isVisitor = { false }>
                         {!overflowDrawer && moderator && (
                             <ParticipantActionEllipsis
                                 accessibilityLabel = { t('breakoutRoom.more') }

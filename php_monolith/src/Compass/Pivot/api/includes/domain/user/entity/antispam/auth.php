@@ -221,7 +221,7 @@ class Domain_User_Entity_Antispam_Auth {
 				$is_from_web
 			);
 			$is_already_checked = Domain_Antispam_Entity_SuspectIp::checkIpLimit($grecaptcha_response, $phone_number, $is_from_web, $is_already_checked);
-			Domain_Antispam_Entity_SuspectIp::checkIp($grecaptcha_response, $is_from_web, $is_already_checked);
+			Domain_Antispam_Entity_SuspectIp::checkIp($grecaptcha_response, $phone_number, $is_from_web, $is_already_checked);
 		}
 
 		// инкрементим уже проверенные блокировки по телефону

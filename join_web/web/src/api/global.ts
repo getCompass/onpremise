@@ -1,28 +1,30 @@
-import { useQuery } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
-import { ApiGlobalStartDictionaryData, APIResponse, ApiUserInfoData, CAPTCHA_PROVIDER_DEFAULT } from "./_types.ts";
-import {useSetAtom, useAtom} from "jotai";
+import {useQuery} from "@tanstack/react-query";
+import {ofetch} from "ofetch";
+import {ApiGlobalStartDictionaryData, APIResponse, ApiUserInfoData, CAPTCHA_PROVIDER_DEFAULT} from "./_types.ts";
+import {useAtom, useSetAtom} from "jotai";
 import {
 	authenticationSessionTimeLeftState,
-	pageReopenExpiredAtState,
+	availableAuthGuestMethodListState,
 	availableAuthMethodListState,
 	captchaProviderState,
 	captchaPublicKeyState,
-	dictionaryDataState, downloadAppUrlState,
+	dictionaryDataState,
+	downloadAppUrlState,
+	pageReopenExpiredAtState,
 	profileState,
 	serverVersionState,
 	ssoProtocolState,
 	userInfoDataState,
 } from "./_stores.ts";
 // @ts-ignore
-import { getPublicPathApi } from "../private/custom.ts";
+import {getPublicPathApi} from "../private/custom.ts";
 import {useEffect, useMemo} from "react";
-import dayjs from "dayjs";
 import {useApiAuthLogout} from "./auth";
 import {NetworkError, ServerError} from "./_index";
 import {useLangString} from "../lib/getLangString";
 import {useShowToast} from "../lib/Toast";
 import {generateDialogId} from "../components/dialog";
+import dayjs from "dayjs";
 
 type ApiGlobalDoStart = {
 	is_authorized: number;
@@ -32,6 +34,7 @@ type ApiGlobalDoStart = {
 		provider_list: { [key: string]: string }[];
 	};
 	available_auth_method_list: string[];
+	available_auth_guest_method_list: string[];
 	sso_protocol: string;
 	dictionary: ApiGlobalStartDictionaryData;
 	user_info: ApiUserInfoData | null;
@@ -44,6 +47,7 @@ export function useApiGlobalDoStart() {
 	const setCaptchaPublicKey = useSetAtom(captchaPublicKeyState);
 	const setCaptchaProvider = useSetAtom(captchaProviderState);
 	const setAvailableAuthMethodList = useSetAtom(availableAuthMethodListState);
+	const setAvailableAuthGuestMethodList = useSetAtom(availableAuthGuestMethodListState);
 	const setSsoProtocol = useSetAtom(ssoProtocolState);
 	const setServerVersion = useSetAtom(serverVersionState);
 	const setStartDictionaryDataState = useSetAtom(dictionaryDataState);
@@ -127,6 +131,8 @@ export function useApiGlobalDoStart() {
 			);
 
 			setAvailableAuthMethodList(result.response.available_auth_method_list);
+
+			setAvailableAuthGuestMethodList(result.response.available_auth_guest_method_list);
 
 			setSsoProtocol(result.response.sso_protocol);
 

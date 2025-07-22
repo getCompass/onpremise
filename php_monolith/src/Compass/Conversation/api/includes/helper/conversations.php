@@ -2885,10 +2885,6 @@ class Helper_Conversations {
 	// пробуем проявить Требовательность
 	public static function tryExacting(int $sender_user_id, array $message_list, string $conversation_map, array $meta_row, int $week_count, int $month_count, int $created_at = null):array {
 
-		if (ServerProvider::isOnPremise()) {
-			throw new \ParseException("action not allowed on on-premise environment");
-		}
-
 		// выдаем Требовательность - добавляем сообщения-требовательность в группу Требовательность
 		$new_message_list = self::addMessageList(
 			$conversation_map,

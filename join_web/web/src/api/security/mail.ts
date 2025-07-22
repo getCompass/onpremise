@@ -15,7 +15,7 @@ import {
 	firstAuthState,
 	isPasswordChangedState,
 	passwordInputState,
-	deviceLoginTypeState,
+	deviceLoginTypeState, isGuestAuthState,
 } from "../_stores.ts";
 
 export type ApiSecurityMailTryResetPasswordArgs = {
@@ -119,6 +119,7 @@ export function useApiSecurityMailFinishResetPassword() {
 	const { navigateToPage } = useNavigatePage();
 	const captchaProvider = useAtomValue(captchaProviderState);
 	const setDeviceLoginType = useSetAtom(deviceLoginTypeState);
+	const setIsGuestAuth = useSetAtom(isGuestAuthState);
 
 	return useMutation({
 		retry: false,
@@ -145,6 +146,7 @@ export function useApiSecurityMailFinishResetPassword() {
 			}
 
 			setAuth(null);
+			setIsGuestAuth(false);
 			setAuthInput("");
 			setPasswordInput("");
 			setConfirmPassword("");

@@ -19,6 +19,8 @@ import KeyboardAvoider from './KeyboardAvoider';
 import MessageContainer from './MessageContainer';
 import MessageRecipient from './MessageRecipient';
 import { isMobileBrowser } from "../../../base/environment/utils";
+import { INotificationProps } from "../../../notifications/types";
+import { MESSAGE_NOT_DELIVERED_NOTIFICATION_ID } from "../../../notifications/constants";
 
 interface IProps extends AbstractProps {
 
@@ -31,6 +33,15 @@ interface IProps extends AbstractProps {
      * True if the chat window should be rendered.
      */
     _isOpen: boolean;
+
+    /**
+     * The notifications to be displayed, with the first index being the
+     * notification at the top and the rest shown below it in order.
+     */
+    _notifications: Array<{
+        props: INotificationProps;
+        uid: string;
+    }>;
 
     /**
      * True if the polls feature is enabled.
@@ -79,7 +90,7 @@ interface IProps extends AbstractProps {
     _showNamePrompt: boolean;
 }
 
-const useStyles = makeStyles()(theme => {
+const useStyles = makeStyles()(() => {
     return {
         container: {
             backgroundColor: 'rgba(33, 33, 33, 1)',
@@ -120,6 +131,22 @@ const useStyles = makeStyles()(theme => {
             '&.is-mobile': {
                 opacity: 0.9,
             },
+        },
+
+        notificationContainer: {
+            position: "absolute",
+            top: "12px",
+            margin: "0 12px",
+            backgroundColor: "rgba(255, 138, 0, 1)",
+            padding: "8px 12px",
+            borderRadius: "5px",
+            zIndex: 9999,
+            fontFamily: "Lato Regular",
+            fontWeight: 'normal' as const,
+            fontSize: "13px",
+            lineHeight: "18px",
+            color: "rgba(255, 255, 255, 1)",
+            textAlign: "center",
         },
 
         chatHeader: {
@@ -166,7 +193,7 @@ const useStyles = makeStyles()(theme => {
 
         chatPanelNoTabs: {
             // extract header height
-            height: 'calc(100% - 60px)'
+            height: 'calc(100% - 62px) !important'
         },
 
         pollsPanel: {
@@ -186,6 +213,7 @@ const useStyles = makeStyles()(theme => {
 const ChatMobile = ({
     _isModal,
     _isOpen,
+    _notifications,
     _isPollsEnabled,
     _isPollsTabFocused,
     _messages,
@@ -360,6 +388,21 @@ const ChatMobile = ({
                 className = {classes.container}
                 id = 'sideToolbarContainer'
                 onKeyDown = {onEscClick}>
+                {
+                    _notifications.length > 0 && (
+                        _notifications.map(({ props }) => {
+                            if (props.descriptionKey === undefined) {
+                                return null;
+                            }
+
+                            return (
+                                <div className = {classes.notificationContainer}>
+                                    {props.titleKey === undefined ? t(props.descriptionKey) : `${t(props.titleKey)}. ${t(props.descriptionKey)}`}
+                                </div>
+                            );
+                        })
+                    )
+                }
                 <ChatHeader
                     className = {cx('chat-header', classes.chatHeader, isMobile && 'is-mobile')}
                     isPollsEnabled = {_isPollsEnabled}
@@ -394,6 +437,7 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     const { isOpen, isPollsTabFocused, messages, nbUnreadMessages } = state['features/chat'];
     const { nbUnreadPolls } = state['features/polls'];
     const _localParticipant = getLocalParticipant(state);
+    const { notifications } = state['features/notifications'];
 
     return {
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,
@@ -403,7 +447,12 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
         _messages: messages,
         _nbUnreadMessages: nbUnreadMessages,
         _nbUnreadPolls: nbUnreadPolls,
-        _showNamePrompt: !_localParticipant?.name
+        _showNamePrompt: !_localParticipant?.name,
+        _notifications: isOpen ? notifications
+                .filter(n => n.uid === MESSAGE_NOT_DELIVERED_NOTIFICATION_ID)
+                .reverse()
+                .slice(0, 1)
+            : []
     };
 }
 

@@ -81,6 +81,9 @@ class Apiv2_Format {
 		// список доступных способов аутентификации
 		$output["available_auth_method_list"] = $start_data["available_auth_method_list"];
 
+		// список доступных способов аутентификации гостей
+		$output["available_auth_guest_method_list"] = $start_data["available_auth_guest_method_list"];
+
 		return $output;
 	}
 
@@ -162,8 +165,8 @@ class Apiv2_Format {
 
 		$phone_story_key = match ($phone_story_type) {
 			Domain_User_Entity_Security_AddPhone_Story::ACTION_TYPE => Type_Pack_AddPhoneStory::doEncrypt($story->getStoryMap()),
-			Domain_User_Entity_ChangePhone_Story::ACTION_TYPE       => Type_Pack_ChangePhoneStory::doEncrypt($story->getStoryMap()),
-			default                                                 => "",
+			Domain_User_Entity_ChangePhone_Story::ACTION_TYPE => Type_Pack_ChangePhoneStory::doEncrypt($story->getStoryMap()),
+			default => "",
 		};
 
 		return [
@@ -236,10 +239,10 @@ class Apiv2_Format {
 	):array {
 
 		$mail_story_key = match ($mail_story_type) {
-			Domain_User_Entity_Security_AddMail_Story::ACTION_TYPE            => Type_Pack_AddMailStory::doEncrypt($story->getStoryMap()),
+			Domain_User_Entity_Security_AddMail_Story::ACTION_TYPE => Type_Pack_AddMailStory::doEncrypt($story->getStoryMap()),
 			Domain_User_Entity_PasswordMail_Story::ACTION_TYPE_RESET_PASSWORD => Type_Pack_PasswordMailStory::doEncrypt($story->getStoryMap()),
-			Domain_User_Entity_ChangeMail_Story::ACTION_TYPE                  => Type_Pack_ChangeMailStory::doEncrypt($story->getStoryMap()),
-			default                                                           => throw new ParseFatalException("unknown type from format resend code"),
+			Domain_User_Entity_ChangeMail_Story::ACTION_TYPE => Type_Pack_ChangeMailStory::doEncrypt($story->getStoryMap()),
+			default => throw new ParseFatalException("unknown type from format resend code"),
 		};
 
 		return [

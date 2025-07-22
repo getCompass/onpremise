@@ -3,7 +3,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigateDialog, useNavigatePage } from "../components/hooks.ts";
 import useIsJoinLink from "../lib/useIsJoinLink.ts";
 import { useSetAtom } from "jotai";
-import { authenticationTokenState } from "./_stores.ts";
+import {
+	authenticationTokenExpiresAtState,
+	authenticationTokenState,
+	authenticationTokenTimeLeftState
+} from "./_stores.ts";
+import dayjs from "dayjs";
 
 export function useApiAuthLogout() {
 	const getResponse = useGetResponse("pivot");
@@ -45,6 +50,8 @@ export type ApiAuthGenerateToken = {
 export function useApiAuthGenerateToken() {
 	const getResponse = useGetResponse("pivot");
 	const setAuthenticationToken = useSetAtom(authenticationTokenState);
+	const setExpiresAt = useSetAtom(authenticationTokenExpiresAtState);
+	const setTimeLeft = useSetAtom(authenticationTokenTimeLeftState);
 
 	return useMutation({
 		retry: false,
@@ -61,6 +68,8 @@ export function useApiAuthGenerateToken() {
 
 			const response = await getResponse<ApiAuthGenerateToken>("auth/generateToken", body);
 			setAuthenticationToken(response.authentication_token);
+			setExpiresAt(response.expires_at);
+			setTimeLeft(response.expires_at - dayjs().unix());
 
 			return response;
 		},

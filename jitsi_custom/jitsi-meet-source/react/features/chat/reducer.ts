@@ -15,6 +15,7 @@ import {
     SET_PRIVATE_MESSAGE_RECIPIENT
 } from './actionTypes';
 import { IMessage } from './types';
+import { MESSAGE_TYPE_ERROR } from "./constants";
 
 const DEFAULT_STATE = {
     isOpen: false,
@@ -59,6 +60,18 @@ ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, ac
             recipient: action.recipient,
             timestamp: action.timestamp
         };
+
+        // сообщение о том, что пользователь не в комнате/зритель не отображаем в чате
+        if (action.messageType === MESSAGE_TYPE_ERROR && action.message === "Recipient not in room"){
+
+            return {
+                ...state,
+                lastReadMessage:
+                    action.hasRead ? newMessage : state.lastReadMessage,
+                nbUnreadMessages: state.isPollsTabFocused ? state.nbUnreadMessages + 1 : state.nbUnreadMessages,
+                ...state.messages
+            };
+        }
 
         // React native, unlike web, needs a reverse sorted message list.
         const messages = navigator.product === 'ReactNative'

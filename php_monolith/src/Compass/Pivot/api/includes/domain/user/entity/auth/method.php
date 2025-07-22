@@ -45,13 +45,41 @@ class Domain_User_Entity_Auth_Method {
 	}
 
 	/**
+	 * получаем список доступных способов аутентификации гостей
+	 *
+	 * @return array
+	 * @throws ParseFatalException
+	 */
+	public static function getAvailableGuestMethodList():array {
+
+		$list = Domain_User_Entity_Auth_Config::getAvailableGuestMethodList();
+
+		// не доверяем значениям, поэтому фильтруем
+		return array_filter($list, static fn(string $item) => in_array($item, self::_EXISTING_METHOD_LIST));
+	}
+
+	/**
 	 * проверяем, что способ аутентификации доступен на сервере
+	 *
+	 * @param string $method
 	 *
 	 * @return bool
 	 */
 	public static function isMethodAvailable(string $method):bool {
 
 		return in_array($method, self::getAvailableMethodList());
+	}
+
+	/**
+	 * проверяем, что способ аутентификации доступен на сервере
+	 *
+	 * @param string $method
+	 *
+	 * @return bool
+	 */
+	public static function isGuestMethodAvailable(string $method):bool {
+
+		return in_array($method, self::getAvailableGuestMethodList());
 	}
 
 	/**
@@ -66,7 +94,7 @@ class Domain_User_Entity_Auth_Method {
 			throw new ParseFatalException("unexpected auth method: $method");
 		}
 
-		if (!self::isMethodAvailable($method)) {
+		if (!self::isMethodAvailable($method) && !self::isGuestMethodAvailable($method)) {
 			throw new Domain_User_Exception_AuthMethodDisabled("auth method not enabled");
 		}
 	}
@@ -77,6 +105,14 @@ class Domain_User_Entity_Auth_Method {
 	public static function isSingleAuthMethodEnabled(string $method):bool {
 
 		return in_array($method, self::getAvailableMethodList()) && count(self::getAvailableMethodList()) == 1;
+	}
+
+	/**
+	 * Проверяем, что способ включен данный метод аутентификации для гостей
+	 */
+	public static function isSingleAuthGuestMethodEnabled(string $method):bool {
+
+		return in_array($method, self::getAvailableGuestMethodList()) && count(self::getAvailableGuestMethodList()) == 1;
 	}
 
 	/**

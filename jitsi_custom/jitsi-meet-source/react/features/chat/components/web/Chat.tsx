@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
@@ -19,6 +19,7 @@ import KeyboardAvoider from './KeyboardAvoider';
 import MessageContainer from './MessageContainer';
 import MessageRecipient from './MessageRecipient';
 import { isMobileBrowser } from "../../../base/environment/utils";
+import { iAmVisitor } from "../../../visitors/functions";
 
 interface IProps extends AbstractProps {
 
@@ -77,6 +78,8 @@ interface IProps extends AbstractProps {
      * Whether or not to block chat access with a nickname input form.
      */
     _showNamePrompt: boolean;
+
+    _isVisitor: boolean;
 }
 
 const useStyles = makeStyles()(theme => {
@@ -142,6 +145,10 @@ const useStyles = makeStyles()(theme => {
                 cursor: 'pointer'
             },
 
+            '&.is-visitor': {
+                padding: '20px 20px 8px 20px',
+            },
+
             '&.is-mobile': {
                 padding: '16px 16px 18px 16px',
                 fontSize: '20px',
@@ -196,6 +203,7 @@ const Chat = ({
     _onToggleChatTab,
     _onTogglePollsTab,
     _showNamePrompt,
+    _isVisitor,
     dispatch,
     t
 }: IProps) => {
@@ -329,7 +337,7 @@ const Chat = ({
                 id = 'sideToolbarContainer'
                 onKeyDown = {onEscClick}>
                 <ChatHeader
-                    className = {cx('chat-header', classes.chatHeader, isMobile && 'is-mobile')}
+                    className = {cx('chat-header', classes.chatHeader, isMobile && 'is-mobile', _isVisitor && 'is-visitor')}
                     isPollsEnabled = {_isPollsEnabled}
                     onCancel = {onToggleChat} />
                 {_showNamePrompt
@@ -362,6 +370,7 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     const { isOpen, isPollsTabFocused, messages, nbUnreadMessages } = state['features/chat'];
     const { nbUnreadPolls } = state['features/polls'];
     const _localParticipant = getLocalParticipant(state);
+    const isVisitor = iAmVisitor(state);
 
     return {
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,
@@ -371,7 +380,8 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
         _messages: messages,
         _nbUnreadMessages: nbUnreadMessages,
         _nbUnreadPolls: nbUnreadPolls,
-        _showNamePrompt: !_localParticipant?.name
+        _showNamePrompt: !_localParticipant?.name,
+        _isVisitor: isVisitor
     };
 }
 

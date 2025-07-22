@@ -38,6 +38,7 @@ import {
 import { startLocalVideoRecording, stopLocalVideoRecording } from "../../../../recording/actions.any";
 import { isScreenSharingSupported } from "../../../../desktop-picker/functions";
 import UnsupportedScreenSharing from "../UnsupportedScreenSharing";
+import RecordingReminderDialog from '../../../../recording/components/web/RecordingReminderDialog';
 
 export interface IProps {
     isAlreadyRecording: boolean;
@@ -180,10 +181,18 @@ const ModeratorSettingsContent = (props: IProps) => {
     const [isPopoverVisible, changeIsPopoverVisible] = useState(false);
 
     const startRecording = useCallback(() => {
-        browser.isElectron() ? postMessage({
+        if (browser.isElectron()) {
+            postMessage({
             type: "recorder_start",
             data: { external_save: true }
-        }, "*") : dispatch(startLocalVideoRecording(false));
+            }, "*");
+
+            dispatch(openDialog(RecordingReminderDialog));
+
+            return;
+        }
+
+        dispatch(startLocalVideoRecording(false));
     }, [])
 
     const stopRecording = useCallback(() => {

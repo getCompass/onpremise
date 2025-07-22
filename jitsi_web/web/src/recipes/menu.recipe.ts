@@ -63,8 +63,8 @@ export const menu = defineSlotRecipe({
 					overflow: "hidden",
 				},
 				item: {
-					py: "9px",
-					px: "19px",
+					py: "8px",
+					px: "16px",
 					bgColor: "white",
 					cursor: "pointer",
 					userSelect: "none",

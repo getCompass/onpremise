@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useAtomValue, useSetAtom } from "jotai/index";
-import { downloadAppUrlState, electronVersionState } from "./_stores.ts";
+import {useQuery} from "@tanstack/react-query";
+import {useAtomValue, useSetAtom} from "jotai/index";
+import {downloadAppUrlState, electronVersionState} from "./_stores.ts";
+import {ELECTRON_VERSION_22, ELECTRON_VERSION_30} from "./_types.ts";
 
 async function fetchVersionInfo(url: string) {
 	const response = await fetch(url, {
@@ -25,22 +26,26 @@ export default function useElectronVersions(backendVersion: string) {
 				return {};
 			}
 
-			try {
-				const data = await fetchVersionInfo(`${downloadAppUrl}electron_versions.json`);
+			const electron_version_list = [ELECTRON_VERSION_22, ELECTRON_VERSION_30];
+			const result: Record<string, any> = {};
 
-				if (!data.hasOwnProperty(backendVersion)) {
-					return data;
+			for (const electron_version of electron_version_list) {
+				try {
+					const data = await fetchVersionInfo(`${downloadAppUrl}${electron_version}/electron_versions.json`);
+					result[electron_version] = data;
+
+					if (data.hasOwnProperty(backendVersion) && data[backendVersion]) {
+						setElectronVersion(prev => ({
+							...prev,
+							[electron_version]: data[backendVersion],
+						}));
+					}
+				} catch (error) {
+					result[electron_version] = {};
 				}
-				if (!data[backendVersion]) {
-					return data;
-				}
-
-				setElectronVersion(data[backendVersion]);
-
-				return data;
-			} catch (error) {
-				return {};
 			}
+
+			return result;
 		},
 	});
 }

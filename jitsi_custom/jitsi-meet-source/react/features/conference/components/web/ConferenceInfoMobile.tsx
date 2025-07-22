@@ -1,6 +1,6 @@
 /* eslint-disable react/no-multi-comp */
 import React, { Component } from 'react';
-import { batch, connect } from 'react-redux';
+import { connect } from 'react-redux';
 
 import { IReduxState, IStore } from '../../../app/types';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
@@ -18,12 +18,7 @@ import { translate } from "../../../base/i18n/functions";
 import { WithTranslation } from "react-i18next";
 import { plural } from "../../../base/compass/functions";
 import { MEDIA_TYPE } from "../../../base/media/constants";
-import {
-    isLocalTrackMuted,
-    isParticipantAudioMuted,
-    isParticipantVideoMuted,
-    isRemoteTrackMuted
-} from "../../../base/tracks/functions.any";
+import { isLocalTrackMuted, isParticipantVideoMuted, isRemoteTrackMuted } from "../../../base/tracks/functions.any";
 import { isToggleCameraEnabled } from "../../../base/tracks/functions.web";
 import { IToolboxButton } from "../../../toolbox/types";
 import OverflowMenuButtonMobile from "../../../toolbox/components/web/OverflowMenuButtonMobile";
@@ -33,12 +28,12 @@ import OverflowToggleButtonMobile from "../../../toolbox/components/web/Overflow
 import AudioMutedIndicator from "../../../filmstrip/components/web/AudioMutedIndicator";
 import { getLargeVideoParticipant } from "../../../large-video/functions";
 import RaisedHandIndicatorMobile from "../../../filmstrip/components/web/RaisedHandIndicatorMobile";
-import { setTileView } from "../../../video-layout/actions.any";
 import { getCurrentLayout } from "../../../video-layout/functions.any";
 import { LAYOUTS } from "../../../video-layout/constants";
 import TileViewButtonMobile from "../../../video-layout/components/TileViewButtonMobile";
 import { open as openParticipantsPane } from "../../../participants-pane/actions.web";
 import ChatCounterMobile from "../../../chat/components/web/ChatCounterMobile";
+import { getVisitorsCount, iAmVisitor } from "../../../visitors/functions";
 
 /**
  * The type of the React {@code Component} props of {@link Subject}.
@@ -73,6 +68,8 @@ interface IProps extends WithTranslation {
     _lobbyKnocking: boolean;
 
     _participantsCount: number;
+
+    _visitorsCount: number;
 
     _remoteParticipantsLength: number;
 
@@ -197,6 +194,7 @@ class ConferenceInfoMobile extends Component<IProps> {
     _renderConferenceInfo() {
         const {
             _participantsCount,
+            _visitorsCount,
             _remoteParticipantsLength,
             _showAudioMutedIndicator,
             _largeVideoParticipantName,
@@ -295,7 +293,13 @@ class ConferenceInfoMobile extends Component<IProps> {
                     fontSize: '12px',
                     lineHeight: '15px',
                     color: 'rgba(255, 255, 255, 0.3)',
-                }}>{`${_participantsCount} ${plural(_participantsCount, t('conference.one_member'), t('conference.two_members'), t('conference.five_members'))}`}</div>
+                }}>
+                    {`${_participantsCount} ${plural(_participantsCount, t('conference.one_member'), t('conference.two_members'), t('conference.five_members'))}${
+                        _visitorsCount > 0
+                            ? `, ${_visitorsCount} ${plural(_visitorsCount, t('conference.one_visitor'), t('conference.two_visitors'), t('conference.five_visitors'))}`
+                            : ""
+                    }`}
+                </div>
             </div>
         );
     }
@@ -455,19 +459,24 @@ function _mapStateToProps(state: IReduxState) {
     const { is_in_picture_in_picture_mode } = state['features/picture-in-picture'];
     const isPrejoinVisible = isPrejoinPageVisible(state);
     const { knocking } = state['features/lobby'];
-    const participantsCount = getParticipantCount(state);
+    let participantsCount = getParticipantCount(state);
+    const isVisitor = iAmVisitor(state);
+    const visitorsCount = getVisitorsCount(state);
     const { enabled: audioOnly } = state['features/base/audio-only'];
     const tracks = state['features/base/tracks'];
     const isToggleCameraButtonEnabled = isToggleCameraEnabled(state);
     const participantsPaneEnabled = isParticipantsPaneEnabled(state);
     const { remoteParticipants } = state['features/filmstrip'];
     const remoteParticipantsLength = remoteParticipants?.length ?? 0;
-    const overflowMenuButtons = useCompassOverflowMenuButtons(participantsPaneEnabled, remoteParticipantsLength);
+    const overflowMenuButtons = useCompassOverflowMenuButtons(participantsPaneEnabled, remoteParticipantsLength, isVisitor);
     const largeVideoParticipant = getLargeVideoParticipant(state);
     const participantId = largeVideoParticipant?.id ?? '';
     const largeVideoParticipantName = largeVideoParticipant?.name ?? '';
     const _currentLayout = getCurrentLayout(state) ?? '';
     const _isLargeVideoParticipantMuted = isParticipantVideoMuted(largeVideoParticipant, state);
+    if (isVisitor) {
+        participantsCount = participantsCount - 1; // зрителя не учитываем в количестве участников
+    }
 
     let isAudioMuted = true;
     if (largeVideoParticipant?.local) {
@@ -484,12 +493,13 @@ function _mapStateToProps(state: IReduxState) {
         _conferenceInfo: getConferenceInfo(state),
         _lobbyKnocking: knocking,
         _participantsCount: participantsCount,
+        _visitorsCount: visitorsCount,
         _remoteParticipantsLength: remoteParticipantsLength,
         _showAudioMutedIndicator: isAudioMuted,
         _largeVideoParticipantName: largeVideoParticipantName,
         _currentLayout,
         _isLargeVideoParticipantMuted,
-        _isParticipantsPaneEnabled: participantsPaneEnabled,
+        _isParticipantsPaneEnabled: participantsPaneEnabled && !isVisitor,
     };
 }
 

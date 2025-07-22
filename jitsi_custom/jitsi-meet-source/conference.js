@@ -166,6 +166,7 @@ import { muteLocal } from './react/features/video-menu/actions.any';
 import i18next from "./react/features/base/i18n/i18next";
 import { setTileView } from "./react/features/video-layout/actions.any";
 import { isMobileBrowser } from "./react/features/base/environment/utils";
+import { iAmVisitor } from "./react/features/visitors/functions";
 
 const logger = Logger.getLogger(__filename);
 let room;
@@ -2074,6 +2075,7 @@ export default {
         const jwt = APP.store.getState()['features/base/jwt'];
         const hasJwt = Boolean(jwt.jwt);
         let isCompassUser = false; // является ли пользователем compass
+        const imVisitor = iAmVisitor(APP.store.getState());
 
         // проверяем является ли пользователем compass
         if (hasJwt && jwt.user !== undefined) {
@@ -2084,17 +2086,24 @@ export default {
 
         // compass changes
         // если пользователь компасс включаем и микрофон и выключаем камеру насильно
-        if (isCompassUser) {
+        if (isCompassUser && !imVisitor) {
             dispatch(muteLocal(false, MEDIA_TYPE.AUDIO));
 
             // для электрона камера сохраняет свое прошлое положение
             !browser.isElectron() && dispatch(muteLocal(true, MEDIA_TYPE.VIDEO));
         }
-        if (jwt?.user?.hiddenFromRecorder) {
+        if (jwt?.user?.hiddenFromRecorder && !imVisitor) {
             dispatch(muteLocal(true, MEDIA_TYPE.AUDIO));
             dispatch(muteLocal(true, MEDIA_TYPE.VIDEO));
             dispatch(setAudioUnmutePermissions(true, true));
             dispatch(setVideoUnmutePermissions(true, true));
+        }
+
+        // обязательно отключаем иначе jingle session откинет с электрона при подключении
+        if (imVisitor) {
+
+            dispatch(muteLocal(true, MEDIA_TYPE.AUDIO));
+            dispatch(muteLocal(true, MEDIA_TYPE.VIDEO));
         }
 
         // compass changes

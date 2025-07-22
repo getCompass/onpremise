@@ -95,6 +95,10 @@ export function commonUserJoinedHandling(
             isReplacing,
             sources: user.getSources()
         }));
+
+        // делаем именно так с задержкой
+        // чтобы при подключении пользователя у него все пересортировались по времени
+        window.setTimeout(() => dispatch({ type: UPDATE_PARTICIPANTS_SORT}), 1000);
     }
 }
 

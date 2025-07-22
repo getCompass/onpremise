@@ -17,6 +17,7 @@ import { useCompassToolboxButtons, useKeyboardShortcuts } from '../../hooks.web'
 import Separator from './Separator';
 import HangupButtonMobile from "../HangupButtonMobile";
 import { isPrejoinPageVisible } from "../../../prejoin/functions.any";
+import { iAmVisitor } from "../../../visitors/functions";
 
 /**
  * The type of the React {@code Component} props of {@link CompassToolboxMobile}.
@@ -75,20 +76,16 @@ export default function CompassToolboxMobile({
     toolbarButtons,
     isLobby
 }: IProps) {
-    const { classes, cx } = useStyles();
-    const { t } = useTranslation();
+    const { cx } = useStyles();
     const dispatch = useDispatch();
     const _toolboxRef = useRef<HTMLDivElement>(null);
 
-    const conference = useSelector((state: IReduxState) => state['features/base/conference'].conference);
     const isNarrowLayout = useSelector((state: IReduxState) => state['features/base/responsive-ui'].isNarrowLayout);
     const clientWidth = useSelector((state: IReduxState) => state['features/base/responsive-ui'].clientWidth);
-    const isModerator = useSelector(isLocalParticipantModerator);
     const customToolbarButtons = useSelector(
         (state: IReduxState) => state['features/base/config'].customToolbarButtons);
     const iAmRecorder = useSelector((state: IReduxState) => state['features/base/config'].iAmRecorder);
     const iAmSipGateway = useSelector((state: IReduxState) => state['features/base/config'].iAmSipGateway);
-    const overflowDrawer = useSelector((state: IReduxState) => state['features/toolbox'].overflowDrawer);
     const shiftUp = useSelector((state: IReduxState) => state['features/toolbox'].shiftUp);
     const overflowMenuVisible = useSelector((state: IReduxState) => state['features/toolbox'].overflowMenuVisible);
     const hangupMenuVisible = useSelector((state: IReduxState) => state['features/toolbox'].hangupMenuVisible);
@@ -108,6 +105,9 @@ export default function CompassToolboxMobile({
     const compassMainToolbarButtonsThresholds
         = useSelector((state: IReduxState) => state['features/toolbox'].compassMainToolbarButtonsThresholds);
     const allButtons = useCompassToolboxButtons(customToolbarButtons);
+    const isVisitor = useSelector((state: IReduxState) => iAmVisitor(state));
+    const { joiningInProgress } = useSelector((state: IReduxState) => state['features/prejoin']);
+    const forcedBooleanJoiningInProgress: boolean = !!joiningInProgress;
 
     useKeyboardShortcuts(toolbarButtonsToUse);
 
@@ -209,13 +209,11 @@ export default function CompassToolboxMobile({
         return null;
     }
 
-    const endConferenceSupported = Boolean(conference?.isEndConferenceSupported() && isModerator);
     const isMobile = isMobileBrowser();
 
     const rootClassNames = `compass-new-toolbox-mobile ${toolbarVisible ? 'visible' : ''} ${
         toolbarButtonsToUse.length ? '' : 'no-buttons'} ${chatOpen ? 'shift-right' : ''} ${isLobby ? 'lobby' : ''}`;
 
-    const toolbarAccLabel = 'toolbar.accessibilityLabel.moreActionsMenu';
     const containerClassName = `compass-toolbox-content${isMobile || isNarrowLayout ? ' toolbox-content-mobile' : ''}`;
 
     const { mainMenuButtons } = getCompassVisibleButtons({
@@ -224,7 +222,9 @@ export default function CompassToolboxMobile({
         toolbarButtons: toolbarButtonsToUse,
         clientWidth,
         jwtDisabledButtons,
-        mainToolbarButtonsThresholds: compassMainToolbarButtonsThresholds
+        mainToolbarButtonsThresholds: compassMainToolbarButtonsThresholds,
+        isVisitor,
+        joiningInProgress: forcedBooleanJoiningInProgress
     });
 
     return (

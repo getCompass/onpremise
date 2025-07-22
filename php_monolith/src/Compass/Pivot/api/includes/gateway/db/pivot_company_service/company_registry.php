@@ -202,6 +202,20 @@ class Gateway_Db_PivotCompanyService_CompanyRegistry extends Gateway_Db_PivotCom
 	}
 
 	/**
+	 * Получаем количество компаний по is_busy
+	 */
+	public static function getIsBusyCount(string $domino_id):int {
+
+		$shard_key  = self::_getDbKey();
+		$table_name = self::_getTableKey($domino_id);
+
+		$query = "SELECT COUNT(*) AS count FROM `?p` WHERE `is_busy` = ?i LIMIT ?i";
+		$row   = ShardingGateway::database($shard_key)->getOne($query, $table_name, 1, 1);
+
+		return $row["count"];
+	}
+
+	/**
 	 * Сформировать из записи таблицы объект
 	 *
 	 * @param array $row

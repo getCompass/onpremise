@@ -7,6 +7,9 @@ import BaseAudioMuteButton from '../../base/toolbox/components/BaseAudioMuteButt
 import { isLocalTrackMuted } from '../../base/tracks/functions';
 import { muteLocal } from '../../video-menu/actions';
 import { isAudioMuteButtonDisabled } from '../functions';
+import { openDialog } from "../../base/dialog/actions";
+import { JoinMeetingDialog } from "../../visitors/components/index.web";
+import { iAmVisitor } from "../../visitors/functions";
 
 
 /**
@@ -17,13 +20,15 @@ export interface IProps extends AbstractButtonProps {
 
     /**
      * Whether audio is currently muted or not.
-    */
-   _audioMuted: boolean;
+     */
+    _audioMuted: boolean;
 
-   /**
-    * Whether the button is disabled.
-   */
-  _disabled: boolean;
+    /**
+     * Whether the button is disabled.
+     */
+    _disabled: boolean;
+
+    _isVisitor?: boolean;
 }
 
 /**
@@ -56,6 +61,12 @@ export default class AbstractAudioMuteButton<P extends IProps> extends BaseAudio
      * @returns {void}
      */
     _setAudioMuted(audioMuted: boolean) {
+        if (this.props._isVisitor) {
+
+            this.props.dispatch(openDialog(JoinMeetingDialog));
+            return;
+        }
+
         this.props.dispatch(muteLocal(audioMuted, MEDIA_TYPE.AUDIO));
     }
 
@@ -84,10 +95,12 @@ export function mapStateToProps(state: IReduxState) {
     const _audioMuted = isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.AUDIO);
     const _disabled = isAudioMuteButtonDisabled(state);
     const enabledFlag = getFeatureFlag(state, AUDIO_MUTE_BUTTON_ENABLED, true);
+    const _isVisitor = iAmVisitor(state);
 
     return {
         _audioMuted,
         _disabled,
+        _isVisitor,
         visible: enabledFlag
     };
 }

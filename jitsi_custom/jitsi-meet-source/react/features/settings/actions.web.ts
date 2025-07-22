@@ -22,7 +22,8 @@ import { toggleBackgroundEffect } from '../virtual-background/actions';
 import virtualBackgroundLogger from '../virtual-background/logger';
 
 import {
-    SET_AUDIO_SETTINGS_VISIBILITY, SET_DESKTOP_SHARE_QUALITY_SETTINGS_VISIBILITY,
+    SET_AUDIO_SETTINGS_VISIBILITY,
+    SET_DESKTOP_SHARE_QUALITY_SETTINGS_VISIBILITY,
     SET_MODERATOR_SETTINGS_VISIBILITY,
     SET_VIDEO_SETTINGS_VISIBILITY
 } from './actionTypes';

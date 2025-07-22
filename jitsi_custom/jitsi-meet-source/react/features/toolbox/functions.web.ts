@@ -188,7 +188,25 @@ interface IGetVisibleButtonsParams {
     toolbarButtons: string[];
 }
 
+interface IGetCompassVisibleButtonsParams {
+    allButtons: { [key: string]: IToolboxButton; };
+    buttonsWithNotifyClick: Map<string, NOTIFY_CLICK_MODE>;
+    clientWidth: number;
+    jwtDisabledButtons: string[];
+    mainToolbarButtonsThresholds: IMainToolbarButtonThresholds;
+    toolbarButtons: string[];
+    isVisitor: boolean;
+    joiningInProgress: boolean;
+}
+
 interface IGetLeftSideVisibleButtonsParams {
+    allButtons: { [key: string]: IToolboxButton; };
+    jwtDisabledButtons: string[];
+    toolbarButtons: string[];
+    isVisitor: boolean;
+}
+
+interface IGetRightSideVisibleButtonsParams {
     allButtons: { [key: string]: IToolboxButton; };
     jwtDisabledButtons: string[];
     toolbarButtons: string[];
@@ -203,20 +221,24 @@ interface IGetRightSideVisibleButtonsParams {
 /**
  * Returns all buttons that need to be rendered on the left side.
  *
- * @param {IGetVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
+ * @param {IGetLeftSideVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
  * @returns {Object} - The visible buttons arrays .
  */
 export function getCompassLeftSideButtons({
     allButtons,
     toolbarButtons,
     jwtDisabledButtons,
+    isVisitor
 }: IGetLeftSideVisibleButtonsParams) {
-    let filteredButtons= Object.keys(allButtons).filter(key =>
-        typeof key !== 'undefined' // filter invalid buttons that may be coming from config.mainToolbarButtons
-        // override
-        && !jwtDisabledButtons.includes(key)
-        && isButtonEnabled(key, toolbarButtons)
-        && (key === 'microphone' || key === 'camera') // оставляем только кнопки microphone и camera
+    let filteredButtons = Object.keys(allButtons).filter(key =>
+            typeof key !== 'undefined' // filter invalid buttons that may be coming from config.mainToolbarButtons
+            // override
+            && !jwtDisabledButtons.includes(key)
+            && isButtonEnabled(key, toolbarButtons)
+            && (
+                (isVisitor && (key === 'visitor-microphone' || key === 'visitor-camera')) // оставляем только кнопки visitor-microphone и visitor-camera
+                || (!isVisitor && (key === 'microphone' || key === 'camera')) // оставляем только кнопки microphone и camera
+            )
     );
 
     return filteredButtons.map(key => allButtons[key]);
@@ -225,15 +247,15 @@ export function getCompassLeftSideButtons({
 /**
  * Returns all buttons that need to be rendered on the left side.
  *
- * @param {IGetVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
+ * @param {IGetRightSideVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
  * @returns {Object} - The visible buttons arrays .
  */
 export function getCompassRightSideButtons({
     allButtons,
     toolbarButtons,
     jwtDisabledButtons,
-}: IGetLeftSideVisibleButtonsParams) {
-    let filteredButtons= Object.keys(allButtons).filter(key =>
+}: IGetRightSideVisibleButtonsParams) {
+    let filteredButtons = Object.keys(allButtons).filter(key =>
         typeof key !== 'undefined' // filter invalid buttons that may be coming from config.mainToolbarButtons
         // override
         && !jwtDisabledButtons.includes(key)
@@ -247,7 +269,7 @@ export function getCompassRightSideButtons({
 /**
  * Returns all buttons that need to be rendered.
  *
- * @param {IGetVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
+ * @param {IGetCompassVisibleButtonsParams} params - The parameters needed to extract the visible buttons.
  * @returns {Object} - The visible buttons arrays .
  */
 export function getCompassVisibleButtons({
@@ -256,8 +278,10 @@ export function getCompassVisibleButtons({
     toolbarButtons,
     clientWidth,
     jwtDisabledButtons,
-    mainToolbarButtonsThresholds
-}: IGetVisibleButtonsParams) {
+    mainToolbarButtonsThresholds,
+    isVisitor,
+    joiningInProgress
+}: IGetCompassVisibleButtonsParams) {
     setButtonsNotifyClickMode(allButtons, buttonsWithNotifyClick);
 
     let filteredButtons: string[];
@@ -266,17 +290,23 @@ export function getCompassVisibleButtons({
         filteredButtons = Object.keys(allButtons).filter(key =>
             typeof key !== 'undefined' // filter invalid buttons that may be coming from config.mainToolbarButtons
             // на мобилке оставляем только кнопки camera и microphone
-            && (key === 'camera' || key === 'microphone')
+            && (
+                (isVisitor && !joiningInProgress && (key === 'visitor-microphone' || key === 'visitor-camera')) // оставляем только кнопки visitor-microphone и visitor-camera
+                || (isVisitor && joiningInProgress && (key === 'microphone' || key === 'camera')) // оставляем только кнопки microphone и camera
+                || (!isVisitor && (key === 'microphone' || key === 'camera')) // оставляем только кнопки microphone и camera
+            )
             && !jwtDisabledButtons.includes(key)
             && isButtonEnabled(key, toolbarButtons));
 
-    }else{
+    } else {
         filteredButtons = Object.keys(allButtons).filter(key =>
             typeof key !== 'undefined' // filter invalid buttons that may be comming from config.mainToolbarButtons
             // override
             && (key !== 'fullscreen' || !isMobileBrowser()) // убираем кнопку fullscreen на мобилках
             && key !== 'microphone' // убираем кнопку microphone
             && key !== 'camera' // убираем кнопку camera
+            && key !== 'visitor-microphone' // убираем кнопку visitor-microphone
+            && key !== 'visitor-camera' // убираем кнопку visitor-camera
             && key !== 'participants-pane' // убираем кнопку participants-pane
             && key !== 'moderatorSettings' // убираем кнопку moderatorSettings
             && !jwtDisabledButtons.includes(key)

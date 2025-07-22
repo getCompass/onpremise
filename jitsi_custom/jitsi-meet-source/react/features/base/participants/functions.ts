@@ -339,6 +339,16 @@ export function isLocalScreenshareParticipant(participant?: IParticipant): boole
 }
 
 /**
+ * Returns whether the fake participant is a local.
+ *
+ * @param {IParticipant|undefined} participant - The participant entity.
+ * @returns {boolean} - True if it's a local participant.
+ */
+export function isLocalParticipant(participant?: IParticipant): boolean {
+    return participant?.local === true;
+}
+
+/**
  * Returns whether the fake participant is a remote screenshare.
  *
  * @param {IParticipant|undefined} participant - The participant entity.

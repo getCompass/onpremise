@@ -126,6 +126,8 @@
         },
         "noMessagesMessage": "Il n'y a pas encore de messages dans cette réunion. Démarrez une conversation ici !",
         "privateNotice": "Vous → {{recipient}}",
+        "privateNoticeForYou": "Message pour vous",
+        "privateMessageReply": "Répondre",
         "sendButton": "Envoyer",
         "smileysPanel": "Panneaux des Émojis",
         "systemDisplayName": "Système",
@@ -148,7 +150,10 @@
         "title": "Conférence",
         "one_member": "participant",
         "two_members": "participants",
-        "five_members": "participants"
+        "five_members": "participants",
+        "one_visitor": "spectateur",
+        "two_visitors": "spectateurs",
+        "five_visitors": "spectateurs"
     },
     "connectingOverlay": {
         "joiningRoom": "Connexion à la réunion ..."
@@ -786,6 +791,8 @@
         "localRecordingStarted": "{{name}} a commencé un enregistrement local.",
         "localRecordingStopped": "{{name}} a arrêté un enregistrement local.",
         "me": "Moi",
+        "messageIsNotDeliveredTitle": "Action non disponible",
+        "messageIsNotDelivered": "L'utilisateur a quitté la conférence ou est spectateur.",
         "moderationInEffectCSDescription": "Merci de lever la main si vous voulez partager votre écran.",
         "moderationInEffectCSTitle": "Le partage d'écran est interdit par le modérateur",
         "moderationInEffectDescription": "Merci de levez la main pour demander la parole.",
@@ -811,6 +818,11 @@
         "oldElectronClientDescription1": "Vous semblez utiliser une ancienne version du client Jitsi Meet qui présente des failles de sécurité connues. Veuillez vous assurer de mettre à jour vers notre ",
         "oldElectronClientDescription2": "dernière build",
         "oldElectronClientDescription3": " rapidement !",
+        "visitorWantsToJoinTitle": "{{participantName}} veut parler",
+        "visitorWantsToJoin": "Pour permettre d'activer le microphone, faites le spectateur le membre.",
+        "visitorsWantToJoin": "Pour permettre d'activer le microphone, faites le spectateur le membre.",
+        "visitorJoinRejectedTitle": "Votre demande est rejetée par le modérateur",
+        "visitorJoinRejected": "Écrivez dans le chat de conférence pour recevoir la réponse du chef de la réunion.",
         "participantWantsToJoin": "souhaite rejoindre la réunion",
         "participantsWantToJoin": "souhaitent rejoindre la réunion",
         "passwordRemovedRemotely": "Le $t(lockRoomPassword) a été supprimé par un autre participant",
@@ -839,7 +851,11 @@
         "videoUnmuteBlockedDescription": "Le rétablissement de la vidéo a été bloqué temporairement en raison de limites système.",
         "videoUnmuteBlockedTitle": "Rétablissement de la caméra bloqué !",
         "viewLobby": "Voir la salle d'attente",
-        "viewVisitors": "Voir les visiteurs",
+        "viewVisitors": "Ouvrir la liste des participants",
+        "oneVisitor": "spectateur",
+        "twoVisitors": "spectateurs",
+        "fiveVisitors": "spectateurs",
+        "raisedHandVisitors": "{{raisedHandVisitors}} veulent parler",
         "waitingParticipants": "{{waitingParticipants}} personnes",
         "waitingVisitors": "Visiteurs en attente dans la file : {{waitingVisitors}}",
         "waitingVisitorsTitle": "La réunion n'est pas encore en direct !",
@@ -848,10 +864,13 @@
     },
     "participantsPane": {
         "actions": {
+            "promoteVisitorAdmit": "Faire le membre",
+            "promoteVisitorReject": "Rejeter",
             "admit": "Accepter",
             "admitAll": "Tout accepter",
             "allow": "Autoriser les participants à:",
             "allowVideo": "permettre la vidéo",
+            "askUnmuteParticipantPane": "Demander micro",
             "askUnmute": "Demander de réactiver le micro",
             "audioModeration": "Rouvrir leur micro",
             "blockEveryoneMicCamera": "Bloquer tous les micros et caméras",
@@ -875,11 +894,16 @@
             "lobby": "Salle d'attente ({{count}})",
             "participantsList": "Participants de la réunion ({{count}})",
             "visitorInQueue": " (en attente {{count}})",
-            "visitorRequests": "(Demande {{count}} )",
-            "visitors": "Visiteurs {{count}}",
+            "visitorRequests": "veulent parler ({{count}})",
+            "visitors": "Spectateurs ({{count}})",
+            "visitorTooltip": "Les utilisateurs qui ont rejoint la conférence comme les spectateurs. Ils voient et entendent tous les membres de la réunion et peuvent écrire dans le chat. Pour activer le microphone ou la caméra, les spectateurs doivent lever la main et attendre que le modérateur leur donne la possibilité de parler.",
+            "visitorTooltipTitleMobile": "Spectateurs",
+            "visitorTooltipMobile": "Les utilisateurs qui voient et entendent tous les membres de la réunion et peuvent écrire dans le chat. Pour activer le microphone ou la caméra, les spectateurs doivent lever la main et attendre que le modérateur leur donne la possibilité de parler.",
             "waitingLobby": "Dans la salle d'attente ({{count}})"
         },
         "search": "Rechercher des participants",
+        "lobbyRequest": "Demande d'adhésion",
+        "visitor": "Spectateur",
         "title": "Participants"
     },
     "passwordDigitsOnly": "Jusqu'à {{number}} chiffres",
@@ -970,6 +994,7 @@
         "initiated": "Appel lancé",
         "joinAudioByPhone": "Rejoindre avec l'audio du téléphone",
         "joinMeeting": "Rejoindre la réunion",
+        "joinMeetingAsGuest": "Conférence<br>Compass",
         "joinMeetingInLowBandwidthMode": "Rejoindre en mode bande passante réduite",
         "joinWithoutAudio": "Rejoignez sans microphone",
         "keyboardShortcuts": "Activer les raccourcis clavier",
@@ -1058,8 +1083,8 @@
         "noMicPermission": "La piste microphone ne peut pas être créée. Veuillez autoriser l’utilisation du microphone.",
         "noModeratorPermission": "Échec du démarrage de l'enregistrement. Veuillez demander les droits de modérateur pour commencer l'enregistrement.",
         "noStreams": "Aucun flux audio ou vidéo détectés.",
-         "saveInDownloads": "Enregistré dans le dossier « Téléchargements »",
-         "pushTitle": "Enregistrement de la conférence",
+        "saveInDownloads": "Enregistré dans le dossier « Téléchargements »",
+        "pushTitle": "Enregistrement de la conférence",
         "off": "Enregistrement arrêté",
         "offBy": "{{name}} a arrêté l'enregistrement",
         "on": "Enregistrement",
@@ -1102,6 +1127,7 @@
     "settings": {
         "audio": "Audio",
         "audioNoPermissions": "Pas d'accès à l'audio",
+        "audioOutputChangeNotSupported": "Votre navigateur ne prend pas en charge la sélection des périphériques audio",
         "buttonLabel": "Paramètres",
         "calendar": {
             "about": "L'intégration de {{appName}} avec votre calendrier permet d'accéder de manière sécurisée aux événements à venir.",
@@ -1232,6 +1258,10 @@
         "surprised": "Surpris"
     },
     "startupoverlay": {
+        "requestPermissions": {
+            "desktop": "Pour rejoindre la vidéoconférence Compass, veuillez autoriser l’accès à votre caméra et à votre microphone.",
+            "mobile": "Pour rejoindre la vidéoconférence Compass, veuillez autoriser l’accès à votre caméra et à votre microphone."
+        },
         "genericTitle": "La conférence a besoin d'utiliser votre microphone et votre caméra.",
         "policyText": " ",
         "title": "{{app}} a besoin d'accéder à votre microphone et votre caméra."
@@ -1495,7 +1525,7 @@
     },
     "videothumbnail": {
         "connectionInfo": "Informations de la connexion",
-        "demote": "Déplacer en visiteur",
+        "demote": "Faire le spectateur",
         "domute": "Couper le micro",
         "domuteOthers": "Couper le micro de tous les autres",
         "domuteVideo": "Couper la caméra",
@@ -1549,15 +1579,24 @@
     },
     "visitors": {
         "chatIndicator": "(visiteur)",
+        "joinMeeting": {
+            "title": "Vous avez rejoint la conférence comme le spectateur",
+            "description": "Pour activer le microphone ou la caméra et parler, levez la main et attendez que le modérateur de la réunion vous donne la possibilité de parler.",
+            "descriptionMobile": "Pour activer le microphone ou la caméra et parler, levez la main et attendez que le modérateur de la réunion vous donne la possibilité de parler.",
+            "button": "Bien"
+        },
+        "audioSettings": {
+            "title": "Réglage du microphone est indisponible",
+            "desc": "Pour activer le microphone, levez la main et attendez que le modérateur vous donne la possibilité de parler"
+        },
         "labelTooltip": "Nombre de Visiteurs",
         "notification": {
-            "demoteDescription": "Envoyé ici par {{actor}}, levez la main pour participer",
-            "description": "Pour participer lever la main.",
+            "title": "Le modérateur vous a fait spectateur",
+            "demoteDescription": "Pour activer le microphone ou la caméra et parler, levez la main et attendez que le modérateur de la réunion vous donne la possibilité de parler.",
             "noMainParticipantsDescription": "Un participant doit démarrer la réunion. Veuillez réessayer dans un moment.",
             "noMainParticipantsTitle": "Cette réunion n'a pas encore commencé.",
             "noVisitorLobby": "Vous ne pouvez pas rejoindre tant qu'une salle d'attente est activée pour la réunion.",
-            "notAllowedPromotion": "Un participant doit d'abord autoriser votre demande.",
-            "title": "Vous êtes visiteur dans cette réunion"
+            "notAllowedPromotion": "Un participant doit d'abord autoriser votre demande."
         },
         "waitingMessage": "Vous rejoindrez la réunion dès qu'elle sera en direct !"
     },
@@ -1624,5 +1663,10 @@
         "title": "Minimiser la fenêtre pendant l'enregistrement ?",
         "text": "La conférence n'apparaît pas dans l'enregistrement lorsque la fenêtre est minimisée.",
         "minimizeButton": "Minimiser"
+    },
+    "recordReminder": {
+        "title": "L'enregistrement est en cours",
+        "description": "Pour un enregistrement de qualité, ne réduisez pas la fenêtre de la réunion.",
+        "button": "OK"
     }
 }

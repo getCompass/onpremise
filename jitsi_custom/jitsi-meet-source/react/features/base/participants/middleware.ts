@@ -60,7 +60,7 @@ import {
 } from './actions';
 import {
     COMMAND_ACTIVE_PARTICIPANTS_INFO,
-    COMMAND_PARTICIPANT_JOINED_AT,
+    COMMAND_PARTICIPANT_JOINED_INFO,
     LOCAL_PARTICIPANT_DEFAULT_ID,
     LOWER_HAND_AUDIO_LEVEL,
     PARTICIPANT_JOINED_SOUND_ID,
@@ -75,7 +75,7 @@ import {
     getParticipantDisplayName,
     getRaiseHandsQueue,
     getRemoteParticipants,
-    hasRaisedHand,
+    hasRaisedHand, isLocalParticipant,
     isLocalParticipantModerator,
     isScreenShareParticipant,
     isWhiteboardParticipant
@@ -311,9 +311,20 @@ MiddlewareRegistry.register(store => next => action => {
 
         // если кто-то включает шейринг экрана, то ставим режим плитки
         if (isScreenSharePlaying(store.getState())
-            && action.participant.fakeParticipant !== undefined
-            && (action.participant.fakeParticipant === "RemoteScreenShare" || action.participant.fakeParticipant === "LocalScreenShare")) {
+            && isScreenShareParticipant(action.participant)) {
             store.dispatch(setTileView(true));
+        }
+
+        // пишем время подключения тех, кто подключился позже нас
+        if (!isLocalParticipant(action.participant)) {
+
+            let joinedAtList: { participantId: string, joinedAt: number }[] = [];
+            joinedAtList.push({
+                // @ts-ignore
+                participantId: action.participant.id,
+                joinedAt: Math.floor(Date.now() / 1000),
+            })
+            store.dispatch(updateParticipantListJoinedAt(joinedAtList));
         }
 
         return result;
@@ -412,26 +423,29 @@ MiddlewareRegistry.register(store => next => action => {
     case NON_PARTICIPANT_MESSAGE_RECEIVED: {
         const { json: data } = action;
 
+        // при подключении получаем информацию по тем, кто подключился раньше
         let joinedAtList: { participantId: string, joinedAt: number }[] = [];
-        if (data.type === COMMAND_PARTICIPANT_JOINED_AT) {
-            joinedAtList.push({
-                // @ts-ignore
-                participantId: Strophe.getResourceFromJid(data.nick),
-                joinedAt: data.joined_at,
-            })
+        if (data.type === COMMAND_PARTICIPANT_JOINED_INFO) {
+
+            const activeParticipantsInfo = data.event_list[COMMAND_ACTIVE_PARTICIPANTS_INFO];
+            if (activeParticipantsInfo) {
+                const participants = activeParticipantsInfo.participants as Record<string, {
+                    joined_at: number;
+                    name: string
+                }>;
+
+                const result = Object.entries(participants).map(([ nick, participantData ]) => ({
+                    // @ts-ignore
+                    participantId: Strophe.getResourceFromJid(nick),
+                    joinedAt: participantData.joined_at,
+                }));
+                joinedAtList = joinedAtList.concat(result);
+            }
         }
 
-        if (data.type === COMMAND_ACTIVE_PARTICIPANTS_INFO) {
-            const participants = data.participants as Record<string, { joined_at: number; name: string }>;
-
-            const result = Object.entries(participants).map(([ nick, participantData ]) => ({
-                // @ts-ignore
-                participantId: Strophe.getResourceFromJid(nick),
-                joinedAt: participantData.joined_at,
-            }));
-            joinedAtList = joinedAtList.concat(result);
+        if (joinedAtList.length > 0) {
+            store.dispatch(updateParticipantListJoinedAt(joinedAtList));
         }
-
         break;
     }
     case UPDATE_PARTICIPANTS_SORT: {

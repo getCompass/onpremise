@@ -15,7 +15,10 @@ const ANIMATION_DURATION = 0.2;
 interface IProps {
     children: ReactElement;
     containerClassName?: string;
+    tooltipContainerClassName?: string;
+    tooltipContentClassName?: string;
     content: string | ReactElement;
+    tail?: ReactElement;
     position?: TOOLTIP_POSITION;
 }
 
@@ -63,7 +66,15 @@ const useStyles = makeStyles()(theme => {
     };
 });
 
-const Tooltip = ({ containerClassName, content, children, position = 'top' }: IProps) => {
+const Tooltip = ({
+    containerClassName,
+    tooltipContainerClassName,
+    tooltipContentClassName,
+    content,
+    children,
+    tail,
+    position = 'top'
+}: IProps) => {
     const dispatch = useDispatch();
     const [ visible, setVisible ] = useState(false);
     const [ isUnmounting, setIsUnmounting ] = useState(false);
@@ -80,17 +91,33 @@ const Tooltip = ({ containerClassName, content, children, position = 'top' }: IP
     } = useSelector((state: IReduxState) => state['features/base/tooltip']);
 
     const contentComponent = (
-        <div className = {cx(classes.container, previousContent === '' && 'mounting-animation',
-            isUnmounting && 'unmounting')}>
+        <div
+            className = {cx(classes.container, tooltipContainerClassName, previousContent === '' && 'mounting-animation',
+                isUnmounting && 'unmounting')}>
+            {position === "bottom" && (
+                <div className = {classes.tail}>
+                    {tail ? tail : (
+                        <svg width = "9" height = "5" viewBox = "0 0 9 5" fill = "none"
+                             xmlns = "http://www.w3.org/2000/svg">
+                            <path d = "M0.5 0L4.5 5L8.5 0H0.5Z" fill = "#212121" fillOpacity = "0.9" />
+                        </svg>
+                    )}
+                </div>
+            )}
             <div
-                className = {classes.content}>
+                className = {cx(classes.content, tooltipContentClassName)}>
                 {content}
             </div>
-            <div className = {classes.tail}>
-                <svg width = "9" height = "5" viewBox = "0 0 9 5" fill = "none" xmlns = "http://www.w3.org/2000/svg">
-                    <path d = "M0.5 0L4.5 5L8.5 0H0.5Z" fill = "#212121" fillOpacity = "0.9" />
-                </svg>
-            </div>
+            {position === "top" && (
+                <div className = {classes.tail}>
+                    {tail ? tail : (
+                        <svg width = "9" height = "5" viewBox = "0 0 9 5" fill = "none"
+                             xmlns = "http://www.w3.org/2000/svg">
+                            <path d = "M0.5 0L4.5 5L8.5 0H0.5Z" fill = "#212121" fillOpacity = "0.9" />
+                        </svg>
+                    )}
+                </div>
+            )}
         </div>
     );
 

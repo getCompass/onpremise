@@ -34,6 +34,22 @@ export const API_JITSI_GET_CONFERENCE_CODE_ERROR_CONFERENCE_NOT_FOUND = 1619004;
 
 export const CLICK_COUNT_AFTER_SHOW_DOWNLOAD_POPOVER = 1;
 
+export const DESKTOP_PLATFORM_MAC_OS_INTEL = "mac_os_intel";
+export const DESKTOP_PLATFORM_MAC_OS_ARM = "mac_os_arm";
+export const DESKTOP_PLATFORM_WINDOWS_10_EXE = "windows_10_exe";
+export const DESKTOP_PLATFORM_WINDOWS_10_MSI = "windows_10_msi";
+export const DESKTOP_PLATFORM_WINDOWS_7_EXE = "windows_7_exe";
+export const DESKTOP_PLATFORM_WINDOWS_7_MSI = "windows_7_msi";
+export const DESKTOP_PLATFORM_LINUX_DEB = "linux_deb";
+export const DESKTOP_PLATFORM_LINUX_TAR = "linux_tar";
+export const DESKTOP_PLATFORM_LINUX_RPM = "linux_rpm";
+export const DESKTOP_PLATFORM_LINUX_ASTRA = "linux_astra";
+export const MOBILE_PLATFORM_IOS = "ios";
+export const MOBILE_PLATFORM_ANDROID = "android";
+export const MOBILE_PLATFORM_HUAWEI = "huawei";
+
+export type Size = "default" | "small";
+
 export type APIConferenceData = {
 	conference_id: string;
 	link: string;

@@ -12,7 +12,7 @@
 <p align="center">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://getcompass.ru/static/github/ru/bg_dark.png?v=3">
-      <img src="https://getcompass.ru/static/github/ru/bg_light.png?v=4" width="100%" height="100%" alt="">
+      <img src="https://getcompass.ru/static/github/ru/bg_light.png?v=5" width="100%" height="100%" alt="">
     </picture>
 </p>
 

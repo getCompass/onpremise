@@ -11,8 +11,8 @@
 
 <p align="center">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://getcompass.ru/static/github/ru/bg_dark.png">
-      <img src="https://getcompass.ru/static/github/ru/bg_light.png" width="100%" height="100%" alt="">
+      <source media="(prefers-color-scheme: dark)" srcset="https://getcompass.ru/static/github/ru/bg_dark.png?v=1">
+      <img src="https://getcompass.ru/static/github/ru/bg_light.png?v=1" width="100%" height="100%" alt="">
     </picture>
 </p>
 

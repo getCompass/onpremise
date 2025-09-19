@@ -180,7 +180,7 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	public const GROUPS_TRYKICK = [
 		"key"    => "GROUPS_TRYKICK",
-		"limit"  => 15,
+		"limit"  => 100,
 		"expire" => 60 * 3,
 	];
 

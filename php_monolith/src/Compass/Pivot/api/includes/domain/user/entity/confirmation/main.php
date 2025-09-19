@@ -105,6 +105,7 @@ abstract class Domain_User_Entity_Confirmation_Main {
 		// получаем доступные в приложении виды авторизации
 		$available_user_method_list = [];
 		$available_method_list      = Domain_User_Entity_Auth_Method::getAvailableMethodList();
+		$available_guest_method_list = Domain_User_Entity_Auth_Method::getAvailableGuestMethodList();
 
 		// если у пользователя есть телефон - то он может подтвердить по нему действие
 		if ($user_security->phone_number !== "") {
@@ -117,8 +118,12 @@ abstract class Domain_User_Entity_Confirmation_Main {
 		}
 
 		// выясняем, какие методы нам доступны и выбираем первый по приоритету
-		// гостевые не добавляем, если гость регался по почте/номеру, то его эти способы будут в $available_user_method_list
 		$confirmation_method_list = array_intersect(self::_AUTH_METHOD_ORDER, $available_method_list, $available_user_method_list);
+
+		// если не нашли ни один - скорее всего гость - его способы будут в $available_user_method_list, проверяем их
+		if ($confirmation_method_list === []) {
+			$confirmation_method_list = array_intersect(self::_AUTH_METHOD_ORDER, $available_guest_method_list, $available_user_method_list);
+		}
 
 		if ($confirmation_method_list === []) {
 
@@ -141,7 +146,7 @@ abstract class Domain_User_Entity_Confirmation_Main {
 				}
 			}
 
-			throw new ParseFatalException("cant find confirmation methods");
+			throw new Domain_User_Exception_Mail_NotFoundOnSso("sso user");
 		}
 
 		$confirmation_method = reset($confirmation_method_list);

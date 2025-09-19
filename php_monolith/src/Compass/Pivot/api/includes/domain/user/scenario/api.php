@@ -1199,10 +1199,9 @@ class Domain_User_Scenario_Api {
 			}
 
 			if (Domain_User_Entity_Auth_Method::isSingleAuthMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_SSO)
-				|| (
-					Domain_User_Entity_Auth_Method::isSingleAuthGuestMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_SSO)
-					&& !Domain_User_Entity_Auth_Method::isSingleAuthGuestMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)
-					&& !Domain_User_Entity_Auth_Method::isSingleAuthGuestMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL)
+				&& (
+					!Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)
+					&& !Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_MAIL)
 				)) {
 
 				throw new Domain_User_Exception_Mail_NotFoundOnSso("sso user");
@@ -1210,12 +1209,30 @@ class Domain_User_Scenario_Api {
 
 			// если аутентификация через номер телефона, то проверяем что есть номер телефона
 			if (Domain_User_Entity_Auth_Method::isSingleAuthMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)) {
-				Domain_User_Entity_Phone::getPhoneByUserId($user_id);
+
+				try {
+					Domain_User_Entity_Phone::getPhoneByUserId($user_id);
+				} catch (cs_UserPhoneSecurityNotFound $e) {
+
+					// бросаем только если нет гостевой авторизации по почте
+					if (!Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_MAIL)) {
+						throw $e;
+					}
+				}
 			}
 
 			// если аутентификация через почту, то проверяем что у пользователя установлена почта
 			if (Domain_User_Entity_Auth_Method::isSingleAuthMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL)) {
-				Domain_User_Entity_Mail::assertAlreadyExistMail($user_security);
+
+				try {
+					Domain_User_Entity_Mail::assertAlreadyExistMail($user_security);
+				} catch (Domain_User_Exception_Mail_NotFound $e) {
+
+					// бросаем только если нет гостевой авторизации по номеру телефона
+					if (!Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER)) {
+						throw $e;
+					}
+				}
 			}
 		}
 

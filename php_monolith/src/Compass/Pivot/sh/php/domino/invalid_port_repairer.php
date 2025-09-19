@@ -14,35 +14,42 @@ class InvalidPortRepairer {
 	 */
 	public static function exec(array $status_list = [Domain_Domino_Entity_Port_Registry::STATUS_INVALID], bool $ignore_confirm = false):void {
 
+		$domino_list = static::_getDominoes();
+
+		if (count($domino_list) === 0) {
+
+			console(redText("Нет домино для работы"));
+			return;
+		}
+
+		$domino_name = Type_Script_InputParser::getArgumentValue("domino", Type_Script_InputParser::TYPE_STRING, "d1", false);
+
+		$domino = null;
+		foreach ($domino_list as $v) {
+
+			if ($v->domino_id == $domino_name) {
+				$domino = $v;
+			}
+		}
+
 		do {
 
-			$domino_list = static::_getDominoes();
+			$port_list = static::_getPorts($domino->domino_id, $status_list);
 
-			if (count($domino_list) === 0) {
-				console("нет домино для работы");
+			if (count($port_list) === 0) {
+
+				console(greenText("На домино {$domino->domino_id} не найдены порты в нужных статусах"));
+				break;
 			}
 
-			$domino = static::_pickDomino($domino_list);
+			$port = static::_pickPort($port_list);
 
-			do {
+			if ($ignore_confirm || Type_Script_InputHelper::assertConfirm(sprintf("Сбрасываем порт %s? [Y/n]", static::_makePortDescription($port, true)))) {
+				Domain_Domino_Action_Port_Reset::run($domino, $port);
+			}
 
-				$port_list = static::_getPorts($domino->domino_id, $status_list);
-
-				if (count($port_list) === 0) {
-
-					console("на домино {$domino->domino_id} не найдены порты в нужных статусах");
-					break;
-				}
-
-				$port = static::_pickPort($port_list);
-
-				if ($ignore_confirm || Type_Script_InputHelper::assertConfirm(sprintf("сбрасываем порт %s?", static::_makePortDescription($port, true)))) {
-					Domain_Domino_Action_Port_Reset::run($domino, $port);
-				}
-
-				console("порт успешно сброшен");
-			} while ($ignore_confirm || Type_Script_InputHelper::assertConfirm("пробуем следующий порт?"));
-		} while (Type_Script_InputHelper::assertConfirm("пробуем следующее домино?"));
+			console("Порт успешно сброшен");
+		} while ($ignore_confirm || Type_Script_InputHelper::assertConfirm("Пробуем следующий порт? [Y/n]"));
 	}
 
 	/**
@@ -62,14 +69,19 @@ class InvalidPortRepairer {
 	 */
 	protected static function _pickDomino(array $domino_list):Struct_Db_PivotCompanyService_DominoRegistry {
 
-		console("выбери домино для поиска невалидных портов");
+		$text = "Выберите домино для поиска невалидных портов";
+
+		$arr_keys    = range(1, count($domino_list));
+		$domino_list = array_combine($arr_keys, $domino_list);
 
 		/** @var  $domino Struct_Db_PivotCompanyService_DominoRegistry */
 		foreach ($domino_list as $key => $domino) {
 
 			$desc = static::_makeDominoDescription($domino);
-			console("{$key}) $desc");
+			$text .= "\n{$key}) $desc";
 		}
+
+		console($text);
 
 		while (true) {
 
@@ -79,7 +91,8 @@ class InvalidPortRepairer {
 				return $domino_list[$picked];
 			}
 
-			console(redText("какое-то неправильно домино, попробуй еще раз"));
+			console(redText("Выбрано некорректное домино, попробуйте еще раз"));
+			console($text);
 		}
 	}
 
@@ -108,14 +121,19 @@ class InvalidPortRepairer {
 	 */
 	protected static function _pickPort(array $port_list):Struct_Db_PivotCompanyService_PortRegistry {
 
-		console("выбери порт для сброса");
+		$text = "Выберите порт для сброса";
+
+		$arr_keys    = range(1, count($port_list));
+		$port_list   = array_combine($arr_keys, $port_list);
 
 		/** @var $port Struct_Db_PivotCompanyService_PortRegistry */
 		foreach ($port_list as $key => $port) {
 
 			$desc = static::_makePortDescription($port);
-			console("{$key}) {$desc}");
+			$text .= "\n{$key}) {$desc}";
 		}
+
+		console($text);
 
 		while (true) {
 
@@ -125,7 +143,8 @@ class InvalidPortRepairer {
 				return $port_list[$picked];
 			}
 
-			console(redText("какой-то неправильный порт, попробуй еще раз"));
+			console(redText("Выбран некорректный порт, попробуйте еще раз"));
+			console($text);
 		}
 	}
 
@@ -138,12 +157,16 @@ class InvalidPortRepairer {
 
 		if ($port->company_id !== 0 && $need_extended) {
 
-			$extended .= "занят компанией $port->company_id\n";
+			$extended .= "Занят компанией $port->company_id\n";
 			$company_init_item = Gateway_Db_PivotCompanyService_CompanyInitRegistry::getOne($port->company_id);
 
-			$extended .= sprintf("создание компании %s / %s\n", date("d/m/Y H:i:s", $company_init_item->creating_started_at), date("d/m/Y H:i:s", $company_init_item->creating_finished_at));
-			$extended .= sprintf("стала свободной %s\n", date("d/m/Y H:i:s", $company_init_item->became_vacant_at));
-			$extended .= sprintf("занята пользователем %d %s / %s\n", $company_init_item->occupant_user_id, date("d/m/Y H:i:s", $company_init_item->occupation_started_at), date("d/m/Y H:i:s", $company_init_item->occupation_finished_at));
+			$extended .= sprintf("Создание компании %s / %s\n", date("d/m/Y H:i:s", $company_init_item->creating_started_at), date("d/m/Y H:i:s", $company_init_item->creating_finished_at));
+			$extended .= sprintf("Стала свободной %s\n", date("d/m/Y H:i:s", $company_init_item->became_vacant_at));
+			$extended .= sprintf("Занята пользователем %d %s / %s\n", $company_init_item->occupant_user_id, date("d/m/Y H:i:s", $company_init_item->occupation_started_at), date("d/m/Y H:i:s", $company_init_item->occupation_finished_at));
+		}
+		
+		if ($extended == "") {
+			return "{$port->port}";
 		}
 
 		return "{$port->port}, $extended";
@@ -152,10 +175,10 @@ class InvalidPortRepairer {
 
 if (Type_Script_InputHelper::needShowUsage()) {
 
-	console(yellowText("скрипт для сброса портов"));
-	console("сбрасывает порты на домино, при сбросе пытается отвязать порт, вне зависимости от его статуса");
-	console("конфиги не пересоздает, поэтому нужно быть максимально аккуратным с ним, иначе случайно можно поломать компанию, если она к нему привязана");
-	console("параметры:");
+	console(yellowText("Скрипт для сброса портов"));
+	console("Сбрасывает порты на домино, при сбросе пытается отвязать порт, вне зависимости от его статуса");
+	console("Конфиги не пересоздает, поэтому нужно быть максимально аккуратным с ним, иначе случайно можно поломать компанию, если она к нему привязана");
+	console("Параметры:");
 	console("  --any-status [opt] позволяет выбрать статусы, в котором можно сбрасывать порты");
 	console("  --no-confirm [opt] отключает подтверждение при сбросе порта");
 	console("\n");
@@ -169,7 +192,7 @@ $ignore_confirm = Type_Script_InputParser::getArgumentValue("no-confirm", Type_S
 // указываем ли статусы или берем только невалидные
 if (Type_Script_InputParser::getArgumentValue("any-status", Type_Script_InputParser::TYPE_NONE, false, false)) {
 
-	console("введи статусы портов для работы через запятую (active — 20, locked — 30, invalid — 90)");
+	console("Введите статусы портов для работы через запятую (active — 20, locked — 30, invalid — 90)");
 	$status_list = explode(",", str_replace(" ", "", readline()));
 } else {
 	$status_list = [Domain_Domino_Entity_Port_Registry::STATUS_INVALID];

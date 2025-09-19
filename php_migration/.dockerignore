@@ -1,4 +1,5 @@
 .git
 .gitignore
+.idea
 .gitlab-ci.yml
 tag.gitlab-ci.yml

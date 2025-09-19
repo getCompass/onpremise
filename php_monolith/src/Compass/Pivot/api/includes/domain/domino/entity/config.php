@@ -313,6 +313,20 @@ class Domain_Domino_Entity_Config {
 	}
 
 	/**
+	 * Проверить наличие конфига php для компании
+	 *
+	 * @throws Domain_Company_Exception_ConfigNotExist
+	 */
+	public static function checkExistConfig(int $company_id, string $domino_id):void {
+
+		$php_config_path  = self::getCompanyPhpConfigPath($domino_id, $company_id);
+
+		if (!file_exists($php_config_path)) {
+			throw new Domain_Company_Exception_ConfigNotExist("config dont exist");
+		}
+	}
+
+	/**
 	 * Установить метку времени последнего изменения файла конфига
 	 *
 	 * @param string $path

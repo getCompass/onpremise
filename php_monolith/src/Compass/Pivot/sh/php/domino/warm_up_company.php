@@ -25,7 +25,7 @@ try {
 	$domino_row = Gateway_Db_PivotCompanyService_DominoRegistry::getOneForCreate();
 } catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
-	console(redText("Такая доминошка не существует"));
+	console(redText("Отсутствует домино для прогрева новых компаний. Необходимо создать дополнительные порты"));
 	exit(1);
 }
 

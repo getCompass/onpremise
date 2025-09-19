@@ -14,6 +14,9 @@
 	"world_config_path": "/config",
 	"current_server": "${CURRENT_SERVER}",
 	"service_role_set": "${SERVICE_ROLE_SET}",
+	"service_label": "${SERVICE_LABEL}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"global_config_path": "/pivot_config",
 	"server_tag_list": ${SERVER_TAG_LIST},
 	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC},
 	"ca_certificate": "${CA_CERTIFICATE}"

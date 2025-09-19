@@ -2,8 +2,6 @@
 
 namespace Compass\Pivot;
 
-use TheSeer\Tokenizer\Exception;
-
 require_once __DIR__ . "/../../../../../../start.php";
 
 ini_set("memory_limit", "4096M");
@@ -45,19 +43,24 @@ class Domino_CreateTeam {
 		try {
 
 			// создаем команду
-			$company = Domain_Company_Scenario_Api::create(
+			$user_company_api = Domain_Company_Scenario_Api::create(
 				$user_id,
 				Domain_Company_Entity_Company::ALLOW_AVATAR_COLOR_ID_LIST[array_rand(Domain_Company_Entity_Company::ALLOW_AVATAR_COLOR_ID_LIST)],
 				$company_name,
 				generateUUID(),
 				false);
 
+			$company = Gateway_Db_PivotCompany_CompanyList::getOne($user_company_api->company_id);
+			$domino  = Gateway_Db_PivotCompanyService_DominoRegistry::getOne($company->domino_id);
+			$port    = Gateway_Db_PivotCompanyService_PortRegistry::getActiveByCompanyId($domino->domino_id, $company->company_id);
+			console("Успешно создали команду $user_company_api->company_id с портом $port->port");
+
 			// устанавливаем стартовый тарифный план
 			$alteration = Domain_SpaceTariff_Plan_MemberCount_Product_ActivateDefault::makeAlteration(self::_INITIAL_TARIFF_MEMBER_LIMIT, self::_INITIAL_TARIFF_DAYS_DURATION);
-			Domain_SpaceTariff_Action_AlterMemberCount::run($user_id, $company->company_id, \Tariff\Plan\BaseAction::METHOD_FORCE, $alteration);
+			Domain_SpaceTariff_Action_AlterMemberCount::run($user_id, $user_company_api->company_id, \Tariff\Plan\BaseAction::METHOD_FORCE, $alteration);
 		} catch (\paramException) {
 
-			console(redText("Данный пользователь не может создать компанию"));
+			console(redText("Данный пользователь не может создать команду"));
 			(new self())->start();
 		}
 	}
@@ -97,7 +100,7 @@ class Domino_CreateTeam {
 			}
 		} catch (cs_CompanyIncorrectName) {
 
-			console(redText("Передано некорректное имя компании"));
+			console(redText("Передано некорректное имя команды"));
 			$input_company_name ? exit(1) : $this->start();
 			return;
 		}
@@ -108,8 +111,8 @@ class Domino_CreateTeam {
 
 try {
 	(new Domino_CreateTeam())->start();
-} catch (Exception) {
+} catch (\Exception $e) {
 
-	console(redText("Не смогли создать команду"));
+	console(redText("Не смогли создать команду. Ошибка: " . $e->getMessage()));
 	exit(1);
 }

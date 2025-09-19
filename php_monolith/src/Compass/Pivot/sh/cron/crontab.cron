@@ -32,3 +32,6 @@
 * * * * * /usr/local/bin/php /app/src/Compass/Pivot/api/cron/company/service_task.php start bot0 > /dev/null 2>&1 &
 * * * * * /usr/local/bin/php /app/src/Compass/Pivot/api/cron/company/service_task.php start bot1 > /dev/null 2>&1 &
 * * * * * /usr/local/bin/php /app/src/Compass/Pivot/api/cron/company/service_task.php start bot2 > /dev/null 2>&1 &
+
+# cron_system_reserve_server_company_observe
+* * * * * /usr/local/bin/php -dxdebug.start_with_request=0 /app/src/Compass/Pivot/api/cron/system/reserve_server_company_observe.php start bot0 now > /dev/null 2>&1 &

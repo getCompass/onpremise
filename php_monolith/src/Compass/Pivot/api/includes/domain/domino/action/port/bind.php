@@ -25,6 +25,13 @@ class Domain_Domino_Action_Port_Bind {
 		"duplicate_data_dir_policy"    => self::_DUPLICATE_DATA_DIR_POLICY_FORBID,
 	];
 
+	// политики создания
+	public const POLICY_RESERVE_CREATING = [
+		"policy"                       => "creating",
+		"non_existing_data_dir_policy" => self::_NON_EXISTING_DATA_DIR_POLICY_ALLOW,
+		"duplicate_data_dir_policy"    => self::_DUPLICATE_DATA_DIR_POLICY_IGNORE,
+	];
+
 	// политики для релокации — копирование данных
 	public const POLICY_RELOCATE_COPYING = [
 		"policy"                       => "relocation_data_copying",
@@ -67,11 +74,20 @@ class Domain_Domino_Action_Port_Bind {
 	 * @throws \returnException
 	 * @throws \Exception
 	 */
-	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list):Struct_Db_PivotCompanyService_PortRegistry {
+	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list, bool $is_skip_unbind = false):Struct_Db_PivotCompanyService_PortRegistry {
 
-		console("биндю порт {$port->port} для компании {$company_id}");
+		console("начинаем привязку порта {$port->port} для компании {$company_id}");
 		$port_to_bound = static::_makeLocalBinding($domino, $port, $company_id);
-		static::_makeRemoteBinding($domino, $port, $company_id, $policy_list);
+		Type_System_Admin::log("start_company_process", "Выполнили привязку порта и компании {$company_id} на локальном сервере");
+		console("выполнили привязку порта и компании {$company_id} на локальном сервере");
+
+		$go_database_controller_host = Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerHost($domino->extra);
+		$go_database_controller_host = $go_database_controller_host !== "" ? $go_database_controller_host : $domino->database_host;
+		$go_database_controller_port = Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerPort($domino->extra);
+		Type_System_Admin::log("start_company_process", "Привязываем компанию к порту в микросервисе go_database: host {$go_database_controller_host}, port {$go_database_controller_port}");
+		static::_makeRemoteBinding($domino, $port, $company_id, $policy_list, $is_skip_unbind);
+		console("выполнили привязку порта и компании {$company_id} на удаленном сервере");
+		Type_System_Admin::log("start_company_process", "Выполнили привязку порта и компании {$company_id} на удаленном сервере");
 
 		return $port_to_bound;
 	}
@@ -140,16 +156,16 @@ class Domain_Domino_Action_Port_Bind {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException|\Exception
 	 */
-	protected static function _makeRemoteBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list):void {
+	protected static function _makeRemoteBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list, bool $is_skip_unbind):void {
 
 		try {
 
-			// выполняем привязку порта на домино и сращу накатываем миграции
+			// выполняем привязку порта на домино и сразу накатываем миграции
 			Gateway_Bus_DatabaseController::bindPort($domino, $port->port, $port->host, $company_id, $policy_list);
 		} catch (\Exception $e) {
 
 			// если что-то пошло не так, то нужно вызвать инвалидацию порта
-			Domain_Domino_Action_Port_Invalidate::run($domino, $port, "error on remote bind");
+			!$is_skip_unbind && Domain_Domino_Action_Port_Invalidate::run($domino, $port, "error on remote bind");
 			throw $e;
 		}
 	}

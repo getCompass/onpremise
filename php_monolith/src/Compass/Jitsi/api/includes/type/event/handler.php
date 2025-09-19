@@ -85,6 +85,10 @@ class Type_Event_Handler {
 			return;
 		}
 
+		if (\BaseFrame\Server\ServerProvider::isReserveServer()) {
+			return;
+		}
+
 		// парсим данные из события
 		$event_data = $event_handler::parse($event);
 

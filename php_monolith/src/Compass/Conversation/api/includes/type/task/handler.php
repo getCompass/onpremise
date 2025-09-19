@@ -95,6 +95,10 @@ class Type_Task_Handler {
 			return Type_Task_Struct_Response::build(static::DELIVERY_STATUS_DONE);
 		}
 
+		if (\BaseFrame\Server\ServerProvider::isReserveServer()) {
+			return Type_Task_Struct_Response::build(Type_Task_Handler::DELIVERY_STATUS_NEXT_ITERATION_REQUIRED, time() + 60);
+		}
+
 		// передаем данные в обработчик
 		$method_meta = $this->_executor_list[$task["name"]];
 

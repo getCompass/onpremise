@@ -21,6 +21,11 @@ type ConfigStruct struct {
 	RegistryServicePath                string `json:"registry_service_path"`
 	CompanyDbPath                      string `json:"company_db_path"`
 	DominoId                           string `json:"domino_id"`
+	ServiceLabel                       string `json:"service_label"`
+	MonolithMysqlNetwork               string `json:"monolith_mysql_network"`
+	MysqlServerId                      int64  `json:"mysql_server_id"`
+	MysqlSslPath                       string `json:"mysql_ssl_path"`
+	ManticoreClusterName               string `json:"manticore_cluster_name"`
 	MysqlCompanyHost                   string `json:"mysql_company_host"`
 	DominoTier                         int64  `json:"domino_tier"`
 	StackNamePrefix                    string `json:"stack_name_prefix"`

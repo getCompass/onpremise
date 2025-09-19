@@ -109,12 +109,17 @@ func UpdateDeployment(ctx context.Context) error {
 // Update обновляем стак
 func update() error {
 
+	stackName := fmt.Sprintf("%s-%s-company", conf.GetConfig().StackNamePrefix, conf.GetConfig().DominoId)
+	if conf.GetConfig().ServiceLabel != "" {
+		stackName = fmt.Sprintf("%s-%s-%s-company", conf.GetConfig().StackNamePrefix, conf.GetConfig().ServiceLabel, conf.GetConfig().DominoId)
+	}
+
 	cmdStr := "/usr/bin/docker stack deploy " +
 		"--with-registry-auth " +
 		"--resolve-image=changed " +
 		"--prune " +
 		"--compose-file " + conf.GetConfig().ComposeFilePath + " " +
-		fmt.Sprintf("%s-%s-company", conf.GetConfig().StackNamePrefix, conf.GetConfig().DominoId)
+		stackName
 
 	// запускаем команду старта контейнера
 	// nosemgrep

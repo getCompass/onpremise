@@ -212,3 +212,50 @@ func IterateOverActive(fn func(isolation *Isolation.Isolation)) {
 		fn(isolation)
 	}
 }
+
+// ReloadIsolation полностью перезагружает изоляцию для компании
+// @long
+func ReloadIsolation() {
+
+	globalConfig := conf.GetConfig()
+
+	startedAt := time.Now()
+	files, err := os.ReadDir(globalConfig.WorldConfigPath)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range files {
+
+		// пропускаем ненужные файлы и файлы, которые не менялись
+		if file.Name() == ".timestamp.json" {
+			continue
+		}
+
+		companyId, err := getCompanyIdByFileName(file)
+		if err != nil {
+			continue
+		}
+
+		companyConfig, err := conf.GetWorldConfig(conf.ResolveConfigByCompanyId(companyId))
+		if err != nil {
+
+			log.Errorf("invalid company config: %v", err)
+			continue
+		}
+
+		// проверяем, что статус компании в конфиге позволяет нам перезагружать изоляцию
+		if companyConfig.Status != activeCompanyStatus && companyConfig.Status != vacantCompanyStatus {
+			continue
+		}
+
+		stopEnv(companyId)
+
+		if _, err = startEnv(companyId); err != nil {
+			log.Errorf("company reload isolation error %s", err.Error())
+		}
+	}
+
+	log.Infof("company configs were reload in %dms", time.Now().Sub(startedAt).Milliseconds())
+}

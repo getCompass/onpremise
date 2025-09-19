@@ -13,6 +13,7 @@ $company_row = Gateway_Db_PivotCompany_CompanyList::getOne($company_id);
 $domino_row  = Gateway_Db_PivotCompanyService_DominoRegistry::getOne($company_row->domino_id);
 
 console(blueText("Инвалидирую компанию"));
+Type_System_Admin::log("start_company_process", "--- Инвалидируем компанию {$company_row->company_id}");
 
 Gateway_Db_PivotCompanyService_CompanyRegistry::set($company_row->domino_id, $company_row->company_id, [
 	"is_busy"        => 1,
@@ -21,12 +22,14 @@ Gateway_Db_PivotCompanyService_CompanyRegistry::set($company_row->domino_id, $co
 ]);
 
 // помечаем компанию как недоступную, чтобы никто не попал в нее
+$company_row->status = Domain_Company_Entity_Company::COMPANY_STATUS_INVALID;
 Gateway_Db_PivotCompany_CompanyList::set($company_row->company_id, [
-	"status"     => Domain_Company_Entity_Company::COMPANY_STATUS_INVALID,
+	"status"     => $company_row->status,
 	"updated_at" => time(),
 ]);
 
 console(blueText("Пробуем остановить компанию"));
+Type_System_Admin::log("start_company_process", "Останавливаем mysql и компанию {$company_row->company_id}");
 try {
 
 	// генерим обновленный конфиг для компании
@@ -34,8 +37,9 @@ try {
 	Domain_Domino_Action_StopCompany::run($domino_row, $company_row, "repair_company");
 
 	Type_Phphooker_Main::onCountCompany(time());
-} catch (\Exception) {
-	console(redText("Не удалось остановить компанию"));
+} catch (\Exception $e) {
+	console(redText("Не удалось остановить компанию. Ошибка: {$e->getMessage()}"));
+	Type_System_Admin::log("start_company_process", "Error: не удалось остановить компанию {$company_row->company_id}. Error: {$e->getMessage()}");
 }
 
 // ждем перед пробуждением
@@ -44,12 +48,14 @@ sleep(2);
 console(blueText("Пробую стартануть компанию"));
 
 // запускаем компанию
+Type_System_Admin::log("start_company_process", "Выполняем старт компании {$company_row->company_id}");
 [$company_row] = Domain_Domino_Action_StartCompany::run($domino_row, $company_row);
 
 // конфиг обновляется каждые 2 секунды - нужно дождаться, когда компания станет доступной
 sleep(2);
 
 // будем компанию пока неразбудим в течении таймаута
+Type_System_Admin::log("start_company_process", "Выполняем пробуждение компании {$company_row->company_id}");
 $awake_timeout_timestamp = time() + 10;
 $e                       = null;
 do {
@@ -75,11 +81,13 @@ do {
 		Type_System_Admin::log("awake_error_repair_company", "Не смогли пробудить компанию {$company_row->company_id}");
 	}
 } while ($awake_timeout_timestamp > time());
+console(blueText("Успешно разбудил компанию {$company_row->company_id}"));
 
 // если не смогли разбудить компанию
 if (!is_null($e)) {
 	throw $e;
 }
+Type_System_Admin::log("start_company_process", "Успешно разбудили компании {$company_row->company_id}");
 
 Gateway_Bus_SenderBalancer::companyAwoke($company_row->company_id, Domain_Company_Action_GetUserIdList::do($company_row));
 
@@ -96,3 +104,4 @@ Gateway_Db_PivotCompany_CompanyTierObserve::insert($company_row->company_id, $do
 Gateway_Db_PivotCompanyService_CompanyRegistry::set($company_row->domino_id, $company_row->company_id, ["is_busy" => 0]);
 
 console(blueText("Разблокировал компанию"));
+Type_System_Admin::log("start_company_process", "Восстановление компании {$company_row->company_id} завершено");

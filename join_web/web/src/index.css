@@ -263,6 +263,7 @@ input[type="search"] {
 .pin-input-container {
 	display: flex;
 	align-items: center;
+	-webkit-tap-highlight-color: transparent;
 }
 .pin-input-container:disabled{
 	opacity: 30%;

@@ -46,7 +46,11 @@ class Update_Ldap_User_Profile {
 			return;
 		}
 
-		$filter = "(&(objectClass=person))";
+		$filter                       = "(objectClass=person)";
+		$user_profile_update_filter = Domain_Ldap_Entity_Config::getUserProfileUpdateFilter();
+		if (mb_strlen($user_profile_update_filter) > 0) {
+			$filter = $user_profile_update_filter;
+		}
 
 		// получаем список всех учетных записей в LDAP со всеми атрибутами, с пагинацией
 		[$count, $entry_list] = $client->searchEntries(

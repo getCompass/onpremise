@@ -200,4 +200,14 @@ class Domain_Ldap_Entity_Config {
 		return $config["profile_update_interval"];
 	}
 
+	/**
+	 * получаем user_profile_update_filter из конфига LDAP
+	 *
+	 * @return string
+	 */
+	public static function getUserProfileUpdateFilter():string {
+
+		$config = getConfig(self::_KEY);
+		return $config["user_profile_update_filter"];
+	}
 }

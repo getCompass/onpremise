@@ -138,7 +138,11 @@ class Domain_Ldap_Scenario_Event {
 
 		// добавляем в фильтр модификатор для времени поиска:
 		// ищем либо по whenChanged (AD), либо по modifyTimestamp (FreeIPA/OpenLDAP)
-		$filter = "(&(objectClass=person)(|(whenChanged>=$timestamp)(modifyTimestamp>=$timestamp)))";
+		$filter                       = "(&(objectClass=person)(|(whenChanged>=$timestamp)(modifyTimestamp>=$timestamp)))";
+		$user_profile_update_filter = Domain_Ldap_Entity_Config::getUserProfileUpdateFilter();
+		if (mb_strlen($user_profile_update_filter) > 0) {
+			$filter = "(&{$user_profile_update_filter}(|(whenChanged>=$timestamp)(modifyTimestamp>=$timestamp)))";
+		}
 
 		// получаем список всех учетных записей в LDAP со всеми атрибутами, с пагинацией
 		[$count, $entry_list] = $client->searchEntries(

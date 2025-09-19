@@ -3,19 +3,17 @@
 namespace Compass\Premise;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
-use CompassApp\Domain\Member\Entity\Member;
-use cs_RowIsEmpty;
-use parseException;
 
 /**
  * Класс обработки сценариев событий premise.
  */
-class Domain_Premise_Scenario_Socket {
-
+class Domain_Premise_Scenario_Socket
+{
 	/**
 	 * Возвращает информацию о сервере.
 	 */
-	public static function getServerInfo():array {
+	public static function getServerInfo(): array
+	{
 
 		// регистрируем, если ранее сервер не был зарегистрирован
 		try {
@@ -34,15 +32,17 @@ class Domain_Premise_Scenario_Socket {
 	 * @throws ParseFatalException
 	 * @throws \queryException
 	 */
-	public static function userRegistered(int $user_id, int $npc_type, bool $is_root):void {
+	public static function userRegistered(int $user_id, int $npc_type, bool $is_root): void
+	{
 
 		// добавляем права админа и бухгалтера, если был добавлен рут-пользователь
 		$premise_permissions     = Domain_User_Entity_Permissions::DEFAULT;
 		$has_premise_permissions = 0;
 		if ($is_root == 1) {
 
-			$premise_permissions     = Domain_User_Entity_Permissions::addPermissionListToMask(
-				$premise_permissions, [Domain_User_Entity_Permissions::SERVER_ADMINISTRATOR]
+			$premise_permissions = Domain_User_Entity_Permissions::addPermissionListToMask(
+				$premise_permissions,
+				[Domain_User_Entity_Permissions::SERVER_ADMINISTRATOR]
 			);
 			$has_premise_permissions = 1;
 		}

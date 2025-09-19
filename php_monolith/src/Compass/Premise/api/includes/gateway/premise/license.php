@@ -61,12 +61,18 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public static function register(string $endpoint_url, string $server_uid):string {
+	public static function register(string $endpoint_url, string $server_uid, string|false $yc_identity_document, string|false $yc_identity_document_base64_signature):string {
 
-		[$status, $response] = self::_call("public.register", [
+		$ar_post = [
 			"endpoint_url" => $endpoint_url,
 			"server_uid"   => $server_uid,
-		]);
+		];
+		if ($yc_identity_document !== false && $yc_identity_document_base64_signature !== false) {
+
+			$ar_post["yc_identity_document"]                  = $yc_identity_document;
+			$ar_post["yc_identity_document_base64_signature"] = $yc_identity_document_base64_signature;
+		}
+		[$status, $response] = self::_call("public.register", $ar_post);
 
 		if ($status !== "ok") {
 

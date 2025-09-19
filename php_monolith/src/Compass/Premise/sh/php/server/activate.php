@@ -18,8 +18,11 @@ class Server_Activate {
 	 */
 	public function run():void {
 
+		$yc_identity_document                  = Type_Script_InputParser::getArgumentValue("--yc-identity-document", required: false);
+		$yc_identity_document_base64_signature = Type_Script_InputParser::getArgumentValue("--yc-identity-document-base64-signature", required: false);
+
 		try {
-			Domain_Premise_Action_Register::do();
+			Domain_Premise_Action_Register::do($yc_identity_document, $yc_identity_document_base64_signature);
 		} catch (Domain_Premise_Exception_ServerCountExceeded) {
 
 			console(redText("На данном сервере было произведено слишком много установок. Дальнейшая активация серверов на нем невозможна"));

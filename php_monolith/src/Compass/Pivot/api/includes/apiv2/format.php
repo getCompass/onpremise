@@ -84,6 +84,9 @@ class Apiv2_Format {
 		// список доступных способов аутентификации гостей
 		$output["available_auth_guest_method_list"] = $start_data["available_auth_guest_method_list"];
 
+		// тип сервера
+		$output["server_type"] = $start_data["server_type"];
+
 		return $output;
 	}
 

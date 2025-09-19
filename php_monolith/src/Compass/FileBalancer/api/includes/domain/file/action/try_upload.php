@@ -14,7 +14,7 @@ class Domain_File_Action_TryUpload {
 		int    $user_id, int $file_type,
 		int    $file_source, int $node_id, int $size_kb, int $created_at,
 		string $mime_type, string $file_name, string $file_extension,
-		array  $extra, string $file_hash, int $is_cdn
+		array  $extra, string $file_hash, int $is_cdn, int $status
 	):array {
 
 		$shard_id = Type_Pack_File::getShardIdByTime($created_at);
@@ -23,7 +23,7 @@ class Domain_File_Action_TryUpload {
 		// сохраняем запись о файле в базу
 		$file_row = static::_makeFileRow(
 			$user_id, $shard_id, $table_id, $file_type, $file_source, $node_id, $size_kb,
-			$created_at, $mime_type, $file_name, $file_extension, $extra, $file_hash, $is_cdn
+			$created_at, $mime_type, $file_name, $file_extension, $extra, $file_hash, $is_cdn, $status
 		);
 
 		$meta_id = $file_row["meta_id"];
@@ -52,7 +52,7 @@ class Domain_File_Action_TryUpload {
 		int    $user_id, int $shard_id, int $table_id, int $file_type,
 		int    $file_source, int $node_id, int $size_kb, int $created_at,
 		string $mime_type, string $file_name, string $file_extension,
-		array  $extra, string $file_hash, int $is_cdn
+		array  $extra, string $file_hash, int $is_cdn, int $status,
 	):array {
 
 		if (!defined("CURRENT_SERVER")) {
@@ -72,6 +72,7 @@ class Domain_File_Action_TryUpload {
 			"file_source"    => $file_source,
 			"is_deleted"     => 0,
 			"is_cdn"         => $is_cdn,
+			"status"         => $status,
 			"node_id"        => $node_id,
 			"created_at"     => $created_at,
 			"updated_at"     => 0,

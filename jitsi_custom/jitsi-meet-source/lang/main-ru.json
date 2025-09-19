@@ -789,6 +789,8 @@
         "me": "Вы",
         "messageIsNotDeliveredTitle": "Действие недоступно",
         "messageIsNotDelivered": "Пользователь покинул конференцию или является зрителем.",
+        "messageIsRestrictedTitle": "Отправка заблокирована",
+        "messageIsRestricted": "Руководитель команды ограничил отправку сообщений, содержащих чувствительные данные.",
         "moderationInEffectCSDescription": "Пожалуйста, поднимите руку, если вы хотите поделиться своим экраном.",
         "moderationInEffectCSTitle": "Демонстрация экрана заблокирована модератором",
         "moderationInEffectDescription": "Пожалуйста, поднимите руку, если хотите высказаться.",

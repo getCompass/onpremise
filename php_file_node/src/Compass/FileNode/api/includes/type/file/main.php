@@ -17,11 +17,12 @@ namespace Compass\FileNode;
  * пример: "https://file1.example.ru/files/12/12/32/22/44/test.txt"
  * ---
  */
-class Type_File_Main {
-
-	public const STATUS_OK      = 1;
-	public const STATUS_CONVERT = 2;
-	public const STATUS_ERROR   = 3;
+class Type_File_Main
+{
+	// статус конвертации файла
+	public const CONVERT_STATUS_OK         = 1;
+	public const CONVERT_STATUS_PROCESSING = 2;
+	public const CONVERT_STATUS_ERROR      = 3;
 
 	// таблица соответствия mime_type с file_type и расширений
 	protected const _FILE_TYPE_REL = [
@@ -45,8 +46,34 @@ class Type_File_Main {
 		FILE_TYPE_ARCHIVE  => Type_File_Archive_Main::EXTENSION_LIST,
 	];
 
+	// строковые названия файлов
+	public const FILE_TYPE_NAME = [
+		FILE_TYPE_DEFAULT  => "file",
+		FILE_TYPE_IMAGE    => "image",
+		FILE_TYPE_VIDEO    => "video",
+		FILE_TYPE_AUDIO    => "audio",
+		FILE_TYPE_DOCUMENT => "document",
+		FILE_TYPE_ARCHIVE  => "archive",
+		FILE_TYPE_VOICE    => "voice",
+	];
+
+	// статус загрузки файла
+	public const FILE_STATUS_PROCESSING = 0;
+	public const FILE_STATUS_APPROVED   = 1;
+	public const FILE_STATUS_RESTRICTED = 2;
+	public const FILE_STATUS_DELETED    = 3;
+
+	// названия статусов для клиентов
+	public const FILE_STATUS_NAME = [
+		self::FILE_STATUS_PROCESSING => "processing",
+		self::FILE_STATUS_APPROVED   => "approved",
+		self::FILE_STATUS_RESTRICTED => "restricted",
+		self::FILE_STATUS_DELETED    => "deleted",
+	];
+
 	// получает тип файла по его mime_type
-	public static function getFileType(string $file_path, string $mime_type, int $size_kb, int $file_source, string $extension):int {
+	public static function getFileType(string $file_path, string $mime_type, int $size_kb, int $file_source, string $extension): int
+	{
 
 		// по умолчанию - файл
 		$file_type = FILE_TYPE_DEFAULT;
@@ -77,7 +104,8 @@ class Type_File_Main {
 	}
 
 	// проверяем дополнительные условия для получения типа файла
-	protected static function _checkAdditionalConditionForGetFileType(int $file_type, int $size_kb, int $file_source, string $file_path):string {
+	protected static function _checkAdditionalConditionForGetFileType(int $file_type, int $size_kb, int $file_source, string $file_path): string
+	{
 
 		// если это картинка и размер больше 30 mb - загружаем её как файл
 		if ($file_type == FILE_TYPE_IMAGE) {
@@ -128,7 +156,8 @@ class Type_File_Main {
 	}
 
 	// проверяем, что пришел корректный file_source
-	public static function tryGetFileSource(int $file_type, int $file_source):int {
+	public static function tryGetFileSource(int $file_type, int $file_source): int
+	{
 
 		// если источник превью и это не картинка то отдаем exception
 		if ($file_type == FILE_TYPE_DEFAULT && $file_source == FILE_SOURCE_MESSAGE_PREVIEW_IMAGE) {
@@ -139,7 +168,8 @@ class Type_File_Main {
 	}
 
 	// создаем папку под файл
-	public static function moveFileToRandomDir(string $src_file_path, string $file_extension, int $company_id):string {
+	public static function moveFileToRandomDir(string $src_file_path, string $file_extension, int $company_id): string
+	{
 
 		$part_path = Type_File_Utils::generatePathPart($file_extension, $company_id);
 
@@ -157,7 +187,8 @@ class Type_File_Main {
 	}
 
 	// создаем папку под файл
-	public static function moveFileToRandomDirByMigration(string $src_file_path, string $file_extension, int $company_id):string {
+	public static function moveFileToRandomDirByMigration(string $src_file_path, string $file_extension, int $company_id): string
+	{
 
 		$part_path = Type_File_Utils::generatePathPart($file_extension, $company_id);
 
@@ -175,7 +206,8 @@ class Type_File_Main {
 	}
 
 	// создаем папку под файл
-	public static function generatePathPart(string $save_file_path, string $src_file_path, string $file_extension):string {
+	public static function generatePathPart(string $save_file_path, string $src_file_path, string $file_extension): string
+	{
 
 		$part_path = Type_File_Utils::generatePathPartByMigration($save_file_path, $file_extension);
 
@@ -188,7 +220,7 @@ class Type_File_Main {
 
 		// перемещает файл который был загружен не с помощью post
 		if (copy($src_file_path, $file_path)) {
-			unlink($src_file_path);
+			unlink($src_file_path); // nosemgrep
 		}
 
 		// задаем права
@@ -198,7 +230,8 @@ class Type_File_Main {
 	}
 
 	// проверяет что такой файл есть
-	protected static function _throwIfFileExist(string $file_path):void {
+	protected static function _throwIfFileExist(string $file_path): void
+	{
 
 		// если существует выбрасываем ошибку
 		if (file_exists($file_path)) {
@@ -208,22 +241,25 @@ class Type_File_Main {
 	}
 
 	// возвращает массив соотношений mime_type
-	public static function getMimeTypeToFileTypeRel():array {
+	public static function getMimeTypeToFileTypeRel(): array
+	{
 
 		return self::_FILE_TYPE_REL;
 	}
 
 	// возвращает массив соотношений extension
-	public static function getExtensionToFileTypeRel():array {
+	public static function getExtensionToFileTypeRel(): array
+	{
 
 		return self::_TYPE_EXTENSION_REL;
 	}
 
 	// создает необходимые записи на file_node при добавлении файла
-	public static function create(int $user_id, int $file_type, int $file_source, int $size_kb, string $mime_type, string $file_name, string $file_extension, array $extra, string $part_path, string $file_hash, bool $is_cdn = false):array {
+	public static function create(int $user_id, int $file_type, int $file_source, int $size_kb, string $mime_type, string $file_name, string $file_extension, array $extra, string $part_path, string $file_hash, int $status, bool $is_cdn = false): array
+	{
 
 		// делаем сначала сокет запрос для сохранения инфы о файле на балансере и получения map
-		[$file_key, $download_token] = self::_saveOnBalancer($file_type, $file_source, $size_kb, $mime_type, $file_name, $file_extension, $extra, $file_hash, $is_cdn);
+		[$file_key, $download_token] = self::_saveOnBalancer($file_type, $file_source, $size_kb, $mime_type, $file_name, $file_extension, $extra, $file_hash, $status, $is_cdn, $user_id);
 
 		$file_row = [
 			"file_key"       => $file_key,
@@ -231,6 +267,7 @@ class Type_File_Main {
 			"file_source"    => $file_source,
 			"is_deleted"     => 0,
 			"is_cdn"         => $is_cdn ? 1 : 0,
+			"status"         => $status,
 			"created_at"     => time(),
 			"updated_at"     => 0,
 			"size_kb"        => $size_kb,
@@ -252,13 +289,15 @@ class Type_File_Main {
 	/**
 	 * Сохраняем файл на балансере
 	 */
-	protected static function _saveOnBalancer(int $file_type, int $file_source, int $size_kb, string $mime_type, string $file_name, string $file_extension, array $extra, string $file_hash, bool $is_cdn = false):array {
+	protected static function _saveOnBalancer(int $file_type, int $file_source, int $size_kb, string $mime_type, string $file_name, string $file_extension, array $extra, string $file_hash, int $status, bool $is_cdn = false, int $user_id = 0): array
+	{
 
 		// делаем сокет запрос для сохранения инфы о файле на balancer
 		[$status, $response] = Gateway_Socket_FileBalancer::doCall("files.trySaveFile", $extra["company_id"], $extra["company_url"], [
 			"file_type"      => $file_type,
 			"file_source"    => $file_source,
 			"is_cdn"         => $is_cdn ? 1 : 0,
+			"status"         => $status,
 			"node_id"        => NODE_ID,
 			"size_kb"        => $size_kb,
 			"mime_type"      => $mime_type,
@@ -266,7 +305,7 @@ class Type_File_Main {
 			"file_extension" => $file_extension,
 			"extra"          => $extra,
 			"file_hash"      => $file_hash,
-		]);
+		], $user_id);
 
 		// если не ок — бросаем экшепшен
 		if ($status != "ok") {
@@ -278,7 +317,8 @@ class Type_File_Main {
 	}
 
 	// обновляем данные файла
-	public static function updateFile(string $file_key, array $extra, string $file_extension = ""):void {
+	public static function updateFile(string $file_key, array $extra, string $file_extension = ""): void
+	{
 
 		// обновляем поле extra для файла в таблице file_node.file
 		Gateway_Db_FileNode_File::update($file_key, [
@@ -290,7 +330,8 @@ class Type_File_Main {
 	}
 
 	// сохраняем данные файла
-	protected static function _updateFileOnBalancer(string $file_key, array $extra, string $file_extension = ""):void {
+	protected static function _updateFileOnBalancer(string $file_key, array $extra, string $file_extension = ""): void
+	{
 
 		// отправляем socket запрос для обновления информации о файле
 		[$status,] = Gateway_Socket_FileBalancer::doCall("files.doUpdateFile", $extra["company_id"], $extra["company_url"], [
@@ -308,7 +349,8 @@ class Type_File_Main {
 	/**
 	 * Записываем содержимое документа на файловый балансировщик
 	 */
-	public static function setContent(string $file_key, array $extra, string $content):void {
+	public static function setContent(string $file_key, array $extra, string $content): void
+	{
 
 		// отправляем socket запрос для обновления информации о файле
 		[$status,] = Gateway_Socket_FileBalancer::doCall("files.setContent", $extra["company_id"], $extra["company_url"], [

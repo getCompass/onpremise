@@ -8,6 +8,7 @@ use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
+use BaseFrame\Exception\Request\InappropriateContentException;
 use BaseFrame\Exception\Request\PaymentRequiredException;
 use CompassApp\Domain\Member\Entity\Permission;
 use JetBrains\PhpStorm\ArrayShape;
@@ -16,8 +17,8 @@ use JetBrains\PhpStorm\ArrayShape;
  * контроллер, отвечающий за взаимодействие пользователя с диалогами и сообщениями в них
  * @property Type_Api_Action action
  */
-class Apiv1_Conversations extends \BaseFrame\Controller\Api {
-
+class Apiv1_Conversations extends \BaseFrame\Controller\Api
+{
 	public const    MAX_SELECTED_MESSAGE_COUNT        = 100;      // максимальное количество сообщений, с которыми можно что-то делать за раз (репостнуть, удалить, скрыть и т.п.)
 	public const    MAX_USER_ID_LIST_FOR_EXACTINGNESS = 30;       // максимальное количество пользователей для Требовательности
 	protected const _MAX_GET_ALLOWED_COUNT            = 50;       // максимальное количество пользователей в поиске getAllowed
@@ -29,8 +30,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	protected const _MAX_BATCHING_COUNT               = 50;       // максимальное количество сущностей, о которых можно получить информацию batching методами за раз
 	protected const _MAX_GET_MESSAGE_BATCHING_COUNT   = 100;      // максимальное количество сообщений, которые вернет в /conversations/getMessageBatching/
 	protected const _MAX_WORKED_HOURS                 = 48;       // максимальное число рабочих часов
-
-	public const ALLOW_METHODS = [
+	public const ALLOW_METHODS                        = [
 		"addSingle",
 		"addToFavorites",
 		"doRemoveFromFavorites",
@@ -72,12 +72,10 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 		"doReadMessage",
 		"shareMember",
 	];
-
 	protected const _ALLOWED_FILE_SOURCES = [
 		FILE_SOURCE_MESSAGE_DEFAULT, FILE_SOURCE_MESSAGE_IMAGE, FILE_SOURCE_MESSAGE_VIDEO, FILE_SOURCE_MESSAGE_VOICE,
 		FILE_SOURCE_MESSAGE_AUDIO, FILE_SOURCE_MESSAGE_DOCUMENT, FILE_SOURCE_MESSAGE_ARCHIVE,
 	];
-
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"addSingle",
 		"addToFavorites",
@@ -105,8 +103,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	// список запрещенных методов по ролям
 	public const RESTRICTED_METHOD_LIST_BY_ROLE = [];
-
-	protected const _MAX_REACTION_COUNT = 20; // максимальное количество реакций в запросе
+	protected const _MAX_REACTION_COUNT         = 20; // максимальное количество реакций в запросе
 
 	##########################################################
 	# region диалоги
@@ -124,7 +121,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function addSingle():array {
+	public function addSingle(): array
+	{
 
 		$opponent_user_id = $this->post(\Formatter::TYPE_INT, "user_id"); // id пользователя, с которым нужно создать диалог
 
@@ -142,7 +140,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 		try {
 
 			$meta_row = Helper_Single::createIfNotExist(
-				$this->user_id, $opponent_user_id, false, true, true, $this->method_version);
+				$this->user_id,
+				$opponent_user_id,
+				false,
+				true,
+				true,
+				$this->method_version
+			);
 		} catch (Domain_Member_Exception_ActionNotAllowed) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation $e) {
@@ -166,13 +170,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * добавить переписку в избранное
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function addToFavorites():array {
+	public function addToFavorites(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -224,13 +228,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * удалить переписку из избранных
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doRemoveFromFavorites():array {
+	public function doRemoveFromFavorites(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -273,7 +277,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// метод для выброса экзепшена если пользователь не является участником диалога
-	protected function _throwIfRowIsNotExistInLeftMenu(array $left_menu_row):void {
+	protected function _throwIfRowIsNotExistInLeftMenu(array $left_menu_row): void
+	{
 
 		// запись не найдена
 		if (!isset($left_menu_row["user_id"])) {
@@ -284,7 +289,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// метод для выброса экзепшена если пользователь покинул диалога
-	protected function _throwIfUserIsLeavedFromConversation(array $left_menu_row):void {
+	protected function _throwIfUserIsLeavedFromConversation(array $left_menu_row): void
+	{
 
 		// проверяем, покинул ли пользователь диалог
 		if ($left_menu_row["is_leaved"] == 1) {
@@ -297,13 +303,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * выключить уведомления в диалоге
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doMute():array {
+	public function doMute(): array
+	{
 
 		// получаем параметры из post_data
 		$interval_minutes = $this->post("?i", "interval_minutes", 0);
@@ -325,7 +331,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// мьютим диалог
-	protected function _doMute(string $conversation_map, int $is_muted, int $interval_minutes):array {
+	protected function _doMute(string $conversation_map, int $is_muted, int $interval_minutes): array
+	{
 
 		try {
 
@@ -353,13 +360,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * включить уведомления в диалоге
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doUnmute():array {
+	public function doUnmute(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -382,7 +389,6 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * отметить диалог прочитанным
 	 *
-	 * @return array
 	 * @throws BusFatalException
 	 * @throws ParamException
 	 * @throws ParseFatalException
@@ -390,7 +396,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 */
-	public function doRead():array {
+	public function doRead(): array
+	{
 
 		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key", "");
 		$message_map = "";
@@ -424,7 +431,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// валидируем параметры
-	protected function _checkParamsForDoRead(string $message_map, string $conversation_map):void {
+	protected function _checkParamsForDoRead(string $message_map, string $conversation_map): void
+	{
 
 		// если передали оба параметра или не передали ни одного
 		if ((mb_strlen($message_map) > 0 && mb_strlen($conversation_map) > 0) || (mb_strlen($message_map) < 1 && mb_strlen($conversation_map) < 1)) {
@@ -442,7 +450,6 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * отметить диалог непрочитанным
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
@@ -450,7 +457,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws BlockException
 	 */
-	public function setAsUnread():array {
+	public function setAsUnread(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -475,13 +483,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * очистить сообщения в диалоге для данного пользователя
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doClearMessages():array {
+	public function doClearMessages(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -505,13 +513,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * убрать диалог из левого меню пользователя
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doRemoveSingle():array {
+	public function doRemoveSingle(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -537,7 +545,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если диалог не является single
-	protected function _throwIfConversationIsNotSingle(array $left_menu_row, string $namespace = null, string $row = null):void {
+	protected function _throwIfConversationIsNotSingle(array $left_menu_row, string $namespace = null, string $row = null): void
+	{
 
 		if (!Type_Conversation_Meta::isSubtypeOfSingle($left_menu_row["type"])) {
 
@@ -553,11 +562,11 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * вернуть информацию о диалоге
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \paramException
 	 */
-	public function get():array {
+	public function get(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -598,11 +607,11 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * вернуть информацию о диалоге по id оппонента
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \paramException
 	 */
-	public function getByOpponentId():array {
+	public function getByOpponentId(): array
+	{
 
 		$opponent_user_id = $this->post("?i", "user_id");
 		Gateway_Bus_Statholder::inc("conversations", "row600");
@@ -635,11 +644,11 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для получения информации о диалогах
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \paramException
 	 */
-	public function getBatching():array {
+	public function getBatching(): array
+	{
 
 		$conversation_key_list = $this->post("?a", "conversation_key_list");
 		Gateway_Bus_Statholder::inc("conversations", "row490");
@@ -680,7 +689,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если пришел некорректный массив диалогов
-	protected function _throwIfConversationKeyListIsIncorrect(array $conversation_key_list):void {
+	protected function _throwIfConversationKeyListIsIncorrect(array $conversation_key_list): void
+	{
 
 		// если пришел пустой массив диалогов
 		if (count($conversation_key_list) < 1) {
@@ -698,7 +708,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// преобразуем пришедшие ключи в map
-	protected function _tryDecryptConversationKeyList(array $conversation_key_list):array {
+	protected function _tryDecryptConversationKeyList(array $conversation_key_list): array
+	{
 
 		$conversation_map_list = [];
 		foreach ($conversation_key_list as $item) {
@@ -722,7 +733,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// инкрементим статистику в зависимости от количества недоступных диалогов
-	protected function _incStatByNotAllowedConversationsIfNeed(array $not_allowed_conversation_map_list):void {
+	protected function _incStatByNotAllowedConversationsIfNeed(array $not_allowed_conversation_map_list): void
+	{
 
 		// если есть недоступные диалоги
 		if (count($not_allowed_conversation_map_list) > 0) {
@@ -731,7 +743,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// формируем массив с ключами доступных диалогов
-	protected function _makeAllowedConversationMapList(array $allowed_conversation_list):array {
+	protected function _makeAllowedConversationMapList(array $allowed_conversation_list): array
+	{
 
 		$allowed_conversation_map_list = [];
 		foreach ($allowed_conversation_list as $item) {
@@ -745,13 +758,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * Формируем массив ответа для метода conversations.getBatching
 	 *
 	 * @return array[]
-	 *
 	 */
 	#[ArrayShape([
 		"conversation_list"                 => "array",
 		"not_allowed_conversation_key_list" => "array",
 	])]
-	protected function _makeGetBatchingOutput(array $allowed_conversation_list, array $not_allowed_conversation_map_list):array {
+	protected function _makeGetBatchingOutput(array $allowed_conversation_list, array $not_allowed_conversation_map_list): array
+	{
 
 		$not_allowed_conversation_key_list = [];
 
@@ -788,10 +801,10 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * вернуть пользователей, с которыми есть диалог
 	 *
-	 * @return array
 	 * @throws ParamException
 	 */
-	public function getAllowed():array {
+	public function getAllowed(): array
+	{
 
 		$offset                 = $this->post("?i", "offset", 0);
 		$count                  = $this->post("?i", "count", self::_MAX_GET_ALLOWED_COUNT);
@@ -824,11 +837,11 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * вернуть дополнительную информацию о диалоге, не попавшую в основную сущность
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \paramException
 	 */
-	public function getExtra():array {
+	public function getExtra(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -867,7 +880,6 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * Вернуть информацию о диалогах
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \apiAccessException
@@ -876,7 +888,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @long
 	 */
-	public function getLeftMenu():array {
+	public function getLeftMenu(): array
+	{
 
 		// получаем параметры из post_data
 		$search_query        = $this->post(\Formatter::TYPE_STRING, "query", ""); // запрос
@@ -939,12 +952,12 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить список изменений в левом меню
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \parseException
 	 * @throws ParamException
 	 */
-	public function getLeftMenuDifference():array {
+	public function getLeftMenuDifference(): array
+	{
 
 		$from_version = $this->post(\Formatter::TYPE_INT, "from_version"); // версия кэша у клиента
 
@@ -963,9 +976,9 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Получить список изменений в левом меню
-	 *
 	 */
-	public function getLeftMenuMeta():array {
+	public function getLeftMenuMeta(): array
+	{
 
 		// получаем избранные диалоги
 		$meta = Domain_User_Scenario_Conversation_Api::getLeftMenuMeta($this->user_id);
@@ -980,13 +993,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * поднимает диалог в левом меню
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doLiftUp():array {
+	public function doLiftUp(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -1028,30 +1041,35 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * Отправить сообщение в диалог
 	 * Версия метода 3
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws PaymentRequiredException
 	 */
-	public function addMessage():array {
+	public function addMessage(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
 
 		$client_message_list = $this->post("?a", "client_message_list");
 
+		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::CONVERSATIONS_ADDMESSAGE, "messages", "row3");
+
 		return $this->_processAddMessage($conversation_map, $client_message_list);
 	}
 
 	// проверяем возможность добавить сообщение в диалог и подготавливает данные для сообщений
 	// @long обертка для логики паблик метода
-	protected function _processAddMessage(string $conversation_map, array $client_message_list):array {
-
-		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::CONVERSATIONS_ADDMESSAGE, "messages", "row3");
+	protected function _processAddMessage(string $conversation_map, array $client_message_list): array
+	{
 
 		// готовим к работе список сообщений
 		try {
 
+			// проводим проверку в DLP системе
+			Domain_Conversation_Action_PerformDlpCheck::doForMessageList($this->user_id, $client_message_list);
+
 			$raw_message_list = $this->_parseRawMessageList($client_message_list);
+			Domain_Conversation_Action_Message_CheckFileListIsApproved::do($raw_message_list);
 			Domain_Member_Entity_Permission::checkVoice($this->user_id, $this->method_version, Permission::IS_VOICE_MESSAGE_ENABLED, $raw_message_list);
 		} catch (cs_Message_IsTooLong) {
 
@@ -1059,6 +1077,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			return $this->error(540, "Message is too long");
 		} catch (Domain_Member_Exception_ActionNotAllowed) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
+		} catch (InappropriateContentException) {
+			return $this->error(2238003, "dlp check failure");
 		}
 
 		// получаем информацию о диалоге и проверяем что пользователь его участник
@@ -1089,7 +1109,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// строим список данных сообщений и располагаем в нем элементы по порядку
-	protected function _parseRawMessageList(array $client_messages_raw):array {
+	protected function _parseRawMessageList(array $client_messages_raw): array
+	{
 
 		$this->_throwOnInvalidMessageChunkFormat($client_messages_raw);
 
@@ -1129,7 +1150,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяет, что количесвто кусков сообщения и их формат
-	protected function _throwOnInvalidMessageChunkFormat(array $client_messages_raw):void {
+	protected function _throwOnInvalidMessageChunkFormat(array $client_messages_raw): void
+	{
 
 		// количесвто кусков не должно превышать половину емкости блока
 		if (count($client_messages_raw) > Type_Conversation_Message_Block::MESSAGE_PER_BLOCK_LIMIT / 2) {
@@ -1149,7 +1171,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \paramException
 	 */
-	protected function _throwIfInvalidMessageChunkHasCorrectFields(mixed $message_chunk):void {
+	protected function _throwIfInvalidMessageChunkHasCorrectFields(mixed $message_chunk): void
+	{
 
 		if (is_array($message_chunk) && isset($message_chunk["client_message_id"]) && is_string($message_chunk["client_message_id"])
 			&& isset($message_chunk["text"]) && is_string($message_chunk["text"])
@@ -1160,14 +1183,16 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасывает исключение при ошибке значения порядка сообщения
-	protected function _throwOnInvalidMessageOrder():void {
+	protected function _throwOnInvalidMessageOrder(): void
+	{
 
 		Gateway_Bus_Statholder::inc("conversations", "row11");
 		throw new ParamException(__CLASS__ . ": invalid message order");
 	}
 
 	// собираем output для raw_message_list
-	protected function _makeOutputForRawMessageList(string $key, int $key_message_ltrim, int $key_message_rtrim, int $order, array $message_chunk, array $output):array {
+	protected function _makeOutputForRawMessageList(string $key, int $key_message_ltrim, int $key_message_rtrim, int $order, array $message_chunk, array $output): array
+	{
 
 		$is_ltrim = false;
 		if ($key == $key_message_ltrim) {
@@ -1189,7 +1214,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// подготавливаем $client_message_id и $message_text для сообщения
-	protected function _prepareRawClientMessageId(string $client_message_id):string {
+	protected function _prepareRawClientMessageId(string $client_message_id): string
+	{
 
 		// валидируем client_message_id
 		$client_message_id = Type_Api_Filter::sanitizeClientMessageId($client_message_id);
@@ -1201,7 +1227,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// подготавливаем $client_message_id и $message_text для сообщения
-	protected function _prepareRawMessageText(string $message_text, bool $is_ltrim, bool $is_rtrim):string {
+	protected function _prepareRawMessageText(string $message_text, bool $is_ltrim, bool $is_rtrim): string
+	{
 
 		// валидируем и преобразуем текст сообщения
 		$text = Type_Api_Filter::replaceEmojiWithShortName($message_text);
@@ -1213,7 +1240,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// пробуем получить file_map из ключа
-	protected function _tryGetFileMapFromKey(string $file_key):string {
+	protected function _tryGetFileMapFromKey(string $file_key): string
+	{
 
 		$file_map = \CompassApp\Pack\File::tryDecrypt($file_key);
 
@@ -1227,7 +1255,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	// если диалог доступен для отправки, то отправляем список сообщений
 	// @long
-	protected function _addMessageListIfAllowed(array $meta_row, array $client_message_list):array {
+	protected function _addMessageListIfAllowed(array $meta_row, array $client_message_list): array
+	{
 
 		// проверяем может ли пользователь писать в диалог
 		try {
@@ -1258,7 +1287,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем возможность писать в диалог
-	protected function _throwIfNotAllowedForNewMessage(array $meta_row):void {
+	protected function _throwIfNotAllowedForNewMessage(array $meta_row): void
+	{
 
 		try {
 			Helper_Conversations::checkIsAllowed($meta_row["conversation_map"], $meta_row, $this->user_id);
@@ -1274,7 +1304,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// создаем и отправляем список сообщений
-	protected function _addMessageList(array $client_message_list, array $meta_row):array {
+	protected function _addMessageList(array $client_message_list, array $meta_row): array
+	{
 
 		$raw_message_list = $this->_generateRawMessageList($client_message_list, $meta_row);
 
@@ -1297,7 +1328,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// создаем массив сообщений-заготовок перед созданием записей в базу
-	protected function _generateRawMessageList(array $client_message_list, array $meta_row):array {
+	protected function _generateRawMessageList(array $client_message_list, array $meta_row): array
+	{
 
 		$raw_message_list = [];
 		$platform         = Type_Api_Platform::getPlatform();
@@ -1309,7 +1341,12 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			if ($v["file_map"] !== false) {
 
 				$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeFile(
-					$this->user_id, $v["text"], $v["client_message_id"], $v["file_map"], $v["file_name"], $platform
+					$this->user_id,
+					$v["text"],
+					$v["client_message_id"],
+					$v["file_map"],
+					$v["file_name"],
+					$platform
 				);
 			} else {
 				$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeText($this->user_id, $v["text"], $v["client_message_id"], $platform);
@@ -1333,7 +1370,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function tryEditMessage():array {
+	public function tryEditMessage(): array
+	{
 
 		$message_key = $this->post("?s", "message_key");
 		$message_map = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -1366,7 +1404,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			if ($this->method_version >= 2) {
 				Domain_Group_Entity_Options::checkChannelRestrictionByMetaRow($this->user_id, $meta_row);
 			}
-		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
+		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted $e) {
 
 			$error = Helper_Conversations::getCheckIsAllowedError($e);
 			return $this->error($error["error_code"], $error["message"]);
@@ -1380,12 +1418,21 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// редактируем сообщение
-	protected function _editMessageText(string $conversation_map, string $message_map, string $text, array $mention_user_id_list, array $meta_row):array {
+	protected function _editMessageText(string $conversation_map, string $message_map, string $text, array $mention_user_id_list, array $meta_row): array
+	{
 
 		try {
 
+			// проводим проверку в DLP системе
+			Domain_Conversation_Action_PerformDlpCheck::doForText($this->user_id, $text);
+
 			$prepared_message = Helper_Conversations::editMessageText(
-				$conversation_map, $message_map, $this->user_id, $text, $meta_row, $mention_user_id_list
+				$conversation_map,
+				$message_map,
+				$this->user_id,
+				$text,
+				$meta_row,
+				$mention_user_id_list
 			);
 		} catch (cs_Message_IsEmptyText) {
 
@@ -1403,6 +1450,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			return $this->_returnErrorIfNotAllowMessageForEdit();
 		} catch (cs_Message_TimeIsOver) {
 			return $this->error(917, "Timed out for edit message");
+		} catch (InappropriateContentException) {
+			return $this->error(2238003, "dlp check failure");
 		}
 
 		Gateway_Bus_Statholder::inc("messages", "row111");
@@ -1413,7 +1462,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// возращаем ошибку если нету сообщения для редактирования
-	protected function _returnErrorIfNotAllowMessageForEdit():array {
+	protected function _returnErrorIfNotAllowMessageForEdit(): array
+	{
 
 		throw new ParamException("you have not permissions to edit this message");
 	}
@@ -1430,7 +1480,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \returnException
 	 */
-	public function tryDeleteMessageList():array {
+	public function tryDeleteMessageList(): array
+	{
 
 		$message_key_list = $this->post(\Formatter::TYPE_JSON, "message_key_list");
 		$message_map_list = $this->_tryGetMessageMapList($message_key_list);
@@ -1455,7 +1506,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			if ($this->method_version >= 2) {
 				Domain_Group_Entity_Options::checkChannelRestrictionByMetaRow($this->user_id, $meta_row);
 			}
-		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
+		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted $e) {
 
 			$error = Helper_Conversations::getCheckIsAllowedError($e, true);
 			return $this->error($error["error_code"], $error["message"]);
@@ -1469,7 +1520,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// удаляем список сообщений
-	protected function _doDeleteMessageList(string $conversation_map, int $conversation_type, array $message_map_list, array $meta_row):array {
+	protected function _doDeleteMessageList(string $conversation_map, int $conversation_type, array $message_map_list, array $meta_row): array
+	{
 
 		// по умолчанию считаем, что для администратора с правами удаления сообщений разрешено удалять сообщение
 		$is_force_delete = Permission::canDeleteMessage($this->role, $this->permissions);
@@ -1492,14 +1544,14 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для скрытия списка сообщений
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function tryHideMessageList():array {
+	public function tryHideMessageList(): array
+	{
 
 		$message_key_list     = $this->post("?j", "message_key_list");
 		$message_map_list     = $this->_tryGetMessageMapList($message_key_list);
@@ -1543,7 +1595,6 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * Поставить реакцию на сообщение
 	 * версия метода 2
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws ParseFatalException
@@ -1551,7 +1602,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 */
-	public function addMessageReaction():array {
+	public function addMessageReaction(): array
+	{
 
 		$message_key   = $this->post("?s", "message_key");
 		$message_map   = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -1605,7 +1657,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 */
-	public function tryRemoveMessageReaction():array {
+	public function tryRemoveMessageReaction(): array
+	{
 
 		$message_key   = $this->post("?s", "message_key");
 		$message_map   = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -1650,7 +1703,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws ParamException
 	 */
-	public function addQuote():array {
+	public function addQuote(): array
+	{
 
 		$text              = $this->post("?s", "text", "");
 		$client_message_id = $this->post("?s", "client_message_id");
@@ -1660,7 +1714,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	// процитировать несколько сообщений
 	// @long - изза legacy-кода
-	protected function _addQuoteNew(string $client_message_id, string $text):array {
+	protected function _addQuoteNew(string $client_message_id, string $text): array
+	{
 
 		$message_key_list = $this->post("?j", "message_key_list");
 		$message_map_list = $this->_tryGetMessageMapList($message_key_list);
@@ -1698,7 +1753,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			if ($this->method_version >= 3) {
 				Domain_Group_Entity_Options::checkChannelRestrictionByMetaRow($this->user_id, $meta_row);
 			}
-		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
+		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted $e) {
 
 			$error = Helper_Conversations::getCheckIsAllowedError($e, true);
 			return $this->error($error["error_code"], $error["message"]);
@@ -1716,9 +1771,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	// создаем цитату v2
 	// @long
-	protected function _doQuoteMessageV2(string $text, string $client_message_id, array $message_map_list, string $conversation_map, array $meta_row, array $mention_user_id_list):array {
+	protected function _doQuoteMessageV2(string $text, string $client_message_id, array $message_map_list, string $conversation_map, array $meta_row, array $mention_user_id_list): array
+	{
 
 		try {
+
+			// проводим проверку в DLP системе
+			Domain_Conversation_Action_PerformDlpCheck::doForText($this->user_id, $text);
 
 			$quote_message_list = Helper_Conversations::addQuoteV2(
 				$this->user_id,
@@ -1742,6 +1801,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 				return $this->error(541, "duplicate client_message_id");
 			}
 			throw new ParamException("client_message_id is duplicated");
+		} catch (InappropriateContentException) {
+			return $this->error(2238003, "dlp check failure");
 		}
 
 		$prepared_message_list = $this->_doPrepareMessageListV2($quote_message_list);
@@ -1759,10 +1820,10 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * Позволяет переслать сообщение
 	 * Версия метода 3
 	 *
-	 * @return array
 	 * @throws ParamException
 	 */
-	public function addRepost():array {
+	public function addRepost(): array
+	{
 
 		$conversation_key          = $this->post("?s", "conversation_key");
 		$receiver_conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -1777,7 +1838,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	// зарепостить сообщения (новая версия, позволяющая репостить репосты)
 	// @long - временно long из-за legacy
-	protected function _addRepostNew(array $message_key_list, string $receiver_conversation_map, string $client_message_id, string $text):array {
+	protected function _addRepostNew(array $message_key_list, string $receiver_conversation_map, string $client_message_id, string $text): array
+	{
 
 		$message_map_list = $this->_tryGetMessageMapList($message_key_list);
 		Gateway_Bus_Statholder::inc("messages", "row941");
@@ -1830,7 +1892,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	// добавляем репост в диалог получатель
 	// @long - временно long из-за legacy
-	protected function _addRepostToReceiverConversation(string $conversation_map, array $message_map_list, string $client_message_id, string $text):array {
+	protected function _addRepostToReceiverConversation(string $conversation_map, array $message_map_list, string $client_message_id, string $text): array
+	{
 
 		// проверяем что есть доступ к диалогу отправителю
 		// в message_map_list гарантированно лежат сообщения из одного диалога, так что берем первое
@@ -1879,9 +1942,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	// репостим сообщения через addRepostV2
 	// @long
-	protected function _addRepostV2(string $conversation_map, array $message_map_list, string $text, string $client_message_id, array $meta_row, array $mention_user_id_list):array {
+	protected function _addRepostV2(string $conversation_map, array $message_map_list, string $text, string $client_message_id, array $meta_row, array $mention_user_id_list): array
+	{
 
 		try {
+
+			// проводим проверку в DLP системе
+			Domain_Conversation_Action_PerformDlpCheck::doForText($this->user_id, $text);
 
 			$repost_message_list = Helper_Conversations::addRepostV2(
 				$this->user_id,
@@ -1905,6 +1972,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 				return $this->error(541, "duplicate client_message_id");
 			}
 			throw new ParamException("client_message_id is duplicated");
+		} catch (InappropriateContentException) {
+			return $this->error(2238003, "dlp check failure");
 		}
 
 		$prepared_message_list = $this->_doPrepareMessageListV2($repost_message_list);
@@ -1920,14 +1989,14 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * пожаловаться на сообщение пользователя
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doReportMessage():array {
+	public function doReportMessage(): array
+	{
 
 		$message_key          = $this->post("?s", "message_key");
 		$message_map          = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -1963,7 +2032,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// форматируем причину репорта сообщения
-	protected function _doFormatReason(string $reason):string {
+	protected function _doFormatReason(string $reason): string
+	{
 
 		// фильтруем
 		$reason = Type_Api_Filter::sanitizeReason($reason);
@@ -1978,13 +2048,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * получает определенное сообщение из диалога
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function getMessage():array {
+	public function getMessage(): array
+	{
 
 		$message_key = $this->post("?s", "message_key");
 		$message_map = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -2020,7 +2090,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// собираем ответ к методу getMessage
-	protected function _getMessageOutput(array $message_data, array $thread_rel_list):array {
+	protected function _getMessageOutput(array $message_data, array $thread_rel_list): array
+	{
 
 		$message = $message_data["message"];
 
@@ -2038,11 +2109,11 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 * @return array
 	 * @throws ParamException
 	 * @throws \paramException
 	 */
-	public function getMyReactions():array {
+	public function getMyReactions(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -2058,13 +2129,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * получаем список реакции для сообщения
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function getMessageReactions():array {
+	public function getMessageReactions(): array
+	{
 
 		$message_key = $this->post("?s", "message_key");
 		$message_map = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -2090,7 +2161,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// форматирует reaction_count_list для отдачи на frontend
-	protected function _formatReactionCountList(array $message_reaction_list):array {
+	protected function _formatReactionCountList(array $message_reaction_list): array
+	{
 
 		$output = [];
 		foreach ($message_reaction_list as $k => $v) {
@@ -2114,7 +2186,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws Domain_Conversation_Exception_Message_NotAllowForRemind
 	 */
-	public function getMessagesRemind():array {
+	public function getMessagesRemind(): array
+	{
 
 		$message_key_list = $this->post(\Formatter::TYPE_ARRAY, "message_key_list");
 
@@ -2168,7 +2241,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws cs_Message_IsDeleted
 	 * @long
 	 */
-	protected function _getMessageRemindData(array $message_map_list, string $conversation_map):array {
+	protected function _getMessageRemindData(array $message_map_list, string $conversation_map): array
+	{
 
 		// получаем блок сообщения
 		$dynamic_row = Domain_Conversation_Entity_Dynamic::get($conversation_map);
@@ -2211,13 +2285,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * получаем список пользователей поставивших реакцию на сообщение
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function getReactionUsers():array {
+	public function getReactionUsers(): array
+	{
 
 		$message_key   = $this->post("?s", "message_key");
 		$message_map   = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -2249,7 +2323,6 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * Получаем список реакций и пользователей поставивших ее на сообщение
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\ControllerMethodNotFoundException
@@ -2258,7 +2331,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function getReactionsUsersBatching():array {
+	public function getReactionsUsersBatching(): array
+	{
 
 		$message_key        = $this->post(\Formatter::TYPE_STRING, "message_key");
 		$message_map        = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -2299,7 +2373,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если список реакций некорректный
-	protected function _throwIfReactionNameListIsIncorrect(array $reaction_name_list):void {
+	protected function _throwIfReactionNameListIsIncorrect(array $reaction_name_list): void
+	{
 
 		// если пришел пустой массив реакций
 		if (count($reaction_name_list) < 1) {
@@ -2313,7 +2388,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// формируем reaction_list для ответа
-	protected function _makeReactionList(array $message_reaction_uniq_user_list):array {
+	protected function _makeReactionList(array $message_reaction_uniq_user_list): array
+	{
 
 		$message_reaction_list = [];
 		foreach ($message_reaction_uniq_user_list as $reaction_name => $user_list) {
@@ -2333,14 +2409,14 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * устанавливаем сообщение последним в левом меню
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function setMessageAsLast():array {
+	public function setMessageAsLast(): array
+	{
 
 		$message_key = $this->post("?s", "message_key");
 		$message_map = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -2382,7 +2458,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем что можем поставить сообщение последним в левом меню
-	protected function _throwIfMessageNoNeedUpdateLeftMenu(array $message, string $namespace, string $row):void {
+	protected function _throwIfMessageNoNeedUpdateLeftMenu(array $message, string $namespace, string $row): void
+	{
 
 		if (!Type_Conversation_Message_Main::getHandler($message)::isNeedUpdateLeftMenu($message)) {
 
@@ -2394,13 +2471,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для получения списка диалогов в которые можем отправлять сообщение
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \busException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function getAllowedConversationsForAddMessage():array {
+	public function getAllowedConversationsForAddMessage(): array
+	{
 
 		$conversation_key_list = $this->post(\Formatter::TYPE_ARRAY, "conversation_key_list");
 
@@ -2412,14 +2489,14 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * фиксируем затраченное время сотрудника
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doCommitWorkedHours():array {
+	public function doCommitWorkedHours(): array
+	{
 
 		$message_key_list = $this->post(\Formatter::TYPE_JSON, "message_key_list");
 		$message_map_list = $this->_tryGetMessageMapList($message_key_list);
@@ -2453,7 +2530,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем \paramException, если передали некорректное значение worked_hours
-	protected function _throwIfIncorrectWorkedHours(float $worked_hours):void {
+	protected function _throwIfIncorrectWorkedHours(float $worked_hours): void
+	{
 
 		if ($worked_hours < 0 || $worked_hours > self::_MAX_WORKED_HOURS) {
 
@@ -2467,7 +2545,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \parseException
 	 */
-	protected function _doCommitMessageWorkedHours(int $user_id, float $worked_hours, array $message_map_list):array {
+	protected function _doCommitMessageWorkedHours(int $user_id, float $worked_hours, array $message_map_list): array
+	{
 
 		// создаем объект worked_hours
 		$worked_hours_data = Type_Conversation_Public_WorkedHours::doCommit($user_id, $worked_hours);
@@ -2493,8 +2572,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 		}
 
 		// фиксируем сообщения с отработанными часами в личном чате Heroes пользователя
-		$message_list = Helper_Conversations::doForwardMessageList($this->user_id, $user_conversation_rel_obj->conversation_map, $forwarding_message_list,
-			$worked_hours_data["worked_hours_id"], $worked_hours_data["day_start_at_iso"], $worked_hours_data["worked_hours_created_at"]
+		$message_list = Helper_Conversations::doForwardMessageList(
+			$this->user_id,
+			$user_conversation_rel_obj->conversation_map,
+			$forwarding_message_list,
+			$worked_hours_data["worked_hours_id"],
+			$worked_hours_data["day_start_at_iso"],
+			$worked_hours_data["worked_hours_created_at"]
 		);
 
 		return $this->ok([
@@ -2505,7 +2589,6 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * Пытаемся проявить требовательность
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \apiAccessException
@@ -2515,7 +2598,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @long
 	 */
-	public function tryExacting():array {
+	public function tryExacting(): array
+	{
 
 		$message_key_list = $this->post(\Formatter::TYPE_JSON, "message_key_list");
 		$message_map_list = $this->_tryGetMessageMapList($message_key_list);
@@ -2590,14 +2674,14 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * Выбрасываем исключение, если передали некорректные параметры
 	 *
 	 * @long много проверок
-	 * @return void
 	 * @throws \apiAccessException
 	 * @throws \busException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws Domain_Conversation_Exception_User_IsAccountDeleted
 	 * @throws ParamException
 	 */
-	protected function _throwIfIncorrectParamsForExacting(array $user_id_list, array $message_map_list):void {
+	protected function _throwIfIncorrectParamsForExacting(array $user_id_list, array $message_map_list): void
+	{
 
 		// если какой-то из списков пуст
 		if (count($user_id_list) < 1 || count($message_map_list) < 1) {
@@ -2642,7 +2726,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// пробуем проявить Требовательность
-	protected function _tryExacting(int $sender_user_id, array $forwarding_message_list, array $user_id_list, string $conversation_map, array $meta_row, string $donor_conversation_map):array {
+	protected function _tryExacting(int $sender_user_id, array $forwarding_message_list, array $user_id_list, string $conversation_map, array $meta_row, string $donor_conversation_map): array
+	{
 
 		// добавляем Требовательность в карточку пользователя
 		[$exactingness_id_list_by_user_id, $week_count, $month_count] = Gateway_Socket_Company::addExactingnessToEmployeeCard($this->user_id, $user_id_list);
@@ -2655,8 +2740,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 			$message = Type_Conversation_Message_Main::getLastVersionHandler()::makeRepost($this->user_id, "", generateUUID(), $forwarding_message_list);
 
 			// добавляем additional-поля для Требовательности, прикрепляя пользователя, которому предъявляем и id требовательности
-			$message_list[] = Type_Conversation_Message_Main::getHandler($message)
-				::attachExactingnessData($message, $receiver_user_id, $exactingness_id);
+			$message_list[] = Type_Conversation_Message_Main::getHandler($message)::attachExactingnessData($message, $receiver_user_id, $exactingness_id);
 		}
 
 		// выдаем Требовательность - добавляем сообщения-требовательность в группу Требовательность
@@ -2670,7 +2754,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 
 	// получаем данные для формирования сущности Требовательности
 	// @long - switch..case по типу файла
-	public static function getDataForExactingnessEntity(array $message, array $message_data_list):array {
+	public static function getDataForExactingnessEntity(array $message, array $message_data_list): array
+	{
 
 		$message_type = Type_Conversation_Message_Main::getHandler($message)::getType($message);
 		switch ($message_type) {
@@ -2752,13 +2837,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для получения информации о ряде сообщений
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function getMessageBatching():array {
+	public function getMessageBatching(): array
+	{
 
 		$message_key_list = $this->post("?j", "message_key_list");
 		$message_map_list = $this->_tryGetMessageMapList($message_key_list);
@@ -2778,7 +2863,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 				$message_map_list,
 				$is_need_check_permission
 			);
-		} catch (\cs_UnpackHasFailed|\cs_RowIsEmpty) {
+		} catch (\cs_UnpackHasFailed | \cs_RowIsEmpty) {
 			throw new ParamException(__METHOD__ . ": passed incorrect message_key_list");
 		}
 		// получаем список сообщений, к которым оказался доступ и приводим их к формату
@@ -2799,7 +2884,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \paramException
 	 */
-	protected function _throwIfIncorrectSignature(array $message_map_list, string $signature):void {
+	protected function _throwIfIncorrectSignature(array $message_map_list, string $signature): void
+	{
 
 		if ($signature == "") {
 			return;
@@ -2815,7 +2901,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * формируем подпись, с помощью который пользователь сможет получить доступ к сообщениям
 	 */
-	protected function _makeSignatureForGetMessageBatching(array $message_map_list):string {
+	protected function _makeSignatureForGetMessageBatching(array $message_map_list): string
+	{
 
 		// сортируем message_map_list
 		sort($message_map_list);
@@ -2826,11 +2913,13 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 		// добавляем user_id в конец
 		$temp .= $this->user_id;
 
+		// nosemgrep
 		return sha1($temp);
 	}
 
 	// выбрасываем exception, если передали некорректный массив с ключами сообщений диалога
-	protected function _throwIfIncorrectBatchingMessageMapList(array $message_map_list, string $row_is_empty_array, string $row_is_limit_exceeded, string $row_is_duplicate):void {
+	protected function _throwIfIncorrectBatchingMessageMapList(array $message_map_list, string $row_is_empty_array, string $row_is_limit_exceeded, string $row_is_duplicate): void
+	{
 
 		if (count($message_map_list) < 1) {
 
@@ -2857,7 +2946,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * Зашифровываем message_map_list в message_key_list
 	 */
-	protected function _doEncryptMessageMapList(array $message_map_list):array {
+	protected function _doEncryptMessageMapList(array $message_map_list): array
+	{
 
 		$output = [];
 		foreach ($message_map_list as $item) {
@@ -2870,7 +2960,6 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * отправить собеседнику контакты на пользователей
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws \busException
@@ -2878,7 +2967,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws cs_PlatformNotFound
 	 */
-	public function shareMember():array {
+	public function shareMember(): array
+	{
 
 		$conversation_key   = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$share_user_id_list = $this->post(\Formatter::TYPE_ARRAY_INT, "share_user_id_list");
@@ -2916,7 +3006,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	// -------------------------------------------------------
 
 	// форматируем и приводим под нужный формат каждое сообщение в массиве
-	protected function _doPrepareMessageListV2(array $message_list):array {
+	protected function _doPrepareMessageListV2(array $message_list): array
+	{
 
 		// подводим под формат и отдаем
 		$prepared_message_list = [];
@@ -2930,7 +3021,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// получить алиас реакции, если существует, иначе возвращает незименное название реакции обратно
-	protected function _getReactionAliasIfExist(string $reaction_name, string $namespace = null, string $row = null):string {
+	protected function _getReactionAliasIfExist(string $reaction_name, string $namespace = null, string $row = null): string
+	{
 
 		$reaction_name = Type_Conversation_Reaction_Main::getReactionNameIfExist($reaction_name);
 		if (mb_strlen($reaction_name) < 1) {
@@ -2945,7 +3037,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// отбираем диалоги с нормальными пользователями
-	protected function _filterAllowedConversationList(array $left_menu_list, array $user_id_list):array {
+	protected function _filterAllowedConversationList(array $left_menu_list, array $user_id_list): array
+	{
 
 		// получаем информацию о пользователях
 		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList($user_id_list, false);
@@ -2974,7 +3067,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем список пользователей
-	protected function _getUserIdList(array $conversation_list):array {
+	protected function _getUserIdList(array $conversation_list): array
+	{
 
 		$user_id_list = [];
 
@@ -2987,13 +3081,15 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// метод для вывода найденных пользователей
-	protected function _makeAllowedUsersOutput(array $left_menu_list = [], int $has_next = 0):array {
+	protected function _makeAllowedUsersOutput(array $left_menu_list = [], int $has_next = 0): array
+	{
 
 		return $this->_makeAllowedUsersOutputNew($left_menu_list, $has_next);
 	}
 
 	// метод для вывода найденных пользователей с новым полным left_menu
-	protected function _makeAllowedUsersOutputNew(array $left_menu_list, int $has_next = 0):array {
+	protected function _makeAllowedUsersOutputNew(array $left_menu_list, int $has_next = 0): array
+	{
 
 		$user_id_list = [];
 
@@ -3015,7 +3111,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем exception если ид сообщения не валиден иначе отдаем его
-	protected function _tryGetClientMessageId(string $client_message_id, string $namespace, string $row):string {
+	protected function _tryGetClientMessageId(string $client_message_id, string $namespace, string $row): string
+	{
 
 		$client_message_id = Type_Api_Filter::sanitizeClientMessageId($client_message_id);
 
@@ -3029,7 +3126,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем message_map_list из массива ключей
-	protected function _tryGetMessageMapList(array $message_key_list):array {
+	protected function _tryGetMessageMapList(array $message_key_list): array
+	{
 
 		$message_map_list = [];
 		foreach ($message_key_list as $v) {
@@ -3050,7 +3148,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем message_map из message_key
-	protected function _tryGetMessageMap(string $message_key, string $row_is_decrypt_failed = null):string {
+	protected function _tryGetMessageMap(string $message_key, string $row_is_decrypt_failed = null): string
+	{
 
 		try {
 			$message_map = \CompassApp\Pack\Message\Conversation::doDecrypt($message_key);
@@ -3072,7 +3171,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @long - множество условий
 	 */
-	protected function _doFormatLeftMenuList(array $left_menu_list, array $filter_client_npc_type = [], array $meta_list = []):array {
+	protected function _doFormatLeftMenuList(array $left_menu_list, array $filter_client_npc_type = [], array $meta_list = []): array
+	{
 
 		$opponent_list   = [];
 		$filter_npc_type = [];
@@ -3119,7 +3219,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \parseException
 	 */
-	protected function _getFilterNpcTypeList(array $filter_client_npc_type):array {
+	protected function _getFilterNpcTypeList(array $filter_client_npc_type): array
+	{
 
 		$filter_npc_type = [];
 		foreach ($filter_client_npc_type as $user_type) {
@@ -3135,7 +3236,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 *
 	 * @post message_key
 	 */
-	public function doReadMessage():array {
+	public function doReadMessage(): array
+	{
 
 		$message_key = $this->post("?s", "message_key");
 		$message_map = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -3153,7 +3255,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 		try {
 
 			[$local_date, $local_time, $_] = getLocalClientTime();
-			$prepared_message = Helper_Conversations::markMessageAsRead($conversation_map, $message_map, $this->user_id, $meta_row, $local_date, $local_time);
+			$prepared_message              = Helper_Conversations::markMessageAsRead($conversation_map, $message_map, $this->user_id, $meta_row, $local_date, $local_time);
 		} catch (cs_Message_IsNotAllowToMarkAsRead) {
 			return $this->error(550, "Message is not allowed to be read");
 		} catch (cs_Message_IsDeleted) {
@@ -3178,7 +3280,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	 */
 
 	// выбрасываем exception если map предыдущего сообщения не корректен
-	protected function _throwIfIncorrectPreviousMessageMap(string $previous_message_map, string $conversation_map, string $message_map):void {
+	protected function _throwIfIncorrectPreviousMessageMap(string $previous_message_map, string $conversation_map, string $message_map): void
+	{
 
 		if ($previous_message_map == "") {
 			return;
@@ -3197,7 +3300,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем, что message_map из диалога
-	protected function _throwIfMessageMapIsNotFromConversation(string $message_map):void {
+	protected function _throwIfMessageMapIsNotFromConversation(string $message_map): void
+	{
 
 		if (!\CompassApp\Pack\Message::isFromConversation($message_map)) {
 			throw new ParamException("the message is not from conversation");
@@ -3205,7 +3309,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем, что сообщение из диалога
-	protected function _throwIfNotConversationMessage(string $message_map):void {
+	protected function _throwIfNotConversationMessage(string $message_map): void
+	{
 
 		if (!\CompassApp\Pack\Message::isFromConversation($message_map)) {
 			throw new ParamException("The message is not from conversation");
@@ -3213,7 +3318,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем, что пользователь является участником диалога
-	protected function _throwIfUserNotConversationMember(int $user_id, array $users, string $namespace = null, string $row = null):void {
+	protected function _throwIfUserNotConversationMember(int $user_id, array $users, string $namespace = null, string $row = null): void
+	{
 
 		if (!Type_Conversation_Meta_Users::isMember($user_id, $users)) {
 
@@ -3227,7 +3333,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если у пользователя нет такого диалога в левом меню
-	protected function _throwIfConversationIsNotExistInLeftMenu(array $left_menu_row, string $namespace = null, string $row = null):void {
+	protected function _throwIfConversationIsNotExistInLeftMenu(array $left_menu_row, string $namespace = null, string $row = null): void
+	{
 
 		if (!isset($left_menu_row["user_id"])) {
 
@@ -3241,7 +3348,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем исключение если передан некорректный список сообщений
-	protected function _throwIfIncorrectMessageMapList(array $message_map_list, string $row_is_empty_array, string $row_is_duplicate, string $row_is_not_from_one_conversation):void {
+	protected function _throwIfIncorrectMessageMapList(array $message_map_list, string $row_is_empty_array, string $row_is_duplicate, string $row_is_not_from_one_conversation): void
+	{
 
 		if (count($message_map_list) < 1) {
 
@@ -3264,14 +3372,12 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	/**
 	 * Проверка, что все полученные сообщения находятся в одном диалоге
 	 *
-	 * @param array  $message_map_list
-	 * @param string $row_is_not_from_one_conversation
 	 *
-	 * @return void
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 */
-	protected static function _checkConversationMapOnlyFromOneDialog(array $message_map_list, string $row_is_not_from_one_conversation):void {
+	protected static function _checkConversationMapOnlyFromOneDialog(array $message_map_list, string $row_is_not_from_one_conversation): void
+	{
 
 		$conversation_map_list = [];
 		foreach ($message_map_list as $v) {
@@ -3292,7 +3398,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// сортируем полученые сообщения по порядку нахождения их в диалоге
-	protected static function _doSortMessageMapListByMessageIndex(array $message_map_list):array {
+	protected static function _doSortMessageMapListByMessageIndex(array $message_map_list): array
+	{
 
 		$grouped_message_map_list = [];
 		foreach ($message_map_list as $message_map) {
@@ -3306,13 +3413,15 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// бросам исключение, если диалог не подходит для этого действия
-	protected function _throwIfConversationTypeIsNotValidForAction(int $conversation_type, string $action):void {
+	protected function _throwIfConversationTypeIsNotValidForAction(int $conversation_type, string $action): void
+	{
 
 		Type_Conversation_Action::assertAction((int) $conversation_type, $action);
 	}
 
 	// выбрасываем исключение, если пытаются выполнить метод неприменимый к диалогам типа public
-	protected function _throwIfConversationIsSubtypeOfPublic(int $conversation_type, string $namespace = null, string $row = null):void {
+	protected function _throwIfConversationIsSubtypeOfPublic(int $conversation_type, string $namespace = null, string $row = null): void
+	{
 
 		if (Type_Conversation_Meta::isSubtypeOfPublicGroup($conversation_type)) {
 
@@ -3326,7 +3435,8 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api {
 	}
 
 	// подготавливаем список сообщений к ответу
-	protected function _prepareMessageListForResponse(array $message_list):array {
+	protected function _prepareMessageListForResponse(array $message_list): array
+	{
 
 		$output    = [];
 		$user_list = [];

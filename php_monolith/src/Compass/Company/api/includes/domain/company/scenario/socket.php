@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Compass\Company;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
@@ -11,8 +13,8 @@ use CompassApp\Domain\Member\Exception\ActionNotAllowed;
 /**
  * Сценарии компании для Socket API
  */
-class Domain_Company_Scenario_Socket {
-
+class Domain_Company_Scenario_Socket
+{
 	/**
 	 * Действия при создании компании
 	 *
@@ -31,8 +33,16 @@ class Domain_Company_Scenario_Socket {
 	 * @throws \returnException
 	 * @long
 	 */
-	public static function actionsOnCreateCompany(int $creator_user_id, string $company_name, int $created_at, array $default_file_key_list, array $bot_list,
-								    int $hibernation_immunity_till, int $is_enabled_employee_card, string $creator_locale):void {
+	public static function actionsOnCreateCompany(
+		int $creator_user_id,
+		string $company_name,
+		int $created_at,
+		array $default_file_key_list,
+		array $bot_list,
+		int $hibernation_immunity_till,
+		int $is_enabled_employee_card,
+		string $creator_locale
+	): void {
 
 		Domain_Company_Entity_Dynamic::set(Domain_Company_Entity_Dynamic::HIBERNATION_IMMUNITY_TILL, $hibernation_immunity_till);
 
@@ -85,7 +95,8 @@ class Domain_Company_Scenario_Socket {
 	 *
 	 * @return int[]
 	 */
-	public static function getListOfActiveMembersByDay(int $year, int $day_num):array {
+	public static function getListOfActiveMembersByDay(int $year, int $day_num): array
+	{
 
 		return Domain_Company_Action_GetActiveMembers::do($year, $day_num);
 	}
@@ -96,7 +107,8 @@ class Domain_Company_Scenario_Socket {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function checkIfExistCurrent():bool {
+	public static function checkIfExistCurrent(): bool
+	{
 
 		return Gateway_Socket_Pivot::checkCompanyExists();
 	}
@@ -110,7 +122,8 @@ class Domain_Company_Scenario_Socket {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setExtendedEmployeeCard(int $user_id, int $is_enabled):void {
+	public static function setExtendedEmployeeCard(int $user_id, int $is_enabled): void
+	{
 
 		Domain_Company_Entity_Config::set(Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY, $is_enabled);
 		Domain_Company_Action_SendExtendedCardEvent::do($user_id, $is_enabled);
@@ -128,7 +141,8 @@ class Domain_Company_Scenario_Socket {
 	 * @throws ParamException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public static function doTask(int $task_id, int $type):bool {
+	public static function doTask(int $task_id, int $type): bool
+	{
 
 		return Domain_Company_Action_Task::do($task_id, $type);
 	}
@@ -147,14 +161,17 @@ class Domain_Company_Scenario_Socket {
 	 * @throws BusFatalException
 	 * @throws ActionNotAllowed
 	 */
-	public static function delete(int $user_id, int $deleted_at):void {
+	public static function delete(int $user_id, int $deleted_at): void
+	{
 
 		$user = Gateway_Bus_CompanyCache::getMember($user_id);
 
 		// если в компании больше одного пользователя
 		$member_list                = Gateway_Db_CompanyData_MemberList::getAllActiveMemberWithNpcFilter();
-		$space_resident_member_list = array_filter($member_list,
-			static fn(\CompassApp\Domain\Member\Struct\Main $member) => in_array($member->role, Member::SPACE_RESIDENT_ROLE_LIST));
+		$space_resident_member_list = array_filter(
+			$member_list,
+			static fn (\CompassApp\Domain\Member\Struct\Main $member) => in_array($member->role, Member::SPACE_RESIDENT_ROLE_LIST)
+		);
 
 		// если в компании остались другие полноценные участники проверяем права
 		if (count($space_resident_member_list) > 1) {
@@ -168,7 +185,9 @@ class Domain_Company_Scenario_Socket {
 
 		// публикуем анонс, что компания удалена
 		$raw_data = \Service\AnnouncementTemplate\TemplateService::createOfType(
-			\Service\AnnouncementTemplate\AnnouncementType::COMPANY_WAS_DELETED, ["deleted_at" => $deleted_at]);
+			\Service\AnnouncementTemplate\AnnouncementType::COMPANY_WAS_DELETED,
+			["deleted_at" => $deleted_at]
+		);
 
 		Domain_Announcement_Action_Publish::run($raw_data, COMPANY_ID, [], [$user_id]);
 	}
@@ -183,7 +202,8 @@ class Domain_Company_Scenario_Socket {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public static function getEventCountInfo():array {
+	public static function getEventCountInfo(): array
+	{
 
 		$space_created_at = Domain_Company_Entity_Config::get(Domain_Company_Entity_Config::COMPANY_CREATED_AT)["value"];
 
@@ -202,13 +222,14 @@ class Domain_Company_Scenario_Socket {
 			$start_week = 1;
 			$end_week   = self::_getLastWeekOfYear($year);
 
-			$event_count_list =
-				Domain_Rating_Action_GetEventCountByInterval::do($year, $start_week, $end_week, Domain_Rating_Entity_Rating::GENERAL);
+			$event_count_list = Domain_Rating_Action_GetEventCountByInterval::do($year, $start_week, $end_week, Domain_Rating_Entity_Rating::GENERAL);
 
 			// считаем количество всех действий в команде
-			$total_event_count += array_reduce($event_count_list,
-				static fn(int $total_event_count, Struct_Bus_Rating_EventCount $event_count) => $total_event_count + $event_count->count,
-				0);
+			$total_event_count += array_reduce(
+				$event_count_list,
+				static fn (int $total_event_count, Struct_Bus_Rating_EventCount $event_count) => $total_event_count + $event_count->count,
+				0
+			);
 
 			// для текущего года считаем текущую и прошедшую недели
 			if ($year === $current_year) {
@@ -229,7 +250,8 @@ class Domain_Company_Scenario_Socket {
 	 *
 	 * @return int
 	 */
-	protected static function _getLastWeekOfYear(int $year):int {
+	protected static function _getLastWeekOfYear(int $year): int
+	{
 
 		$date = new \DateTime();
 		$date->setISODate($year, 53);

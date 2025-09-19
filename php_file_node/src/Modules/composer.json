@@ -2,7 +2,7 @@
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"require": {
-		"service/php_base_frame": "v1.1.32",
+		"service/php_base_frame": "v1.2.1",
 		"backend_compass_dev_2/company_protobuf_schemes": "v1.1.1",
 		"backend_compass_dev_2/company_utils": "v1.5.6",
 		"phpseclib/phpseclib": "3.0.42",

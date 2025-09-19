@@ -38,10 +38,11 @@ import {
     SEND_REACTION,
     SET_IS_POLL_TAB_FOCUSED
 } from './actionTypes';
-import { addMessage, addMessageReaction, clearMessages, closeChat } from './actions.any';
+import { addMessage, addMessageReaction, clearMessages, clearPendingMessage, closeChat, addPendingMessage } from './actions.any';
 import {
     INCOMING_MSG_SOUND_ID,
     LOBBY_CHAT_MESSAGE,
+    MESSAGE_STATUS_UPDATED,
     MESSAGE_TYPE_ERROR,
     MESSAGE_TYPE_LOCAL,
     MESSAGE_TYPE_REMOTE,
@@ -151,6 +152,7 @@ MiddlewareRegistry.register(store => next => action => {
     }
 
     case NON_PARTICIPANT_MESSAGE_RECEIVED: {
+        const state = store.getState();
         const { participantId, json: data } = action;
 
         if (data?.type === MESSAGE_TYPE_SYSTEM && data.message) {
@@ -162,6 +164,38 @@ MiddlewareRegistry.register(store => next => action => {
                 privateMessage: true,
                 timestamp: Date.now()
             });
+        }
+
+        if (data?.type === MESSAGE_STATUS_UPDATED) {
+
+            if (data.status !== "approved") {
+
+                dispatch(showNotification({
+                    titleKey: 'notify.messageIsRestrictedTitle',
+                    descriptionKey: 'notify.messageIsRestricted',
+                    uid: MESSAGE_NOT_DELIVERED_NOTIFICATION_ID,
+                    icon: NOTIFICATION_ICON.WARNING
+                }, isMobileBrowser() ? NOTIFICATION_TIMEOUT_TYPE.MEDIUM : NOTIFICATION_TIMEOUT_TYPE.LONG));
+
+            } else if (state['features/chat'].pendingMessage !== undefined) {
+
+                const pendingMessage = state['features/chat'].pendingMessage
+                dispatch(addMessage({
+                    displayName: pendingMessage.displayName,
+                    hasRead: true,
+                    participantId: pendingMessage.participantId,
+                    messageType: pendingMessage.messageType,
+                    message: pendingMessage.message,
+                    privateMessage: pendingMessage.privateMessage,
+                    lobbyChat: pendingMessage.lobbyChat,
+                    recipient: pendingMessage.recipient,
+                    timestamp: pendingMessage.timestamp,
+                    messageId: pendingMessage.messageId,
+                    isReaction: pendingMessage.isReaction
+                }));
+            }
+
+            dispatch(clearPendingMessage())
         }
 
         break;
@@ -582,7 +616,7 @@ function _persistSentPrivateMessage({ dispatch, getState }: IStore, recipientID:
     const displayName = getParticipantDisplayName(state, localParticipant.id);
     const { lobbyMessageRecipient } = state['features/chat'];
 
-    dispatch(addMessage({
+    dispatch(addPendingMessage({
         displayName,
         hasRead: true,
         participantId: localParticipant.id,

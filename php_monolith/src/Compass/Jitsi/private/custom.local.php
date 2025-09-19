@@ -14,6 +14,7 @@ define(__NAMESPACE__ . "\EXTENDED_ENCRYPT_IV_DEFAULT"            , "${EXTENDED_E
 // -------------------------------------------------------
 
 define(__NAMESPACE__ . "\SOCKET_KEY_JITSI"                       , "${SOCKET_KEY_JITSI}");
+define(__NAMESPACE__ . "\SOCKET_KEY_PROSODY"                       , "${SOCKET_KEY_PROSODY}");
 
 // -------------------------------------------------------
 // ОСТАЛЬНОЕ

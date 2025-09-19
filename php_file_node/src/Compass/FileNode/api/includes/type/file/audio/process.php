@@ -56,9 +56,9 @@ class Type_File_Audio_Process {
 
 		// установим статус после конвертации
 		if ($is_success) {
-			$extra["status"] = Type_File_Main::STATUS_OK;
+			$extra["status"] = Type_File_Main::CONVERT_STATUS_OK;
 		} else {
-			$extra["status"] = Type_File_Main::STATUS_ERROR;
+			$extra["status"] = Type_File_Main::CONVERT_STATUS_ERROR;
 		}
 
 		$extra["name_convert_file"] = str_replace($file_extension, $extra["convert_to"], $file_name);

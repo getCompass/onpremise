@@ -3,15 +3,17 @@
 namespace Compass\Jitsi;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Request\InappropriateContentException;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * Для сокет запросов к конференциям
  */
-class Socket_Conference extends \BaseFrame\Controller\Socket {
-
+class Socket_Conference extends \BaseFrame\Controller\Socket
+{
 	public const ALLOW_METHODS = [
 		"removeAllPermanentConference",
+		"performDlpCheck",
 	];
 
 	/**
@@ -23,12 +25,30 @@ class Socket_Conference extends \BaseFrame\Controller\Socket {
 	 * @throws \cs_CurlError
 	 * @throws \parseException
 	 */
-	public function removeAllPermanentConference():array {
+	public function removeAllPermanentConference(): array
+	{
 
 		$user_id  = $this->post(\Formatter::TYPE_INT, "user_id");
 		$space_id = $this->post(\Formatter::TYPE_INT, "space_id");
 
 		Domain_Jitsi_Entity_PermanentConference::removeWhenUserKick($user_id, $space_id);
+
+		return $this->ok();
+	}
+
+	/**
+	 * Проверяем текст в dlp
+	 */
+	public function performDlpCheck(): array
+	{
+
+		$payload = $this->post(\Formatter::TYPE_JSON, "payload");
+
+		try {
+			Domain_Jitsi_Action_Conference_PerformDlpCheck::do($payload);
+		} catch (InappropriateContentException) {
+			return $this->error(2238003, "dlp check failure");
+		}
 
 		return $this->ok();
 	}

@@ -3,6 +3,7 @@
 namespace Compass\FileBalancer;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
 
 /**
  * класс для работы с go_sender - микросервисом для общения с клиентами по websocket
@@ -34,6 +35,25 @@ class Gateway_Bus_Sender {
 		], $user_list);
 	}
 
+	/**
+	 * отправляем ws при обновлении статуса файла
+	 *
+	 * @param int    $user_id
+	 * @param string $file_map
+	 *
+	 * @throws busException
+	 * @throws ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 */
+	public static function fileStatusUpdated(int $user_id, array $prepared_file_row):void {
+
+		// формируем список пользователей на отправку ws
+		$user_list[] = self::makeTalkingUserItem($user_id, false);
+
+		self::_sendEvent([
+			Gateway_Bus_Sender_Event_FileStatusUpdated_V1::makeEvent($prepared_file_row),
+		], $user_list);
+	}
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------
@@ -115,7 +135,6 @@ class Gateway_Bus_Sender {
 	 * @long большие структуры
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws busException
 	 */
 	protected static function _sendEventRequest(string $event, array $user_list, array $event_version_list, array $ws_user_list = [], array $push_data = [], string $routine_key = ""):void {
 
@@ -151,7 +170,7 @@ class Gateway_Bus_Sender {
 		/** @noinspection PhpParamsInspection $grpc_request что ты такое */
 		[, $status] = self::_doCallGrpc("SenderSendEvent", $grpc_request);
 		if ($status->code !== \Grpc\STATUS_OK) {
-			throw new busException("undefined error_code in " . __CLASS__ . " code " . $status->code);
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
 		}
 	}
 

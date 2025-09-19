@@ -2,16 +2,15 @@
 
 namespace Compass\FileBalancer;
 
-use BaseFrame\Exception\Domain\ParseFatalException;
-
 /**
  * вспомогательные функции для файлов
  */
-class Type_File_Utils {
-
+class Type_File_Utils
+{
 	// подготавливает файл к передаче в Apiv1_Format
 	// @long --- switch...case
-	public static function prepareFileForFormat(array $file_row, string $node_url, int $user_id):array {
+	public static function prepareFileForFormat(array $file_row, string $node_url, int $user_id): array
+	{
 
 		// если файл загружен для использования на CDN, то подменяем url отдачи файла с CDN серверов
 		if ($file_row["is_cdn"] == 1) {
@@ -21,6 +20,8 @@ class Type_File_Utils {
 		$output = [
 			"file_map"       => $file_row["file_map"],
 			"size_kb"        => $file_row["size_kb"],
+			"is_deleted"     => $file_row["is_deleted"],
+			"status"         => self::getFileStatus($file_row),
 			"created_at"     => $file_row["created_at"],
 			"type"           => $file_row["file_type"],
 			"url"            => self::getDownloadUrlByPartPath($node_url, $file_row["extra"]["original_part_path"]),
@@ -83,7 +84,8 @@ class Type_File_Utils {
 	}
 
 	// получает URL из part_path
-	public static function getUrlByPartPath(string $node_url, string $part_path):string {
+	public static function getUrlByPartPath(string $node_url, string $part_path): string
+	{
 
 		return $node_url . $part_path;
 	}
@@ -91,13 +93,15 @@ class Type_File_Utils {
 	/**
 	 * Получает URL из part_path и добавляет к нему токен загрузки.
 	 */
-	public static function getDownloadUrlByPartPath(string $node_url, string $part_path):string {
+	public static function getDownloadUrlByPartPath(string $node_url, string $part_path): string
+	{
 
 		return static::_attachDownloadToken(static::getUrlByPartPath($node_url, $part_path), $part_path);
 	}
 
 	// video_version_list в файлах-видео
-	protected static function _makeVideoVersionList(string $node_url, array $video_version_list):array {
+	protected static function _makeVideoVersionList(string $node_url, array $video_version_list): array
+	{
 
 		$output = [];
 
@@ -115,7 +119,8 @@ class Type_File_Utils {
 	}
 
 	// пробуем получить формат видео
-	protected static function _tryGetVideoFormat(array $video, string $version_key):string {
+	protected static function _tryGetVideoFormat(array $video, string $version_key): string
+	{
 
 		// switch по типу видео - получаем название формата
 		switch ($video["video_type"]) {
@@ -136,7 +141,8 @@ class Type_File_Utils {
 
 	// формируем ответ в зависимости от статуса
 	// @long --- switch...case
-	protected static function _makeOutput(array $video, string $format, string $node_url):array {
+	protected static function _makeOutput(array $video, string $format, string $node_url): array
+	{
 
 		// выставляем поля в зависимости от статуса
 		switch ($video["status"]) {
@@ -176,7 +182,8 @@ class Type_File_Utils {
 	}
 
 	// image_version_list в файлах-изображениях
-	protected static function _makeImageVersionList(string $node_url, array $image_version_list):array {
+	protected static function _makeImageVersionList(string $node_url, array $image_version_list): array
+	{
 
 		// проходимся по всему массиву и приводим формат
 		foreach ($image_version_list as $k => $v) {
@@ -187,7 +194,8 @@ class Type_File_Utils {
 	}
 
 	// формируем image item
-	protected static function _getImageItem(string $node_url, array $image_version_item):array {
+	protected static function _getImageItem(string $node_url, array $image_version_item): array
+	{
 
 		return [
 			"url"     => self::getDownloadUrlByPartPath($node_url, $image_version_item["part_path"]),
@@ -200,7 +208,8 @@ class Type_File_Utils {
 	/**
 	 * Добавляет к файлу токен загрузки при необходимости.
 	 */
-	protected static function _attachDownloadToken(string $url_path, string $part_path):string {
+	protected static function _attachDownloadToken(string $url_path, string $part_path): string
+	{
 
 		if (COMPANY_ID === 0 || (bool) IS_FILE_AUTH_RESTRICTION_ENABLED === false) {
 			return $url_path;
@@ -212,7 +221,8 @@ class Type_File_Utils {
 	/**
 	 * Формирует токен загрузки для файла.
 	 */
-	public static function makeDownloadToken(string $part_path):string {
+	public static function makeDownloadToken(string $part_path): string
+	{
 
 		// проверяем ид компании и статус проверки авторизации для файлов
 		if (COMPANY_ID === 0 || (bool) IS_FILE_AUTH_RESTRICTION_ENABLED === false) {
@@ -229,5 +239,18 @@ class Type_File_Utils {
 		];
 
 		return urlencode(base64_encode(CrypterProvider::get("download_token")->encrypt(toJson($token))));
+	}
+
+	/**
+	 * Получить статус файла. Метод нужен для поддержки старых записей в базе
+	 */
+	public static function getFileStatus(array $file_row): int
+	{
+
+		if ($file_row["is_deleted"] == 1) {
+			return Type_File_Main::FILE_STATUS_DELETED;
+		}
+
+		return $file_row["status"];
 	}
 }

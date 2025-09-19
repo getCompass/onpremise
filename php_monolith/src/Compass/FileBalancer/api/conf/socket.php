@@ -3,20 +3,20 @@
 namespace Compass\FileBalancer;
 
 // конфиг с глобальными эндпоинтами (которые существуют вне DPC)
-$CONFIG["SOCKET_URL"] = [
+$CONFIG["SOCKET_URL"]       = [
 	"pivot"   => ENTRYPOINT_PIVOT,
 	"company" => ENTRYPOINT_DOMINO,
 ];
 
 // конфиг с query для обращения к определенному модулю
-$CONFIG["SOCKET_MODULE"] = [
-	"pivot"   => [
+$CONFIG["SOCKET_MODULE"]    = [
+	"pivot"        => [
 		"socket_path" => "/api/socket/pivot/",
 	],
-	"company" => [
+	"company"      => [
 		"socket_path" => "/api/socket/company/",
 	],
-	"profile" => [
+	"profile"      => [
 		"socket_path" => "/api/socket/pivot/",
 	],
 	"conversation" => [
@@ -26,7 +26,7 @@ $CONFIG["SOCKET_MODULE"] = [
 
 $CONFIG["SOCKET_ALLOW_KEY"] = [
 
-	"pivot"     => [
+	"pivot"        => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_PIVOT,
 		"allow_methods" => [
@@ -38,7 +38,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"files.getFileByKeyList",
 		],
 	],
-	"file_node" => [
+	"file_node"    => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_FILE_NODE,
 		"allow_methods" => [
@@ -47,9 +47,10 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"previews.doImageDownload",
 			"files.doUpdateFile",
 			"files.setContent",
+			"files.updateFileStatus",
 		],
 	],
-	"company"   => [
+	"company"      => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_COMPANY,
 		"allow_methods" => [
@@ -59,7 +60,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 		],
 	],
 
-	"test" => [
+	"test"         => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_TEST,
 		"allow_methods" => [
@@ -102,27 +103,27 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"files.getFileByKeyList",
 		],
 	],
-	"crm"     => [
+	"crm"          => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_CRM,
 		"allow_methods" => [
 			"files.getFileList",
 		],
 	],
-	"partner"     => [
+	"partner"      => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_PARTNER,
 		"allow_methods" => [
 			"files.getFileList",
 		],
 	],
-	"jitsi"     => [
+	"jitsi"        => [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
 		"auth_key"      => SOCKET_KEY_JITSI,
 		"allow_methods" => [
 			"files.getFileList",
 		],
-	],
+	]
 ];
 
 return $CONFIG;

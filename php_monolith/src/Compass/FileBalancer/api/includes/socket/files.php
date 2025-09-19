@@ -2,11 +2,15 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
+use BaseFrame\Exception\Request\ParamException;
+
 /**
  * метод для работы с файлами
  */
-class Socket_Files extends \BaseFrame\Controller\Socket {
-
+class Socket_Files extends \BaseFrame\Controller\Socket
+{
 	// поддерживаемые методы. Регистр не имеет значение */
 	public const ALLOW_METHODS = [
 		"trySaveFile",
@@ -23,6 +27,7 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 		"getNodeForUserbot",
 		"checkIsDeleted",
 		"setContent",
+		"updateFileStatus"
 	];
 
 	// -------------------------------------------------------
@@ -31,9 +36,9 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 
 	/**
 	 * функция для получения информации по переданному списку файлов
-	 *
 	 */
-	public function getFileList():array {
+	public function getFileList(): array
+	{
 
 		$file_map_list = $this->post(\Formatter::TYPE_ARRAY, "file_map_list");
 
@@ -51,7 +56,8 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * Возвращает данные файлы с содержимым (если оно есть).
 	 */
-	public function getFileWithContentList():array {
+	public function getFileWithContentList(): array
+	{
 
 		$file_map_list = $this->post(\Formatter::TYPE_ARRAY, "file_map_list");
 
@@ -77,11 +83,11 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * Проверяем, удален ли файл
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
 	 */
-	public function checkIsDeleted():array {
+	public function checkIsDeleted(): array
+	{
 
 		$file_key = $this->post(\Formatter::TYPE_STRING, "file_key");
 		$file_map = Type_Pack_File::tryDecrypt($file_key);
@@ -97,12 +103,11 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * форматируем список файлов
 	 *
-	 * @param array $file_list
 	 *
-	 * @return array
 	 * @throws returnException
 	 */
-	protected function _formatFileList(array $file_list):array {
+	protected function _formatFileList(array $file_list): array
+	{
 
 		$output = [];
 		foreach ($file_list as $item) {
@@ -121,16 +126,17 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * функция сохраняет файл
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws parseException
 	 * @throws returnException
 	 */
-	public function trySaveFile():array {
+	public function trySaveFile(): array
+	{
 
 		$file_type      = $this->post(\Formatter::TYPE_INT, "file_type");
 		$node_id        = $this->post(\Formatter::TYPE_INT, "node_id");
 		$size_kb        = $this->post(\Formatter::TYPE_INT, "size_kb");
+		$status         = $this->post(\Formatter::TYPE_INT, "status");
 		$mime_type      = $this->post(\Formatter::TYPE_STRING, "mime_type");
 		$file_name      = $this->post(\Formatter::TYPE_STRING, "file_name");
 		$file_extension = $this->post(\Formatter::TYPE_STRING, "file_extension");
@@ -144,8 +150,19 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 		$created_at = $is_migrate == 1 ? random_int(1527868800, time()) : time();
 
 		[$file_row, $node_url, $download_token] = Domain_File_Action_TryUpload::run(
-			$this->user_id, $file_type, $file_source, $node_id, $size_kb,
-			$created_at, $mime_type, $file_name, $file_extension, $extra, $file_hash, $is_cdn
+			$this->user_id,
+			$file_type,
+			$file_source,
+			$node_id,
+			$size_kb,
+			$created_at,
+			$mime_type,
+			$file_name,
+			$file_extension,
+			$extra,
+			$file_hash,
+			$is_cdn,
+			$status
 		);
 
 		$file_row["file_key"] = Type_Pack_File::doEncrypt($file_row["file_map"]);
@@ -160,11 +177,11 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * функция обновляет информацию о файле и его расширении
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
 	 */
-	public function doUpdateFile():array {
+	public function doUpdateFile(): array
+	{
 
 		$file_key       = $this->post(\Formatter::TYPE_STRING, "file_key");
 		$extra          = $this->post(\Formatter::TYPE_ARRAY, "extra");
@@ -190,12 +207,12 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * метод для получения информации о файле
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
 	 * @throws returnException
 	 */
-	public function getFile():array {
+	public function getFile(): array
+	{
 
 		$file_key = $this->post(\Formatter::TYPE_STRING, "file_key");
 		$file_map = Type_Pack_File::tryDecrypt($file_key);
@@ -215,13 +232,13 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * метод для получения информации о файлах по их ключу
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
 	 * @throws parseException
 	 * @throws returnException
 	 */
-	public function getFileByKeyList():array {
+	public function getFileByKeyList(): array
+	{
 
 		$file_key_list = $this->post(\Formatter::TYPE_ARRAY, "file_key_list");
 
@@ -252,12 +269,12 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * метод для получения ноды для сохранения файла
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws paramException
 	 * @throws returnException
 	 */
-	public function getNodeForUpload():array {
+	public function getNodeForUpload(): array
+	{
 
 		$file_source = $this->post(\Formatter::TYPE_INT, "file_source");
 
@@ -275,11 +292,11 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * функция обновляет поле  хэш у старых файлов
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
 	 */
-	public function updateHash():array {
+	public function updateHash(): array
+	{
 
 		$file_key  = $this->post("?s", "file_key");
 		$file_hash = $this->post("?s", "file_hash");
@@ -300,12 +317,12 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * помечает файл удаленным
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
 	 * @throws returnException
 	 */
-	public function setDeleted():array {
+	public function setDeleted(): array
+	{
 
 		$node_id  = $this->post(\Formatter::TYPE_INT, "node_id");
 		$file_key = $this->post(\Formatter::TYPE_STRING, "file_key");
@@ -360,11 +377,11 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * получаем файловую ноду и токен для бота
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws returnException
 	 */
-	public function getNodeForUserbot():array {
+	public function getNodeForUserbot(): array
+	{
 
 		$userbot_user_id = $this->post(\Formatter::TYPE_INT, "userbot_user_id");
 
@@ -379,10 +396,10 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 	/**
 	 * Обновляем содержимое текстового документа в базе
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 */
-	public function setContent():array {
+	public function setContent(): array
+	{
 
 		$file_key = $this->post(\Formatter::TYPE_STRING, "file_key");
 		$content  = $this->post(\Formatter::TYPE_STRING, "content");
@@ -390,13 +407,55 @@ class Socket_Files extends \BaseFrame\Controller\Socket {
 		// расшифровываем ключ файла
 		$file_map = Type_Pack_File::tryDecrypt($file_key);
 
+		// удаляем все не utf8
+		$content = cleanForMysqlUtf8($content);
+
 		// удаляем эмодзи из контента
 		$content = removeEmojiFromText($content);
+
+		// удаляем битые не utf8
+		$content = formatString($content);
 
 		// обновляем содержимое, если что-то осталось
 		if (mb_strlen($content) > 0) {
 			Domain_File_Scenario_Socket::setContent($file_map, $content);
 		}
+
+		return $this->ok();
+	}
+
+	/**
+	 * Обновить статус файла
+	 *
+	 * @throws \BaseFrame\Exception\Request\ParamException
+	 * @throws \cs_DecryptHasFailed
+	 */
+	public function updateFileStatus(): array
+	{
+
+		$file_key = $this->post(\Formatter::TYPE_STRING, "file_key");
+		$status   = $this->post(\Formatter::TYPE_INT, "status");
+		$file_map = Type_Pack_File::tryDecrypt($file_key);
+
+		// формируем массив для обновления
+		$set = [
+			"status"     => $status,
+			"updated_at" => time(),
+		];
+
+		// обновляем запись с файлом
+		Type_File_Main::set($file_map, $set);
+
+		$file_row = Type_File_Main::getOne($file_map);
+
+		// получаем ссылку на ноду, где расположен файл
+		$node_url = Type_Node_Config::getNodeUrl($file_row["node_id"]);
+
+		$prepared_file_row = Type_File_Utils::prepareFileForFormat($file_row, $node_url, $file_row["user_id"]);
+
+		DOMINO_ID === ""
+		? Gateway_Bus_SenderBalancer::fileStatusUpdated($file_row["user_id"], $prepared_file_row)
+		: Gateway_Bus_Sender::fileStatusUpdated($file_row["user_id"], $prepared_file_row);
 
 		return $this->ok();
 	}

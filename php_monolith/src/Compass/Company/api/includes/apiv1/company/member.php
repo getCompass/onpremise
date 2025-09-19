@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Company;
 
@@ -12,8 +12,8 @@ use CompassApp\Domain\Member\Entity\Permission;
 /**
  * Контроллер для работы с пользователями.
  */
-class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
-
+class Apiv1_Company_Member extends \BaseFrame\Controller\Api
+{
 	public const ALLOW_METHODS = [
 		"getUserRoleList",
 		"getStatusUserList",
@@ -63,7 +63,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 */
-	public function getUserRoleList():array {
+	public function getUserRoleList(): array
+	{
 
 		$roles = $this->post(\Formatter::TYPE_ARRAY_INT, "roles");
 
@@ -88,7 +89,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function getStatusUserList():array {
+	public function getStatusUserList(): array
+	{
 
 		$user_id_list = $this->post(\Formatter::TYPE_ARRAY_INT, "user_list");
 
@@ -120,7 +122,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \busException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public function setDescription():array {
+	public function setDescription(): array
+	{
 
 		$description = $this->post(\Formatter::TYPE_STRING, "description");
 		$user_id     = $this->post(\Formatter::TYPE_INT, "user_id");
@@ -133,7 +136,7 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 
 			return match ($this->method_version) {
 
-				1 => $this->error(655, "not access for action"),
+				1       => $this->error(655, "not access for action"),
 				default => $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action")
 			};
 		} catch (cs_IncorrectUserId) {
@@ -169,7 +172,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public function setStatus():array {
+	public function setStatus(): array
+	{
 
 		$status  = $this->post(\Formatter::TYPE_STRING, "status");
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
@@ -179,13 +183,19 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 		try {
 
 			Domain_Member_Entity_Permission::checkSpace($this->user_id, $this->method_version, Permission::IS_SET_MEMBER_PROFILE_ENABLED);
-			Domain_Member_Scenario_Api::setStatus($this->user_id, $this->method_version,
-				$this->role, $this->permissions, $user_id, $status);
+			Domain_Member_Scenario_Api::setStatus(
+				$this->user_id,
+				$this->method_version,
+				$this->role,
+				$this->permissions,
+				$user_id,
+				$status
+			);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 
 			return match ($this->method_version) {
 
-				1 => $this->error(655, "not access for action"),
+				1       => $this->error(655, "not access for action"),
 				default => $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action")
 			};
 		} catch (cs_IncorrectUserId) {
@@ -213,7 +223,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 */
-	public function setMBTIType():array {
+	public function setMBTIType(): array
+	{
 
 		$mbti_type = $this->post(\Formatter::TYPE_STRING, "mbti_type");
 		$user_id   = $this->post(\Formatter::TYPE_INT, "user_id");
@@ -252,7 +263,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function setBadge():array {
+	public function setBadge(): array
+	{
 
 		$content  = $this->post(\Formatter::TYPE_STRING, "content", false);
 		$color_id = $this->post(\Formatter::TYPE_INT, "color_id", false);
@@ -268,7 +280,7 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 
 			return match ($this->method_version) {
 
-				1 => $this->error(655, "not access for action"),
+				1       => $this->error(655, "not access for action"),
 				default => $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action")
 			};
 		} catch (cs_IncorrectUserId) {
@@ -303,7 +315,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 */
-	public function setJoinTime():array {
+	public function setJoinTime(): array
+	{
 
 		$time    = $this->post(\Formatter::TYPE_INT, "time");
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
@@ -345,7 +358,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function setDescriptionBadgeAndJoinTime():array {
+	public function setDescriptionBadgeAndJoinTime(): array
+	{
 
 		$description = $this->post(\Formatter::TYPE_STRING, "description", false);
 		$content     = $this->post(\Formatter::TYPE_STRING, "content", false);
@@ -388,7 +402,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function getBatchingList():array {
+	public function getBatchingList(): array
+	{
 
 		$need_user_id_list = $this->post(\Formatter::TYPE_JSON, "need_user_id_list", []);
 		$batch_user_list   = $this->post(\Formatter::TYPE_JSON, "batch_user_list");
@@ -414,7 +429,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws paramException
 	 * @throws \parseException
 	 */
-	public function getListByMBTI():array {
+	public function getListByMBTI(): array
+	{
 
 		$mbti_type = $this->post(\Formatter::TYPE_STRING, "mbti_type");
 		$offset    = $this->post(\Formatter::TYPE_INT, "offset", 0);
@@ -456,7 +472,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public function leave():array {
+	public function leave(): array
+	{
 
 		$two_fa_key = $this->post(\Formatter::TYPE_STRING, "two_fa_key", false);
 
@@ -495,7 +512,8 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public function setProfile():array {
+	public function setProfile(): array
+	{
 
 		$description    = $this->post(\Formatter::TYPE_STRING, "description", false);
 		$badge_content  = $this->post(\Formatter::TYPE_STRING, "badge_content", false);

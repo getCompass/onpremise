@@ -14,6 +14,26 @@
 export const ADD_MESSAGE = 'ADD_MESSAGE';
 
 /**
+ * Тип для сохранения сообщения в памяти без отображения до решения DLP системы
+ *
+ * {
+ *     type: ADD_MESSAGE,
+ *     displayName: string
+ *     hasRead: boolean,
+ *     id: string,
+ *     messageType: string,
+ *     message: string,
+ *     timestamp: string,
+ * }
+ */
+export const ADD_PENDING_MESSAGE = 'ADD_PENDING_MESSAGE';
+
+/**
+ * Тип для очистки отложенного сообщения
+ */
+export const CLEAR_PENDING_MESSAGE = 'CLEAR_PENDING_MESSAGE';
+
+/**
  * The type of the action that adds a reaction to a chat message.
  *
  * {

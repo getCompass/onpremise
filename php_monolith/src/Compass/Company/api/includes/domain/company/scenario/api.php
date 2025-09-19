@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Compass\Company;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
-use BaseFrame\Exception\Gateway\BusFatalException;
-use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Exception\ActionNotAllowed;
@@ -12,8 +12,8 @@ use CompassApp\Domain\Member\Exception\ActionNotAllowed;
 /**
  * Сценарии компании для API
  */
-class Domain_Company_Scenario_Api {
-
+class Domain_Company_Scenario_Api
+{
 	/**
 	 * Сценарий изменения имени компании
 	 *
@@ -28,7 +28,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setName(int $user_id, int $role, int $permissions, string $name):string {
+	public static function setName(int    $user_id, int    $role, int    $permissions, string $name): string
+	{
 
 		$name = Domain_Company_Entity_Sanitizer::sanitizeCompanyName($name);
 		Domain_Company_Entity_Validator::assertIncorrectName($name);
@@ -52,7 +53,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws cs_CompanyIncorrectAvatarColorId
 	 * @throws \parseException
 	 */
-	public static function setAvatar(int $user_id, int $role, int $permissions, int $avatar_color_id):void {
+	public static function setAvatar(int $user_id, int $role, int $permissions, int $avatar_color_id): void
+	{
 
 		Domain_Company_Entity_Validator::assertIncorrectAvatarColorId($avatar_color_id);
 
@@ -79,7 +81,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setBaseInfo(int $user_id, int $role, int $permissions, string|false $name, int|false $avatar_color_id):array {
+	public static function setBaseInfo(int   $user_id, int   $role, int   $permissions, string | false $name, int | false $avatar_color_id): array
+	{
 
 		if ($name === false && $avatar_color_id === false) {
 			throw new ParamException("params are empty");
@@ -118,7 +121,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws cs_InvalidConfigValue
 	 * @throws \queryException
 	 */
-	public static function setPushBodyDisplayConfig(int $role, int $permissions, int $value):void {
+	public static function setPushBodyDisplayConfig(int $role, int $permissions, int $value): void
+	{
 
 		Domain_Company_Entity_Config::edit($role, $permissions, Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY, $value);
 
@@ -132,7 +136,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws ParseFatalException
 	 * @throws \queryException
 	 */
-	public static function getPushBodyDisplayConfig():int {
+	public static function getPushBodyDisplayConfig(): int
+	{
 
 		// достаём значение
 		$config = Domain_Company_Entity_Config::get(Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY);
@@ -155,7 +160,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public static function setExtendedEmployeeCard(int $user_id, int $role, int $permissions, int $is_enabled):void {
+	public static function setExtendedEmployeeCard(int $user_id, int $role, int $permissions, int $is_enabled): void
+	{
 
 		$is_edited = Domain_Company_Entity_Config::edit($role, $permissions, Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY, $is_enabled);
 
@@ -169,7 +175,8 @@ class Domain_Company_Scenario_Api {
 	 *
 	 * @return int
 	 */
-	public static function getExtendedEmployeeCard():int {
+	public static function getExtendedEmployeeCard(): int
+	{
 
 		return Domain_Company_Action_Config_Get::do(Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY)["value"] ?? 0;
 	}
@@ -181,7 +188,8 @@ class Domain_Company_Scenario_Api {
 	 *
 	 * @return array
 	 */
-	protected static function _formatUserIdList(array $user_id_list):array {
+	protected static function _formatUserIdList(array $user_id_list): array
+	{
 
 		$formated_id_list = [];
 
@@ -194,7 +202,8 @@ class Domain_Company_Scenario_Api {
 	/**
 	 * Сценарий изменения информации компании
 	 */
-	public static function changeInfo(int $user_id, int $role, int $permissions, string|false $name, string|false $avatar_file_key):array {
+	public static function changeInfo(int   $user_id, int   $role, int   $permissions, string | false $name, string | false $avatar_file_key): array
+	{
 
 		if ($name === false && $avatar_file_key === false) {
 			throw new Domain_Company_Exception_ParamsIsEmpty("Params is empty");
@@ -225,7 +234,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function clearAvatar(int $user_id, int $role, int $permissions):void {
+	public static function clearAvatar(int $user_id, int $role, int $permissions): void
+	{
 
 		// проверяем может ли пользователь выполнить это действие
 		Permission::assertCanEditSpaceSettings($role, $permissions);
@@ -246,10 +256,15 @@ class Domain_Company_Scenario_Api {
 	 * @throws cs_InvalidConfigValue
 	 * @throws \queryException
 	 */
-	public static function setGeneralChatNotifications(int $role, int $permissions, int $value):void {
+	public static function setGeneralChatNotifications(int $role, int $permissions, int $value): void
+	{
 
 		$is_edited = Domain_Company_Entity_Config::edit(
-			$role, $permissions, Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS, $value);
+			$role,
+			$permissions,
+			Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS,
+			$value
+		);
 
 		if (!$is_edited) {
 			return;
@@ -272,10 +287,15 @@ class Domain_Company_Scenario_Api {
 	 * @throws cs_InvalidConfigValue
 	 * @throws \queryException
 	 */
-	public static function setAddToGeneralChatOnHiring(int $role, int $permissions, int $value):void {
+	public static function setAddToGeneralChatOnHiring(int $role, int $permissions, int $value): void
+	{
 
 		$is_edited = Domain_Company_Entity_Config::edit(
-			$role, $permissions, Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING, $value);
+			$role,
+			$permissions,
+			Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING,
+			$value
+		);
 
 		if (!$is_edited) {
 			return;
@@ -298,10 +318,15 @@ class Domain_Company_Scenario_Api {
 	 * @throws cs_InvalidConfigValue
 	 * @throws \queryException
 	 */
-	public static function setShowMessageReadStatus(int $role, int $permissions, int $value):void {
+	public static function setShowMessageReadStatus(int $role, int $permissions, int $value): void
+	{
 
 		$is_edited = Domain_Company_Entity_Config::edit(
-			$role, $permissions, Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS, $value);
+			$role,
+			$permissions,
+			Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS,
+			$value
+		);
 
 		if (!$is_edited) {
 			return;
@@ -325,7 +350,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws ParseFatalException
 	 * @throws \returnException
 	 */
-	public static function getActivityData(int $user_id, int $role, int $permissions):Struct_Domain_Company_ActivityData {
+	public static function getActivityData(int $user_id, int $role, int $permissions): Struct_Domain_Company_ActivityData
+	{
 
 		$premium_payment_request = Domain_Premium_Entity_PaymentRequest::get($user_id);
 
@@ -363,7 +389,8 @@ class Domain_Company_Scenario_Api {
 	/**
 	 * Изменяем ограничения роли участника
 	 */
-	public static function setMemberPermissions(int $user_id, array $member_permissions_list):void {
+	public static function setMemberPermissions(int $user_id, array $member_permissions_list): void
+	{
 
 		// проверяем может ли пользователь выполнить это действие
 		$member = Domain_User_Action_Member_GetShort::do($user_id);
@@ -393,7 +420,8 @@ class Domain_Company_Scenario_Api {
 	/**
 	 * Получаем список ограничений участника пространства
 	 */
-	public static function getMemberPermissions():array {
+	public static function getMemberPermissions(): array
+	{
 
 		$member_permissions_struct_list = Domain_Company_Entity_Config::getListValue(Domain_Company_Entity_Config::MEMBER_PERMISSIONS_VALUE_LIST);
 
@@ -408,7 +436,8 @@ class Domain_Company_Scenario_Api {
 	/**
 	 * Получаем список уведомлений
 	 */
-	public static function getNotifications(int $user_id, int $user_role):array {
+	public static function getNotifications(int $user_id, int $user_role): array
+	{
 
 		// проверяем может ли пользователь выполнить это действие
 		\CompassApp\Domain\Member\Entity\Member::assertUserAdministrator($user_role);
@@ -424,7 +453,8 @@ class Domain_Company_Scenario_Api {
 	 * @throws Domain_Member_Exception_IncorrectMenuType
 	 * @long switch case
 	 */
-	protected static function _groupNotificationByType(array $unread_notification_list):array {
+	protected static function _groupNotificationByType(array $unread_notification_list): array
+	{
 
 		$unread_active_member_list           = [];
 		$unread_guest_member_list            = [];
@@ -437,19 +467,22 @@ class Domain_Company_Scenario_Api {
 		foreach ($unread_notification_list as $notification) {
 
 			match ($notification->type) {
-				Domain_Member_Entity_Menu::ACTIVE_MEMBER             => $unread_active_member_list[] = $notification->action_user_id,
-				Domain_Member_Entity_Menu::ADMINISTRATOR_MEMBER      => $unread_administrator_member_list[] = $notification->action_user_id,
-				Domain_Member_Entity_Menu::JOIN_REQUEST              => $unread_join_request_list[] = $notification->action_user_id,
-				Domain_Member_Entity_Menu::LEFT_MEMBER               => $unread_left_member_list[] = $notification->action_user_id,
+				Domain_Member_Entity_Menu::ACTIVE_MEMBER             => $unread_active_member_list[]         = $notification->action_user_id,
+				Domain_Member_Entity_Menu::ADMINISTRATOR_MEMBER      => $unread_administrator_member_list[]  = $notification->action_user_id,
+				Domain_Member_Entity_Menu::JOIN_REQUEST              => $unread_join_request_list[]          = $notification->action_user_id,
+				Domain_Member_Entity_Menu::LEFT_MEMBER               => $unread_left_member_list[]           = $notification->action_user_id,
 				Domain_Member_Entity_Menu::MEMBER_COUNT_TRIAL_PERIOD => $is_member_count_trial_period_unread = 1,
-				Domain_Member_Entity_Menu::GUEST_MEMBER              => $unread_guest_member_list[] = $notification->action_user_id,
+				Domain_Member_Entity_Menu::GUEST_MEMBER              => $unread_guest_member_list[]          = $notification->action_user_id,
 				default                                              => throw new Domain_Member_Exception_IncorrectMenuType("not valid notification type"),
 			};
 		}
 
 		// для уведомлений про найм - достаем соответствующие заявки
-		$hiring_request_list      = Gateway_Db_CompanyData_HiringRequest::getByCandidateUserIdList($unread_join_request_list,
-			[Domain_HiringRequest_Entity_Request::STATUS_NEED_POSTMODERATION], Gateway_Db_CompanyData_MemberMenu::NOTIFICATION_LIMIT);
+		$hiring_request_list = Gateway_Db_CompanyData_HiringRequest::getByCandidateUserIdList(
+			$unread_join_request_list,
+			[Domain_HiringRequest_Entity_Request::STATUS_NEED_POSTMODERATION],
+			Gateway_Db_CompanyData_MemberMenu::NOTIFICATION_LIMIT
+		);
 		$unread_join_request_list = array_column($hiring_request_list, "hiring_request_id");
 
 		return [
@@ -461,8 +494,8 @@ class Domain_Company_Scenario_Api {
 	/**
 	 * Прочитываем уведомления по типу
 	 */
-
-	public static function readNotifications(int $user_id, int $user_role, array $type_list):void {
+	public static function readNotifications(int $user_id, int $user_role, array $type_list): void
+	{
 
 		// проверяем может ли пользователь выполнить это действие
 		\CompassApp\Domain\Member\Entity\Member::assertUserAdministrator($user_role);
@@ -471,17 +504,22 @@ class Domain_Company_Scenario_Api {
 	}
 
 	/**
-	 * Сценарий смены настроек ограничений сообщений в чате
+	 * Сценарий смены настроек ограничений редактирования сообщений в чате
 	 *
 	 * @throws ParseFatalException
 	 * @throws ActionNotAllowed
 	 * @throws cs_InvalidConfigValue
 	 * @throws \queryException
 	 */
-	public static function setUnlimitedMessagesEditing(int $role, int $permissions, int $value):void {
+	public static function setUnlimitedMessagesEditing(int $role, int $permissions, int $value): void
+	{
 
 		$is_edited = Domain_Company_Entity_Config::edit(
-			$role, $permissions, Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING, $value);
+			$role,
+			$permissions,
+			Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING,
+			$value
+		);
 
 		if (!$is_edited) {
 			return;

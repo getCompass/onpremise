@@ -8,6 +8,7 @@ use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Gateway\QueryFatalException;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
+use BaseFrame\Exception\Request\InappropriateContentException;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Exception\ActionNotAllowed;
@@ -16,8 +17,8 @@ use CompassApp\Domain\Member\Exception\UserIsGuest;
 /**
  * Контроллер, отвечающий за подгрузку ленты сообщений в треде
  */
-class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
-
+class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api
+{
 	public const ALLOW_METHODS = [
 		"getMessages",
 		"repost",
@@ -28,7 +29,8 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 	 * Возвращает запрошенные блоки сообщений.
 	 * @throws CaseException
 	 */
-	public function getMessages():array {
+	public function getMessages(): array
+	{
 
 		$thread_key    = $this->post(\Formatter::TYPE_STRING, "thread_key");
 		$block_id_list = $this->post("?ai", "block_id_list", []);
@@ -48,7 +50,7 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 
 		return $this->ok([
 			"thread_meta"            => (object) $thread_meta,
-			"message_list"           => array_map(static fn(array $el) => Apiv1_Format::threadMessage($el), $message_list),
+			"message_list"           => array_map(static fn (array $el) => Apiv1_Format::threadMessage($el), $message_list),
 			"previous_block_id_list" => $previous_block_id_list,
 			"next_block_id_list"     => $next_block_id_list,
 		]);
@@ -71,7 +73,8 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @long Большое количество ошибок для обработки
 	 */
-	public function repost():array {
+	public function repost(): array
+	{
 
 		$thread_key              = $this->post(\Formatter::TYPE_STRING, "thread_key");
 		$source_key              = $this->post(\Formatter::TYPE_STRING, "source_key");
@@ -94,17 +97,28 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 		$output              = [];
 		try {
 
+			// проверяем текст в DLP системе
+			Domain_Thread_Action_PerformDlpCheck::doForText($this->user_id, $text);
+
 			[$source_map, $message_map_list] = match ($source_type) {
 				Domain_Thread_Entity_Repost::REPOST_FROM_CONVERSATION_TYPE => $this->_decryptConversationMessageList($source_key, $source_message_key_list),
-				Domain_Thread_Entity_Repost::REPOST_FROM_THREAD_TYPE, Domain_Thread_Entity_Repost::REPOST_FROM_THREAD_WITH_PARENT_TYPE =>
-				$this->_decryptThreadMessageList($source_key, $source_message_key_list),
-				default => throw new ParamException("unknown source type"),
+				Domain_Thread_Entity_Repost::REPOST_FROM_THREAD_TYPE, Domain_Thread_Entity_Repost::REPOST_FROM_THREAD_WITH_PARENT_TYPE => $this->_decryptThreadMessageList($source_key, $source_message_key_list),
+				default                                                    => throw new ParamException("unknown source type"),
 			};
 
 			Domain_Member_Entity_Permission::check($this->user_id, $this->method_version, Permission::IS_REPOST_MESSAGE_ENABLED);
 
 			[$thread_meta, $message_list] = Domain_Thread_Scenario_Feed_Api::addRepost(
-				$this->user_id, $source_type, $source_map, $receiver_thread_map, $message_map_list, $text, $client_message_id, $platform, $this->method_version);
+				$this->user_id,
+				$source_type,
+				$source_map,
+				$receiver_thread_map,
+				$message_map_list,
+				$text,
+				$client_message_id,
+				$platform,
+				$this->method_version
+			);
 		} catch (Domain_Thread_Exception_Message_IsDuplicated) {
 			throw new ParamException("Passed duplicated message in repost");
 		} catch (cs_Message_DuplicateClientMessageId) {
@@ -145,6 +159,8 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		} catch (Domain_Group_Exception_NotEnoughRights) {
 			return $this->error(2129003, "not enough right");
+		} catch (InappropriateContentException) {
+			throw new CaseException(2238003, "dlp check failure");
 		}
 
 		foreach ($message_list as $message) {
@@ -160,7 +176,6 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить список прочитавших сообщение
 	 *
-	 * @return array
 	 * @throws BusFatalException
 	 * @throws CaseException
 	 * @throws ControllerMethodNotFoundException
@@ -173,17 +188,22 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws cs_Conversation_IsBlockedOrDisabled
 	 */
-	public function getMessageReadParticipants():array {
+	public function getMessageReadParticipants(): array
+	{
 
 		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key");
 		$message_map = \CompassApp\Pack\Message::tryDecrypt($message_key);
 
 		try {
 			[$read_participants, $read_participant_count] = Domain_Thread_Scenario_Feed_Api::getMessageReadParticipants(
-				$this->user_id, $message_map, $this->role, $this->method_version);
-		} catch (cs_Thread_UserNotMember|cs_Message_HaveNotAccess|Gateway_Socket_Exception_Conversation_UserIsNotMember) {
+				$this->user_id,
+				$message_map,
+				$this->role,
+				$this->method_version
+			);
+		} catch (cs_Thread_UserNotMember | cs_Message_HaveNotAccess | Gateway_Socket_Exception_Conversation_UserIsNotMember) {
 			return $this->error(2229002, "You are not allow to do this action");
-		} catch (ActionNotAllowed|UserIsGuest|Domain_Member_Exception_ActionNotAllowed) {
+		} catch (ActionNotAllowed | UserIsGuest | Domain_Member_Exception_ActionNotAllowed) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		} catch (Domain_Thread_Exception_Message_IsNotFromThread) {
 			throw new ParamException("not thread message key");
@@ -200,15 +220,13 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Расшифровать ключ чата и его сообщения для репоста
 	 *
-	 * @param string $conversation_key
-	 * @param array  $message_key_list
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 */
-	protected function _decryptConversationMessageList(string $conversation_key, array $message_key_list):array {
+	protected function _decryptConversationMessageList(string $conversation_key, array $message_key_list): array
+	{
 
 		$message_map_list = [];
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -226,13 +244,11 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Расшифровать ключ треда и его сообщения для репоста
 	 *
-	 * @param string $thread_key
-	 * @param array  $message_key_list
 	 *
-	 * @return array
 	 * @throws ParamException
 	 */
-	protected function _decryptThreadMessageList(string $thread_key, array $message_key_list):array {
+	protected function _decryptThreadMessageList(string $thread_key, array $message_key_list): array
+	{
 
 		$message_map_list = [];
 		$thread_map       = \CompassApp\Pack\Thread::tryDecrypt($thread_key);

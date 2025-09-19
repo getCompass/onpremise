@@ -26,13 +26,13 @@ class Type_File_Audio_Extra {
 			"duration"           => $duration,
 			"company_id"         => $company_id,
 			"company_url"        => $company_url,
-			"status"             => Type_File_Main::STATUS_OK,
+			"status"             => Type_File_Main::CONVERT_STATUS_OK,
 		];
 
 		if ($is_need_convert) {
 
 			$extra["convert_to"] = Type_File_Audio_Main::CONVERT_TYPE;
-			$extra["status"]     = Type_File_Main::STATUS_CONVERT;
+			$extra["status"]     = Type_File_Main::CONVERT_STATUS_PROCESSING;
 		}
 
 		return $extra;

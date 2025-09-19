@@ -5,6 +5,7 @@ namespace Compass\FileNode;
 // ---------------------------------------------
 // РАБОЧИЕ КЛАССЫ
 // ---------------------------------------------
+use BaseFrame\Server\ServerProvider;
 use Generator;
 use JetBrains\PhpStorm\ArrayShape;
 

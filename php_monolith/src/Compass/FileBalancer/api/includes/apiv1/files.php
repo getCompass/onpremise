@@ -230,6 +230,7 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 
 	/**
 	 * метод для получение списка файлов по их ключам
+	 * @deprecated переезжаем на apiv2/files/getBarching
 	 */
 	public function getBatching():array {
 

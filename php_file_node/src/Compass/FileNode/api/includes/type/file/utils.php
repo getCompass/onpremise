@@ -10,11 +10,12 @@ use JetBrains\PhpStorm\Pure;
 /**
  * Вспомогательные функции
  */
-class Type_File_Utils {
-
+class Type_File_Utils
+{
 	// подготавливает файл к передаче в Apiv1_Format
 	// @long --- switch ... case
-	public static function prepareFileForFormat(array $file_row, int $user_id, string $download_token = ""):array {
+	public static function prepareFileForFormat(array $file_row, int $user_id, string $download_token = ""): array
+	{
 
 		$data = [];
 
@@ -55,6 +56,7 @@ class Type_File_Utils {
 		return [
 			"file_key"       => $file_row["file_key"],
 			"size_kb"        => $file_row["size_kb"],
+			"status"         => self::getFileStatus($file_row),
 			"created_at"     => $file_row["created_at"],
 			"type"           => $file_row["file_type"],
 			"url"            => $url,
@@ -67,7 +69,8 @@ class Type_File_Utils {
 	}
 
 	// формируем image дату
-	protected static function _getImageData(string $node_url, array $image_version_list, string $download_token):array {
+	protected static function _getImageData(string $node_url, array $image_version_list, string $download_token): array
+	{
 
 		// проходимся по всему массиву и приводим формат
 		foreach ($image_version_list as $k => $v) {
@@ -79,7 +82,8 @@ class Type_File_Utils {
 
 	// формируем image item
 	#[ArrayShape(["url" => "string", "width" => "mixed", "height" => "mixed", "size_kb" => "mixed"])]
-	protected static function _getImageItem(string $node_url, array $image_version_item, string $download_token):array {
+	protected static function _getImageItem(string $node_url, array $image_version_item, string $download_token): array
+	{
 
 		return [
 			"url"     => self::_getDownloadUrlByPartPath($node_url, $image_version_item["part_path"], $download_token),
@@ -91,7 +95,8 @@ class Type_File_Utils {
 
 	// получаем видео дату
 	#[ArrayShape(["original_video_info" => "mixed", "image_version_list" => "array", "duration" => "mixed", "preview" => "string", "video_version_list" => "array"])]
-	protected static function _getVideoData(string $node_url, array $extra, string $download_token):array {
+	protected static function _getVideoData(string $node_url, array $extra, string $download_token): array
+	{
 
 		return [
 			"original_video_info" => $extra["original_video_item"],
@@ -104,13 +109,9 @@ class Type_File_Utils {
 
 	/**
 	 * Получить video_version_list в файлах-видео
-	 *
-	 * @param string $node_url
-	 * @param array  $video_version_list
-	 *
-	 * @return array
 	 */
-	protected static function _getVideoVersionList(string $node_url, array $video_version_list):array {
+	protected static function _getVideoVersionList(string $node_url, array $video_version_list): array
+	{
 
 		$output = [];
 
@@ -129,15 +130,12 @@ class Type_File_Utils {
 	/**
 	 * Получаем один элемент video_version_list
 	 *
-	 * @param array  $video_version_item
-	 * @param string $file_url
-	 * @param int    $video_quality
 	 *
 	 * @long - switch...case
-	 * @return array
 	 * @throws \ParseException
 	 */
-	protected static function _getVideoVersionItem(array $video_version_item, string $file_url, int $video_quality):array {
+	protected static function _getVideoVersionItem(array $video_version_item, string $file_url, int $video_quality): array
+	{
 
 		// switch по типу видео - получаем название формата
 		$format = match ($video_version_item["video_type"]) {
@@ -185,7 +183,8 @@ class Type_File_Utils {
 	/**
 	 * Получает URL из part_path
 	 */
-	protected static function _getUrlByPartPath(string $node_url, string $part_path):string {
+	protected static function _getUrlByPartPath(string $node_url, string $part_path): string
+	{
 
 		return $node_url . $part_path;
 	}
@@ -193,14 +192,16 @@ class Type_File_Utils {
 	/**
 	 * Получает URL из part_path и добавляет к нему токен загрузки.
 	 */
-	protected static function _getDownloadUrlByPartPath(string $node_url, string $part_path, string $download_token):string {
+	protected static function _getDownloadUrlByPartPath(string $node_url, string $part_path, string $download_token): string
+	{
 
 		$token = $download_token === "" ? "" : "?token=$download_token";
 		return static::_getUrlByPartPath($node_url, $part_path) . $token;
 	}
 
 	// получить расширение
-	public static function getExtension(string $file_path):string {
+	public static function getExtension(string $file_path): string
+	{
 
 		$file_extension = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
 		if (mb_strlen($file_extension) > 0) {
@@ -211,25 +212,29 @@ class Type_File_Utils {
 	}
 
 	// получает file_path из part_path
-	public static function getFilePathFromPartPath(string $part_path):string {
+	public static function getFilePathFromPartPath(string $part_path): string
+	{
 
 		return PATH_WWW . $part_path;
 	}
 
 	// получает part_path из file_path
-	public static function getPartPathFromFilePath(string $file_path):string {
+	public static function getPartPathFromFilePath(string $file_path): string
+	{
 
 		return str_replace(PATH_WWW, "", $file_path);
 	}
 
 	// получает mime_type файла
-	public static function getMimeType(string $file_path):string {
+	public static function getMimeType(string $file_path): string
+	{
 
 		return mime_content_type($file_path);
 	}
 
 	// получает mime_type файла
-	public static function getMimeTypeFromContent(string $file_content):string {
+	public static function getMimeTypeFromContent(string $file_content): string
+	{
 
 		$file_info = finfo_open(FILEINFO_MIME_TYPE);
 		$mime_type = finfo_buffer($file_info, $file_content);
@@ -239,7 +244,8 @@ class Type_File_Utils {
 	}
 
 	// генерирует part_path
-	public static function generatePathPart(string $file_extension, int $company_id):string {
+	public static function generatePathPart(string $file_extension, int $company_id): string
+	{
 
 		$dir_depth = 5;
 		$path_part = FOLDER_FILE_NAME . "/";
@@ -269,7 +275,8 @@ class Type_File_Utils {
 	}
 
 	// генерирует part_path
-	public static function generatePathPartByMigration(string $save_file_path, string $file_extension):string {
+	public static function generatePathPartByMigration(string $save_file_path, string $file_extension): string
+	{
 
 		$dir_depth = 5;
 		$path_part = $save_file_path . "/";
@@ -292,7 +299,8 @@ class Type_File_Utils {
 	}
 
 	// генерирует tmp_file_path
-	public static function generateTmpPath(string $file_extension = ""):string {
+	public static function generateTmpPath(string $file_extension = ""): string
+	{
 
 		$tmp_path = "/tmp/" . bin2hex(openssl_random_pseudo_bytes(10));
 		if (mb_strlen($file_extension) > 0) {
@@ -304,32 +312,39 @@ class Type_File_Utils {
 
 	// получает размер файла
 	#[Pure]
-	public static function getFileSizeKb(string $file_path):int {
+	public static function getFileSizeKb(string $file_path): int
+	{
 
 		return ceil(filesize($file_path) / 1024);
 	}
 
 	// получает размер файла в байтах
 	#[Pure]
-	public static function getFileSizeB(string $file_path):int {
+	public static function getFileSizeB(string $file_path): int
+	{
 
 		return filesize($file_path);
 	}
 
 	// перевод из байтов в килобайты
-	#[Pure] public static function convertSizeToKb(int $size_b):int {
+	#[Pure]
+	public static function convertSizeToKb(int $size_b): int
+	{
 
 		return round($size_b / 1024);
 	}
 
 	// получает название файла
-	#[Pure] public static function getFileName(string $file_path):string {
+	#[Pure]
+	public static function getFileName(string $file_path): string
+	{
 
 		return basename($file_path);
 	}
 
 	// получить имя файла из url
-	public static function getFileNameFromUrl(string $file_url):string {
+	public static function getFileNameFromUrl(string $file_url): string
+	{
 
 		$file_name = self::getFileName($file_url);
 
@@ -339,7 +354,8 @@ class Type_File_Utils {
 	}
 
 	// создает директорию для файла
-	public static function makeDir(string $file_path):void {
+	public static function makeDir(string $file_path): void
+	{
 
 		// убираем из file_path название файла
 		$dir = dirname($file_path);
@@ -353,7 +369,8 @@ class Type_File_Utils {
 	}
 
 	// сохраняем файл в tmp папку
-	public static function saveContentToTmp(string $file_path, string $file_content):void {
+	public static function saveContentToTmp(string $file_path, string $file_content): void
+	{
 
 		$work_dir     = PATH_TMP;
 		$file_subpath = self::_makeSubpath($work_dir, $file_path);
@@ -370,10 +387,9 @@ class Type_File_Utils {
 	 *
 	 * @param string $src_file_path - путь до копируемого файла
 	 * @param string $dst_file_path - путь до файла назначения
-	 *
-	 * @return void
 	 */
-	public static function moveFromTmpToFiles(string $src_file_path, string $dst_file_path):void {
+	public static function moveFromTmpToFiles(string $src_file_path, string $dst_file_path): void
+	{
 
 		$tmp_files_dir  = PATH_TMP;
 		$files_work_dir = PATH_WWW . FOLDER_FILE_NAME . "/";
@@ -397,10 +413,9 @@ class Type_File_Utils {
 	 *
 	 * @param string $src_file_path - путь до копируемого файла
 	 * @param string $dst_file_path - путь до файла назначения
-	 *
-	 * @return void
 	 */
-	public static function moveFromFilesToFilesForMigration(string $src_file_path, string $dst_file_path):void {
+	public static function moveFromFilesToFilesForMigration(string $src_file_path, string $dst_file_path): void
+	{
 
 		$tmp_files_dir  = PATH_WWW;
 		$files_work_dir = PATH_WWW . FOLDER_FILE_NAME . "/";
@@ -422,7 +437,8 @@ class Type_File_Utils {
 	/**
 	 * Получить подкаталог в рабочей директории
 	 */
-	protected static function _makeSubpath(string $work_dir, string $file_path):string {
+	protected static function _makeSubpath(string $work_dir, string $file_path): string
+	{
 
 		// узнаем, действительно ли путь ведет в tmp папку
 		$file_subpath = "";
@@ -438,7 +454,8 @@ class Type_File_Utils {
 	}
 
 	// сохраняем файл по пути
-	protected static function _save(string $work_dir, string $file_subpath, string $file_content):void {
+	protected static function _save(string $work_dir, string $file_subpath, string $file_content): void
+	{
 
 		// сохраняем содержимое скачиваемого файла в локальный
 		$file = File::init($work_dir, $file_subpath);
@@ -449,8 +466,24 @@ class Type_File_Utils {
 	}
 
 	// получаем хэш файла
-	#[Pure] public static function getFileHash(string $file_path):string {
+	#[Pure]
+	public static function getFileHash(string $file_path): string
+	{
 
+		// nosemgrep
 		return sha1_file($file_path);
+	}
+
+	/**
+	 * Получить статус файла. Метод нужен для поддержки старых записей в базе
+	 */
+	public static function getFileStatus(array $file_row): string
+	{
+
+		if ($file_row["is_deleted"] === 1) {
+			return Type_File_Main::FILE_STATUS_DELETED;
+		}
+
+		return $file_row["status"];
 	}
 }

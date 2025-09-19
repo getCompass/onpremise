@@ -793,6 +793,8 @@
         "me": "Moi",
         "messageIsNotDeliveredTitle": "Action non disponible",
         "messageIsNotDelivered": "L'utilisateur a quitté la conférence ou est spectateur.",
+        "messageIsRestrictedTitle": "Отправка заблокирована",
+        "messageIsRestricted": "Руководитель команды ограничил отправку сообщений, содержащих чувствительные данные.",
         "moderationInEffectCSDescription": "Merci de lever la main si vous voulez partager votre écran.",
         "moderationInEffectCSTitle": "Le partage d'écran est interdit par le modérateur",
         "moderationInEffectDescription": "Merci de levez la main pour demander la parole.",

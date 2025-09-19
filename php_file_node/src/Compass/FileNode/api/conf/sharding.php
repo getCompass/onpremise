@@ -66,7 +66,7 @@ $CONFIG["SHARDING_MYSQL"] = [
 				"data" => [],
 			],
 			"tables"        => [
-				"file"                        => "file_key,file_type,file_source,is_deleted,is_cdn,created_at,updated_at,size_kb,access_count,last_access_at,user_id,file_hash,mime_type,file_name,file_extension,part_path,extra",
+				"file"                        => "file_key,file_type,file_source,is_deleted,is_cdn,status,created_at,updated_at,size_kb,access_count,last_access_at,user_id,file_hash,mime_type,file_name,file_extension,part_path,extra",
 				"datastore"                   => "key,extra",
 				"post_upload_queue"           => "queue_id,file_type,error_count,need_work,file_key,part_path,extra",
 				"relocate_queue"              => "file_key,error_count,need_work",

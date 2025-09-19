@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Company;
 
@@ -10,8 +10,8 @@ namespace Compass\Company;
  *
  * Сюда попадают события из шины, то есть тут оно распределяется уже по методам.
  */
-class Type_Event_Handler {
-
+class Type_Event_Handler
+{
 	// статусы доставки для событий, пришедших пачками
 	protected const _DELIVERY_STATUS_DELIVERED = 1;
 	protected const _DELIVERY_STATUS_REQUEUED  = 3;
@@ -21,7 +21,7 @@ class Type_Event_Handler {
 	protected const _TIME_LIMIT_FOR_BATCH = 10 * 1000;
 
 	/** @var Type_Event_Handler|null для синглтона */
-	protected static Type_Event_Handler|null $_instance = null;
+	protected static Type_Event_Handler | null $_instance = null;
 
 	/** @var string[] классы, в которых объявлены подписчики */
 	protected array $_listener_class_list = [
@@ -45,7 +45,8 @@ class Type_Event_Handler {
 	 *
 	 * @throws \ReflectionException
 	 */
-	protected function __construct() {
+	protected function __construct()
+	{
 
 		// обновляем всех подписчиков
 		$this->_listener_list = $this->_updateListener();
@@ -57,7 +58,8 @@ class Type_Event_Handler {
 	 *
 	 * @return $this
 	 */
-	public static function instance():self {
+	public static function instance(): self
+	{
 
 		if (is_null(self::$_instance)) {
 			self::$_instance = new self();
@@ -69,10 +71,9 @@ class Type_Event_Handler {
 	/**
 	 * Обработать событие.
 	 * Рассылает событие по конечным обработчикам.
-	 *
-	 * @param array $event
 	 */
-	public function handle(array $event):void {
+	public function handle(array $event): void
+	{
 
 		// проверяем наличие подписчиков на событие
 		// если их нет, то дальше делать уже нечего
@@ -87,7 +88,7 @@ class Type_Event_Handler {
 		$name     = str_replace("_", "", ucwords($name, "_"));
 
 		// обработчик для полученного события
-		$event_handler = __NAMESPACE__ ."\\Type_Event_{$category}_{$name}";
+		$event_handler = __NAMESPACE__ . "\\Type_Event_{$category}_{$name}";
 
 		// если такого обработчика нет, то событие обработать не получится
 		if (!class_exists($event_handler)) {
@@ -110,12 +111,9 @@ class Type_Event_Handler {
 	/**
 	 * Обработать событие.
 	 * Рассылает событие по конечным обработчикам.
-	 *
-	 * @param array $event_list
-	 *
-	 * @return array
 	 */
-	public function handleList(array $event_list):array {
+	public function handleList(array $event_list): array
+	{
 
 		$output = [];
 
@@ -154,15 +152,10 @@ class Type_Event_Handler {
 
 	/**
 	 * Создает информацию об обработке события.
-	 *
-	 * @param int    $status
-	 * @param int    $delivered_at
-	 * @param string $message
-	 *
-	 * @return array
 	 */
 	#[\JetBrains\PhpStorm\ArrayShape(["status" => "int", "delivered_at" => "int", "processed_in" => "int", "requeue_delay" => "int", "message" => "string"])]
-	protected static function _createDeliveryInfo(int $status, int $delivered_at, string $message = ""):array {
+	protected static function _createDeliveryInfo(int $status, int $delivered_at, string $message = ""): array
+	{
 
 		return [
 			"status"        => $status,
@@ -176,7 +169,8 @@ class Type_Event_Handler {
 	/**
 	 * Получить список слушателей для всех событий
 	 */
-	public function getListenerList():array {
+	public function getListenerList(): array
+	{
 
 		return $this->_listener_list;
 	}
@@ -188,7 +182,8 @@ class Type_Event_Handler {
 	 *
 	 * @throws \ReflectionException
 	 */
-	protected function _updateListener():array {
+	protected function _updateListener(): array
+	{
 
 		$output = [];
 

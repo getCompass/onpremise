@@ -28,6 +28,7 @@ class Apiv1_Format {
 		$output = [
 			"file_key"       => (string) $file_row["file_key"],
 			"size_kb"        => (int) $file_row["size_kb"],
+			"status"         => (string) Type_File_Main::FILE_STATUS_NAME[$file_row["status"]],
 			"created_at"     => (int) $file_row["created_at"],
 			"type"           => (string) self::_FILE_TYPE_NAME[$file_row["type"]],
 			"url"            => (string) $file_row["url"],

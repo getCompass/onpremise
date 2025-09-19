@@ -6,6 +6,7 @@ import { LOBBY_CHAT_INITIALIZED } from '../lobby/constants';
 
 import {
     ADD_MESSAGE,
+    ADD_PENDING_MESSAGE,
     ADD_MESSAGE_REACTION,
     CLEAR_MESSAGES,
     CLOSE_CHAT,
@@ -16,7 +17,8 @@ import {
     SET_IS_POLL_TAB_FOCUSED,
     SET_LOBBY_CHAT_ACTIVE_STATE,
     SET_LOBBY_CHAT_RECIPIENT,
-    SET_PRIVATE_MESSAGE_RECIPIENT
+    SET_PRIVATE_MESSAGE_RECIPIENT,
+    CLEAR_PENDING_MESSAGE,
 } from './actionTypes';
 
 /**
@@ -51,6 +53,19 @@ export function addMessage(messageDetails: Object) {
     };
 }
 
+export function addPendingMessage(messageDetails: Object) {
+    return {
+        type: ADD_PENDING_MESSAGE,
+        ...messageDetails
+    };
+}
+
+export function clearPendingMessage() {
+
+    return {
+        type: CLEAR_PENDING_MESSAGE
+    }
+}
 /**
  * Adds a reaction to a chat message.
  *

@@ -1,26 +1,25 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Company;
 
 /**
  * Агрегатор подписок на событие для домена компании.
  */
-class Domain_Company_Scenario_Event {
-
+class Domain_Company_Scenario_Event
+{
 	/**
 	 * Callback для события - проверить не нужно ли запустить задачи по периодической рассылке данных для компаний
 	 *
-	 * @param Struct_Event_Company_SenderCheckRequired $event_data
 	 *
-	 * @return Type_Task_Struct_Response
 	 * @throws \parseException
 	 *
 	 * @noinspection PhpUnusedParameterInspection
 	 */
 	#[Type_Task_Attribute_Executor(Type_Event_Company_SenderCheckRequired::EVENT_TYPE, Struct_Event_Company_SenderCheckRequired::class)]
-	public static function onSenderCheckRequired(Struct_Event_Company_SenderCheckRequired $event_data):Type_Task_Struct_Response {
+	public static function onSenderCheckRequired(Struct_Event_Company_SenderCheckRequired $event_data): Type_Task_Struct_Response
+	{
 
 		$next_time = Type_Company_Job_Main::work();
 		return Type_Task_Struct_Response::build(Type_Task_Handler::DELIVERY_STATUS_NEXT_ITERATION_REQUIRED, $next_time);
@@ -29,16 +28,15 @@ class Domain_Company_Scenario_Event {
 	/**
 	 * Callback для события - проверить активность компании
 	 *
-	 * @param Struct_Event_Company_CheckLastActivity $event_data
 	 *
-	 * @return Type_Task_Struct_Response
 	 * @throws \parseException
 	 * @throws \returnException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @noinspection PhpUnusedParameterInspection
 	 */
 	#[Type_Task_Attribute_Executor(Type_Event_Company_CheckLastActivity::EVENT_TYPE, Struct_Event_Company_CheckLastActivity::class)]
-	public static function onCheckLastActivity(Struct_Event_Company_CheckLastActivity $event_data):Type_Task_Struct_Response {
+	public static function onCheckLastActivity(Struct_Event_Company_CheckLastActivity $event_data): Type_Task_Struct_Response
+	{
 
 		// если не требуется гибернация компании, то полностью завершаем работу ивента
 		if (!\CompassApp\Company\HibernationHandler::instance()->isNeedHibernation()) {
@@ -56,14 +54,13 @@ class Domain_Company_Scenario_Event {
 	/**
 	 * Callback для события - создания компании
 	 *
-	 * @param Struct_Event_Company_CreateCompany $event_data
 	 *
-	 * @return void
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Company_CreateCompany::EVENT_TYPE)]
-	public static function onCreateCompany(Struct_Event_Company_CreateCompany $event_data):void {
+	public static function onCreateCompany(Struct_Event_Company_CreateCompany $event_data): void
+	{
 
 		foreach ($event_data->bot_list as $bot_info) {
 

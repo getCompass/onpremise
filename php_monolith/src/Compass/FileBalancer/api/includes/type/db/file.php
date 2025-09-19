@@ -2,6 +2,9 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
+
 /**
  * класс-интерфейс для работы с таблицами pivot_file_{year}.file_list_{month}|company_data.file_list
  */
@@ -165,6 +168,94 @@ class Type_Db_File {
 		}
 
 		throw new parseException("trying to get file db prefix from undefined server");
+	}
+
+	/**
+	 * Обновить несколько записей
+	 *
+	 * @param array $file_map_list
+	 * @param array $set
+	 *
+	 * @return void
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 * @throws parseException
+	 * @long разделение по серверам
+	 */
+	public static function setList(array $file_map_list, array $set):void {
+
+		$set["updated_at"] = time();
+
+		$grouped_by_shard = [];
+
+		// группируем по шардам
+		foreach ($file_map_list as $file_map) {
+			$grouped_by_shard[Type_Pack_File::getShardId($file_map)][Type_Pack_File::getTableId($file_map)][] = Type_Pack_File::getMetaId($file_map);
+		}
+
+		// для пивота
+		if (defined("CURRENT_SERVER") && CURRENT_SERVER == PIVOT_SERVER) {
+
+			self::_setListOnPivot($grouped_by_shard, $set);
+			return;
+		}
+
+		// для компаний
+		if (defined("CURRENT_SERVER") && CURRENT_SERVER == CLOUD_SERVER) {
+
+			self::_setListOnCloud($grouped_by_shard, $set);
+			return;
+		}
+
+		throw new parseException("trying to get file db prefix from undefined server");
+	}
+
+	/**
+	 * Обновить записи для pivot
+	 *
+	 * @param array $grouped_by_shard
+	 * @param array $set
+	 *
+	 * @return void
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 */
+	protected static function _setListOnPivot(array $grouped_by_shard, array $set):void {
+
+		foreach ($grouped_by_shard as $shard_id => $grouped_by_table_meta_id_list) {
+
+			// для каждой таблицы базы данных
+			foreach ($grouped_by_table_meta_id_list as $table_id => $meta_id_list) {
+
+				// запрос проверен на EXPLAIN (INDEX=PRIMARY)
+				$query = "UPDATE `?p` SET ?u WHERE `meta_id` IN (?a) LIMIT ?i";
+				ShardingGateway::database(self::_getDbKey($shard_id))->update($query, self::_getTableName($table_id), $set, $meta_id_list, count($meta_id_list));
+			}
+		}
+	}
+
+	/**
+	 * Обновить записи для cloud
+	 *
+	 * @param array $grouped_by_shard
+	 * @param array $set
+	 *
+	 * @return void
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 */
+	protected static function _setListOnCloud(array $grouped_by_shard, array $set):void {
+
+		foreach ($grouped_by_shard as $shard_id => $grouped_by_table_meta_id_list) {
+
+			// для каждой таблицы базы данных
+			foreach ($grouped_by_table_meta_id_list as $table_id => $meta_id_list) {
+
+				// запрос проверен на EXPLAIN (INDEX=PRIMARY)
+				$query = "UPDATE `?p` SET ?u WHERE `meta_id` IN (?a) AND `year` = ?i AND `month` = ?i LIMIT ?i";
+				ShardingGateway::database(self::_getDbKey($shard_id))->update($query, self::_getTableName($table_id), $set, $meta_id_list, $shard_id, $table_id, count($meta_id_list));
+			}
+		}
 	}
 
 	// метод для старта транзакции

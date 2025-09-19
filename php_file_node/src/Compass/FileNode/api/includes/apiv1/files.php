@@ -10,8 +10,8 @@ ini_set("max_execution_time", 30);
 /**
  * Группа методов для загрузки файлов
  */
-class Apiv1_Files extends \BaseFrame\Controller\Api {
-
+class Apiv1_Files extends \BaseFrame\Controller\Api
+{
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"tryUpload",
@@ -26,10 +26,10 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * загрузить файл по токену, полученному в php_file_balancer
 	 *
-	 * @return array
 	 * @throws ParamException
 	 */
-	public function tryUpload():array {
+	public function tryUpload(): array
+	{
 
 		$tmp_file_path      = $this->post(\Formatter::TYPE_STRING, "file_path");
 		$file_name          = $this->post(\Formatter::TYPE_STRING, "file_name");
@@ -51,7 +51,12 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 		try {
 
 			[$file_row, $download_token] = Helper_File::uploadFile(
-				$user_id, $cache["company_id"], $cache["company_url"], $cache["file_source"], $file_name, $tmp_file_path
+				$user_id,
+				$cache["company_id"],
+				$cache["company_url"],
+				$cache["file_source"],
+				$file_name,
+				$tmp_file_path
 			);
 		} catch (cs_InvalidFileTypeForSource $e) {
 			throw new ParamException($e->getMessage());
@@ -68,7 +73,8 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * Загрузить файл новым способом
 	 */
-	public function tryPartialUpload():array {
+	public function tryPartialUpload(): array
+	{
 
 		$tmp_file_path = $this->post(\Formatter::TYPE_STRING, "file_path");
 		$file_name     = $this->post(\Formatter::TYPE_STRING, "file_name");
@@ -113,13 +119,13 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * кропнуть файл по токену, полученному в php_file_balancer
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \ParseException
 	 * @throws cs_DownloadFailed
 	 * @long
 	 */
-	public function doCropImage():array {
+	public function doCropImage(): array
+	{
 
 		$token    = $this->post(\Formatter::TYPE_STRING, "token");
 		$x_offset = (int) $this->post(\Formatter::TYPE_STRING, "x_offset");
@@ -161,7 +167,8 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем размеры изображения, высоту и ширину
-	protected static function _checkImageSizes(array $cache, int $width, int $height, int $x_offset, int $y_offset):void {
+	protected static function _checkImageSizes(array $cache, int $width, int $height, int $x_offset, int $y_offset): void
+	{
 
 		// получаем данные файла из кеша
 		$file_width  = $cache["file_width"];
@@ -179,12 +186,12 @@ class Apiv1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * пробуем получить user_id из кэша
 	 *
-	 * @param $cache
 	 *
 	 * @throws paramException
 	 * @mixed - кэш моет быть false
 	 */
-	protected function _tryGetUserIdFromCacheForUpload($cache):int {
+	protected function _tryGetUserIdFromCacheForUpload($cache): int
+	{
 
 		if ($cache === false) {
 			throw new paramException("Malformed token");

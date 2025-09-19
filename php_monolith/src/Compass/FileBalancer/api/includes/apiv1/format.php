@@ -9,8 +9,8 @@ namespace Compass\FileBalancer;
  * к этому классу обращаемся строго отдачей результата в API
  * для форматирования стандартных сущностей
  */
-class Apiv1_Format {
-
+class Apiv1_Format
+{
 	protected const _FILE_TYPE_NAME = [
 		FILE_TYPE_DEFAULT  => "file",
 		FILE_TYPE_IMAGE    => "image",
@@ -28,7 +28,8 @@ class Apiv1_Format {
 	/**
 	 * Файл с содержимым.
 	 */
-	public static function fileWithContent(array $file_row):array {
+	public static function fileWithContent(array $file_row): array
+	{
 
 		$file = static::file($file_row);
 
@@ -38,10 +39,13 @@ class Apiv1_Format {
 
 	// файл
 	//@long --- switch...case
-	public static function file(array $file_row):array {
+	public static function file(array $file_row): array
+	{
 
 		$output = [
 			"file_map"       => (string) $file_row["file_map"],
+			"is_deleted"     => (int) $file_row["is_deleted"],
+			"status"         => (string) Type_File_Main::FILE_STATUS_NAME[$file_row["status"]],
 			"size_kb"        => (int) $file_row["size_kb"],
 			"created_at"     => (int) $file_row["created_at"],
 			"type"           => (string) self::_FILE_TYPE_NAME[$file_row["type"]],
@@ -107,7 +111,8 @@ class Apiv1_Format {
 	}
 
 	// waveform в голосовых аудио
-	protected static function _doFormatWaveform(array $waveform):array {
+	protected static function _doFormatWaveform(array $waveform): array
+	{
 
 		// проходимся по всему массиву и приводим формат
 		foreach ($waveform as $k => $v) {
@@ -118,7 +123,8 @@ class Apiv1_Format {
 	}
 
 	// основная инфа о оригинальном видео
-	protected static function _doFormatOriginalVideoInfo(array $original_video_info):array {
+	protected static function _doFormatOriginalVideoInfo(array $original_video_info): array
+	{
 
 		return [
 			"width"   => (int) $original_video_info["width"],
@@ -128,7 +134,8 @@ class Apiv1_Format {
 	}
 
 	// video_version_list в файлах-изображениях
-	protected static function _doFormatVideoVersionList(array $video_version_list):array {
+	protected static function _doFormatVideoVersionList(array $video_version_list): array
+	{
 
 		$output = [];
 
@@ -155,7 +162,8 @@ class Apiv1_Format {
 	}
 
 	// image_version_list в файлах-изображениях
-	protected static function _doFormatImageVersionList(array $image_version_list):array {
+	protected static function _doFormatImageVersionList(array $image_version_list): array
+	{
 
 		// проходимся по всему массиву и приводим формат
 		foreach ($image_version_list as $k => $v) {
@@ -166,7 +174,8 @@ class Apiv1_Format {
 	}
 
 	// получаем один элемент image version
-	protected static function _doFormatImageVersionItem(array $image_version_item):array {
+	protected static function _doFormatImageVersionItem(array $image_version_item): array
+	{
 
 		return [
 			"url"     => (string) $image_version_item["url"],
@@ -177,7 +186,8 @@ class Apiv1_Format {
 	}
 
 	// отношение к типу файла
-	public static function fileRel(array $rel):array {
+	public static function fileRel(array $rel): array
+	{
 
 		$output = [];
 

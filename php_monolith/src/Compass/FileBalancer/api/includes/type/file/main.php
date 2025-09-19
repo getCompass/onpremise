@@ -5,8 +5,8 @@ namespace Compass\FileBalancer;
 /**
  * обертка для работы с моделями файлов
  */
-class Type_File_Main {
-
+class Type_File_Main
+{
 	// список доступных file_source
 	public const ALLOWED_FILE_SOURCE_LIST = [
 		FILE_SOURCE_AVATAR,
@@ -29,14 +29,41 @@ class Type_File_Main {
 		FILE_SOURCE_DOCUMENT_CDN,
 	];
 
+	// строковые названия файлов
+	public const FILE_TYPE_NAME = [
+		FILE_TYPE_DEFAULT  => "file",
+		FILE_TYPE_IMAGE    => "image",
+		FILE_TYPE_VIDEO    => "video",
+		FILE_TYPE_AUDIO    => "audio",
+		FILE_TYPE_DOCUMENT => "document",
+		FILE_TYPE_ARCHIVE  => "archive",
+		FILE_TYPE_VOICE    => "voice",
+	];
+
+	// статус загрузки файла
+	public const FILE_STATUS_PROCESSING = 0;
+	public const FILE_STATUS_APPROVED   = 1;
+	public const FILE_STATUS_RESTRICTED = 2;
+	public const FILE_STATUS_DELETED    = 3;
+
+	// названия статусов для клиентов
+	public const FILE_STATUS_NAME = [
+		self::FILE_STATUS_PROCESSING => "processing",
+		self::FILE_STATUS_APPROVED   => "approved",
+		self::FILE_STATUS_RESTRICTED => "restricted",
+		self::FILE_STATUS_DELETED    => "deleted",
+	];
+
 	// получаем одну запись из базы
-	public static function getOne(string $file_map):array {
+	public static function getOne(string $file_map): array
+	{
 
 		return Type_Db_File::getOne($file_map);
 	}
 
 	// получаем все записи
-	public static function getAll(array $file_map_list):array {
+	public static function getAll(array $file_map_list): array
+	{
 
 		// группируем список файлов по таблицам
 		$grouped_file_list = self::_doGroupFileMapListByTables($file_map_list);
@@ -46,7 +73,8 @@ class Type_File_Main {
 	}
 
 	// группируем массив файлов по таблицам
-	protected static function _doGroupFileMapListByTables(array $file_map_list):array {
+	protected static function _doGroupFileMapListByTables(array $file_map_list): array
+	{
 
 		$grouped_file_list = [];
 		foreach ($file_map_list as $item) {
@@ -61,7 +89,8 @@ class Type_File_Main {
 	}
 
 	// получаем ключ для группировки file_map_list
-	protected static function _getFullTableNameFromFileMap(string $file_map):string {
+	protected static function _getFullTableNameFromFileMap(string $file_map): string
+	{
 
 		$shard_id    = Type_Pack_File::getShardId($file_map);
 		$table_id    = Type_Pack_File::getTableId($file_map);
@@ -70,7 +99,8 @@ class Type_File_Main {
 	}
 
 	// получаем записи из базы
-	protected static function _getFileList(array $grouped_file_list):array {
+	protected static function _getFileList(array $grouped_file_list): array
+	{
 
 		$output = [];
 		foreach ($grouped_file_list as $k => $v) {
@@ -87,13 +117,15 @@ class Type_File_Main {
 	}
 
 	// функция для создания записи в таблице
-	public static function insert(string $shard_id, int $table_id, array $insert):void {
+	public static function insert(string $shard_id, int $table_id, array $insert): void
+	{
 
 		Type_Db_File::insert($shard_id, $table_id, $insert);
 	}
 
 	// функция для обновления записи в таблице
-	public static function set(string $file_map, array $set):void {
+	public static function set(string $file_map, array $set): void
+	{
 
 		Type_Db_File::set($file_map, $set);
 	}

@@ -94,7 +94,7 @@ class Cron_Postupload_Audio extends Cron_Default {
 		}
 
 		// если конвертация не нужна - выходим
-		if ($file_row["extra"]["status"] !== Type_File_Main::STATUS_CONVERT) {
+		if ($file_row["extra"]["status"] !== Type_File_Main::CONVERT_STATUS_PROCESSING) {
 			return;
 		}
 
@@ -102,7 +102,7 @@ class Cron_Postupload_Audio extends Cron_Default {
 		$extra = Type_File_Audio_Process::doPostProcess($item["part_path"], $file_row["extra"]["company_id"], $file_row["extra"], $file_row["file_name"]);
 
 		// обновляем данные файла
-		if ($extra["status"] == Type_File_Audio_Main::STATUS_ERROR) {
+		if ($extra["status"] == Type_File_Main::CONVERT_STATUS_ERROR) {
 			Type_File_Main::updateFile($file_row["file_key"], $extra);
 		} else {
 			Type_File_Main::updateFile($file_row["file_key"], $extra, $extra["convert_to"]);

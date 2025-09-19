@@ -107,7 +107,7 @@ class Type_File_Process {
 	protected static function _addAudioToPostProcessQueue(string $file_key, int $file_type, string $part_path, array $extra, int $need_work):void {
 
 		// если нет нужды конвертировать
-		if ($extra["status"] == Type_File_Main::STATUS_OK) {
+		if ($extra["status"] == Type_File_Main::CONVERT_STATUS_OK) {
 			return;
 		}
 

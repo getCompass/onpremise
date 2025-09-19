@@ -3,6 +3,7 @@ import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     ADD_MESSAGE,
+    ADD_PENDING_MESSAGE,
     ADD_MESSAGE_REACTION,
     CLEAR_MESSAGES,
     CLOSE_CHAT,
@@ -12,7 +13,8 @@ import {
     SET_IS_POLL_TAB_FOCUSED,
     SET_LOBBY_CHAT_ACTIVE_STATE,
     SET_LOBBY_CHAT_RECIPIENT,
-    SET_PRIVATE_MESSAGE_RECIPIENT
+    SET_PRIVATE_MESSAGE_RECIPIENT,
+    CLEAR_PENDING_MESSAGE
 } from './actionTypes';
 import { IMessage } from './types';
 import { MESSAGE_TYPE_ERROR } from "./constants";
@@ -26,7 +28,8 @@ const DEFAULT_STATE = {
     nbUnreadMessages: 0,
     privateMessageRecipient: undefined,
     lobbyMessageRecipient: undefined,
-    isLobbyChatActive: false
+    isLobbyChatActive: false,
+    pendingMessage: undefined,
 };
 
 export interface IChatState {
@@ -41,10 +44,40 @@ export interface IChatState {
     messages: IMessage[];
     nbUnreadMessages: number;
     privateMessageRecipient?: IParticipant;
+    pendingMessage?: IMessage;
 }
 
 ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, action): IChatState => {
     switch (action.type) {
+
+        case CLEAR_PENDING_MESSAGE: {
+            return {
+                ...state,
+                pendingMessage: undefined
+            }
+        }
+        case ADD_PENDING_MESSAGE: {
+
+        const newMessage: IMessage = {
+            displayName: action.displayName,
+            error: action.error,
+            participantId: action.participantId,
+            isReaction: action.isReaction,
+            messageId: action.messageId,
+            messageType: action.messageType,
+            message: action.message,
+            reactions: action.reactions,
+            privateMessage: action.privateMessage,
+            lobbyChat: action.lobbyChat,
+            recipient: action.recipient,
+            timestamp: action.timestamp
+        };
+
+        return {
+            ...state,
+            pendingMessage: newMessage
+        }
+        }
     case ADD_MESSAGE: {
         const newMessage: IMessage = {
             displayName: action.displayName,

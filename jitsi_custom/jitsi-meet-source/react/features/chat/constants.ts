@@ -53,3 +53,8 @@ export const TIMESTAMP_FORMAT = 'H:mm';
  * The namespace for system messages.
  */
 export const MESSAGE_TYPE_SYSTEM = 'system_chat_message';
+
+/**
+ * Обновлен статус сообщения
+ */
+export const MESSAGE_STATUS_UPDATED = 'message-status-updated';

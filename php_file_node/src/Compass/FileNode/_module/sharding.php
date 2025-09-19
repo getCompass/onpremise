@@ -40,7 +40,7 @@ class ShardingGateway extends \ShardingGateway {
 	public static function cache():\mCache {
 
 		// получаем конфиг с базой данных
-		return \CompassApp\Gateway\Memcached::configured(static::instance()->_config_list[static::CACHE_KEY]);
+		return \mCache::configured(static::instance()->_config_list[static::CACHE_KEY]);
 	}
 
 	/**

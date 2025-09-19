@@ -7,13 +7,14 @@ import { playSound } from '../base/sounds/actions';
 import { INCOMING_MSG_SOUND_ID } from '../chat/constants';
 import { arePollsDisabled } from '../conference/functions.any';
 import { showNotification } from '../notifications/actions';
-import { NOTIFICATION_ICON, NOTIFICATION_TIMEOUT_TYPE, NOTIFICATION_TYPE } from '../notifications/constants';
+import { MESSAGE_NOT_DELIVERED_NOTIFICATION_ID, NOTIFICATION_ICON, NOTIFICATION_TIMEOUT_TYPE, NOTIFICATION_TYPE } from '../notifications/constants';
 
 import { RECEIVE_POLL } from './actionTypes';
 import { clearPolls, receiveAnswer, receivePoll } from './actions';
-import { COMMAND_ANSWER_POLL, COMMAND_NEW_POLL, COMMAND_OLD_POLLS } from './constants';
+import { COMMAND_ANSWER_POLL, COMMAND_NEW_POLL, COMMAND_OLD_POLLS, POLL_STATUS_UPDATED } from './constants';
 import { IAnswer, IPoll, IPollData } from './types';
 import { getLocalParticipant } from "../base/participants/functions";
+import { isMobileBrowser } from '../base/environment/utils';
 
 /**
  * Set up state change listener to perform maintenance tasks when the conference
@@ -71,6 +72,21 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     case NON_PARTICIPANT_MESSAGE_RECEIVED: {
         const { id, json: data } = action;
         const isNewPoll = data.type === COMMAND_NEW_POLL;
+
+        if (data?.type === POLL_STATUS_UPDATED) {
+
+            if (data.status !== "approved") {
+
+                dispatch(showNotification({
+                    titleKey: 'notify.messageIsRestrictedTitle',
+                    descriptionKey: 'notify.messageIsRestricted',
+                    uid: MESSAGE_NOT_DELIVERED_NOTIFICATION_ID,
+                    icon: NOTIFICATION_ICON.WARNING
+                }, isMobileBrowser() ? NOTIFICATION_TIMEOUT_TYPE.MEDIUM : NOTIFICATION_TIMEOUT_TYPE.LONG));
+            }
+
+            break;
+        }
 
         _handleReceivePollsMessage({
             ...data,

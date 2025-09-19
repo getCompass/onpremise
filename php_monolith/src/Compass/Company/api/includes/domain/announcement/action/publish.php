@@ -5,12 +5,17 @@ namespace Compass\Company;
 /**
  * Публикация анонсов.
  */
-class Domain_Announcement_Action_Publish {
-
+class Domain_Announcement_Action_Publish
+{
 	/**
 	 * Публикует новый анонс и возвращает его id.
 	 */
-	public static function run(array $raw_data, int $company_id = COMPANY_ID, array $receiver_user_id_list = [], array $excluded_user_id_list = []):int {
+	public static function run(
+		array $raw_data,
+		int $company_id = COMPANY_ID,
+		array $receiver_user_id_list = [],
+		array $excluded_user_id_list = []
+	): int {
 
 		$raw_data = self::_setCompanyId($raw_data, $company_id);
 
@@ -39,7 +44,8 @@ class Domain_Announcement_Action_Publish {
 	/**
 	 * Добавляет id компании к анонсу.
 	 */
-	protected static function _setCompanyId(array $data, int $company_id):array {
+	protected static function _setCompanyId(array $data, int $company_id): array
+	{
 
 		$data["company_id"] = $company_id;
 		return $data;

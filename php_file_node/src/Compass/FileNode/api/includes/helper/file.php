@@ -8,14 +8,15 @@ use BaseFrame\System\File;
 /**
  * хелпер для работы с файлами
  */
-class Helper_File {
-
+class Helper_File
+{
 	protected const _REDIRECT_MAX_COUNT               = 10;                // максимальное количество редиректов
 	public const    MAX_IMAGE_DOWNLOAD_CONTENT_LENGTH = 20 * 1024 * 1024;  // максимальный размер содержимого для превью
 	public const    MAX_FILE_DOWNLOAD_CONTENT_LENGTH  = MAX_FILE_SIZE_MB * 1024 * 1024;  // максимальный размер содержимого для файлов
 
 	// скачивание файла
-	public static function downloadFile(string $file_url, bool $is_source_trusted = false, int $timeout = DEFAULT_UPLOAD_TIMEOUT_SEC, string|bool $node_id = false, int $max_file_size = self::MAX_IMAGE_DOWNLOAD_CONTENT_LENGTH, string $proxy = ""):string {
+	public static function downloadFile(string $file_url, bool $is_source_trusted = false, int $timeout = DEFAULT_UPLOAD_TIMEOUT_SEC, string | bool $node_id = false, int $max_file_size = self::MAX_IMAGE_DOWNLOAD_CONTENT_LENGTH, string $proxy = ""): string
+	{
 
 		// если файл находится на этой же ноде
 		if (NODE_ID == $node_id) {
@@ -69,7 +70,7 @@ class Helper_File {
 		// мониторим, сколько скачали, если больше лимита, то завершаем
 		// нельзя верить только хедеру content-length. Злоумышленник или кривые руки разраба может им манипулировать. Для этого и добавлена функция прогресса
 		$curl->setOpt(CURLOPT_MAXFILESIZE, $max_file_size);
-		$curl->setOpt(CURLOPT_PROGRESSFUNCTION, function(int $download_size, int $downloaded, int $max_file_size) {
+		$curl->setOpt(CURLOPT_PROGRESSFUNCTION, function (int $download_size, int $downloaded, int $max_file_size) {
 
 			return ($downloaded > $max_file_size) ? 1 : 0;
 		});
@@ -89,7 +90,8 @@ class Helper_File {
 	}
 
 	// устанавливаем timeout для курла
-	protected static function _setTimeout(\Curl $curl, int $timeout):void {
+	protected static function _setTimeout(\Curl $curl, int $timeout): void
+	{
 
 		$curl->setTimeout($timeout);
 
@@ -101,7 +103,8 @@ class Helper_File {
 	/**
 	 * Выполняет загрузку файла. Возвращает строку и токена загрузки.
 	 */
-	public static function uploadFile(int $user_id, int $company_id, string $company_url, int $file_source, string $original_file_name, string $tmp_file_path, string $parent_file_key = "", bool $is_cdn = false):array {
+	public static function uploadFile(int $user_id, int $company_id, string $company_url, int $file_source, string $original_file_name, string $tmp_file_path, string $parent_file_key = "", bool $is_cdn = false): array
+	{
 
 		$mime_type      = Type_File_Utils::getMimeType($tmp_file_path);
 		$file_extension = Type_File_Utils::getExtension($original_file_name);
@@ -120,7 +123,7 @@ class Helper_File {
 		// делаем первичную обработку в зависимости от типа файла
 		try {
 			$extra = Type_File_Process::doProcessOnUpload($part_path, $company_id, $company_url, $file_type, $user_id, $parent_file_key, $file_extension);
-		} catch (cs_FileProcessFailed|cs_VideoProcessFailed) {
+		} catch (cs_FileProcessFailed | cs_VideoProcessFailed) {
 
 			// если не смогли обработать и это превью то выбрасываем exception
 			if ($file_source == FILE_SOURCE_MESSAGE_PREVIEW_IMAGE) {
@@ -135,20 +138,39 @@ class Helper_File {
 		// получаем размер изображения после обработки
 		$size_kb = Type_File_Utils::getFileSizeKb($file_path);
 
+		$status = Type_File_Main::FILE_STATUS_PROCESSING;
+
+		if ($is_cdn || !Domain_Config_Entity_Icap::instance($user_id)->isEnabled()) {
+			$status = Type_File_Main::FILE_STATUS_APPROVED;
+		}
+
 		// сохраняем файл на файловой ноде
 		[$file_row, $download_token] = Type_File_Main::create(
-			$user_id, $file_type, $file_source, $size_kb, $mime_type, $original_file_name,
-			$file_extension, $extra, $part_path, $file_hash, $is_cdn
+			$user_id,
+			$file_type,
+			$file_source,
+			$size_kb,
+			$mime_type,
+			$original_file_name,
+			$file_extension,
+			$extra,
+			$part_path,
+			$file_hash,
+			$status,
+			$is_cdn,
 		);
 
-		// оправляем на пост обработку
-		Type_File_Process::sendToPostUpload($file_row, $part_path);
+		// оправляем на проверку в DLP, если он включен
+		$status === Type_File_Main::FILE_STATUS_PROCESSING
+		? Domain_File_Action_AddToDlpCheckQueue::do($file_row)
+		: Type_File_Process::sendToPostUpload($file_row, $part_path);
 
 		return [$file_row, $download_token];
 	}
 
 	// метод для сохранения файла на ноде
-	public static function uploadFileByMigration(int $user_id, int $company_id, string $company_url, int $file_source, string $original_file_name, string $tmp_file_path, int $need_work, string $parent_file_key = "", bool $is_cdn = false):array {
+	public static function uploadFileByMigration(int $user_id, int $company_id, string $company_url, int $file_source, string $original_file_name, string $tmp_file_path, int $need_work, string $parent_file_key = "", bool $is_cdn = false): array
+	{
 
 		$mime_type      = Type_File_Utils::getMimeType($tmp_file_path);
 		$file_extension = Type_File_Utils::getExtension($original_file_name);
@@ -167,7 +189,7 @@ class Helper_File {
 		// делаем первичную обработку в зависимости от типа файла
 		try {
 			$extra = Type_File_Process::doProcessOnUpload($part_path, $company_id, $company_url, $file_type, $user_id, $parent_file_key, $file_extension);
-		} catch (cs_FileProcessFailed|cs_VideoProcessFailed) {
+		} catch (cs_FileProcessFailed | cs_VideoProcessFailed) {
 
 			// если не смогли обработать и это превью то выбрасываем exception
 			if ($file_source == FILE_SOURCE_MESSAGE_PREVIEW_IMAGE) {
@@ -182,10 +204,22 @@ class Helper_File {
 		// получаем размер изображения после обработки
 		$size_kb = Type_File_Utils::getFileSizeKb($file_path);
 
+		$status = Type_File_Main::FILE_STATUS_APPROVED;
+
 		// сохраняем файл на файловой ноде
 		[$file_row] = Type_File_Main::create(
-			$user_id, $file_type, $file_source, $size_kb, $mime_type, $original_file_name,
-			$file_extension, $extra, $part_path, $file_hash, $is_cdn
+			$user_id,
+			$file_type,
+			$file_source,
+			$size_kb,
+			$mime_type,
+			$original_file_name,
+			$file_extension,
+			$extra,
+			$part_path,
+			$file_hash,
+			$status,
+			$is_cdn
 		);
 
 		// оправляем на пост обработку

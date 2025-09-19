@@ -5,8 +5,8 @@ namespace Compass\Company;
 /**
  * Класс для перевода заголовков в пуше
  */
-class Domain_Push_Entity_Locale_Message_Title extends Domain_Push_Entity_Locale_Message {
-
+class Domain_Push_Entity_Locale_Message_Title extends Domain_Push_Entity_Locale_Message
+{
 	// разрешенные сущности, где может быть пуш
 	protected const _ALLOWED_ENTITY_TYPE_LIST = [
 		self::SPACE_ENTITY,

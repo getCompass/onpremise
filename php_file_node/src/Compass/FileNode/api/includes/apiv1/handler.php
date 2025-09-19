@@ -17,8 +17,8 @@ use BaseFrame\Handler\Api;
  * 8. соотвественно все методы GLOBAL - анонимны
  * 9. методы регистро НЕ зависимые
  */
-class Apiv1_Handler extends Api implements \RouteHandler {
-
+class Apiv1_Handler extends Api implements \RouteHandler
+{
 	// поддерживаемые методы (при создании новой группы заносятся вручную)
 	public const ALLOW_CONTROLLERS = [
 		"files",
@@ -28,15 +28,17 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	/**
 	 * @inheritDoc
 	 */
-	public function getServedRoutes():array {
+	public function getServedRoutes(): array
+	{
 
-		return array_map(static fn(string $method) => str_replace("_", ".", $method), static::ALLOW_CONTROLLERS);
+		return array_map(static fn (string $method) => str_replace("_", ".", $method), static::ALLOW_CONTROLLERS);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function getType():string {
+	public function getType(): string
+	{
 
 		return "apiv1";
 	}
@@ -44,7 +46,8 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	/**
 	 * @inheritDoc
 	 */
-	public function __toString():string {
+	public function __toString(): string
+	{
 
 		return static::class;
 	}
@@ -52,7 +55,8 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	/**
 	 * @inheritDoc
 	 */
-	public function handle(string $route, array $post_data, int $user_id = 0):array {
+	public function handle(string $route, array $post_data, int $user_id = 0): array
+	{
 
 		// если нода только для чтения
 		if (IS_READONLY) {

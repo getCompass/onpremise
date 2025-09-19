@@ -796,6 +796,8 @@
         "me": "Ich",
         "messageIsNotDeliveredTitle": "Diese Aktion ist nicht verfügbar",
         "messageIsNotDelivered": "Der Benutzer hat die Konferenz verlassen oder ist ein Zuschauer.",
+        "messageIsRestrictedTitle": "Отправка заблокирована",
+        "messageIsRestricted": "Руководитель команды ограничил отправку сообщений, содержащих чувствительные данные.",
         "moderationInEffectCSDescription": "Bitte melden um ein Video zu teilen",
         "moderationInEffectCSTitle": "Die Videofreigabe ist von der Moderation gesperrt",
         "moderationInEffectDescription": "Bitte melden um zu sprechen",

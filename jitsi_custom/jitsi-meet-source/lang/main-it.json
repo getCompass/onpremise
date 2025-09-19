@@ -694,6 +694,8 @@
         "me": "Io",
         "messageIsNotDeliveredTitle": "Azione non disponibile",
         "messageIsNotDelivered": "L'utente ha lasciato la conferenza o è un spettatore.",
+        "messageIsRestrictedTitle": "Отправка заблокирована",
+        "messageIsRestricted": "Руководитель команды ограничил отправку сообщений, содержащих чувствительные данные.",
         "moderationInEffectCSDescription": "Alza la mano, se vuoi condividere lo schermo, per favore.",
         "moderationInEffectCSTitle": "La condivisione schermo è stata bloccata dal moderatore",
         "moderationInEffectDescription": "Alza la mano, se vuoi prender la parola, per favore.",

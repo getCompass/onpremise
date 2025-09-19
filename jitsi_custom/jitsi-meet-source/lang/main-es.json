@@ -735,6 +735,8 @@
         "me": "Yo",
         "messageIsNotDeliveredTitle": "Acción no disponible",
         "messageIsNotDelivered": "El usuario ha salido de la conferencia o es un espectador.",
+        "messageIsRestrictedTitle": "Отправка заблокирована",
+        "messageIsRestricted": "Руководитель команды ограничил отправку сообщений, содержащих чувствительные данные.",
         "moderationInEffectCSDescription": "Por favor, levante la mano si quiere compartir su pantalla.",
         "moderationInEffectCSTitle": "La pantalla compartida está bloqueada por el moderador",
         "moderationInEffectDescription": "Por favor, levanten la mano si quieren hablar.",

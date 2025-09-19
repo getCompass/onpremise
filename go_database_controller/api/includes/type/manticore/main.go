@@ -52,6 +52,16 @@ func InitTable(ctx context.Context, spaceId int64) error {
 		return err
 	}
 
+	if len(conf.GetConfig().ServiceLabel) > 0 && len(conf.GetConfig().ManticoreClusterName) > 0 {
+
+		sqlQuery = fmt.Sprintf("ALTER CLUSTER %s add main_%d", conf.GetConfig().ManticoreClusterName, spaceId)
+
+		_, err = connection.Query(sqlQuery)
+		if err != nil {
+			return err
+		}
+	}
+
 	registry, err := port_registry.GetByCompany(ctx, spaceId)
 	if err != nil {
 

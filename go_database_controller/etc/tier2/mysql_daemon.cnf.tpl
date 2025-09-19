@@ -13,7 +13,7 @@ datadir = {{$.CompanyDbPath}}/mysql_company_{{$mysql_conf_block.CompanyId}}
 log-error = /var/log/mysql/{{$.ServerName}}-{{$mysql_conf_block.CompanyId}}-error.log
 bind-address = 0.0.0.0
 
-innodb_buffer_pool_size = 128M          # кэш таблиц, данных и индексов
+innodb_buffer_pool_size = 32M          # кэш таблиц, данных и индексов
 innodb_thread_concurrency = 8           # кол-во одновременно обрабатываемых запросов, оптимально = кол-во ядер на машине если один mysql
 innodb_log_buffer_size = 1M             # буфера лога транзакций
 innodb_flush_log_at_trx_commit = 0      # сброс данных на диск, 0 - раз в секунду (быстро, ненадожно), 1 - при каждой транзакции (очень медленно), 2 - сброс в память системы, потом на диск
@@ -43,7 +43,7 @@ innodb_log_file_size = 16M
 
 max-allowed-packet = 16M                # макс размер данных, которые могут быть переданы за один запрос
 max-connect-errors = 1000000            # макс кол-во ошибок который должен поймать mysql перед тем как заблокировать хост
-max_connections = 450                  # макс кол-во одновременных соединений, для оптимальной работы, нужно переиспользовать соединения на клиенте
+max_connections = 10000                  # макс кол-во одновременных соединений, для оптимальной работы, нужно переиспользовать соединения на клиенте
 open-files-limit = 65535                #
 
 skip_external_locking

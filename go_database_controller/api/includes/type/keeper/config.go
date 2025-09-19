@@ -20,12 +20,17 @@ type MysqlConfBlockStruct struct {
 
 // данные для подстановки в шаблон
 type templateStruct struct {
-	RegistryServicePath string
-	DominoNetwork       string `json:"domino_network"`
-	ConfPath            string `json:"conf_path"`
-	MysqlConfBlockList  []*MysqlConfBlockStruct
-	DominoId            string `json:"domino_id"`
-	StackNamePrefix     string `json:"stack_name_prefix"`
+	RegistryServicePath  string
+	DominoNetwork        string `json:"domino_network"`
+	ConfPath             string `json:"conf_path"`
+	MysqlConfBlockList   []*MysqlConfBlockStruct
+	MysqlServerId        int64  `json:"mysql_server_id"`
+	MysqlSslPath         string `json:"mysql_ssl_path"`
+	DominoId             string `json:"domino_id"`
+	StackNamePrefix      string `json:"stack_name_prefix"`
+	ServiceLabel         string `json:"service_label"`
+	MonolithMysqlNetwork string `json:"monolith_mysql_network"`
+	MysqlSslPrefix       string `json:"mysql_ssl_prefix"`
 }
 
 // мьютексы для защиты от гонок; не защищают от косяков,
@@ -62,13 +67,23 @@ func GenerateComposeConfig(portList []*port_registry.PortRegistryStruct) error {
 	//goland:noinspection GoUnhandledErrorResult
 	defer file.Close()
 
+	mysqlSslPrefix := "master"
+	if conf.GetConfig().MysqlServerId > 1 {
+		mysqlSslPrefix = "replica"
+	}
+
 	return templ.WriteToFile(file, t, &templateStruct{
-		DominoNetwork:       conf.GetConfig().DominoNetwork,
-		RegistryServicePath: conf.GetConfig().RegistryServicePath,
-		MysqlConfBlockList:  makePortBlockData(portList),
-		ConfPath:            confPath,
-		DominoId:            conf.GetConfig().DominoId,
-		StackNamePrefix:     conf.GetConfig().StackNamePrefix,
+		DominoNetwork:        conf.GetConfig().DominoNetwork,
+		RegistryServicePath:  conf.GetConfig().RegistryServicePath,
+		MysqlConfBlockList:   makePortBlockData(portList),
+		ConfPath:             confPath,
+		DominoId:             conf.GetConfig().DominoId,
+		StackNamePrefix:      conf.GetConfig().StackNamePrefix,
+		MysqlServerId:        conf.GetConfig().MysqlServerId,
+		MysqlSslPath:         conf.GetConfig().MysqlSslPath,
+		ServiceLabel:         conf.GetConfig().ServiceLabel,
+		MonolithMysqlNetwork: conf.GetConfig().MonolithMysqlNetwork,
+		MysqlSslPrefix:       mysqlSslPrefix,
 	})
 }
 

@@ -31,7 +31,7 @@ class Domain_Domino_Action_CreateVacantCompany {
 	public static function do(Struct_Db_PivotCompanyService_DominoRegistry $domino_row):int {
 
 		// добавляем в базу запись для новой компании
-		$company = static::_create($domino_row);
+		$company = static::create($domino_row);
 
 		// блокируем порт для компании
 		$port_row = Domain_Domino_Action_Port_LockForCompany::run($domino_row, $company->company_id, Domain_Domino_Entity_Port_Registry::TYPE_COMMON, static::_PORT_LOCK_DURATION);
@@ -48,7 +48,6 @@ class Domain_Domino_Action_CreateVacantCompany {
 		Gateway_Db_PivotCompany_CompanyList::set($company->company_id, ["status" => $company->status]);
 
 		// создаем конфиг для компании
-
 		$port_registry_row = Gateway_Db_PivotCompanyService_PortRegistry::getOne($domino_row->domino_id, $port_row->port, $port_row->host);
 		Domain_Domino_Action_Config_UpdateMysql::do($company, $domino_row, $port_registry_row, true);
 		Domain_Domino_Action_WaitConfigSync::do($company, $domino_row);
@@ -83,10 +82,12 @@ class Domain_Domino_Action_CreateVacantCompany {
 	 * @throws \returnException
 	 * @long мало действий, записи данных в столбик для читаемости
 	 */
-	public static function _create(Struct_Db_PivotCompanyService_DominoRegistry $domino_row):Struct_Db_PivotCompany_Company {
+	public static function create(Struct_Db_PivotCompanyService_DominoRegistry $domino_row, int|null $company_id = null):Struct_Db_PivotCompany_Company {
 
 		// получаем инкрементальный идентификатор компании
-		$company_id = Type_Autoincrement_Pivot::getNextId(Type_Autoincrement_Pivot::COMPANY_ID_KEY);
+		if (is_null($company_id)) {
+			$company_id = Type_Autoincrement_Pivot::getNextId(Type_Autoincrement_Pivot::COMPANY_ID_KEY);
+		}
 
 		$company_registry = new Struct_Db_PivotCompanyService_CompanyInitRegistry(
 			$company_id,

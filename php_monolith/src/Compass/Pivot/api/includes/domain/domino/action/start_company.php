@@ -54,26 +54,41 @@ class Domain_Domino_Action_StartCompany {
 		}
 
 		// получаем рабочий порт, на котором будет подниматься компания и привязываем ее
+		Type_System_Admin::log("start_company_process", "Выполняем привязку к порту для компании {$company->company_id}");
 		$target_port = Domain_Domino_Action_Port_ResolveWorkPortForCompany::run($domino, $company, static::_PORT_LOCK_DURATION);
+		Type_System_Admin::log("start_company_process", "Выбрали порт {$target_port->port} для привязки компании {$company->company_id}");
 		$target_port = Domain_Domino_Action_Port_Bind::run($domino, $target_port, $company->company_id, Domain_Domino_Action_Port_Bind::POLICY_WAKING_UP);
+		Type_System_Admin::log("start_company_process", "Привязка к порту успешно выполнена для компании {$company->company_id}");
 
 		// поднимаем актуальную миграцию
+		console("поднимаем актуальную миграцию для компании {$company->company_id}");
 		Gateway_Bus_DatabaseController::migrateUp($domino, $company->company_id);
+		Type_System_Admin::log("start_company_process", "Актуализировали миграцию для компании {$company->company_id}");
+		console("актуализировали миграцию для компании {$company->company_id}");
 
 		// обновляем данные компании
 		$company = static::_updateCompany($company, $domino);
+		Type_System_Admin::log("start_company_process", "Обновили данные компании {$company->company_id}");
+		console("обновили данные компании {$company->company_id}");
 
 		// генерим конфиг тарифа
 		$tariff = Domain_SpaceTariff_Repository_Tariff::get($company->company_id);
 		Domain_Domino_Action_Config_UpdateTariff::do($company, $tariff);
+		Type_System_Admin::log("start_company_process", "Сгенерировали файл-конфиг тарифа для компании {$company->company_id}");
+		console("сгенерировали файл-конфиг тарифа для компании {$company->company_id}");
 
 		// генерим конфиг мускула для компании в активном состоянии
 		Domain_Domino_Action_Config_UpdateMysql::do($company, $domino, $target_port, true);
+		Type_System_Admin::log("start_company_process", "Обновили файл-конфиг mysql для компании {$company->company_id}");
+		console("обновляем файл-конфиг mysql для компании {$company->company_id}");
 
 		// ждем, пока компания не подтвердит готовность
 		Domain_Domino_Action_WaitConfigSync::do($company, $domino);
+		Type_System_Admin::log("start_company_process", "Успешно синхронизированы конфиг-файлы между pivot и компанией {$company->company_id}");
+		console("успешно синхронизированы конфиг-файлы между pivot и компанией {$company->company_id}");
 
 		// обновляем данные премиума для компании
+		console("обновляем дополнительные данные после успешного старта компании {$company->company_id}");
 		return [static::_afterStart($company), $target_port];
 	}
 
@@ -116,8 +131,8 @@ class Domain_Domino_Action_StartCompany {
 		// обновляем данные премиума для компании
 		Gateway_Socket_Company::updatePermissions($company);
 
-		// пытаемся провести переиндексацию
-		Gateway_Socket_Company::tryReindex($company);
+		console("обновление компании {$company->company_id} завершено");
+		Type_System_Admin::log("start_company_process", "Обновление компании {$company->company_id} завершено");
 
 		return $company;
 	}

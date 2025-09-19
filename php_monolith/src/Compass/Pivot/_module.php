@@ -24,7 +24,7 @@ include_once PIVOT_MODULE_ROOT . "_module/sharding.php";
 
 // инициализируем данные в вендоре
 \BaseFrame\Error\ErrorHandler::init(DISPLAY_ERRORS);
-\BaseFrame\Server\ServerHandler::init(SERVER_TAG_LIST);
+\BaseFrame\Server\ServerHandler::init(SERVER_TAG_LIST, SERVICE_LABEL);
 
 \BaseFrame\Crypt\CryptProvider::init([
 	\BaseFrame\Crypt\CryptProvider::DEFAULT  => new \BaseFrame\Crypt\CryptData(ENCRYPT_KEY_DEFAULT, ENCRYPT_IV_DEFAULT),

@@ -40,7 +40,7 @@ class Onpremiseweb_Global extends \BaseFrame\Controller\Api {
 			"user_info"                        => $is_authorized ? Onpremiseweb_Format::userInfo($user_info) : null,
 			"restrictions"                     => (array) $restrictions,
 			"connect_check_url"                => (string) PUBLIC_CONNECT_CHECK_URL . "/",
-			"download_app_url"                 => (string) PUBLIC_ENTRYPOINT_ELECTRON_UPDATE . "/",
+			"download_app_url"                 => (string) PUBLIC_ENTRYPOINT_ELECTRON_DOWNLOAD_APP . "/",
 		]);
 	}
 }

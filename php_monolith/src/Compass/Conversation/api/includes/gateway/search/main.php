@@ -2,6 +2,8 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * Класс для работы с поисковиком.
  */
@@ -18,7 +20,7 @@ class Gateway_Search_Main {
 
 		// приводим элементы к массиву
 		$insert = array_map(static fn(Struct_Domain_Search_Insert $item) => (array) $item, $insert_item_list);
-		ShardingGateway::search()->insert(static::_getTableName(), $insert);
+		ShardingGateway::search()->insert(static::_getTableNameWithCluster(), $insert);
 	}
 
 	/**
@@ -64,7 +66,7 @@ class Gateway_Search_Main {
 			if (count($replace) > 0) {
 
 				// обновляем записи в поисковике
-				ShardingGateway::search()->replace(static::_getTableName(), $replace);
+				ShardingGateway::search()->replace(static::_getTableNameWithCluster(), $replace);
 
 				$offset += static::REPLACE_BATCH_SIZE;
 				$count  += count($replace);
@@ -305,7 +307,7 @@ class Gateway_Search_Main {
 	public static function delete(int $parent_search_id):void {
 
 		$query = "DELETE FROM ?t WHERE `search_id` = ?i OR ANY(`inherit_parent_id_list`) = ?i";
-		ShardingGateway::search()->delete($query, [static::_getTableName(), $parent_search_id, $parent_search_id]);
+		ShardingGateway::search()->delete($query, [static::_getTableNameWithCluster(), $parent_search_id, $parent_search_id]);
 	}
 
 	/**
@@ -314,7 +316,7 @@ class Gateway_Search_Main {
 	public static function deleteForUsers(int $parent_search_id, array $user_id_list):void {
 
 		$query = "DELETE FROM ?t WHERE `user_id` IN (?an) AND (`search_id` = ?i OR ANY(`inherit_parent_id_list`) = ?i)";
-		ShardingGateway::search()->delete($query, [static::_getTableName(), $user_id_list, $parent_search_id, $parent_search_id]);
+		ShardingGateway::search()->delete($query, [static::_getTableNameWithCluster(), $user_id_list, $parent_search_id, $parent_search_id]);
 	}
 
 	/**
@@ -323,7 +325,7 @@ class Gateway_Search_Main {
 	public static function deleteByParent(int $parent_search_id):void {
 
 		$query = "DELETE FROM ?t WHERE ANY(`inherit_parent_id_list`) = ?i";
-		ShardingGateway::search()->delete($query, [static::_getTableName(), $parent_search_id]);
+		ShardingGateway::search()->delete($query, [static::_getTableNameWithCluster(), $parent_search_id]);
 	}
 
 	/**
@@ -332,7 +334,7 @@ class Gateway_Search_Main {
 	public static function deleteTypedByParent(int $parent_search_id, array $type_list):void {
 
 		$query = "DELETE FROM ?t WHERE `parent_id` = ?i AND `type` IN (?an)";
-		ShardingGateway::search()->delete($query, [static::_getTableName(), $parent_search_id, $type_list]);
+		ShardingGateway::search()->delete($query, [static::_getTableNameWithCluster(), $parent_search_id, $type_list]);
 	}
 
 	/**
@@ -342,7 +344,7 @@ class Gateway_Search_Main {
 	public static function deleteByParentForUsers(int $parent_search_id, array $user_id_list):void {
 
 		$query = "DELETE FROM ?t WHERE `user_id` IN (?an) AND ANY(`inherit_parent_id_list`) = ?i";
-		ShardingGateway::search()->delete($query, [static::_getTableName(), $user_id_list, $parent_search_id]);
+		ShardingGateway::search()->delete($query, [static::_getTableNameWithCluster(), $user_id_list, $parent_search_id]);
 	}
 
 	/**
@@ -368,7 +370,8 @@ class Gateway_Search_Main {
 	 */
 	public static function truncate():void {
 
-		$table = static::_getTableName();
+		$table = static::_getTableNameWithCluster();
+		$table = str_replace(":", "`:`", $table);
 		ShardingGateway::search()->query("TRUNCATE TABLE `$table`");
 	}
 
@@ -388,5 +391,26 @@ class Gateway_Search_Main {
 	protected static function _getTableName(int $space_id = COMPANY_ID):string {
 
 		return static::TABLE_NAME . "_$space_id";
+	}
+
+	/**
+	 * Возвращает имя таблицы с кластером (для репликации мантикоры).
+	 * Из документации:
+	 * При работе с кластером репликации все операторы записи, такие как INSERT, REPLACE, DELETE, TRUNCATE, UPDATE
+	 * которые изменяют содержимое таблицы кластера, должны использовать cluster_name:table_name выражение вместо имени таблицы
+	 */
+	protected static function _getTableNameWithCluster(int $space_id = COMPANY_ID):string {
+
+		$table_name = self::_getTableName($space_id);
+
+		if (!ServerProvider::isOnPremise() || mb_strlen(SERVICE_LABEL) < 1) {
+			return $table_name;
+		}
+
+		if (!defined("MANTICORE_CLUSTER_NAME") || mb_strlen(MANTICORE_CLUSTER_NAME) < 1) {
+			return $table_name;
+		}
+
+		return MANTICORE_CLUSTER_NAME . ":" . $table_name;
 	}
 }

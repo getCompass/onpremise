@@ -80,6 +80,10 @@ class Type_Event_Handler {
 		// обработчик для полученного события
 		$event_handler = __NAMESPACE__ . "\Type_Event_{$category}_{$name}";
 
+		if (\BaseFrame\Server\ServerProvider::isReserveServer()) {
+			return;
+		}
+
 		// если такого обработчика нет, то событие обработать не получится
 		if (!class_exists($event_handler)) {
 			return;

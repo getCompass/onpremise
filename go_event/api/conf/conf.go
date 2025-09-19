@@ -29,10 +29,13 @@ type ConfigStruct struct {
 
 	SocketKeyMe string `json:"socket_key_me"`
 
-	CapacityLimit   int    `json:"capacity_limit"`
-	WorldConfigPath string `json:"world_config_path"`
+	CapacityLimit    int    `json:"capacity_limit"`
+	WorldConfigPath  string `json:"world_config_path"`
+	GlobalConfigPath string `json:"global_config_path"`
 
-	ServiceRoleSet string `json:"service_role_set"`
+	ServiceRoleSet            string `json:"service_role_set"`
+	ServiceLabel              string `json:"service_label"`
+	CompaniesRelationshipFile string `json:"companies_relationship_file"`
 
 	ServerTagList                       []string      `json:"server_tag_list"`
 	ForceCompanyConfigUpdateIntervalSec time.Duration `json:"force_company_config_update_interval_sec"`

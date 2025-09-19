@@ -24,7 +24,7 @@ require_once ANNOUNCEMENT_MODULE_API . "includes/custom_define.php";
 
 // инициализируем данные в вендоре
 \BaseFrame\Error\ErrorHandler::init(DISPLAY_ERRORS);
-\BaseFrame\Server\ServerHandler::init(SERVER_TAG_LIST);
+\BaseFrame\Server\ServerHandler::init(SERVER_TAG_LIST, SERVICE_LABEL);
 \BaseFrame\Socket\SocketHandler::init(getConfig("SOCKET_URL"), getConfig("SOCKET_MODULE"), SOCKET_KEY_ANNOUNCEMENT, CA_CERTIFICATE);
 \BaseFrame\Conf\ConfHandler::init(
 	getConfig("SHARDING_GO"), getConfig("SHARDING_SPHINX"), getConfig("SHARDING_RABBIT"),

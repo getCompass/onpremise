@@ -91,4 +91,8 @@ define("CA_CERTIFICATE"                	, "${CA_CERTIFICATE}");
 // максимальный размер загружаемого файла
 define("MAX_FILE_SIZE_MB"                 , ${MAX_FILE_SIZE_MB});
 define("DEFAULT_UPLOAD_TIMEOUT_SEC"       , ${DEFAULT_UPLOAD_TIMEOUT_SEC});
+
+// константы используемые для резервных серверов
+define("SERVICE_LABEL"                	, "${SERVICE_LABEL}");
+define("COMPANIES_RELATIONSHIP_FILE"      , "${COMPANIES_RELATIONSHIP_FILE}");
 // @formatter:on <чтобы автоформатирование не убирало табы>

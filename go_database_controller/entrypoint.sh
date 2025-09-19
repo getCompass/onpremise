@@ -6,6 +6,8 @@ SCRIPT_PATH=$(cd -- "$(dirname "$0")" || exit 1 >/dev/null 2>&1 ; pwd -P); VERBO
 envsubst < /app/api/conf/conf.example.json > /app/api/conf/conf.json
 envsubst < /app/api/conf/sharding.example.json > /app/api/conf/sharding.json
 
+envsubst < /app/etc/mysql_daemon.cnf.tpl > /app/etc/mysql_daemon.cnf
+
 sh wait-services.sh 60
 mkdir -p /app/logs && cd /app && go build -gcflags "all=-N -l" -o database_controller -mod vendor main.go && ln -sf /dev/stdout /app/logs/main.log
 

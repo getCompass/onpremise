@@ -51,6 +51,9 @@ class Domain_System_Action_GetStartDataV2 {
 		$output_data["available_auth_method_list"]       = Domain_User_Entity_Auth_Config::getAvailableMethodList();
 		$output_data["available_auth_guest_method_list"] = Domain_User_Entity_Auth_Config::getAvailableGuestMethodList();
 
+		// получаем тип сервера
+		$output_data["server_type"] = Domain_System_Entity_ServerType::getServerType();
+
 		// получаем конфиг с фичами для приложения
 		return self::_getFeatureListIfNeed($need_data_list, $user_id, $output_data);
 	}

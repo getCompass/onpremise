@@ -7,12 +7,11 @@ use BaseFrame\Exception\Domain\ParseFatalException;
 /**
  * Регистрация onpremise сервера
  */
-class Domain_Premise_Action_Register {
-
+class Domain_Premise_Action_Register
+{
 	/**
 	 * Выполняем
 	 *
-	 * @return string
 	 * @throws Domain_Premise_Exception_ServerAlreadyRegistered
 	 * @throws Domain_Premise_Exception_ServerCountExceeded
 	 * @throws Domain_Premise_Exception_ServerIsNotAvailable
@@ -21,15 +20,15 @@ class Domain_Premise_Action_Register {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public static function do():string {
+	public static function do(string | false $yc_identity_document = false, string | false $yc_identity_document_base64_signature = false): string
+	{
 
 		try {
 
-			$secret_key = Gateway_Premise_License::register(PUBLIC_ENTRYPOINT_PREMISE, SERVER_UID);
+			$secret_key = Gateway_Premise_License::register(PUBLIC_ENTRYPOINT_PREMISE, SERVER_UID, $yc_identity_document, $yc_identity_document_base64_signature);
 			Domain_Config_Entity_Main::set(Domain_Config_Entity_Main::SECRET_KEY, [
 				"secret_key" => $secret_key,
 			]);
-
 		} catch (Gateway_Premise_Exception_ServerAlreadyRegistered) {
 			throw new Domain_Premise_Exception_ServerAlreadyRegistered("server already registered");
 		} catch (Gateway_Premise_Exception_ServerIsNotAvailable) {

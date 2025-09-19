@@ -10,11 +10,11 @@ require_once __DIR__ . "/../../../../../../start.php";
 class Sh_Php_Migration_Publish_Technical_Works_In_Progress_Company_Announcement {
 
 	protected const _HINT = [
-		\Service\AnnouncementTemplate\AnnouncementType::APPLICATION_TECHNICAL_WORKS_IN_PROGRESS => [
-			"description"       => "анонс технических работ",
+		\Service\AnnouncementTemplate\AnnouncementType::COMPANY_TECHNICAL_WORKS_IN_PROGRESS => [
+			"description"       => "анонс технических работ в компании",
 			"extra_description" => [
-				"started_at"               => "время начала, тех. работ (timestamp)",
-				"app_will_be_available_at" => "когда приложение станет доступно (timestamp)",
+				"started_at"           => "время начала, тех. работ (timestamp)",
+				"will_be_available_at" => "когда компания станет доступна (timestamp)",
 			],
 		],
 	];
@@ -27,7 +27,7 @@ class Sh_Php_Migration_Publish_Technical_Works_In_Progress_Company_Announcement 
 		// параметры
 		$company_id = Type_Script_InputParser::getArgumentValue("--company_id", Type_Script_InputParser::TYPE_INT);
 
-		$template = \Service\AnnouncementTemplate\TemplateService::createOfType(\Service\AnnouncementTemplate\AnnouncementType::APPLICATION_TECHNICAL_WORKS_IN_PROGRESS);
+		$template = \Service\AnnouncementTemplate\TemplateService::createOfType(\Service\AnnouncementTemplate\AnnouncementType::COMPANY_TECHNICAL_WORKS_IN_PROGRESS);
 
 		$template["is_global"]             = false;
 		$template["company_id"]            = $company_id;

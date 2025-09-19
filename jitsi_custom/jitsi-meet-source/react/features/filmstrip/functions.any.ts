@@ -1,6 +1,6 @@
 import { IReduxState, IStore } from '../app/types';
 import {
-    getActiveSpeakersToBeDisplayed, getLocalParticipant, getParticipantById, getRaiseHandsQueue, getSortedModeratorList,
+    getLocalParticipant, getParticipantById, getRaiseHandsQueue, getSortedModeratorList,
     getVirtualScreenshareParticipantOwnerId
 } from '../base/participants/functions';
 
@@ -42,7 +42,6 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, raisedH
     const screenShareParticipants = sortedRemoteVirtualScreenshareParticipants
         ? [ ...sortedRemoteVirtualScreenshareParticipants.keys() ] : [];
     const sharedVideos = fakeParticipants ? Array.from(fakeParticipants.keys()) : [];
-    const speakers = getActiveSpeakersToBeDisplayed(state);
     const raisedHandQueue = raisedHandParticipantsQueue ?? getRaiseHandsQueue(state);
     const raisedHandParticipants = raisedHandQueue.map(({ id: particId }) => particId);
     const remoteRaisedHandParticipants = new Set(raisedHandParticipants || []);
@@ -60,18 +59,12 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, raisedH
         if (remoteParticipants.has(participant)) {
             remoteParticipants.delete(participant);
         }
-        if (speakers.has(participant)) {
-            speakers.delete(participant);
-        }
     }
 
     for (const participant of remoteRaisedHandParticipants.keys()) {
         // Avoid duplicates.
         if (remoteParticipants.has(participant)) {
             remoteParticipants.delete(participant);
-        }
-        if (speakers.has(participant)) {
-            speakers.delete(participant);
         }
     }
 
@@ -80,14 +73,10 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, raisedH
 
         remoteParticipants.delete(ownerId);
         remoteParticipants.delete(screenshare);
-        speakers.delete(ownerId);
     }
 
     for (const sharedVideo of sharedVideos) {
         remoteParticipants.delete(sharedVideo);
-    }
-    for (const speaker of speakers.keys()) {
-        remoteParticipants.delete(speaker);
     }
 
     // Always update the order of the thumbnails.
@@ -104,7 +93,6 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, raisedH
     // НЕ сортируем по id remoteRaisedHandParticipants, чтобы их порядок сохранился по очереди поднятия руки
     participantsWithScreenShare.sort((a, b) => a.localeCompare(b));
     sharedVideos.sort((a, b) => a.localeCompare(b));
-    const reorderedSpeakers = Array.from(speakers.keys());
     const reorderedRemoteParticipants = Array.from(remoteParticipants)
         .sort(([, aData], [, bData]) => aData.joinedAt - bData.joinedAt) // Сортируем по joinedAt
         .map(([id]) => id); // Преобразуем обратно в массив id
@@ -114,7 +102,6 @@ export function updateRemoteParticipants(store: IStore, force?: boolean, raisedH
         ...Array.from(moderatorsMap.keys()),
         ...participantsWithScreenShare,
         ...sharedVideos,
-        ...reorderedSpeakers,
         ...reorderedRemoteParticipants
     ];
 

@@ -25,8 +25,8 @@ services:
       mysqld
         --log_bin=/var/lib/mysql/log-bin.log
         --binlog-format=ROW
-        --expire-logs-days=5
-        --max-binlog-size=300M
+        --expire-logs-days=20
+        --max-binlog-size=500M
         --sync-binlog=1
         --server-id={{$.MysqlServerId}}
         --replicate-ignore-table=mysql.user

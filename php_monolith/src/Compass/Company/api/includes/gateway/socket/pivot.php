@@ -766,6 +766,10 @@ class Gateway_Socket_Pivot {
 		if ($webhook !== false) {
 
 			$ar_post["webhook"]          = $webhook;
+		}
+
+		if ($is_react_command !== false) {
+
 			$ar_post["is_react_command"] = (int) $is_react_command;
 		}
 
@@ -1323,9 +1327,9 @@ class Gateway_Socket_Pivot {
 	protected static function _throwExceptionByStatusCode(int $http_status_code, \Throwable $default_exception):void {
 
 		match ($http_status_code) {
-			490 => throw new \BaseFrame\Exception\Request\CompanyIsHibernatedException("company is hibernation"),
-			491 => throw new \BaseFrame\Exception\Request\CompanyIsRelocatingException("company is relocation"),
-			404 => throw new \BaseFrame\Exception\Request\CompanyNotServedException("company is not served"),
+			490     => throw new \BaseFrame\Exception\Request\CompanyIsHibernatedException("company is hibernation"),
+			491     => throw new \BaseFrame\Exception\Request\CompanyIsRelocatingException("company is relocation"),
+			404     => throw new \BaseFrame\Exception\Request\CompanyNotServedException("company is not served"),
 			default => throw $default_exception,
 		};
 	}

@@ -25,6 +25,7 @@ class Migration_Export_Users {
 
 	/**
 	 * выполняем работу
+	 * @long
 	 */
 	public static function doWork(int $space_id, string $file_path):void {
 
@@ -71,21 +72,11 @@ class Migration_Export_Users {
 			self::_writeToFile($file_path, $formatted_user_list);
 		}
 
-		$user = Gateway_Db_PivotUser_UserList::getOne(REMIND_BOT_USER_ID);
-
-		$file_url = "";
-		$file_key = "";
-		if ($user->avatar_file_map !== "") {
-
-			$file_list = Domain_Partner_Scenario_Socket::getFileByKeyList([Type_Pack_File::doEncrypt($user->avatar_file_map)]);
-			$file_url  = $file_list[0]["data"]["image_version_list"][0]["url"];
-			$file_key  = Type_Pack_File::doEncrypt($user->avatar_file_map);
+		$formatted_user_list = self::_doWorkWithBot($space_id);
+		if (count($formatted_user_list) < 1) {
+			return;
 		}
 
-		$email  = "";
-		$status = "";
-
-		$formatted_user_list = [self::_prepareSlackFormat($user, $space_id, $file_key, $file_url, $email, $status)];
 		self::_writeToFile($file_path, $formatted_user_list);
 	}
 
@@ -134,6 +125,7 @@ class Migration_Export_Users {
 		}
 
 		try {
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			[$_, $_, $_, $_, $status] = Gateway_Socket_Company::getUserInfo($user->user_id, $space_id, $domino_id, $private_key);
 		} catch (cs_UserNotFound) {
 			return [];
@@ -141,6 +133,37 @@ class Migration_Export_Users {
 
 		// приводим к нужному формату как в слаке
 		return self::_prepareSlackFormat($user, $space_id, $file_key, $file_url, $email, $status);
+	}
+
+	/**
+	 * Работаем с ботами
+	 *
+	 * @throws \paramException
+	 */
+	protected static function _doWorkWithBot(int $space_id):array {
+
+		$email  = "";
+		$status = "";
+
+		$user_list = Gateway_Db_PivotUser_UserList::getList(1, [REMIND_BOT_USER_ID, AUTH_BOT_USER_ID, SUPPORT_BOT_USER_ID]);
+
+		$formatted_user_list = [];
+		foreach ($user_list as $user) {
+
+
+			$file_url = "";
+			$file_key = "";
+			if ($user->avatar_file_map !== "") {
+
+				$file_list = Domain_Partner_Scenario_Socket::getFileByKeyList([Type_Pack_File::doEncrypt($user->avatar_file_map)]);
+				$file_url  = $file_list[0]["data"]["image_version_list"][0]["url"];
+				$file_key  = Type_Pack_File::doEncrypt($user->avatar_file_map);
+			}
+
+			$formatted_user_list[] = self::_prepareSlackFormat($user, $space_id, $file_key, $file_url, $email, $status);
+		}
+
+		return $formatted_user_list;
 	}
 
 	/**

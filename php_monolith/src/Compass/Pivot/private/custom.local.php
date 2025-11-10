@@ -120,6 +120,7 @@ define(__NAMESPACE__ . "\VONAGE_API_SECRET"                            , "${VONA
 define(__NAMESPACE__ . "\VONAGE_PROXY"                                 , "${VONAGE_PROXY}");
 define(__NAMESPACE__ . "\TWILIO_ACCOUNT_SID"                           , "${TWILIO_ACCOUNT_SID}");
 define(__NAMESPACE__ . "\TWILIO_AUTH_TOKEN"                            , "${TWILIO_AUTH_TOKEN}");
+define(__NAMESPACE__ . "\IDIGITAL_HEADER_API_KEY"                      , "${IDIGITAL_HEADER_API_KEY}");
 
 define(__NAMESPACE__ . "\COMPANY_TO_PIVOT_PUBLIC_KEY"                  , "${COMPANY_TO_PIVOT_PUBLIC_KEY}");
 define(__NAMESPACE__ . "\PIVOT_TO_COMPANY_PRIVATE_KEY"                 , "${PIVOT_TO_COMPANY_PRIVATE_KEY}");
@@ -139,6 +140,8 @@ define(__NAMESPACE__ . "\ELECTRON_TEST_PHONE"                          , "${ELEC
 define(__NAMESPACE__ . "\ELECTRON_TEST_SMS_CODE"                       , "${ELECTRON_TEST_SMS_CODE}");
 define(__NAMESPACE__ . "\ANDROID_TEST_PHONE"                           , "${ANDROID_TEST_PHONE}");
 define(__NAMESPACE__ . "\ANDROID_TEST_SMS_CODE"                        , "${ANDROID_TEST_SMS_CODE}");
+define(__NAMESPACE__ . "\ANDROID_TEST_PHONE2"                           , "${ANDROID_TEST_PHONE2}");
+define(__NAMESPACE__ . "\ANDROID_TEST_SMS_CODE2"                        , "${ANDROID_TEST_SMS_CODE2}");
 
 define(__NAMESPACE__ . "\TRUSTED_AUTH_TOKEN_LIST"                      , [${TRUSTED_AUTH_TOKEN_LIST}]);
 

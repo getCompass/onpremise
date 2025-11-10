@@ -199,7 +199,7 @@ class Type_Api_Filter {
 	// для флагов utf8 emoji -> :short_name:
 	protected static function _replaceFlagWithShortName(string $text):string {
 
-		// получаем список флагов всех смайликов из конфига
+		// получаем список всех смайликов из конфига
 		$emoji_flag_list = \BaseFrame\Conf\Emoji::EMOJI_FLAG_LIST;
 
 		// если флагов нет, то отдаем текст
@@ -210,11 +210,12 @@ class Type_Api_Filter {
 		// проходимся по каждому флагу
 		foreach ($match[0] as $flag) {
 
-			// заменяем его на :short_name:
-			$text = preg_replace("/" . $flag . "/ui", $emoji_flag_list[$flag], $text, 1);
+			$emoji_flag = $emoji_flag_list[$flag] ?? "";
+
+			// заменяем его на :short_name:, если возможно
+			$text = preg_replace("/" . $flag . "/ui", $emoji_flag, $text, 1);
 		}
 
-		// отдаем ответ с замененными флагами
 		return $text;
 	}
 }

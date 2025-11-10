@@ -1,7 +1,4 @@
-FROM docker.getcompass.ru/service/php-8:8.2.28-1
-ARG BRANCH
-
-RUN apk update && apk add --no-cache curl-dev
+FROM docker.getcompass.ru/service/php-8:8.4.12-3
 
 COPY --chown=www-data:www-data . /app
 

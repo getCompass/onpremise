@@ -85,9 +85,9 @@ class Domain_Member_Entity_Sanitizer {
 		}
 
 		if (count($need_user_id_list) > 0) {
-			return array_intersect($need_user_id_list, $implode_user_id_list);
+			return array_keys(array_flip(array_intersect($need_user_id_list, $implode_user_id_list)));
 		}
-		return $implode_user_id_list;
+		return array_keys(array_flip($implode_user_id_list));
 	}
 
 	/**

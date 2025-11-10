@@ -82,7 +82,7 @@ class Domain_Domino_Action_CreateVacantCompany {
 	 * @throws \returnException
 	 * @long мало действий, записи данных в столбик для читаемости
 	 */
-	public static function create(Struct_Db_PivotCompanyService_DominoRegistry $domino_row, int|null $company_id = null):Struct_Db_PivotCompany_Company {
+	public static function create(Struct_Db_PivotCompanyService_DominoRegistry $domino_row, ?int $company_id = null):Struct_Db_PivotCompany_Company {
 
 		// получаем инкрементальный идентификатор компании
 		if (is_null($company_id)) {

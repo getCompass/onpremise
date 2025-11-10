@@ -106,6 +106,10 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		"otherIpPhone",
 		"url",
 		"pager",
+		"objectSid",
+		"objectGUID",
+		"ipaUniqueID",
+		"ipaNTSecurityIdentifier",
 	];
 
 	public function __construct(string $host, int $port, bool $use_ssl, int $require_cert_strategy, int $timeout) {
@@ -114,13 +118,9 @@ class Domain_Ldap_Entity_Client_Default implements Domain_Ldap_Entity_Client_Int
 		ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, $require_cert_strategy);
 
 		// создаем соединение с правильным форматированием URL
-		if ($use_ssl) {
-			$uri                   = "ldaps://" . $host . ":" . $port;
-			$this->ldap_connection = ldap_connect($uri);
-		} else {
-			$this->ldap_connection = ldap_connect($host, $port);
-		}
+		$uri = $use_ssl ? "ldaps://$host:$port" : "ldap://$host:$port";
 
+		$this->ldap_connection = ldap_connect($uri);
 		if (!$this->ldap_connection) {
 			throw new ParseFatalException(sprintf("could not connect to ldap server [%s]", ldap_error($this->ldap_connection)));
 		}

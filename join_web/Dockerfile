@@ -56,7 +56,7 @@ RUN cd /app \
     && chmod +x /app/entrypoint.sh
 
 RUN cd /app/web \
-    && pnpm install
+    && pnpm install --force
 
 WORKDIR /app
 ENTRYPOINT ["sh", "/app/entrypoint.sh"]

@@ -43,7 +43,6 @@ class Domain_Ldap_Entity_Client_Mock implements Domain_Ldap_Entity_Client_Interf
 	public function searchEntries(string $base, string $filter, int $page_size, array $attribute_list = []):array {
 
 		$entry_list = self::_getMock(self::_MOCK_KEY_SEARCH_ENTRIES, []);
-
 		$count = 0;
 		if (isset($entry_list["count"])) {
 
@@ -59,7 +58,7 @@ class Domain_Ldap_Entity_Client_Mock implements Domain_Ldap_Entity_Client_Interf
 	 */
 	protected static function _setMock(string $key, mixed $value):void {
 
-		\mCache::init()->set(self::_prepareMockKey($key), $value);
+        ShardingGateway::cache()->set(self::_prepareMockKey($key), $value);
 	}
 
 	/**
@@ -69,7 +68,7 @@ class Domain_Ldap_Entity_Client_Mock implements Domain_Ldap_Entity_Client_Interf
 	 */
 	protected static function _getMock(string $key, mixed $default_value):mixed {
 
-		return \mCache::init()->get(self::_prepareMockKey($key), $default_value);
+		return ShardingGateway::cache()->get(self::_prepareMockKey($key), $default_value);
 	}
 
 	/**

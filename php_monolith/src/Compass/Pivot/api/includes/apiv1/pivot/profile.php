@@ -13,8 +13,8 @@ use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 /**
  * контроллер для методов профиля компаса
  */
-class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
-
+class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api
+{
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"set",
@@ -29,7 +29,8 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод обновления профиля
 	 */
-	public function set():array {
+	public function set(): array
+	{
 
 		$name            = $this->post(\Formatter::TYPE_STRING, "name", false);
 		$avatar_file_key = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
@@ -75,9 +76,10 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 	 * Метод очистки аватара
 	 *
 	 * @throws \parseException
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws BlockException
 	 */
-	public function doClearAvatar():array {
+	public function doClearAvatar(): array
+	{
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::PROFILE_SET);
 
@@ -93,7 +95,6 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 	/**
 	 * удаляем аккаунт пользователя
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws BusFatalException
 	 * @throws EndpointAccessDeniedException
@@ -104,9 +105,10 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 * @throws cs_AnswerCommand
-	 * @throws cs_blockException
+	 * @throws cs_blockException|\busException
 	 */
-	public function delete():array {
+	public function delete(): array
+	{
 
 		$two_fa_key                      = $this->post(\Formatter::TYPE_STRING, "two_fa_key", false);
 		$confirm_mail_password_story_key = $this->post(\Formatter::TYPE_STRING, "confirm_mail_password_story_key", false);
@@ -115,27 +117,29 @@ class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api {
 
 		try {
 			Domain_User_Scenario_Api::deleteProfile($this->user_id, $this->session_uniq, $two_fa_key, $confirm_mail_password_story_key);
-		} catch (cs_TwoFaIsInvalid|cs_WrongTwoFaKey|cs_UnknownKeyType|cs_TwoFaTypeIsInvalid|cs_TwoFaInvalidUser|cs_TwoFaInvalidCompany) {
+		} catch (cs_TwoFaIsInvalid | cs_WrongTwoFaKey | cs_UnknownKeyType | cs_TwoFaTypeIsInvalid | cs_TwoFaInvalidUser | cs_TwoFaInvalidCompany) {
 			return $this->error(2302, "2fa key is not valid");
-		} catch (cs_TwoFaIsNotActive|cs_TwoFaIsFinished|cs_TwoFaIsExpired) {
+		} catch (cs_TwoFaIsNotActive | cs_TwoFaIsFinished | cs_TwoFaIsExpired) {
 			return $this->error(2303, "2fa key is not active");
 		} catch (Domain_User_Exception_Confirmation_Mail_IsExpired) {
 			return $this->error(1118002, "mail confirmation key is expired");
-		} catch (Domain_User_Exception_Confirmation_Mail_IsNotConfirmed|Domain_User_Exception_Confirmation_Mail_IsActive|
+		} catch (Domain_User_Exception_Confirmation_Mail_IsNotConfirmed | Domain_User_Exception_Confirmation_Mail_IsActive |
 		Domain_User_Exception_Confirmation_Mail_NotSuccess) {
 			return $this->error(1118001, "mail confirmation key is active");
 		} catch (Domain_User_Exception_Mail_NotFound) {
 			return $this->error(1118003, "mail not found");
-		} catch (cs_UserPhoneSecurityNotFound|cs_PhoneNumberNotFound) {
+		} catch (cs_UserPhoneSecurityNotFound | cs_PhoneNumberNotFound) {
 			return $this->error(1118004, "phone not found");
-		}  catch (Domain_User_Exception_Mail_NotFoundOnSso) {
+		} catch (Domain_User_Exception_Mail_NotFoundOnSso) {
 			return $this->error(1118005, "mail not found");
+		} catch (Domain_User_Exception_ProfileDeletionDisabled) {
+			return $this->error(1118005, "profile deletion disabled");
 		} catch (cs_UserAlreadyBlocked) {
 			throw new ParamException("user is already blocked");
 		} catch (Domain_User_Exception_IsOnpremiseRoot) {
 			throw new ParamException("action not available for this user");
-		} catch (Domain_User_Exception_Confirmation_Mail_InvalidMailPasswordStoryKey|Domain_User_Exception_Confirmation_Mail_InvalidUser|
-		Domain_User_Exception_Confirmation_Mail_IsInvalidType|\cs_UnpackHasFailed|\cs_DecryptHasFailed|\cs_RowIsEmpty) {
+		} catch (Domain_User_Exception_Confirmation_Mail_InvalidMailPasswordStoryKey | Domain_User_Exception_Confirmation_Mail_InvalidUser |
+		Domain_User_Exception_Confirmation_Mail_IsInvalidType | \cs_UnpackHasFailed | \cs_DecryptHasFailed | \cs_RowIsEmpty) {
 			throw new ParamException("mail confirmation key is invalid");
 		} catch (cs_UserNotFound) {
 			throw new ParamException("user not found");

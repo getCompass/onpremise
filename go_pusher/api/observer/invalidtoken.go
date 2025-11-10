@@ -1,11 +1,12 @@
 package observer
 
 import (
-	socketAuthKey "go_pusher/api/includes/type/socket/auth"
+	"go_pusher/api/includes/type/device"
+	"go_pusher/api/includes/type/gwsolution"
 	"time"
 )
 
-// запускаем observer который работает с задачами по обновлению бейджа
+// запускаем observer который работает с задачей по инвалидированию токенов
 func goDeleteInvalidTokens() {
 
 	if isInvalidTokensWork.Load() != nil && isInvalidTokensWork.Load().(bool) {
@@ -15,7 +16,11 @@ func goDeleteInvalidTokens() {
 
 	for {
 
-		socketAuthKey.DeleteUnusedKey()
+		invalidTokens := gwsolution.GetInvalidTokens()
+
+		for _, v := range invalidTokens {
+			device.AddInvalidToken(v.Device, v.Token)
+		}
 
 		// спим
 		time.Sleep(invalidTokensGoroutineInterval)

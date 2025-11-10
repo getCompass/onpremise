@@ -30,9 +30,6 @@ class Domain_System_Action_CreateReserveServerCompany {
 		// занимаем порт на доминошке
 		Domain_Domino_Action_Port_Bind::run($domino_row, $port_row, $company_id, Domain_Domino_Action_Port_Bind::POLICY_RESERVE_CREATING, true);
 
-		// инициализируем таблицу для поиска в пространстве
-		//Gateway_Bus_DatabaseController::initSearch($domino_row, $company_id);
-
 		// создаём/обновляем конфиг mysql для компании
 		$company = Gateway_Db_PivotCompany_CompanyList::getOne($company_id);
 

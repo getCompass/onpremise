@@ -7,8 +7,8 @@ use BaseFrame\Exception\Gateway\RowNotFoundException;
 /**
  * Класс сущности "сервисный таск компании"
  */
-class Domain_Company_Entity_ServiceTask {
-
+class Domain_Company_Entity_ServiceTask
+{
 	public const TASK_TYPE_HIBERNATION_STEP_ONE  = 10; // тип задачи - гибернация
 	public const TASK_TYPE_HIBERNATION_STEP_TWO  = 11; // тип задачи - второй этап гибернации
 	public const TASK_TYPE_AWAKE                 = 20; // тип задачи - пробуждение
@@ -31,16 +31,13 @@ class Domain_Company_Entity_ServiceTask {
 	/**
 	 * Добавить сервисную задачу для компании
 	 *
-	 * @param int   $task_type
-	 * @param int   $need_work
-	 * @param int   $company_id
-	 * @param array $data
 	 *
 	 * @return void
 	 * @throws Domain_System_Exception_IsNotAllowedServiceTask
 	 * @throws \queryException
 	 */
-	public static function schedule(int $task_type, int $need_work, int $company_id, array $data = []):int {
+	public static function schedule(int $task_type, int $need_work, int $company_id, array $data = []): int
+	{
 
 		// проверяем, что передали разрешенный тип задачи
 		if (!in_array($task_type, self::_ALLOWED_TASK_TYPES)) {
@@ -54,11 +51,7 @@ class Domain_Company_Entity_ServiceTask {
 	/**
 	 * Выполняем задачу
 	 *
-	 * @param Struct_Db_PivotCompanyService_CompanyServiceTask $company_service_task
-	 * @param Struct_Db_PivotCompany_Company                   $company_row
-	 * @param \BaseFrame\System\Log                            $log
 	 *
-	 * @return array
 	 * @throws Domain_Company_Exception_ConfigNotExist
 	 * @throws Domain_Company_Exception_IsNotHibernated
 	 * @throws Domain_Domino_Exception_CompanyInOnMaintenance
@@ -79,7 +72,8 @@ class Domain_Company_Entity_ServiceTask {
 	 * @throws \returnException
 	 * @long
 	 */
-	public static function run(Struct_Db_PivotCompanyService_CompanyServiceTask $company_service_task, Struct_Db_PivotCompany_Company $company_row, \BaseFrame\System\Log $log):array {
+	public static function run(Struct_Db_PivotCompanyService_CompanyServiceTask $company_service_task, Struct_Db_PivotCompany_Company $company_row, \BaseFrame\System\Log $log): array
+	{
 
 		// если компания вакантная - ничего не делаем с ней
 		if ($company_row->status === Domain_Company_Entity_Company::COMPANY_STATUS_VACANT) {
@@ -125,7 +119,8 @@ class Domain_Company_Entity_ServiceTask {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public static function forceRun(Struct_Db_PivotCompany_Company $company, Struct_Db_PivotCompanyService_CompanyServiceTask $task):void {
+	public static function forceRun(Struct_Db_PivotCompany_Company $company, Struct_Db_PivotCompanyService_CompanyServiceTask $task): void
+	{
 
 		if (!isTestServer()) {
 			throw new \BaseFrame\Exception\Domain\ReturnFatalException("method is not allowed on current environment level");
@@ -141,12 +136,11 @@ class Domain_Company_Entity_ServiceTask {
 	/**
 	 * Переместить задачу в историю
 	 *
-	 * @param Struct_Db_PivotCompanyService_CompanyServiceTask $company_service_task
 	 *
-	 * @return void
 	 * @throws \queryException
 	 */
-	public static function moveToHistory(Struct_Db_PivotCompanyService_CompanyServiceTask $company_service_task):void {
+	public static function moveToHistory(Struct_Db_PivotCompanyService_CompanyServiceTask $company_service_task): void
+	{
 
 		Gateway_Db_PivotCompanyService_CompanyServiceTaskHistory::insert($company_service_task);
 		Gateway_Db_PivotCompanyService_CompanyServiceTask::delete($company_service_task->task_id);
@@ -176,7 +170,8 @@ class Domain_Company_Entity_ServiceTask {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	protected static function _execTask(Struct_Db_PivotCompany_Company $company, Struct_Db_PivotCompanyService_CompanyServiceTask $company_service_task, \BaseFrame\System\Log $log):\BaseFrame\System\Log {
+	protected static function _execTask(Struct_Db_PivotCompany_Company $company, Struct_Db_PivotCompanyService_CompanyServiceTask $company_service_task, \BaseFrame\System\Log $log): \BaseFrame\System\Log
+	{
 
 		// пытаемся занять компанию для сервисной задачи
 		$company_registry = static::_getLockedRegistryItem($company);
@@ -211,7 +206,8 @@ class Domain_Company_Entity_ServiceTask {
 	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
 	 * @throws \returnException
 	 */
-	protected static function _getLockedRegistryItem(Struct_Db_PivotCompany_Company $company):Struct_Db_PivotCompanyService_CompanyRegistry {
+	protected static function _getLockedRegistryItem(Struct_Db_PivotCompany_Company $company): Struct_Db_PivotCompanyService_CompanyRegistry
+	{
 
 		/** начало транзакции */
 		Gateway_Db_PivotCompanyService_Main::beginTransaction();
@@ -223,7 +219,6 @@ class Domain_Company_Entity_ServiceTask {
 			Gateway_Db_PivotCompanyService_Main::rollback();
 			throw $e;
 		}
-
 
 		// если компания занята - отправляем на следующую итерацию
 		if ($company_registry->is_busy) {

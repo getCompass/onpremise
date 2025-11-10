@@ -111,11 +111,18 @@ class Domain_Conversation_Feed_Action_ReadMessage {
 		// если есть непрочитанные
 		if ($left_menu_row["unread_count"] > 0) {
 
-			Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
+			$set_user_inbox = [
 				"conversation_unread_count" => "conversation_unread_count - 1",
 				"message_unread_count"      => "message_unread_count - " . $left_menu_row["unread_count"],
 				"updated_at"                => $updated_at,
-			]);
+			];
+
+			// если сингл диалог
+			if (Type_Conversation_Meta::isSubtypeOfSingle($left_menu_row["type"])) {
+				$set_user_inbox["single_conversation_unread_count"] = "single_conversation_unread_count - 1";
+			}
+
+			Gateway_Db_CompanyConversation_UserInbox::set($user_id, $set_user_inbox);
 
 			$is_version_update_need = true;
 		}

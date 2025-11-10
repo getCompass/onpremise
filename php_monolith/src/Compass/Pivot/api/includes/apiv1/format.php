@@ -357,10 +357,6 @@ class Apiv1_Format {
 		// отдаем конфиг эмоджи если есть
 		$output["emoji_keywords_list"] = isset($start_data["emoji_keywords_list"]) ? (array) $start_data["emoji_keywords_list"] : [];
 
-		// отдаем видео-онбординг для чата наймы и увольнения
-		$output["hiring_conversation_welcome_video"] = isset($start_data["hiring_conversation_welcome_video"])
-			? (array) $start_data["hiring_conversation_welcome_video"] : [];
-
 		// отдаем видео-онбординг для главного чата
 		$output["general_conversation_welcome_video"] = isset($start_data["general_conversation_welcome_video"])
 			? (array) $start_data["general_conversation_welcome_video"] : [];

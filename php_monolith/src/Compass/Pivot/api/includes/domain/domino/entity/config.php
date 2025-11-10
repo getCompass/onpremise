@@ -8,8 +8,8 @@ use BaseFrame\System\File;
 /**
  * Action для генерации конфигов компании
  */
-class Domain_Domino_Entity_Config {
-
+class Domain_Domino_Entity_Config
+{
 	/** @var array список статусов компаний, для которых можно создавать конфиг с демоном */
 	protected const _ALLOWED_TO_CREATE_MYSQL_CONFIG_STATUS_LIST = [
 		Domain_Company_Entity_Company::COMPANY_STATUS_ACTIVE,
@@ -22,19 +22,15 @@ class Domain_Domino_Entity_Config {
 	/**
 	 * Сформировать секцию с mysql
 	 *
-	 * @param int                                             $status
-	 * @param Struct_Db_PivotCompany_Company                  $company
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry    $domino
-	 * @param Struct_Db_PivotCompanyService_PortRegistry|null $port
-	 *
-	 * @return Struct_Config_Company_Mysql|null
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	public static function makeMysql(int                                             $status,
-						   Struct_Db_PivotCompany_Company                  $company,
-						   Struct_Db_PivotCompanyService_DominoRegistry    $domino,
-						   Struct_Db_PivotCompanyService_PortRegistry|null $port = null):Struct_Config_Company_Mysql|null {
+	public static function makeMysql(
+		int $status,
+		Struct_Db_PivotCompany_Company $company,
+		Struct_Db_PivotCompanyService_DominoRegistry $domino,
+		?Struct_Db_PivotCompanyService_PortRegistry $port = null
+	): Struct_Config_Company_Mysql | null {
 
 		// проверяем, что для переданных данных можно сгенерить конфиг
 		try {
@@ -62,19 +58,16 @@ class Domain_Domino_Entity_Config {
 
 		$mysql_host = $port->host !== "" ? $port->host : $domino->domino_id . "-" . $port->port;
 
-		$host = (ServerProvider::isOnPremise() && !ServerProvider::isMaster()) ? $mysql_host : $domino->database_host;
+		$host = ServerProvider::isOnPremise() ? $mysql_host : $domino->database_host;
 
 		return new Struct_Config_Company_Mysql($host, $port->port, $mysql_user, $mysql_pass);
 	}
 
 	/**
 	 * Сформировать секцию с тарифами
-	 *
-	 * @param \Tariff\Plan\MemberCount\SaveData $member_count_plan
-	 *
-	 * @return Struct_Config_Company_Tariff|null
 	 */
-	public static function makeTariff(\Tariff\Plan\MemberCount\SaveData $member_count_plan):Struct_Config_Company_Tariff|null {
+	public static function makeTariff(\Tariff\Plan\MemberCount\SaveData $member_count_plan): Struct_Config_Company_Tariff | null
+	{
 
 		return new Struct_Config_Company_Tariff(new Struct_Config_Company_Tariff_PlanInfo(
 			$member_count_plan
@@ -87,7 +80,8 @@ class Domain_Domino_Entity_Config {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	protected static function _assert(int $status, Struct_Db_PivotCompany_Company $company, Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry|null $port = null):void {
+	protected static function _assert(int $status, Struct_Db_PivotCompany_Company $company, Struct_Db_PivotCompanyService_DominoRegistry $domino, ?Struct_Db_PivotCompanyService_PortRegistry $port = null): void
+	{
 
 		// проверяем, что домино совпадает
 		if ($company->domino_id !== $domino->domino_id) {
@@ -130,7 +124,8 @@ class Domain_Domino_Entity_Config {
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	public static function update(int $company_id, Struct_Config_Company_Main $config, bool $need_force_update = false):void {
+	public static function update(int $company_id, Struct_Config_Company_Main $config, bool $need_force_update = false): void
+	{
 
 		$domino_path = self::_getDominoPath($config->domino_id);
 
@@ -154,7 +149,7 @@ class Domain_Domino_Entity_Config {
 			}
 		} elseif (!$need_force_update) {
 
-			$existing_config = include($php_config_path);
+			$existing_config = include $php_config_path;
 
 			// если существующий и новый конфиг идентичны,
 			// то не нужно перезаписывать данные
@@ -179,7 +174,8 @@ class Domain_Domino_Entity_Config {
 	 * Вернуть конфиг компании
 	 * @throws Domain_Company_Exception_ConfigNotExist
 	 */
-	public static function get(Struct_Db_PivotCompany_Company $company):Struct_Config_Company_Main {
+	public static function get(Struct_Db_PivotCompany_Company $company): Struct_Config_Company_Main
+	{
 
 		$domino_path     = self::_getDominoPath($company->domino_id);
 		$php_config_path = $domino_path . "{$company->company_id}_company.php";
@@ -191,7 +187,7 @@ class Domain_Domino_Entity_Config {
 		// если нужно - инвалидируем opcache, чтобы получить свежий конфиг. invalidate сам поймет, нужно ли чистить кэш
 		opcache_invalidate($php_config_path);
 
-		$company_config = include($php_config_path);
+		$company_config = include $php_config_path;
 
 		$output_config = new Struct_Config_Company_Main($company_config["status"], $company_config["domino_id"]);
 
@@ -206,12 +202,9 @@ class Domain_Domino_Entity_Config {
 
 	/**
 	 * Очистить конфиги домино
-	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino
-	 *
-	 * @return void
 	 */
-	public static function clear(Struct_Db_PivotCompanyService_DominoRegistry $domino):void {
+	public static function clear(Struct_Db_PivotCompanyService_DominoRegistry $domino): void
+	{
 
 		$domino_path = self::_getDominoPath($domino->domino_id);
 
@@ -226,7 +219,8 @@ class Domain_Domino_Entity_Config {
 	/**
 	 * Сбрасывает конфиг для компании.
 	 */
-	public static function invalidate(Struct_Db_PivotCompany_Company $company, Struct_Db_PivotCompanyService_DominoRegistry $domino, bool $force = false):void {
+	public static function invalidate(Struct_Db_PivotCompany_Company $company, Struct_Db_PivotCompanyService_DominoRegistry $domino, bool $force = false): void
+	{
 
 		if (!$force && $company->domino_id === $domino->domino_id) {
 			throw new \BaseFrame\Exception\Domain\ParseFatalException("can't invalidate config — company belong to domino");
@@ -249,26 +243,19 @@ class Domain_Domino_Entity_Config {
 
 	/**
 	 * получаем путь к конфигам доминошки
-	 *
-	 * @param string $domino_id
-	 *
-	 * @return string
 	 */
-	protected static function _getDominoPath(string $domino_id):string {
+	protected static function _getDominoPath(string $domino_id): string
+	{
 
 		return sprintf("%s%s_domino/", DOMINO_CONFIG_PATH, $domino_id);
 	}
 
 	/**
 	 * получаем путь к php конфигу компании
-	 *
-	 * @param string $domino_id
-	 * @param int    $company_id
-	 *
-	 * @return string
 	 */
 	#[\JetBrains\PhpStorm\Pure]
-	public static function getCompanyPhpConfigPath(string $domino_id, int $company_id):string {
+	public static function getCompanyPhpConfigPath(string $domino_id, int $company_id): string
+	{
 
 		$domino_path = self::_getDominoPath($domino_id);
 		return $domino_path . "{$company_id}_company.php";
@@ -276,14 +263,10 @@ class Domain_Domino_Entity_Config {
 
 	/**
 	 * получаем путь к json конфигу компании
-	 *
-	 * @param string $domino_id
-	 * @param int    $company_id
-	 *
-	 * @return string
 	 */
 	#[\JetBrains\PhpStorm\Pure]
-	public static function getCompanyJsonConfigPath(string $domino_id, int $company_id):string {
+	public static function getCompanyJsonConfigPath(string $domino_id, int $company_id): string
+	{
 
 		$domino_path = self::_getDominoPath($domino_id);
 		return $domino_path . "{$company_id}_company.json";
@@ -291,12 +274,9 @@ class Domain_Domino_Entity_Config {
 
 	/**
 	 * Добавить хост домино для работы конфигов
-	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino
-	 *
-	 * @return void
 	 */
-	public static function addDominoHost(Struct_Db_PivotCompanyService_DominoRegistry $domino):void {
+	public static function addDominoHost(Struct_Db_PivotCompanyService_DominoRegistry $domino): void
+	{
 
 		$domino_hosts_file = File::init(DOMINO_CONFIG_PATH, self::_DOMINO_HOSTS_FILE);
 
@@ -317,9 +297,10 @@ class Domain_Domino_Entity_Config {
 	 *
 	 * @throws Domain_Company_Exception_ConfigNotExist
 	 */
-	public static function checkExistConfig(int $company_id, string $domino_id):void {
+	public static function checkExistConfig(int $company_id, string $domino_id): void
+	{
 
-		$php_config_path  = self::getCompanyPhpConfigPath($domino_id, $company_id);
+		$php_config_path = self::getCompanyPhpConfigPath($domino_id, $company_id);
 
 		if (!file_exists($php_config_path)) {
 			throw new Domain_Company_Exception_ConfigNotExist("config dont exist");
@@ -328,16 +309,11 @@ class Domain_Domino_Entity_Config {
 
 	/**
 	 * Установить метку времени последнего изменения файла конфига
-	 *
-	 * @param string $path
-	 * @param string $domino_id
-	 *
-	 * @return void
 	 */
-	protected static function _setTimestampFile(string $path, string $domino_id):void {
+	protected static function _setTimestampFile(string $path, string $domino_id): void
+	{
 
 		$timestamp_file = File::init($path, self::_TIMESTAMP_FILE);
-
 
 		if (!$timestamp_file->isExists()) {
 

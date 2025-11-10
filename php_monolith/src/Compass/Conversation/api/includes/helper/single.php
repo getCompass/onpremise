@@ -99,16 +99,6 @@ class Helper_Single {
 		$meta_row["users"] = Type_Conversation_Single::attachUser($meta_row["conversation_map"], $user_id, $opponent_user_id, $meta_row, $is_hidden_for_user);
 		$meta_row["users"] = Type_Conversation_Single::attachUser($meta_row["conversation_map"], $opponent_user_id, $user_id, $meta_row, $is_hidden_for_opponent);
 
-		// отправляем событие пользователю
-		if (!$is_hidden_for_user) {
-			Gateway_Bus_Sender::conversationAdded($user_id, $meta_row["conversation_map"]);
-		}
-
-		// отправляем событие пользователю
-		if (!$is_hidden_for_opponent) {
-			Gateway_Bus_Sender::conversationAdded($opponent_user_id, $meta_row["conversation_map"]);
-		}
-
 		// если чата не было - логируем создание
 		if ($conversation_map === false) {
 			Type_User_ActionAnalytics::send($user_id, Type_User_ActionAnalytics::ADD_SINGLE);

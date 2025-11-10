@@ -43,7 +43,7 @@ class Gateway_Bus_Company_Timer extends Gateway_Bus_Company_Main {
 	 * получаем дополнительные поля для обновления баджа
 	 *
 	 */
-	public static function getExtraForUpdateBadge(int $user_id, array $thread_map_list = null, bool $is_add_threads = null):array {
+	public static function getExtraForUpdateBadge(int $user_id, ?array $thread_map_list = null, ?bool $is_add_threads = null):array {
 
 		$extra = ["user_id" => $user_id];
 

@@ -34,9 +34,6 @@ class Domain_Jitsi_Entity_ConferenceMember_JoiningAsserts_PrivateConference impl
 					throw new Domain_Jitsi_Exception_ConferenceMember_AttemptJoinToPrivateConference();
 				}
 			}
-
-			// на on-premise окружении пользователи из первой компании могут участвовать в конференции второй компании
-			// поэтому какие либо проверки опускаем
 		}
 	}
 }

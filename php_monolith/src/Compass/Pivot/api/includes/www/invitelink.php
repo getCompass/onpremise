@@ -42,7 +42,8 @@ class Www_Invitelink extends \BaseFrame\Controller\Www {
 			] = Domain_Www_Scenario_Api::getInviteLinkInfo($link);
 		} catch (cs_JoinLinkIsUsed | cs_JoinLinkIsNotActive | cs_UserNotFound | BlockException
 		| cs_IncorrectJoinLink | cs_JoinLinkNotFound | Domain_Company_Exception_IsHibernated
-		| Domain_Company_Exception_IsRelocating | Domain_Company_Exception_IsNotServed) {
+		| Domain_Company_Exception_IsRelocating | Domain_Company_Exception_IsNotServed
+		| Domain_Www_Exception_UnavailableAction) {
 
 			return $this->error(1609001, "Invite link information not available");
 		}

@@ -44,11 +44,12 @@ class Domain_Ldap_Entity_AuthToken_Data {
 		return $data;
 	}
 
-	/**
-	 * Получаем entry
-	 *
-	 * @return array
-	 */
+    /**
+     * Получаем entry
+     *
+     * @param array $data
+     * @return array
+     */
 	public static function getEntry(array $data):array {
 
 		$data                  = self::_actualizeData($data);

@@ -27,8 +27,13 @@ class Domain_Www_Scenario_Api {
 	 * @return array
 	 * @throws Domain_Company_Exception_IsHibernated
 	 * @throws Domain_Company_Exception_IsRelocating
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \blockException
 	 * @throws \busException
+	 * @throws \parseException
+	 * @throws \returnException
+	 * @throws \userAccessException
 	 * @throws cs_CompanyIncorrectCompanyId
 	 * @throws cs_CompanyNotExist
 	 * @throws cs_IncorrectJoinLink
@@ -38,9 +43,7 @@ class Domain_Www_Scenario_Api {
 	 * @throws cs_UserAlreadyInCompany
 	 * @throws cs_UserNotFound
 	 * @throws cs_blockException
-	 * @throws \parseException
-	 * @throws \returnException
-	 * @throws \userAccessException
+	 * @throws Domain_Www_Exception_UnavailableAction
 	 */
 	public static function getInviteLinkInfo(string $link):array {
 
@@ -56,6 +59,11 @@ class Domain_Www_Scenario_Api {
 			// инкрементим блокировку, если ссылка некорректная или не существует
 			Type_Antispam_Ip::checkAndIncrementBlock(Type_Antispam_Ip::INCORRECT_INVITELINK);
 			throw $e;
+		}
+
+		// проверяем, что метод запрашивает не робот
+		if (Type_Www_Validator::isBot()) {
+			throw new Domain_Www_Exception_UnavailableAction("robot cant get info by link");
 		}
 
 		// получаем аватар

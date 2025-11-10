@@ -10,6 +10,7 @@ export type Dialog =
 	| "auth_phone_number_confirm_code"
 	| "auth_email_confirm_code"
 	| "auth_sso_ldap"
+	| "auth_ldap_2fa_attach_mail"
 	| "auth_create_profile"
 	| "token_page";
 

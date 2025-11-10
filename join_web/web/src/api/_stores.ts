@@ -1,6 +1,7 @@
 import {atom, useAtomValue} from "jotai";
 import {
 	APIAuthInfo,
+	APICommandData,
 	ApiGlobalStartDictionaryData,
 	APIJoinLinkInfo,
 	ApiUserInfoData,
@@ -8,7 +9,7 @@ import {
 	ClientVersionMap,
 	ELECTRON_VERSION_22,
 	ELECTRON_VERSION_30,
-	Lang,
+	Lang, LdapAuthCredentials,
 	PrepareJoinLinkErrorInfo,
 } from "./_types.ts";
 import {atomWithStorage} from "jotai/utils";
@@ -70,6 +71,8 @@ export const authenticationSessionTimeLeftState = atomWithStorage<number | null>
 	"authentication_web_session_time_left",
 	JSON.parse(localStorage.getItem("authentication_web_session_time_left") ?? 'null')
 );
+// хранит (server_time − клиентское dayjs().unix()) в секундах
+export const serverTimeOffsetState = atom<number>(0);
 
 // константа времени истечения когда страница считается переоткрытой
 // чтобы сбросить сессию в случае если страницу долго не открывали
@@ -104,7 +107,7 @@ export const needShowForgotPasswordButtonState = atom(true);
 export const isNeedShowCreateProfileDialogAfterSsoRegistrationState = atom(false);
 export const isNeedShowCreateProfileDialogAfterLdapRegistrationState = atom(false);
 
-export const joinLinkState = atomWithImmer<APIJoinLinkInfo | null >(null);
+export const joinLinkState = atomWithImmer<APIJoinLinkInfo | null>(null);
 export const isGuestAuthState = atom(false);
 export const prepareJoinLinkErrorState = atom<PrepareJoinLinkErrorInfo | null>(null);
 
@@ -127,3 +130,15 @@ export const authSsoState = atomWithStorage<AuthSsoInfo | null>(
 	"auth_sso_state",
 	JSON.parse(localStorage.getItem("auth_sso_state") ?? "null")
 );
+
+export const authLdapState = atomWithStorage<APICommandData | null>(
+	"auth_ldap_state",
+	JSON.parse(localStorage.getItem("auth_ldap_state") ?? "null")
+);
+
+export const isLdapChangeMailState = atom(false);
+
+export const authLdapCredentialsState = atom<LdapAuthCredentials>({
+	username: "",
+	password: "",
+});

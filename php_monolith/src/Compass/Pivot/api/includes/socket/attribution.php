@@ -10,6 +10,7 @@ class Socket_Attribution extends \BaseFrame\Controller\Socket {
 	// список доступных методов
 	public const ALLOW_METHODS = [
 		"onLandingVisit",
+		"onPartnerRegister",
 	];
 
 	/**
@@ -38,5 +39,28 @@ class Socket_Attribution extends \BaseFrame\Controller\Socket {
 		);
 
 		return $this->ok();
+	}
+
+	/**
+	 * Отдаем invite_code менеджера при регистрации партнера
+	 * @return array
+	 */
+	public function onPartnerRegister():array {
+
+		$ip_address          = $this->post(\Formatter::TYPE_STRING, "ip_address");
+		$platform            = $this->post(\Formatter::TYPE_STRING, "platform");
+		$platform_os         = $this->post(\Formatter::TYPE_STRING, "platform_os");
+		$timezone_utc_offset = $this->post(\Formatter::TYPE_INT, "timezone_utc_offset");
+		$screen_avail_width  = $this->post(\Formatter::TYPE_INT, "screen_avail_width");
+		$screen_avail_height = $this->post(\Formatter::TYPE_INT, "screen_avail_height");
+		$registered_at       = $this->post(\Formatter::TYPE_INT, "registered_at");
+
+		$invite_code = Domain_Partner_Entity_Attribution::getPartnerInviteCode(
+			$ip_address, $platform, $platform_os, $timezone_utc_offset, $screen_avail_width, $screen_avail_height, $registered_at
+		);
+
+		return $this->ok([
+			"invite_code" => (string) $invite_code,
+		]);
 	}
 }

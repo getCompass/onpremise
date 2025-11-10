@@ -68,6 +68,8 @@ if (COMPANY_ID > 0) {
 				"session_active_list"          => "session_uniq,user_id,user_company_session_token,created_at,updated_at,login_at,ip_address,user_agent,extra",
 				"session_history_list"         => "session_uniq,user_id,user_company_session_token,status,created_at,login_at,logout_at,ip_address,user_agent,extra",
 				"member_menu"                  => "notification_id,user_id,action_user_id,type,is_unread,created_at,updated_at",
+				"smart_app_list"               => "smart_app_id,catalog_item_id,creator_user_id,smart_app_uniq_name,created_at,updated_at,extra",
+				"smart_app_user_rel"           => "smart_app_id,user_id,status,created_at,updated_at,extra",
 			],
 		],
 

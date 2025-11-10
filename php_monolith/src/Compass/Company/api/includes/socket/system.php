@@ -441,7 +441,7 @@ class Socket_System extends \BaseFrame\Controller\Socket {
 			if ($last_wakeup_at > time() - DAY14) {
 				$last_active_at = $hibernation_delay_token->hibernation_delayed_till - $hibernation_delayed_time;
 			} else {
-				$last_active_at = $hibernation_delay_token->hibernation_delayed_till - $hibernation_delayed_time * 2;
+				$last_active_at = $hibernation_delay_token->hibernation_delayed_till - $hibernation_delayed_time;
 			}
 		} catch (\cs_RowIsEmpty) {
 			$last_active_at = 0;

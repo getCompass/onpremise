@@ -18,7 +18,7 @@ class cs_AnswerCommand extends \Exception {
 	protected string $_command_name;
 	protected array  $_command_extra;
 
-	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, \Exception $previous = null) {
+	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, ?\Exception $previous = null) {
 
 		$this->_command_name  = $command_name;
 		$this->_command_extra = $command_extra;
@@ -206,7 +206,7 @@ class cs_UserKickedList extends \Exception {
 
 	protected array $_kicked_user_id_list;
 
-	public function __construct(array $kicked_user_id_list, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(array $kicked_user_id_list, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->_kicked_user_id_list = $kicked_user_id_list;
 
@@ -226,7 +226,7 @@ class cs_UserAlreadyInCompany extends \cs_ExceptionWithIndex {
 
 	protected int $_user_id;
 
-	public function __construct(int $user_id = 0, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $user_id = 0, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->_user_id = $user_id;
 
@@ -246,7 +246,7 @@ class cs_UsersFromSingleListErrorOrUserCannotAddToGroups extends \Exception {
 
 	protected array $_users_groups_ok_error_list;
 
-	public function __construct(array $users_groups_ok_error_list, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(array $users_groups_ok_error_list, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->_users_groups_ok_error_list = $users_groups_ok_error_list;
 
@@ -1262,7 +1262,7 @@ class cs_NotificationsSnoozeTimeLimitExceeded extends \Exception {
 	/**
 	 * cs_NotificationsShutdownLimitExceeded constructor.
 	 */
-	public function __construct(int $max_time_limit, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $max_time_limit, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->max_time_limit = $max_time_limit;
 		parent::__construct($message, $code, $previous);

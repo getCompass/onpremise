@@ -10,12 +10,14 @@ use BaseFrame\Exception\Domain\ParseFatalException;
  */
 class Domain_Ldap_Entity_AccountData implements Domain_Sso_Entity_CompassMapping_ParserInterface {
 
-	/**
-	 * получаем объект с основными данными об учетной записи
-	 *
-	 * @return Struct_Ldap_AccountData
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 */
+    /**
+     * получаем объект с основными данными об учетной записи
+     *
+     * @param array $ldap_account_entry
+     * @param string $username
+     * @return Struct_Ldap_AccountData
+     * @throws ParseFatalException
+     */
 	public static function parse(array $ldap_account_entry, string $username):Struct_Ldap_AccountData {
 
 		// объект парсера
@@ -35,11 +37,6 @@ class Domain_Ldap_Entity_AccountData implements Domain_Sso_Entity_CompassMapping
 	}
 
 	/**
-	 * Спарсить обычное поле
-	 *
-	 * @param mixed  $data
-	 * @param string $attribute
-	 *
 	 * @return string
 	 */
 	public static function parseField(mixed $data, string $attribute):string {

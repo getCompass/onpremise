@@ -7,8 +7,7 @@ namespace Compass\Company;
  */
 class Domain_Userbot_Entity_Sanitizer {
 
-	protected const _MAX_WEBHOOK_URL_LENGTH = 1000; // максимальная длина для вебхука бота
-	protected const _MAX_SMART_APP_NAME_LENGTH = 40; // максимальная длина для smart_app_name
+	protected const _MAX_WEBHOOK_URL_LENGTH    = 1000; // максимальная длина для вебхука бота
 	protected const _MAX_NAME_LENGTH        = 40;   // максимальная длина имени
 
 	/**
@@ -24,36 +23,6 @@ class Domain_Userbot_Entity_Sanitizer {
 
 		// обрезаем
 		return mb_substr($webhook_url, 0, self::_MAX_WEBHOOK_URL_LENGTH);
-	}
-
-	/**
-	 * очистка smart app name бота
-	 */
-	public static function sanitizeSmartAppName(string $smart_app_name):string {
-
-		// приводим строку к нижнему регистру
-		$smart_app_name = strtolower($smart_app_name);
-
-		// удаляем все символы, кроме a-z и цифр 0-9
-		$smart_app_name = preg_replace("/[^a-z0-9]/", "", $smart_app_name);
-
-		// обрезаем
-		return mb_substr($smart_app_name, 0, self::_MAX_SMART_APP_NAME_LENGTH);
-	}
-
-	/**
-	 * очистка smart app url бота
-	 */
-	public static function sanitizeSmartAppUrl(string $smart_app_url):string {
-
-		// удаляем весь левак
-		$smart_app_url = preg_replace("/[^\w _.\/\-$&+,:;~!'()*=?%\[\]@#]/uism", "", $smart_app_url);
-
-		// удаляем лишние пробелы
-		$smart_app_url = trim(preg_replace("/[ ]{2,}/", " ", $smart_app_url));
-
-		// обрезаем
-		return mb_substr($smart_app_url, 0, self::_MAX_WEBHOOK_URL_LENGTH);
 	}
 
 	/**

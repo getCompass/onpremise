@@ -10,7 +10,7 @@ import {
 	authenticationTokenExpiresAtState,
 	authenticationTokenTimeLeftState,
 	deviceLoginTypeState,
-	joinLinkState
+	joinLinkState, serverTimeOffsetState
 } from "../api/_stores.ts";
 import { UseMutationResult } from "@tanstack/react-query";
 import { plural } from "../lib/plural.ts";
@@ -38,12 +38,13 @@ export const DynamicTimerAuthenticationToken = ({ apiAuthGenerateToken }: Dynami
 	const minutes = useMemo(() => Math.ceil(timeLeft / 60), [ timeLeft ]);
 	const joinLink = useAtomValue(joinLinkState);
 	const loginType = useAtomValue(deviceLoginTypeState);
+	const serverTimeOffset = useAtomValue(serverTimeOffsetState);
 
 	// обновляем таймер, когда пользователь вернулся на страницу
 	// нужно для того, чтобы правильно обновить таймер при выходе из бэкграунда мобильных устройств
 	useEffect(() => {
-		setTimeLeft(expiresAt - dayjs().unix());
-	}, [ isTabActive ]);
+		setTimeLeft(expiresAt - (dayjs().unix() + serverTimeOffset));
+	}, [ isTabActive, serverTimeOffset ]);
 
 	useEffect(() => {
 

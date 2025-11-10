@@ -289,7 +289,7 @@ const PageTempDeepLinkDesktop = () => {
 			px="16px"
 			maxWidth="50vw"
 			w="100%"
-			h="100dvh"
+			h="100vh"
 			className="invisible-scrollbar"
 		>
 			<VStack
@@ -430,7 +430,7 @@ const PageTempDeepLinkMobile = () => {
 			px="16px"
 			maxWidth="100vw"
 			w="100%"
-			h="100dvh"
+			h="100vh"
 			className="invisible-scrollbar"
 		>
 			<VStack

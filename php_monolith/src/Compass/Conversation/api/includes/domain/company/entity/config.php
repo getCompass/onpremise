@@ -16,6 +16,7 @@ class Domain_Company_Entity_Config {
 	public const ADD_TO_GENERAL_CHAT_ON_HIRING     = "is_add_to_general_chat_on_hiring";
 	public const SHOW_MESSAGE_READ_STATUS          = "show_message_read_status";
 	public const UNLIMITED_MESSAGES_EDITING        = "unlimited_messages_editing";
+	public const UNLIMITED_MESSAGES_DELETING       = "unlimited_messages_deleting";
 
 	public const GENERAL_CONVERSATION_KEY_NAME      = "general_conversation_key";
 	public const HEROES_CONVERSATION_KEY_NAME       = "heroes_conversation_key";
@@ -34,5 +35,6 @@ class Domain_Company_Entity_Config {
 		self::ADD_TO_GENERAL_CHAT_ON_HIRING     => 1,
 		self::SHOW_MESSAGE_READ_STATUS          => 1,
 		self::UNLIMITED_MESSAGES_EDITING        => 0,
+		self::UNLIMITED_MESSAGES_DELETING       => 0,
 	];
 }

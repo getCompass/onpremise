@@ -59,9 +59,11 @@ const PageContentDesktopLeaveConference = () => {
 					try {
 						apiJitsiGetConferenceData.mutate({ link: window.location.href });
 						searchParams.delete("is_leave");
+						searchParams.delete("is_kicked");
 						setSearchParams(searchParams);
 					} catch (errorGetConferenceData) {
 						searchParams.delete("is_leave");
+						searchParams.delete("is_kicked");
 						setSearchParams(searchParams);
 
 						if (errorGetConferenceData instanceof ApiError) {
@@ -90,6 +92,7 @@ const PageContentDesktopLeaveConference = () => {
 				setConferenceDataErrorCode(error.error_code);
 				setConferenceData(null);
 				searchParams.delete("is_leave");
+				searchParams.delete("is_kicked");
 				setSearchParams(searchParams);
 				return;
 			}

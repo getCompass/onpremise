@@ -501,7 +501,7 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Отправляем в битрикс информацию о новом пользователе
 	 */
-	protected function _sendBitrixOnUserRegistered(int $task_id, int $user_id, string|null $force_stage_id):bool {
+	protected function _sendBitrixOnUserRegistered(int $task_id, int $user_id, ?string $force_stage_id):bool {
 
 		if (ServerProvider::isOnPremise()) {
 			return true;

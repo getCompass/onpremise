@@ -54,6 +54,9 @@ class Domain_System_Action_GetStartDataV2 {
 		// получаем тип сервера
 		$output_data["server_type"] = Domain_System_Entity_ServerType::getServerType();
 
+		// получаем список приложений каталога
+		$output_data["smart_app_short_suggested_list"] = Domain_SmartApp_Entity_SuggestedCatalog::getStartDataSuggestedCatalog();
+
 		// получаем конфиг с фичами для приложения
 		return self::_getFeatureListIfNeed($need_data_list, $user_id, $output_data);
 	}

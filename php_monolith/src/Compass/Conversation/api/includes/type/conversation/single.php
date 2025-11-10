@@ -9,13 +9,14 @@ use CompassApp\Domain\Member\Entity\Member;
 /**
  * класс для функционала, связанного только с одиночными диалогами
  */
-class Type_Conversation_Single extends Type_Conversation_Default {
-
+class Type_Conversation_Single extends Type_Conversation_Default
+{
 	/**
 	 * Создает диалог между двумя пользователями из данных миграции.
 	 * @long
 	 */
-	public static function addFromMigration(int $user_id, int $opponent_user_id, int|null $conversation_type = null, array|null $extra = null, array|null $dynamic = null):array {
+	public static function addFromMigration(int $user_id, int $opponent_user_id, ?int $conversation_type = null, ?array $extra = null, ?array $dynamic = null): array
+	{
 
 		// получаем данные о пользователях
 		$user_info_list = Gateway_Bus_CompanyCache::getMemberList([$user_id, $opponent_user_id]);
@@ -45,8 +46,14 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 
 			// пытаемся создать single диалога
 			$meta_row = Type_Conversation_Single::add(
-				$meta_type, $initiator_user->user_id, $initiator_user->npc_type,
-				$opponent_user->user_id, $opponent_user->npc_type, $allow_status, $extra, $dynamic
+				$meta_type,
+				$initiator_user->user_id,
+				$initiator_user->npc_type,
+				$opponent_user->user_id,
+				$opponent_user->npc_type,
+				$allow_status,
+				$extra,
+				$dynamic
 			);
 		} catch (cs_Conversation_SingleIsExist $e) {
 
@@ -74,7 +81,8 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 	}
 
 	// создает записи во всех таблицах ДИАЛОГА
-	public static function add(int $conversation_type, int $creator_user_id, int $creator_user_npc, int $opponent_user_id, int $opponent_user_npc, int $allow_status, array|null $extra = null, array|null $dynamic = null):array {
+	public static function add(int $conversation_type, int $creator_user_id, int $creator_user_npc, int $opponent_user_id, int $opponent_user_npc, int $allow_status, ?array $extra = null, ?array $dynamic = null): array
+	{
 
 		self::_throwIfCreatorEqualOpponent($creator_user_id, $opponent_user_id);
 
@@ -88,7 +96,8 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 	}
 
 	// если оппонент и есть создатель диалога
-	protected static function _throwIfCreatorEqualOpponent(int $creator_user_id, int $opponent_user_id):void {
+	protected static function _throwIfCreatorEqualOpponent(int $creator_user_id, int $opponent_user_id): void
+	{
 
 		if ($creator_user_id == $opponent_user_id) {
 			throw new ReturnFatalException("Trying to create single conversation where creator_user_id ($creator_user_id) == opponent_user_id ($opponent_user_id)");
@@ -96,7 +105,8 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 	}
 
 	// получаем users
-	protected static function _makeUsersForCreateSingle(int $creator_user_id, int $opponent_user_id):array {
+	protected static function _makeUsersForCreateSingle(int $creator_user_id, int $opponent_user_id): array
+	{
 
 		return [
 			$creator_user_id  => Type_Conversation_Meta_Users::initUserSchema(Type_Conversation_Meta_Users::ROLE_DEFAULT),
@@ -105,7 +115,8 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 	}
 
 	// получаем extra
-	protected static function _makeExtraForCreateSingle(int $creator_user_id, int $creator_user_npc, int $opponent_id, int $opponent_npc_type):array {
+	protected static function _makeExtraForCreateSingle(int $creator_user_id, int $creator_user_npc, int $opponent_id, int $opponent_npc_type): array
+	{
 
 		// инициализируем структуру extra
 		$extra = Type_Conversation_Meta_Extra::initExtra();
@@ -138,7 +149,8 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 	}
 
 	// мето для создания single меты
-	protected static function _createSingleMeta(int $conversation_type, int $creator_user_id, int $opponent_user_id, array $users, array $extra, int $allow_status, array|null $dynamic):array {
+	protected static function _createSingleMeta(int $conversation_type, int $creator_user_id, int $opponent_user_id, array $users, array $extra, int $allow_status, array | null $dynamic): array
+	{
 
 		// проверяем, что указанный тип диалога является валидным подтипом синглов
 		if (!Type_Conversation_Meta::isSubtypeOfSingle($conversation_type)) {
@@ -176,7 +188,8 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 	}
 
 	// создает записи во всех таблицах ПОЛЬЗОВАТЕЛЯ
-	public static function attachUser(string $conversation_map, int $user_id, int $opponent_user_id, array $meta_row, bool $is_hidden, bool $is_migration_muted = false):array {
+	public static function attachUser(string $conversation_map, int $user_id, int $opponent_user_id, array $meta_row, bool $is_hidden, bool $is_migration_muted = false): array
+	{
 
 		self::_throwIfConversationIsNotSingle($meta_row);
 
@@ -187,35 +200,19 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 
 		// получаем запись из left_menu, создаем allow_status_alias для сингл диалога и передаем его
 		$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getOne($user_id, $conversation_map);
+
+		// если записи в левом меню нет, значит привязываем пользователя в первый раз
 		if (!isset($left_menu_row["user_id"])) {
-
-			$allow_status_alias = Type_Conversation_Utils::getAllowStatus($meta_row["allow_status"], $meta_row["extra"], $opponent_user_id);
-			self::_createUserCloudData(
-				$user_id, $conversation_map, Type_Conversation_Meta_Users::ROLE_DEFAULT, $meta_row["type"],
-				$allow_status_alias, 2, "", "", false, false, $opponent_user_id, $is_hidden, $is_migration_muted
-			);
-		} else {
-
-			$set = [
-				"role" => Type_Conversation_Meta_Users::ROLE_DEFAULT,
-			];
-
-			if (!$is_hidden) {
-
-				$set["version"]    = Domain_User_Entity_Conversation_LeftMenu::generateVersion($left_menu_row["version"]);
-				$set["is_hidden"]  = 0;
-				$set["updated_at"] = time();
-			}
-			Gateway_Db_CompanyConversation_UserLeftMenu::set($user_id, $conversation_map, $set);
+			return self::_attachNewUser($conversation_map, $user_id, $opponent_user_id, $meta_row, $is_hidden, $is_migration_muted);
 		}
 
-		Gateway_Event_Dispatcher::dispatch(Type_Event_UserConversation_UserJoinedConversation::create($user_id, $conversation_map, 1, time(), $is_hidden));
-
-		return $meta_row["users"];
+		// иначе перепривязываем его
+		return self::_reattachUser($conversation_map, $user_id, $meta_row, $left_menu_row, $is_hidden);
 	}
 
 	// обновить записи в таблицах пользователя (при очередном прикреплении)
-	protected static function _throwIfConversationIsNotSingle(array $meta_row):void {
+	protected static function _throwIfConversationIsNotSingle(array $meta_row): void
+	{
 
 		if (!Type_Conversation_Meta::isSubtypeOfSingle($meta_row["type"])) {
 			throw new ParseFatalException("Trying to use method on conversation, which type is not single");
@@ -223,11 +220,106 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 	}
 
 	/**
+	 * Прикрепить пользователя в первый раз
+	 *
+	 *
+	 * @throws ParseFatalException
+	 */
+	protected static function _attachNewUser(string $conversation_map, int $user_id, int $opponent_user_id, array $meta_row, bool $is_hidden, bool $is_migration_muted = false): array
+	{
+
+		$allow_status_alias = Type_Conversation_Utils::getAllowStatus($meta_row["allow_status"], $meta_row["extra"], $opponent_user_id);
+		$left_menu_row      = self::_createUserCloudData(
+			$user_id,
+			$conversation_map,
+			Type_Conversation_Meta_Users::ROLE_DEFAULT,
+			$meta_row["type"],
+			$allow_status_alias,
+			2,
+			"",
+			"",
+			false,
+			false,
+			$opponent_user_id,
+			$is_hidden,
+			$is_migration_muted
+		);
+
+		if (!$is_hidden) {
+
+			// отправляем вску об обновлении левого меню
+			// не отправляем conversationLiftedUp, потому что у клиента может и не быть такого чата в загруженном левом меню, а так отдадим и сущность чата
+			$prepared_left_menu_row  = Type_Conversation_Utils::prepareLeftMenuForFormat($left_menu_row);
+			$formatted_left_menu_row = Apiv1_Format::leftMenu($prepared_left_menu_row);
+
+			// LEGACY убрать, как ios уберет ws ку event.conversation_added
+			Gateway_Bus_Sender::conversationAdded($user_id, $conversation_map);
+
+			Gateway_Bus_Sender::conversationLeftMenuUpdated($user_id, $formatted_left_menu_row);
+		}
+
+		Gateway_Event_Dispatcher::dispatch(
+			Type_Event_UserConversation_UserJoinedConversation::create($user_id, $conversation_map, Type_Conversation_Meta_Users::ROLE_DEFAULT, time(), $is_hidden)
+		);
+
+		return $meta_row["users"];
+	}
+
+	/**
+	 * Перепривязать пользователя
+	 *
+	 *
+	 * @throws ParseFatalException
+	 */
+	protected static function _reattachUser(string $conversation_map, int $user_id, array $meta_row, array $left_menu_row, bool $is_hidden): array
+	{
+
+		$set = [];
+
+		// если у пользователя по какой-то причине отсутствует роль в чате
+		if ($left_menu_row["role"] == Type_Conversation_Meta_Users::ROLE_NOT_ATTACHED) {
+			$set["role"] = Type_Conversation_Meta_Users::ROLE_DEFAULT;
+		}
+
+		// если чат надо раскрыть, готовим параметры для базы
+		if (!$is_hidden) {
+
+			$set["is_hidden"]  = 0;
+			$set["version"]    = Domain_User_Entity_Conversation_LeftMenu::generateVersion($left_menu_row["version"]);
+			$set["updated_at"] = time();
+		}
+
+		// записываем в базу изменение
+		if ($set === []) {
+			return $meta_row["users"];
+		}
+
+		Gateway_Db_CompanyConversation_UserLeftMenu::set($user_id, $conversation_map, $set);
+
+		if (!$is_hidden) {
+
+			// отправляем вску об обновлении левого меню
+			// не отправляем conversationLiftedUp, потому что у клиента может и не быть такого чата в загруженном левом меню, а так отдадим и сущность чата
+			$left_menu_row           = array_merge($left_menu_row, $set);
+			$prepared_left_menu_row  = Type_Conversation_Utils::prepareLeftMenuForFormat($left_menu_row);
+			$formatted_left_menu_row = Apiv1_Format::leftMenu($prepared_left_menu_row);
+
+			// LEGACY убрать, как ios уберет ws ку event.conversation_added
+			Gateway_Bus_Sender::conversationAdded($user_id, $conversation_map);
+
+			Gateway_Bus_Sender::conversationLeftMenuUpdated($user_id, $formatted_left_menu_row);
+		}
+
+		return $meta_row["users"];
+	}
+
+	/**
 	 * возвращает conversation_map по id участников single диалога, если не нашлось - false
 	 *
 	 * @return false|string
 	 */
-	public static function getMapByUsers(int $user1_id, int $user2_id):bool|string {
+	public static function getMapByUsers(int $user1_id, int $user2_id): bool | string
+	{
 
 		$user_single_row = Gateway_Db_CompanyConversation_UserSingleUniq::getOne($user1_id, $user2_id);
 
@@ -236,15 +328,16 @@ class Type_Conversation_Single extends Type_Conversation_Default {
 
 	/**
 	 * Получить cluster_user_conversation_uniq записи списком по парам пользователей
-	 *
 	 */
-	public static function getMapListByUserPairList(array $user_pair_list):array {
+	public static function getMapListByUserPairList(array $user_pair_list): array
+	{
 
 		return Gateway_Db_CompanyConversation_UserSingleUniq::getList($user_pair_list);
 	}
 
 	// обновить необходимый статус диалога allow_status, а также записать в левое меню изменение allow_status_alias
-	public static function setIsAllowedInMetaAndLeftMenu(string $conversation_map, int $allow_status, int $user_id, int $opponent_user_id, array $extra = null):void {
+	public static function setIsAllowedInMetaAndLeftMenu(string $conversation_map, int $allow_status, int $user_id, int $opponent_user_id, ?array $extra = null): void
+	{
 
 		$set = [
 			"allow_status" => $allow_status,

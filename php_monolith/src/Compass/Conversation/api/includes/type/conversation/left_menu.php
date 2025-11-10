@@ -70,9 +70,10 @@ class Type_Conversation_LeftMenu {
 
 		// обновляем значение total_unread_count
 		Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
-			"conversation_unread_count" => $total_unread_count_row["conversation_unread_count"] ?? 0,
-			"message_unread_count"      => $total_unread_count_row["message_unread_count"] ?? 0,
-			"updated_at"                => time(),
+			"conversation_unread_count"        => $total_unread_count_row["conversation_unread_count"] ?? 0,
+			"single_conversation_unread_count" => $total_unread_count_row["single_conversation_unread_count"] ?? 0,
+			"message_unread_count"             => $total_unread_count_row["message_unread_count"] ?? 0,
+			"updated_at"                       => time(),
 		]);
 
 		Gateway_Db_CompanyConversation_Main::commitTransaction();
@@ -118,9 +119,10 @@ class Type_Conversation_LeftMenu {
 	public static function nullifyTotalUnread(int $user_id):void {
 
 		Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
-			"conversation_unread_count" => 0,
-			"message_unread_count"      => 0,
-			"updated_at"                => time(),
+			"conversation_unread_count"        => 0,
+			"single_conversation_unread_count" => 0,
+			"message_unread_count"             => 0,
+			"updated_at"                       => time(),
 		]);
 	}
 
@@ -184,109 +186,6 @@ class Type_Conversation_LeftMenu {
 		];
 
 		Domain_User_Action_Conversation_UpdateLeftMenu::do($user_id, $conversation_map, $set);
-	}
-
-	// помечаем диалог прочтенным
-	public static function setAsRead(int $user_id, string $conversation_map, string $need_read_message_map):array {
-
-		Gateway_Db_CompanyConversation_Main::beginTransaction();
-
-		// если чат пустой
-		if (mb_strlen($need_read_message_map) < 1) {
-
-			$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getForUpdate($user_id, $conversation_map);
-			self::_rollbackAndThrowIfNotExistRowInLeftMenu($left_menu_row);
-
-			// читаем сообщение
-			$left_menu_row = self::_setConversationAsRead($user_id, $need_read_message_map, $left_menu_row);
-			Gateway_Db_CompanyConversation_Main::commitTransaction();
-			return $left_menu_row;
-		}
-
-		$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getForUpdate($user_id, $conversation_map);
-		self::_rollbackAndThrowIfNotExistRowInLeftMenu($left_menu_row);
-
-		$need_read_message_index = \CompassApp\Pack\Message\Conversation::getConversationMessageIndex($need_read_message_map);
-		$last_read_message_index = self::_getLastReadMessageIndex($left_menu_row);
-
-		// если индекс пришедшего сообщения меньше текущего прочитанного то выходим
-		if ($need_read_message_index < $last_read_message_index) {
-
-			Gateway_Db_CompanyConversation_Main::rollback();
-			return $left_menu_row;
-		}
-
-		// читаем сообщение
-		$left_menu_row = self::_setConversationAsRead($user_id, $need_read_message_map, $left_menu_row);
-
-		Gateway_Db_CompanyConversation_Main::commitTransaction();
-		return $left_menu_row;
-	}
-
-	// откатываем транзакцию и выбрасываем экзепшен если нет записи в левом меню
-	protected static function _rollbackAndThrowIfNotExistRowInLeftMenu(array $left_menu_row):void {
-
-		// запись в левом меню не существует
-		if (!isset($left_menu_row["user_id"])) {
-
-			Gateway_Db_CompanyConversation_Main::rollback();
-			throw new cs_LeftMenuRowIsNotExist();
-		}
-	}
-
-	// получаем индекс последнего прочитанного сообщения
-	protected static function _getLastReadMessageIndex(array $left_menu_row):int {
-
-		$message_index = 0;
-		if (mb_strlen($left_menu_row["last_read_message_map"]) > 0) {
-			$message_index = \CompassApp\Pack\Message\Conversation::getConversationMessageIndex($left_menu_row["last_read_message_map"]);
-		}
-
-		return $message_index;
-	}
-
-	/**
-	 * обновляем последнее прочитанного сообщение
-	 *
-	 * @long
-	 */
-	protected static function _setConversationAsRead(int $user_id, string $need_read_message_map, array $left_menu_row):array {
-
-		$updated_at = time();
-
-		// если есть непрочитанные
-		if ($left_menu_row["unread_count"] > 0) {
-
-			Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
-				"total_unread_count" => "total_unread_count - " . $left_menu_row["unread_count"],
-				"updated_at"         => $updated_at,
-			]);
-		}
-
-		$set = [
-			"last_read_message_map" => $need_read_message_map,
-			"unread_count"          => 0,
-			"is_have_notice"        => 0,
-		];
-
-		$left_menu_row["last_read_message_map"] = $need_read_message_map;
-		$left_menu_row["unread_count"]          = 0;
-		$left_menu_row["is_have_notice"]        = 0;
-
-		if ($left_menu_row["is_mentioned"] == 1) {
-
-			$set["is_mentioned"]  = 0;
-			$set["mention_count"] = 0;
-			$set["updated_at"]    = $updated_at;
-
-			$left_menu_row["is_mentioned"]  = 0;
-			$left_menu_row["mention_count"] = 0;
-			$left_menu_row["updated_at"]    = $updated_at;
-		}
-
-		Gateway_Db_CompanyConversation_UserLeftMenu::set($user_id, $left_menu_row["conversation_map"], $set);
-
-		return $left_menu_row;
 	}
 
 	// обнуляет unread_count, устанавливает время очистки диалога и очищает last_read_message_map и last_message при очистке диалога
@@ -483,7 +382,7 @@ class Type_Conversation_LeftMenu {
 		$receiver_id     = self::_getLastMessageReceiverIdIfExistAdditional($message);
 		$additional_type = self::_getLastMessageAdditionalType($message);
 
-		$conference_id     = self::_getLastMessageConferenceId($message);
+		$conference_id            = self::_getLastMessageConferenceId($message);
 		$conference_accept_status = self::_getLastMessageConferenceAcceptStatus($message);
 
 		return Gateway_Db_CompanyConversation_UserLeftMenu::initLastMessage(

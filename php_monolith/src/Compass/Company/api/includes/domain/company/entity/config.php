@@ -24,6 +24,8 @@ class Domain_Company_Entity_Config {
 	public const POSTMODERATION                              = "postmoderation";
 	public const GENERAL_CHAT_NOTIFICATIONS                  = "general_chat_notifications";
 	public const UNLIMITED_MESSAGES_EDITING                  = "unlimited_messages_editing";
+	public const UNLIMITED_MESSAGES_DELETING                 = "unlimited_messages_deleting";
+	public const LOCAL_LINKS                                 = "local_links";
 	public const PREMIUM_PAYMENT_REQUESTING_KEY              = "is_premium_payment_requesting_enabled";
 	public const PERMISSIONS_VERSION                         = "permissions_version";
 	public const ADD_TO_GENERAL_CHAT_ON_HIRING               = "is_add_to_general_chat_on_hiring";
@@ -47,6 +49,8 @@ class Domain_Company_Entity_Config {
 		self::GENERAL_CHAT_NOTIFICATIONS                  => [0, 1],
 		self::SHOW_MESSAGE_READ_STATUS                    => [0, 1],
 		self::UNLIMITED_MESSAGES_EDITING                  => [0, 1],
+		self::UNLIMITED_MESSAGES_DELETING                 => [0, 1],
+		self::LOCAL_LINKS                                 => [0, 1],
 		self::ADD_TO_GENERAL_CHAT_ON_HIRING               => [0, 1],
 		self::PREMIUM_PAYMENT_REQUESTING_KEY              => [0, 1],
 		self::PERMISSIONS_VERSION                         => "integer",
@@ -71,6 +75,8 @@ class Domain_Company_Entity_Config {
 		self::PUSH_BODY_DISPLAY_KEY                       => 0, // для безопасности, если по какой-то причине потеряли в базе конфиг
 		self::GENERAL_CHAT_NOTIFICATIONS                  => 0,
 		self::UNLIMITED_MESSAGES_EDITING                  => 0,
+		self::UNLIMITED_MESSAGES_DELETING                 => 0,
+		self::LOCAL_LINKS                                 => 0,
 		self::ADD_TO_GENERAL_CHAT_ON_HIRING               => 1,
 		self::SHOW_MESSAGE_READ_STATUS                    => 1,
 		self::PREMIUM_PAYMENT_REQUESTING_KEY              => 1,
@@ -100,6 +106,8 @@ class Domain_Company_Entity_Config {
 		self::MODULE_EXTENDED_EMPLOYEE_CARD_KEY    => 0,
 		self::GENERAL_CHAT_NOTIFICATIONS           => 0,
 		self::UNLIMITED_MESSAGES_EDITING           => 0,
+		self::UNLIMITED_MESSAGES_DELETING          => 0,
+		self::LOCAL_LINKS                          => 0,
 		self::ADD_TO_GENERAL_CHAT_ON_HIRING        => 1,
 		self::SHOW_MESSAGE_READ_STATUS             => 1,
 		self::PREMIUM_PAYMENT_REQUESTING_KEY       => 1,

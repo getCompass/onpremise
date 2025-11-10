@@ -45,7 +45,7 @@ class Type_Session_GuestId {
 	/**
 	 * устанавливаем куки
 	 */
-	public static function setup(string $guest_id = null):void {
+	public static function setup(?string $guest_id = null):void {
 
 		if (is_null($guest_id)) {
 			$guest_id = generateUUID();

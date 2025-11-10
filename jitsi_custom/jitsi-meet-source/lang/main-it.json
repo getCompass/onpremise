@@ -253,6 +253,8 @@
         "cameraNotSendingData": "Non possiamo accedere alla tua videocamera. Controlla che non sia già usata da un'altra applicazione, seleziona un altro dispositivo dalle impostazioni o prova a ricaricare l'applicazione.",
         "cameraNotSendingDataTitle": "Impossibile accedere alla videocamera",
         "cameraPermissionDeniedError": "Non hai concesso il permesso di usare la videocamera. Potrai partecipare comunque alla riunione ma gli altri non potranno vederti. Usa il pulsante a forma di videocamera nella barra degli indirizzi per risolvere il problema.",
+        "screenRecordingPermissionErrorDescription": "Controlla le autorizzazioni per la registrazione dello schermo e riavvia l'applicazione",
+        "screenRecordingPermissionErrorTitle": "Errore di accesso alla registrazione dello schermo",
         "cameraTimeoutError": "Impossibile avviare la sorgente video. Tempo di attesa scaduto.",
         "cameraUnknownError": "Impossibile usare la videocamera per un motivo sconosciuto.",
         "cameraUnsupportedResolutionError": "La tua videocamera non supporta la risoluzione richiesta.",
@@ -1048,7 +1050,16 @@
         "startReactionsMuted": "Spegni i suoni delle reazioni a tutti",
         "startVideoMuted": "Tutti cominciano a videocamera disattivata",
         "talkWhileMuted": "Parli a microfono spento",
-        "title": "Impostazioni"
+        "title": "Impostazioni",
+        "autoGainControl": {
+            "checkbox": "Livello microfono automatico",
+            "systemSettings": "Impostazioni audio di sistema",
+            "notificationAlert": {
+                "titleEnabled": "Livello automatico del microfono attivato",
+                "titleDisabled": "Livello automatico del microfono disattivato",
+                "description": "L'impostazione verrà applicata dopo il riavvio della conferenza."
+            }
+        }
     },
     "moderatorSettings": {
         "conferenceQualityTitle": "Qualità video della conferenza per tutti",

@@ -25,6 +25,7 @@ class Socket_Handler implements \RouteHandler {
 		"hiring.joinlink",
 		"task",
 		"premium",
+		"smartapp",
 		"space",
 		"space.member",
 		"space.tariff",

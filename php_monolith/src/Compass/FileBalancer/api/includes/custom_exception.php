@@ -18,7 +18,7 @@ class cs_AnswerCommand extends \Exception {
 	protected string $_command_name;
 	protected array  $_command_extra;
 
-	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, \Exception $previous = null) {
+	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, ?\Exception $previous = null) {
 
 		$this->_command_name  = $command_name;
 		$this->_command_extra = $command_extra;

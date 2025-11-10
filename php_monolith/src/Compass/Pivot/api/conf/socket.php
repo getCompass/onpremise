@@ -109,6 +109,9 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"system.getRootUserId",
 			"tariff.increaseMemberCountLimit",
 			"user.getScreenTimeStat",
+			"smartapp.getDefaultAvatar",
+			"smartapp.getSmartAppCatalogItem",
+			"smartapp.getSmartAppCatalogList",
 		],
 	],
 	"migration"        => [
@@ -318,6 +321,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"pivot.ldap.isLdapAuthAvailable",
 			"pivot.ldap.getUserInfo",
 			"pivot.ldap.actualizeProfileData",
+			"pivot.ldap.sendMailConfirmCode",
 		],
 	],
 	"sender"           => [
@@ -325,6 +329,13 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 		"auth_key"      => SOCKET_KEY_SENDER,
 		"allow_methods" => [
 			"user.validateSession",
+		],
+	],
+	"file_node"        => [
+		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_KEY,
+		"auth_key"      => SOCKET_KEY_FILE_NODE,
+		"allow_methods" => [
+			"pivot.company.getEntrypointList",
 		],
 	],
 ];

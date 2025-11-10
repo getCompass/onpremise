@@ -7,16 +7,17 @@ use BaseFrame\Server\ServerProvider;
 /**
  * Класс для работы с типом сервера для отдачи клиентам
  */
-class Domain_System_Entity_ServerType {
-
+class Domain_System_Entity_ServerType
+{
 	public const SERVER_TYPE_SAAS         = "saas";
 	public const SERVER_TYPE_ON_PREMISE   = "on-premise";
 	public const SERVER_TYPE_YANDEX_CLOUD = "yandex_cloud";
 
 	/**
-	 * Выполняет отправку сообщения.
+	 * Получаем тип сервера
 	 */
-	public static function getServerType():string {
+	public static function getServerType(): string
+	{
 
 		if (ServerProvider::isSaas()) {
 			return self::SERVER_TYPE_SAAS;

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { keyframes } from 'tss-react';
 import { makeStyles } from 'tss-react/mui';
 import {
+    IconMicAutoLeveling,
     IconPoll,
     IconRecordingNotification,
     IconScreenshareNotification,
@@ -308,6 +309,7 @@ const Notification = ({
         [NOTIFICATION_ICON.SCREENSHARE]: IconScreenshareNotification,
         [NOTIFICATION_ICON.WARNING_STOP_HAND]: IconWarningStopHandNotification,
         [NOTIFICATION_ICON.WARNING]: IconWarningColor,
+        [NOTIFICATION_ICON.MICROPHONE]: IconMicAutoLeveling,
     };
 
     const iconPathByAppearance: { [p: string]: string } = {

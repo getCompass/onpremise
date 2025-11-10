@@ -41,6 +41,9 @@ class Domain_Ldap_Scenario_Socket {
 
 			// переактивируем связь, если ранее LDAP аккаунт был заблокирован
 			Domain_Ldap_Action_ReactivateAccountRel::do($account_user_rel);
+
+			// если пользователь поменял username, обновляем его запись
+			Domain_Ldap_Action_UpdateAccountRelUsername::do($account_user_rel, $ldap_account_data);
 		} catch (Domain_Ldap_Exception_UserRelationship_NotFound) {
 			$compass_user_id = 0;
 		}

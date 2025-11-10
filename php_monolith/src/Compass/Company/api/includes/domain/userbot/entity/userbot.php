@@ -30,8 +30,6 @@ class Domain_Userbot_Entity_Userbot {
 		self::AVATAR_COLOR_CUPCAKE_ID,
 	];
 
-	public const USERBOT_LIMIT = 15; // максимальное количество неудалённых ботов для компании
-
 	/**
 	 * создание записи с ботом
 	 *
@@ -39,37 +37,25 @@ class Domain_Userbot_Entity_Userbot {
 	 */
 	public static function create(string $userbot_id, int $userbot_user_id, int $status,
 						int    $is_react_command, string $webhook,
-						int    $is_smart_app, string $smart_app_name, string $smart_app_url, int $is_smart_app_sip, int $is_smart_app_mail,
-						int    $smart_app_default_width, int $smart_app_default_height,
-						string $token, string $secret_key, int $avatar_color_id, string $avatar_file_key,
-						string $smart_app_public_key, string $smart_app_private_key):Struct_Db_CloudCompany_Userbot {
+						string $token, string $secret_key, int $avatar_color_id, string $avatar_file_key):Struct_Db_CloudCompany_Userbot {
 
 		$extra = self::initExtra();
 
 		$extra = self::setToken($extra, $token);
 		$extra = self::setSecretKey($extra, $secret_key);
 		$extra = self::setWebhook($extra, $webhook);
-		$extra = self::setSmartAppUrl($extra, $smart_app_url);
 		$extra = self::setAvatarColorId($extra, $avatar_color_id);
 		$extra = self::setAvatarFileKey($extra, $avatar_file_key);
 		$extra = self::setFlagReactCommand($extra, $is_react_command);
-		$extra = self::setFlagSmartApp($extra, $is_smart_app);
-		$extra = self::setFlagSmartAppSip($extra, $is_smart_app_sip);
-		$extra = self::setFlagSmartAppMail($extra, $is_smart_app_mail);
-		$extra = self::setSmartAppDefaultWidth($extra, $smart_app_default_width);
-		$extra = self::setSmartAppDefaultHeight($extra, $smart_app_default_height);
-		$extra = self::setSmartAppPublicKey($extra, $smart_app_public_key);
-		$extra = self::setSmartAppPrivateKey($extra, $smart_app_private_key);
 
 		$created_at = time();
 
-		Gateway_Db_CompanyData_UserbotList::insert($userbot_id, $userbot_user_id, $smart_app_name, $status, $created_at, $extra);
+		Gateway_Db_CompanyData_UserbotList::insert($userbot_id, $userbot_user_id, $status, $created_at, $extra);
 
 		return new Struct_Db_CloudCompany_Userbot(
 			$userbot_id,
 			$status,
 			$userbot_user_id,
-			$smart_app_name,
 			$created_at,
 			0,
 			$extra
@@ -228,16 +214,6 @@ class Domain_Userbot_Entity_Userbot {
 	}
 
 	/**
-	 * установим smart app url
-	 */
-	public static function setSmartAppUrl(array $extra, string $smart_app_url):array {
-
-		$extra                           = self::_getExtra($extra);
-		$extra["extra"]["smart_app_url"] = $smart_app_url;
-		return $extra;
-	}
-
-	/**
 	 * установим токен бота
 	 */
 	public static function setToken(array $extra, string $token):array {
@@ -318,109 +294,12 @@ class Domain_Userbot_Entity_Userbot {
 	}
 
 	/**
-	 * установим флаг smart_app ли это
-	 */
-	public static function setFlagSmartApp(array $extra, int $is_smart_app):array {
-
-		$extra                          = self::_getExtra($extra);
-		$extra["extra"]["is_smart_app"] = $is_smart_app;
-		return $extra;
-	}
-
-	/**
-	 * установим флаг smart_app для звонков ли это
-	 */
-	public static function setFlagSmartAppSip(array $extra, int $is_smart_app_sip):array {
-
-		$extra                              = self::_getExtra($extra);
-		$extra["extra"]["is_smart_app_sip"] = $is_smart_app_sip;
-		return $extra;
-	}
-
-	/**
-	 * установим флаг smart_app для почты ли это
-	 */
-	public static function setFlagSmartAppMail(array $extra, int $is_smart_app_mail):array {
-
-		$extra                               = self::_getExtra($extra);
-		$extra["extra"]["is_smart_app_mail"] = $is_smart_app_mail;
-		return $extra;
-	}
-
-	/**
-	 * установим дефолтную ширину smart_app
-	 */
-	public static function setSmartAppDefaultWidth(array $extra, int $smart_app_default_width):array {
-
-		$extra                                     = self::_getExtra($extra);
-		$extra["extra"]["smart_app_default_width"] = $smart_app_default_width;
-		return $extra;
-	}
-
-	/**
-	 * установим дефолтную высоту smart_app
-	 */
-	public static function setSmartAppDefaultHeight(array $extra, int $smart_app_default_height):array {
-
-		$extra                                      = self::_getExtra($extra);
-		$extra["extra"]["smart_app_default_height"] = $smart_app_default_height;
-		return $extra;
-	}
-
-	/**
-	 * установим приватный ключ smart app
-	 */
-	public static function setSmartAppPrivateKey(array $extra, string $private_key):array {
-
-		$extra                                   = self::_getExtra($extra);
-		$extra["extra"]["smart_app_private_key"] = $private_key;
-		return $extra;
-	}
-
-	/**
-	 * установим публичный ключ smart app
-	 */
-	public static function setSmartAppPublicKey(array $extra, string $public_key):array {
-
-		$extra                                  = self::_getExtra($extra);
-		$extra["extra"]["smart_app_public_key"] = $public_key;
-		return $extra;
-	}
-
-	/**
 	 * получим вебхук бота
 	 */
 	public static function getWebhook(array $extra):string {
 
 		$extra = self::_getExtra($extra);
 		return $extra["extra"]["webhook"];
-	}
-
-	/**
-	 * получим smart app url бота
-	 */
-	public static function getSmartAppUrl(array $extra):string {
-
-		$extra = self::_getExtra($extra);
-		return $extra["extra"]["smart_app_url"];
-	}
-
-	/**
-	 * получим приватный ключ smart app
-	 */
-	public static function getSmartAppPrivateKey(array $extra):string {
-
-		$extra = self::_getExtra($extra);
-		return $extra["extra"]["smart_app_private_key"];
-	}
-
-	/**
-	 * получим публичный ключ smart app
-	 */
-	public static function getSmartAppPublicKey(array $extra):string {
-
-		$extra = self::_getExtra($extra);
-		return $extra["extra"]["smart_app_public_key"];
 	}
 
 	/**
@@ -502,75 +381,6 @@ class Domain_Userbot_Entity_Userbot {
 
 		$extra = self::_getExtra($extra);
 		return $extra["extra"]["is_react_command"] == 1;
-	}
-
-	/**
-	 * получим флаг smart_app ли это
-	 */
-	public static function getFlagSmartApp(array $extra):int {
-
-		$extra = self::_getExtra($extra);
-		return $extra["extra"]["is_smart_app"];
-	}
-
-	/**
-	 * smart_app ли это
-	 */
-	public static function isSmartApp(array $extra):bool {
-
-		return self::getFlagSmartApp($extra) == 1;
-	}
-
-	/**
-	 * получим флаг smart_app для звонков ли это
-	 */
-	public static function getFlagSmartAppSip(array $extra):int {
-
-		$extra = self::_getExtra($extra);
-		return $extra["extra"]["is_smart_app_sip"];
-	}
-
-	/**
-	 * smart_app для звонков ли это
-	 */
-	public static function isSmartAppSip(array $extra):bool {
-
-		return self::getFlagSmartAppSip($extra) == 1;
-	}
-
-	/**
-	 * получим флаг smart_app для почты ли это
-	 */
-	public static function getFlagSmartAppMail(array $extra):int {
-
-		$extra = self::_getExtra($extra);
-		return $extra["extra"]["is_smart_app_mail"];
-	}
-
-	/**
-	 * smart_app для почты ли это
-	 */
-	public static function isSmartAppMail(array $extra):bool {
-
-		return self::getFlagSmartAppMail($extra) == 1;
-	}
-
-	/**
-	 * получим дефолтную ширину smart_app
-	 */
-	public static function getSmartAppDefaultWidth(array $extra):int {
-
-		$extra = self::_getExtra($extra);
-		return $extra["extra"]["smart_app_default_width"];
-	}
-
-	/**
-	 * получим дефолтную высоту smart_app
-	 */
-	public static function getSmartAppDefaultHeight(array $extra):int {
-
-		$extra = self::_getExtra($extra);
-		return $extra["extra"]["smart_app_default_height"];
 	}
 
 	// -------------------------------------------------------

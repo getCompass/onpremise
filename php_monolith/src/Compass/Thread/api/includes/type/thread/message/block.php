@@ -350,6 +350,12 @@ class Type_Thread_Message_Block {
 		// время и роль не позволяет удалить сообщение
 		if (!$is_manage && !Type_Thread_Message_Main::getHandler($message)::isTimeAllowToDelete($message)) {
 
+			// если разрешено безлимитное удаление сообщений
+			$is_unlimited_messages_deleting_enabled = Type_Company_Config::init()->get(Domain_Company_Entity_Config::UNLIMITED_MESSAGES_DELETING)["value"];
+			if ($is_unlimited_messages_deleting_enabled) {
+				return;
+			}
+
 			Gateway_Db_CompanyThread_Main::rollback();
 
 			if (!$is_new_try_delete_message_error) {

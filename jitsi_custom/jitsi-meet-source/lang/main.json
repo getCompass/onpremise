@@ -303,6 +303,8 @@
         "cameraNotSendingData": "We are unable to access your camera. Please check if another application is using this device, select another device from the settings menu or try to reload the application.",
         "cameraNotSendingDataTitle": "Unable to access camera",
         "cameraPermissionDeniedError": "You have not granted permission to use your camera. You can still join the conference but others won't see you. Use the camera button in the address bar to fix this.",
+        "screenRecordingPermissionErrorDescription": "Please check the permission to record the screen and then restart the app",
+        "screenRecordingPermissionErrorTitle": "Screen recording access error",
         "cameraTimeoutError": "Could not start video source. Timeout occurred!",
         "cameraUnknownError": "Cannot use camera for an unknown reason.",
         "cameraUnsupportedResolutionError": "Your camera does not support required video resolution.",
@@ -1188,7 +1190,16 @@
         "title": "Settings",
         "video": "Video",
         "videoNoPermissions": "No access to video",
-        "virtualBackgroundsTitle": "Virtual backgrounds"
+        "virtualBackgroundsTitle": "Virtual backgrounds",
+        "autoGainControl": {
+            "checkbox": "Automatic microphone level",
+            "systemSettings": "System audio settings",
+            "notificationAlert": {
+                "titleEnabled": "Automatic microphone level is on",
+                "titleDisabled": "Automatic microphone level is off",
+                "description": "The setting will be applied after restarting the conference."
+            }
+        }
     },
     "moderatorSettings": {
         "conferenceQualityTitle": "All participants video quality",

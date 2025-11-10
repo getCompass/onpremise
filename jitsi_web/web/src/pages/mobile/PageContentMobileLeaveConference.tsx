@@ -39,9 +39,9 @@ const PageContentMobileLeaveConference = () => {
 	const setConferenceDataErrorCode = useSetAtom(conferenceDataErrorCodeState);
 	const setLimitNextAttempt = useSetAtom(limitNextAttemptState);
 
-	const [searchParams, setSearchParams] = useSearchParams();
+	const [ searchParams, setSearchParams ] = useSearchParams();
 
-	const [clickCount, setClickCount] = useState(0);
+	const [ clickCount, setClickCount ] = useState(0);
 
 	const onTryCompassClickHandler = useCallback(() => {
 		openDeepLink(true, getDeeplinkUrlScheme());
@@ -59,9 +59,11 @@ const PageContentMobileLeaveConference = () => {
 					try {
 						apiJitsiGetConferenceData.mutate({ link: window.location.href });
 						searchParams.delete("is_leave");
+						searchParams.delete("is_kicked");
 						setSearchParams(searchParams);
 					} catch (errorGetConferenceData) {
 						searchParams.delete("is_leave");
+						searchParams.delete("is_kicked");
 						setSearchParams(searchParams);
 
 						if (errorGetConferenceData instanceof ApiError) {
@@ -90,6 +92,7 @@ const PageContentMobileLeaveConference = () => {
 				setConferenceDataErrorCode(error.error_code);
 				setConferenceData(null);
 				searchParams.delete("is_leave");
+				searchParams.delete("is_kicked");
 				setSearchParams(searchParams);
 				return;
 			}
@@ -104,28 +107,29 @@ const PageContentMobileLeaveConference = () => {
 				return;
 			}
 		}
-	}, [window.location.href, searchParams]);
+	}, [ window.location.href, searchParams ]);
 
 	return (
-		<VStack w="100%" mt="98px" pt="32px" pb="24px" px="24px" rounded="16px" bgColor="255255255.04" gap="0px">
-			<Center w="100px" h="100px">
-				<Icon width="84px" height="84px" avatar={ConferenceEnded84Svg} />
+		<VStack w = "100%" mt = "98px" pt = "32px" pb = "24px" px = "24px" rounded = "16px" bgColor = "255255255.04"
+				gap = "0px">
+			<Center w = "100px" h = "100px">
+				<Icon width = "84px" height = "84px" avatar = {ConferenceEnded84Svg} />
 			</Center>
-			<Text style="inter_24_34_700" mt="16px" textAlign="center" color="333e49">
+			<Text style = "inter_24_34_700" mt = "16px" textAlign = "center" color = "333e49">
 				{langStringMobileConferenceEndedContentTitle}
 			</Text>
-			<Text style="inter_18_25_400" mt="8px" textAlign="center" color="333e49">
+			<Text style = "inter_18_25_400" mt = "8px" textAlign = "center" color = "333e49">
 				{langStringMobileConferenceEndedContentDesc}
 			</Text>
 			<DownloadMenu
-				marginTop="24px"
-				width="100%"
-				triggerEl={
+				marginTop = "24px"
+				width = "100%"
+				triggerEl = {
 					<Button
-						size="px24py12full"
-						textSize="inter_18_27_600"
-						rounded="12px"
-						onClick={() => {
+						size = "px24py12full"
+						textSize = "inter_18_27_600"
+						rounded = "12px"
+						onClick = {() => {
 							onTryCompassClickHandler();
 							setClickCount(clickCount + 1);
 						}}
@@ -133,10 +137,10 @@ const PageContentMobileLeaveConference = () => {
 						{langStringMobileConferenceEndedContentTryCompassButton}
 					</Button>
 				}
-				isNeedDeviceAutoDetect={false}
-				clickCount={clickCount}
+				isNeedDeviceAutoDetect = {false}
+				clickCount = {clickCount}
 			/>
-			<Button textSize="inter_16_22_400" mt="20px" color="2574a9" onClick={onJoinAgainButtonClickHandler}>
+			<Button textSize = "inter_16_22_400" mt = "20px" color = "2574a9" onClick = {onJoinAgainButtonClickHandler}>
 				{langStringMobileConferenceEndedContentJoinToConferenceAgainButton}
 			</Button>
 		</VStack>

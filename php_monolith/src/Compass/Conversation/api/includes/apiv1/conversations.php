@@ -545,7 +545,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 	}
 
 	// выбрасываем ошибку, если диалог не является single
-	protected function _throwIfConversationIsNotSingle(array $left_menu_row, string $namespace = null, string $row = null): void
+	protected function _throwIfConversationIsNotSingle(array $left_menu_row, ?string $namespace = null, ?string $row = null): void
 	{
 
 		if (!Type_Conversation_Meta::isSubtypeOfSingle($left_menu_row["type"])) {
@@ -984,9 +984,10 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 		$meta = Domain_User_Scenario_Conversation_Api::getLeftMenuMeta($this->user_id);
 
 		return $this->ok([
-			"messages_unread_count"      => (int) $meta["messages_unread_count"],
-			"conversations_unread_count" => (int) $meta["conversations_unread_count"],
-			"left_menu_version"          => (int) $meta["left_menu_version"],
+			"messages_unread_count"             => (int) $meta["messages_unread_count"],
+			"conversations_unread_count"        => (int) $meta["conversations_unread_count"],
+			"single_conversations_unread_count" => (int) $meta["single_conversations_unread_count"],
+			"left_menu_version"                 => (int) $meta["left_menu_version"],
 		]);
 	}
 
@@ -3021,7 +3022,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 	}
 
 	// получить алиас реакции, если существует, иначе возвращает незименное название реакции обратно
-	protected function _getReactionAliasIfExist(string $reaction_name, string $namespace = null, string $row = null): string
+	protected function _getReactionAliasIfExist(string $reaction_name, ?string $namespace = null, ?string $row = null): string
 	{
 
 		$reaction_name = Type_Conversation_Reaction_Main::getReactionNameIfExist($reaction_name);
@@ -3148,7 +3149,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 	}
 
 	// получаем message_map из message_key
-	protected function _tryGetMessageMap(string $message_key, string $row_is_decrypt_failed = null): string
+	protected function _tryGetMessageMap(string $message_key, ?string $row_is_decrypt_failed = null): string
 	{
 
 		try {
@@ -3318,7 +3319,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 	}
 
 	// проверяем, что пользователь является участником диалога
-	protected function _throwIfUserNotConversationMember(int $user_id, array $users, string $namespace = null, string $row = null): void
+	protected function _throwIfUserNotConversationMember(int $user_id, array $users, ?string $namespace = null, ?string $row = null): void
 	{
 
 		if (!Type_Conversation_Meta_Users::isMember($user_id, $users)) {
@@ -3333,7 +3334,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 	}
 
 	// выбрасываем ошибку, если у пользователя нет такого диалога в левом меню
-	protected function _throwIfConversationIsNotExistInLeftMenu(array $left_menu_row, string $namespace = null, string $row = null): void
+	protected function _throwIfConversationIsNotExistInLeftMenu(array $left_menu_row, ?string $namespace = null, ?string $row = null): void
 	{
 
 		if (!isset($left_menu_row["user_id"])) {
@@ -3420,7 +3421,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 	}
 
 	// выбрасываем исключение, если пытаются выполнить метод неприменимый к диалогам типа public
-	protected function _throwIfConversationIsSubtypeOfPublic(int $conversation_type, string $namespace = null, string $row = null): void
+	protected function _throwIfConversationIsSubtypeOfPublic(int $conversation_type, ?string $namespace = null, ?string $row = null): void
 	{
 
 		if (Type_Conversation_Meta::isSubtypeOfPublicGroup($conversation_type)) {

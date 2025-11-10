@@ -596,6 +596,24 @@ class Domain_User_Scenario_Socket {
 	}
 
 	/**
+	 * Актуализируем данные пользователя
+	 *
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws BusFatalException
+	 * @throws \busException
+	 * @throws \cs_CurlError
+	 * @throws \cs_RowIsEmpty
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws cs_FileIsNotImage
+	 */
+	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data, int $is_empty_attributes_update_enabled):void {
+
+		Domain_User_Scenario_OnPremiseWeb_Auth_Ldap::actualizeProfileData($user_id, $sso_account_data, $is_empty_attributes_update_enabled);
+	}
+
+	/**
 	 * Получить список истории логина/разлогина устройств пользователя
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
@@ -657,23 +675,5 @@ class Domain_User_Scenario_Socket {
 
 		// достаем session_uniq
 		return Type_Pack_PivotSession::getSessionUniq($pivot_session_map);
-	}
-
-	/**
-	 * Актуализируем данные пользователя
-	 *
-	 * @throws ParseFatalException
-	 * @throws ReturnFatalException
-	 * @throws BusFatalException
-	 * @throws \busException
-	 * @throws \cs_CurlError
-	 * @throws \cs_RowIsEmpty
-	 * @throws \parseException
-	 * @throws \queryException
-	 * @throws cs_FileIsNotImage
-	 */
-	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data):void {
-
-		Domain_User_Scenario_OnPremiseWeb_Auth_Ldap::actualizeProfileData($user_id, $sso_account_data);
 	}
 }

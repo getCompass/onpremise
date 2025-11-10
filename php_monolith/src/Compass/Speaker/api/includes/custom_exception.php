@@ -17,7 +17,7 @@ class cs_AnswerCommand extends \Exception {
 	protected $_command_extra;
 
 	// @mixed
-	public function __construct(string $command_name, array $command_extra, $message = "", $code = 0, Exception $previous = null) {
+	public function __construct(string $command_name, array $command_extra, $message = "", $code = 0, ?Exception $previous = null) {
 
 		$this->_command_name  = $command_name;
 		$this->_command_extra = $command_extra;
@@ -69,7 +69,7 @@ class cs_FailedJanusGatewayAPIRequest extends \Exception {
 	protected $node_id;
 
 	// @mixed
-	public function __construct(int $node_id, array $response, $message = "", $code = 0, Throwable $previous = null) {
+	public function __construct(int $node_id, array $response, $message = "", $code = 0, ?Throwable $previous = null) {
 
 		$this->_response = $response;
 		$this->node_id   = $node_id;
@@ -91,7 +91,7 @@ class cs_Call_LineIsBusy extends \Exception {
 	protected $_conversation_map;
 
 	// @mixed
-	public function __construct(int $user_id, string $call_map = null, string $conversation_map = null, $message = "", $code = 0, Exception $previous = null) {
+	public function __construct(int $user_id, ?string $call_map = null, ?string $conversation_map = null, $message = "", $code = 0, ?Exception $previous = null) {
 
 		$this->_user_id          = $user_id;
 		$this->_call_map         = $call_map;

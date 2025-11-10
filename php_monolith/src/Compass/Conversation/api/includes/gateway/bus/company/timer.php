@@ -88,7 +88,7 @@ class Gateway_Bus_Company_Timer extends Gateway_Bus_Company_Main {
 	 * получаем дополнительные поля для обновления баджа
 	 *
 	 */
-	public static function getExtraForUpdateBadge(int $user_id, array $conversation_map_list = null, bool $is_add_conversations = null):array {
+	public static function getExtraForUpdateBadge(int $user_id, ?array $conversation_map_list = null, ?bool $is_add_conversations = null):array {
 
 		$extra = ["user_id" => $user_id];
 
@@ -113,7 +113,7 @@ class Gateway_Bus_Company_Timer extends Gateway_Bus_Company_Main {
 	 * получаем дополнительные поля для обновления баджа для списка пользователей
 	 *
 	 */
-	public static function getExtraForUserIdListUpdateBadge(array $user_id_list, array $conversation_map_list = null, bool $is_add_conversations = null):array {
+	public static function getExtraForUserIdListUpdateBadge(array $user_id_list, ?array $conversation_map_list = null, ?bool $is_add_conversations = null):array {
 
 		$extra = [
 			"user_id_list" => $user_id_list,

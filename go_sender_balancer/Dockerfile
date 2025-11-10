@@ -1,4 +1,4 @@
-FROM docker.getcompass.ru/service/go:1.23.7-1
+FROM docker.getcompass.ru/service/go:1.24.6-1
 
 COPY . /app
 RUN cd /app && mkdir -p logs && go build -o sender_balancer -mod vendor main.go && chmod +x ./entrypoint.sh

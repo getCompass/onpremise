@@ -47,6 +47,18 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => 60,
 	];
 
+	const COMPANY_SET_UNLIMITED_MESSAGES_DELETING = [
+		"key"    => "COMPANY_SET_UNLIMITED_MESSAGES_DELETING",
+		"limit"  => 10,
+		"expire" => 60,
+	];
+
+	const COMPANY_SET_LOCAL_LINKS = [
+		"key"    => "COMPANY_SET_LOCAL_LINKS",
+		"limit"  => 10,
+		"expire" => 60,
+	];
+
 	const REQUIRE_PIN_CODE_COMPANY = [
 		"key"    => "REQUIRE_PIN_CODE_COMPANY",
 		"limit"  => 3,
@@ -429,12 +441,6 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"expire" => 10 * 60,
 	];
 
-	const USERBOT_REFRESH_SMART_APP_KEYS = [
-		"key"    => "USERBOT_REFRESH_SMART_APP_KEYS",
-		"limit"  => 15,
-		"expire" => 10 * 60,
-	];
-
 	const USERBOT_NOT_FOUND = [
 		"key"    => "USERBOT_NOT_FOUND",
 		"limit"  => 5,
@@ -451,6 +457,37 @@ class Type_Antispam_User extends Type_Antispam_Main {
 		"key"    => "USERBOT_REMOVE_FROM_GROUP",
 		"limit"  => 15,
 		"expire" => 5 * 60,
+	];
+
+	// endregion userbot
+	// -------------------------------------------------------
+
+	// -------------------------------------------------------
+	// region smart_app
+	// -------------------------------------------------------
+
+	const SMART_APP_CREATE = [
+		"key"    => "SMART_APP_CREATE",
+		"limit"  => 20,
+		"expire" => 5 * 60,
+	];
+
+	const SMART_APP_DELETE = [
+		"key"    => "SMART_APP_DELETE",
+		"limit"  => 10,
+		"expire" => 5 * 60,
+	];
+
+	const SMART_APP_EDIT = [
+		"key"    => "SMART_APP_EDIT",
+		"limit"  => 20,
+		"expire" => 5 * 60,
+	];
+
+	const SMART_APP_REFRESH_KEYS = [
+		"key"    => "SMART_APP_REFRESH_KEYS",
+		"limit"  => 15,
+		"expire" => 10 * 60,
 	];
 
 	// endregion userbot

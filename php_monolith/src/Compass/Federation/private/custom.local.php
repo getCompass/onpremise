@@ -14,3 +14,5 @@ define(__NAMESPACE__ . "\EXTENDED_ENCRYPT_IV_DEFAULT"                  , "${EXTE
 // -------------------------------------------------------
 
 define(__NAMESPACE__ . "\SOCKET_KEY_FEDERATION"                        , "${SOCKET_KEY_FEDERATION}");
+
+define(__NAMESPACE__ . "\SALT_LDAP_MAIL_ADDRESS"                        , "${SALT_PACK_LDAP_MAIL_1}");

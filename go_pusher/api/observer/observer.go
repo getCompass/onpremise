@@ -40,13 +40,13 @@ func Work(ctx context.Context) {
 
 	// число задаваемое здесь равняется кол-ву функций, запускаемых ниже
 	// выглядит не гибко, но больше идей нет :c
-	wg.Add(4)
+	wg.Add(5)
 
 	go goWorkFunc(&wg, goClearUnusedPivotSocketKey)
 	go goWorkFuncWithContext(&wg, ctx, goWorkTextPushWorker)
 	go goWorkFuncWithContext(&wg, ctx, goWorkVoipPushWorker)
 	go goWorkFunc(&wg, goWorkAnalyticsObserver)
-
+	go goWorkFunc(&wg, goDeleteInvalidTokens)
 	wg.Wait()
 }
 

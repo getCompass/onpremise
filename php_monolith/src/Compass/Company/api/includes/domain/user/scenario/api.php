@@ -110,12 +110,9 @@ class Domain_User_Scenario_Api
 
 	/**
 	 * Получаем список пользователей по ролям
-	 *
-	 * @param array $roles
-	 *
-	 * @return array
 	 */
-	public static function getUserRoleList(array $roles):array {
+	public static function getUserRoleList(array $roles): array
+	{
 
 		// получаем список пользователей
 		$user_role_list = Domain_User_Action_Member_GetUserRoleList::do($roles);
@@ -145,7 +142,8 @@ class Domain_User_Scenario_Api
 	 * @throws cs_UserNotLoggedIn
 	 * @throws \queryException
 	 */
-	public static function doStart(int $user_id, int $role, int $permissions):array {
+	public static function doStart(int $user_id, int $role, int $permissions): array
+	{
 
 		$device_id = getDeviceId();
 		$platform  = Type_Api_Platform::getPlatform();
@@ -179,7 +177,8 @@ class Domain_User_Scenario_Api
 	}
 
 	// получаем переменные для конфига пользователя
-	protected static function _getConfig():array {
+	protected static function _getConfig(): array
+	{
 
 		$config = [];
 
@@ -188,19 +187,23 @@ class Domain_User_Scenario_Api
 			Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY,
 			Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS,
 			Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING,
+			Domain_Company_Entity_Config::UNLIMITED_MESSAGES_DELETING,
 			Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING,
 			Domain_Company_Entity_Config::MEMBER_COUNT,
 			Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS,
+			Domain_Company_Entity_Config::LOCAL_LINKS,
 		]);
 
 		// достаём значения
-		$config["is_push_body_display"]                  = $config_list[Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY]["value"];
-		$config["is_extended_employee_card_enabled"]     = $config_list[Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY]["value"];
-		$config["is_general_chat_notification_enabled"]  = $config_list[Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS]["value"];
-		$config["is_add_to_general_chat_on_hiring"]      = $config_list[Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING]["value"];
-		$config["member_count"]                          = $config_list[Domain_Company_Entity_Config::MEMBER_COUNT]["value"];
-		$config["show_message_read_status"]              = $config_list[Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS]["value"];
-		$config["is_unlimited_messages_editing_enabled"] = $config_list[Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING]["value"];
+		$config["is_push_body_display"]                   = $config_list[Domain_Company_Entity_Config::PUSH_BODY_DISPLAY_KEY]["value"];
+		$config["is_extended_employee_card_enabled"]      = $config_list[Domain_Company_Entity_Config::MODULE_EXTENDED_EMPLOYEE_CARD_KEY]["value"];
+		$config["is_general_chat_notification_enabled"]   = $config_list[Domain_Company_Entity_Config::GENERAL_CHAT_NOTIFICATIONS]["value"];
+		$config["is_add_to_general_chat_on_hiring"]       = $config_list[Domain_Company_Entity_Config::ADD_TO_GENERAL_CHAT_ON_HIRING]["value"];
+		$config["member_count"]                           = $config_list[Domain_Company_Entity_Config::MEMBER_COUNT]["value"];
+		$config["show_message_read_status"]               = $config_list[Domain_Company_Entity_Config::SHOW_MESSAGE_READ_STATUS]["value"];
+		$config["is_unlimited_messages_editing_enabled"]  = $config_list[Domain_Company_Entity_Config::UNLIMITED_MESSAGES_EDITING]["value"];
+		$config["is_unlimited_messages_deleting_enabled"] = $config_list[Domain_Company_Entity_Config::UNLIMITED_MESSAGES_DELETING]["value"];
+		$config["is_local_links_enabled"]                 = $config_list[Domain_Company_Entity_Config::LOCAL_LINKS]["value"];
 
 		return $config;
 	}
@@ -208,14 +211,10 @@ class Domain_User_Scenario_Api
 	/**
 	 * Есть ли в пространстве ранее принятая заявка на вступление
 	 *
-	 * @param int $member_count
-	 * @param int $role
-	 * @param int $permissions
-	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 */
-	protected static function _hasConfirmedJoinRequest(int $member_count, int $role, int $permissions):bool {
+	protected static function _hasConfirmedJoinRequest(int $member_count, int $role, int $permissions): bool
+	{
 
 		// если участников меньше 2 и участник может приглашать участников, проверяем, принимал ли кто-то заявку на вступление
 		// таким образом обрабатываем кейс, когда участник добавился в компанию и сразу вышел
@@ -240,7 +239,8 @@ class Domain_User_Scenario_Api
 	 * @throws \returnException
 	 * @throws ParamException|\paramException
 	 */
-	public static function doLogout(int $user_id):void {
+	public static function doLogout(int $user_id): void
+	{
 
 		// ID устройства пользователя
 		// может быть пустым, если это socket запрос по исключению пользователя из команды
@@ -256,7 +256,7 @@ class Domain_User_Scenario_Api
 			if ($device_id !== "" && Type_Api_Platform::getPlatform() != Type_Api_Platform::PLATFORM_ELECTRON) {
 				Domain_User_Action_Notifications_DeleteDevice::do($user_id, $device_id);
 			}
-		} catch (cs_UserNotLoggedIn|\cs_RowIsEmpty|\cs_SessionNotFound) {
+		} catch (cs_UserNotLoggedIn | \cs_RowIsEmpty | \cs_SessionNotFound) {
 			// просто ничего не делаем
 		}
 
@@ -288,9 +288,6 @@ class Domain_User_Scenario_Api
 	/**
 	 * Получаем список идентификаторов пользователей, сгруппированные по их статусу в системе
 	 *
-	 * @param int   $user_id
-	 * @param array $user_id_list
-	 *
 	 * @return array[]
 	 * @throws \apiAccessException
 	 * @throws \busException
@@ -299,7 +296,8 @@ class Domain_User_Scenario_Api
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function getUserIdListWithStatusInSystem(int $user_id, array $user_id_list):array {
+	public static function getUserIdListWithStatusInSystem(int $user_id, array $user_id_list): array
+	{
 
 		// проверяем user_list
 		Domain_User_Entity_Validator::assertValidUserIdList($user_id_list);
@@ -362,7 +360,8 @@ class Domain_User_Scenario_Api
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public static function leaveCompany(int $user_id, int $user_role, string|false $two_fa_key, int $method_version):void {
+	public static function leaveCompany(int $user_id, int $user_role, string | false $two_fa_key, int $method_version): void
+	{
 
 		// проверяем то, что пользователю доступно покидание компании
 		Domain_User_Action_Member_CheckIsAllowedLeaveCompany::do($user_id, $method_version);
@@ -408,12 +407,15 @@ class Domain_User_Scenario_Api
 	 * @throws cs_IncorrectDismissalRequestId
 	 * @throws cs_PlatformNotFound
 	 */
-	public static function doLeaveCompany(int $user_id, int $user_role, bool $is_delete_user = false):void {
+	public static function doLeaveCompany(int $user_id, int $user_role, bool $is_delete_user = false): void
+	{
 
 		// получаем полноценных пользователей пространства
 		$member_list                = Gateway_Db_CompanyData_MemberList::getAllActiveMemberWithNpcFilter();
-		$space_resident_member_list = array_filter($member_list,
-			static fn(\CompassApp\Domain\Member\Struct\Main $member) => in_array($member->role, Member::SPACE_RESIDENT_ROLE_LIST));
+		$space_resident_member_list = array_filter(
+			$member_list,
+			static fn (\CompassApp\Domain\Member\Struct\Main $member) => in_array($member->role, Member::SPACE_RESIDENT_ROLE_LIST)
+		);
 
 		// если в компании остались другие полноценные участники или покидает компанию гость,
 		// то просто увольняем его; иначе - удаляем компанию
@@ -450,7 +452,8 @@ class Domain_User_Scenario_Api
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	protected static function _dismissUser(int $user_id):void {
+	protected static function _dismissUser(int $user_id): void
+	{
 
 		// получаем старую заявку на увольнение, если она есть
 		try {
@@ -474,8 +477,7 @@ class Domain_User_Scenario_Api
 		self::doLogout($user_id);
 
 		// отправляем соообщение заявки о самоувольнении в диалог
-		[$hiring_conversation_map, $dismissal_request_message_map, $dismissal_request_thread_map] =
-			Gateway_Socket_Conversation::addDismissalRequestMessage($user_id, $dismissal_request->dismissal_request_id, $dismissal_request->dismissal_user_id);
+		[$hiring_conversation_map, $dismissal_request_message_map, $dismissal_request_thread_map] = Gateway_Socket_Conversation::addDismissalRequestMessage($user_id, $dismissal_request->dismissal_request_id, $dismissal_request->dismissal_user_id);
 
 		// сохраняем в заявке мапу сообщения из чата и треда к заявке
 		$dismissal_request = Domain_DismissalRequest_Action_SetMessageMap::do($dismissal_request->dismissal_request_id, $dismissal_request_message_map);

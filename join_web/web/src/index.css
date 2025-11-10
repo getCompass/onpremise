@@ -111,7 +111,6 @@ input[type="search"] {
 
 .landing-page-layout-mobile {
 	min-height: 100vh;
-	min-height: 100dvh;
 	@media screen and (max-width: 600px) {
 		background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(145, 155, 234, 0.3) 22.6%, rgba(145, 155, 234, 0.3) 52.6%, rgba(145, 155, 234, 0.3) 52.6%, rgba(145, 155, 234, 0.3) 52.6%);
 		background-attachment: fixed;
@@ -148,11 +147,6 @@ input[type="search"] {
 
 .h100vh {
 	height: 100vh;
-}
-
-.h100dvh {
-	height: 100vh;
-	height: 100dvh;
 }
 
 .main-bg {

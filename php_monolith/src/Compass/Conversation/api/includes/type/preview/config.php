@@ -8,8 +8,8 @@ use BaseFrame\Exception\Domain\ParseFatalException;
  * класс для работы с конфиг-файлом превью api/conf/preview.php
  * @package Compass\Conversation
  */
-class Type_Preview_Config {
-
+class Type_Preview_Config
+{
 	/** Ключ для получения конфига с основными параметрами парсинга превью */
 	protected const _KEY_PREVIEW = "PREVIEW";
 
@@ -18,7 +18,8 @@ class Type_Preview_Config {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function isPreviewEnabled():bool {
+	public static function isPreviewEnabled(): bool
+	{
 
 		return (bool) self::_getConfig(self::_KEY_PREVIEW)["url_parsing_flag"] ?? true;
 	}
@@ -26,10 +27,10 @@ class Type_Preview_Config {
 	/**
 	 * Проверяем заполняли ли белый список
 	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 */
-	public static function isWhiteListEmpty():bool {
+	public static function isWhiteListEmpty(): bool
+	{
 
 		return count(self::getWhiteDomainList()) === 0;
 	}
@@ -39,7 +40,8 @@ class Type_Preview_Config {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function isDomainInWhiteList(string $domain):bool {
+	public static function isDomainInWhiteList(string $domain): bool
+	{
 
 		$white_list = Type_Preview_Config::getWhiteDomainList();
 
@@ -47,16 +49,16 @@ class Type_Preview_Config {
 			return false;
 		}
 
-		return in_array(self::_prepareDomain($domain), $white_list);
+		return self::_checkIsInDomainList(self::_prepareDomain($domain), $white_list);
 	}
 
 	/**
 	 * Получаем список доменоч
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 */
-	public static function getWhiteDomainList():array {
+	public static function getWhiteDomainList(): array
+	{
 
 		$white_list = self::_getConfig(self::_KEY_PREVIEW)["white_list"];
 
@@ -77,10 +79,10 @@ class Type_Preview_Config {
 	/**
 	 * Проверяем заполняли ли черный список
 	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 */
-	public static function isBlackListEmpty():bool {
+	public static function isBlackListEmpty(): bool
+	{
 
 		return count(self::getBlackDomainList()) === 0;
 	}
@@ -90,7 +92,8 @@ class Type_Preview_Config {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function isDomainInBlackList(string $domain):bool {
+	public static function isDomainInBlackList(string $domain): bool
+	{
 
 		$black_list = Type_Preview_Config::getBlackDomainList();
 
@@ -98,17 +101,16 @@ class Type_Preview_Config {
 			return false;
 		}
 
-		return in_array(self::_prepareDomain($domain), $black_list);
+		return self::_checkIsInDomainList(self::_prepareDomain($domain), $black_list);
 	}
 
 	/**
 	 * Получаем список доменов в черном списке
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 */
-	public static function getBlackDomainList():array {
-
+	public static function getBlackDomainList(): array
+	{
 
 		$black_list = self::_getConfig(self::_KEY_PREVIEW)["black_list"];
 
@@ -129,10 +131,10 @@ class Type_Preview_Config {
 	/**
 	 * Проверяем заполняли ли черный список редиректов
 	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 */
-	public static function isRedirectBlackListEmpty():bool {
+	public static function isRedirectBlackListEmpty(): bool
+	{
 
 		return count(self::getRedirectBlackDomainList()) === 0;
 	}
@@ -142,7 +144,8 @@ class Type_Preview_Config {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function isDomainInRedirectBlackList(string $domain):bool {
+	public static function isDomainInRedirectBlackList(string $domain): bool
+	{
 
 		$redirect_black_list = Type_Preview_Config::getRedirectBlackDomainList();
 
@@ -156,10 +159,10 @@ class Type_Preview_Config {
 	/**
 	 * Получаем список доменов в черном списке для редиректа
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 */
-	public static function getRedirectBlackDomainList():array {
+	public static function getRedirectBlackDomainList(): array
+	{
 
 		$redirect_black_list = self::_getConfig(self::_KEY_PREVIEW)["redirect_black_list"];
 
@@ -180,7 +183,8 @@ class Type_Preview_Config {
 	/**
 	 * Готовим домен если был редирект
 	 */
-	protected static function _prepareDomain(string $domain):string {
+	protected static function _prepareDomain(string $domain): string
+	{
 
 		if (str_starts_with($domain, "www.")) {
 			$domain = substr($domain, 4);
@@ -190,9 +194,40 @@ class Type_Preview_Config {
 	}
 
 	/**
+	 * Проверить, есть ли домен в списке
+	 */
+	protected static function _checkIsInDomainList(string $check_domain, array $domain_list): bool
+	{
+
+		foreach ($domain_list as $domain) {
+
+			// для wildcard домена
+			if (str_starts_with($domain, "*.")) {
+
+				// выделяем постфикс без wildcard
+				$domain_postfix = mb_substr($domain, 2);
+
+				// проверяем, что вайлдкард домен является концом проверяемого, и не равен ему
+				if ($check_domain !== $domain_postfix && str_ends_with($check_domain, $domain_postfix)) {
+					return true;
+				}
+
+			}
+
+			// если домен полностью совпадет - значит есть в списке
+			if ($check_domain === $domain) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Получаем контент конфига
 	 */
-	protected static function _getDomain(string $url):string|false {
+	protected static function _getDomain(string $url): string | false
+	{
 
 		$prepared_url = Helper_Preview::prepareUrl($url);
 
@@ -214,7 +249,8 @@ class Type_Preview_Config {
 	 *
 	 * @throws ParseFatalException
 	 */
-	protected static function _getConfig(string $config_key):array {
+	protected static function _getConfig(string $config_key): array
+	{
 
 		$config = getConfig($config_key);
 

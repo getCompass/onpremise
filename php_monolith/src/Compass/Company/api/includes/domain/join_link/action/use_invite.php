@@ -46,7 +46,14 @@ class Domain_JoinLink_Action_UseInvite {
 
 			// если те закончились, помечаем ссылку использованной
 			if ($invite_link->can_use_count < 1) {
+
 				$invite_link_status = Domain_JoinLink_Entity_Main::STATUS_USED;
+
+				// если в этом кейсе ссылка была без ограничений по времени
+				// то помечаем время истечения текущим временем
+				if ($invite_link->expires_at == 0) {
+					$invite_link->expires_at = time();
+				}
 			}
 		}
 
@@ -54,6 +61,7 @@ class Domain_JoinLink_Action_UseInvite {
 			"updated_at"    => time(),
 			"can_use_count" => $invite_link->can_use_count,
 			"status"        => $invite_link_status,
+			"expires_at"    => $invite_link->expires_at,
 		];
 
 		Gateway_Db_CompanyData_JoinLinkList::set($invite_link_uniq, $set);

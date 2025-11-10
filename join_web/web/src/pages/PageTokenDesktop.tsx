@@ -11,7 +11,7 @@ import {
 	authInputState,
 	authState,
 	confirmPasswordState,
-	deviceLoginTypeState, isGuestAuthState,
+	deviceLoginTypeState, isGuestAuthState, isLdapChangeMailState,
 	isPasswordChangedState,
 	isRegistrationState,
 	joinLinkState,
@@ -294,6 +294,9 @@ const PageTokenDesktop = () => {
 	const langStringCreateNewPasswordDialogSuccessTooltipMessage = useLangString(
 		"create_new_password_dialog.success_tooltip_message"
 	);
+	const langStringLdap2FaAddMailDialogChangeMailToastSuccess = useLangString(
+		"ldap_2fa_add_mail_dialog.change_mail_toast_success"
+	);
 
 	const isJoinLink = useIsJoinLink();
 	const joinLink = useAtomValue(joinLinkState);
@@ -305,6 +308,7 @@ const PageTokenDesktop = () => {
 	const setIsGuestAuth = useSetAtom(isGuestAuthState);
 	const setAuth = useSetAtom(authState);
 	const [ isPasswordChanged, setIsPasswordChanged ] = useAtom(isPasswordChangedState);
+	const [ isLdapChangeMail, setIsLdapChangeMail ] = useAtom(isLdapChangeMailState);
 	const apiAuthLogout = useApiAuthLogout();
 	const dialogId = useMemo(() => generateDialogId(), []);
 	const toastConfig = useToastConfig(dialogId);
@@ -348,6 +352,14 @@ const PageTokenDesktop = () => {
 		setAuth(null);
 		setIsGuestAuth(false);
 	}, []);
+
+	useEffect(() => {
+
+		if (isLdapChangeMail) {
+			pageShowToast(langStringLdap2FaAddMailDialogChangeMailToastSuccess, "success");
+		}
+		setIsLdapChangeMail(false);
+	}, [])
 
 	useEffect(() => {
 		if (!isPasswordChanged) {

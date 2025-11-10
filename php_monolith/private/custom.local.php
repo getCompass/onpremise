@@ -311,6 +311,7 @@ define("NEED_SEND_GUEST_MEMBER_PUSH"			, ${NEED_SEND_GUEST_MEMBER_PUSH});
 define("TEST_USER_NAME_PREFIX"                        , "${TEST_USER_NAME_PREFIX}");
 
 define("ONPREMISE_VERSION"                , "${ONPREMISE_VERSION}");
+define("DISPLAYED_ONPREMISE_VERSION"	, "${DISPLAYED_ONPREMISE_VERSION}");
 
 define("CA_CERTIFICATE"                			, "${CA_CERTIFICATE}");
 

@@ -2,6 +2,9 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
@@ -12,33 +15,44 @@ class Domain_SmartApp_Action_GetAuthorizationToken {
 	/**
 	 * выполняем действие
 	 *
-	 * @throws Domain_Userbot_Exception_UserbotNotFound
+	 * @param int          $user_id
+	 * @param string|false $entity
+	 * @param string|false $entity_key
+	 * @param int          $smart_app_id
+	 * @param int          $client_width
+	 * @param int          $client_height
+	 *
+	 * @return string
+	 * @throws DBShardingNotFoundException
 	 * @throws ParamException
+	 * @throws QueryFatalException
+	 * @throws ReturnFatalException
+	 * @throws \returnException
+	 * @throws cs_PlatformNotFound
 	 */
-	public static function do(int $user_id, string|false $entity, string|false $entity_key, string $smart_app_name, int $client_width, int $client_height):string {
+	public static function do(int $user_id, string|false $entity, string|false $entity_key, int $smart_app_id, int $client_width, int $client_height):string {
 
 		// проверяем что есть доступ к переданной сущности
 		self::_assertEntityMember($user_id, $entity, $entity_key);
 
 		try {
-			$userbot = Gateway_Db_CompanyData_UserbotList::getBySmartAppName($smart_app_name);
-		} catch (Domain_Userbot_Exception_UserbotNotFound) {
+			$smart_app_user_rel = Gateway_Db_CompanyData_SmartAppUserRel::getOne($smart_app_id, $user_id);
+		} catch (Domain_SmartApp_Exception_SmartAppNotFound) {
 			throw new ParamException("passed incorrect params");
 		}
 
-		// получаем информацию о пользователе
 		try {
-			$user_info = Gateway_Bus_CompanyCache::getMember($userbot->user_id);
-		} catch (\cs_RowIsEmpty) {
+			$smart_app = Gateway_Db_CompanyData_SmartAppList::getOne($smart_app_id);
+		} catch (Domain_SmartApp_Exception_SmartAppNotFound) {
 			throw new ParamException("passed incorrect params");
 		}
 
 		// получаем ссылку на аватар
-		$smart_app_avatar_url = self::_getAvatarUrl(Domain_Userbot_Entity_Userbot::getAvatarFileKey($userbot->extra));
+		$smart_app_avatar_url = self::_getAvatarUrl(Domain_SmartApp_Entity_SmartAppUserRel::getAvatarFileKey($smart_app_user_rel->extra));
 
 		return Domain_SmartApp_Entity_AuthenticationToken::generate(
-			$user_id, $user_info->full_name,
-			$smart_app_name, $smart_app_avatar_url, Domain_Userbot_Entity_Userbot::getSmartAppPrivateKey($userbot->extra),
+			$user_id, Domain_SmartApp_Entity_SmartAppUserRel::getTitle($smart_app_user_rel->extra),
+			$smart_app->smart_app_uniq_name, $smart_app_avatar_url, Domain_SmartApp_Entity_SmartApp::getPrivateKey($smart_app->extra),
 			$client_width, $client_height, Type_Api_Platform::getPlatform(),
 			$entity, $entity_key,
 		);
@@ -52,6 +66,8 @@ class Domain_SmartApp_Action_GetAuthorizationToken {
 	 * @param string|false $entity_key
 	 *
 	 * @return void
+	 * @throws ParamException
+	 * @throws ReturnFatalException
 	 */
 	protected static function _assertEntityMember(int $user_id, string|false $entity, string|false $entity_key):void {
 
@@ -85,6 +101,7 @@ class Domain_SmartApp_Action_GetAuthorizationToken {
 	 * @param string $smart_app_avatar_file_key
 	 *
 	 * @return string
+	 * @throws \returnException
 	 */
 	protected static function _getAvatarUrl(string $smart_app_avatar_file_key):string {
 

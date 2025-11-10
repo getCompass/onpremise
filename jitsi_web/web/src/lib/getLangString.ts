@@ -58,6 +58,11 @@ const LANG_CONFIG: LangConfig = {
 				try_compass_button: "Скачать Compass",
 				join_to_conference_again_button: "Вернуться в конференцию",
 			},
+			kicked_from_conference_content: {
+				title: "Вы исключены из конференции",
+				desc: "Для создания новой конференции скачайте Compass.",
+				try_compass_button: "Скачать Compass",
+			},
 			conference_not_found_content: {
 				title: "Видеоконференция не найдена",
 				desc: "Пожалуйста, проверьте ссылку или свяжитесь\nс организатором конференции.",
@@ -127,6 +132,11 @@ const LANG_CONFIG: LangConfig = {
 				desc: "Для создания новой конференции скачайте Compass.",
 				try_compass_button: "Скачать Compass",
 				join_to_conference_again_button: "Вернуться в конференцию",
+			},
+			kicked_from_conference_content: {
+				title: "Вы исключены из конференции",
+				desc: "Для создания новой конференции скачайте Compass.",
+				try_compass_button: "Скачать Compass",
 			},
 			conference_not_found_content: {
 				title: "Видеоконференция не найдена",

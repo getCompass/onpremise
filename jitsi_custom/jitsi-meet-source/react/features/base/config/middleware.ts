@@ -74,6 +74,12 @@ function _setConfig({ dispatch, getState }: IStore, next: Function, action: AnyA
         }));
     }
 
+    if (action.config.disableAGC !== undefined) {
+        dispatch(updateSettings({
+            disableAGC: action.config.disableAGC,
+        }));
+    }
+
     if (action.config.filmstrip?.stageFilmstripParticipants !== undefined) {
         dispatch(updateSettings({
             maxStageParticipants: action.config.filmstrip.stageFilmstripParticipants

@@ -460,6 +460,46 @@ class Type_User_Notifications {
 	}
 
 	/**
+	 * убираем выбранный список device_id у пользователя
+	 *
+	 * @throws \returnException
+	 */
+	public static function deleteDeviceListForUser(int $user_id, array $device_id_list):void {
+
+		Gateway_Db_PivotUser_NotificationList::beginTransaction($user_id);
+
+		try {
+			$user_notification_row = Gateway_Db_PivotUser_NotificationList::getForUpdate($user_id);
+		} catch (\cs_RowIsEmpty) {
+
+			Gateway_Db_PivotUser_NotificationList::rollback($user_id);
+			return;
+		}
+
+		if (!isset($user_notification_row->user_id)) {
+
+			Gateway_Db_PivotUser_NotificationList::rollback($user_id);
+			return;
+		}
+
+		// если в записи отсутствует девайс пользователя, то ничего не делаем
+		if (count($user_notification_row->device_list) != 1 && count(array_diff($user_notification_row->device_list, $device_id_list)) == 0) {
+
+			Gateway_Db_PivotUser_NotificationList::rollback($user_id);
+			return;
+		}
+
+		// открепляем device_id от пользователя
+		$device_list = array_diff($user_notification_row->device_list, $device_id_list);
+		Gateway_Db_PivotUser_NotificationList::set($user_id, [
+			"device_list" => array_values($device_list),
+			"updated_at"  => time(),
+		]);
+
+		Gateway_Db_PivotUser_NotificationList::commitTransaction($user_id);
+	}
+
+	/**
 	 * очищаем список токенов компании для данного устройства
 	 *
 	 * @throws \returnException

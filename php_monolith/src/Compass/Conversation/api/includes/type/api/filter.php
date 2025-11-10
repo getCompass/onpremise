@@ -286,8 +286,10 @@ class Type_Api_Filter {
 		// проходимся по каждому флагу
 		foreach ($match[0] as $flag) {
 
-			// заменяем его на :short_name:
-			$text = preg_replace("/" . $flag . "/ui", $emoji_flag_list[$flag], $text, 1);
+			$emoji_flag = $emoji_flag_list[$flag] ?? "";
+
+			// заменяем его на :short_name:, если возможно
+			$text = preg_replace("/" . $flag . "/ui", $emoji_flag, $text, 1);
 		}
 
 		return $text;

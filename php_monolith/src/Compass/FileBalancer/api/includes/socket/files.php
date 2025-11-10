@@ -348,28 +348,37 @@ class Socket_Files extends \BaseFrame\Controller\Socket
 	/**
 	 * помеметить файлы удаленными
 	 *
-	 * @return array
-	 * @throws \BaseFrame\Exception\Request\ParamException
-	 * @throws returnException
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 * @throws ParamException
+	 * @throws parseException
 	 */
-	public function setFileListDeleted():array {
+	public function setFileListDeleted(): array
+	{
 
-		$file_map_list = $this->post(\Formatter::TYPE_ARRAY, "file_map_list");
+		$file_key_list = $this->post(\Formatter::TYPE_ARRAY, "file_key_list", []);
+		$file_map_list = $this->post(\Formatter::TYPE_ARRAY, "file_map_list", []);
 
-		// удаляем каждый файл
-		foreach ($file_map_list as $v) {
+		foreach ($file_key_list as $file_key) {
+
+			$file_map = Type_Pack_File::tryDecrypt($file_key);
 
 			// проверяем что запрос пришел на правильный сервер
-			if (Type_Pack_File::getServerType($v) != CURRENT_SERVER) {
-				throw new returnException("Someone trying to set file deleted from server, which is not from current server");
+			if (Type_Pack_File::getServerType($file_map) != CURRENT_SERVER) {
+				continue;
 			}
 
-			// помечаем файл как удаленный
-			Type_File_Main::set($v, [
-				"is_deleted" => 1,
-				"updated_at" => time(),
-			]);
+			$file_map_list[] = $file_map;
 		}
+
+		if ($file_map_list === []) {
+			return $this->ok();
+		}
+
+		// помечаем файлы как удаленные
+		Type_Db_File::setList($file_map_list, [
+			"is_deleted" => 1,
+		]);
 
 		return $this->ok();
 	}

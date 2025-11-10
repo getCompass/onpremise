@@ -5,10 +5,10 @@ namespace Compass\Pivot;
 /**
  * Класс описывает работу атрибуции для трафика сотрудников/участников команды – такие пользователи приходят с ссылок-приглашений /join/
  */
-class Domain_User_Entity_Attribution_Traffic_JoinSpace extends Domain_User_Entity_Attribution_Traffic_Abstract {
+class Domain_User_Entity_Attribution_Traffic_UserJoinSpace extends Domain_User_Entity_Attribution_Traffic_Abstract {
 
 	/** @var string тип трафика */
-	protected const _TRAFFIC_TYPE = "join_space";
+	protected const _TRAFFIC_TYPE = "user_join_space";
 
 	/** @var array результаты сравнения параметров регистрации и посещений /join/ страниц – для аналитики */
 	protected array $_visit_parameters_comparing_result_map = [];

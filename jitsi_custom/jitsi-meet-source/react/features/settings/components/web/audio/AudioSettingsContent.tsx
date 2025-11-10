@@ -5,17 +5,23 @@ import { connect } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState, IStore } from '../../../../app/types';
-import { IconMic, IconVolumeUp } from '../../../../base/icons/svg';
+import { isNeedShowElectronOnlyElements } from '../../../../base/environment/utils_web';
+import { setAutoGainControl } from '../../../../base/conference/actions.web';
+import { isAGCDisabled } from '../../../../base/settings/functions.any';
+import { IconMic, IconModeratorSettings, IconVolumeUp } from '../../../../base/icons/svg';
 import JitsiMeetJS from '../../../../base/lib-jitsi-meet';
 import { equals } from '../../../../base/redux/functions';
 import Checkbox from '../../../../base/ui/components/web/Checkbox';
 import ContextMenu from '../../../../base/ui/components/web/ContextMenu';
 import ContextMenuItem from '../../../../base/ui/components/web/ContextMenuItem';
 import ContextMenuItemGroup from '../../../../base/ui/components/web/ContextMenuItemGroup';
+import { isLinux, isWindows } from '../../../../base/environment/environment';
 import { toggleNoiseSuppression } from '../../../../noise-suppression/actions';
 import { isNoiseSuppressionEnabled } from '../../../../noise-suppression/functions';
 import { isPrejoinPageVisible } from '../../../../prejoin/functions';
 import { createLocalAudioTracks } from '../../../functions.web';
+import { showNotification } from '../../../../notifications/actions';
+import { NOTIFICATION_ICON, NOTIFICATION_TIMEOUT_TYPE } from '../../../../notifications/constants';
 
 import MicrophoneEntry from './MicrophoneEntry';
 import SpeakerEntry from './SpeakerEntry';
@@ -63,6 +69,9 @@ export interface IProps {
      * Whether noise suppression is enabled or not.
      */
     noiseSuppressionEnabled: boolean;
+
+    isAutoGainControlDisabled: boolean;
+    changeAutoGainControl: (isEnabled: boolean) => void;
 
     /**
      * A list of objects containing the labels and deviceIds
@@ -128,7 +137,28 @@ const useStyles = makeStyles()(theme => {
         },
 
         checkboxContainer: {
-            padding: '10px 16px'
+            paddingLeft: '19px',
+        },
+
+        openMicroSystemSettings: {
+            paddingLeft: '11px',
+        },
+
+        checkbox: {
+            padding: '9px 0 8px 4px',
+            width: '100%',
+
+            '.checkbox-text': {
+                lineHeight: '17px',
+            },
+
+            '&:hover': {
+                borderRadius: '0 !important',
+
+                '.checkbox-text': {
+                    color: 'rgba(255, 255, 255, 1)',
+                },
+            }
         },
 
         separateLineContainer: {
@@ -168,12 +198,14 @@ const AudioSettingsContent = ({
     measureAudioLevels,
     microphoneDevices,
     noiseSuppressionEnabled,
+    isAutoGainControlDisabled,
+    changeAutoGainControl,
     outputDevices,
     prejoinVisible,
     setAudioInputDevice,
     setAudioOutputDevice,
     toggleSuppression,
-    isVisitorButton
+    isVisitorButton,
 }: IProps) => {
     const _componentWasUnmounted = useRef(false);
     const microphoneHeaderId = 'microphone_settings_header';
@@ -189,6 +221,12 @@ const AudioSettingsContent = ({
     }));
     const microphoneDevicesRef = useRef(microphoneDevices);
     const { t } = useTranslation();
+
+    const isWindowsOrLinux = isWindows() || isLinux();
+
+    const openRecordingSystemSettingsHandler = () => {
+        window.open('ms-settings:sound');
+    }
 
     /**
      * Click handler for the microphone entries.
@@ -373,6 +411,32 @@ const AudioSettingsContent = ({
                             )}
                         </ul>
                     </ContextMenuItemGroup>
+                    {isNeedShowElectronOnlyElements() && isWindowsOrLinux && (
+                        <>
+                            <div className={classes.separateLineContainer}>
+                                <div className={classes.separateLine} />
+                            </div>
+                            <div
+                                className = {classes.checkboxContainer}
+                                onClick = {(e: React.MouseEvent) => e.stopPropagation()}>
+                                <Checkbox
+                                    className = {classes.checkbox}
+                                    classNameText='checkbox-text'
+                                    checked = {!isAutoGainControlDisabled}
+                                    label = {t('settings.autoGainControl.checkbox')}
+                                    onChange = {() => changeAutoGainControl(isAutoGainControlDisabled)} />
+                            </div>
+                            {isWindows() && (
+                                <ContextMenuItem
+                                    className={classes.openMicroSystemSettings}
+                                    accessibilityLabel={t('settings.autoGainControl.systemSettings')}
+                                    icon={IconModeratorSettings}
+                                    onClick={openRecordingSystemSettingsHandler}
+                                    text={t('settings.autoGainControl.systemSettings')}
+                                />
+                            )}
+                        </>
+                    )}
                 </>)
             }
             {/*{!prejoinVisible && (*/}
@@ -395,7 +459,8 @@ const AudioSettingsContent = ({
 const mapStateToProps = (state: IReduxState) => {
     return {
         noiseSuppressionEnabled: isNoiseSuppressionEnabled(state),
-        prejoinVisible: isPrejoinPageVisible(state)
+        prejoinVisible: isPrejoinPageVisible(state),
+        isAutoGainControlDisabled: !!isAGCDisabled(state),
     };
 };
 
@@ -403,7 +468,19 @@ const mapDispatchToProps = (dispatch: IStore['dispatch']) => {
     return {
         toggleSuppression() {
             dispatch(toggleNoiseSuppression());
-        }
+        },
+        changeAutoGainControl(currentState: boolean) {
+            dispatch(showNotification({
+                titleKey: currentState
+                    ? 'settings.autoGainControl.notificationAlert.titleEnabled'
+                    : 'settings.autoGainControl.notificationAlert.titleDisabled',
+                descriptionKey: 'settings.autoGainControl.notificationAlert.description',
+                appearance: NOTIFICATION_TIMEOUT_TYPE.SHORT,
+                icon: NOTIFICATION_ICON.MICROPHONE,
+            }));
+
+            dispatch(setAutoGainControl(!currentState));
+        },
     };
 };
 

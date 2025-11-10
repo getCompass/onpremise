@@ -34,9 +34,11 @@ class Type_Script_Source_RecountTotalUnread extends Type_Script_CompanyUpdateTem
 
 		Gateway_Db_CompanyConversation_Main::beginTransaction();
 
-		$total_unread_counters           = Gateway_Db_CompanyConversation_UserLeftMenu::getTotalUnreadCounters($user_id);
-		$total_message_unread_count      = $total_unread_counters["message_unread_count"] ?? 0;
-		$total_conversation_unread_count = $total_unread_counters["conversation_unread_count"] ?? 0;
+		$total_unread_counters = Gateway_Db_CompanyConversation_UserLeftMenu::getTotalUnreadCounters($user_id);
+
+		$total_message_unread_count       = $total_unread_counters["message_unread_count"] ?? 0;
+		$total_conversation_unread_count  = $total_unread_counters["conversation_unread_count"] ?? 0;
+		$single_conversation_unread_count = $total_unread_counters["single_conversation_unread_count"] ?? 0;
 
 		$current_unread_counters             = Gateway_Db_CompanyConversation_UserInbox::getOne($user_id);
 		$current_unread_message_counter      = $current_unread_counters["message_unread_count"] ?? 0;
@@ -61,8 +63,9 @@ class Type_Script_Source_RecountTotalUnread extends Type_Script_CompanyUpdateTem
 		}
 
 		Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
-			"message_unread_count"      => (int) $total_message_unread_count,
-			"conversation_unread_count" => (int) $total_conversation_unread_count,
+			"message_unread_count"             => (int) $total_message_unread_count,
+			"conversation_unread_count"        => (int) $total_conversation_unread_count,
+			"single_conversation_unread_count" => (int) $single_conversation_unread_count,
 		]);
 
 		Gateway_Db_CompanyConversation_Main::commitTransaction();

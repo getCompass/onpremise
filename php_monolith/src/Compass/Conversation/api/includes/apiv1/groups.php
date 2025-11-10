@@ -844,7 +844,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	// -------------------------------------------------------
 
 	// очищаем имя группы, выкидываем \paramException если прислали некорректные данные
-	protected function _tryFilterGroupName(string $group_name, string $namespace = null, string $row = null):string {
+	protected function _tryFilterGroupName(string $group_name, ?string $namespace = null, ?string $row = null):string {
 
 		// форматируем название группового диалога
 		$group_name = Type_Api_Filter::sanitizeGroupName($group_name);
@@ -864,7 +864,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем что пользователь является участником диалога
-	protected function _throwIfUserIsNotConversationMember(array $meta_row, int $user_id, string $namespace = null, string $row = null):void {
+	protected function _throwIfUserIsNotConversationMember(array $meta_row, int $user_id, ?string $namespace = null, ?string $row = null):void {
 
 		if (!Type_Conversation_Meta_Users::isMember($user_id, $meta_row["users"])) {
 
@@ -878,7 +878,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяет что присланный user_id - корректный
-	protected function _throwIfUserIdIsMalformed(int $user_id, string $namespace = null, string $row = null):void {
+	protected function _throwIfUserIdIsMalformed(int $user_id, ?string $namespace = null, ?string $row = null):void {
 
 		// проверяем user_id
 		if ($user_id < 1) {
@@ -893,7 +893,7 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяет что присланный user_id не равен user_id пользователя совершающего запрос
-	protected function _throwIfUserIdIsEqualWithYourself(int $user_id, string $namespace = null, string $row = null):void {
+	protected function _throwIfUserIdIsEqualWithYourself(int $user_id, ?string $namespace = null, ?string $row = null):void {
 
 		if ($user_id == $this->user_id) {
 

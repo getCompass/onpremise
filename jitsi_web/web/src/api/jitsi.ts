@@ -1,8 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
-import { useGetResponse } from "./_index.ts";
-import { APIConferenceData } from "./_types.ts";
-import { conferenceDataState } from "./_stores.ts";
-import { useSetAtom } from "jotai";
+import {useMutation} from "@tanstack/react-query";
+import {useGetResponse} from "./_index.ts";
+import {APIConferenceData} from "./_types.ts";
+import {conferenceDataState} from "./_stores.ts";
+import {useSetAtom} from "jotai";
 
 type ApiJitsiGetConferenceDataArgs = {
 	link: string;
@@ -19,7 +19,7 @@ export function useApiJitsiGetConferenceData() {
 	return useMutation({
 		retry: false,
 		networkMode: "always",
-		mutationFn: async ({ link }: ApiJitsiGetConferenceDataArgs) => {
+		mutationFn: async ({link}: ApiJitsiGetConferenceDataArgs) => {
 			const body = new URLSearchParams({
 				link: link,
 			});
@@ -50,7 +50,7 @@ export function useApiJitsiJoinConference() {
 	return useMutation({
 		retry: false,
 		networkMode: "always",
-		mutationFn: async ({ link }: ApiJitsiJoinConferenceArgs) => {
+		mutationFn: async ({link}: ApiJitsiJoinConferenceArgs) => {
 			const body = new URLSearchParams({
 				link: link,
 			});

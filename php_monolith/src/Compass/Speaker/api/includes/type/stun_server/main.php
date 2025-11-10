@@ -11,7 +11,7 @@ class Type_StunServer_Main {
 	protected const _MAX_GET_STUN_LIST = 4;
 
 	// функция для получения списка stun-серверов
-	public static function getList(array $stun_server_list = null):array {
+	public static function getList(?array $stun_server_list = null):array {
 
 		if (is_null($stun_server_list)) {
 			$stun_server_list = getConfig("STUN_SERVER_LIST");

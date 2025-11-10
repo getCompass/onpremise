@@ -68,7 +68,7 @@ class Domain_Group_Action_CompanyDefaultCreate {
 			}
 
 			// создаем дефолтную группу
-			$meta_row = Type_Conversation_Group::add(
+			[$_, $meta_row] = Type_Conversation_Group::add(
 				$creator_user_id, $group_name, $conversation_type, false, false, $avatar_file_map, "",
 				false, false
 			);

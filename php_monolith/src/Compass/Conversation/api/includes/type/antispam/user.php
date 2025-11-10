@@ -401,7 +401,7 @@ class Type_Antispam_User extends Type_Antispam_Main {
 	 * @throws BlockException
 	 * @throws ParseFatalException
 	 */
-	public static function throwIfBlocked(int $user_id, array $block_key, string $namespace = null, string $row_name = null, string $key_extra = null):void {
+	public static function throwIfBlocked(int $user_id, array $block_key, ?string $namespace = null, ?string $row_name = null, ?string $key_extra = null):void {
 
 		if (self::needCheckIsBlocked()) {
 			return;

@@ -49,15 +49,22 @@ class Domain_Conversation_Action_SetAsUnread {
 	}
 
 	/**
-	 * Выполняем если чат был прочитанный
+	 * Инкрементим непрочитанные
 	 */
 	protected static function _incrementUnreadCount(int $user_id, array $left_menu_row):void {
 
-		Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
+		$set_user_inbox = [
 			"message_unread_count"      => "message_unread_count + 1",
 			"conversation_unread_count" => "conversation_unread_count + 1",
 			"updated_at"                => time(),
-		]);
+		];
+
+		// если сингл диалог
+		if (Type_Conversation_Meta::isSubtypeOfSingle($left_menu_row["type"])) {
+			$set_user_inbox["single_conversation_unread_count"] = "single_conversation_unread_count + 1";
+		}
+
+		Gateway_Db_CompanyConversation_UserInbox::set($user_id, $set_user_inbox);
 
 		$set = [
 			"unread_count"   => "unread_count + 1",

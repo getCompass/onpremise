@@ -64,6 +64,22 @@ class Type_File_Video_Extra {
 	}
 
 	/**
+	 * получаем video_version_list из extra
+	 *
+	 * @param array $extra
+	 *
+	 * @return array
+	 */
+	public static function getVideoVersionList(array $extra):array {
+
+		if (!isset($extra["video_version_list"])) {
+			return [];
+		}
+
+		return $extra["video_version_list"];
+	}
+
+	/**
 	 * получаем preview_size_list из extra
 	 *
 	 * @param array $extra

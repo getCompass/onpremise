@@ -3024,7 +3024,7 @@ class Type_Conversation_Message_Handler_Default {
 
 	// метод преобразует сообщения из треда в сообщения диалога с их структурой
 	// @long because switch ... case
-	public static function transferThreadMessageListToConversationMessageStructure(array $thread_message_list, array $parent_message_data = [], array $allow_message_types = null):array {
+	public static function transferThreadMessageListToConversationMessageStructure(array $thread_message_list, array $parent_message_data = [], ?array $allow_message_types = null):array {
 
 		// флаг, имеются ли в списке пересланные сообщения
 		$is_have_quote_or_repost = false;
@@ -3243,7 +3243,7 @@ class Type_Conversation_Message_Handler_Default {
 	}
 
 	// подготавливаем сообщения треда перед репостом
-	public static function prepareThreadMessageListBeforeRepost(array $message_list, array $allow_message_types = null):array {
+	public static function prepareThreadMessageListBeforeRepost(array $message_list, ?array $allow_message_types = null):array {
 
 		// индекс сообщений
 		$message_index = 1;

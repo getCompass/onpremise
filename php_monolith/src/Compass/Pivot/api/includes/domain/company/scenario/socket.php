@@ -405,8 +405,8 @@ class Domain_Company_Scenario_Socket {
 		[$need_backup, $need_wakeup] = match ($domino_registry_row->tier) {
 
 			Domain_Domino_Entity_Registry_Main::TIER_FREE, Domain_Domino_Entity_Registry_Main::TIER_PREPAYING => [true, false],
-			Domain_Domino_Entity_Registry_Main::TIER_PAYING                                                   => [true, true],
-			default                                                                                           => [false, false],
+			Domain_Domino_Entity_Registry_Main::TIER_PAYING => [true, true],
+			default => [false, false],
 		};
 
 		return [$need_backup, $need_wakeup];
@@ -712,6 +712,43 @@ class Domain_Company_Scenario_Socket {
 		// вернем ответ как есть, в текущей реализации нет смысле менять коды ошибок
 		// или как-то еще обрабатывать результат, пивот работает как прокси по сути
 		return Gateway_Socket_Company::isMediaConferenceCreatingAllowed($company_row, $user_id);
+	}
+
+	/**
+	 * Получить список ентрипоинтов для компаний
+	 *
+	 * @param array $company_id_list
+	 *
+	 * @return array
+	 * @throws cs_CompanyIncorrectCompanyId
+	 */
+	public static function getEntrypointList(array $company_id_list):array {
+
+		$domino_list     = [];
+		$entrypoint_list = [];
+
+		// получаем список пространств, и узнаем, на каких домино они находятся
+		$company_list = Gateway_Db_PivotCompany_CompanyList::getList($company_id_list);
+		foreach ($company_list as $company) {
+			$domino_list[$company->company_id] = $company->domino_id;
+		}
+
+		// для каждого домино узнаем его ентрипоинт
+		foreach ($domino_list as $company_id => $domino_id) {
+
+			if (!isset(getConfig("DOMINO_ENTRYPOINT")[$domino_id])) {
+				continue;
+			}
+
+			$entrypoint_list[$company_id] = getConfig("DOMINO_ENTRYPOINT")[$domino_id]["private_entrypoint"];
+		}
+
+		// для нулевой компании отдаем ентрипоинт пивота
+		if (in_array(0, $company_id_list)) {
+			$entrypoint_list[0] = ENTRYPOINT_PIVOT;
+		}
+
+		return $entrypoint_list;
 	}
 
 	// -------------------------------------------------------

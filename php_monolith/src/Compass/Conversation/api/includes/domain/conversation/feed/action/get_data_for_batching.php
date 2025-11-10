@@ -2,6 +2,8 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\Server\ServerProvider;
+
 /**
  * класс для получения данных для батчинга
  */

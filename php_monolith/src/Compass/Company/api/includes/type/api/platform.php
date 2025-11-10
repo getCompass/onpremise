@@ -32,7 +32,7 @@ class Type_Api_Platform {
 	 * @return string
 	 * @throws cs_PlatformNotFound
 	 */
-	public static function getPlatform(string $user_agent = null):string {
+	public static function getPlatform(?string $user_agent = null):string {
 
 		// если работаем из консоли и не передали ua - возвращаем платформу other
 		if (isCLi() && is_null($user_agent)) {

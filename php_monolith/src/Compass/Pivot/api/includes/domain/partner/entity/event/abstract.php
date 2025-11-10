@@ -28,7 +28,7 @@ class Domain_Partner_Entity_Event_Abstract {
 	 */
 	protected static function _sendToPartner(array $event_data):void {
 
-		if (ServerProvider::isOnPremise()) {
+		if (ServerProvider::isOnPremise() || ServerProvider::isMaster()) {
 			return;
 		}
 

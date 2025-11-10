@@ -713,7 +713,7 @@ class Gateway_Sso_Oidc_Client {
 	 * @return bool
 	 * @throws Gateway_Sso_Oidc_Exception
 	 */
-	protected function verifyJWTClaims(object $claims, string $accessToken = null):bool {
+	protected function verifyJWTClaims(object $claims, ?string $accessToken = null):bool {
 
 		$expected_at_hash = "";
 		if (isset($claims->at_hash, $accessToken)) {

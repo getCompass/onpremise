@@ -8,7 +8,7 @@ namespace Compass\Conversation;
 abstract class Type_Conversation_Default {
 
 	// создает новый пустой диалог (company_conversation.meta + company_conversation.dynamic)
-	protected static function _createNewConversation(int $type, int $allow_status, int $creator_user_id, array $users, array $extra, string $name = "", string $avatar_file_map = "", array|null $dynamic = null):array {
+	protected static function _createNewConversation(int $type, int $allow_status, int $creator_user_id, array $users, array $extra, string $name = "", string $avatar_file_map = "", ?array $dynamic = null):array {
 
 		// получаем shard_id
 		$created_at = time();
@@ -99,24 +99,26 @@ abstract class Type_Conversation_Default {
 	protected static function _createUserCloudData(int  $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias,
 								     int  $member_count, string $conversation_name = "", string $avatar_file_map = "", bool $is_favorite = false,
 								     bool $is_mentioned = false, int $opponent_user_id = 0, bool $is_hidden = false, bool $is_migration_muted = false,
-								     bool $is_channel = false):void {
+								     bool $is_channel = false):array {
 
 		Gateway_Db_CompanyConversation_Main::beginTransaction();
 
-		$created_at = time();
-		self::_doUserLeftMenuInsert($user_id, $conversation_map, $user_role, $conversation_type, $allow_status_alias, $member_count, $created_at,
+		$created_at    = time();
+		$left_menu_row = self::_doUserLeftMenuInsert($user_id, $conversation_map, $user_role, $conversation_type, $allow_status_alias, $member_count, $created_at,
 			$opponent_user_id, $conversation_name, $avatar_file_map, $is_favorite, $is_mentioned, $is_hidden, $is_migration_muted, $is_channel);
 
 		// создаем запись в dynamic пользователя
-		self::_doUserDynamicInsert($user_id, $created_at);
+		self::_doUserInboxInsert($user_id, $created_at);
 
 		Gateway_Db_CompanyConversation_Main::commitTransaction();
+
+		return $left_menu_row;
 	}
 
 	// создаем запись в left_menu
 	private static function _doUserLeftMenuInsert(int  $user_id, string $conversation_map, int $user_role, int $conversation_type, int $allow_status_alias,
 								    int  $member_count, int $created_at, int $opponent_user_id, string $conversation_name, string $avatar_file_map,
-								    bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted = false, bool $is_channel = false):void {
+								    bool $is_favorite, bool $is_mentioned, bool $is_hidden, bool $is_migration_muted = false, bool $is_channel = false):array {
 
 		$left_menu_row = self::_makeInsertDataLeftMenuRow(
 			$user_id, $conversation_map, $user_role,
@@ -127,6 +129,8 @@ abstract class Type_Conversation_Default {
 		);
 
 		Gateway_Db_CompanyConversation_UserLeftMenu::insert($left_menu_row);
+
+		return $left_menu_row;
 	}
 
 	// формируем данные для вставки в левое меню
@@ -143,12 +147,15 @@ abstract class Type_Conversation_Default {
 			"is_muted"              => $is_migration_muted ? 1 : 0,
 			"muted_until"           => $muted_until,
 			"is_hidden"             => $is_hidden ? 1 : 0,
-			"allow_status_alias"    => $allow_status_alias,
-			"is_channel_alias"      => $is_channel ? 1 : 0,
 			"is_leaved"             => 0,
+			"allow_status_alias"    => $allow_status_alias,
+			"leave_reason"          => 0,
 			"role"                  => $user_role,
 			"type"                  => $conversation_type,
 			"unread_count"          => 0,
+			"mention_count"         => 0,
+			"is_have_notice"        => 0,
+			"is_channel_alias"      => $is_channel ? 1 : 0,
 			"member_count"          => $member_count,
 			"version"               => Domain_User_Entity_Conversation_LeftMenu::generateVersion(0), // previous_version = 0, т.к новая запись
 			"clear_until"           => 0,
@@ -163,14 +170,15 @@ abstract class Type_Conversation_Default {
 	}
 
 	// создаем запись в dynamic пользователя
-	private static function _doUserDynamicInsert(int $user_id, int $created_at):void {
+	private static function _doUserInboxInsert(int $user_id, int $created_at):void {
 
 		$user_dynamic_row = [
-			"user_id"                   => $user_id,
-			"message_unread_count"      => 0,
-			"conversation_unread_count" => 0,
-			"created_at"                => $created_at,
-			"updated_at"                => 0,
+			"user_id"                          => $user_id,
+			"message_unread_count"             => 0,
+			"conversation_unread_count"        => 0,
+			"single_conversation_unread_count" => 0,
+			"created_at"                       => $created_at,
+			"updated_at"                       => 0,
 		];
 		Gateway_Db_CompanyConversation_UserInbox::insert($user_dynamic_row);
 	}

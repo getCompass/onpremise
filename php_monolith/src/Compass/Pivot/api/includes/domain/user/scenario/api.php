@@ -19,18 +19,14 @@ use BaseFrame\Exception\Gateway\BusFatalException;
  *
  * Class Domain_User_Scenario_Api
  */
-class Domain_User_Scenario_Api {
-
+class Domain_User_Scenario_Api
+{
 	protected const _MAX_COLOR_SELECTION_LIST_COUNT = 500; // максимальное количество выделений
 
 	/**
 	 * Сценарий регистрации
 	 *
-	 * @param int          $user_id
-	 * @param string       $phone_number
-	 * @param string|false $grecaptcha_response
 	 *
-	 * @return Struct_User_Auth_Info
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws InvalidPhoneNumber
@@ -45,7 +41,8 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_UserAlreadyLoggedIn
 	 * @throws cs_WrongRecaptcha
 	 */
-	public static function startAuth(int $user_id, string $phone_number, string|false $grecaptcha_response):Struct_User_Auth_Info {
+	public static function startAuth(int $user_id, string $phone_number, string | false $grecaptcha_response): Struct_User_Auth_Info
+	{
 
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
 		Domain_User_Entity_Validator::assertBanned($user_id);
@@ -59,7 +56,7 @@ class Domain_User_Scenario_Api {
 				->assertNotExpired()
 				->assertAuthParameter($phone_number)
 				->getAuthInfo();
-		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual) {
+		} catch (cs_CacheIsEmpty | cs_AuthIsExpired | Domain_User_Exception_AuthStory_AuthParameterNotEqual) {
 
 			// пробуем залогинить, если такого номера нет, то регистрируем
 			try {
@@ -84,19 +81,11 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Сценарий подтверждения смс
 	 *
-	 * @param int    $user_id
-	 * @param string $auth_map
-	 * @param string $code
-	 *
-	 * @return int
 	 * @throws Domain_User_Exception_Mail_BelongAnotherUser
 	 * @throws Domain_User_Exception_PhoneNumberBinding
 	 * @throws InvalidPhoneNumber
-	 * @throws ParseFatalException
 	 * @throws \busException
-	 * @throws \parseException
 	 * @throws \queryException
-	 * @throws \returnException
 	 * @throws \userAccessException
 	 * @throws cs_AnswerCommand
 	 * @throws cs_AuthAlreadyFinished
@@ -104,12 +93,15 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_AuthIsExpired
 	 * @throws cs_DamagedActionException
 	 * @throws cs_InvalidConfirmCode
+	 * @throws cs_PlatformNotFound
+	 * @throws cs_PlatformVersionNotFound
 	 * @throws cs_UserAlreadyLoggedIn
 	 * @throws cs_WrongAuthKey
 	 * @throws cs_WrongCode
 	 * @long
 	 */
-	public static function tryConfirmAuth(int $user_id, string $auth_map, string $code):int {
+	public static function tryConfirmAuth(int $user_id, string $auth_map, string $code): int
+	{
 
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
 		Domain_User_Entity_Validator::assertValidConfirmCode($code);
@@ -145,7 +137,12 @@ class Domain_User_Scenario_Api {
 
 		// фиксируем в аналитике, что пользователь использовал код из смс
 		Type_Sms_Analytics_Story::onConfirm(
-			$user_id, Type_Sms_Analytics_Story::STORY_TYPE_AUTH, $auth_map, $story->getExpiresAt(), $story->getAuthPhoneHandler()->getSmsID(), $story->getAuthPhoneHandler()->getPhoneNumber()
+			$user_id,
+			Type_Sms_Analytics_Story::STORY_TYPE_AUTH,
+			$auth_map,
+			$story->getExpiresAt(),
+			$story->getAuthPhoneHandler()->getSmsID(),
+			$story->getAuthPhoneHandler()->getPhoneNumber()
 		);
 
 		// увеличиваем счетчик использованных кодов из смс
@@ -206,10 +203,11 @@ class Domain_User_Scenario_Api {
 	/**
 	 * после успешной аутентификации
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 * @throws \queryException
 	 */
-	protected static function _onSuccessAuth(Domain_User_Entity_AuthStory $story, int $user_id):void {
+	protected static function _onSuccessAuth(Domain_User_Entity_AuthStory $story, int $user_id): void
+	{
 
 		// добавляем аутентификацию в историю
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
@@ -227,22 +225,22 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Сценарий переотправки
 	 *
+	 * @throws InvalidPhoneNumber
+	 * @throws LocaleTextNotFound
+	 * @throws \BaseFrame\Exception\Domain\CountryNotFound
+	 * @throws \queryException
 	 * @throws cs_AuthAlreadyFinished
-	 * @throws cs_AuthIsExpired
-	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_AuthIsBlocked
+	 * @throws cs_AuthIsExpired
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_ResendCodeCountLimitExceeded
 	 * @throws cs_ResendWillBeAvailableLater
 	 * @throws cs_UserAlreadyLoggedIn
 	 * @throws cs_WrongRecaptcha
-	 * @throws \parseException
-	 * @throws \queryException
-	 * @throws \returnException
-	 * @long
 	 */
-	public static function resendCode(int $user_id, string $auth_map, string|false $grecaptcha_response):Struct_User_Auth_Info {
+	public static function resendCode(int $user_id, string $auth_map, string | false $grecaptcha_response): Struct_User_Auth_Info
+	{
 
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
 
@@ -290,10 +288,6 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Сценарий метода doStart
 	 *
-	 * @param int    $user_id
-	 * @param string $app_version
-	 *
-	 * @return array
 	 * @throws \busException
 	 * @throws cs_AnswerCommand
 	 * @throws cs_CompanyIncorrectDeviceId
@@ -303,10 +297,11 @@ class Domain_User_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws \returnException
-	 * @throws \userAccessException
+	 * @throws \userAccessException|BusFatalException
 	 * @long
 	 */
-	public static function doStart(int $user_id, string $session_uniq, string $app_version):array {
+	public static function doStart(int $user_id, string $session_uniq, string $app_version): array
+	{
 
 		$platform = Type_Api_Platform::getPlatform();
 		$app_name = Type_Api_Platform::getAppNameByUserAgent();
@@ -332,7 +327,7 @@ class Domain_User_Scenario_Api {
 			// получаем информацию о пользователе
 			$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
 
-			[$ws_token, $ws_url] = self::_getWsTokenAndUrlAuthUser($user_id, getDeviceId(), $platform);
+			[$ws_token, $ws_url]        = self::_getWsTokenAndUrlAuthUser($user_id, getDeviceId(), $platform);
 			$notification_preferences   = self::_getNotificationPreferencesAuthUser($user_id);
 			$call_preferences           = self::_getCallPreferencesAuthUser($user_id);
 			$userbot_preferences        = self::_getUserbotPreferences();
@@ -381,10 +376,9 @@ class Domain_User_Scenario_Api {
 
 	/**
 	 * Получить токен пользователя для подключения к анонсам
-	 *
-	 * @throws \paramException
 	 */
-	public static function getAnnouncementAuthorizationToken(int $user_id, string $device_id):string {
+	public static function getAnnouncementAuthorizationToken(int $user_id, string $device_id): string
+	{
 
 		if ($device_id === "") {
 			throw new ParamException("incorrect device id");
@@ -397,7 +391,7 @@ class Domain_User_Scenario_Api {
 		$all_lobby_company_list = Gateway_Db_PivotUser_CompanyLobbyList::getCompanyListWithMinOrder($user_id, 0, 100);
 
 		// фильтруем, что получить именно те компании, что удалены - мы не должны иметь доступ к компаниям, в которые нас еще не приняли
-		$all_lobby_company_list = array_filter($all_lobby_company_list, function(Struct_Db_PivotUser_CompanyLobby $company_lobby) {
+		$all_lobby_company_list = array_filter($all_lobby_company_list, function (Struct_Db_PivotUser_CompanyLobby $company_lobby) {
 
 			return $company_lobby->status === Domain_Company_Entity_Company::COMPANY_STATUS_DELETED;
 		});
@@ -421,11 +415,11 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Получить данные для соединения по WS
 	 *
-	 * @throws \busException
 	 * @throws cs_PlatformNotFound
-	 * @throws \parseException
+	 * @throws \parseException|BusFatalException
 	 */
-	public static function getConnection(int $user_id):array {
+	public static function getConnection(int $user_id): array
+	{
 
 		$platform = Type_Api_Platform::getPlatform();
 
@@ -434,9 +428,9 @@ class Domain_User_Scenario_Api {
 
 	/**
 	 * Получаем список флагов
-	 *
 	 */
-	public static function getFlagList():array {
+	public static function getFlagList(): array
+	{
 
 		return Domain_User_Entity_Flag::getCountryFlagList();
 	}
@@ -444,23 +438,18 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Сценарий обновления профиля
 	 *
-	 * @param int          $user_id
-	 * @param string|false $name
-	 * @param string|false $avatar_file_map
-	 *
-	 * @return Struct_User_Info
+	 * @throws ActionRestrictedException
+	 * @throws BusFatalException
 	 * @throws Domain_User_Exception_AvatarIsDeleted
-	 * @throws ReturnFatalException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws cs_FileIsNotImage
-	 * @throws cs_InvalidAvatarFileMap
+	 * @throws \busException
 	 * @throws \cs_InvalidProfileName
 	 * @throws \cs_RowIsEmpty
-	 * @throws \parseException
 	 * @throws \queryException
-	 * @throws \returnException
+	 * @throws cs_FileIsNotImage
+	 * @throws cs_InvalidAvatarFileMap
 	 */
-	public static function setProfile(int $user_id, string|false $name, string|false $avatar_file_map, bool $is_operator = false):Struct_User_Info {
+	public static function setProfile(int $user_id, string | false $name, string | false $avatar_file_map, bool $is_operator = false): Struct_User_Info
+	{
 
 		if ($name !== false) {
 
@@ -508,15 +497,13 @@ class Domain_User_Scenario_Api {
 	/**
 	 * разлогинить пользователя
 	 *
-	 * @param int $user_id
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 * @throws cs_IncorrectSaltVersion
-	 * @throws \cs_RowIsEmpty
-	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public static function doLogout(int $user_id):void {
+	public static function doLogout(int $user_id): void
+	{
 
 		try {
 
@@ -535,20 +522,22 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Сценарий для отправки смс для 2аф
 	 *
+	 * @throws LocaleTextNotFound
+	 * @throws \blockException
+	 * @throws \cs_UnpackHasFailed
+	 * @throws \queryException
 	 * @throws cs_PlatformNotFound
 	 * @throws cs_RecaptchaIsRequired
 	 * @throws cs_TwoFaInvalidUser
 	 * @throws cs_TwoFaIsExpired
 	 * @throws cs_TwoFaIsFinished
 	 * @throws cs_TwoFaTypeIsInvalid
-	 * @throws \cs_UnpackHasFailed
 	 * @throws cs_UserPhoneSecurityNotFound
 	 * @throws cs_WrongAuthKey
 	 * @throws cs_WrongRecaptcha
-	 * @throws \parseException
-	 * @throws \queryException
 	 */
-	public static function trySendTwoFaSms(int $user_id, string $two_fa_map, string|false $grecaptcha_response):Domain_User_Entity_Confirmation_TwoFa_Story {
+	public static function trySendTwoFaSms(int $user_id, string $two_fa_map, string | false $grecaptcha_response): Domain_User_Entity_Confirmation_TwoFa_Story
+	{
 
 		try {
 
@@ -589,7 +578,8 @@ class Domain_User_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function tryConfirmTwoFaSms(int $user_id, string $two_fa_map, string $sms_code):void {
+	public static function tryConfirmTwoFaSms(int $user_id, string $two_fa_map, string $sms_code): void
+	{
 
 		$story = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 
@@ -613,8 +603,14 @@ class Domain_User_Scenario_Api {
 		}
 
 		// фиксируем в аналитике, что пользователь использовал код из смс
-		Type_Sms_Analytics_Story::onConfirm($user_id, Type_Sms_Analytics_Story::STORY_TYPE_TWO_FA, $two_fa_map, $story->getTwoFaInfo()->expires_at,
-			$story->getPhoneInfo()->sms_id, $story->getPhoneInfo()->phone_number);
+		Type_Sms_Analytics_Story::onConfirm(
+			$user_id,
+			Type_Sms_Analytics_Story::STORY_TYPE_TWO_FA,
+			$two_fa_map,
+			$story->getTwoFaInfo()->expires_at,
+			$story->getPhoneInfo()->sms_id,
+			$story->getPhoneInfo()->phone_number
+		);
 
 		// увеличиваем счетчик использованных кодов из смс
 		Gateway_Bus_CollectorAgent::init()->inc("row55");
@@ -638,7 +634,8 @@ class Domain_User_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public static function tryResendTwoFaSms(int $user_id, string $two_fa_map, string|false $grecaptcha_response):Domain_User_Entity_Confirmation_TwoFa_Story {
+	public static function tryResendTwoFaSms(int $user_id, string $two_fa_map, string | false $grecaptcha_response): Domain_User_Entity_Confirmation_TwoFa_Story
+	{
 
 		$story = Domain_User_Entity_Confirmation_TwoFa_Story::getByMap($two_fa_map);
 
@@ -671,9 +668,10 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Сценарий для очистки аватара пользователя
 	 *
-	 * @throws \parseException
+	 * @throws \parseException|ActionRestrictedException
 	 */
-	public static function doClearAvatar(int $user_id):void {
+	public static function doClearAvatar(int $user_id): void
+	{
 
 		if (!Type_Restrictions_Config::isAvatarChangeEnabled()) {
 			throw new ActionRestrictedException("action is restricted");
@@ -688,9 +686,10 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Получаем инфу о типе личности
 	 *
-	 * @throws \paramException|\cs_RowIsEmpty
+	 * @throws \cs_RowIsEmpty
 	 */
-	public static function getMBTIInfo(int $user_id, string $mbti_type):array {
+	public static function getMBTIInfo(int $user_id, string $mbti_type): array
+	{
 
 		if (!Domain_User_Entity_Validator::isMBTIType($mbti_type)) {
 			throw new ParamException(__METHOD__ . ": select is not available mbti_type");
@@ -730,7 +729,8 @@ class Domain_User_Scenario_Api {
 		"short_description" => "object",
 		"description"       => "object",
 	])]
-	protected static function _outputGetMBTIInfo(string $mbti_type, array $config, array $short_description_color_selection_list, array $description_color_selection_list):array {
+	protected static function _outputGetMBTIInfo(string $mbti_type, array $config, array $short_description_color_selection_list, array $description_color_selection_list): array
+	{
 
 		$mbti_file = Gateway_Db_PivotSystem_DefaultFileList::get("mbti_document_" . mb_strtolower($mbti_type));
 
@@ -751,9 +751,9 @@ class Domain_User_Scenario_Api {
 	 * Устанавливаем выделения цветом
 	 *
 	 * @throws cs_ExceededColorSelectionList
-	 * @throws \paramException
 	 */
-	public static function setColorSelectionList(int $user_id, string $mbti_type, string $text_type, array $color_selection_list):void {
+	public static function setColorSelectionList(int $user_id, string $mbti_type, string $text_type, array $color_selection_list): void
+	{
 
 		// проверяем color_selection_list
 		if (!Domain_User_Entity_Validator::isMbtiColorSelectionList($color_selection_list)) {
@@ -805,7 +805,8 @@ class Domain_User_Scenario_Api {
 	 * @throws Domain_User_Exception_Security_UserWasRegisteredBySso
 	 * @long
 	 */
-	public static function changePhoneStep1(int $user_id, string $session_uniq):array {
+	public static function changePhoneStep1(int $user_id, string $session_uniq): array
+	{
 
 		if (!Type_Restrictions_Config::isPhoneChangeEnabled()) {
 			throw new ActionRestrictedException("action is restricted");
@@ -845,7 +846,7 @@ class Domain_User_Scenario_Api {
 				$e->setNextAttempt($story->getExpiresAt());
 				throw $e;
 			}
-		} catch (cs_CacheIsEmpty|cs_PhoneChangeIsExpired|cs_PhoneChangeIsSuccess|cs_PhoneChangeSmsNotFound|cs_PhoneChangeWrongStage) {
+		} catch (cs_CacheIsEmpty | cs_PhoneChangeIsExpired | cs_PhoneChangeIsSuccess | cs_PhoneChangeSmsNotFound | cs_PhoneChangeWrongStage) {
 
 			// проверяем блокировку
 			Type_Antispam_User::throwIfBlocked($user_id, Type_Antispam_User::PHONE_CHANGE);
@@ -868,24 +869,25 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Подтвердить смс при смене номера
 	 *
-	 * @long
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws cs_IncorrectSaltVersion
+	 * @throws BusFatalException
+	 * @throws Domain_User_Exception_AuthMethodDisabled
+	 * @throws Domain_User_Exception_PhoneNumberBinding
+	 * @throws InvalidPhoneNumber
+	 * @throws \busException
+	 * @throws \cs_UnpackHasFailed
+	 * @throws \queryException
+	 * @throws \userAccessException
 	 * @throws cs_InvalidHashStruct
 	 * @throws cs_PhoneChangeIsExpired
 	 * @throws cs_PhoneChangeIsSuccess
 	 * @throws cs_PhoneChangeSmsErrorCountExceeded
 	 * @throws cs_PhoneChangeSmsNotFound
 	 * @throws cs_PhoneChangeStoryWrongMap
-	 * @throws \cs_UnpackHasFailed
 	 * @throws cs_UserPhoneSecurityNotFound
 	 * @throws cs_WrongCode
-	 * @throws \parseException
-	 * @throws \queryException
-	 * @throws \returnException
-	 * @throws \userAccessException|Domain_User_Exception_AuthMethodDisabled
 	 */
-	public static function confirmSmsForChangePhone(int $user_id, string $change_phone_story_map, string $sms_code):string {
+	public static function confirmSmsForChangePhone(int $user_id, string $change_phone_story_map, string $sms_code): string
+	{
 
 		// проверяем что добавление номера телефона не отключено в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER);
@@ -915,8 +917,14 @@ class Domain_User_Scenario_Api {
 			}
 
 			// фиксируем в аналитике, что пользователь использовал код из смс
-			Type_Sms_Analytics_Story::onConfirm($user_id, Type_Sms_Analytics_Story::STORY_TYPE_PHONE_CHANGE, $change_phone_story_map,
-				$story->getExpiresAt(), $sms_story->getSmsId(), $sms_story->getPhoneNumber());
+			Type_Sms_Analytics_Story::onConfirm(
+				$user_id,
+				Type_Sms_Analytics_Story::STORY_TYPE_PHONE_CHANGE,
+				$change_phone_story_map,
+				$story->getExpiresAt(),
+				$sms_story->getSmsId(),
+				$sms_story->getPhoneNumber()
+			);
 
 			// увеличиваем счетчик использованных кодов из смс
 			Gateway_Bus_CollectorAgent::init()->inc("row55");
@@ -941,13 +949,9 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Выполняем ввод нового номера телефона при смене
 	 *
-	 * @param int    $user_id
-	 * @param string $change_phone_story_map
-	 * @param string $phone_number
 	 *
-	 * @return array
-	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
-	 * @throws \BaseFrame\Exception\Request\BlockException
+	 * @throws InvalidPhoneNumber
+	 * @throws BlockException
 	 * @throws cs_IncorrectSaltVersion
 	 * @throws cs_PhoneAlreadyAssignedToCurrentUser
 	 * @throws cs_PhoneAlreadyRegistered
@@ -961,7 +965,8 @@ class Domain_User_Scenario_Api {
 	 * @throws \queryException
 	 * @throws \userAccessException|Domain_User_Exception_AuthMethodDisabled
 	 */
-	public static function changePhoneStep2(int $user_id, string $change_phone_story_map, string $phone_number):array {
+	public static function changePhoneStep2(int $user_id, string $change_phone_story_map, string $phone_number): array
+	{
 
 		// проверяем что добавление номера телефона не отключено в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER);
@@ -1008,7 +1013,13 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Переотправка смс при смене номера
 	 *
-	 * @throws cs_IncorrectSaltVersion
+	 * @throws Domain_User_Exception_AuthMethodDisabled
+	 * @throws InvalidPhoneNumber
+	 * @throws LocaleTextNotFound
+	 * @throws \BaseFrame\Exception\Domain\CountryNotFound
+	 * @throws \cs_UnpackHasFailed
+	 * @throws \queryException
+	 * @throws \userAccessException
 	 * @throws cs_PhoneChangeIsExpired
 	 * @throws cs_PhoneChangeIsSuccess
 	 * @throws cs_PhoneChangeSmsErrorCountExceeded
@@ -1016,12 +1027,9 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_PhoneChangeSmsResendCountExceeded
 	 * @throws cs_PhoneChangeSmsResendNotAvailable
 	 * @throws cs_PhoneChangeStoryWrongMap
-	 * @throws \cs_UnpackHasFailed
-	 * @throws \parseException
-	 * @throws \queryException
-	 * @throws \userAccessException|Domain_User_Exception_AuthMethodDisabled
 	 */
-	public static function resendSmsForNumberChange(int $user_id, string $change_phone_story_map):array {
+	public static function resendSmsForNumberChange(int $user_id, string $change_phone_story_map): array
+	{
 
 		// проверяем что добавление номера телефона не отключено в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_PHONE_NUMBER);
@@ -1063,13 +1071,12 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Получить данные о номере телефона
 	 *
-	 * @param int $user_id
 	 *
-	 * @return \BaseFrame\System\PhoneNumber
-	 * @throws \BaseFrame\Exception\Domain\InvalidPhoneNumber
+	 * @throws InvalidPhoneNumber
 	 * @throws cs_UserPhoneSecurityNotFound
 	 */
-	public static function getPhoneNumberInfo(int $user_id):\BaseFrame\System\PhoneNumber {
+	public static function getPhoneNumberInfo(int $user_id): \BaseFrame\System\PhoneNumber
+	{
 
 		$phone_number = Domain_User_Entity_Phone::getPhoneByUserId($user_id);
 
@@ -1082,9 +1089,9 @@ class Domain_User_Scenario_Api {
 
 	/**
 	 * Генерирует токен для получения глобальных анонсов
-	 *
 	 */
-	protected static function _generateInitialTokenForAnnouncement(int $user_id):string {
+	protected static function _generateInitialTokenForAnnouncement(int $user_id): string
+	{
 
 		$payload = [
 			"id" => $user_id,
@@ -1095,9 +1102,9 @@ class Domain_User_Scenario_Api {
 
 	/**
 	 * Форматируем список выделений цветом
-	 *
 	 */
-	protected static function _formatColorSelectionList(array $color_selection_list):array {
+	protected static function _formatColorSelectionList(array $color_selection_list): array
+	{
 
 		$output = [];
 		foreach ($color_selection_list as $v) {
@@ -1115,9 +1122,9 @@ class Domain_User_Scenario_Api {
 
 	/**
 	 * Получаем информацию для звонков
-	 *
 	 */
-	public static function getCallPreferences(int $user_id):array {
+	public static function getCallPreferences(int $user_id): array
+	{
 
 		// добавляем к ответу константу с максимальным количеством участников
 		$constants = [
@@ -1184,11 +1191,17 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_WrongTwoFaKey
 	 * @throws cs_blockException
 	 */
-	public static function deleteProfile(int $user_id, string $session_uniq, string|false $two_fa_key, string|false $confirm_mail_password_story_key):void {
+	public static function deleteProfile(int $user_id, string $session_uniq, string | false $two_fa_key, string | false $confirm_mail_password_story_key): void
+	{
 
 		$user_security = Gateway_Db_PivotUser_UserSecurity::getOne($user_id);
 
 		if (ServerProvider::isOnPremise()) {
+
+			// проверяем опцию возможности удаления аккаунта
+			if (!Type_Restrictions_Config::isProfileDeletionEnabled()) {
+				throw new Domain_User_Exception_ProfileDeletionDisabled("profile deletion disabled");
+			}
 
 			// если, пользователь зарегистрирован через ссо и отключен метод авторизации через ссо
 			self::_checkIfUserWasRegisteredBySso($user_id, $user_security, $two_fa_key, $confirm_mail_password_story_key);
@@ -1238,8 +1251,12 @@ class Domain_User_Scenario_Api {
 
 		// проверяем 2fa
 		Domain_User_Entity_Confirmation_Main::handle(
-			$user_security, $session_uniq, Domain_User_Entity_Confirmation_Main::CONFIRMATION_DELETE_PROFILE,
-			$two_fa_key, $confirm_mail_password_story_key);
+			$user_security,
+			$session_uniq,
+			Domain_User_Entity_Confirmation_Main::CONFIRMATION_DELETE_PROFILE,
+			$two_fa_key,
+			$confirm_mail_password_story_key
+		);
 
 		// проверяем, может профиль уже заблочен и у пользователя не привязан номер телефона
 		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
@@ -1286,7 +1303,8 @@ class Domain_User_Scenario_Api {
 	 * @throws ReturnFatalException
 	 * @throws cs_UserPhoneSecurityNotFound
 	 */
-	protected static function _checkIfUserWasRegisteredBySso(int $user_id, Struct_Db_PivotUser_UserSecurity $user_security, string|false $two_fa_key, string|false $confirm_mail_password_story_key):void {
+	protected static function _checkIfUserWasRegisteredBySso(int $user_id, Struct_Db_PivotUser_UserSecurity $user_security, string | false $two_fa_key, string | false $confirm_mail_password_story_key): void
+	{
 
 		// если, пользователь зарегистрирован через ссо, иначе - выходим
 		if (!Gateway_Socket_Federation::hasSsoUserRelationship($user_id)) {
@@ -1320,22 +1338,20 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Завершить онбординг
 	 *
-	 * @param int    $user_id
-	 * @param string $type
 	 *
-	 * @return void
 	 * @throws BusFatalException
 	 * @throws Domain_User_Exception_Onboarding_NotAllowedStatus
 	 * @throws Domain_User_Exception_Onboarding_NotAllowedStatusStep
 	 * @throws Domain_User_Exception_Onboarding_NotAllowedType
 	 * @throws ReturnFatalException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Request\EndpointAccessDeniedException
+	 * @throws ParseFatalException
+	 * @throws EndpointAccessDeniedException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws cs_UserNotFound
 	 */
-	public static function finishOnboarding(int $user_id, string $type):void {
+	public static function finishOnboarding(int $user_id, string $type): void
+	{
 
 		$type = Domain_User_Entity_Onboarding::formatTypeToInt($type);
 		Domain_User_Action_Onboarding_Finish::do($user_id, $type);
@@ -1348,8 +1364,8 @@ class Domain_User_Scenario_Api {
 	 * @throws Domain_User_Exception_Onboarding_NotAllowedStatus
 	 * @throws Domain_User_Exception_Onboarding_NotAllowedType
 	 * @throws ReturnFatalException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Request\EndpointAccessDeniedException
+	 * @throws ParseFatalException
+	 * @throws EndpointAccessDeniedException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws cs_UserNotFound
@@ -1358,7 +1374,8 @@ class Domain_User_Scenario_Api {
 	 * @throws cs_CompanyIncorrectCompanyId
 	 * @throws cs_CompanyNotExist
 	 */
-	public static function startOnboarding(int $user_id, string $type, int $space_id):void {
+	public static function startOnboarding(int $user_id, string $type, int $space_id): void
+	{
 
 		$type = Domain_User_Entity_Onboarding::formatTypeToInt($type);
 
@@ -1386,24 +1403,18 @@ class Domain_User_Scenario_Api {
 
 	/**
 	 * получаем онлайн пользователя
-	 *
-	 * @param int $user_id
-	 *
-	 * @return int
 	 */
-	public static function getOnline(int $user_id):int {
+	public static function getOnline(int $user_id): int
+	{
 
 		return Domain_User_Action_Online_Get::do($user_id);
 	}
 
 	/**
 	 * получаем список онлайна пользователей
-	 *
-	 * @param array $user_id_list
-	 *
-	 * @return array
 	 */
-	public static function getOnlineList(array $user_id_list):array {
+	public static function getOnlineList(array $user_id_list): array
+	{
 
 		return Domain_User_Action_Online_GetList::do($user_id_list);
 	}
@@ -1421,7 +1432,8 @@ class Domain_User_Scenario_Api {
 	 * @throws \returnException
 	 * @throws \userAccessException
 	 */
-	protected static function _throwIfProfileIsEmpty(int $user_id):void {
+	protected static function _throwIfProfileIsEmpty(int $user_id): void
+	{
 
 		if (Type_User_Main::isEmptyProfile($user_id)) {
 			throw new cs_AnswerCommand("need_fill_profile", []);
@@ -1431,18 +1443,15 @@ class Domain_User_Scenario_Api {
 	/**
 	 * получаем и возвращаем параметры подключения для WS у авторизованного юзера
 	 *
-	 * @param int    $user_id
-	 * @param string $device_id
-	 * @param string $platform
 	 *
-	 * @return array
 	 * @throws \busException
 	 * @throws cs_AnswerCommand
 	 * @throws cs_UserNotFound
 	 * @throws \parseException
 	 * @throws \userAccessException
 	 */
-	protected static function _getWsTokenAndUrlAuthUser(int $user_id, string $device_id, string $platform):array {
+	protected static function _getWsTokenAndUrlAuthUser(int $user_id, string $device_id, string $platform): array
+	{
 
 		// проверяем, заполнен ли профиль
 		Domain_User_Entity_User::throwCommandIfEmptyProfile($user_id);
@@ -1462,9 +1471,9 @@ class Domain_User_Scenario_Api {
 
 	/**
 	 * получаем информацию о состоянии уведомлений в приложении у авторизованного юзера
-	 *
 	 */
-	protected static function _getNotificationPreferencesAuthUser(int $user_id):array {
+	protected static function _getNotificationPreferencesAuthUser(int $user_id): array
+	{
 
 		// получаем информацию о состоянии уведомлений в приложении
 		return Domain_User_Action_Notifications_GetPreferences::do($user_id);
@@ -1472,13 +1481,10 @@ class Domain_User_Scenario_Api {
 
 	/**
 	 * получаем информацию о состоянии звонка у авторизованного юзера
-	 *
-	 * @param int $user_id
-	 *
-	 * @return array
 	 */
 	#[ArrayShape(["constants" => "array", "active_call" => "object"])]
-	protected static function _getCallPreferencesAuthUser(int $user_id):array {
+	protected static function _getCallPreferencesAuthUser(int $user_id): array
+	{
 
 		// получаем информацию о состоянии звонка
 		[$call_constants, $active_call] = Domain_User_Scenario_Api::getCallPreferences($user_id);
@@ -1494,7 +1500,8 @@ class Domain_User_Scenario_Api {
 	/**
 	 * получаем информацию о настройках для бота
 	 */
-	protected static function _getUserbotPreferences():array {
+	protected static function _getUserbotPreferences(): array
+	{
 
 		return [
 			"api_documentation_url" => (string) Domain_Userbot_Action_GetApiDocumentationUrl::do(),

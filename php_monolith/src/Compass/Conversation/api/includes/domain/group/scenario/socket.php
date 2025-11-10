@@ -164,7 +164,7 @@ class Domain_Group_Scenario_Socket {
 		}
 
 		// создаем группу
-		$meta_row = Type_Conversation_Group::add(
+		[$_, $meta_row] = Type_Conversation_Group::add(
 			$creator_user_id, $group_name, CONVERSATION_TYPE_GROUP_RESPECT, false, false,
 			$respect_conversation_avatar_file_map, "", false, false
 		);

@@ -20,7 +20,6 @@ class Struct_Domain_Userbot_SensitiveData {
 		public array  $group_info_list,
 		public int    $avatar_color_id,
 		public string $avatar_file_key,
-		public string $smart_app_public_key,
 	) {
 
 	}

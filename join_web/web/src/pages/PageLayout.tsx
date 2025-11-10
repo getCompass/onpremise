@@ -3,7 +3,7 @@ import { Box, Center, VStack } from "../../styled-system/jsx";
 import { PropsWithChildren, useEffect, useRef, useState } from "react";
 import { loadingState, prepareJoinLinkErrorState } from "../api/_stores.ts";
 import { useAtomValue } from "jotai";
-import { useNavigateDialog, useNavigatePage } from "../components/hooks.ts";
+import { useNavigatePage } from "../components/hooks.ts";
 import LoadingLogoMobile from "../components/LoadingLogoMobile.tsx";
 import LoadingLogoDesktop from "../components/LoadingLogoDesktop.tsx";
 import { ALREADY_MEMBER_ERROR_CODE } from "../api/_types.ts";
@@ -62,7 +62,6 @@ const PageLayoutDesktop = ({ isLoading, children }: PageLayoutProps) => {
 
 const PageLayoutMobile = ({ isLoading, children }: PageLayoutProps) => {
 	const { activePage } = useNavigatePage();
-	const { activeDialog } = useNavigateDialog();
 	const prepareJoinLinkError = useAtomValue(prepareJoinLinkErrorState);
 
 	if (activePage === "token" && !isLoading) {
@@ -116,16 +115,7 @@ const PageLayoutMobile = ({ isLoading, children }: PageLayoutProps) => {
 				w="100%"
 				minHeight="100vh"
 				fontFamily="lato_regular"
-				className={`main-bg ${
-					!isLoading &&
-					activePage === "auth" &&
-					(activeDialog === "auth_email_phone_number" ||
-						activeDialog === "auth_phone_number_confirm_code" ||
-						activeDialog === "auth_email_confirm_code" ||
-						activeDialog === "auth_create_profile")
-						? "h100vh"
-						: "h100dvh"
-				}`}
+				className="main-bg h100vh"
 			>
 				{isLoading ? <LoadingLogoMobile /> : <>{children}</>}
 			</Center>

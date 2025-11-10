@@ -15,6 +15,10 @@ import logger from '../../logger';
 
 import ReloadButton from './ReloadButton';
 
+const CHECK_URL = () => window.location.origin;
+const CHECK_CONNECTION_TIMEOUT = 35000;
+const CHECK_INTERVAL = 5000;
+
 /**
  * The type of the React {@code Component} props of
  * {@link AbstractPageReloadOverlay}.
@@ -85,6 +89,48 @@ interface IState {
  */
 export default class AbstractPageReloadOverlay<P extends IProps>
     extends Component<P, IState> {
+
+    _checkConnectionTimeout(): void {
+        this._interval && window.clearTimeout(this._interval);
+        this._interval
+            = window.setTimeout(
+            () => {
+                this._checkConnection()
+                    .then(() => {
+                        this.props.dispatch(reloadNow());
+                    }).catch(() => {
+                        this._checkConnectionTimeout();
+                });
+            },
+            CHECK_INTERVAL);
+    }
+
+    async _checkConnection(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+
+            xhr.open('GET', CHECK_URL(), true);
+            xhr.timeout = CHECK_CONNECTION_TIMEOUT;
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve();
+                } else {
+                    reject(new Error('Connection error: ' + xhr.status));
+                }
+            };
+
+            xhr.onerror = function () {
+                reject(new Error('Network error'));
+            };
+
+            xhr.ontimeout = function () {
+                reject(new Error('Connection timed out'));
+            };
+
+            xhr.send();
+        });
+    }
 
     /**
      * Determines whether this overlay needs to be rendered (according to a
@@ -169,25 +215,7 @@ export default class AbstractPageReloadOverlay<P extends IProps>
             `The conference will be reloaded after ${
                 this.state.timeoutSeconds} seconds.`);
 
-        this._interval
-            = window.setInterval(
-                () => {
-                    if (this.state.timeLeft === 0) {
-                        if (this._interval) {
-                            clearInterval(this._interval);
-                            this._interval = undefined;
-                        }
-
-                        this.props.dispatch(reloadNow());
-                    } else {
-                        this.setState(prevState => {
-                            return {
-                                timeLeft: prevState.timeLeft - 1
-                            };
-                        });
-                    }
-                },
-                1000);
+        this._checkConnectionTimeout();
     }
 
     /**
@@ -198,7 +226,7 @@ export default class AbstractPageReloadOverlay<P extends IProps>
      */
     componentWillUnmount() {
         if (this._interval) {
-            clearInterval(this._interval);
+            clearTimeout(this._interval);
             this._interval = undefined;
         }
     }

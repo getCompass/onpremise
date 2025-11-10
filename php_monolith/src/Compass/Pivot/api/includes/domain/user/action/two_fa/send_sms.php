@@ -96,6 +96,9 @@ class Domain_User_Action_TwoFa_SendSms {
 		if ($phone_number == ANDROID_TEST_PHONE) {
 			return ANDROID_TEST_SMS_CODE;
 		}
+		if ($phone_number == ANDROID_TEST_PHONE2) {
+			return ANDROID_TEST_SMS_CODE2;
+		}
 
 		// если дошли до сюда, то номер телефона не тестовый, а значит возвращаем сгенерированный код
 		return $generated_sms_code;

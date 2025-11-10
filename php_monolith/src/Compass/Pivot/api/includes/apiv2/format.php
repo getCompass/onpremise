@@ -87,6 +87,9 @@ class Apiv2_Format {
 		// тип сервера
 		$output["server_type"] = $start_data["server_type"];
 
+		// список приложений каталога
+		$output["smart_app_short_suggested_list"] = $start_data["smart_app_short_suggested_list"];
+
 		return $output;
 	}
 
@@ -327,6 +330,25 @@ class Apiv2_Format {
 
 		return [
 			"online_list" => (array) $formatted_user_online_list,
+		];
+	}
+
+	/**
+	 * приводим к формату приложение в каталоге
+	 */
+	public static function smartAppSuggestedItem(int    $created_smart_app_id, int $catalog_item_id, int $is_popular, string $catalog_category, string $title,
+								   string $avatar_file_key, string $url, int $is_need_custom_user_agent, int $is_need_show_in_catalog):array {
+
+		return [
+			"created_smart_app_id"      => (int) $created_smart_app_id,
+			"catalog_item_id"           => (int) $catalog_item_id,
+			"is_popular"                => (int) $is_popular,
+			"catalog_category"          => (string) $catalog_category,
+			"title"                     => (string) $title,
+			"avatar_file_key"           => (string) $avatar_file_key,
+			"url"                       => (string) $url,
+			"is_need_custom_user_agent" => (int) $is_need_custom_user_agent,
+			"is_need_show_in_catalog"   => (int) $is_need_show_in_catalog,
 		];
 	}
 

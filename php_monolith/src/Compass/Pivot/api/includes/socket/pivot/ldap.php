@@ -19,6 +19,7 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 		"isLdapAuthAvailable",
 		"getUserInfo",
 		"actualizeProfileData",
+		"sendMailConfirmCode",
 	];
 
 	/**
@@ -137,11 +138,32 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 	 */
 	public function actualizeProfileData():array {
 
-		$user_id           = $this->post(\Formatter::TYPE_INT, "user_id");
-		$ldap_account_data = $this->post(\Formatter::TYPE_ARRAY, "ldap_account_data");
+		$user_id                            = $this->post(\Formatter::TYPE_INT, "user_id");
+		$ldap_account_data                  = $this->post(\Formatter::TYPE_ARRAY, "ldap_account_data");
+		$is_empty_attributes_update_enabled = $this->post(\Formatter::TYPE_INT, "is_empty_attributes_update_enabled");
 
-		Domain_User_Scenario_Socket::actualizeProfileData($user_id, Struct_User_Auth_Ldap_AccountData::arrayToStruct($ldap_account_data));
+		Domain_User_Scenario_Socket::actualizeProfileData($user_id, Struct_User_Auth_Ldap_AccountData::arrayToStruct($ldap_account_data), $is_empty_attributes_update_enabled);
 
 		return $this->ok();
+	}
+
+	/**
+	 * Отправить проверочный код на почту
+	 *
+	 * @return array
+	 * @throws ParamException
+	 * @throws \queryException
+	 */
+	public function sendMailConfirmCode():array {
+
+		$mail         = $this->post(\Formatter::TYPE_STRING, "mail");
+		$confirm_code = $this->post(\Formatter::TYPE_STRING, "confirm_code");
+		$template     = $this->post(\Formatter::TYPE_STRING, "template");
+
+		$message_id = Domain_Ldap_Scenario_Socket::sendMailConfirmCode($mail, $confirm_code, $template);
+
+		return $this->ok([
+			"message_id" => (string) $message_id,
+		]);
 	}
 }

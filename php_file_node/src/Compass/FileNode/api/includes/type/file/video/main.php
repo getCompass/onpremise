@@ -53,6 +53,7 @@ class Type_File_Video_Main extends Type_File_Main {
 	// массив с доступными кодеками видео
 	protected const _AVAILABLE_CODEC_LIST = [
 		"h264",
+		"hevc",
 		// "h265",
 		// "mpeg4",
 	];

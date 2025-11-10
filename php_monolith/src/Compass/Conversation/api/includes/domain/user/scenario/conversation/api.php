@@ -50,7 +50,7 @@ class Domain_User_Scenario_Conversation_Api {
 	 *
 	 * @return array
 	 */
-	#[ArrayShape(["messages_unread_count" => "int", "conversations_unread_count" => "int", "left_menu_version" => "int"])]
+	#[ArrayShape(["messages_unread_count" => "int", "conversations_unread_count" => "int", "single_conversations_unread_count" => "int", "left_menu_version" => "int"])]
 	public static function getLeftMenuMeta(int $user_id):array {
 
 		return Domain_User_Action_Conversation_GetLeftMenuMeta::do($user_id);

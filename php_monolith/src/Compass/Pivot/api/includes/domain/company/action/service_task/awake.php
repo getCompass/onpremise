@@ -7,8 +7,8 @@ use JetBrains\PhpStorm\ArrayShape;
 /**
  * Разбудить компанию
  */
-class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_ServiceTask_Main {
-
+class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_ServiceTask_Main
+{
 	protected const _PUBLISH_ANNOUNCEMENT_TIME = 3;		// через какое то время опубликовать анонс
 	protected const _HIBERNATION_IMMUNITY_TILL = DAY1;	// сколько компания не засыпает
 	protected const _AWAKE_TIMEOUT             = 10;      // время сколько ждем пробуждения компании
@@ -16,12 +16,7 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 	/**
 	 * Разбудить компанию
 	 *
-	 * @param Struct_Db_PivotCompany_Company                $company_row
-	 * @param Struct_Db_PivotCompanyService_CompanyRegistry $company_registry
-	 * @param \BaseFrame\System\Log                         $log
-	 * @param array                                         $data
 	 *
-	 * @return \BaseFrame\System\Log
 	 * @throws Domain_Company_Exception_ConfigNotExist
 	 * @throws Domain_Domino_Exception_CompanyInOnMaintenance
 	 * @throws Domain_Domino_Exception_CompanyIsBound
@@ -42,7 +37,8 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 	 * @throws \userAccessException
 	 * @long
 	 */
-	public static function do(Struct_Db_PivotCompany_Company $company_row, Struct_Db_PivotCompanyService_CompanyRegistry $company_registry, \BaseFrame\System\Log $log, array $data = []):\BaseFrame\System\Log {
+	public static function do(Struct_Db_PivotCompany_Company $company_row, Struct_Db_PivotCompanyService_CompanyRegistry $company_registry, \BaseFrame\System\Log $log, array $data = []): \BaseFrame\System\Log
+	{
 
 		$hibernate_at = $company_row->updated_at;
 
@@ -96,14 +92,9 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 
 	/**
 	 * Записать логи
-	 *
-	 * @param int                   $company_id
-	 * @param string                $domino_id
-	 * @param \BaseFrame\System\Log $log
-	 *
-	 * @return \BaseFrame\System\Log
 	 */
-	protected static function _writeLog(int $company_id, string $domino_id, \BaseFrame\System\Log $log):\BaseFrame\System\Log {
+	protected static function _writeLog(int $company_id, string $domino_id, \BaseFrame\System\Log $log): \BaseFrame\System\Log
+	{
 
 		Type_System_Analytic::save($company_id, $domino_id, Type_System_Analytic::TYPE_POST_AWAKE);
 
@@ -113,17 +104,15 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 	/**
 	 * Получим пользователей которых нужно синхроинизировать в компании и на пивоте
 	 *
-	 * @param Struct_Db_PivotCompany_Company $company_row
-	 * @param int                            $hibernate_at
 	 *
 	 * @long большая структура цикла
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\EndpointAccessDeniedException
 	 * @throws cs_UserNotFound
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 */
-	protected static function _getUserIdNeedSync(Struct_Db_PivotCompany_Company $company_row, int $hibernate_at):array {
+	protected static function _getUserIdNeedSync(Struct_Db_PivotCompany_Company $company_row, int $hibernate_at): array
+	{
 
 		// получим пользователей в компании
 		$user_id_list = Gateway_Db_PivotCompany_CompanyUserList::getFullUserIdList($company_row->company_id);
@@ -190,7 +179,8 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 	 * @throws \userAccessException
 	 */
 	#[ArrayShape(["user_id" => "int", "full_name" => "string", "avatar_file_key" => "string", "npc_type" => "int"])]
-	protected static function _getRemindBotInfo():array {
+	protected static function _getRemindBotInfo(): array
+	{
 
 		$bot_info = Gateway_Bus_PivotCache::getUserInfo(REMIND_BOT_USER_ID);
 
@@ -211,7 +201,8 @@ class Domain_Company_Action_ServiceTask_Awake implements Domain_Company_Action_S
 	 * @throws \userAccessException
 	 */
 	#[ArrayShape(["user_id" => "int", "full_name" => "string", "avatar_file_key" => "string", "npc_type" => "int"])]
-	protected static function _getSupportBotInfo():array {
+	protected static function _getSupportBotInfo(): array
+	{
 
 		$bot_info = Gateway_Bus_PivotCache::getUserInfo(SUPPORT_BOT_USER_ID);
 

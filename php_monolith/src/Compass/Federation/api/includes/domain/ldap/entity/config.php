@@ -89,6 +89,17 @@ class Domain_Ldap_Entity_Config {
 	}
 
 	/**
+	 * получаем user_login_attribute из конфига LDAP
+	 *
+	 * @return string
+	 */
+	public static function getUserLoginAttribute():string {
+
+		$config = getConfig(self::_KEY);
+		return $config["user_login_attribute"];
+	}
+
+	/**
 	 * получаем user_search_filter из конфига LDAP
 	 *
 	 * @return string
@@ -176,6 +187,17 @@ class Domain_Ldap_Entity_Config {
 
 		$config = getConfig(self::_KEY);
 		return $config["profile_update_enabled"];
+	}
+
+	/**
+	 * Требуется ли обновлять значение атрибутов, которые не заполнены для пользователя в LDAP
+	 *
+	 * @return bool
+	 */
+	public static function isEmptyAttributesUpdateEnabled():bool {
+
+		$config = getConfig(self::_KEY);
+		return $config["empty_attributes_update_enabled"];
 	}
 
 	/**

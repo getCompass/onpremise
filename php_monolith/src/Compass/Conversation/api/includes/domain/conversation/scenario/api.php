@@ -411,24 +411,6 @@ class Domain_Conversation_Scenario_Api {
 	}
 
 	/**
-	 * Получить количество непрочитанных
-	 *
-	 * @param int $user_id
-	 *
-	 * @return int[]
-	 */
-	#[ArrayShape(["conversations_unread_count" => "int", "messages_unread_count" => "int"])]
-	public static function getTotalUnreadCount(int $user_id):array {
-
-		$total_unread_counter_list = Domain_Conversation_Action_GetTotalUnreadCount::do($user_id);
-
-		return [
-			"conversations_unread_count" => (int) $total_unread_counter_list["conversations_unread_count"],
-			"messages_unread_count"      => (int) $total_unread_counter_list["messages_unread_count"],
-		];
-	}
-
-	/**
 	 * Получить приглашенных в группу
 	 *
 	 * @throws Domain_Member_Exception_ActionNotAllowed

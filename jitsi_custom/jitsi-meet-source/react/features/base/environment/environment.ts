@@ -55,6 +55,10 @@ export function isWindows() {
     return Platform.OS === 'windows';
 }
 
+export function isLinux() {
+    return Platform.OS === 'linux';
+}
+
 /**
  * Returns whether or not the current browser or the list of passed in browsers
  * is considered suboptimal. Suboptimal means it is a supported browser but has

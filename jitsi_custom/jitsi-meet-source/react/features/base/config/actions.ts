@@ -101,6 +101,9 @@ export function overwriteConfig(config: Object) {
 export function setConfig(config: IConfig = {}) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const { locationURL } = getState()['features/base/connection'];
+        const { disableAGC } = getState()['features/base/settings'];
+
+        config.disableAGC = disableAGC;
 
         // Now that the loading of the config was successful override the values
         // with the parameters passed in the hash part of the location URI.

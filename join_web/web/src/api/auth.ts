@@ -1,12 +1,12 @@
-import { useGetResponse } from "./_index.ts";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigateDialog, useNavigatePage } from "../components/hooks.ts";
+import {useGetResponse} from "./_index.ts";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useNavigateDialog, useNavigatePage} from "../components/hooks.ts";
 import useIsJoinLink from "../lib/useIsJoinLink.ts";
-import { useSetAtom } from "jotai";
+import {useSetAtom} from "jotai";
 import {
 	authenticationTokenExpiresAtState,
 	authenticationTokenState,
-	authenticationTokenTimeLeftState
+	authenticationTokenTimeLeftState, serverTimeOffsetState
 } from "./_stores.ts";
 import dayjs from "dayjs";
 
@@ -14,8 +14,8 @@ export function useApiAuthLogout() {
 	const getResponse = useGetResponse("pivot");
 	const queryClient = useQueryClient();
 	const isJoinLink = useIsJoinLink();
-	const { navigateToPage } = useNavigatePage();
-	const { navigateToDialog } = useNavigateDialog();
+	const {navigateToPage} = useNavigatePage();
+	const {navigateToDialog} = useNavigateDialog();
 
 	return useMutation({
 		retry: false,
@@ -25,11 +25,11 @@ export function useApiAuthLogout() {
 			return getResponse<object>("auth/logout", body);
 		},
 		async onSuccess() {
-			await queryClient.invalidateQueries({ queryKey: ["global/start"] });
+			await queryClient.invalidateQueries({queryKey: ["global/start"]});
 
 			// только в случае если это join ссылка - перекидываем на welcome, иначе в GlobalStartProvider самообработается корректно
 			if (isJoinLink) {
-				await queryClient.invalidateQueries({ queryKey: ["joinlink/prepare", window.location.href] });
+				await queryClient.invalidateQueries({queryKey: ["joinlink/prepare", window.location.href]});
 				navigateToPage("welcome");
 				navigateToDialog("auth_email_phone_number");
 			}
@@ -45,6 +45,7 @@ export type ApiAuthGenerateTokenAcceptArgs = {
 export type ApiAuthGenerateToken = {
 	authentication_token: string;
 	expires_at: number;
+	server_time: number;
 };
 
 export function useApiAuthGenerateToken() {
@@ -52,11 +53,12 @@ export function useApiAuthGenerateToken() {
 	const setAuthenticationToken = useSetAtom(authenticationTokenState);
 	const setExpiresAt = useSetAtom(authenticationTokenExpiresAtState);
 	const setTimeLeft = useSetAtom(authenticationTokenTimeLeftState);
+	const setServerTimeOffsetState = useSetAtom(serverTimeOffsetState);
 
 	return useMutation({
 		retry: false,
 		networkMode: "always",
-		mutationFn: async ({ join_link_uniq, login_type }: ApiAuthGenerateTokenAcceptArgs) => {
+		mutationFn: async ({join_link_uniq, login_type}: ApiAuthGenerateTokenAcceptArgs) => {
 			const body = new URLSearchParams();
 
 			if (join_link_uniq !== undefined) {
@@ -67,9 +69,10 @@ export function useApiAuthGenerateToken() {
 			}
 
 			const response = await getResponse<ApiAuthGenerateToken>("auth/generateToken", body);
+			setServerTimeOffsetState(response.server_time - dayjs().unix());
+			setTimeLeft(response.expires_at - response.server_time);
 			setAuthenticationToken(response.authentication_token);
 			setExpiresAt(response.expires_at);
-			setTimeLeft(response.expires_at - dayjs().unix());
 
 			return response;
 		},

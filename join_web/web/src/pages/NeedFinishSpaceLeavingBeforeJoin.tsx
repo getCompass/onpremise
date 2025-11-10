@@ -50,7 +50,7 @@ const NeedFinishSpaceLeavingBeforeJoinMobile = () => {
 			py="16px"
 			maxWidth="100vw"
 			width="100%"
-			className={"h100dvh invisible-scrollbar"}
+			className={"h100vh invisible-scrollbar"}
 			position="relative"
 			zIndex="9999"
 		>

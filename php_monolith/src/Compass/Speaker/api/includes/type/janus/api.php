@@ -417,7 +417,7 @@ class Type_Janus_Api extends Type_Janus_Default {
 	}
 
 	// отправить сообщение в админ handler
-	public function sendAdminRequest(string $janus_request, int $session_id = null, int $handle_id = null):array {
+	public function sendAdminRequest(string $janus_request, ?int $session_id = null, ?int $handle_id = null):array {
 
 		// формируем параметры запроса
 		$ar_post = [

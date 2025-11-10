@@ -10,6 +10,7 @@ class Socket_Pivot_Company extends \BaseFrame\Controller\Socket {
 	public const ALLOW_METHODS = [
 		"ping",
 		"getList",
+		"getEntrypointList",
 	];
 
 	/**
@@ -44,6 +45,24 @@ class Socket_Pivot_Company extends \BaseFrame\Controller\Socket {
 		return $this->ok([
 			"company_list" => (array) $company_list,
 			"offset"       => (int) $offset,
+		]);
+	}
+
+	/**
+	 * Получить ентрипоинты пространств
+	 *
+	 * @return array
+	 * @throws \BaseFrame\Exception\Request\ParamException
+	 * @throws cs_CompanyIncorrectCompanyId
+	 */
+	public function getEntrypointList():array {
+
+		$company_id_list = $this->post(\Formatter::TYPE_ARRAY_INT, "company_id_list");
+
+		$entrypoint_list = Domain_Company_Scenario_Socket::getEntrypointList($company_id_list);
+
+		return $this->ok([
+			"entrypoint_list" => (array) $entrypoint_list,
 		]);
 	}
 }

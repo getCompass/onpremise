@@ -2,11 +2,12 @@
 .DS_Store
 main
 main.pid
-/company_cache
-api/conf/conf.json
+/api/conf/conf.json
+/api/conf/mysql.json
 /api/conf/sharding.json
 /api/conf/test_define.json
 /dev/_go/*
 !/dev/_go/example.go
 /logs
 /logs/*
+/tests/_output

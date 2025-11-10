@@ -32,7 +32,7 @@ class cs_AnswerCommand extends \Exception {
 	protected string $_command_name;
 	protected array $_command_extra;
 
-	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, \Exception $previous = NULL) {
+	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, ?\Exception $previous = NULL) {
 
 		$this->_command_name  = $command_name;
 		$this->_command_extra = $command_extra;
@@ -167,7 +167,7 @@ class cs_Conversation_SingleIsExist extends \Exception {
 	// мап уже существующего single диалога
 	protected $_conversation_map;
 
-	public function __construct(string $conversation_map, string $message = "", int $code = 0, \Exception $previous = NULL) {
+	public function __construct(string $conversation_map, string $message = "", int $code = 0, ?\Exception $previous = NULL) {
 
 		$this->_conversation_map = $conversation_map;
 
@@ -328,7 +328,7 @@ class cs_UserIdListIsNotCompanyMember extends \Exception {
 
 	protected array $_kicked_user_id_list;
 
-	public function __construct(array $kicked_user_id_list, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(array $kicked_user_id_list, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->_kicked_user_id_list = $kicked_user_id_list;
 
@@ -425,7 +425,7 @@ class cs_UrlNotAllowToParse extends \Exception {
 
 	protected $_redirect_url; // ссылка после редиректов
 
-	public function __construct(string $redirect_url, string $message = "", int $code = 0, \Exception $previous = NULL) {
+	public function __construct(string $redirect_url, string $message = "", int $code = 0, ?\Exception $previous = NULL) {
 
 		$this->_redirect_url = $redirect_url;
 

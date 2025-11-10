@@ -14,6 +14,7 @@ class Type_Sms_Provider {
 		"vonage_alphanumeric_v1"    => Gateway_Sms_Provider_Vonage::class,
 		"twilio_alphanumeric_v1"    => Gateway_Sms_Provider_Twilio::class,
 		"userbot_v1"                => Gateway_Sms_Provider_Userbot::class,
+		"idigital_alphanumeric_v1"  => Gateway_Sms_Provider_Idigital::class,
 	];
 
 	/**

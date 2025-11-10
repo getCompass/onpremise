@@ -55,8 +55,6 @@ func getServerInfo() {
 		return
 	}
 
-	log.Infof("serverInfo %v", serverInfo)
-
 	// все остальные решения используют авторизацию с подписью
 	authAppender = &HttpAuthAppenderSecretSign{
 		Domain:         serverInfo.Domain,
@@ -81,6 +79,7 @@ func resolveUrl(module string) string {
 }
 
 // Call выполняет вызов удаленного сервера по premise-интерфейсу
+// @long
 func call(socketUrl string, method string, jsonParams json.RawMessage) ([]byte, error) {
 
 	post := map[string]string{
@@ -105,8 +104,6 @@ func call(socketUrl string, method string, jsonParams json.RawMessage) ([]byte, 
 	for key, value := range rawRequestData.headers {
 		req.Header.Set(key, value)
 	}
-
-	log.Infof("request: %s", req)
 
 	rawResponse, err := client.Do(req)
 	if err != nil {

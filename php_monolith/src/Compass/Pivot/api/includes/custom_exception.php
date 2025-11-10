@@ -20,7 +20,7 @@ class cs_ResendWillBeAvailableLater extends \Exception {
 
 	protected int $_next_attempt;
 
-	public function __construct(int $next_attempt, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $next_attempt, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->_next_attempt = $next_attempt;
 		parent::__construct($message, $code, $previous);
@@ -40,7 +40,7 @@ class cs_AnswerCommand extends \Exception {
 	protected string $_command_name;
 	protected array  $_command_extra;
 
-	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, \Exception $previous = null) {
+	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, ?\Exception $previous = null) {
 
 		$this->_command_name  = $command_name;
 		$this->_command_extra = $command_extra;
@@ -108,7 +108,7 @@ class cs_WrongCode extends \Exception {
 	private int $available_attempts;
 	private int $next_attempt;
 
-	public function __construct(int $available_attempts = 0, int $next_attempt = 0, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $available_attempts = 0, int $next_attempt = 0, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->available_attempts = $available_attempts;
 		$this->next_attempt       = $next_attempt;
@@ -217,7 +217,7 @@ class cs_ErrorCountLimitExceeded extends \Exception {
 
 	protected int $_next_attempt;
 
-	public function __construct(int $next_attempt, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $next_attempt, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->_next_attempt = $next_attempt;
 		parent::__construct($message, $code, $previous);
@@ -475,7 +475,7 @@ class cs_UserAlreadyInCompany extends \cs_ExceptionWithIndex {
 	protected int    $_was_member;
 	protected string $_join_link_uniq;
 
-	public function __construct(int $user_id = 0, int $company_id = 0, int $inviter_user_id = 0, string $inviter_full_name = "", int $is_post_moderation = 0, int $entry_option = 0, int $was_member = 0, string $join_link_uniq = "", int $is_waiting_for_post_moderation = 0, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $user_id = 0, int $company_id = 0, int $inviter_user_id = 0, string $inviter_full_name = "", int $is_post_moderation = 0, int $entry_option = 0, int $was_member = 0, string $join_link_uniq = "", int $is_waiting_for_post_moderation = 0, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->_user_id                        = $user_id;
 		$this->_company_id                     = $company_id;
@@ -675,7 +675,7 @@ class cs_SmsFailedRequestToProvider extends \Exception {
 
 	protected Struct_Gateway_Sms_Provider_Response $_response;
 
-	public function __construct(Struct_Gateway_Sms_Provider_Response $response, string $message = "", int $code = 0, \Exception $previous = null) {
+	public function __construct(Struct_Gateway_Sms_Provider_Response $response, string $message = "", int $code = 0, ?\Exception $previous = null) {
 
 		$this->_response = $response;
 		parent::__construct($message, $code, $previous);
@@ -731,7 +731,7 @@ class cs_AuthIsBlocked extends BlockException {
 	 * cs_PhoneNumberIsBlocked constructor.
 	 *
 	 */
-	public function __construct(int $next_attempt, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $next_attempt, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->next_attempt = $next_attempt;
 		parent::__construct($message, $next_attempt, $code, $previous);
@@ -930,7 +930,7 @@ class cs_blockException extends BlockException {
 	 * cs_PhoneNumberIsBlocked constructor.
 	 *
 	 */
-	public function __construct(int $next_attempt, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $next_attempt, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->next_attempt = $next_attempt;
 		parent::__construct($message, $next_attempt, $code, $previous);
@@ -975,7 +975,7 @@ class cs_NotificationsShutdownLimitExceeded extends BlockException {
 	 * cs_NotificationsShutdownLimitExceeded constructor.
 	 *
 	 */
-	public function __construct(int $max_time_limit, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $max_time_limit, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->max_time_limit = $max_time_limit;
 		parent::__construct($message, $max_time_limit, $code, $previous);
@@ -1076,7 +1076,7 @@ class cs_PhoneChangeSmsErrorCountExceeded extends \Exception {
 	 * cs_PhoneChangeSmsErrorCountExceeded constructor.
 	 *
 	 */
-	public function __construct(int $next_attempt = 0, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $next_attempt = 0, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->next_attempt = $next_attempt;
 		parent::__construct($message, $code, $previous);
@@ -1297,7 +1297,7 @@ class cs_OneOfUsersHaveActiveCall extends \Exception {
 	// список пользователей, у кого занята телефонная линия
 	protected array $_user_list_with_busy_line = [];
 
-	public function __construct(array $user_list_with_busy_line, $message = "", $code = 0, \Throwable $previous = null) {
+	public function __construct(array $user_list_with_busy_line, $message = "", $code = 0, ?\Throwable $previous = null) {
 
 		$this->_user_list_with_busy_line = $user_list_with_busy_line;
 

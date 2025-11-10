@@ -260,7 +260,7 @@ class Type_Call_Config {
 	}
 
 	// получаем список доступных для новых звонков нод
-	public static function getJanusAvailableNodes(array $config_node_list = null):array {
+	public static function getJanusAvailableNodes(?array $config_node_list = null):array {
 
 		if (is_null($config_node_list)) {
 			$config_node_list = self::getJanusList();

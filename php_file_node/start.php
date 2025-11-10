@@ -49,7 +49,7 @@ $max_execution_time = 10;
 ini_set("log_errors", "1");
 ini_set("error_log", __DIR__ . "/logs/_error_start_php.log");
 ini_set("display_errors", "0");
-ini_set("error_reporting", (string) (E_ALL ^ E_DEPRECATED ^ E_STRICT));
+ini_set("error_reporting", (string) (E_ALL ^ E_DEPRECATED));
 ini_set("max_execution_time", (string) $max_execution_time);
 ini_set("max_input_time", (string) $max_execution_time);
 ini_set("memory_limit", "2G");

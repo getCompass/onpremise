@@ -39,19 +39,21 @@ class Type_Conversation_Notes extends Type_Conversation_Default {
 			$group_name, $avatar_file_map);
 
 		// создаем запись в левом меню создателя
-		self::_createUserCloudData(
+		$left_menu_row = self::_createUserCloudData(
 			$user_id, $meta_row["conversation_map"], Type_Conversation_Meta_Users::ROLE_OWNER,
 			CONVERSATION_TYPE_SINGLE_NOTES, Type_Conversation_Utils::ALLOW_STATUS_OK,
 			count($users), $group_name, $avatar_file_map, 1, 0
 		);
 
+		// отправляем событие пользователю, что добавлен диалог в левом меню
+		$prepared_left_menu_row  = Type_Conversation_Utils::prepareLeftMenuForFormat($left_menu_row);
+		$formatted_left_menu_row = Apiv1_Format::leftMenu($prepared_left_menu_row);
+		Gateway_Bus_Sender::conversationLeftMenuUpdated($user_id, $formatted_left_menu_row);
+
 		// пушим событие, что пользователь присоединился к группе
 		Gateway_Event_Dispatcher::dispatch(Type_Event_UserConversation_UserJoinedConversation::create(
 			$user_id, $meta_row["conversation_map"], Type_Conversation_Meta_Users::ROLE_OWNER, time(), true
 		));
-
-		// отправляем событие пользователю, что добавлен диалог в левом меню
-		Gateway_Bus_Sender::conversationAdded($user_id, $meta_row["conversation_map"]);
 
 		return $meta_row;
 	}

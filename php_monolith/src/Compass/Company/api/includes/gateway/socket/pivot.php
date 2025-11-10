@@ -9,19 +9,16 @@ use BaseFrame\Exception\Domain\ParseFatalException;
 /**
  * Класс-интерфейс для работы с модулей pivot
  */
-class Gateway_Socket_Pivot {
-
+class Gateway_Socket_Pivot
+{
 	/**
-	 * Метод для проверки пользовательского токена и получения данных для аутентификации.
+	 * Метод для проверки пользовательского токена.
 	 *
-	 * @param int    $user_id
-	 * @param string $user_company_session_token
-	 *
-	 * @return Struct_User_AuthenticationData|false
-	 * @throws \parseException
-	 * @throws \returnException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
 	 */
-	public static function getCompanyAuthenticationDataByToken(int $user_id, string $user_company_session_token):Struct_User_AuthenticationData|false {
+	public static function checkUserCompanySessionToken(int $user_id, string $user_company_session_token): bool
+	{
 
 		$params = [
 			"user_company_session_token" => $user_company_session_token,
@@ -38,39 +35,7 @@ class Gateway_Socket_Pivot {
 			throw new ParseFatalException("passed unknown error_code");
 		}
 
-		return new Struct_User_AuthenticationData(
-			(bool) $response["need_block_if_premium_inactive"],
-			(int) $response["premium_active_till"]
-		);
-	}
-
-	/**
-	 * метод для проверки пользовательского токена
-	 *
-	 * @param int $user_id
-	 *
-	 * @return Struct_User_AuthenticationData|false
-	 * @throws ParseFatalException
-	 * @throws \parseException
-	 * @throws \returnException
-	 */
-	public static function getCompanyAuthenticationData(int $user_id):Struct_User_AuthenticationData|false {
-
-		[$status, $response] = self::_call("company.auth.getCompanyAuthenticationData", [], $user_id);
-
-		if ($status !== "ok") {
-
-			if ($response["error_code"] === 423 || $response["error_code"] === 1) {
-				return false;
-			}
-
-			throw new ParseFatalException("passed unknown error_code");
-		}
-
-		return new Struct_User_AuthenticationData(
-			(bool) $response["need_block_if_premium_inactive"],
-			(int) $response["premium_active_till"]
-		);
+		return true;
 	}
 
 	/**

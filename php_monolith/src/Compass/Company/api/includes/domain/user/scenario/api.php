@@ -5,6 +5,7 @@ namespace Compass\Company;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CompanyIsHibernatedException;
 use BaseFrame\Exception\Request\CompanyIsRelocatingException;
 use BaseFrame\Exception\Request\ParamException;
@@ -17,34 +18,30 @@ use CompassApp\Domain\Member\Entity\Member;
  *
  * Class Domain_User_Scenario_Api
  */
-class Domain_User_Scenario_Api {
-
+class Domain_User_Scenario_Api
+{
 	/**
 	 * Сценарий авторизации в компании
 	 *
-	 * @param int    $session_user_id
-	 * @param int    $user_id
-	 * @param string $pin_code
-	 * @param string $user_company_session_token
-	 * @param string $pin_key
-	 *
-	 * @throws \blockException
-	 * @throws \paramException
+	 * @throws BlockException
+	 * @throws ParamException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
 	 * @throws \busException
+	 * @throws \cs_UserIsNotMember
+	 * @throws \parseException
+	 * @throws \queryException
+	 * @throws \returnException
 	 * @throws cs_CompanyIsDeleted
 	 * @throws cs_CompanyIsNotExist
 	 * @throws cs_IncorrectUserId
 	 * @throws cs_InvalidUserCompanySessionToken
 	 * @throws cs_IsNotEqualsPinCode
 	 * @throws cs_PlatformNotFound
-	 * @throws \cs_SessionNotFound
 	 * @throws cs_UserAlreadyLoggedIn
-	 * @throws \cs_UserIsNotMember
-	 * @throws \parseException
-	 * @throws \queryException
-	 * @throws \returnException
 	 */
-	public static function tryLoginInCompany(int $session_user_id, int $user_id, string $user_company_session_token):void {
+	public static function tryLoginInCompany(int $session_user_id, int $user_id, string $user_company_session_token): void
+	{
 
 		Domain_Company_Entity_Validator::assertCompanyExist();
 		Domain_Company_Entity_Dynamic::assertCompanyIsNotDeleted();
@@ -69,12 +66,45 @@ class Domain_User_Scenario_Api {
 		// проверяем блокировку
 		Type_Antispam_User::assertKeyIsNotBlocked($user_id, Type_Antispam_User::PIN_CODE_LIMIT);
 
+		try {
+
+			// получаем данные для аутентификации сессии
+			self::_tryCheckUserCompanySessionToken($user_id, $user_company_session_token);
+		} catch (cs_IsNotEqualsPinCode $e) {
+
+			Type_Antispam_User::throwIfBlocked($user_id, Type_Antispam_User::PIN_CODE_LIMIT);
+			throw $e;
+		}
+
 		// логиним сессию пользователю
 		Type_Session_Main::doLoginSession($user_id, $user_company_session_token);
 
 		// добавляем устройство в список тех, которые могут получать пуши, если это не электрон(им пуши не нужны)
 		if (Type_Api_Platform::getPlatform() !== Type_Api_Platform::PLATFORM_ELECTRON) {
 			Domain_User_Action_Notifications_AddDevice::do($user_id, getDeviceId());
+		}
+	}
+
+	/**
+	 * Проверяем токен
+	 *
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \cs_UserIsNotMember
+	 * @throws cs_InvalidUserCompanySessionToken
+	 */
+	protected static function _tryCheckUserCompanySessionToken(int $user_id, string $user_company_session_token): void
+	{
+
+		// проверяем что пользователь участник компании
+		Member::assertIsMember($user_id);
+
+		// получаем данные авторизации
+		$valid = Gateway_Socket_Pivot::checkUserCompanySessionToken($user_id, $user_company_session_token);
+
+		// проверяем, что пользователю действительно принадлежит этот user_company_session_token и он валиден.
+		if ($valid === false) {
+			throw new cs_InvalidUserCompanySessionToken("can't authenticate user with given token");
 		}
 	}
 

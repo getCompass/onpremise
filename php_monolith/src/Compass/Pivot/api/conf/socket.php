@@ -70,6 +70,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 		"auth_type"     => Type_Socket_Auth_Handler::AUTH_TYPE_SSL,
 		"auth_key"      => "",
 		"allow_methods" => [
+			"company.auth.checkUserSessionToken",
 			"company.profile.setName",
 			"company.profile.setAvatar",
 			"company.profile.setBaseInfo",

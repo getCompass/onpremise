@@ -9,13 +9,12 @@ use BaseFrame\Exception\Request\BlockException;
 /**
  * Class Apiv1_Company_Auth
  */
-class Apiv1_Auth extends \BaseFrame\Controller\Api {
-
+class Apiv1_Auth extends \BaseFrame\Controller\Api
+{
 	public const ALLOW_METHODS = [
 		"tryLogin",
 		"doLogout",
 	];
-
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"tryLogin",
 		"doLogout",
@@ -24,7 +23,6 @@ class Apiv1_Auth extends \BaseFrame\Controller\Api {
 	/**
 	 * Начинаем процесс авторизации в компании
 	 *
-	 * @return array
 	 * @throws CompanyNotServedException
 	 * @throws ParamException
 	 * @throws \paramException
@@ -35,7 +33,8 @@ class Apiv1_Auth extends \BaseFrame\Controller\Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public function tryLogin():array {
+	public function tryLogin(): array
+	{
 
 		$user_id                    = $this->post(\Formatter::TYPE_INT, "user_id");
 		$user_company_session_token = $this->post(\Formatter::TYPE_STRING, "user_company_session_token");
@@ -83,7 +82,8 @@ class Apiv1_Auth extends \BaseFrame\Controller\Api {
 	/**
 	 * Разлогиниваемся из компании
 	 */
-	public function doLogout():array {
+	public function doLogout(): array
+	{
 
 		Gateway_Bus_CollectorAgent::init()->inc("row48");
 		Domain_User_Scenario_Api::doLogout($this->user_id);

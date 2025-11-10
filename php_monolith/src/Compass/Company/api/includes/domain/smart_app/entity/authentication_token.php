@@ -15,14 +15,14 @@ class Domain_SmartApp_Entity_AuthenticationToken {
 	/**
 	 * Генерирует токен аутентификации.
 	 */
-	public static function generate(int    $user_id, string $userbot_title,
+	public static function generate(int    $user_id, string $title,
 						  string $smart_app_name, string $smart_app_avatar_url, string $smart_app_private_key,
 						  int    $client_width, int $client_height, string $platform,
 						  string $entity, string $entity_key):string {
 
 		$issued_at    = time();
 		$expires_at   = $issued_at + (60 * 30);
-		$sign_payload = static::_makeSignPayload($user_id, $userbot_title, $smart_app_name, $smart_app_avatar_url, $entity, $entity_key, $expires_at, $issued_at);
+		$sign_payload = static::_makeSignPayload($user_id, $title, $smart_app_name, $smart_app_avatar_url, $entity, $entity_key, $expires_at, $issued_at);
 		$app_data     = static::_makeAppData($client_width, $client_height, $platform);
 		$sign         = static::_singPayload($sign_payload, $smart_app_private_key);
 
@@ -37,7 +37,7 @@ class Domain_SmartApp_Entity_AuthenticationToken {
 	/**
 	 * Генерирует массив с полезной нагрузкой токена.
 	 */
-	protected static function _makeSignPayload(int    $user_id, string $userbot_title,
+	protected static function _makeSignPayload(int    $user_id, string $title,
 								 string $smart_app_name, string $smart_app_avatar_url,
 								 string $entity, string $entity_key,
 								 int    $expires_at, int $issued_at):array {
@@ -47,7 +47,7 @@ class Domain_SmartApp_Entity_AuthenticationToken {
 				"user_id" => $user_id,
 			],
 			"smart_app_data" => [
-				"title"      => $userbot_title,
+				"title"      => $title,
 				"name"       => $smart_app_name,
 				"avatar_url" => $smart_app_avatar_url,
 				"entity"     => $entity,

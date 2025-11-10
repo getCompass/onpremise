@@ -106,23 +106,6 @@ class Apiv2_Format {
 			"command_list"    => (array) $command_list,
 			"disabled_at"     => (int) Domain_Userbot_Entity_Userbot::getDisabledAt($userbot->extra),
 			"deleted_at"      => (int) Domain_Userbot_Entity_Userbot::getDeletedAt($userbot->extra),
-			"smart_app"       => (object) self::smartApp($userbot),
-		];
-	}
-
-	/**
-	 * приводим к формату данные о smart app
-	 */
-	public static function smartApp(Struct_Db_CloudCompany_Userbot $userbot):array {
-
-		return [
-			"is_enabled"     => (int) Domain_Userbot_Entity_Userbot::getFlagSmartApp($userbot->extra),
-			"name"           => (string) $userbot->smart_app_name,
-			"url"            => (string) Domain_Userbot_Entity_Userbot::getSmartAppUrl($userbot->extra),
-			"is_sip"         => (int) Domain_Userbot_Entity_Userbot::getFlagSmartAppSip($userbot->extra),
-			"is_mail"        => (int) Domain_Userbot_Entity_Userbot::getFlagSmartAppMail($userbot->extra),
-			"default_width"  => (int) Domain_Userbot_Entity_Userbot::getSmartAppDefaultWidth($userbot->extra),
-			"default_height" => (int) Domain_Userbot_Entity_Userbot::getSmartAppDefaultHeight($userbot->extra),
 		];
 	}
 
@@ -132,14 +115,13 @@ class Apiv2_Format {
 	public static function userbotSensitiveData(Struct_Domain_Userbot_SensitiveData $sensitive_data):array {
 
 		return [
-			"token"                => (string) $sensitive_data->token,
-			"secret_key"           => (string) $sensitive_data->secret_key,
-			"is_react_command"     => (int) $sensitive_data->is_react_command,
-			"webhook"              => (string) $sensitive_data->webhook,
-			"group_info_list"      => (array) $sensitive_data->group_info_list,
-			"avatar_color_id"      => (int) $sensitive_data->avatar_color_id,
-			"avatar_file_key"      => (string) $sensitive_data->avatar_file_key,
-			"smart_app_public_key" => (string) $sensitive_data->smart_app_public_key,
+			"token"            => (string) $sensitive_data->token,
+			"secret_key"       => (string) $sensitive_data->secret_key,
+			"is_react_command" => (int) $sensitive_data->is_react_command,
+			"webhook"          => (string) $sensitive_data->webhook,
+			"group_info_list"  => (array) $sensitive_data->group_info_list,
+			"avatar_color_id"  => (int) $sensitive_data->avatar_color_id,
+			"avatar_file_key"  => (string) $sensitive_data->avatar_file_key,
 		];
 	}
 
@@ -151,6 +133,40 @@ class Apiv2_Format {
 		return [
 			"userbot_id" => (string) $userbot->userbot_id,
 			"user_id"    => (int) $userbot->user_id,
+		];
+	}
+
+	/**
+	 * приводим к формату данные о приложении
+	 */
+	public static function smartApp(Struct_Db_CompanyData_SmartAppList $smart_app, Struct_Db_CompanyData_SmartAppUserRel $smart_app_user_rel):array {
+
+		return [
+			"smart_app_id"               => (int) $smart_app->smart_app_id,
+			"smart_app_uniq_name"        => (string) $smart_app->smart_app_uniq_name,
+			"catalog_item_id"            => (int) $smart_app->catalog_item_id,
+			"title"                      => (string) Domain_SmartApp_Entity_SmartAppUserRel::getTitle($smart_app_user_rel->extra),
+			"status"                     => (int) $smart_app_user_rel->status,
+			"avatar_file_key"            => (string) Domain_SmartApp_Entity_SmartAppUserRel::getAvatarFileKey($smart_app_user_rel->extra),
+			"is_default_avatar"          => (int) Domain_SmartApp_Entity_SmartAppUserRel::getFlagDefaultAvatar($smart_app_user_rel->extra),
+			"created_at"                 => (int) $smart_app_user_rel->created_at,
+			"deleted_at"                 => (int) $smart_app_user_rel->deleted_at,
+			"url"                        => (string) Domain_SmartApp_Entity_SmartApp::getUrl($smart_app->extra),
+			"is_open_in_new_window"      => (int) Domain_SmartApp_Entity_SmartAppUserRel::getFlagOpenInNewWindow($smart_app_user_rel->extra),
+			"is_notifications_enabled"   => (int) Domain_SmartApp_Entity_SmartAppUserRel::getFlagNotificationsEnabled($smart_app_user_rel->extra),
+			"is_sound_enabled"           => (int) Domain_SmartApp_Entity_SmartAppUserRel::getFlagSoundEnabled($smart_app_user_rel->extra),
+			"is_background_work_enabled" => (int) Domain_SmartApp_Entity_SmartAppUserRel::getFlagBackgroundWorkEnabled($smart_app_user_rel->extra),
+			"size"                       => (string) Domain_SmartApp_Entity_SmartAppUserRel::getSize($smart_app_user_rel->extra),
+		];
+	}
+
+	/**
+	 * приводим к формату секуьюрные данные приложения
+	 */
+	public static function smartAppSensitiveData(Struct_Domain_SmartApp_SensitiveData $sensitive_data):array {
+
+		return [
+			"public_key" => (string) $sensitive_data->public_key,
 		];
 	}
 

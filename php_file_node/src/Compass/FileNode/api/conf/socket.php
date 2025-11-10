@@ -27,6 +27,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"system.doUploadFile",
 			"nodes.replaceUserbotAvatar",
 			"nodes.replacePreviewForWelcomeVideo",
+			"nodes.replaceResizedDefaultFile",
 			"nodes.uploadInvoice",
 			"nodes.uploadAvatarFile",
 			"nodes.uploadFileByUrl",

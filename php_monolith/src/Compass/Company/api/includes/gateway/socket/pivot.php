@@ -41,15 +41,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * метод для обновления статус_алиаса ссылки-инвайта
 	 *
-	 * @param int    $user_id
-	 * @param string $join_link_uniq
-	 * @param int    $status_alias
-	 *
-	 * @return void
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function updateJoinLinkStatus(int $user_id, string $join_link_uniq, int $status_alias):void {
+	public static function updateJoinLinkStatus(int $user_id, string $join_link_uniq, int $status_alias): void
+	{
 
 		$params = [
 			"invite_link_uniq" => $join_link_uniq,
@@ -64,16 +60,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Установить токен уведомления для компании
 	 *
-	 * @param int    $user_id
-	 * @param string $device_id
-	 * @param string $token
-	 * @param bool   $is_add
-	 *
-	 * @return bool
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setUserCompanyToken(int $user_id, string $device_id, string $token, bool $is_add = true):bool {
+	public static function setUserCompanyToken(int $user_id, string $device_id, string $token, bool $is_add = true): bool
+	{
 
 		$params = [
 			"device_id"          => (string) $device_id,
@@ -95,14 +86,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем запрос на изменение имени компании
 	 *
-	 * @param int    $user_id
-	 * @param string $name
-	 *
-	 * @return bool
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setName(int $user_id, string $name):bool {
+	public static function setName(int $user_id, string $name): bool
+	{
 
 		$params = [
 			"name" => $name,
@@ -118,14 +106,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем запрос на изменение цвета аватарки компании
 	 *
-	 * @param int $user_id
-	 * @param int $avatar_color_id
-	 *
-	 * @return bool
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setAvatar(int $user_id, int $avatar_color_id):bool {
+	public static function setAvatar(int $user_id, int $avatar_color_id): bool
+	{
 
 		$params = [
 			"avatar_color_id" => $avatar_color_id,
@@ -144,15 +129,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем запрос на изменение основных данных профиля компании
 	 *
-	 * @param int          $user_id
-	 * @param string|false $name
-	 * @param int|false    $avatar_color_id
-	 *
-	 * @return array
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setCompanyBaseInfo(int $user_id, string|false $name, int|false $avatar_color_id):array {
+	public static function setCompanyBaseInfo(int $user_id, string | false $name, int | false $avatar_color_id): array
+	{
 
 		$params = [];
 
@@ -176,14 +157,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем запрос на увольнения из компании
 	 *
-	 * @param int  $user_id
-	 * @param bool $need_add_user_lobby
-	 *
-	 * @return void
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function kickMember(int $user_id, int $role, bool $need_add_user_lobby, string $reason):void {
+	public static function kickMember(int $user_id, int $role, bool $need_add_user_lobby, string $reason): void
+	{
 
 		$params = [
 			"need_add_user_lobby" => $need_add_user_lobby,
@@ -205,11 +183,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем запрос на актвиацию пользователя в компании
 	 *
-	 * @return void
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function doConfirmHiringRequest(int $candidate_user_id, int $hired_by_user_id, int $approved_by_user_id, int $user_space_role, int $user_space_permissions, string $user_company_token):void {
+	public static function doConfirmHiringRequest(int $candidate_user_id, int $hired_by_user_id, int $approved_by_user_id, int $user_space_role, int $user_space_permissions, string $user_company_token): void
+	{
 
 		$params = [
 			"user_company_token"     => $user_company_token,
@@ -228,14 +206,10 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем запрос на обновление флага is_has_pin
 	 *
-	 * @param int $user_id
-	 * @param int $company_id
-	 * @param int $is_has_pin
-	 *
-	 * @return bool
 	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public static function setIsHasPin(int $user_id, int $company_id, int $is_has_pin):bool {
+	public static function setIsHasPin(int $user_id, int $company_id, int $is_has_pin): bool
+	{
 
 		return true;
 	}
@@ -243,14 +217,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Сгенерировать 2fa токен
 	 *
-	 * @param int $user_id
-	 * @param int $action_type
-	 *
-	 * @return array
 	 * @throws \parseException
 	 * @throws \returnException|blockException
 	 */
-	public static function doGenerateTwoFaToken(int $user_id, int $action_type):array {
+	public static function doGenerateTwoFaToken(int $user_id, int $action_type): array
+	{
 
 		$params = [
 			"action_type" => $action_type,
@@ -277,11 +248,6 @@ class Gateway_Socket_Pivot
 	/**
 	 * Валидировать 2fa токен
 	 *
-	 * @param int    $user_id
-	 * @param int    $action_type
-	 * @param string $two_fa_key
-	 *
-	 * @return bool
 	 * @throws cs_ActionForCompanyBlocked
 	 * @throws cs_AnswerCommand
 	 * @throws cs_TwoFaIsInvalid
@@ -289,7 +255,8 @@ class Gateway_Socket_Pivot
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function tryValidateTwoFaToken(int $user_id, int $action_type, string $two_fa_key):bool {
+	public static function tryValidateTwoFaToken(int $user_id, int $action_type, string $two_fa_key): bool
+	{
 
 		$params = [
 			"two_fa_key"  => $two_fa_key,
@@ -320,14 +287,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Пометить токен как невалидный
 	 *
-	 * @param int    $user_id
-	 * @param string $two_fa_key
-	 *
-	 * @return bool
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setTwoFaTokenAsInactive(int $user_id, string $two_fa_key):bool {
+	public static function setTwoFaTokenAsInactive(int $user_id, string $two_fa_key): bool
+	{
 
 		$params = [
 			"two_fa_key" => $two_fa_key,
@@ -348,7 +312,8 @@ class Gateway_Socket_Pivot
 	 * @throws ReturnFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function getUserInfo(int $user_id):array|false {
+	public static function getUserInfo(int $user_id): array | false
+	{
 
 		// делаем запрос
 		[$status, $response] = self::_call("company.user.getUserInfo", [], $user_id);
@@ -379,14 +344,13 @@ class Gateway_Socket_Pivot
 	/**
 	 * Получает список данных для пользователей с pivot сервера.
 	 *
-	 * @param array $user_id_list
-	 *
 	 * @return Struct_User_Info[]
 	 *
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function getUserInfoList(array $user_id_list):array {
+	public static function getUserInfoList(array $user_id_list): array
+	{
 
 		// делаем запрос
 		[$status, $response] = self::_call("company.user.getUserInfoList", ["user_id_list" => $user_id_list], 0);
@@ -417,14 +381,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Получает список данных для пользователей с pivot сервера. ТОЛЬКО ДЛЯ СКРИПТА
 	 *
-	 * @param int $user_id
-	 *
-	 * @return array
-	 *
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function getBeforeRedesignUserInfo(int $user_id):array {
+	public static function getBeforeRedesignUserInfo(int $user_id): array
+	{
 
 		// делаем запрос ТОЛЬКО ДЛЯ СКРИПТА
 		[$status, $response] = self::_call("company.user.getBeforeRedesignUserInfo", [], $user_id);
@@ -446,15 +407,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Удаляем все пуш токены
 	 *
-	 * @param int    $user_id
-	 * @param array  $device_list
-	 * @param string $token
-	 *
-	 * @return array
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function clearTokenList(int $user_id, array $device_list, string $token):array {
+	public static function clearTokenList(int $user_id, array $device_list, string $token): array
+	{
 
 		$post_data = [
 			"user_id"     => $user_id,
@@ -475,12 +432,12 @@ class Gateway_Socket_Pivot
 	/**
 	 * Получаем id создателя
 	 *
-	 * @return int
 	 * @throws ReturnFatalException
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function getCompanyCreatorUserId():int {
+	public static function getCompanyCreatorUserId(): int
+	{
 
 		// делаем запрос
 		[$status, $response] = self::_call("company.member.getCreatorUserId", [], 0);
@@ -495,14 +452,12 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отзываем инвайт
 	 *
-	 * @param int $invited_user_id
-	 *
-	 * @return void
 	 * @throws cs_HiringRequestAlreadyConfirmed
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function doRejectHiringRequest(int $inviter_user_id, int $invited_user_id):void {
+	public static function doRejectHiringRequest(int $inviter_user_id, int $invited_user_id): void
+	{
 
 		// делаем запрос
 		[$status, $response] = self::_call("company.member.doRejectHiringRequest", [
@@ -524,11 +479,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Проверяем, существует ли компания
 	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public static function checkCompanyExists():bool {
+	public static function checkCompanyExists(): bool
+	{
 
 		try {
 
@@ -549,14 +504,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем задачу в крон
 	 *
-	 * @param int    $task_id
-	 * @param string $type
-	 * @param int    $user_id
-	 *
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function addScheduledCompanyTask(int $task_id, string $type, int $user_id):void {
+	public static function addScheduledCompanyTask(int $task_id, string $type, int $user_id): void
+	{
 
 		$params = [
 			"task_id"    => $task_id,
@@ -576,14 +528,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * создаем ссылку-инвайт
 	 *
-	 * @param int $user_id
-	 * @param int $status
-	 *
-	 * @return string
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function createJoinLink(int $user_id, int $status):string {
+	public static function createJoinLink(int $user_id, int $status): string
+	{
 
 		$ar_post = ["status_alias" => $status];
 
@@ -600,11 +549,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * метод для начала гибернации
 	 *
-	 * @return bool
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function startHibernate():bool {
+	public static function startHibernate(): bool
+	{
 
 		[$status] = self::_call("company.system.startHibernate", [], 0);
 		if ($status != "ok") {
@@ -621,12 +570,15 @@ class Gateway_Socket_Pivot
 	 * @throws \returnException
 	 * @long - switch..case для кодов ошибок
 	 */
-	public static function createUserbot(string    $userbot_name, int $avatar_color_id, string|false $avatar_file_key,
-							 int|false $is_react_command, string|false $webhook,
-							 int|false $is_smart_app, string|false $smart_app_name, string|false $smart_app_url,
-							 int|false $is_smart_app_sip, int|false $is_smart_app_mail,
-							 int|false $smart_app_default_width, int|false $smart_app_default_height,
-							 int       $role, int $permissions):array {
+	public static function createUserbot(
+		string $userbot_name,
+		int $avatar_color_id,
+		string | false $avatar_file_key,
+		int | false $is_react_command,
+		string | false $webhook,
+		int $role,
+		int $permissions
+	): array {
 
 		$ar_post = [
 			"userbot_name" => $userbot_name,
@@ -647,34 +599,6 @@ class Gateway_Socket_Pivot
 			$ar_post["webhook"] = $webhook;
 		}
 
-		if ($is_smart_app !== false) {
-			$ar_post["is_smart_app"] = (int) $is_smart_app;
-		}
-
-		if ($smart_app_name !== false) {
-			$ar_post["smart_app_name"] = $smart_app_name;
-		}
-
-		if ($smart_app_url !== false) {
-			$ar_post["smart_app_url"] = $smart_app_url;
-		}
-
-		if ($is_smart_app_sip !== false) {
-			$ar_post["is_smart_app_sip"] = (int) $is_smart_app_sip;
-		}
-
-		if ($is_smart_app_mail !== false) {
-			$ar_post["is_smart_app_mail"] = (int) $is_smart_app_mail;
-		}
-
-		if ($smart_app_default_width !== false) {
-			$ar_post["smart_app_default_width"] = (int) $smart_app_default_width;
-		}
-
-		if ($smart_app_default_height !== false) {
-			$ar_post["smart_app_default_height"] = (int) $smart_app_default_height;
-		}
-
 		[$status, $response] = self::_call("company.userbot.create", $ar_post, 0);
 
 		if ($status != "ok") {
@@ -687,7 +611,6 @@ class Gateway_Socket_Pivot
 
 				case 1434001:
 					throw new Domain_Userbot_Exception_IncorrectParam("not create userbot cause incorrect param");
-
 				case 1434002:
 					throw new ReturnFatalException("something strange happened on try create userbot");
 			}
@@ -711,12 +634,15 @@ class Gateway_Socket_Pivot
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function editUserbot(string    $userbot_id, string $token, string|false $userbot_name,
-						     int|false $avatar_color_id, string|false $avatar_file_key,
-						     int|false $is_react_command, string|false $webhook,
-						     int|false $is_smart_app, string|false $smart_app_name, string|false $smart_app_url,
-						     int|false $is_smart_app_sip, int|false $is_smart_app_mail,
-						     int|false $smart_app_default_width, int|false $smart_app_default_height):void {
+	public static function editUserbot(
+		string $userbot_id,
+		string $token,
+		string | false $userbot_name,
+		int | false $avatar_color_id,
+		string | false $avatar_file_key,
+		int | false $is_react_command,
+		string | false $webhook
+	): void {
 
 		$ar_post = [
 			"userbot_id"         => $userbot_id,
@@ -730,24 +656,12 @@ class Gateway_Socket_Pivot
 
 		if ($webhook !== false) {
 
-			$ar_post["webhook"]          = $webhook;
+			$ar_post["webhook"] = $webhook;
 		}
 
 		if ($is_react_command !== false) {
 
 			$ar_post["is_react_command"] = (int) $is_react_command;
-		}
-
-		if ($smart_app_name !== false) {
-
-			$ar_post["smart_app_name"] = $smart_app_name;
-			$ar_post["is_smart_app"]   = (int) $is_smart_app;
-		}
-
-		if ($smart_app_url !== false) {
-
-			$ar_post["smart_app_url"] = $smart_app_url;
-			$ar_post["is_smart_app"]  = (int) $is_smart_app;
 		}
 
 		if ($avatar_color_id !== false) {
@@ -756,22 +670,6 @@ class Gateway_Socket_Pivot
 
 		if ($avatar_file_key !== false) {
 			$ar_post["avatar_file_key"] = (string) $avatar_file_key;
-		}
-
-		if ($is_smart_app_sip !== false) {
-			$ar_post["is_smart_app_sip"] = (int) $is_smart_app_sip;
-		}
-
-		if ($is_smart_app_mail !== false) {
-			$ar_post["is_smart_app_mail"] = (int) $is_smart_app_mail;
-		}
-
-		if ($smart_app_default_width !== false) {
-			$ar_post["smart_app_default_width"] = (int) $smart_app_default_width;
-		}
-
-		if ($smart_app_default_height !== false) {
-			$ar_post["smart_app_default_height"] = (int) $smart_app_default_height;
 		}
 
 		// делаем запрос
@@ -793,7 +691,8 @@ class Gateway_Socket_Pivot
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function enableUserbot(string $userbot_id, string $token):void {
+	public static function enableUserbot(string $userbot_id, string $token): void
+	{
 
 		$ar_post = [
 			"userbot_id"         => $userbot_id,
@@ -820,7 +719,8 @@ class Gateway_Socket_Pivot
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function disableUserbot(string $userbot_id, string $token):void {
+	public static function disableUserbot(string $userbot_id, string $token): void
+	{
 
 		$ar_post = [
 			"userbot_id"         => $userbot_id,
@@ -847,7 +747,8 @@ class Gateway_Socket_Pivot
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function deleteUserbot(string $userbot_id, string $token):void {
+	public static function deleteUserbot(string $userbot_id, string $token): void
+	{
 
 		$ar_post = [
 			"userbot_id"         => $userbot_id,
@@ -874,7 +775,8 @@ class Gateway_Socket_Pivot
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function refreshSecretKey(string $token):string {
+	public static function refreshSecretKey(string $token): string
+	{
 
 		$ar_post = [
 			"token" => $token,
@@ -902,7 +804,8 @@ class Gateway_Socket_Pivot
 	 * @throws Domain_Userbot_Exception_UserbotNotFound
 	 * @throws ParseFatalException
 	 */
-	public static function refreshToken(string $token):string {
+	public static function refreshToken(string $token): string
+	{
 
 		$ar_post = [
 			"token" => $token,
@@ -930,10 +833,11 @@ class Gateway_Socket_Pivot
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function getUserbotInfo(string $token):array {
+	public static function getUserbotInfo(string $token): array
+	{
 
 		// делаем запрос
-		$ar_post = ["token" => $token];
+		$ar_post             = ["token" => $token];
 		[$status, $response] = self::_call("userbot.getInfo", $ar_post, 0);
 
 		if ($status != "ok") {
@@ -958,13 +862,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем запрос на удаление аватара компании
 	 *
-	 * @param int $user_id
-	 *
-	 * @return void
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function clearAvatarCompany(int $user_id):void {
+	public static function clearAvatarCompany(int $user_id): void
+	{
 
 		[$status, $response] = self::_call("company.clearAvatar", [], $user_id);
 
@@ -976,7 +878,8 @@ class Gateway_Socket_Pivot
 	/**
 	 * Отправляем запрос на изменение информации профиля компании
 	 */
-	public static function changeInfoCompany(int $user_id, string|false $name, string|false $avatar_file_key):array {
+	public static function changeInfoCompany(int $user_id, string | false $name, string | false $avatar_file_key): array
+	{
 
 		$params = [];
 
@@ -1008,7 +911,8 @@ class Gateway_Socket_Pivot
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public static function getPremiumActiveAtList(array $user_id_list):array {
+	public static function getPremiumActiveAtList(array $user_id_list): array
+	{
 
 		$ar_post = [
 			"user_id_list" => $user_id_list,
@@ -1029,7 +933,8 @@ class Gateway_Socket_Pivot
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public static function getPremiumActiveTillListByOrder(string $sort_order):array {
+	public static function getPremiumActiveTillListByOrder(string $sort_order): array
+	{
 
 		$ar_post = [
 			"sort_order" => $sort_order,
@@ -1054,7 +959,8 @@ class Gateway_Socket_Pivot
 	 * @throws \cs_UserIsNotMember
 	 * @throws ParseFatalException
 	 */
-	public static function deleteCompany(int $user_id):void {
+	public static function deleteCompany(int $user_id): void
+	{
 
 		$ar_post = [];
 
@@ -1091,7 +997,6 @@ class Gateway_Socket_Pivot
 	/**
 	 * получаем данные для аналитики пространства
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws \BaseFrame\Exception\Request\CompanyIsHibernatedException
@@ -1099,7 +1004,8 @@ class Gateway_Socket_Pivot
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 * @long
 	 */
-	public static function getSpaceAnalyticsInfo():array {
+	public static function getSpaceAnalyticsInfo(): array
+	{
 
 		$ar_post = [];
 
@@ -1107,8 +1013,10 @@ class Gateway_Socket_Pivot
 			[$status, $response] = self::_call("company.getAnalyticsInfo", $ar_post, 0);
 		} catch (\cs_SocketRequestIsFailed $e) {
 
-			self::_throwExceptionByStatusCode($e->getHttpStatusCode(),
-				new ParseFatalException("socket system.getScriptCompanyUserList failed. Error: " . $e->getMessage()));
+			self::_throwExceptionByStatusCode(
+				$e->getHttpStatusCode(),
+				new ParseFatalException("socket system.getScriptCompanyUserList failed. Error: " . $e->getMessage())
+			);
 		}
 
 		if ($status != "ok") {
@@ -1139,14 +1047,17 @@ class Gateway_Socket_Pivot
 	 * @throws \BaseFrame\Exception\Request\CompanyIsRelocatingException
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 */
-	public static function increaseMemberCountLimit(int $user_id):array {
+	public static function increaseMemberCountLimit(int $user_id): array
+	{
 
 		try {
 			[$status, $response] = self::_call("tariff.increaseMemberCountLimit", [], $user_id);
 		} catch (\cs_SocketRequestIsFailed $e) {
 
-			self::_throwExceptionByStatusCode($e->getHttpStatusCode(),
-				new ParseFatalException("socket tariff.increaseMemberCountLimit failed. Error: " . $e->getMessage()));
+			self::_throwExceptionByStatusCode(
+				$e->getHttpStatusCode(),
+				new ParseFatalException("socket tariff.increaseMemberCountLimit failed. Error: " . $e->getMessage())
+			);
 		}
 
 		self::_throwOnUnknownErrorCode($status, $response);
@@ -1164,14 +1075,17 @@ class Gateway_Socket_Pivot
 	 * @throws \BaseFrame\Exception\Request\CompanyIsRelocatingException
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 */
-	public static function tryStartTrial(int $user_id):bool {
+	public static function tryStartTrial(int $user_id): bool
+	{
 
 		try {
 			[$status, $response] = self::_call("tariff.tryStartTrial", [], $user_id);
 		} catch (\cs_SocketRequestIsFailed $e) {
 
-			self::_throwExceptionByStatusCode($e->getHttpStatusCode(),
-				new ParseFatalException("socket tariff.tryStartTrial failed. Error: " . $e->getMessage()));
+			self::_throwExceptionByStatusCode(
+				$e->getHttpStatusCode(),
+				new ParseFatalException("socket tariff.tryStartTrial failed. Error: " . $e->getMessage())
+			);
 		}
 
 		self::_throwOnUnknownErrorCode($status, $response);
@@ -1182,17 +1096,14 @@ class Gateway_Socket_Pivot
 	/**
 	 * Получить статистику пользователя по экранному времени
 	 *
-	 * @param int $user_id
-	 * @param int $days_count
-	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws \BaseFrame\Exception\Request\CompanyIsHibernatedException
 	 * @throws \BaseFrame\Exception\Request\CompanyIsRelocatingException
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 */
-	public static function getScreenTimeStat(int $user_id, int $days_count):array {
+	public static function getScreenTimeStat(int $user_id, int $days_count): array
+	{
 
 		try {
 			$ar_post = [
@@ -1220,13 +1131,14 @@ class Gateway_Socket_Pivot
 	 * @throws \BaseFrame\Exception\Request\CompanyIsRelocatingException
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 */
-	public static function onUpgradeGuest():void {
+	public static function onUpgradeGuest(): void
+	{
 
 		try {
 			[$status, $response] = self::_call("company.member.onUpgradeGuest", [], 0);
 		} catch (\cs_SocketRequestIsFailed $e) {
 
-			self::_throwExceptionByStatusCode($e->getHttpStatusCode(), new ParseFatalException("socket user.getScreenTimeStat failed. Error: " . $e->getMessage()));
+			self::_throwExceptionByStatusCode($e->getHttpStatusCode(), new ParseFatalException("socket company.member.onUpgradeGuest failed. Error: " . $e->getMessage()));
 		}
 
 		self::_throwOnUnknownErrorCode($status, $response);
@@ -1235,18 +1147,74 @@ class Gateway_Socket_Pivot
 	/**
 	 * Получить user_id рут-пользователя он-премайз.
 	 */
-	public static function getRootUserId():int {
+	public static function getRootUserId(): int
+	{
 
 		try {
 			[$status, $response] = self::_call("system.getRootUserId", [], 0);
 		} catch (\cs_SocketRequestIsFailed $e) {
 
-			self::_throwExceptionByStatusCode($e->getHttpStatusCode(), new ParseFatalException("socket user.getScreenTimeStat failed. Error: " . $e->getMessage()));
+			self::_throwExceptionByStatusCode($e->getHttpStatusCode(), new ParseFatalException("socket system.getRootUserId failed. Error: " . $e->getMessage()));
 		}
 
 		self::_throwOnUnknownErrorCode($status, $response);
 
 		return $response["user_id"];
+	}
+
+	/**
+	 * Получить дефолтную аватарку приложений
+	 */
+	public static function getSmartAppDefaultAvatar(int $user_id): string
+	{
+
+		try {
+			[$status, $response] = self::_call("smartapp.getDefaultAvatar", [], $user_id);
+		} catch (\cs_SocketRequestIsFailed $e) {
+			self::_throwExceptionByStatusCode($e->getHttpStatusCode(), new ParseFatalException("socket smartapp.getDefaultAvatar failed. Error: " . $e->getMessage()));
+		}
+
+		self::_throwOnUnknownErrorCode($status, $response);
+
+		return $response["avatar_file_key"];
+	}
+
+	/**
+	 * Получить данные о приложении из каталога
+	 */
+	public static function getSmartAppCatalogItem(int $user_id, int $catalog_item_id): array
+	{
+
+		try {
+			[$status, $response] = self::_call("smartapp.getSmartAppCatalogItem", [
+				"catalog_item_id" => $catalog_item_id,
+			], $user_id);
+		} catch (\cs_SocketRequestIsFailed $e) {
+			self::_throwExceptionByStatusCode($e->getHttpStatusCode(), new ParseFatalException("socket smartapp.getDefaultAvatar failed. Error: " . $e->getMessage()));
+		}
+
+		self::_throwOnUnknownErrorCode($status, $response);
+
+		return [$response["uniq_name"], $response["avatar_file_key"], $response["url"]];
+	}
+
+	/**
+	 * Получить список приложений из каталога
+	 */
+	public static function getSmartAppCatalogList(array $catalog_item_id_list): array
+	{
+
+		try {
+			[$status, $response] = self::_call("smartapp.getSmartAppCatalogList", [
+				"catalog_item_id_list" => $catalog_item_id_list,
+			], 0);
+		} catch (\cs_SocketRequestIsFailed $e) {
+			self::_throwExceptionByStatusCode($e->getHttpStatusCode(), new ParseFatalException("socket smartapp.getDefaultAvatar failed. Error: " . $e->getMessage()));
+		}
+
+		self::_throwOnUnknownErrorCode($status, $response);
+
+		return $response["smart_app_list"];
 	}
 
 	// -------------------------------------------------------
@@ -1256,15 +1224,11 @@ class Gateway_Socket_Pivot
 	/**
 	 * Получаем подпись из массива параметров.
 	 *
-	 * @param string $method
-	 * @param array  $params
-	 * @param int    $user_id
-	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	protected static function _call(string $method, array $params, int $user_id):array {
+	protected static function _call(string $method, array $params, int $user_id): array
+	{
 
 		// переводим в json параметры
 		$json_params = toJson($params);
@@ -1272,7 +1236,9 @@ class Gateway_Socket_Pivot
 		// получаем url и подпись
 		$url       = self::_getUrl();
 		$signature = \BaseFrame\Socket\Authorization\Handler::getSignature(
-			\BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_SSL, COMPANY_TO_PIVOT_PRIVATE_KEY, $json_params
+			\BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_SSL,
+			COMPANY_TO_PIVOT_PRIVATE_KEY,
+			$json_params
 		);
 
 		return \BaseFrame\Socket\Main::doCall($url, $method, $json_params, $signature, CURRENT_MODULE, COMPANY_ID, $user_id);
@@ -1281,7 +1247,6 @@ class Gateway_Socket_Pivot
 	/**
 	 * Выбрасываем нужно исключение, ориентируясь на http status code
 	 *
-	 * @param int       $http_status_code
 	 * @param Throwable $default_exception
 	 *
 	 * @throws \BaseFrame\Exception\Request\CompanyIsRelocatingException
@@ -1289,7 +1254,8 @@ class Gateway_Socket_Pivot
 	 * @throws \Throwable
 	 * @throws \BaseFrame\Exception\Request\CompanyIsHibernatedException
 	 */
-	protected static function _throwExceptionByStatusCode(int $http_status_code, \Throwable $default_exception):void {
+	protected static function _throwExceptionByStatusCode(int $http_status_code, \Throwable $default_exception): void
+	{
 
 		match ($http_status_code) {
 			490     => throw new \BaseFrame\Exception\Request\CompanyIsHibernatedException("company is hibernation"),
@@ -1304,7 +1270,8 @@ class Gateway_Socket_Pivot
 	 *
 	 * @throws ParseFatalException
 	 */
-	protected static function _throwOnUnknownErrorCode(string $status, array $response):void {
+	protected static function _throwOnUnknownErrorCode(string $status, array $response): void
+	{
 
 		if ($status != "ok") {
 
@@ -1316,10 +1283,9 @@ class Gateway_Socket_Pivot
 
 	/**
 	 * получаем url
-	 *
-	 * @return string
 	 */
-	protected static function _getUrl():string {
+	protected static function _getUrl(): string
+	{
 
 		$socket_url_config    = getConfig("SOCKET_URL");
 		$socket_module_config = getConfig("SOCKET_MODULE");

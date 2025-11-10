@@ -561,6 +561,11 @@ end
 local get_room_by_name_and_subdomain = module:require "util".get_room_by_name_and_subdomain;
 
 function occupant_groupchat(event)
+    -- иногда groupchat-событие приходит раньше, чем сработал room_created
+    if not event.room or not event.room.event_data then
+        return
+    end
+
     local room_name = event.room.event_data.room_name;
     local room = get_room_by_name_and_subdomain(room_name);
     local stanza = event.stanza;
@@ -584,7 +589,7 @@ function occupant_groupchat(event)
                 local affiliation = room:get_affiliation(event_occupant.bare_jid);
                 if affiliation ~= 'owner' and affiliation ~= 'admin' then
                     module:log('warn', 'Unauthorized user %s attempted to update quality_level', event_occupant.jid);
-                    return ;
+                    return
                 end
 
                 -- обновляем quality_level в room

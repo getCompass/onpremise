@@ -5,20 +5,17 @@ namespace Compass\Pivot;
 /**
  * Crm сценарии
  */
-class Domain_Crm_Scenario_Socket {
-
+class Domain_Crm_Scenario_Socket
+{
 	/**
 	 * Сценарий получения списка всех компаний
 	 *
-	 * @param int  $limit
-	 * @param int  $offset
-	 * @param bool $only_active
 	 *
-	 * @return array
 	 * @throws cs_CompanyIncorrectLimit
 	 * @throws cs_CompanyIncorrectMinOrder
 	 */
-	public static function getCompanyList(int $limit, int $offset, bool $only_active):array {
+	public static function getCompanyList(int $limit, int $offset, bool $only_active): array
+	{
 
 		// проверяем
 		Domain_Company_Entity_Validator::assertIncorrectLimit($limit);

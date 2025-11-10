@@ -4,6 +4,7 @@ namespace Compass\Conversation;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * крон для исполнения задач
@@ -496,7 +497,7 @@ class Type_Phphooker_Worker {
 			}
 
 			// инкрементим
-			return $this->_incrementUnreadCount($set, $user_id, $left_menu_row["unread_count"], $messages_count);
+			return $this->_incrementUnreadCount($set, $user_id, $left_menu_row["unread_count"], $left_menu_row, $messages_count);
 		} else {
 
 			// если это отправитель и сообщение типа инвайт
@@ -507,7 +508,7 @@ class Type_Phphooker_Worker {
 			}
 
 			// иначе декрементим total_unread_count
-			return $this->_decrementUnreadCount($set, $message_map, $left_menu_row["unread_count"], $user_id);
+			return $this->_decrementUnreadCount($set, $message_map, $left_menu_row["unread_count"], $user_id, $left_menu_row);
 		}
 	}
 
@@ -524,7 +525,7 @@ class Type_Phphooker_Worker {
 	}
 
 	// инкрементим количество непрочитанных
-	protected function _incrementUnreadCount(array $set, int $user_id, int $unread_count, int $new_messages_count = 1):array {
+	protected function _incrementUnreadCount(array $set, int $user_id, int $unread_count, array $left_menu_row, int $new_messages_count = 1):array {
 
 		// инкрементим
 		$set["unread_count"]   = "unread_count + " . $new_messages_count;
@@ -533,11 +534,18 @@ class Type_Phphooker_Worker {
 		// инкрементим total_unread_conversations_count, если в чате не было прочитанных
 		if ($unread_count == 0) {
 
-			Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
+			$set_user_inbox = [
 				"message_unread_count"      => "message_unread_count + " . $new_messages_count,
 				"conversation_unread_count" => "conversation_unread_count + 1",
 				"updated_at"                => time(),
-			]);
+			];
+
+			// если сингл диалог
+			if (Type_Conversation_Meta::isSubtypeOfSingle($left_menu_row["type"])) {
+				$set_user_inbox["single_conversation_unread_count"] = "single_conversation_unread_count + 1";
+			}
+
+			Gateway_Db_CompanyConversation_UserInbox::set($user_id, $set_user_inbox);
 
 			return $set;
 		}
@@ -551,7 +559,7 @@ class Type_Phphooker_Worker {
 	}
 
 	// декрементим количество непрочитанных
-	protected function _decrementUnreadCount(array $set, string $message_map, int $unread_count, int $user_id):array {
+	protected function _decrementUnreadCount(array $set, string $message_map, int $unread_count, int $user_id, array $left_menu_row):array {
 
 		$set["last_read_message_map"] = $message_map;
 
@@ -563,11 +571,18 @@ class Type_Phphooker_Worker {
 			$set["is_have_notice"] = 0;
 			$set["is_mentioned"]   = 0;
 
-			Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
+			$set_user_inbox = [
 				"message_unread_count"      => "message_unread_count - " . $unread_count,
 				"conversation_unread_count" => "conversation_unread_count - 1",
 				"updated_at"                => time(),
-			]);
+			];
+
+			// если сингл диалог
+			if (Type_Conversation_Meta::isSubtypeOfSingle($left_menu_row["type"])) {
+				$set_user_inbox["single_conversation_unread_count"] = "single_conversation_unread_count - 1";
+			}
+
+			Gateway_Db_CompanyConversation_UserInbox::set($user_id, $set_user_inbox);
 		}
 
 		return $set;
@@ -770,7 +785,7 @@ class Type_Phphooker_Worker {
 		}
 
 		// это кейс если сообщения были прочитаны
-		return $this->_incrementUnreadCount($set, $user_id, $left_menu_row["unread_count"]);
+		return $this->_incrementUnreadCount($set, $user_id, $left_menu_row["unread_count"], $left_menu_row);
 	}
 
 	// обновляем last_message в left_menu при системном удалении сообщения
@@ -1368,6 +1383,13 @@ class Type_Phphooker_Worker {
 			);
 		} catch (cs_ConversationIsLocked) {
 			return false;
+		} catch (cs_Message_DuplicateClientMessageId $e) {
+
+			if (ServerProvider::isMaster()) {
+				Type_System_Admin::log("duplicate_message_test", [$conversation_map, $conversation_name, $conversation_type, $message_list]);
+			}
+
+			throw $e;
 		}
 
 		return true;

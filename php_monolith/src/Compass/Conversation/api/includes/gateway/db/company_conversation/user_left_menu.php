@@ -461,7 +461,7 @@ class Gateway_Db_CompanyConversation_UserLeftMenu extends Gateway_Db_CompanyConv
 			$where_clause .= " AND `is_favorite` = ?i";
 			$args[]       = match ($filter_favorite) {
 				-1 => 0,
-				1 => 1,
+				1  => 1,
 			};
 		}
 
@@ -716,8 +716,8 @@ class Gateway_Db_CompanyConversation_UserLeftMenu extends Gateway_Db_CompanyConv
 		$table = self::_getTable();
 
 		// запрос проверен на EXPLAIN (INDEX=`get_unread_menu`)
-		$query = "SELECT SUM(`unread_count`) AS message_unread_count, COUNT(`conversation_map`) AS conversation_unread_count FROM `?p` USE INDEX(`get_unread_menu`) WHERE `user_id` = ?i AND `is_hidden` = ?i AND `is_have_notice` = ?i LIMIT ?i";
-		return static::_connect(self::_getDbKey())->getOne($query, $table, $user_id, 0, 1, 1);
+		$query = "SELECT SUM(`unread_count`) AS message_unread_count, COUNT(`conversation_map`) AS conversation_unread_count, COUNT(CASE WHEN `type` IN (?a) THEN TRUE END) AS single_conversation_unread_count FROM `?p` USE INDEX(`get_unread_menu`) WHERE `user_id` = ?i AND `is_hidden` = ?i AND `is_have_notice` = ?i LIMIT ?i";
+		return static::_connect(self::_getDbKey())->getOne($query, $table, Type_Conversation_Meta::getSingleSubtypes(), $user_id, 0, 1, 1);
 	}
 
 	// получение групповых диалогов, где пользователь имеет админ права

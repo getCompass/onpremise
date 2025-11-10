@@ -3,6 +3,8 @@ import { gumPending } from '../media/actions';
 import { MEDIA_TYPE, MediaType } from '../media/constants';
 import { IGUMPendingState } from '../media/types';
 import { createAndAddInitialAVTracks } from '../tracks/actions.web';
+import { isNeedShowElectronOnlyElements } from '../environment/utils_web';
+import { updateSettings } from '../settings/actions';
 
 export * from './actions.any';
 
@@ -21,5 +23,15 @@ export function setupVisitorStartupMedia(media: Array<MediaType>) {
         if (media && Array.isArray(media) && media.length > 0) {
             dispatch(createAndAddInitialAVTracks(media));
         }
+    };
+}
+
+export function setAutoGainControl(isEnabled: boolean) {
+    return (dispatch: IStore['dispatch']) => {
+        if (!isNeedShowElectronOnlyElements()) {
+            return;
+        }
+
+        dispatch(updateSettings({ disableAGC: isEnabled }));
     };
 }

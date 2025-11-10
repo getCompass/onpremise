@@ -28,7 +28,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function incGroupCreated(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incGroupCreated(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_GROUPS_CREATED, $user_info);
 	}
@@ -44,7 +44,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function incConversationRead(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incConversationRead(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_CONVERSATIONS_READ, $user_info);
 	}
@@ -61,7 +61,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws ParseFatalException
 	 * @throws \parseException
 	 */
-	public static function incMessageSent(string $conversation_map, array $message_list, Short $user_info = null):void {
+	public static function incMessageSent(string $conversation_map, array $message_list, ?Short $user_info = null):void {
 
 		if (count($message_list) < 1) {
 			return;
@@ -81,8 +81,31 @@ class Domain_User_Action_IncActionCount {
 			CONVERSATION_MESSAGE_TYPE_HIRING_REQUEST,
 			CONVERSATION_MESSAGE_TYPE_DISMISSAL_REQUEST,
 			CONVERSATION_MESSAGE_TYPE_INVITE_TO_COMPANY_INVITER_SINGLE,
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_TEXT,
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_RATING,
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_FILE,
+			CONVERSATION_MESSAGE_TYPE_EMPLOYEE_METRIC_DELTA,
+			CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_ANNIVERSARY,
+			CONVERSATION_MESSAGE_TYPE_EDITOR_FEEDBACK_REQUEST,
+			CONVERSATION_MESSAGE_TYPE_EDITOR_WORKSHEET_RATING,
+			CONVERSATION_MESSAGE_TYPE_COMPANY_EMPLOYEE_METRIC_STATISTIC,
+			CONVERSATION_MESSAGE_TYPE_EMPLOYEE_ANNIVERSARY,
+			CONVERSATION_MESSAGE_TYPE_EDITOR_EMPLOYEE_METRIC_NOTICE,
+			CONVERSATION_MESSAGE_TYPE_WORK_TIME_AUTO_LOG_NOTICE,
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_MESSAGES_MOVED_NOTIFICATION,
+			CONVERSATION_MESSAGE_TYPE_SYSTEM_BOT_REMIND,
+			CONVERSATION_MESSAGE_TYPE_SHARED_MEMBER,
 		])) {
 			return;
+		}
+
+		// не учитываем в статистике автоматическое соообщение в личный heroes
+		if ($message_type === CONVERSATION_MESSAGE_TYPE_TEXT) {
+
+			$message_text = Type_Conversation_Message_Main::getHandler($last_message)::getText($last_message);
+			if (inHtml(mb_strtolower($message_text), mb_strtolower("время отправлено в личный heroes автоматически"))) {
+				return;
+			}
 		}
 
 		$sender_user_id = Type_Conversation_Message_Main::getHandler($last_message)::getSenderUserId($last_message);
@@ -100,7 +123,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function incConversationReactionAdded(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incConversationReactionAdded(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_CONVERSATION_REACTIONS_ADDED, $user_info);
 	}
@@ -116,7 +139,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function incConversationRemindCreated(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incConversationRemindCreated(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_CONVERSATIONS_REMINDS_CREATED, $user_info);
 	}
@@ -133,7 +156,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	protected static function _send(int $user_id, string $conversation_map, string $action, Short $user_info = null):void {
+	protected static function _send(int $user_id, string $conversation_map, string $action, ?Short $user_info = null):void {
 
 		if ($user_id < 1) {
 			return;

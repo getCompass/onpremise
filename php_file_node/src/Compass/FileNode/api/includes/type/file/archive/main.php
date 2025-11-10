@@ -15,6 +15,16 @@ class Type_File_Archive_Main extends Type_File_Main {
 		"application/x-msdownload",
 		"application/vnd.ms-cab-compressed",
 		"application/x-7z-compressed",
+		"application/zstd",
+		"application/gzip",
+		"application/x-tar",
+		"application/x-xz",
+		"application/x-bzip",
+		"application/x-bzip2",
+		"application/x-brotli",
+		"application/x-lz4",
+		"application/x-lzip",
+		"application/x-cpio",
 	];
 
 	// список расширений
@@ -24,5 +34,21 @@ class Type_File_Archive_Main extends Type_File_Main {
 		"7z",
 		"tar",
 		"gz",
+		"xz",
+		"bz",
+		"bz2",
+		"zst",
+		"lzma",
+		"cab",
+		"br",
+		"lz4",
+		"lz",
+		"cpio",
+		"zipx",
+		"tgz",
+		"tbz",
+		"tbz2",
+		"txz",
+		"tlz4"
 	];
 }

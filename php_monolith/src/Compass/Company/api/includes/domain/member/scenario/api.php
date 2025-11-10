@@ -309,7 +309,7 @@ class Domain_Member_Scenario_Api {
 
 		// формируем массив пользователей для запроса
 		$user_id_list = Domain_Member_Entity_Sanitizer::sanitizeUserList($batch_user_list, $need_user_id_list);
-		$member_list  = Gateway_Bus_CompanyCache::getMemberList($user_id_list, false);
+		$member_list  = Gateway_Bus_CompanyCache::getMemberList($user_id_list);
 
 		$left_user_id_list = [];
 		foreach ($member_list as $member) {

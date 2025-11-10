@@ -90,6 +90,36 @@ class Gateway_Db_PivotCompany_TariffPlanTask extends Gateway_Db_PivotCompany_Mai
 	}
 
 	/**
+	 * Получить одну запись из базы по типу
+	 *
+	 * @param int $company_id
+	 * @param int $type
+	 *
+	 * @return Struct_Db_PivotCompany_TariffPlanTask
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
+	 * @throws \parseException
+	 */
+	public static function getByType(int $company_id, int $type):Struct_Db_PivotCompany_TariffPlanTask {
+
+		// только для тестового сервера, здесь нет индекса!!!
+		assertTestServer();
+
+		$db_key    = self::_getDbKey($company_id);
+		$table_key = self::_getTableKey();
+
+		// нет индекса, используется только для бекдура
+		$query = "SELECT * from `?p` WHERE `space_id` = ?i AND `status` = ?i AND `type` = ?i LIMIT ?i";
+		$row   = ShardingGateway::database($db_key)->getOne($query, $table_key, $company_id, Domain_Space_Entity_Tariff_PlanTask::TASK_STATUS_SUCCESS, $type, 1);
+
+		if (!isset($row["space_id"])) {
+			throw new \BaseFrame\Exception\Gateway\RowNotFoundException("company service task not found");
+		}
+
+		return self::_formatRow($row);
+	}
+
+	/**
 	 * Вставить запись в таблицу
 	 *
 	 * @param Struct_Db_PivotCompany_TariffPlanTask $tariff_plan_task

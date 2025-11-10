@@ -16,7 +16,7 @@ class Domain_EmployeeCard_Action_Exactingness_Add {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \busException
 	 */
-	public static function do(int $user_id, array $user_id_list, int $created_at = null):array {
+	public static function do(int $user_id, array $user_id_list, ?int $created_at = null):array {
 
 		if (is_null($created_at)) {
 			$created_at = time();

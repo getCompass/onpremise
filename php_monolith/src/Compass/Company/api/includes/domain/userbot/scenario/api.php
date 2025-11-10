@@ -30,10 +30,7 @@ class Domain_Userbot_Scenario_Api {
 	 */
 	public static function create(int       $creator_role, int $creator_permissions, string $userbot_name,
 						int|false $avatar_color_id, string|false $avatar_file_key, string|false $short_description,
-						int       $is_react_command, string|false $webhook,
-						int       $is_smart_app, string|false $smart_app_name, string|false $smart_app_url,
-						int|false $is_smart_app_sip, int|false $is_smart_app_mail,
-						int|false $smart_app_default_width, int|false $smart_app_default_height):array {
+						int       $is_react_command, string|false $webhook):array {
 
 		// проверяем имя и описание бота на корректность
 		$userbot_name = Domain_Userbot_Entity_Sanitizer::sanitizeName($userbot_name);
@@ -46,11 +43,6 @@ class Domain_Userbot_Scenario_Api {
 		}
 
 		Domain_Userbot_Entity_Validator::assertCorrectFlagReactCommand($is_react_command);
-		Domain_Userbot_Entity_Validator::assertCorrectFlagSmartApp($is_smart_app);
-		Domain_Userbot_Entity_Validator::assertCorrectFlagSmartApp($is_smart_app_sip);
-		Domain_Userbot_Entity_Validator::assertCorrectFlagSmartApp($is_smart_app_mail);
-		Domain_Userbot_Entity_Validator::assertCorrectSmartAppSideResolution($smart_app_default_width);
-		Domain_Userbot_Entity_Validator::assertCorrectSmartAppSideResolution($smart_app_default_height);
 		Domain_Userbot_Entity_Validator::assertCorrectAvatarColorId($avatar_color_id);
 		Domain_Userbot_Entity_Validator::assertCorrectAvatarFileKey($avatar_file_key);
 
@@ -66,42 +58,12 @@ class Domain_Userbot_Scenario_Api {
 			Domain_Userbot_Entity_Validator::assertCorrectWebhook($webhook);
 		}
 
-		// если включен флаг smart_app, но smart_app_name не передан
-		if ($is_smart_app == 1 && ($smart_app_name === false || isEmptyString($smart_app_name))) {
-			throw new Domain_Userbot_Exception_EmptySmartAppName("smart_app_name is empty");
-		}
-
-		// если включен флаг smart_app, но smart_app_url не передан
-		if ($is_smart_app == 1 && ($smart_app_url === false || isEmptyString($smart_app_url))) {
-			throw new Domain_Userbot_Exception_EmptySmartAppUrl("smart_app_url is empty");
-		}
-
-		// если передан smart_app_name
-		if ($is_smart_app == 1 && $smart_app_name !== false) {
-
-			$smart_app_name = Domain_Userbot_Entity_Sanitizer::sanitizeSmartAppName($smart_app_name);
-			Domain_Userbot_Entity_Validator::assertCorrectSmartAppName($smart_app_name);
-		}
-
-		// если передан smart_app_url
-		if ($is_smart_app == 1 && $smart_app_url !== false) {
-
-			$smart_app_url = Domain_Userbot_Entity_Sanitizer::sanitizeSmartAppUrl($smart_app_url);
-			Domain_Userbot_Entity_Validator::assertCorrectSmartAppUrl($smart_app_url);
-		}
-
 		// проверяем, что пользователь имеет права программиста бота
 		\CompassApp\Domain\Member\Entity\Permission::assertCanManageBots($creator_role, $creator_permissions);
 
-		// проверяем что другого такого имени в команде нет
-		if ($smart_app_name !== false) {
-			Domain_Userbot_Entity_Validator::assertUniqSmartAppName($smart_app_name);
-		}
-
 		// создаём бота
 		[$userbot, $sensitive_data] = Domain_Userbot_Action_Create::do(
-			$userbot_name, $short_description, $avatar_color_id, $avatar_file_key, $is_react_command, $webhook,
-			$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height
+			$userbot_name, $short_description, $avatar_color_id, $avatar_file_key, $is_react_command, $webhook
 		);
 
 		return [$userbot, $sensitive_data];
@@ -155,8 +117,6 @@ class Domain_Userbot_Scenario_Api {
 	 * @param int|false    $avatar_color_id
 	 * @param int|false    $is_react_command
 	 * @param string|false $webhook
-	 * @param int|false    $is_smart_app
-	 * @param string|false $smart_app_url
 	 *
 	 * @return int
 	 * @throws \blockException
@@ -176,15 +136,11 @@ class Domain_Userbot_Scenario_Api {
 	 */
 	public static function edit(int          $developer_user_id, int $developer_role, int $developer_permissions, string $userbot_id,
 					    string|false $userbot_name, string|false $short_description, int|false $avatar_color_id, string|false $avatar_file_key,
-					    int|false    $is_react_command, string|false $webhook,
-					    int|false    $is_smart_app, string|false $smart_app_name, string|false $smart_app_url,
-					    int|false    $is_smart_app_sip, int|false $is_smart_app_mail,
-					    int|false    $smart_app_default_width, int|false $smart_app_default_height):int {
+					    int|false    $is_react_command, string|false $webhook):int {
 
 		// валидируем параметры для бота
-		[$userbot_name, $short_description, $webhook, $smart_app_name, $smart_app_url] = Domain_Userbot_Action_ValidateParamsOnEdit::do(
-			$userbot_name, $short_description, $avatar_color_id, $avatar_file_key, $is_react_command, $webhook,
-			$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height
+		[$userbot_name, $short_description, $webhook] = Domain_Userbot_Action_ValidateParamsOnEdit::do(
+			$userbot_name, $short_description, $avatar_color_id, $avatar_file_key, $is_react_command, $webhook
 		);
 
 		// проверяем, что пользователь администратор ботов
@@ -203,15 +159,8 @@ class Domain_Userbot_Scenario_Api {
 			throw new Domain_Userbot_Exception_DeletedStatus("userbot is not enabled");
 		}
 
-		// проверяем что другого такого имени в команде нет
-		if ($smart_app_name !== false) {
-			Domain_Userbot_Entity_Validator::assertUniqSmartAppName($smart_app_name);
-		}
-
 		// редактируем бота
-		Domain_Userbot_Action_Edit::do($userbot, $userbot_name, $short_description, $avatar_color_id, $avatar_file_key, $is_react_command, $webhook,
-			$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height
-		);
+		Domain_Userbot_Action_Edit::do($userbot, $userbot_name, $short_description, $avatar_color_id, $avatar_file_key, $is_react_command, $webhook);
 
 		return $userbot->user_id;
 	}
@@ -286,24 +235,6 @@ class Domain_Userbot_Scenario_Api {
 		$webhook              = Domain_Userbot_Entity_Userbot::getWebhook($userbot->extra);
 		$avatar_color_id      = Domain_Userbot_Entity_Userbot::getAvatarColorId($userbot->extra);
 		$avatar_file_key      = Domain_Userbot_Entity_Userbot::getAvatarFileKey($userbot->extra);
-		$smart_app_public_key = Domain_Userbot_Entity_Userbot::getSmartAppPublicKey($userbot->extra);
-
-		// миграция для заливки, чтобы не было пустых ключей
-		// сработает 1 раз для каждого бота
-		if ($smart_app_public_key === "") {
-
-			// генерируем новые ключи
-			[$smart_app_public_key, $smart_app_private_key] = Domain_SmartApp_Action_GenerateSmartAppKeys::do();
-
-			// обновляем в таблице с ботами
-			$userbot->extra = Domain_Userbot_Entity_Userbot::setSmartAppPublicKey($userbot->extra, $smart_app_public_key);
-			$userbot->extra = Domain_Userbot_Entity_Userbot::setSmartAppPrivateKey($userbot->extra, $smart_app_private_key);
-			$set            = [
-				"updated_at" => time(),
-				"extra"      => $userbot->extra,
-			];
-			Gateway_Db_CompanyData_UserbotList::set($userbot_id, $set);
-		}
 
 		return new Struct_Domain_Userbot_SensitiveData(
 			$token,
@@ -312,8 +243,7 @@ class Domain_Userbot_Scenario_Api {
 			$webhook,
 			$group_info_list,
 			$avatar_color_id,
-			$avatar_file_key,
-			$smart_app_public_key
+			$avatar_file_key
 		);
 	}
 
@@ -462,51 +392,6 @@ class Domain_Userbot_Scenario_Api {
 		Gateway_Db_CompanyData_UserbotList::set($userbot_id, $set);
 
 		return $token;
-	}
-
-	/**
-	 * обновляем приватный и публичный ключи smart app
-	 *
-	 * @throws \blockException
-	 * @throws Domain_Userbot_Exception_DeletedStatus
-	 * @throws Domain_Userbot_Exception_DisabledStatus
-	 * @throws Domain_Userbot_Exception_UserbotNotFound
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
-	 * @throws \CompassApp\Domain\Member\Exception\ActionNotAllowed
-	 * @throws \blockException
-	 * @throws \parseException
-	 */
-	public static function refreshSmartAppKeys(int $developer_user_id, int $developer_role, int $developer_permissions, string $userbot_id):string {
-
-		// проверяем права нашего пользователя
-		\CompassApp\Domain\Member\Entity\Permission::assertCanManageBots($developer_role, $developer_permissions);
-
-		// достаём инфу по боту, проверяем, что есть такой бот
-		[$userbot, $_] = Domain_Userbot_Action_Get::do($userbot_id, $developer_user_id);
-
-		// если бот отключён
-		if ($userbot->status_alias == Domain_Userbot_Entity_Userbot::STATUS_DISABLE) {
-			throw new Domain_Userbot_Exception_DisabledStatus("userbot is not enabled");
-		}
-
-		// если бот удалён
-		if ($userbot->status_alias == Domain_Userbot_Entity_Userbot::STATUS_DELETE) {
-			throw new Domain_Userbot_Exception_DeletedStatus("userbot is not enabled");
-		}
-
-		[$smart_app_public_key, $smart_app_private_key] = Domain_SmartApp_Action_GenerateSmartAppKeys::do();
-
-		// обновляем в таблице с ботами
-		$userbot->extra = Domain_Userbot_Entity_Userbot::setSmartAppPublicKey($userbot->extra, $smart_app_public_key);
-		$userbot->extra = Domain_Userbot_Entity_Userbot::setSmartAppPrivateKey($userbot->extra, $smart_app_private_key);
-		$set            = [
-			"extra"      => $userbot->extra,
-			"updated_at" => time(),
-		];
-		Gateway_Db_CompanyData_UserbotList::set($userbot_id, $set);
-
-		return $smart_app_public_key;
 	}
 
 	/**

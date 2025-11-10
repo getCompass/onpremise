@@ -28,7 +28,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function incThreadCreated(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incThreadCreated(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_THREADS_CREATED, $user_info);
 	}
@@ -44,7 +44,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function incThreadRead(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incThreadRead(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_THREADS_READ, $user_info);
 	}
@@ -61,7 +61,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws ParseFatalException
 	 * @throws \parseException
 	 */
-	public static function incMessageSent(string $conversation_map, array $message_list, Short $user_info = null):void {
+	public static function incMessageSent(string $conversation_map, array $message_list, ?Short $user_info = null):void {
 
 		if (count($message_list) < 1) {
 			return;
@@ -74,6 +74,8 @@ class Domain_User_Action_IncActionCount {
 			THREAD_MESSAGE_TYPE_DELETED,
 			THREAD_MESSAGE_TYPE_SYSTEM,
 			THREAD_MESSAGE_TYPE_CONVERSATION_CALL,
+			THREAD_MESSAGE_TYPE_CONVERSATION_MEDIA_CONFERENCE,
+			THREAD_MESSAGE_TYPE_SYSTEM_BOT_REMIND,
 		])) {
 			return;
 		}
@@ -93,7 +95,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function incThreadReactionAdded(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incThreadReactionAdded(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_THREAD_REACTIONS_ADDED, $user_info);
 	}
@@ -109,7 +111,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	public static function incThreadRemindCreated(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incThreadRemindCreated(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_THREAD_REMINDS_CREATED, $user_info);
 	}
@@ -126,7 +128,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 */
-	protected static function _send(int $user_id, string $conversation_map, string $action, Short $user_info = null):void {
+	protected static function _send(int $user_id, string $conversation_map, string $action, ?Short $user_info = null):void {
 
 		if ($user_id < 1) {
 			return;

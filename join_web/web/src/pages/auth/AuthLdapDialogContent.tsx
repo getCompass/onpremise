@@ -4,31 +4,60 @@ import { Button } from "../../components/button.tsx";
 import { Text } from "../../components/text.tsx";
 import { useLangString } from "../../lib/getLangString.ts";
 import useIsMobile from "../../lib/useIsMobile.ts";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KeyIcon80 } from "../../components/KeyIcon80.tsx";
 import PasswordInput from "../../components/PasswordInput.tsx";
-import { useApiFederationLdapAuthTryAuthenticate, useApiPivotAuthLdapBegin } from "../../api/auth/ldap.ts";
-import { ApiError, NetworkError, ServerError } from "../../api/_index.ts";
-import { useAtom, useAtomValue } from "jotai/index";
-import { activeDialogIdState, dictionaryDataState, prepareJoinLinkErrorState } from "../../api/_stores.ts";
+import { useApiFederationLdapAuthGetToken, useApiPivotAuthLdapBegin } from "../../api/auth/ldap.ts";
+import { ApiCommand, ApiError, NetworkError, ServerError } from "../../api/_index.ts";
+import { useAtom, useAtomValue, useSetAtom } from "jotai/index";
+import {
+	activeDialogIdState,
+	dictionaryDataState,
+	isLdapChangeMailState,
+	prepareJoinLinkErrorState
+} from "../../api/_stores.ts";
 import { useShowToast } from "../../lib/Toast.tsx";
 import {
 	ALREADY_MEMBER_ERROR_CODE,
+	API_COMMAND_TYPE_NEED_CONFIRM_LDAP_MAIL,
 	INACTIVE_LINK_ERROR_CODE,
 	INCORRECT_LINK_ERROR_CODE,
-	LIMIT_ERROR_CODE, SSO_PROTOCOL_OIDC,
+	LIMIT_ERROR_CODE,
+	SSO_PROTOCOL_OIDC,
 } from "../../api/_types.ts";
 import dayjs from "dayjs";
 import { plural } from "../../lib/plural.ts";
 import Preloader16 from "../../components/Preloader16.tsx";
 import { useNavigateDialog } from "../../components/hooks.ts";
+import useLdap2FaStage from "../../lib/useLdap2FaStage.ts";
 
-const AuthLdapDialogContentDesktop = () => {
-	const langStringErrorsNetworkError = useLangString("errors.network_error");
-	const langStringErrorsServerError = useLangString("errors.server_error");
-	const langStringOneMinute = useLangString("one_minute");
-	const langStringTwoMinutes = useLangString("two_minutes");
-	const langStringFiveMinutes = useLangString("five_minutes");
+type AuthLdapDialogContentProps = {
+	onLoginClickHandler: () => void
+	usernameInputRef: RefObject<HTMLInputElement>
+	passwordInputRef: RefObject<HTMLInputElement>
+	apiIsLoading: boolean
+	isLoading: boolean
+	isError: boolean
+	setIsError: (value: boolean) => void
+	username: string
+	setUsername: (value: string) => void
+	password: string
+	setPassword: (value: string) => void
+}
+
+const AuthLdapDialogContentDesktop = ({
+	onLoginClickHandler,
+	usernameInputRef,
+	passwordInputRef,
+	apiIsLoading,
+	isLoading,
+	isError,
+	setIsError,
+	username,
+	setUsername,
+	password,
+	setPassword
+}: AuthLdapDialogContentProps) => {
 	const langStringLdapLoginDialogTitle = useLangString("ldap_login_dialog.title");
 	const langStringLdapLoginDialogUsernameInputPlaceholder = useLangString(
 		"ldap_login_dialog.username_input_placeholder"
@@ -37,264 +66,39 @@ const AuthLdapDialogContentDesktop = () => {
 		"ldap_login_dialog.password_input_placeholder"
 	);
 	const langStringLdapLoginDialogLoginButton = useLangString("ldap_login_dialog.login_button");
-	const langStringLdapLoginDialogIncorrectCredentialsError = useLangString(
-		"ldap_login_dialog.incorrect_credentials_error"
-	);
-	const langStringLdapLoginDialogAuthBlocked = useLangString("ldap_login_dialog.auth_blocked");
-	const langStringLdapLoginDialogUnknownError = useLangString("ldap_login_dialog.unknown_error");
-	const langStringLdapLoginDialogIncorrectConfigUserSearchFilter = useLangString("ldap_login_dialog.incorrect_config_user_search_filter");
-	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
-	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
-	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
 
 	const ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
 
-	const apiFederationLdapAuthTryAuthenticate = useApiFederationLdapAuthTryAuthenticate();
-	const apiPivotAuthLdapBegin = useApiPivotAuthLdapBegin();
-
-	const activeDialogId = useAtomValue(activeDialogIdState);
-	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
-
-	const usernameInputRef = useRef<HTMLInputElement>(null);
-	const passwordInputRef = useRef<HTMLInputElement>(null);
-
-	const [username, setUsername] = useState("");
-	const [password, setPassword] = useState("");
-	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-	const [isError, setIsError] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-
-	const showToast = useShowToast(activeDialogId);
-
-	const onLoginClickHandler = useCallback(async () => {
-		if (username.length < 1 || password.length < 1) {
-			return;
-		}
-
-		if (apiFederationLdapAuthTryAuthenticate.isLoading || apiPivotAuthLdapBegin.isLoading) {
-			return;
-		}
-
-		try {
-			setIsLoading(true);
-			const federationLdapAuthTryAuthenticateResponse = await apiFederationLdapAuthTryAuthenticate.mutateAsync({
-				username: username,
-				password: password,
-			});
-
-			await apiPivotAuthLdapBegin.mutateAsync({
-				ldap_auth_token: federationLdapAuthTryAuthenticateResponse.ldap_auth_token,
-				join_link:
-					prepareJoinLinkError === null || prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
-						? window.location.href
-						: undefined,
-			});
-			setIsLoading(false);
-		} catch (error) {
-			if (error instanceof NetworkError) {
-				showToast(langStringErrorsNetworkError, "warning");
-				setIsLoading(false);
-				setIsError(true);
-				return;
-			}
-
-			if (error instanceof ServerError) {
-				showToast(langStringErrorsServerError, "warning");
-				setIsLoading(false);
-				setIsError(true);
-				return;
-			}
-
-			if (error instanceof ApiError) {
-				if (error.error_code === 1708001) {
-					showToast(langStringLdapLoginDialogIncorrectCredentialsError, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1708002) {
-					showToast(langStringLdapLoginDialogUnknownError, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1708003) {
-					showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === LIMIT_ERROR_CODE) {
-					showToast(
-						langStringLdapLoginDialogAuthBlocked.replace(
-							"$MINUTES",
-							`${Math.ceil((error.expires_at - dayjs().unix()) / 60)}${plural(
-								Math.ceil((error.expires_at - dayjs().unix()) / 60),
-								langStringOneMinute,
-								langStringTwoMinutes,
-								langStringFiveMinutes
-							)}`
-						),
-						"warning"
-					);
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1708118) {
-					showToast(langStringErrorsAuthLdapMethodDisabled, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1000) {
-					showToast(langStringErrorsLdapRegistrationWithoutInvite, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-
-				if (error.error_code === 1708120) {
-					showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-
-				if (error.error_code === INCORRECT_LINK_ERROR_CODE || error.error_code === INACTIVE_LINK_ERROR_CODE) {
-					setPrepareJoinLinkError({ error_code: error.error_code });
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-
-				// если сказали что уже участник этой компании - то логиним без передачи joinLink
-				if (error.error_code === ALREADY_MEMBER_ERROR_CODE) {
-					try {
-						const federationLdapAuthTryAuthenticateResponse =
-							await apiFederationLdapAuthTryAuthenticate.mutateAsync({
-								username: username,
-								password: password,
-							});
-
-						await apiPivotAuthLdapBegin.mutateAsync({
-							ldap_auth_token: federationLdapAuthTryAuthenticateResponse.ldap_auth_token,
-						});
-					} catch (error) {
-						if (error instanceof NetworkError) {
-							showToast(langStringErrorsNetworkError, "warning");
-							setIsLoading(false);
-							setIsError(true);
-							return;
-						}
-
-						if (error instanceof ServerError) {
-							showToast(langStringErrorsServerError, "warning");
-							setIsLoading(false);
-							setIsError(true);
-							return;
-						}
-
-						if (error instanceof ApiError) {
-							if (error.error_code === 1708001) {
-								showToast(langStringLdapLoginDialogIncorrectCredentialsError, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1708002) {
-								showToast(langStringLdapLoginDialogUnknownError, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1708003) {
-								showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === LIMIT_ERROR_CODE) {
-								showToast(
-									langStringLdapLoginDialogAuthBlocked.replace(
-										"$MINUTES",
-										`${Math.ceil((error.expires_at - dayjs().unix()) / 60)}${plural(
-											Math.ceil((error.expires_at - dayjs().unix()) / 60),
-											langStringOneMinute,
-											langStringTwoMinutes,
-											langStringFiveMinutes
-										)}`
-									),
-									"warning"
-								);
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1708118) {
-								showToast(langStringErrorsAuthLdapMethodDisabled, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1000) {
-								showToast(langStringErrorsLdapRegistrationWithoutInvite, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1708120) {
-								showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-
-							if (
-								error.error_code === INCORRECT_LINK_ERROR_CODE ||
-								error.error_code === INACTIVE_LINK_ERROR_CODE
-							) {
-								setPrepareJoinLinkError({ error_code: error.error_code });
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-						}
-						setIsLoading(false);
-					}
-				}
-			}
-			setIsLoading(false);
-		}
-	}, [username, password]);
+	const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
 
 	return (
-		<VStack w="100%" gap="0px">
-			<VStack gap="0px" mt="20px" minW="100%">
+		<VStack w = "100%" gap = "0px">
+			<VStack gap = "0px" mt = "20px" minW = "100%">
 				<KeyIcon80 />
-				<Text mt="16px" style="lato_18_24_900" ls="-02">
+				<Text mt = "16px" style = "lato_18_24_900" ls = "-02">
 					{langStringLdapLoginDialogTitle}
 				</Text>
-				<Text mt="6px" textAlign="center" style="lato_14_20_400" ls="-015" maxW="328px" overflow="wrapEllipsis">
+				<Text mt = "6px" textAlign = "center" style = "lato_14_20_400" ls = "-015" maxW = "328px"
+					  overflow = "wrapEllipsis">
 					{ssoLdapLoginDialogDesc}
 				</Text>
 				<Input
-					disabled={apiFederationLdapAuthTryAuthenticate.isLoading || apiPivotAuthLdapBegin.isLoading}
-					ref={usernameInputRef}
-					tabIndex={1}
-					mt="20px"
-					type="search"
-					autoFocus={true}
-					autoComplete="nope"
-					value={username}
-					onChange={(changeEvent) => {
+					disabled = {apiIsLoading}
+					ref = {usernameInputRef}
+					tabIndex = {1}
+					mt = "20px"
+					type = "search"
+					autoFocus = {true}
+					autoComplete = "nope"
+					value = {username}
+					onChange = {(changeEvent) => {
 						setUsername(changeEvent.target.value ?? "");
 						setIsError(false);
 					}}
-					autoCapitalize="none"
-					placeholder={langStringLdapLoginDialogUsernameInputPlaceholder}
-					size="default_desktop"
-					onKeyDown={(event: React.KeyboardEvent) => {
+					autoCapitalize = "none"
+					placeholder = {langStringLdapLoginDialogUsernameInputPlaceholder}
+					size = "default_desktop"
+					onKeyDown = {(event: React.KeyboardEvent) => {
 						if (event.key === "Enter") {
 							if (password.length < 1 && passwordInputRef.current !== null) {
 								passwordInputRef.current.focus();
@@ -303,44 +107,44 @@ const AuthLdapDialogContentDesktop = () => {
 							onLoginClickHandler();
 						}
 					}}
-					input={isError ? "error_default" : "default"}
+					input = {isError ? "error_default" : "default"}
 				/>
 				<PasswordInput
-					isDisabled={apiFederationLdapAuthTryAuthenticate.isLoading || apiPivotAuthLdapBegin.isLoading}
-					mt="8px"
-					autoFocus={false}
-					password={password}
-					setPassword={setPassword}
-					inputPlaceholder={langStringLdapLoginDialogPasswordInputPlaceholder}
-					isToolTipVisible={false}
-					setIsToolTipVisible={() => null}
-					isNeedShowTooltip={false}
-					setIsNeedShowTooltip={() => null}
-					isError={isError}
-					setIsError={setIsError}
-					onEnterClick={() => {
+					isDisabled = {apiIsLoading}
+					mt = "8px"
+					autoFocus = {false}
+					password = {password}
+					setPassword = {setPassword}
+					inputPlaceholder = {langStringLdapLoginDialogPasswordInputPlaceholder}
+					isToolTipVisible = {false}
+					setIsToolTipVisible = {() => null}
+					isNeedShowTooltip = {false}
+					setIsNeedShowTooltip = {() => null}
+					isError = {isError}
+					setIsError = {setIsError}
+					onEnterClick = {() => {
 						if (username.length < 1 && usernameInputRef.current !== null) {
 							usernameInputRef.current.focus();
 							return;
 						}
 						onLoginClickHandler();
 					}}
-					inputRef={passwordInputRef}
-					isPasswordVisible={isPasswordVisible}
-					setIsPasswordVisible={setIsPasswordVisible}
-					maxLength={9999}
-					inputTabIndex={2}
+					inputRef = {passwordInputRef}
+					isPasswordVisible = {isPasswordVisible}
+					setIsPasswordVisible = {setIsPasswordVisible}
+					maxLength = {9999}
+					inputTabIndex = {2}
 				/>
 				<Button
-					mt="12px"
-					size="px12py6full"
-					textSize="lato_15_23_600"
-					rounded="6px"
-					disabled={username.length < 1 || password.length < 1}
-					onClick={() => onLoginClickHandler()}
+					mt = "12px"
+					size = "px12py6full"
+					textSize = "lato_15_23_600"
+					rounded = "6px"
+					disabled = {username.length < 1 || password.length < 1}
+					onClick = {() => onLoginClickHandler()}
 				>
 					{isLoading ? (
-						<Box py="3.5px">
+						<Box py = "3.5px">
 							<Preloader16 />
 						</Box>
 					) : (
@@ -352,12 +156,19 @@ const AuthLdapDialogContentDesktop = () => {
 	);
 };
 
-const AuthLdapDialogContentMobile = () => {
-	const langStringErrorsNetworkError = useLangString("errors.network_error");
-	const langStringErrorsServerError = useLangString("errors.server_error");
-	const langStringOneMinute = useLangString("one_minute");
-	const langStringTwoMinutes = useLangString("two_minutes");
-	const langStringFiveMinutes = useLangString("five_minutes");
+const AuthLdapDialogContentMobile = ({
+	onLoginClickHandler,
+	usernameInputRef,
+	passwordInputRef,
+	apiIsLoading,
+	isLoading,
+	isError,
+	setIsError,
+	username,
+	setUsername,
+	password,
+	setPassword
+}: AuthLdapDialogContentProps) => {
 	const langStringLdapLoginDialogTitle = useLangString("ldap_login_dialog.title");
 	const langStringLdapLoginDialogUsernameInputPlaceholder = useLangString(
 		"ldap_login_dialog.username_input_placeholder"
@@ -367,284 +178,58 @@ const AuthLdapDialogContentMobile = () => {
 	);
 	const langStringLdapLoginDialogBackButton = useLangString("ldap_login_dialog.back_button");
 	const langStringLdapLoginDialogLoginButton = useLangString("ldap_login_dialog.login_button");
-	const langStringLdapLoginDialogIncorrectCredentialsError = useLangString(
-		"ldap_login_dialog.incorrect_credentials_error"
-	);
-	const langStringLdapLoginDialogAuthBlocked = useLangString("ldap_login_dialog.auth_blocked");
-	const langStringLdapLoginDialogUnknownError = useLangString("ldap_login_dialog.unknown_error");
-	const langStringLdapLoginDialogIncorrectConfigUserSearchFilter = useLangString("ldap_login_dialog.incorrect_config_user_search_filter");
-	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
-	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
-	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
 
 	const ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
 
 	const { navigateToDialog } = useNavigateDialog();
 
-	const apiFederationLdapAuthTryAuthenticate = useApiFederationLdapAuthTryAuthenticate();
-	const apiPivotAuthLdapBegin = useApiPivotAuthLdapBegin();
+	const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
 
-	const activeDialogId = useAtomValue(activeDialogIdState);
-	const [prepareJoinLinkError, setPrepareJoinLinkError] = useAtom(prepareJoinLinkErrorState);
-
-	const usernameInputRef = useRef<HTMLInputElement>(null);
-	const passwordInputRef = useRef<HTMLInputElement>(null);
-
-	const [username, setUsername] = useState("");
-	const [password, setPassword] = useState("");
-	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-	const [isError, setIsError] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-
-	const screenWidth = useMemo(() => document.body.clientWidth, [document.body.clientWidth]);
-
-	const showToast = useShowToast(activeDialogId);
-
-	const onLoginClickHandler = useCallback(async () => {
-		if (username.length < 1 || password.length < 1) {
-			return;
-		}
-
-		if (apiFederationLdapAuthTryAuthenticate.isLoading || apiPivotAuthLdapBegin.isLoading) {
-			return;
-		}
-
-		try {
-			setIsLoading(true);
-			const federationLdapAuthTryAuthenticateResponse = await apiFederationLdapAuthTryAuthenticate.mutateAsync({
-				username: username,
-				password: password,
-			});
-
-			await apiPivotAuthLdapBegin.mutateAsync({
-				ldap_auth_token: federationLdapAuthTryAuthenticateResponse.ldap_auth_token,
-				join_link:
-					prepareJoinLinkError === null || prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
-						? window.location.href
-						: undefined,
-			});
-			setIsLoading(false);
-		} catch (error) {
-			if (error instanceof NetworkError) {
-				showToast(langStringErrorsNetworkError, "warning");
-				setIsLoading(false);
-				setIsError(true);
-				return;
-			}
-
-			if (error instanceof ServerError) {
-				showToast(langStringErrorsServerError, "warning");
-				setIsLoading(false);
-				setIsError(true);
-				return;
-			}
-
-			if (error instanceof ApiError) {
-				if (error.error_code === 1708001) {
-					showToast(langStringLdapLoginDialogIncorrectCredentialsError, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1708002) {
-					showToast(langStringLdapLoginDialogUnknownError, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1708003) {
-					showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === LIMIT_ERROR_CODE) {
-					showToast(
-						langStringLdapLoginDialogAuthBlocked.replace(
-							"$MINUTES",
-							`${Math.ceil((error.expires_at - dayjs().unix()) / 60)}${plural(
-								Math.ceil((error.expires_at - dayjs().unix()) / 60),
-								langStringOneMinute,
-								langStringTwoMinutes,
-								langStringFiveMinutes
-							)}`
-						),
-						"warning"
-					);
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1708118) {
-					showToast(langStringErrorsAuthLdapMethodDisabled, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1708120) {
-					showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-				if (error.error_code === 1000) {
-					showToast(langStringErrorsLdapRegistrationWithoutInvite, "warning");
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-
-				if (error.error_code === INCORRECT_LINK_ERROR_CODE || error.error_code === INACTIVE_LINK_ERROR_CODE) {
-					setPrepareJoinLinkError({ error_code: error.error_code });
-					setIsLoading(false);
-					setIsError(true);
-					return;
-				}
-
-				// если сказали что уже участник этой компании - то логиним без передачи joinLink
-				if (error.error_code === ALREADY_MEMBER_ERROR_CODE) {
-					try {
-						const federationLdapAuthTryAuthenticateResponse =
-							await apiFederationLdapAuthTryAuthenticate.mutateAsync({
-								username: username,
-								password: password,
-							});
-
-						await apiPivotAuthLdapBegin.mutateAsync({
-							ldap_auth_token: federationLdapAuthTryAuthenticateResponse.ldap_auth_token,
-						});
-					} catch (error) {
-						if (error instanceof NetworkError) {
-							showToast(langStringErrorsNetworkError, "warning");
-							setIsLoading(false);
-							setIsError(true);
-							return;
-						}
-
-						if (error instanceof ServerError) {
-							showToast(langStringErrorsServerError, "warning");
-							setIsLoading(false);
-							setIsError(true);
-							return;
-						}
-
-						if (error instanceof ApiError) {
-							if (error.error_code === 1708001) {
-								showToast(langStringLdapLoginDialogIncorrectCredentialsError, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1708002) {
-								showToast(langStringLdapLoginDialogUnknownError, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1708003) {
-								showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === LIMIT_ERROR_CODE) {
-								showToast(
-									langStringLdapLoginDialogAuthBlocked.replace(
-										"$MINUTES",
-										`${Math.ceil((error.expires_at - dayjs().unix()) / 60)}${plural(
-											Math.ceil((error.expires_at - dayjs().unix()) / 60),
-											langStringOneMinute,
-											langStringTwoMinutes,
-											langStringFiveMinutes
-										)}`
-									),
-									"warning"
-								);
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1708118) {
-								showToast(langStringErrorsAuthLdapMethodDisabled, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-							if (error.error_code === 1000) {
-								showToast(langStringErrorsLdapRegistrationWithoutInvite, "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-
-							if (error.error_code === 1708120) {
-								showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-
-							if (
-								error.error_code === INCORRECT_LINK_ERROR_CODE ||
-								error.error_code === INACTIVE_LINK_ERROR_CODE
-							) {
-								setPrepareJoinLinkError({ error_code: error.error_code });
-								setIsLoading(false);
-								setIsError(true);
-								return;
-							}
-						}
-						setIsLoading(false);
-					}
-				}
-			}
-			setIsLoading(false);
-		}
-	}, [username, password]);
+	const screenWidth = useMemo(() => document.body.clientWidth, [ document.body.clientWidth ]);
 
 	return (
-		<VStack w="100%" gap="0px">
-			<Box w="100%">
+		<VStack w = "100%" gap = "0px">
+			<Box w = "100%">
 				<Button
-					color="2574a9"
-					textSize="lato_16_22_400"
-					size="px0py0"
-					onClick={() => navigateToDialog("auth_email_phone_number")}
-					disabled={isLoading}
+					color = "2574a9"
+					textSize = "lato_16_22_400"
+					size = "px0py0"
+					onClick = {() => navigateToDialog("auth_email_phone_number")}
+					disabled = {isLoading}
 				>
 					{langStringLdapLoginDialogBackButton}
 				</Button>
 			</Box>
-			<VStack gap="0px" mt="-6px" minW="100%">
+			<VStack gap = "0px" mt = "-6px" minW = "100%">
 				<KeyIcon80 />
-				<Text mt="16px" style="lato_20_28_700" ls="-03">
+				<Text mt = "16px" style = "lato_20_28_700" ls = "-03">
 					{langStringLdapLoginDialogTitle}
 				</Text>
 				<Text
-					mt="4px"
-					textAlign="center"
-					style="lato_16_22_400"
-					maxW={screenWidth <= 390 ? "326px" : "350px"}
-					overflow="wrapEllipsis"
+					mt = "4px"
+					textAlign = "center"
+					style = "lato_16_22_400"
+					maxW = {screenWidth <= 390 ? "326px" : "350px"}
+					overflow = "wrapEllipsis"
 				>
 					{ssoLdapLoginDialogDesc}
 				</Text>
 				<Input
-					disabled={apiFederationLdapAuthTryAuthenticate.isLoading || apiPivotAuthLdapBegin.isLoading}
-					ref={usernameInputRef}
-					mt="24px"
-					type="search"
-					autoFocus={true}
-					autoComplete="nope"
-					value={username}
-					onChange={(changeEvent) => {
+					disabled = {apiIsLoading}
+					ref = {usernameInputRef}
+					mt = "24px"
+					type = "search"
+					autoFocus = {true}
+					autoComplete = "nope"
+					value = {username}
+					onChange = {(changeEvent) => {
 						setUsername(changeEvent.target.value ?? "");
 						setIsError(false);
 					}}
-					autoCapitalize="none"
-					placeholder={langStringLdapLoginDialogUsernameInputPlaceholder}
-					size="px12py10w100"
-					onKeyDown={(event: React.KeyboardEvent) => {
+					autoCapitalize = "none"
+					placeholder = {langStringLdapLoginDialogUsernameInputPlaceholder}
+					size = "px12py10w100"
+					onKeyDown = {(event: React.KeyboardEvent) => {
 						if (event.key === "Enter") {
 							if (password.length < 1 && passwordInputRef.current !== null) {
 								passwordInputRef.current.focus();
@@ -653,42 +238,42 @@ const AuthLdapDialogContentMobile = () => {
 							onLoginClickHandler();
 						}
 					}}
-					input={isError ? "error_default" : "default"}
+					input = {isError ? "error_default" : "default"}
 				/>
 				<PasswordInput
-					isDisabled={apiFederationLdapAuthTryAuthenticate.isLoading || apiPivotAuthLdapBegin.isLoading}
-					mt="8px"
-					autoFocus={false}
-					password={password}
-					setPassword={setPassword}
-					inputPlaceholder={langStringLdapLoginDialogPasswordInputPlaceholder}
-					isToolTipVisible={false}
-					setIsToolTipVisible={() => null}
-					isNeedShowTooltip={false}
-					setIsNeedShowTooltip={() => null}
-					isError={isError}
-					setIsError={setIsError}
-					onEnterClick={() => {
+					isDisabled = {apiIsLoading}
+					mt = "8px"
+					autoFocus = {false}
+					password = {password}
+					setPassword = {setPassword}
+					inputPlaceholder = {langStringLdapLoginDialogPasswordInputPlaceholder}
+					isToolTipVisible = {false}
+					setIsToolTipVisible = {() => null}
+					isNeedShowTooltip = {false}
+					setIsNeedShowTooltip = {() => null}
+					isError = {isError}
+					setIsError = {setIsError}
+					onEnterClick = {() => {
 						if (username.length < 1 && usernameInputRef.current !== null) {
 							usernameInputRef.current.focus();
 							return;
 						}
 						onLoginClickHandler();
 					}}
-					inputRef={passwordInputRef}
-					isPasswordVisible={isPasswordVisible}
-					setIsPasswordVisible={setIsPasswordVisible}
-					maxLength={9999}
+					inputRef = {passwordInputRef}
+					isPasswordVisible = {isPasswordVisible}
+					setIsPasswordVisible = {setIsPasswordVisible}
+					maxLength = {9999}
 				/>
 				<Button
-					mt="12px"
-					size="px16py9full"
-					textSize="lato_17_26_600"
-					disabled={username.length < 1 || password.length < 1}
-					onClick={() => onLoginClickHandler()}
+					mt = "12px"
+					size = "px16py9full"
+					textSize = "lato_17_26_600"
+					disabled = {username.length < 1 || password.length < 1}
+					onClick = {() => onLoginClickHandler()}
 				>
 					{isLoading ? (
-						<Box py="5px">
+						<Box py = "5px">
 							<Preloader16 />
 						</Box>
 					) : (
@@ -703,11 +288,248 @@ const AuthLdapDialogContentMobile = () => {
 const AuthLdapDialogContent = () => {
 	const isMobile = useIsMobile();
 
+	const langStringErrorsNetworkError = useLangString("errors.network_error");
+	const langStringErrorsServerError = useLangString("errors.server_error");
+	const langStringOneMinute = useLangString("one_minute");
+	const langStringTwoMinutes = useLangString("two_minutes");
+	const langStringFiveMinutes = useLangString("five_minutes");
+	const langStringLdapLoginDialogIncorrectCredentialsError = useLangString(
+		"ldap_login_dialog.incorrect_credentials_error"
+	);
+	const langStringLdapLoginDialogAuthBlocked = useLangString("ldap_login_dialog.auth_blocked");
+	const langStringLdapLoginDialogUnknownError = useLangString("ldap_login_dialog.unknown_error");
+	const langStringLdapLoginDialogIncorrectConfigUserSearchFilter = useLangString("ldap_login_dialog.incorrect_config_user_search_filter");
+	const langStringLdapLoginDialogIncorrect2FaMailConfigAttribute = useLangString("ldap_login_dialog.incorrect_2fa_mail_config_attribute");
+	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
+	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
+	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
+
+	const apiFederationLdapAuthGetToken = useApiFederationLdapAuthGetToken();
+	const apiPivotAuthLdapBegin = useApiPivotAuthLdapBegin();
+
+	const activeDialogId = useAtomValue(activeDialogIdState);
+	const setIsLdapChangeMail = useSetAtom(isLdapChangeMailState);
+	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
+	const { navigateByStage } = useLdap2FaStage();
+
+	const usernameInputRef = useRef<HTMLInputElement>(null);
+	const passwordInputRef = useRef<HTMLInputElement>(null);
+
+	const [ username, setUsername ] = useState("");
+	const [ password, setPassword ] = useState("");
+	const [ isError, setIsError ] = useState(false);
+	const [ isLoading, setIsLoading ] = useState(false);
+
+	const showToast = useShowToast(activeDialogId);
+
+	useEffect(() => setIsLdapChangeMail(false), []);
+
+	const onLoginClickHandler = useCallback(async () => {
+		if (username.length < 1 || password.length < 1) {
+			return;
+		}
+
+		if (apiFederationLdapAuthGetToken.isLoading || apiPivotAuthLdapBegin.isLoading) {
+			return;
+		}
+
+		try {
+			setIsLoading(true);
+			const federationLdapAuthGetTokenResponse = await apiFederationLdapAuthGetToken.mutateAsync({
+				username: username,
+				password: password,
+			});
+
+			await apiPivotAuthLdapBegin.mutateAsync({
+				ldap_auth_token: federationLdapAuthGetTokenResponse.ldap_auth_token,
+				join_link:
+					prepareJoinLinkError === null || prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
+						? window.location.href
+						: undefined,
+			});
+			setIsLoading(false);
+		} catch (error) {
+			if (error instanceof NetworkError || error instanceof ServerError) {
+				showToast(error instanceof NetworkError ? langStringErrorsNetworkError : langStringErrorsServerError, "warning");
+				setIsLoading(false);
+				setIsError(true);
+				return;
+			}
+
+			if (error instanceof ApiCommand) {
+
+				if (error.type === API_COMMAND_TYPE_NEED_CONFIRM_LDAP_MAIL) {
+
+					navigateByStage(error.data, setIsLoading, setIsError, {
+						username: username,
+						password: password,
+					});
+				}
+			}
+
+			if (error instanceof ApiError) {
+
+				if ([ 1708001, 1708002, 1708003, LIMIT_ERROR_CODE, 1708118, 1000, 1708120, 1708015,
+					INCORRECT_LINK_ERROR_CODE, INACTIVE_LINK_ERROR_CODE, ].includes(error.error_code)) {
+
+					switch (error.error_code) {
+						case 1708001:
+							showToast(langStringLdapLoginDialogIncorrectCredentialsError, "warning");
+							break;
+						case 1708002:
+							showToast(langStringLdapLoginDialogUnknownError, "warning");
+							break;
+						case 1708003:
+							showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
+							break;
+						case LIMIT_ERROR_CODE:
+							showToast(
+								langStringLdapLoginDialogAuthBlocked.replace(
+									"$MINUTES",
+									`${Math.ceil((error.expires_at - dayjs().unix()) / 60)}${plural(
+										Math.ceil((error.expires_at - dayjs().unix()) / 60),
+										langStringOneMinute,
+										langStringTwoMinutes,
+										langStringFiveMinutes
+									)}`
+								),
+								"warning"
+							);
+							break;
+						case 1708118:
+							showToast(langStringErrorsAuthLdapMethodDisabled, "warning");
+							break;
+						case 1000:
+							showToast(langStringErrorsLdapRegistrationWithoutInvite, "warning");
+							break;
+						case 1708120:
+							showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
+							break;
+						case 1708015:
+							showToast(langStringLdapLoginDialogIncorrect2FaMailConfigAttribute, "warning");
+							break;
+						case INCORRECT_LINK_ERROR_CODE:
+						case INACTIVE_LINK_ERROR_CODE:
+							setPrepareJoinLinkError({ error_code: error.error_code });
+							break;
+					}
+
+					setIsLoading(false);
+					setIsError(true);
+					return;
+				}
+
+				// если сказали что уже участник этой компании - то логиним без передачи joinLink
+				if (error.error_code === ALREADY_MEMBER_ERROR_CODE) {
+
+					try {
+						const federationLdapAuthGetTokenResponse =
+							await apiFederationLdapAuthGetToken.mutateAsync({
+								username: username,
+								password: password,
+							});
+
+						await apiPivotAuthLdapBegin.mutateAsync({
+							ldap_auth_token: federationLdapAuthGetTokenResponse.ldap_auth_token,
+						});
+					} catch (error) {
+						if (error instanceof NetworkError || error instanceof ServerError) {
+							showToast(error instanceof NetworkError ? langStringErrorsNetworkError : langStringErrorsServerError, "warning");
+							setIsLoading(false);
+							setIsError(true);
+							return;
+						}
+
+						if (error instanceof ApiError) {
+
+							if ([ 1708001, 1708002, 1708003, LIMIT_ERROR_CODE, 1708118, 1000, 1708120, 1708015,
+								INCORRECT_LINK_ERROR_CODE, INACTIVE_LINK_ERROR_CODE, ].includes(error.error_code)) {
+
+								switch (error.error_code) {
+									case 1708001:
+										showToast(langStringLdapLoginDialogIncorrectCredentialsError, "warning");
+										break;
+									case 1708002:
+										showToast(langStringLdapLoginDialogUnknownError, "warning");
+										break;
+									case 1708003:
+										showToast(langStringLdapLoginDialogIncorrectConfigUserSearchFilter, "warning");
+										break;
+									case LIMIT_ERROR_CODE:
+										showToast(
+											langStringLdapLoginDialogAuthBlocked.replace(
+												"$MINUTES",
+												`${Math.ceil((error.expires_at - dayjs().unix()) / 60)}${plural(
+													Math.ceil((error.expires_at - dayjs().unix()) / 60),
+													langStringOneMinute,
+													langStringTwoMinutes,
+													langStringFiveMinutes
+												)}`
+											),
+											"warning"
+										);
+										break;
+									case 1708118:
+										showToast(langStringErrorsAuthLdapMethodDisabled, "warning");
+										break;
+									case 1000:
+										showToast(langStringErrorsLdapRegistrationWithoutInvite, "warning");
+										break;
+									case 1708120:
+										showToast(langStringErrorsAuthSsoFullNameIncorrect.replace("$SSO_PROVIDER_NAME", error.sso_protocol == SSO_PROTOCOL_OIDC ? "SSO" : "LDAP"), "warning");
+										break;
+									case 1708015:
+										showToast(langStringLdapLoginDialogIncorrect2FaMailConfigAttribute, "warning");
+										break;
+									case INCORRECT_LINK_ERROR_CODE:
+									case INACTIVE_LINK_ERROR_CODE:
+										setPrepareJoinLinkError({ error_code: error.error_code });
+										break;
+								}
+
+								setIsLoading(false);
+								setIsError(true);
+								return;
+							}
+						}
+						setIsLoading(false);
+					}
+				}
+			}
+			setIsLoading(false);
+		}
+	}, [ username, password ]);
+
 	if (isMobile) {
-		return <AuthLdapDialogContentMobile />;
+
+		return <AuthLdapDialogContentMobile
+			onLoginClickHandler = {onLoginClickHandler}
+			usernameInputRef = {usernameInputRef}
+			passwordInputRef = {passwordInputRef}
+			apiIsLoading = {apiFederationLdapAuthGetToken.isLoading || apiPivotAuthLdapBegin.isLoading}
+			isLoading = {isLoading}
+			isError = {isError}
+			setIsError = {setIsError}
+			username = {username}
+			setUsername = {setUsername}
+			password = {password}
+			setPassword = {setPassword}
+		/>;
 	}
 
-	return <AuthLdapDialogContentDesktop />;
+	return <AuthLdapDialogContentDesktop
+		onLoginClickHandler = {onLoginClickHandler}
+		usernameInputRef = {usernameInputRef}
+		passwordInputRef = {passwordInputRef}
+		apiIsLoading = {apiFederationLdapAuthGetToken.isLoading || apiPivotAuthLdapBegin.isLoading}
+		isLoading = {isLoading}
+		isError = {isError}
+		setIsError = {setIsError}
+		username = {username}
+		setUsername = {setUsername}
+		password = {password}
+		setPassword = {setPassword}
+	/>;
 };
 
 export default AuthLdapDialogContent;

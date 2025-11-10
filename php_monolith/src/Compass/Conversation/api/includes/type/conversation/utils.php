@@ -266,6 +266,7 @@ class Type_Conversation_Utils {
 			"name"            => $left_menu_row["conversation_name"],
 			"member_count"    => $left_menu_row["member_count"],
 			"avatar_file_map" => $left_menu_row["avatar_file_map"],
+			"is_channel"      => $left_menu_row["is_channel_alias"],
 		];
 	}
 

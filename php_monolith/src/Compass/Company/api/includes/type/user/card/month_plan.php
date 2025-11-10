@@ -52,7 +52,7 @@ class Type_User_Card_MonthPlan {
 	/**
 	 * Добавляем/изменяем план на текущий месяц пользователя карточки
 	 */
-	public static function insertOrUpdate(int $user_id, int $type, int $month_start_at, int $plan_value, int $current_value = null):void {
+	public static function insertOrUpdate(int $user_id, int $type, int $month_start_at, int $plan_value, ?int $current_value = null):void {
 
 		Gateway_Db_CompanyMember_UsercardMonthPlanList::insertOrUpdate($user_id, $type, $month_start_at, $plan_value, $current_value);
 	}
@@ -254,7 +254,7 @@ class Type_User_Card_MonthPlan {
 	 *
 	 * @return int
 	 */
-	public static function getCorrectedMonthStartAt(int $time = null):int {
+	public static function getCorrectedMonthStartAt(?int $time = null):int {
 
 		$current_month_started_at = monthStart($time);
 

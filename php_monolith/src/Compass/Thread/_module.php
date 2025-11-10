@@ -9,6 +9,7 @@
  *      — возвращает обработчики путей
  *
  * @package Compass\Thread
+ *
  */
 
 namespace Compass\Thread;

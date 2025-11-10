@@ -3,6 +3,7 @@ import { getCurrentConference } from '../base/conference/functions';
 import { getLocalParticipant } from '../base/participants/functions';
 import { IParticipant } from '../base/participants/types';
 import { LOBBY_CHAT_INITIALIZED } from '../lobby/constants';
+import { CLEAR_POLLS } from '../polls/actionTypes';
 
 import {
     ADD_MESSAGE,

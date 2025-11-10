@@ -31,6 +31,7 @@ import { SUBMIT_FEEDBACK_ERROR, SUBMIT_FEEDBACK_SUCCESS } from '../feedback/acti
 import { SET_FILMSTRIP_VISIBLE } from '../filmstrip/actionTypes';
 
 import './subscriber';
+import {redirectToAnotherPage } from "../app/actions.any";
 
 /**
  * The middleware of the feature {@code external-api}.
@@ -142,20 +143,15 @@ MiddlewareRegistry.register(store => next => action => {
             break;
         }
 
-        const pId = action.participant.getId();
-
-        APP.API.notifyKickedOut(
-            {
-                id: localParticipant.id,
-                name: getParticipantDisplayName(state, localParticipant.id),
-                local: true
+        window.parent.postMessage({
+            type: 'kicked_out',
+            data: {
+                kicked: localParticipant?.jwtId,
             },
-            {
-                id: pId,
-                name: getParticipantDisplayName(state, pId)
-            }
-        );
-        break;
+        }, "*");
+
+        const jwt = store.getState()['features/base/jwt'];
+        store.dispatch(redirectToAnotherPage(`${jwt?.user?.jitsi_frontend_url}&is_kicked=1`));
     }
 
     case NOTIFY_CAMERA_ERROR:

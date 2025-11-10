@@ -1,7 +1,7 @@
-import { APIResponse } from "./_types";
-import { FetchError, ofetch } from "ofetch";
+import {APICommandData, APIResponse} from "./_types";
+import {FetchError, ofetch} from "ofetch";
 // @ts-ignore
-import { getPublicPathApi } from "../private/custom.ts";
+import {getPublicPathApi} from "../private/custom.ts";
 
 export class ApiError extends Error {
 	error_code: number;
@@ -17,6 +17,7 @@ export class ApiError extends Error {
 	expires_at: number;
 	join_link_uniq: string;
 	sso_protocol: string;
+	mail_allowed_domains: string[]
 
 	constructor(
 		message: string,
@@ -32,7 +33,8 @@ export class ApiError extends Error {
 		was_member_before: number,
 		expires_at: number,
 		join_link_uniq: string,
-		sso_protocol: string
+		sso_protocol: string,
+		mail_allowed_domains: string[]
 	) {
 		super(message);
 		this.name = "ApiError";
@@ -49,6 +51,20 @@ export class ApiError extends Error {
 		this.expires_at = expires_at;
 		this.join_link_uniq = join_link_uniq;
 		this.sso_protocol = sso_protocol;
+		this.mail_allowed_domains = mail_allowed_domains;
+	}
+}
+
+export class ApiCommand {
+	type: string;
+	data: APICommandData;
+
+	constructor(
+		type: string,
+		data: APICommandData,
+	) {
+		this.type = type;
+		this.data = data;
 	}
 }
 
@@ -75,6 +91,17 @@ export class LimitError extends Error {
 
 export type GET_RESPONSE_MODULE = "pivot" | "federation";
 
+interface CommandResponse {
+	command: {
+		type: string;
+		data: object;
+	};
+}
+
+function isCommandResponse<T>(r: APIResponse<T> | CommandResponse): r is CommandResponse {
+	return (r as any).command !== undefined;
+}
+
 export function useGetResponse(module: GET_RESPONSE_MODULE) {
 	return async <T>(method: string, body: URLSearchParams, headerList: Record<string, string> = {}) => {
 		try {
@@ -85,6 +112,10 @@ export function useGetResponse(module: GET_RESPONSE_MODULE) {
 					...headerList,
 				},
 			});
+
+			if (isCommandResponse(result)) {
+				throw new ApiCommand(result.command.type, result.command.data as APICommandData);
+			}
 
 			if (result.status !== "ok") {
 				// @ts-ignore
@@ -115,10 +146,14 @@ export function useGetResponse(module: GET_RESPONSE_MODULE) {
 					// @ts-ignore
 					result.response.join_link_uniq ?? "",
 					// @ts-ignore
-					result.response.sso_protocol ?? ""
+					result.response.sso_protocol ?? "",
+					// @ts-ignore
+					result.response.mail_allowed_domains ?? []
 				);
 			}
 
+			// @ts-ignore добавляем в ответ
+			result.response.server_time = result.server_time
 			return result.response;
 		} catch (error) {
 			if (error instanceof FetchError) {

@@ -302,6 +302,7 @@ export interface IConfig {
     disableVirtualBackground?: boolean;
     disabledNotifications?: Array<string>;
     disabledSounds?: Array<Sounds>;
+    disableAGC?: boolean;
     doNotFlipLocalVideo?: boolean;
     doNotStoreRoom?: boolean;
     dropbox?: {
@@ -371,6 +372,7 @@ export interface IConfig {
     firefox_fake_device?: string;
     flags?: {
         ssrcRewritingEnabled: boolean;
+        isSingleConference?: boolean;
     };
     focusUserJid?: string;
     gatherStats?: boolean;

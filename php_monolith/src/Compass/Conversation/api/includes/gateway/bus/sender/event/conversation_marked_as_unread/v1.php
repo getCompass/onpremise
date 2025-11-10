@@ -15,10 +15,11 @@ class Gateway_Bus_Sender_Event_ConversationMarkedAsUnread_V1 extends Gateway_Bus
 
 	/** @var array структура ws события */
 	protected const _WS_DATA = [
-		"conversation_map"           => \Entity_Validator_Structure::TYPE_STRING,
-		"conversations_unread_count" => \Entity_Validator_Structure::TYPE_INT,
-		"messages_unread_count"      => \Entity_Validator_Structure::TYPE_INT,
-		"left_menu_version"          => \Entity_Validator_Structure::TYPE_INT,
+		"conversation_map"                  => \Entity_Validator_Structure::TYPE_STRING,
+		"conversations_unread_count"        => \Entity_Validator_Structure::TYPE_INT,
+		"single_conversations_unread_count" => \Entity_Validator_Structure::TYPE_INT,
+		"messages_unread_count"             => \Entity_Validator_Structure::TYPE_INT,
+		"left_menu_version"                 => \Entity_Validator_Structure::TYPE_INT,
 	];
 
 	/**
@@ -30,10 +31,11 @@ class Gateway_Bus_Sender_Event_ConversationMarkedAsUnread_V1 extends Gateway_Bus
 	public static function makeEvent(string $conversation_map, array $meta):Struct_Sender_Event {
 
 		return self::_buildEvent([
-			"conversation_map"           => (string) $conversation_map,
-			"conversations_unread_count" => (int) $meta["conversations_unread_count"],
-			"messages_unread_count"      => (int) $meta["messages_unread_count"],
-			"left_menu_version"          => (int) $meta["left_menu_version"],
+			"conversation_map"                  => (string) $conversation_map,
+			"conversations_unread_count"        => (int) $meta["conversations_unread_count"],
+			"single_conversations_unread_count" => (int) $meta["single_conversations_unread_count"],
+			"messages_unread_count"             => (int) $meta["messages_unread_count"],
+			"left_menu_version"                 => (int) $meta["left_menu_version"],
 		]);
 	}
 }

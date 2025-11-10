@@ -2,6 +2,10 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
+
 /**
  * класс для работы с таблицей pivot_attribution . user_app_registration_log
  * @package Compass\Pivot
@@ -61,13 +65,39 @@ class Gateway_Db_PivotAttribution_UserAppRegistrationLog extends Gateway_Db_Pivo
 	/**
 	 * Удаляем старые записи
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @param int $older_than_timestamp
+	 * @param int $limit
+	 *
+	 * @return int
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function deleteOlder(int $older_than_timestamp):void {
+	public static function deleteOlder(int $older_than_timestamp, int $limit):int {
+
+		if (!isCron()) {
+			throw new \BaseFrame\Exception\Domain\ParseFatalException("only for cron");
+		}
 
 		// запрос проверен на EXPLAIN (INDEX=registered_at)
 		$query = "DELETE FROM `?p` WHERE `registered_at` < ?i LIMIT ?i";
-		ShardingGateway::database(self::_DB_KEY)->delete($query, self::_TABLE_KEY, $older_than_timestamp, 1000);
+		return ShardingGateway::database(self::_DB_KEY)->delete($query, self::_TABLE_KEY, $older_than_timestamp, $limit);
 	}
 
+	/**
+	 * Оптимизируем таблицу
+	 * ВНИМАНИЕ!!! только после очистки старых записей
+	 */
+	public static function optimize():void {
+
+		if (!isCron()) {
+			throw new \BaseFrame\Exception\Domain\ParseFatalException("only for cron");
+		}
+
+		$db_key     = self::_DB_KEY;
+		$table_name = self::_TABLE_KEY;
+
+		$query = "OPTIMIZE TABLE `{$db_key}`.`{$table_name}`;";
+		ShardingGateway::database($db_key)->query($query);
+	}
 }

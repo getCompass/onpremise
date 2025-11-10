@@ -1259,7 +1259,7 @@ class Helper_Conversations {
 	}
 
 	// заносим информацию о репосте в таблицу с историей репостов
-	public static function doAfterRepost(int $user_id, array $repost_message_list, string $donor_conversation_map, array $receiver_meta_row, string $stat_row = null):void {
+	public static function doAfterRepost(int $user_id, array $repost_message_list, string $donor_conversation_map, array $receiver_meta_row, ?string $stat_row = null):void {
 
 		$message_map_list = [];
 		foreach ($repost_message_list as $v) {
@@ -2883,7 +2883,7 @@ class Helper_Conversations {
 	}
 
 	// пробуем проявить Требовательность
-	public static function tryExacting(int $sender_user_id, array $message_list, string $conversation_map, array $meta_row, int $week_count, int $month_count, int $created_at = null):array {
+	public static function tryExacting(int $sender_user_id, array $message_list, string $conversation_map, array $meta_row, int $week_count, int $month_count, ?int $created_at = null):array {
 
 		// выдаем Требовательность - добавляем сообщения-требовательность в группу Требовательность
 		$new_message_list = self::addMessageList(

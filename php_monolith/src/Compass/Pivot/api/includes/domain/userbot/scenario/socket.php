@@ -35,12 +35,8 @@ class Domain_Userbot_Scenario_Socket {
 	 * @throws queryException
 	 * @throws returnException
 	 */
-	public static function create(int $company_id, string $userbot_name,
-						int $avatar_color_id, string|false $avatar_file_key,
-						int $is_react_command, string $webhook,
-						int $is_smart_app, string $smart_app_name, string $smart_app_url, int $is_smart_app_sip, int $is_smart_app_mail,
-						int $smart_app_default_width, int $smart_app_default_height,
-						int $role, int $permissions):array {
+	public static function create(int $company_id, string $userbot_name, int $avatar_color_id, string|false $avatar_file_key,
+						int $is_react_command, string $webhook, int $role, int $permissions):array {
 
 		// получаем аватарку бота
 		try {
@@ -55,7 +51,6 @@ class Domain_Userbot_Scenario_Socket {
 		// далее создаём сущность бота
 		return self::_createUserbot(
 			$create_user_bot->user_id, $create_user_bot->npc_type, $avatar_color_id, $avatar_file_key, $company_id, $is_react_command, $webhook,
-			$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height,
 			$role, $permissions
 		);
 	}
@@ -91,8 +86,6 @@ class Domain_Userbot_Scenario_Socket {
 	 */
 	protected static function _createUserbot(int $user_id, int $npc_type, int $avatar_color_id, string $avatar_file_key, int $company_id,
 							     int $is_react_command, string $webhook,
-							     int $is_smart_app, string $smart_app_name, string $smart_app_url, int $is_smart_app_sip, int $is_smart_app_mail,
-							     int $smart_app_default_width, int $smart_app_default_height,
 							     int $role, int $permissions):array {
 
 		$created_at = time();
@@ -105,16 +98,11 @@ class Domain_Userbot_Scenario_Socket {
 			Domain_Userbot_Entity_Userbot::create($userbot_id, $user_id, $company_id, $avatar_color_id, $avatar_file_key, $created_at);
 		} catch (cs_RowDuplication) {
 
-			return self::_createUserbot($user_id, $npc_type, $avatar_color_id, $avatar_file_key, $company_id, $is_react_command, $webhook,
-				$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height,
-				$role, $permissions);
+			return self::_createUserbot($user_id, $npc_type, $avatar_color_id, $avatar_file_key, $company_id, $is_react_command, $webhook, $role, $permissions);
 		}
 
 		// создаём токен и ключ подписи для бота
-		[$token, $secret_key] = self::_createToken($userbot_id, $is_react_command, $webhook,
-			$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height,
-			$created_at
-		);
+		[$token, $secret_key] = self::_createToken($userbot_id, $is_react_command, $webhook, $created_at);
 
 		// добавляем пользователя в компанию на пивоте
 		$user_info = Gateway_Bus_PivotCache::getUserInfo($user_id);
@@ -129,25 +117,16 @@ class Domain_Userbot_Scenario_Socket {
 	 *
 	 * @throws queryException
 	 */
-	protected static function _createToken(string $userbot_id, int $is_react_command, string $webhook,
-							   int    $is_smart_app, string $smart_app_name, string $smart_app_url, int $is_smart_app_sip, int $is_smart_app_mail,
-							   int    $smart_app_default_width, int $smart_app_default_height,
-							   int    $created_at):array {
+	protected static function _createToken(string $userbot_id, int $is_react_command, string $webhook, int $created_at):array {
 
 		$token      = Domain_Userbot_Entity_Token::generateToken();
 		$secret_key = Domain_Userbot_Entity_Token::generateSecretKey();
 
 		try {
 
-			Domain_Userbot_Entity_Token::create($userbot_id, $token, $secret_key, $is_react_command, $webhook,
-				$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height,
-				$created_at
-			);
+			Domain_Userbot_Entity_Token::create($userbot_id, $token, $secret_key, $is_react_command, $webhook, $created_at);
 		} catch (cs_RowDuplication) {
-
-			return self::_createToken($userbot_id, $is_react_command, $webhook,
-				$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height,
-				$created_at);
+			return self::_createToken($userbot_id, $is_react_command, $webhook, $created_at);
 		}
 
 		return [$token, $secret_key];
@@ -344,24 +323,15 @@ class Domain_Userbot_Scenario_Socket {
 	 * @throws queryException
 	 * @throws returnException
 	 */
-	public static function edit(string    $userbot_id, string $token, string|false $userbot_name,
-					    int|false $is_react_command, string|false $webhook,
-					    int|false $is_smart_app, string|false $smart_app_name, string|false $smart_app_url,
-					    int|false $is_smart_app_sip, int|false $is_smart_app_mail,
-					    int|false $smart_app_default_width, int|false $smart_app_default_height,
-					    int|false $avatar_color_id, string|false $avatar_file_key,
-					    string    $client_launch_uuid):void {
+	public static function edit(string    $userbot_id, string $token, string|false $userbot_name, int|false $is_react_command, string|false $webhook,
+					    int|false $avatar_color_id, string|false $avatar_file_key, string $client_launch_uuid):void {
 
 		// если переданы данные по токену бота
-		if ($is_react_command !== false || $webhook !== false
-			|| $is_smart_app !== false || $smart_app_name !== false || $smart_app_url !== false || $is_smart_app_sip !== false || $is_smart_app_mail !== false
-			|| $smart_app_default_width !== false || $smart_app_default_height !== false) {
+		if ($is_react_command !== false || $webhook !== false) {
 
 			// редактируем данные токена для бота
 			$token_obj = Gateway_Db_PivotUserbot_TokenList::get($token);
-			self::_editUserbotTokenInfo($token_obj, $is_react_command, $webhook,
-				$is_smart_app, $smart_app_name, $smart_app_url, $is_smart_app_sip, $is_smart_app_mail, $smart_app_default_width, $smart_app_default_height
-			);
+			self::_editUserbotTokenInfo($token_obj, $is_react_command, $webhook);
 
 			// чистим данные по боту в кэше
 			Gateway_Socket_UserbotCache::clearUserbotCache($token);
@@ -388,11 +358,7 @@ class Domain_Userbot_Scenario_Socket {
 	/**
 	 * редактируем данные бота по токенам
 	 */
-	protected static function _editUserbotTokenInfo(Struct_Db_PivotUserbot_Token $token,
-									int|false                    $is_react_command, string|false $webhook,
-									int|false                    $is_smart_app, string|false $smart_app_name, string|false $smart_app_url,
-									int|false                    $is_smart_app_sip, int|false $is_smart_app_mail,
-									int|false                    $smart_app_default_width, int|false $smart_app_default_height):void {
+	protected static function _editUserbotTokenInfo(Struct_Db_PivotUserbot_Token $token, int|false $is_react_command, string|false $webhook):void {
 
 		$extra = $token->extra;
 
@@ -402,34 +368,6 @@ class Domain_Userbot_Scenario_Socket {
 
 		if ($webhook !== false) {
 			$token->extra = Domain_Userbot_Entity_Token::setWebhook($token->extra, $webhook);
-		}
-
-		if ($is_smart_app !== false) {
-			$token->extra = Domain_Userbot_Entity_Token::setFlagSmartApp($token->extra, $is_smart_app);
-		}
-
-		if ($smart_app_name !== false) {
-			$token->extra = Domain_Userbot_Entity_Token::setSmartAppName($token->extra, $smart_app_name);
-		}
-
-		if ($smart_app_url !== false) {
-			$token->extra = Domain_Userbot_Entity_Token::setSmartAppUrl($token->extra, $smart_app_url);
-		}
-
-		if ($is_smart_app_sip !== false) {
-			$token->extra = Domain_Userbot_Entity_Token::setFlagSmartAppSip($token->extra, $is_smart_app_sip);
-		}
-
-		if ($is_smart_app_mail !== false) {
-			$token->extra = Domain_Userbot_Entity_Token::setFlagSmartAppMail($token->extra, $is_smart_app_mail);
-		}
-
-		if ($smart_app_default_width !== false) {
-			$token->extra = Domain_Userbot_Entity_Token::setSmartAppDefaultWidth($token->extra, $smart_app_default_width);
-		}
-
-		if ($smart_app_default_height !== false) {
-			$token->extra = Domain_Userbot_Entity_Token::setSmartAppDefaultHeight($token->extra, $smart_app_default_height);
 		}
 
 		// если данные не изменились

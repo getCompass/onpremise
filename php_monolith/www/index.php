@@ -37,6 +37,7 @@ $response = [
 	"start_url"         => (string) PUBLIC_ENTRYPOINT_PIVOT . "/",
 	"connect_check_url" => (string) PUBLIC_CONNECT_CHECK_URL . "/",
 	"version"           => ONPREMISE_VERSION,
+	"displayed_version" => DISPLAYED_ONPREMISE_VERSION,
 	"url_list"          => (object) $url_list,
 	"service_data"      => (object) [
 		"dsn" => (object) [
@@ -46,7 +47,6 @@ $response = [
 		],
 	],
 ];
-
 
 $answer = [
 	"status"   => "ok",

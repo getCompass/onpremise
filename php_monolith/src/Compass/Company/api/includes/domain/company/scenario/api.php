@@ -17,9 +17,9 @@ class Domain_Company_Scenario_Api
 	/**
 	 * Сценарий изменения имени компании
 	 *
-	 * @param int    $user_id
-	 * @param int    $role
-	 * @param int    $permissions
+	 * @param i   nt $user_id
+	 * @param i   nt $role
+	 * @param i   nt $permissions
 	 * @param string $name
 	 *
 	 * @return string
@@ -67,11 +67,11 @@ class Domain_Company_Scenario_Api
 	/**
 	 * Сценарий изменения основных данных профиля компании
 	 *
-	 * @param int          $user_id
-	 * @param int          $role
-	 * @param int          $permissions
+	 * @p         aram int $user_id
+	 * @p         aram int $role
+	 * @p         aram int $permissions
 	 * @param string|false $name
-	 * @param int|false    $avatar_color_id
+	 * @param int|fal   se $avatar_color_id
 	 *
 	 * @return array
 	 * @throws ParamException
@@ -527,5 +527,53 @@ class Domain_Company_Scenario_Api
 
 		// отправляем событие о переключении настройки
 		Gateway_Bus_Sender::unlimitedMessagesEditingChanged($value);
+	}
+
+	/**
+	 * Сценарий смены настроек ограничений удалений сообщений в чате
+	 *
+	 * @throws ParseFatalException
+	 * @throws ActionNotAllowed
+	 * @throws cs_InvalidConfigValue
+	 * @throws \queryException
+	 */
+	public static function setUnlimitedMessagesDeleting(int $role, int $permissions, int $value): void
+	{
+
+		$is_deleted = Domain_Company_Entity_Config::edit(
+			$role,
+			$permissions,
+			Domain_Company_Entity_Config::UNLIMITED_MESSAGES_DELETING,
+			$value
+		);
+
+		if (!$is_deleted) {
+			return;
+		}
+
+		// отправляем событие о переключении настройки
+		Gateway_Bus_Sender::unlimitedMessagesDeletingChanged($value);
+	}
+
+	/**
+	 * Изменяем настройки включения локальных ссылок для клиентов
+	 *
+	 * @throws ParseFatalException
+	 * @throws ActionNotAllowed
+	 * @throws cs_InvalidConfigValue
+	 * @throws \queryException
+	 */
+	public static function setLocalLinks(int $role, int $permissions, int $value):void {
+
+		$is_set_local_links = Domain_Company_Entity_Config::edit(
+			$role, $permissions, Domain_Company_Entity_Config::LOCAL_LINKS, $value
+		);
+
+		if (!$is_set_local_links) {
+			return;
+		}
+
+		// отправляем событие о переключении настройки
+		Gateway_Bus_Sender::localLinksChanged($value);
 	}
 }

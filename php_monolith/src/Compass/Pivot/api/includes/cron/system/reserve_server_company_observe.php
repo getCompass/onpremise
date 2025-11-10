@@ -230,9 +230,6 @@ class Cron_System_ReserveServerCompanyObserve extends \Cron_Default {
 			Domain_Domino_Action_Config_UpdateMysql::do($company_row, $domino_registry_row, need_force_update: true);
 			Domain_Domino_Action_WaitConfigSync::do($company_row, $domino_registry_row);
 			Domain_Domino_Action_StopCompany::run($domino_registry_row, $company_row, "deleteCompany");
-
-			// удаляем поисковый индекс компании
-			// Gateway_Bus_DatabaseController::dropSearchTable($domino_registry_row, $company_row->company_id);
 		}
 	}
 

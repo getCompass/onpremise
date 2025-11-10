@@ -18,7 +18,7 @@ class cs_AnswerCommand extends \Exception {
 	 * Исключение формирования команды приложения.
 	 */
 	#[\JetBrains\PhpStorm\Pure]
-	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, \Exception $previous = null) {
+	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, ?\Exception $previous = null) {
 
 		$this->_command_name  = $command_name;
 		$this->_command_extra = $command_extra;
@@ -53,7 +53,7 @@ class cs_blockException extends \BaseFrame\Exception\Request\BlockException {
 	 * @param int             $code
 	 * @param \Throwable|null $previous
 	 */
-	public function __construct(int $next_attempt, string $message = "", int $code = 0, \Throwable $previous = null) {
+	public function __construct(int $next_attempt, string $message = "", int $code = 0, ?\Throwable $previous = null) {
 
 		$this->next_attempt = $next_attempt;
 		parent::__construct($message, $next_attempt, $code, $previous);

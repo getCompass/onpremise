@@ -34,7 +34,7 @@ class Type_Company_Job_RatingMonth extends Type_Company_Job_Default {
 	 *
 	 * @throws \parseException
 	 */
-	public static function provideJobList(array $extra, int $test_month_first_data_ay = null):array {
+	public static function provideJobList(array $extra, ?int $test_month_first_data_ay = null):array {
 
 		$datastore_row = Domain_Company_Action_Config_Get::do(self::_STATISTIC_SENDER_KEY);
 

@@ -9,6 +9,7 @@
  *      — возвращает обработчики путей
  *
  * @package Compass\Conversation
+ *
  */
 
 namespace Compass\Conversation;

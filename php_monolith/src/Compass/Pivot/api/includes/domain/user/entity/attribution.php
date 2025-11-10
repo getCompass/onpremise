@@ -2,6 +2,9 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
 use BaseFrame\Exception\Gateway\RowNotFoundException;
 use BaseFrame\Server\ServerProvider;
 
@@ -30,8 +33,13 @@ class Domain_User_Entity_Attribution {
 	/** @var int спустя какое время сырые данные атрибуции (цифр. подпись посещения, регистрации) должны удаляться */
 	protected const _ATTRIBUTION_RAW_DATA_TIME_LIFE = DAY7;
 
+	/** @var int лимит кол-ва записей удаляемых за раз */
+	protected const _DELETE_EXPIRED_LIMIT = 1000;
+
 	/**
 	 * проверяем, корректен ли сдвиг часового пояса относительно UTC в секундах
+	 *
+	 * @param int $timezone_utc_offset
 	 *
 	 * @return bool
 	 */
@@ -49,6 +57,8 @@ class Domain_User_Entity_Attribution {
 
 	/**
 	 * проверяем, корректен ли размер стороны экрана
+	 *
+	 * @param int $screen_side_size
 	 *
 	 * @return bool
 	 */
@@ -191,7 +201,7 @@ class Domain_User_Entity_Attribution {
 	public static function getUserSourceData(int $user_id):array {
 
 		// ответ по-умолчанию
-		$source_type  = "organic";
+		$source_type  = "user_organic";
 		$source_extra = [];
 
 		// получаем связь user_id -> visit_id
@@ -201,7 +211,7 @@ class Domain_User_Entity_Attribution {
 			return [$source_type, $source_extra];
 		}
 
-		$source_type  = "landing";
+		$source_type  = "user_landing";
 		$source_extra = [
 			"visit_url" => $user_campaign_rel->link,
 		];
@@ -239,7 +249,63 @@ class Domain_User_Entity_Attribution {
 	 */
 	public static function clearOldData():void {
 
-		Gateway_Db_PivotAttribution_LandingVisitLog::deleteOlder(time() - self::_ATTRIBUTION_RAW_DATA_TIME_LIFE);
-		Gateway_Db_PivotAttribution_UserAppRegistrationLog::deleteOlder(time() - self::_ATTRIBUTION_RAW_DATA_TIME_LIFE);
+		self::_clearOldDataLandingVisitLog();
+		self::_clearOldDataUserAppRegistrationLog();
+	}
+
+	/**
+	 * Очищаем старые данные в таблице landing_visit_log
+	 * @return void
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 * @throws ParseFatalException
+	 */
+	protected static function _clearOldDataLandingVisitLog():void {
+
+		$min_created_at   = time() - self::_ATTRIBUTION_RAW_DATA_TIME_LIFE;
+		$is_need_optimize = false;
+		do {
+
+			// очищаем таблицу
+			$deleted_count = Gateway_Db_PivotAttribution_LandingVisitLog::deleteOlder($min_created_at, self::_DELETE_EXPIRED_LIMIT);
+			if ($deleted_count > 0) {
+				$is_need_optimize = true;
+			}
+		} while ($deleted_count == self::_DELETE_EXPIRED_LIMIT);
+
+		// если записи не трогали, то и оптимизация таблицы не нужна
+		if (!$is_need_optimize) {
+			return;
+		}
+
+		Gateway_Db_PivotAttribution_LandingVisitLog::optimize();
+	}
+
+	/**
+	 * Очищаем старые данные в таблице landing_visit_log
+	 * @return void
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 * @throws ParseFatalException
+	 */
+	protected static function _clearOldDataUserAppRegistrationLog():void {
+
+		$min_created_at   = time() - self::_ATTRIBUTION_RAW_DATA_TIME_LIFE;
+		$is_need_optimize = false;
+		do {
+
+			// очищаем таблицу
+			$deleted_count = Gateway_Db_PivotAttribution_UserAppRegistrationLog::deleteOlder($min_created_at, self::_DELETE_EXPIRED_LIMIT);
+			if ($deleted_count > 0) {
+				$is_need_optimize = true;
+			}
+		} while ($deleted_count == self::_DELETE_EXPIRED_LIMIT);
+
+		// если записи не трогали, то и оптимизация таблицы не нужна
+		if (!$is_need_optimize) {
+			return;
+		}
+
+		Gateway_Db_PivotAttribution_UserAppRegistrationLog::optimize();
 	}
 }

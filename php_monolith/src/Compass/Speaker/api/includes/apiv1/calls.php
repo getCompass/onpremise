@@ -1214,7 +1214,7 @@ class ApiV1_Calls extends \BaseFrame\Controller\Api {
 	// -------------------------------------------------------
 
 	// проверяем, являлся ли пользователь участником звонка в ПРОШЛОМ
-	protected function _throwIfUserWasNotMemberOfCall(int $user_id, array $users, string $namespace = null, string $row = null):void {
+	protected function _throwIfUserWasNotMemberOfCall(int $user_id, array $users, ?string $namespace = null, ?string $row = null):void {
 
 		// если пользователь никогда не являлся участником звонка
 		if (!isset($users[$user_id])) {
@@ -1228,7 +1228,7 @@ class ApiV1_Calls extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем, является ли пользователь участником звонка в ТЕКУЩИЙ МОМЕНТ
-	protected function _throwIfUserIsNotMemberOfCall(int $user_id, array $users, string $namespace = null, string $row = null):void {
+	protected function _throwIfUserIsNotMemberOfCall(int $user_id, array $users, ?string $namespace = null, ?string $row = null):void {
 
 		// если пользователь никогда не являлся участником звонка
 		if (!Type_Call_Users::isMember($user_id, $users)) {
@@ -1258,7 +1258,7 @@ class ApiV1_Calls extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем, что запрос осуществляется с того устройства, с которого запустился звонок
-	protected function _throwIfCallStartedFromAnotherSession(array $users, string $namespace = null, string $row = null):void {
+	protected function _throwIfCallStartedFromAnotherSession(array $users, ?string $namespace = null, ?string $row = null):void {
 
 		if (!Type_Call_Users::isCallStartSessionUniq($this->user_id, $this->session_uniq, $users)
 			|| !Type_Call_Users::isCallStartDeviceId($this->user_id, getDeviceId(), $users)) {

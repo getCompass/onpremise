@@ -41,7 +41,7 @@ function cookie(string $field, $default = null) {
 }
 
 // возвращает число ограниченное min & max
-function limit(int $value, int $min = null, int $max = null):int {
+function limit(int $value, int $min = null, ?int $max = null):int {
 
 	$value = intval($value);
 	if ($min !== null && $value < $min) {

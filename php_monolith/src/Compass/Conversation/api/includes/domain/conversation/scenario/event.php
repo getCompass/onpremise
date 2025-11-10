@@ -193,7 +193,6 @@ class Domain_Conversation_Scenario_Event {
 
 		$set["conversation_name"] = $conversation_name;
 		if ($last_message != false) {
-
 			$set["last_message"] = $last_message;
 		}
 		Gateway_Db_CompanyConversation_UserLeftMenu::set($event_data->user_id, $event_data->conversation_map, $set);

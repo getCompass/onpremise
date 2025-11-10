@@ -983,7 +983,7 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	// -------------------------------------------------------
 
 	// проверяет что присланный user_id - корректный
-	protected function _throwIfUserIdIsMalformed(int $user_id, string $inc_row = null):void {
+	protected function _throwIfUserIdIsMalformed(int $user_id, ?string $inc_row = null):void {
 
 		if ($user_id < 1) {
 
@@ -995,7 +995,7 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяет что присланный user_id не равен user_id пользователя совершающего запрос
-	protected function _throwIfUserIdIsEqualWithYourself(int $user_id, string $inc_row = null):void {
+	protected function _throwIfUserIdIsEqualWithYourself(int $user_id, ?string $inc_row = null):void {
 
 		if ($user_id == $this->user_id) {
 
@@ -1042,7 +1042,7 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// добавляем action users если приглашение не отклонено или отозвано
-	protected function _addActionUsersIfInviteNotIsDeclined(string $status, array $users, string $row = null):void {
+	protected function _addActionUsersIfInviteNotIsDeclined(string $status, array $users, ?string $row = null):void {
 
 		// проверяем что приглашение отклонено/отозвано
 		if (Type_Invite_Handler::isDeclined($status)) {

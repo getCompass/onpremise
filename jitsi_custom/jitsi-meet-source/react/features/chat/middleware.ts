@@ -169,21 +169,21 @@ MiddlewareRegistry.register(store => next => action => {
         if (data?.type === MESSAGE_STATUS_UPDATED) {
 
             if (data.status !== "approved") {
-
+                
                 dispatch(showNotification({
                     titleKey: 'notify.messageIsRestrictedTitle',
                     descriptionKey: 'notify.messageIsRestricted',
                     uid: MESSAGE_NOT_DELIVERED_NOTIFICATION_ID,
                     icon: NOTIFICATION_ICON.WARNING
                 }, isMobileBrowser() ? NOTIFICATION_TIMEOUT_TYPE.MEDIUM : NOTIFICATION_TIMEOUT_TYPE.LONG));
-
+                
             } else if (state['features/chat'].pendingMessage !== undefined) {
 
                 const pendingMessage = state['features/chat'].pendingMessage
                 dispatch(addMessage({
                     displayName: pendingMessage.displayName,
                     hasRead: true,
-                    participantId: pendingMessage.participantId,
+                    participantId,
                     messageType: pendingMessage.messageType,
                     message: pendingMessage.message,
                     privateMessage: pendingMessage.privateMessage,
@@ -194,7 +194,7 @@ MiddlewareRegistry.register(store => next => action => {
                     isReaction: pendingMessage.isReaction
                 }));
             }
-
+            
             dispatch(clearPendingMessage())
         }
 

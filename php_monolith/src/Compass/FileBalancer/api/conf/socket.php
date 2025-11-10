@@ -48,6 +48,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"files.doUpdateFile",
 			"files.setContent",
 			"files.updateFileStatus",
+			"files.setFileListDeleted",
 		],
 	],
 	"company"      => [

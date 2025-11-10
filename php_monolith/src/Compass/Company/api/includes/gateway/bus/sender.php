@@ -729,6 +729,30 @@ class Gateway_Bus_Sender {
 	}
 
 	/**
+	 * Послать ws событие, когда переключили значение настройки ограничения удаления сообщений
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function unlimitedMessagesDeletingChanged(int $is_unlimited_messages_deleting_enabled):void {
+
+		self::_sendEventToAll([
+			Gateway_Bus_Sender_Event_UnlimitedMessagesDeletingChanged_V1::makeEvent($is_unlimited_messages_deleting_enabled),
+		]);
+	}
+
+	/**
+	 * Послать ws событие, когда переключили значение настройки локальных ссылок
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function localLinksChanged(int $is_local_links_enabled):void {
+
+		self::_sendEventToAll([
+			Gateway_Bus_Sender_Event_LocalLinksChanged_V1::makeEvent($is_local_links_enabled),
+		]);
+	}
+
+	/**
 	 * послать ws событие, когда переключили значение настройки об показе статуса прочтения сообщений
 	 *
 	 * @param int $is_add_to_general_chat_on_hiring
@@ -805,25 +829,67 @@ class Gateway_Bus_Sender {
 		], $talking_user_list, ws_users: [$userbot_as_user_id]);
 	}
 
+	// endregion Userbot
+	// -------------------------------------------------------
+
+	// -------------------------------------------------------
+	// region SmartApp
+	// -------------------------------------------------------
+
 	/**
-	 * ws-событие, когда был обновлён smart app
+	 * ws-событие, когда было создано приложение
 	 *
-	 * @param string $userbot_id
-	 * @param array  $userbot
-	 * @param array  $user_id_list
+	 * @param array $smart_app
+	 * @param int   $creator_user_id
 	 *
+	 * @throws ParseFatalException
 	 */
-	public static function userbotSmartAppUpdated(string $userbot_id, array $smart_app, array $user_id_list):void {
+	public static function smartAppCreated(array $smart_app, int $creator_user_id):void {
 
 		// формируем список пользователей на отправку ws
-		$talking_user_list = [];
-		foreach ($user_id_list as $v) {
-			$talking_user_list[] = self::makeTalkingUserItem($v, false);
-		}
+		$talking_user_list   = [];
+		$talking_user_list[] = self::makeTalkingUserItem($creator_user_id, false);
 
-		// отправляем событие
 		self::_sendEvent([
-			Gateway_Bus_Sender_Event_UserbotSmartAppUpdated_V1::makeEvent($userbot_id, $smart_app),
+			Gateway_Bus_Sender_Event_SmartAppCreated_V1::makeEvent($smart_app),
+		], $talking_user_list);
+	}
+
+	/**
+	 * ws-событие, когда было отредактировано приложение
+	 *
+	 * @param array $smart_app
+	 * @param int   $creator_user_id
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function smartAppEdited(array $smart_app, int $creator_user_id):void {
+
+		// формируем список пользователей на отправку ws
+		$talking_user_list   = [];
+		$talking_user_list[] = self::makeTalkingUserItem($creator_user_id, false);
+
+		self::_sendEvent([
+			Gateway_Bus_Sender_Event_SmartAppEdited_V1::makeEvent($smart_app),
+		], $talking_user_list);
+	}
+
+	/**
+	 * ws-событие, когда было удалено приложение
+	 *
+	 * @param int $smart_app_id
+	 * @param int $creator_user_id
+	 *
+	 * @throws ParseFatalException
+	 */
+	public static function smartAppDeleted(int $smart_app_id, int $creator_user_id):void {
+
+		// формируем список пользователей на отправку ws
+		$talking_user_list   = [];
+		$talking_user_list[] = self::makeTalkingUserItem($creator_user_id, false);
+
+		self::_sendEvent([
+			Gateway_Bus_Sender_Event_SmartAppDeleted_V1::makeEvent($smart_app_id),
 		], $talking_user_list);
 	}
 

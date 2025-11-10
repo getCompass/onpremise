@@ -777,6 +777,13 @@ class Type_Conversation_Message_Block {
 		// проверяем роль пользователя и время отправки сообщения
 		if (!$is_admin && !Type_Conversation_Message_Main::getHandler($message)::isTimeAllowToDelete($message, $is_unusual_message)) {
 
+			// если разрешено безлимитное удаление сообщений
+			$is_unlimited_messages_deleting_enabled = Type_Company_Config::init()->get(Domain_Company_Entity_Config::UNLIMITED_MESSAGES_DELETING)["value"];
+			if ($is_unlimited_messages_deleting_enabled) {
+
+				return;
+			}
+
 			Gateway_Db_CompanyConversation_MessageBlock::rollback();
 			throw new cs_Message_IsNotAllowForDelete();
 		}

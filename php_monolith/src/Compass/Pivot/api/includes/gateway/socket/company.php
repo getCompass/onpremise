@@ -1040,9 +1040,9 @@ class Gateway_Socket_Company {
 		if ($status != "ok") {
 
 			throw match ($response["error_code"]) {
-				404     => new cs_JoinLinkIsNotActive(),
-				406     => new cs_Text_IsTooLong(),
-				408     => new cs_ExitTaskInProgress(),
+				404 => new cs_JoinLinkIsNotActive(),
+				406 => new cs_Text_IsTooLong(),
+				408 => new cs_ExitTaskInProgress(),
 				default => new ParseFatalException("passed unknown error_code: " . $response["error_code"])
 			};
 		}
@@ -2231,18 +2231,113 @@ class Gateway_Socket_Company {
 
 		$params = ["user_id" => $user_id];
 
-		[$status, $response] = self::_call(
-			"space.member.incConferenceMembershipRating",
-			$params,
-			$user_id,
-			$space->company_id,
-			$space->domino_id,
-			Domain_Company_Entity_Company::getPrivateKey($space->extra)
-		);
+		try {
+
+			[$status, $response] = self::_call(
+				"space.member.incConferenceMembershipRating",
+				$params,
+				$user_id,
+				$space->company_id,
+				$space->domino_id,
+				Domain_Company_Entity_Company::getPrivateKey($space->extra)
+			);
+		} catch (cs_CompanyIsHibernate) {
+
+			Type_System_Admin::log("inc_conference_membership_rating_error", ["Компания {$space->company_id} спит", $params]);
+			return;
+		}
 
 		if ($status !== "ok") {
 			throw new ReturnFatalException("unexpected response");
 		}
+	}
+
+	/**
+	 * Получаем id приложений созданных пользователем из каталога
+	 *
+	 * @param int    $user_id
+	 * @param int    $company_id
+	 * @param string $domino_id
+	 * @param string $private_key
+	 *
+	 * @return array
+	 * @throws CompanyNotServedException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws cs_CompanyIsHibernate
+	 * @throws cs_SocketRequestIsFailed
+	 */
+	public static function getCreatedSmartAppListByUser(int $user_id, int $company_id, string $domino_id, string $private_key):array {
+
+		[$status, $response] = self::_call("smartapp.getCreatedSmartAppListByUser", [], $user_id, $company_id, $domino_id, $private_key);
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw new ParseFatalException("passed unknown error_code");
+		}
+
+		return $response["created_smart_app_list"];
+	}
+
+	/**
+	 * Получаем статистику по количеству созданных приложений из каталога
+	 *
+	 * @param int    $company_id
+	 * @param string $domino_id
+	 * @param string $private_key
+	 *
+	 * @return array
+	 * @throws CompanyNotServedException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws cs_CompanyIsHibernate
+	 * @throws cs_SocketRequestIsFailed
+	 */
+	public static function getCreatedSmartAppsStatFromSuggestionList(int $company_id, string $domino_id, string $private_key):array {
+
+		[$status, $response] = self::_call("smartapp.getCreatedSmartAppsStatFromSuggestionList", [], 0, $company_id, $domino_id, $private_key);
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw new ParseFatalException("passed unknown error_code");
+		}
+
+		return $response["suggestion_stat_list"];
+	}
+
+	/**
+	 * Получаем созданные приложения НЕ из каталога
+	 *
+	 * @param int    $company_id
+	 * @param string $domino_id
+	 * @param string $private_key
+	 *
+	 * @return array
+	 * @throws CompanyNotServedException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws cs_CompanyIsHibernate
+	 * @throws cs_SocketRequestIsFailed
+	 */
+	public static function getCreatedPersonalSmartApps(int $company_id, string $domino_id, string $private_key):array {
+
+		[$status, $response] = self::_call("smartapp.getCreatedPersonalSmartApps", [], 0, $company_id, $domino_id, $private_key);
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw new ParseFatalException("passed unknown error_code");
+		}
+
+		return $response["smart_app_list"];
 	}
 
 	// -------------------------------------------------------

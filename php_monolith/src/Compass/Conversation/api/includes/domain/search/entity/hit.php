@@ -66,7 +66,7 @@ abstract class Domain_Search_Entity_Hit {
 	 * Формируем структуру совпадения в сущности файла.
 	 * @return Struct_Domain_Search_SpotDetail[]
 	 */
-	protected static function _makeExtraPreviewHitSpotDetails(array $preview_item, Struct_Domain_Search_RawHit $extended_hit, Struct_Domain_Search_Dto_SearchRequest $query_param, array $spot_name_list, array|null $extra = null):array {
+	protected static function _makeExtraPreviewHitSpotDetails(array $preview_item, Struct_Domain_Search_RawHit $extended_hit, Struct_Domain_Search_Dto_SearchRequest $query_param, array $spot_name_list, ?array $extra = null):array {
 
 		$output = [];
 
@@ -111,7 +111,7 @@ abstract class Domain_Search_Entity_Hit {
 	 * Формируем структуру совпадения в сущности файла.
 	 * @return Struct_Domain_Search_SpotDetail[]
 	 */
-	protected static function _makeExtraFileHitSpotDetails(array $file, Struct_Domain_Search_RawHit $extended_hit, Struct_Domain_Search_Dto_SearchRequest $query_param, array $spot_name_list, array|null $extra = null):array {
+	protected static function _makeExtraFileHitSpotDetails(array $file, Struct_Domain_Search_RawHit $extended_hit, Struct_Domain_Search_Dto_SearchRequest $query_param, array $spot_name_list, ?array $extra = null):array {
 
 		$output = [];
 

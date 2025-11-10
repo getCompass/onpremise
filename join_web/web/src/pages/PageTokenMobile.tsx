@@ -14,7 +14,7 @@ import {
 	authState,
 	confirmPasswordState,
 	deviceLoginTypeState,
-	downloadAppUrlState, isGuestAuthState,
+	downloadAppUrlState, isGuestAuthState, isLdapChangeMailState,
 	isPasswordChangedState,
 	isRegistrationState,
 	joinLinkState,
@@ -519,6 +519,9 @@ const PageTokenMobile = () => {
 	const langStringCreateNewPasswordDialogSuccessTooltipMessage = useLangString(
 		"create_new_password_dialog.success_tooltip_message"
 	);
+	const langStringLdap2FaAddMailDialogChangeMailToastSuccess = useLangString(
+		"ldap_2fa_add_mail_dialog.change_mail_toast_success"
+	);
 
 	const scrollableParentBlockRef = useRef(null);
 	const parentBlockRef = useRef(null);
@@ -530,6 +533,7 @@ const PageTokenMobile = () => {
 	const setAuth = useSetAtom(authState);
 	const setIsGuestAuth = useSetAtom(isGuestAuthState);
 	const [ isPasswordChanged, setIsPasswordChanged ] = useAtom(isPasswordChangedState);
+	const [ isLdapChangeMail, setIsLdapChangeMail ] = useAtom(isLdapChangeMailState);
 	const [ isStoreMenuOpen, setStoreMenuOpen ] = useState(false);
 
 	const isJoinLink = useIsJoinLink();
@@ -550,6 +554,14 @@ const PageTokenMobile = () => {
 		setAuth(null);
 		setIsGuestAuth(false);
 	}, []);
+
+	useEffect(() => {
+
+		if (isLdapChangeMail) {
+			pageShowToast(langStringLdap2FaAddMailDialogChangeMailToastSuccess, "success");
+		}
+		setIsLdapChangeMail(false);
+	}, [])
 
 	useEffect(() => {
 		if (!isPasswordChanged) {

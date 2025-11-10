@@ -10,6 +10,7 @@
 !/dev/php/example.php
 
 /api/conf/tariff.php
+/api/conf/preview.php
 
 # для того чтобы не создавать эти папки вручную при инсталле фреймворка
 /logs/*

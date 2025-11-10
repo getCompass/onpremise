@@ -167,9 +167,9 @@ class Gateway_Db_CompanyData_JoinLinkList extends Gateway_Db_CompanyData_Main {
 		// формируем и осуществляем запрос
 		// запрос проверен на EXPLAIN (INDEX=get_status_expires)
 		$query = "SELECT * FROM `?p` FORCE INDEX(`get_status_expires`) 
-			WHERE `status` = ?i OR (`status` = ?i AND `expires_at` < ?i) AND `expires_at` > ?i
+			WHERE (`status` = ?i AND `expires_at` > ?i) OR (`status` = ?i AND `expires_at` < ?i AND `expires_at` > ?i)
 			ORDER BY `updated_at` DESC LIMIT ?i OFFSET ?i";
-		$rows  = ShardingGateway::database(self::_DB_KEY)->getAll($query, self::_TABLE_KEY, $used_status, $active_status, $time, $last_expires_at, $limit, $count);
+		$rows  = ShardingGateway::database(self::_DB_KEY)->getAll($query, self::_TABLE_KEY, $used_status, $last_expires_at, $active_status, $time, $last_expires_at, $limit, $count);
 
 		$list = [];
 		foreach ($rows as $row) {

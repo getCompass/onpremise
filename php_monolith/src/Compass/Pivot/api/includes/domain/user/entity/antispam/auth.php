@@ -80,6 +80,7 @@ class Domain_User_Entity_Antispam_Auth {
 		if ($phone_number == IOS_TEST_PHONE ||
 			$phone_number == ELECTRON_TEST_PHONE ||
 			$phone_number == ANDROID_TEST_PHONE ||
+			$phone_number == ANDROID_TEST_PHONE2 ||
 			$phone_number == IOS_TEST_PHONE2 ||
 			$phone_number == IOS_TEST_PHONE3 ||
 			$phone_number == IOS_TEST_PHONE4) {

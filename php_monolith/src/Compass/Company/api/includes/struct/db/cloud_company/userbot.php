@@ -16,7 +16,6 @@ class Struct_Db_CloudCompany_Userbot {
 		public string $userbot_id,
 		public int    $status_alias,
 		public int    $user_id,
-		public string $smart_app_name,
 		public int    $created_at,
 		public int    $updated_at,
 		public array  $extra,

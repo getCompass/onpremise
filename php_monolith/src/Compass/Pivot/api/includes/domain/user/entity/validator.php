@@ -2,6 +2,9 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\RowNotFoundException;
+
 /**
  * класс для валидации данных вводимых пользователем
  */

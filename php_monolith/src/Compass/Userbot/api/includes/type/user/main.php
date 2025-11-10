@@ -253,7 +253,7 @@ class Type_User_Main {
 	 *
 	 * @return array
 	 */
-	public static function setProfileDisabled(array $extra, int $disabled_at = null):array {
+	public static function setProfileDisabled(array $extra, ?int $disabled_at = null):array {
 
 		// актуализируем структуру
 		$extra = self::_getExtra($extra);

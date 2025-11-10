@@ -18,7 +18,7 @@ class cs_AnswerCommand extends \Exception {
 	protected string $_command_name;
 	protected array  $_command_extra;
 
-	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, \Exception $previous = null) {
+	public function __construct(string $command_name, array $command_extra, string $message = "", int $code = 0, ?\Exception $previous = null) {
 
 		$this->_command_name  = $command_name;
 		$this->_command_extra = $command_extra;
@@ -200,7 +200,7 @@ class cs_Conversation_IsBlockedOrDisabled extends \Exception {
 	protected $_meta_row; // запись с meta_row
 	protected $_allow_status; // передает, что собеседник заблокировал нас, либо мы заблокировали его, либо он заблокирован в системе
 
-	public function __construct(int $allow_status, array $meta_row = [], string $message = "", int $code = 0, \Exception $previous = null) {
+	public function __construct(int $allow_status, array $meta_row = [], string $message = "", int $code = 0, ?\Exception $previous = null) {
 
 		$this->_meta_row     = $meta_row;
 		$this->_allow_status = $allow_status;
@@ -239,7 +239,7 @@ class cs_UrlNotAllowToParse extends \Exception {
 
 	protected $_redirect_url; // ссылка после редиректов
 
-	public function __construct(string $redirect_url, string $message = "", int $code = 0, \Exception $previous = null) {
+	public function __construct(string $redirect_url, string $message = "", int $code = 0, ?\Exception $previous = null) {
 
 		$this->_redirect_url = $redirect_url;
 

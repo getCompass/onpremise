@@ -33,7 +33,7 @@ class Type_TurnServer_Session {
 	//		"username"		=> "1558066310:uid160605",
 	//		"credential"	=> "1Dj9XZ5fwvKS6YoQZOoORcFnXaI=",
 	// ]
-	public static function chooseTlsServerForClient(int $user_id, int $janus_node_id, array $turn_list = null):array {
+	public static function chooseTlsServerForClient(int $user_id, int $janus_node_id, ?array $turn_list = null):array {
 
 		// получаем список включенных TURN серверов из того списка, которые закреплены за janus нодой
 		if (is_null($turn_list)) {
@@ -86,7 +86,7 @@ class Type_TurnServer_Session {
 	//		"username"		=> "1558066310:uid160605",
 	//		"credential"	=> "1Dj9XZ5fwvKS6YoQZOoORcFnXaI=",
 	// ]
-	public static function chooseServerForClient(int $user_id, int $janus_node_id, array $turn_list = null):array {
+	public static function chooseServerForClient(int $user_id, int $janus_node_id, ?array $turn_list = null):array {
 
 		// получаем список включенных TURN серверов из того списка, которые закреплены за janus нодой
 		if (is_null($turn_list)) {
@@ -149,7 +149,7 @@ class Type_TurnServer_Session {
 	//		"turns:1.2.3.4:443?transport=tcp"
 	//	]
 	// }
-	public static function chooseServerForJanus(int $janus_node_id, array $turn_list = null):array {
+	public static function chooseServerForJanus(int $janus_node_id, ?array $turn_list = null):array {
 
 		// получаем список всех turn серверов, которые закреплены за Janus нодой
 		if (is_null($turn_list)) {

@@ -28,7 +28,7 @@ class Domain_Crm_Entity_Event_Abstract {
 	 */
 	protected static function _sendToCrm(array $event_data):void {
 
-		if (ServerProvider::isOnPremise()) {
+		if (ServerProvider::isOnPremise() || ServerProvider::isMaster()) {
 			return;
 		}
 

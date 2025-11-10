@@ -1284,7 +1284,7 @@ class Apiv1_Format {
 
 	// подготавливаем сущность итема левого меню для новых клиентов
 	// при изменении обязательно добавь изменения в apiv2 (если такая же функция там имеется)
-	public static function prepareFormattedLeftMenuForNewClient(array $formatted_left_menu_item, int $original_conversation_type, int $origin_last_message_type = null):array {
+	public static function prepareFormattedLeftMenuForNewClient(array $formatted_left_menu_item, int $original_conversation_type, ?int $origin_last_message_type = null):array {
 
 		// если не диалог с ботом, то все ок и ничего не нужно переконвертировать
 		if ($original_conversation_type != CONVERSATION_TYPE_SINGLE_WITH_SYSTEM_BOT) {

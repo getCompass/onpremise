@@ -12,18 +12,20 @@ import { useSearchParams } from "react-router-dom";
 import PageContentMobileLeaveConference from "./PageContentMobileLeaveConference.tsx";
 import PageContentMobileConferenceLimit from "./PageContentMobileConferenceLimit.tsx";
 import PageContentMobileUnsupportedBrowser from "./PageContentMobileUnsupportedBrowser.tsx";
-import {isUnsupportedMobileBrowser} from "../../lib/functions.ts";
+import { isUnsupportedMobileBrowser } from "../../lib/functions.ts";
+import PageContentMobileKickedFromConference from "./PageContentMobileKickedFromConference.tsx";
 
 const PageContentMobile = () => {
 	const conferenceData = useAtomValue(conferenceDataState);
 	const conferenceDataErrorCode = useAtomValue(conferenceDataErrorCodeState);
 
-	const [searchParams] = useSearchParams();
+	const [ searchParams ] = useSearchParams();
 	const isLeaveConference = Number(searchParams.get("is_leave"));
+	const isKickedFromConference = Number(searchParams.get("is_kicked"));
 
 	// если браузер не поддерживается
 	if (isUnsupportedMobileBrowser()) {
-		return <PageContentMobileUnsupportedBrowser/>;
+		return <PageContentMobileUnsupportedBrowser />;
 	}
 
 	if (conferenceData === null) {
@@ -44,6 +46,10 @@ const PageContentMobile = () => {
 
 	if (isLeaveConference === 1) {
 		return <PageContentMobileLeaveConference />;
+	}
+
+	if (isKickedFromConference === 1) {
+		return <PageContentMobileKickedFromConference />;
 	}
 
 	if (conferenceData.is_private) {

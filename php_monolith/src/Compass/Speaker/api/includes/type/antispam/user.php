@@ -45,7 +45,7 @@ class Type_Antispam_User {
 
 	// проверяем на срабатывание блокировок по конкретному ключу
 	// пишем статистику по срабатыванию блокировки если необходимо
-	public static function throwIfBlocked(int $user_id, array $block_key, string $namespace = null, string $row_name = null, string $key_extra = null):void {
+	public static function throwIfBlocked(int $user_id, array $block_key, ?string $namespace = null, ?string $row_name = null, ?string $key_extra = null):void {
 
 		// проверяем, что пользователь авторизован
 		self::_throwIfPassedInvalidUserId($user_id);

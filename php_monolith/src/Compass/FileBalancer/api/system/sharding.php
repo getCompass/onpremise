@@ -58,7 +58,7 @@ class sharding {
 	}
 
 	// функция для создания соединения с MySQL сервером
-	public static function pdoConnect(string $host, string $user, string $password, bool $ssl, string $db = null):myPDObasic {
+	public static function pdoConnect(string $host, string $user, string $password, bool $ssl, ?string $db = null):myPDObasic {
 
 		// опции подключения
 		$opt = [
@@ -352,7 +352,7 @@ class myPDObasic extends PDO {
 	// -----------------------------------------------------------------
 
 	// ескейпим строку
-	protected function _escapeString(string $value = null):string {
+	protected function _escapeString(?string $value = null):string {
 
 		if ($value === null) {
 			return "NULL";

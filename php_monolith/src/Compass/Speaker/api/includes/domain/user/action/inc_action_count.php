@@ -27,7 +27,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws \busException
 	 * @throws \returnException
 	 */
-	public static function incCall(int $user_id, string $conversation_map, Short $user_info = null):void {
+	public static function incCall(int $user_id, string $conversation_map, ?Short $user_info = null):void {
 
 		self::_send($user_id, $conversation_map, self::_CALLS, $user_info);
 	}
@@ -47,7 +47,7 @@ class Domain_User_Action_IncActionCount {
 	 * @throws \busException
 	 * @throws \returnException
 	 */
-	protected static function _send(int $user_id, string $conversation_map, string $action, Short $user_info = null):void {
+	protected static function _send(int $user_id, string $conversation_map, string $action, ?Short $user_info = null):void {
 
 		if ($user_id < 1) {
 			return;

@@ -284,6 +284,8 @@
         "cameraNotSendingData": "No podemos acceder a la cámara. Asegúrate que no haya otra aplicación usándola, selecciona otro dispositivo del menú de configuración o intenta volver a cargar la aplicación.",
         "cameraNotSendingDataTitle": "No es posible acceder a la cámara",
         "cameraPermissionDeniedError": "No has otorgado permiso para usar la cámara. Puedes unirte a la conferencia de todos modos, pero los demás asistentes no te podrán ver. Usa el botón de la cámara en la barra de direcciones para solucionar esto.",
+        "screenRecordingPermissionErrorDescription": "Por favor, compruebe los permisos de grabación de pantalla y reinicie la aplicación",
+        "screenRecordingPermissionErrorTitle": "Error de acceso a la grabación de pantalla",
         "cameraTimeoutError": "No se ha podido iniciar la fuente de vídeo. Se ha agotado el tiempo de espera.",
         "cameraUnknownError": "No se puede usar la cámara por un motivo desconocido.",
         "cameraUnsupportedResolutionError": "La cámara no admite la resolución de vídeo requerida.",
@@ -1101,7 +1103,16 @@
         "talkWhileMuted": "Hablar en silencio",
         "title": "Ajustes",
         "video": "Video",
-        "videoNoPermissions": "Sin acceso al video"
+        "videoNoPermissions": "Sin acceso al video",
+        "autoGainControl": {
+            "checkbox": "Nivel automático del micrófono",
+            "systemSettings": "Configuración de audio del sistema",
+            "notificationAlert": {
+                "titleEnabled": "Nivel automático del micrófono activado",
+                "titleDisabled": "Nivel automático del micrófono desactivado",
+                "description": "La configuración se aplicará después de reiniciar la conferencia."
+            }
+        }
     },
     "moderatorSettings": {
         "conferenceQualityTitle": "Calidad del vídeo en la conferencia para todos",

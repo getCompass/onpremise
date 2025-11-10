@@ -40,7 +40,7 @@ $CONFIG["SOCKET_MODULE"] = [
 ];
 
 $CONFIG["SOCKET_ALLOW_KEY"] = [
-	"pivot"         => [
+	"pivot" => [
 		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_SSL,
 		"auth_key"      => PIVOT_TO_COMPANY_PUBLIC_KEY,
 		"allow_methods" => [
@@ -104,6 +104,9 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"premium.onInvoiceCreated",
 			"premium.onInvoicePayed",
 			"premium.onInvoiceCanceled",
+			"smartapp.getCreatedSmartAppListByUser",
+			"smartapp.getCreatedSmartAppsStatFromSuggestionList",
+			"smartapp.getCreatedPersonalSmartApps",
 			"space.member.updatePermissions",
 			"space.member.isMediaConferenceCreatingAllowed",
 			"space.member.checkIsAllowedForCall",
@@ -233,20 +236,20 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"company.member.getUserInfo",
 		],
 	],
-	"crm"      => [
+	"crm"           => [
 		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_SSL,
 		"auth_key"      => PIVOT_TO_COMPANY_PUBLIC_KEY,
 		"allow_methods" => [
 			"company.member.getAll",
 		],
 	],
-	"go_file_auth" => [
+	"go_file_auth"  => [
 		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_KEY,
 		"auth_key"      => \SOCKET_KEY_GO_FILE_AUTH,
 		"allow_methods" => [
 			"space.member.checkSession",
 		],
-	]
+	],
 ];
 
 return $CONFIG;

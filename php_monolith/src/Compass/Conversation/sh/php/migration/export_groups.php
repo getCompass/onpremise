@@ -201,7 +201,7 @@ class Migration_Export_Groups {
 	 */
 	protected function _prepareConversation(Struct_Db_CompanyConversation_ConversationMeta $meta,
 							    Struct_Db_CompanyConversation_ConversationDynamic $dynamic,
-							    string $conversation_export_name, array|null $avatar_file = null):array {
+							    string $conversation_export_name, ?array $avatar_file = null):array {
 
 		$meta_users_joined_at = [];
 		foreach ($meta->users as $user_id => $user_item) {

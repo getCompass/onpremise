@@ -57,6 +57,7 @@ export const NOTIFICATION_ICON = {
     SCREENSHARE: 'screenshare',
     WARNING_STOP_HAND: 'warning_stop_hand',
     WARNING: 'warning',
+    MICROPHONE: 'microphone',
 };
 
 /**

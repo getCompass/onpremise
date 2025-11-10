@@ -9,8 +9,8 @@ use BaseFrame\Server\ServerProvider;
 /**
  * хелпер для всего, что связано с url preview
  */
-class Helper_Preview {
-
+class Helper_Preview
+{
 	protected const    _PREVIEW_EXPIRE_TIME = DAY1; // время протухания превью
 	public const       REDIRECT_MAX_COUNT   = 10; // максимальное количество редиректов
 
@@ -21,7 +21,6 @@ class Helper_Preview {
 		"image/jpg",
 		"image/x-icon",
 	];
-
 	protected const _REDIRECT_CODE = [
 		300,
 		301,
@@ -42,8 +41,14 @@ class Helper_Preview {
 	// соль для обозначения простого превью
 	protected const _SIMPLE_PREVIEW_SALT = "simple";
 
+	// исключаемсые первые октеты для ссылок типа ip
+	protected const _EXCLUDED_FIRST_OCTET_LIST = [
+		10, 127, 192, 0,
+	];
+
 	// подготавливает ссылку
-	public static function prepareUrl(string $url):string {
+	public static function prepareUrl(string $url): string
+	{
 
 		// если у переданной ссылки не указан http(s) - используем http по умолчанию
 		$url = Type_Preview_Utils::addProtocol($url);
@@ -74,17 +79,13 @@ class Helper_Preview {
 	/**
 	 * Создаем превью для сайта
 	 *
-	 * @param string $prepared_url
-	 * @param int    $user_id
-	 * @param string $lang
-	 * @param bool   $need_full_preview
 	 *
-	 * @return array
 	 * @throws Domain_Thread_Exception_Preview_IncorrectUrl
 	 * @throws cs_UrlNotAllowToParse
 	 * @throws cs_UrlParseFailed
 	 */
-	public static function createPreview(string $prepared_url, int $user_id, string $lang, bool $need_full_preview = false):array {
+	public static function createPreview(string $prepared_url, int $user_id, string $lang, bool $need_full_preview = false): array
+	{
 
 		// подготовим url к парсингу, в зависимости от сайта
 		$prepared_url = self::prepareUrlBySite($prepared_url);
@@ -124,16 +125,12 @@ class Helper_Preview {
 	/**
 	 * Создать полноценное превью
 	 *
-	 * @param string $prepared_url
-	 * @param string $domain
-	 * @param int    $user_id
-	 * @param string $lang
 	 *
-	 * @return array
 	 * @throws cs_UrlNotAllowToParse
 	 * @throws cs_UrlParseFailed
 	 */
-	protected static function _createFullPreview(string $prepared_url, string $domain, int $user_id, string $lang):array {
+	protected static function _createFullPreview(string $prepared_url, string $domain, int $user_id, string $lang): array
+	{
 
 		try {
 
@@ -168,14 +165,12 @@ class Helper_Preview {
 	/**
 	 * Сделать простое превью
 	 *
-	 * @param string $prepared_url
-	 * @param string $domain
 	 *
-	 * @return array
 	 * @throws Domain_Thread_Exception_Preview_IncorrectUrl
 	 * @long
 	 */
-	protected static function _createSimplePreview(string $prepared_url, string $domain):array {
+	protected static function _createSimplePreview(string $prepared_url, string $domain): array
+	{
 
 		// если это ip адрес - достать имя сайта не получится
 		if (ip2long($domain) !== false) {
@@ -214,14 +209,9 @@ class Helper_Preview {
 
 	/**
 	 * Формируем preview_map
-	 *
-	 * @param string $prepared_url
-	 * @param string $lang
-	 * @param bool   $need_full_preview
-	 *
-	 * @return string
 	 */
-	protected static function _getPreviewMapFromUrl(string $prepared_url, string $lang, bool $need_full_preview):string {
+	protected static function _getPreviewMapFromUrl(string $prepared_url, string $lang, bool $need_full_preview): string
+	{
 
 		// формируем preview_hash
 		$salt         = $need_full_preview ? "" : self::_SIMPLE_PREVIEW_SALT;
@@ -234,7 +224,8 @@ class Helper_Preview {
 	}
 
 	// получаем информацию по url preview
-	protected static function _makeFullPreviewData(\Curl $curl, string $content, string $domain, int $user_id, string $prepared_url):array {
+	protected static function _makeFullPreviewData(\Curl $curl, string $content, string $domain, int $user_id, string $prepared_url): array
+	{
 
 		$mime_type       = self::_getMimeType($curl);
 		$is_need_favicon = self::_getIsNeedFaviconForDomain($domain);
@@ -256,15 +247,13 @@ class Helper_Preview {
 	/**
 	 * Получаем ссылку после редиректов
 	 *
-	 * @param \Curl  $curl
-	 * @param string $prepared_url
 	 *
-	 * @return string
 	 * @throws \cs_CurlError
 	 * @throws cs_UrlNotAllowToParse
 	 * @throws cs_UrlParseFailed
 	 */
-	protected static function _doCurlRequest(\Curl $curl, string $prepared_url):string {
+	protected static function _doCurlRequest(\Curl $curl, string $prepared_url): string
+	{
 
 		// получаем html ссылки
 		$html = $curl->get($prepared_url);
@@ -275,7 +264,8 @@ class Helper_Preview {
 	}
 
 	// получаем html по ссылке после редиректов
-	protected static function _getContentAfterRedirects(\Curl $curl, string $content):string {
+	protected static function _getContentAfterRedirects(\Curl $curl, string $content): string
+	{
 
 		for ($i = 0; $i <= self::REDIRECT_MAX_COUNT; $i++) {
 
@@ -307,7 +297,8 @@ class Helper_Preview {
 	 *
 	 * @mixed
 	 */
-	protected static function _getRedirectUrlIfHttp200(\Curl $curl, string $html):mixed {
+	protected static function _getRedirectUrlIfHttp200(\Curl $curl, string $html): mixed
+	{
 
 		// на случай если вернулся 401/402/403 - выходим из цикла
 		if (self::_isNotAvailableHttpCode($curl->getResponseCode())) {
@@ -330,7 +321,8 @@ class Helper_Preview {
 	 * для обработки таких случаев нужен этот код
 	 * @mixed
 	 */
-	protected static function _checkHtmlRedirect(string $html):mixed {
+	protected static function _checkHtmlRedirect(string $html): mixed
+	{
 
 		// список регулярных выражений
 		// match_num - порядковый номер совпадения (ключ массива совпадений)
@@ -355,7 +347,8 @@ class Helper_Preview {
 	}
 
 	// проверяем на какую страницу ведет редирект
-	protected static function _isInfiniteLoop(array $matches):bool {
+	protected static function _isInfiniteLoop(array $matches): bool
+	{
 
 		// разбиваем на 2 части
 		$arr = explode("url=", $matches[0], 2);
@@ -381,7 +374,8 @@ class Helper_Preview {
 	 * @throws cs_UrlParseFailed
 	 * @mixed
 	 */
-	protected static function _getRedirectedUrlIfHttp301(\Curl $curl, mixed $redirect_url):string {
+	protected static function _getRedirectedUrlIfHttp301(\Curl $curl, mixed $redirect_url): string
+	{
 
 		// если вернулся редирект http_code
 		if (self::_isRedirectHttpCode($curl->getResponseCode())) {
@@ -396,7 +390,8 @@ class Helper_Preview {
 	}
 
 	// если вдруг пропал якорь из ссылки - возвращаем
-	protected static function _doAnchorFix(string $old_domain, string $old_url, string $new_url):string {
+	protected static function _doAnchorFix(string $old_domain, string $old_url, string $new_url): string
+	{
 
 		$anchor     = parse_url($old_url, PHP_URL_FRAGMENT);
 		$new_domain = self::_getDomain($new_url);
@@ -410,7 +405,8 @@ class Helper_Preview {
 	}
 
 	// проверяем сменился ли домен, если остался таким же или домен доверенный тогда отдаем первоначальную ссылку
-	protected static function _checkDomainAfterRedirect(string $prepared_url, string $domain_after_redirects, string $domain_before_redirects, string $prepared_url_after_redirects):string {
+	protected static function _checkDomainAfterRedirect(string $prepared_url, string $domain_after_redirects, string $domain_before_redirects, string $prepared_url_after_redirects): string
+	{
 
 		// если домен в доверенных то отдаем первоначальную ссылку
 		if (Type_Preview_Config::isDomainInWhiteList($domain_before_redirects)) {
@@ -428,7 +424,8 @@ class Helper_Preview {
 	}
 
 	// получаем mime_type
-	protected static function _getMimeType(\Curl $curl):string {
+	protected static function _getMimeType(\Curl $curl): string
+	{
 
 		// получаем заголовки
 		$headers = $curl->getHeaders();
@@ -457,7 +454,8 @@ class Helper_Preview {
 	}
 
 	// получаем флаг, нужен фавикон для домена или нет
-	protected static function _getIsNeedFaviconForDomain(string $domain):bool {
+	protected static function _getIsNeedFaviconForDomain(string $domain): bool
+	{
 
 		// разбиваем домен на все уровни
 		$temp = explode(".", $domain);
@@ -472,7 +470,8 @@ class Helper_Preview {
 	}
 
 	// выбрасываем исключение, если пришел пустой массив headers
-	protected static function _throwIfHeadersIsEmpty(array $headers):void {
+	protected static function _throwIfHeadersIsEmpty(array $headers): void
+	{
 
 		if (count($headers) < 1) {
 			throw new cs_UrlParseFailed("Headers is empty", Type_Logs_Cron_Parser::LOG_STATUS_PARSE_ERROR);
@@ -480,7 +479,8 @@ class Helper_Preview {
 	}
 
 	// приводим заголовки к нижнему регистру
-	protected static function _setHeadersToLower(array $headers):array {
+	protected static function _setHeadersToLower(array $headers): array
+	{
 
 		foreach ($headers as $k => $v) {
 			$headers[mb_strtolower($k)] = $v;
@@ -489,7 +489,8 @@ class Helper_Preview {
 	}
 
 	// выбрасываем исключение, если в $headers нету поля content-type
-	protected static function _throwIfContentTypeNotExistInHeaders(array $headers):void {
+	protected static function _throwIfContentTypeNotExistInHeaders(array $headers): void
+	{
 
 		if (!isset($headers["content-type"])) {
 			throw new cs_UrlParseFailed("Content-type not exist in Headers", Type_Logs_Cron_Parser::LOG_STATUS_SERVER_RESPONSE_ERROR);
@@ -497,7 +498,8 @@ class Helper_Preview {
 	}
 
 	// пробуем получить mime_type из полученного content_type
-	protected static function _tryGetMimeTypeFromContentTypeLost(array $content_type_list):string {
+	protected static function _tryGetMimeTypeFromContentTypeLost(array $content_type_list): string
+	{
 
 		$mime_type = "";
 
@@ -520,7 +522,8 @@ class Helper_Preview {
 	}
 
 	// формируем превью сайта text/html
-	protected static function _makePreviewDataMimeTypeIsHtml(\Curl $curl, string $html, string $domain, int $user_id, string $prepared_url):array {
+	protected static function _makePreviewDataMimeTypeIsHtml(\Curl $curl, string $html, string $domain, int $user_id, string $prepared_url): array
+	{
 
 		// пробуем поменять кодировку на UTF-8
 		$html = self::_trySetUtf8Charset($curl, $html);
@@ -536,7 +539,8 @@ class Helper_Preview {
 	}
 
 	// формируем превью сайта application/json
-	protected static function _makePreviewDataMimeTypeJson(string $content, string $domain, int $user_id, string $prepared_url):array {
+	protected static function _makePreviewDataMimeTypeJson(string $content, string $domain, int $user_id, string $prepared_url): array
+	{
 
 		// пытаемся распаковать содержимое
 		$content = fromJson($content);
@@ -557,7 +561,8 @@ class Helper_Preview {
 	}
 
 	// парсим html и собираем preview data в зависимости от ресурса
-	public static function makeDataFromHtml(string $user_id, string $url, string $short_url, string $html):array {
+	public static function makeDataFromHtml(string $user_id, string $url, string $short_url, string $html): array
+	{
 
 		// определяем класс парсера
 		$parser = Type_Preview_Parser::resolveClass($url);
@@ -565,7 +570,8 @@ class Helper_Preview {
 	}
 
 	// парсим json и собираем preview data в зависимости от ресурса
-	public static function makeDataFromJson(string $user_id, string $url, string $short_url, array $content):array {
+	public static function makeDataFromJson(string $user_id, string $url, string $short_url, array $content): array
+	{
 
 		// определяем класс парсера
 		$parser = Type_Preview_Parser::resolveClass($url);
@@ -573,7 +579,8 @@ class Helper_Preview {
 	}
 
 	// пробуем поменять кодировку html на utf-8
-	protected static function _trySetUtf8Charset(\Curl $curl, string $html):string {
+	protected static function _trySetUtf8Charset(\Curl $curl, string $html): string
+	{
 
 		// меняем кодировку на utf-8, чтобы определить кодировку и не сломать кириллицу
 		$temp = mb_convert_encoding($html, "utf-8");
@@ -597,7 +604,8 @@ class Helper_Preview {
 	}
 
 	// получаем кодировку
-	protected static function _getCharset(string $html, \Curl $curl):string {
+	protected static function _getCharset(string $html, \Curl $curl): string
+	{
 
 		// пробуем найти кодировку
 		if (preg_match("/<meta[^>]+?http-equiv=['\"]Content-Type['\"].*?content=['\"].*charset=([0-9a-zA-Z-]+).*['\"]/ui", $html, $matches)) {
@@ -618,7 +626,8 @@ class Helper_Preview {
 	}
 
 	// формируем превью картинки
-	protected static function _makeImageDataPreview(string $domain, int $user_id, string $prepared_url, bool $is_need_favicon):array {
+	protected static function _makeImageDataPreview(string $domain, int $user_id, string $prepared_url, bool $is_need_favicon): array
+	{
 
 		// получаем file_map изображения
 		$image_file_map = self::_tryDownloadFile($user_id, $prepared_url);
@@ -640,7 +649,8 @@ class Helper_Preview {
 	}
 
 	// обновляем запись в базе или создаем новую
-	protected static function _createOrUpdateRow(string $preview_map, array $url_preview, array $url_preview_data):void {
+	protected static function _createOrUpdateRow(string $preview_map, array $url_preview, array $url_preview_data): void
+	{
 
 		// если превью есть в базе
 		if (isset($url_preview["preview_map"])) {
@@ -660,20 +670,17 @@ class Helper_Preview {
 
 	/**
 	 * Прикрепляем ссылки к сообщению
-	 *
-	 * @param int         $user_id
-	 * @param string      $message_map
-	 * @param string      $parent_conversation_map
-	 * @param array       $users
-	 * @param array       $link_list
-	 * @param string|null $preview_map
-	 * @param int|null    $preview_type
-	 * @param array       $preview_image
-	 *
-	 * @return void
 	 */
-	public static function attachLinkList(int    $user_id, string $message_map, string $parent_conversation_map, array $users, array $link_list,
-							  string $preview_map = null, int $preview_type = null, array $preview_image = []):void {
+	public static function attachLinkList(
+		int $user_id,
+		string $message_map,
+		string $parent_conversation_map,
+		array $users,
+		array $link_list,
+		string $preview_map = null,
+		int $preview_type = null,
+		array $preview_image = []
+	): void {
 
 		// прикрепляем preview и список ссылок к сообщению и шлем событие всем пользователям, переданным в крон
 		$threads_updated_version = Type_Preview_Main::attachToMessage($user_id, $message_map, $parent_conversation_map, $link_list, $users, $preview_map, $preview_type, $preview_image);
@@ -681,7 +688,8 @@ class Helper_Preview {
 	}
 
 	// шлет ws событие
-	protected static function _sendWS(array $user_list, string $message_map, array $link_list, int $threads_updated_version, string $preview_map = null, int $preview_type = null, array $preview_image = []):void {
+	protected static function _sendWS(array $user_list, string $message_map, array $link_list, int $threads_updated_version, string $preview_map = null, int $preview_type = null, array $preview_image = []): void
+	{
 
 		// формируем список пользователей, которым нужно отправлять ws-эвент
 		$talking_user_list = Type_Thread_Meta_Users::getTalkingUserList($user_list);
@@ -703,12 +711,19 @@ class Helper_Preview {
 
 		// отправляем ws событие всем пользователям, переданным в крон
 		Gateway_Bus_Sender::threadMessageLinkDataChanged(
-			$talking_user_list, $message_map, $link_list, $threads_updated_version, $preview_map, $preview_type, $preview_image
+			$talking_user_list,
+			$message_map,
+			$link_list,
+			$threads_updated_version,
+			$preview_map,
+			$preview_type,
+			$preview_image
 		);
 	}
 
 	// получаем конечную ссылку после редиректов
-	public static function getRealUrl(string $url):string {
+	public static function getRealUrl(string $url): string
+	{
 
 		$domain = self::_getDomain($url);
 		if (!self::_isDomainAllowToParse($domain)) {
@@ -761,10 +776,9 @@ class Helper_Preview {
 
 	/**
 	 * Функция подготавливает ссылку к парсингу в зависимости от сайта
-	 *
-	 * @return string
 	 */
-	public static function prepareUrlBySite(string $url):string {
+	public static function prepareUrlBySite(string $url): string
+	{
 
 		$parser = Type_Preview_Parser::resolveClass($url);
 		return $parser::prepareUrl($url);
@@ -777,12 +791,11 @@ class Helper_Preview {
 	/**
 	 * Получаем домен
 	 *
-	 * @param string $url
 	 *
-	 * @return string
 	 * @throws Domain_Thread_Exception_Preview_IncorrectUrl
 	 */
-	protected static function _getDomain(string $url):string {
+	protected static function _getDomain(string $url): string
+	{
 
 		// получаем домен из ссылки
 		$domain = parse_url($url, PHP_URL_HOST);
@@ -797,7 +810,8 @@ class Helper_Preview {
 	}
 
 	// инициализируем curl и получаем инфо по ссылке
-	protected static function _doFirstRequest(string $url):\Curl {
+	protected static function _doFirstRequest(string $url): \Curl
+	{
 
 		// инициализируем curl и устанавливаем таймаут с User Agent
 		$curl = new \Curl();
@@ -812,10 +826,17 @@ class Helper_Preview {
 	}
 
 	// проверяем, можно ли парсить домен
-	protected static function _isDomainAllowToParse(string $domain):bool {
+	protected static function _isDomainAllowToParse(string $domain): bool
+	{
 
 		// если парсинг отключен, запрещаем
 		if (!Type_Preview_Config::isPreviewEnabled()) {
+			return false;
+		}
+
+		// не парсим приватные ip
+		preg_match("/^(\d{1,3})\.\d{1,3}\.\d{1,3}\.\d{1,3}$/", $domain, $matches);
+		if (count($matches) > 0 && in_array($matches[1], self::_EXCLUDED_FIRST_OCTET_LIST)) {
 			return false;
 		}
 
@@ -838,7 +859,8 @@ class Helper_Preview {
 	}
 
 	// устанавливаем timeout для курла
-	protected static function _setTimeout(\Curl $curl):void {
+	protected static function _setTimeout(\Curl $curl): void
+	{
 
 		$curl->setTimeout(2);
 
@@ -848,7 +870,8 @@ class Helper_Preview {
 	}
 
 	// проверяем http_code запроса
-	protected static function _checkRequestHttpCode(\Curl $curl):void {
+	protected static function _checkRequestHttpCode(\Curl $curl): void
+	{
 
 		// если не получили ответа
 		if ($curl->getResponseCode() == 0) {
@@ -857,7 +880,8 @@ class Helper_Preview {
 	}
 
 	// проверяем, является ли http_code кодом редиректа
-	protected static function _isRedirectHttpCode(int $http_code):bool {
+	protected static function _isRedirectHttpCode(int $http_code): bool
+	{
 
 		// если совпал редирект
 		if (in_array($http_code, self::_REDIRECT_CODE)) {
@@ -868,7 +892,8 @@ class Helper_Preview {
 	}
 
 	// проверяем, является ли http_code кодом указываеющим на недоступность
-	protected static function _isNotAvailableHttpCode(int $http_code):bool {
+	protected static function _isNotAvailableHttpCode(int $http_code): bool
+	{
 
 		// если совпал редирект
 		if (in_array($http_code, self::_NOT_AVAILABLE_HTTP_CODE)) {
@@ -879,7 +904,8 @@ class Helper_Preview {
 	}
 
 	// скачиваем файл
-	protected static function _tryDownloadFile(int $user_id, string $file_url):string {
+	protected static function _tryDownloadFile(int $user_id, string $file_url): string
+	{
 
 		$node_socket_url    = self::_getNodeForDownload();
 		$company_socket_url = getConfig("SOCKET_URL")["company"];
@@ -922,7 +948,8 @@ class Helper_Preview {
 	}
 
 	// получаем ссылку на ноду для сохранения файла
-	protected static function _getNodeForDownload():string {
+	protected static function _getNodeForDownload(): string
+	{
 
 		// отправляем сокет запрос для получения url файловой ноды
 		[$status, $response] = Gateway_Socket_FileBalancer::doCall("previews.getNodeForDownload", []);

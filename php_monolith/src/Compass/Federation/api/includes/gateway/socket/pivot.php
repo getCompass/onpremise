@@ -135,8 +135,9 @@ class Gateway_Socket_Pivot extends Gateway_Socket_Default {
 		}
 
 		$ar_post = [
-			"user_id"           => (int) $user_id,
-			"ldap_account_data" => (array) $ldap_account_data,
+			"user_id"                            => (int) $user_id,
+			"ldap_account_data"                  => (array) $ldap_account_data,
+			"is_empty_attributes_update_enabled" => (int) Domain_Ldap_Entity_Config::isEmptyAttributesUpdateEnabled(),
 		];
 
 		$method = "pivot.ldap.actualizeProfileData";
@@ -145,6 +146,36 @@ class Gateway_Socket_Pivot extends Gateway_Socket_Default {
 		if ($status !== "ok") {
 			throw new ReturnFatalException("unexpected response");
 		}
+	}
+
+	/**
+	 * Отправить код подтверждения
+	 *
+	 * @param string $mail
+	 * @param string $confirm_code
+	 * @param int    $template
+	 *
+	 * @return string
+	 * @throws ReturnFatalException
+	 * @throws \parseException
+	 * @throws \returnException
+	 */
+	public static function sendMailConfirmCode(string $mail, string $confirm_code, string $template):string {
+
+		$ar_post = [
+			"mail"         => $mail,
+			"confirm_code" => $confirm_code,
+			"template"     => $template,
+		];
+
+		$method = "pivot.ldap.sendMailConfirmCode";
+		[$status, $response] = self::_doCall(self::_getUrl(), $method, $ar_post, SOCKET_KEY_FEDERATION);
+
+		if ($status !== "ok") {
+			throw new ReturnFatalException("unexpected response");
+		}
+
+		return $response["message_id"];
 	}
 
 	/**

@@ -17,7 +17,7 @@ class Domain_User_Action_Conversation_GetLeftMenuMeta {
 	 *
 	 * @return array
 	 */
-	#[ArrayShape(["messages_unread_count" => "int", "conversations_unread_count" => "int", "left_menu_version" => "int"])]
+	#[ArrayShape(["messages_unread_count" => "int", "conversations_unread_count" => "int", "single_conversations_unread_count" => "int", "left_menu_version" => "int"])]
 	public static function do(int $user_id):array {
 
 		// получаем счетчики непрочитанных
@@ -25,9 +25,10 @@ class Domain_User_Action_Conversation_GetLeftMenuMeta {
 		$left_menu_version = Gateway_Db_CompanyConversation_UserLeftMenu::getLeftMenuLastVersion($user_id);
 
 		return [
-			"messages_unread_count"      => (int) ($dynamic_row["message_unread_count"] ?? 0),
-			"conversations_unread_count" => (int) ($dynamic_row["conversation_unread_count"] ?? 0),
-			"left_menu_version"          => (int) $left_menu_version,
+			"messages_unread_count"             => (int) ($dynamic_row["message_unread_count"] ?? 0),
+			"conversations_unread_count"        => (int) ($dynamic_row["conversation_unread_count"] ?? 0),
+			"single_conversations_unread_count" => (int) ($dynamic_row["single_conversation_unread_count"] ?? 0),
+			"left_menu_version"                 => (int) $left_menu_version,
 		];
 	}
 }

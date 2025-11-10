@@ -37,3 +37,9 @@ type TokenItem struct {
 	IsNewFirebasePush int    `json:"is_new_firebase_push,omitempty"`
 	RawMessage        json.RawMessage
 }
+
+// структура инвалидного токена
+type InvalidTokenStruct struct {
+	Token  string `json:"token"`
+	Device string `json:"device"`
+}

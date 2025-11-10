@@ -20,13 +20,12 @@ class Gateway_Db_CompanyData_UserbotList extends Gateway_Db_CompanyData_Main {
 	 *
 	 * @throws \queryException
 	 */
-	public static function insert(string $userbot_id, int $user_id, string $smart_app_name, int $status, int $created_at, array $extra):void {
+	public static function insert(string $userbot_id, int $user_id, int $status, int $created_at, array $extra):void {
 
 		$insert_row = [
 			"userbot_id"     => $userbot_id,
 			"status_alias"   => $status,
 			"user_id"        => $user_id,
-			"smart_app_name" => $smart_app_name,
 			"created_at"     => $created_at,
 			"updated_at"     => 0,
 			"extra"          => $extra,
@@ -66,25 +65,6 @@ class Gateway_Db_CompanyData_UserbotList extends Gateway_Db_CompanyData_Main {
 		// запрос проверен на EXPLAIN (INDEX=PRIMARY)
 		$query = "SELECT * FROM `?p` WHERE `userbot_id` = ?s LIMIT ?i";
 		$row   = ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_KEY, $userbot_id, 1);
-
-		if (!isset($row["userbot_id"])) {
-			throw new Domain_Userbot_Exception_UserbotNotFound("user is not found");
-		}
-
-		return self::_rowToObject($row);
-	}
-
-	/**
-	 * метод для получения записи
-	 *
-	 * @throws Domain_Userbot_Exception_UserbotNotFound
-	 */
-	public static function getBySmartAppName(string $smart_app_name):Struct_Db_CloudCompany_Userbot {
-
-		// формируем и осуществляем запрос
-		// запрос проверен на EXPLAIN (INDEX=smart_app_name)
-		$query = "SELECT * FROM `?p` WHERE `smart_app_name` = ?s LIMIT ?i";
-		$row   = ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_KEY, $smart_app_name, 1);
 
 		if (!isset($row["userbot_id"])) {
 			throw new Domain_Userbot_Exception_UserbotNotFound("user is not found");
@@ -184,7 +164,6 @@ class Gateway_Db_CompanyData_UserbotList extends Gateway_Db_CompanyData_Main {
 			$row["userbot_id"],
 			$row["status_alias"],
 			$row["user_id"],
-			$row["smart_app_name"],
 			$row["created_at"],
 			$row["updated_at"],
 			fromJson($row["extra"])

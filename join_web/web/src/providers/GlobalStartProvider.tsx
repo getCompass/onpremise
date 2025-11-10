@@ -2,7 +2,7 @@ import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
 	activeDialogIdState,
-	authInputState,
+	authInputState, authLdapState,
 	authSsoState,
 	authState, isGuestAuthState,
 	isLoadedState,
@@ -56,6 +56,7 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 	const [ isLoaded, setIsLoaded ] = useAtom(isLoadedState);
 	const authInput = useAtomValue(authInputState);
 	const auth = useAtomValue(authState);
+	const authLdap = useAtomValue(authLdapState);
 	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
 	const { is_authorized, need_fill_profile } = useAtomValue(profileState);
 	const isNeedShowCreateProfileDialogAfterSsoRegistration = useAtomValue(
@@ -87,6 +88,8 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 	const langStringTwoMinutes = useLangString("two_minutes");
 	const langStringFiveMinutes = useLangString("five_minutes");
 	const [ prevIsAuthorized, setPrevIsAuthorized ] = useState<boolean | null>(null);
+
+	useEffect(() => isJoinLink ? navigateToPage("welcome") : navigateToPage("auth"), [ isJoinLink ]);
 
 	useEffect(() => {
 		// обновляем prevActivePage перед изменением activePage
@@ -308,34 +311,34 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 
 			if (apiJoinLinkPrepare.isError && apiJoinLinkPrepare.error instanceof ApiError) {
 				switch (apiJoinLinkPrepare.error.error_code) {
-				case ALREADY_MEMBER_ERROR_CODE:
-					setPrepareJoinLinkError({
-						error_code: apiJoinLinkPrepare.error.error_code,
-						data: {
-							company_id: apiJoinLinkPrepare.error.company_id,
-							inviter_user_id: apiJoinLinkPrepare.error.inviter_user_id,
-							inviter_full_name: apiJoinLinkPrepare.error.inviter_full_name,
-							is_postmoderation: apiJoinLinkPrepare.error.is_postmoderation,
-							is_waiting_for_postmoderation: apiJoinLinkPrepare.error.is_waiting_for_postmoderation,
-							role: apiJoinLinkPrepare.error.role,
-							was_member_before: apiJoinLinkPrepare.error.was_member_before,
-							join_link_uniq: apiJoinLinkPrepare.error.join_link_uniq,
-						} as PrepareJoinLinkErrorAlreadyMemberData,
-					});
-					break;
+					case ALREADY_MEMBER_ERROR_CODE:
+						setPrepareJoinLinkError({
+							error_code: apiJoinLinkPrepare.error.error_code,
+							data: {
+								company_id: apiJoinLinkPrepare.error.company_id,
+								inviter_user_id: apiJoinLinkPrepare.error.inviter_user_id,
+								inviter_full_name: apiJoinLinkPrepare.error.inviter_full_name,
+								is_postmoderation: apiJoinLinkPrepare.error.is_postmoderation,
+								is_waiting_for_postmoderation: apiJoinLinkPrepare.error.is_waiting_for_postmoderation,
+								role: apiJoinLinkPrepare.error.role,
+								was_member_before: apiJoinLinkPrepare.error.was_member_before,
+								join_link_uniq: apiJoinLinkPrepare.error.join_link_uniq,
+							} as PrepareJoinLinkErrorAlreadyMemberData,
+						});
+						break;
 
-				case LIMIT_ERROR_CODE:
-					setPrepareJoinLinkError({
-						error_code: apiJoinLinkPrepare.error.error_code,
-						data: {
-							expires_at: apiJoinLinkPrepare.error.expires_at,
-						} as PrepareJoinLinkErrorLimitData,
-					});
-					break;
+					case LIMIT_ERROR_CODE:
+						setPrepareJoinLinkError({
+							error_code: apiJoinLinkPrepare.error.error_code,
+							data: {
+								expires_at: apiJoinLinkPrepare.error.expires_at,
+							} as PrepareJoinLinkErrorLimitData,
+						});
+						break;
 
-				default:
-					setPrepareJoinLinkError({ error_code: apiJoinLinkPrepare.error.error_code });
-					break;
+					default:
+						setPrepareJoinLinkError({ error_code: apiJoinLinkPrepare.error.error_code });
+						break;
 				}
 			} else {
 				setPrepareJoinLinkError(null);
@@ -423,13 +426,13 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 			} else {
 				if (authInputValue.length > 0) {
 					// чтобы не выкидывало при перезапросе start на ввод номера/почты
-					if (activeDialog !== "auth_sso_ldap") {
+					if (activeDialog !== "auth_sso_ldap" && authLdap === null) {
 						navigateToPage("auth");
 						navigateToDialog("auth_email_phone_number");
 					}
 				} else {
 					// чтобы не выкидывало при перезапросе start на ввод номера/почты
-					if (!isJoinLink && activeDialog !== "auth_sso_ldap") {
+					if (!isJoinLink && activeDialog !== "auth_sso_ldap" && authLdap === null) {
 						navigateToPage("auth");
 						navigateToDialog("auth_email_phone_number");
 					}

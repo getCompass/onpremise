@@ -303,6 +303,8 @@
         "cameraNotSendingData": "Impossible d'accéder à votre caméra. Veuillez sélectionner un autre périphérique dans les paramètres ou rafraîchir la page.",
         "cameraNotSendingDataTitle": "Impossible d'accéder à votre caméra",
         "cameraPermissionDeniedError": "Vous n'avez pas autorisé l'utilisation de votre caméra. Vous pouvez toujours participer à la conférence, mais les autres ne pourront pas vous voir. Utilisez le bouton de la caméra dans la barre d'adresse pour résoudre ce problème.",
+        "screenRecordingPermissionErrorDescription": "Veuillez vérifier les permissions d’enregistrement d’écran, puis redémarrez l’application",
+        "screenRecordingPermissionErrorTitle": "Erreur d’accès à l’enregistrement d’écran",
         "cameraTimeoutError": "Impossible de démarrer la source vidéo. Délai dépassé!",
         "cameraUnknownError": "Vous ne pouvez pas utiliser la caméra pour une raison inconnue.",
         "cameraUnsupportedResolutionError": "Votre appareil ne prend pas en charge la résolution vidéo requise.",
@@ -1173,7 +1175,16 @@
         "talkWhileMuted": "vous parlez en étant muet",
         "title": "Paramètres",
         "video": "Vidéo",
-        "videoNoPermissions": "Pas d'accès à la vidéo"
+        "videoNoPermissions": "Pas d'accès à la vidéo",
+        "autoGainControl": {
+            "checkbox": "Niveau automatique du microphone",
+            "systemSettings": "Paramètres audio système",
+            "notificationAlert": {
+                "titleEnabled": "Niveau automatique du microphone activé",
+                "titleDisabled": "Niveau automatique du microphone désactivé",
+                "description": "Le paramètre sera appliqué après le redémarrage de la conférence."
+            }
+        }
     },
     "moderatorSettings": {
         "conferenceQualityTitle": "Qualité de vidéo dans la conférence pour tous",

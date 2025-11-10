@@ -22,6 +22,7 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 		"uploadInvoice",
 		"uploadAvatarFile",
 		"uploadFileByUrl",
+		"replaceResizedDefaultFile",
 	];
 
 	// функция сохраняет файл
@@ -256,6 +257,52 @@ class Socket_Nodes extends \BaseFrame\Controller\Socket {
 			Domain_File_Scenario_Socket::replacePreviewForWelcomeVideo($welcome_video_file_key, $replace_preview_file_key);
 		} catch (Domain_File_Exception_FileNotFound) {
 			throw new \BaseFrame\Exception\Request\ParamException("replace file not found");
+		}
+
+		return $this->ok();
+	}
+
+	/**
+	 * заменяем нарезанный дефолтный файл
+	 *
+	 * @return array
+	 * @throws ParamException
+	 */
+	public function replaceResizedDefaultFile():array {
+
+		$file_key     = $this->post(\Formatter::TYPE_STRING, "file_key");
+		$replace_size = $this->post(\Formatter::TYPE_INT, "replace_size");
+
+		// проверяем, что файл был успешно загружен
+		if (!isset($_FILES["file"]) || $_FILES["file"]["error"] != UPLOAD_ERR_OK) {
+			return $this->error(704, "file was not uploaded");
+		}
+
+		if ($replace_size < 80 || $replace_size > 2000) {
+			throw new \ParseException("replace size {$replace_size} less than 80 or greater than 2000");
+		}
+
+		// получаем новый загруженный файл
+		$uploaded_file_info = $_FILES["file"];
+
+		// получаем дефолт файл, которому заменим изображение
+		$file_row = Gateway_Db_FileNode_File::getOne($file_key);
+
+		// получаем все нарезанные файлы
+		$image_size_list = Type_File_Image_Extra::getImageSizeListFromExtra($file_row["extra"]);
+		foreach ($image_size_list as $size) {
+
+			// заменяем нужный размер файла
+			if ($size["width"] == $replace_size || $size["height"] == $replace_size) {
+
+				// если хэш не совпал то заменяем
+				$file_path = Type_File_Utils::getFilePathFromPartPath($size["part_path"]);
+				if (Type_File_Utils::getFileHash($uploaded_file_info["tmp_name"]) !== Type_File_Utils::getFileHash($file_path)) {
+
+					move_uploaded_file($uploaded_file_info["tmp_name"], $file_path);
+				}
+				break;
+			}
 		}
 
 		return $this->ok();

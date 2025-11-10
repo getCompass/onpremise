@@ -2,6 +2,7 @@
 
 namespace Compass\Federation;
 
+use BaseFrame\Exception\Request\AnswerCommandException;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Handler\Api;
@@ -25,12 +26,14 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 	public const ALLOW_CONTROLLERS = [
 		"sso_auth",
 		"ldap_auth",
+		"ldap_mail",
 	];
 
 	// поддерживаемые группы методов, доступные без авторизации
 	public const ALLOWED_NOT_AUTHORIZED = [
 		"sso_auth",
 		"ldap_auth",
+		"ldap_mail",
 	];
 
 	/**
@@ -90,8 +93,17 @@ class Onpremiseweb_Handler extends Api implements \RouteHandler {
 			throw new ParamException("wrong key format");
 		} catch (CaseException $e) {
 			$response = static::handleCaseError($e);
-		}
+		} catch (AnswerCommandException $e) {
 
+			// если вдруг поймали команду
+			$response  = ["command" => Type_Api_Command::work($e->getCommandName(), $e->getCommandExtra())];
+			$auth_data = \BaseFrame\Http\Authorization\Data::inst();
+
+			// если данные авторизации не менялись, то ничего не делаем
+			if ($auth_data->hasChanges()) {
+				$response["actions"][] = ["type" => "authorization", "data" => $auth_data->get()];
+			}
+		}
 		// если запуск был не из консоли - закрываем соединения
 		self::_closeConnectionsIfRunFromNotCli();
 

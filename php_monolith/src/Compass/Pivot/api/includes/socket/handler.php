@@ -44,6 +44,7 @@ class Socket_Handler extends Api implements \RouteHandler {
 		"attribution",
 		"pivot_ldap",
 		"device",
+		"smartapp",
 	];
 
 	/**

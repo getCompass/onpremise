@@ -12,7 +12,7 @@ class Domain_Solution_Action_GenerateAuthenticationToken {
 	/**
 	 * Генерирует токен авторизации для указанного пользователя.
 	 */
-	public static function exec(int $user_id, string|false $join_link_uniq = false, int|null $login_type = null):array {
+	public static function exec(int $user_id, string|false $join_link_uniq = false, ?int $login_type = null):array {
 
 		// генерируем токен и ключ
 		/** @var Struct_Solution_AuthenticationKeyCache|false $authentication_key_obj */

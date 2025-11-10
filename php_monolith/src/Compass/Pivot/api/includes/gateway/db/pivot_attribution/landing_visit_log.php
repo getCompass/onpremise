@@ -2,6 +2,10 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
+use BaseFrame\Exception\Gateway\QueryFatalException;
+
 /**
  * класс для работы с таблицей pivot_attribution . landing_visit_log
  * @package Compass\Pivot
@@ -11,7 +15,7 @@ class Gateway_Db_PivotAttribution_LandingVisitLog extends Gateway_Db_PivotAttrib
 	protected const _TABLE_KEY = "landing_visit_log";
 
 	/** @var int лимит выборки записей */
-	protected const _LIMIT = 3000;
+	protected const _LIMIT = 10000;
 
 	/**
 	 * Создаем запись
@@ -49,7 +53,7 @@ class Gateway_Db_PivotAttribution_LandingVisitLog extends Gateway_Db_PivotAttrib
 
 		// запрос проверен на explain (PRIMARY_KEY)
 		$query = "SELECT * FROM `?p` WHERE `visit_id` = ?s LIMIT ?i";
-		$row = ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_KEY, $visit_id, 1);
+		$row   = ShardingGateway::database(self::_DB_KEY)->getOne($query, self::_TABLE_KEY, $visit_id, 1);
 
 		return Struct_Db_PivotAttribution_LandingVisit::rowToStruct($row);
 	}
@@ -61,11 +65,11 @@ class Gateway_Db_PivotAttribution_LandingVisitLog extends Gateway_Db_PivotAttrib
 	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public static function getListByPeriod(int $start_id, int $end_at):array {
+	public static function getListByPeriod(int $start_at, int $end_at):array {
 
 		// запрос проверен на explain (visited_at)
-		$query = "SELECT * FROM `?p` WHERE `visited_at` >= ?i AND `visited_at` <= ?i LIMIT ?i";
-		$list = ShardingGateway::database(self::_DB_KEY)->getAll($query, self::_TABLE_KEY, $start_id, $end_at, self::_LIMIT);
+		$query = "SELECT * FROM `?p` WHERE `visited_at` >= ?i AND `visited_at` <= ?i ORDER BY `visited_at` DESC LIMIT ?i";
+		$list  = ShardingGateway::database(self::_DB_KEY)->getAll($query, self::_TABLE_KEY, $start_at, $end_at, self::_LIMIT);
 
 		return array_map(static fn(array $row) => Struct_Db_PivotAttribution_LandingVisit::rowToStruct($row), $list);
 	}
@@ -73,12 +77,51 @@ class Gateway_Db_PivotAttribution_LandingVisitLog extends Gateway_Db_PivotAttrib
 	/**
 	 * Удаляем старые записи
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @param int $older_than_timestamp
+	 * @param int $limit
+	 *
+	 * @return int
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function deleteOlder(int $older_than_timestamp):void {
+	public static function deleteOlder(int $older_than_timestamp, int $limit):int {
+
+		if (!isCron()) {
+			throw new \BaseFrame\Exception\Domain\ParseFatalException("only for cron");
+		}
 
 		// запрос проверен на EXPLAIN (INDEX=visited_at)
 		$query = "DELETE FROM `?p` WHERE `visited_at` < ?i LIMIT ?i";
-		ShardingGateway::database(self::_DB_KEY)->delete($query, self::_TABLE_KEY, $older_than_timestamp, 1000);
+		return ShardingGateway::database(self::_DB_KEY)->delete($query, self::_TABLE_KEY, $older_than_timestamp, $limit);
+	}
+
+	/**
+	 * Оптимизируем таблицу
+	 * ВНИМАНИЕ!!! только после очистки старых записей
+	 */
+	public static function optimize():void {
+
+		if (!isCron()) {
+			throw new \BaseFrame\Exception\Domain\ParseFatalException("only for cron");
+		}
+
+		$db_key     = self::_DB_KEY;
+		$table_name = self::_TABLE_KEY;
+
+		$query = "OPTIMIZE TABLE `{$db_key}`.`{$table_name}`;";
+		ShardingGateway::database($db_key)->query($query);
+	}
+
+	/**
+	 * Удаляем запись
+	 *
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 */
+	public static function delete(string $visit_id):void {
+
+		// запрос проверен на EXPLAIN (INDEX=PRIMARY)
+		$query = "DELETE FROM `?p` WHERE `visit_id` = ?s LIMIT ?i";
+		ShardingGateway::database(self::_DB_KEY)->delete($query, self::_TABLE_KEY, $visit_id, 1);
 	}
 }

@@ -2,14 +2,16 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Gateway\SocketException;
 use BaseFrame\Server\ServerProvider;
 
 /**
  * Class Gateway_Bus_DatabaseController
  */
-class Gateway_Bus_DatabaseController {
-
+class Gateway_Bus_DatabaseController
+{
 	protected const _ROUTINE_STATUS_PENDING = 10; // рутина еще в работе
 	protected const _ROUTINE_STATUS_DONE    = 20; // рутина успешно завершилась
 	protected const _ROUTINE_STATUS_ERROR   = 30; // рутина завершилась с ошибкой
@@ -17,15 +19,11 @@ class Gateway_Bus_DatabaseController {
 	/**
 	 * Проверяем статус mysql на указанном порту.
 	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row
-	 * @param int                                          $port
-	 *
-	 * @return string
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function getStatus(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host):string {
+	public static function getStatus(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host): string
+	{
 
 		$request = new \DatabaseControllerGrpc\GetStatusRequestStruct([
 			"port" => $port,
@@ -45,14 +43,11 @@ class Gateway_Bus_DatabaseController {
 	/**
 	 * Сгенерировать mysql конфиг для домино
 	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row
-	 *
-	 * @return void
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function generateMysqlConfig(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row):void {
+	public static function generateMysqlConfig(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row): void
+	{
 
 		$request = new \DatabaseControllerGrpc\GenerateMysqlConfigRequest([]);
 
@@ -65,24 +60,13 @@ class Gateway_Bus_DatabaseController {
 	}
 
 	/**
-	 * Добавить порт в домино
+	 * Добавить порт на домино
 	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row
-	 * @param int                                          $port
-	 * @param int                                          $status
-	 * @param int                                          $type
-	 * @param int                                          $locked_till
-	 * @param int                                          $created_at
-	 * @param int                                          $updated_at
-	 * @param int                                          $company_id
-	 * @param array                                        $extra
-	 *
-	 * @return void
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function addPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $status, int $type, int $locked_till, int $created_at, int $updated_at, int $company_id, int $locked_by_company_id, array $extra):void {
+	public static function addPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $status, int $type, int $locked_till, int $created_at, int $updated_at, int $company_id, int $locked_by_company_id, array $extra): void
+	{
 
 		$request = new \DatabaseControllerGrpc\AddPortRequestStruct([
 			"port"                 => $port,
@@ -108,15 +92,11 @@ class Gateway_Bus_DatabaseController {
 	/**
 	 * Помечаем порт не валидным
 	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row
-	 * @param int                                          $port
-	 *
-	 * @return void
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function invalidatePort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host):void {
+	public static function invalidatePort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host): void
+	{
 
 		$request = new \DatabaseControllerGrpc\SetPortInvalidRequestStruct([
 			"port" => $port,
@@ -138,11 +118,12 @@ class Gateway_Bus_DatabaseController {
 	 * Напрямую политики передавать не стоит,
 	 * лучше использовать готовые пресеты в action привязки.
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
+	 * @throws SocketException
 	 */
-	public static function bindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $company_id, array $policy_list):void {
+	public static function bindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $company_id, array $policy_list): void
+	{
 
 		$request = new \DatabaseControllerGrpc\BindPortRequestStruct([
 			"port"                         => $port,
@@ -166,15 +147,11 @@ class Gateway_Bus_DatabaseController {
 	/**
 	 * Разбиндиваем порт от компании
 	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row
-	 * @param int                                          $port
-	 *
-	 * @return void
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function unbindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host):void {
+	public static function unbindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host): void
+	{
 
 		$request = new \DatabaseControllerGrpc\UnbindPortRequestStruct([
 			"port" => $port,
@@ -192,12 +169,12 @@ class Gateway_Bus_DatabaseController {
 	/**
 	 * Запускает рутину копирования данных компании.
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \BaseFrame\Exception\Gateway\SocketException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
+	 * @throws SocketException
 	 */
-	public static function beginDataCopying(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $company_id, string $target_host):void {
+	public static function beginDataCopying(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $company_id, string $target_host): void
+	{
 
 		$request = new \DatabaseControllerGrpc\BeginDataCopyingRequestStruct([
 			"company_id"  => $company_id,
@@ -208,7 +185,7 @@ class Gateway_Bus_DatabaseController {
 		[$response, $status] = self::_doCallGrpc($domino, "BeginDataCopying", $request);
 
 		if ($status->code !== \Grpc\STATUS_OK) {
-			throw new \BaseFrame\Exception\Gateway\BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
 		}
 
 		// дожидаемся завершения рутины
@@ -218,12 +195,12 @@ class Gateway_Bus_DatabaseController {
 	/**
 	 * Запускает рутину применения скопированных данных компании.
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \BaseFrame\Exception\Gateway\SocketException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
+	 * @throws SocketException
 	 */
-	public static function beginDataApplying(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $company_id):void {
+	public static function beginDataApplying(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $company_id): void
+	{
 
 		$request = new \DatabaseControllerGrpc\BeginDataApplyingRequestStruct([
 			"company_id" => $company_id,
@@ -233,7 +210,7 @@ class Gateway_Bus_DatabaseController {
 		[$response, $status] = self::_doCallGrpc($domino, "BeginDataApplying", $request);
 
 		if ($status->code !== \Grpc\STATUS_OK) {
-			throw new \BaseFrame\Exception\Gateway\BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
 		}
 
 		// дожидаемся завершения рутины
@@ -244,10 +221,11 @@ class Gateway_Bus_DatabaseController {
 	 * Выполняет синхронизацию статуса порта на домино.
 	 * Вызывается стоит, только если нужно что-то явно поменять (например почистить).
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws ParseFatalException
+	 * @throws BusFatalException
 	 */
-	public static function syncPortStatus(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port, string $host, int $status, int $locked_till, int $company_id):void {
+	public static function syncPortStatus(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port, string $host, int $status, int $locked_till, int $company_id): void
+	{
 
 		$request = new \DatabaseControllerGrpc\SyncPortStatusRequestStruct([
 			"port"                 => $port,
@@ -262,7 +240,7 @@ class Gateway_Bus_DatabaseController {
 		[, $status] = self::_doCallGrpc($domino, "SyncPortStatus", $request);
 
 		if ($status->code !== \Grpc\STATUS_OK) {
-			throw new \BaseFrame\Exception\Gateway\BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
 		}
 	}
 
@@ -270,10 +248,11 @@ class Gateway_Bus_DatabaseController {
 	 * Выполняет сброс порта.
 	 * При сбросе порта останавливается демон базы данных и порт переводится в статус void.
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws ParseFatalException
+	 * @throws BusFatalException
 	 */
-	public static function resetPort(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port, string $host):void {
+	public static function resetPort(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $port, string $host): void
+	{
 
 		$request = new \DatabaseControllerGrpc\ResetPortRequestStruct([
 			"port" => $port,
@@ -284,23 +263,21 @@ class Gateway_Bus_DatabaseController {
 		[, $status] = self::_doCallGrpc($domino, "ResetPort", $request);
 
 		if ($status->code !== \Grpc\STATUS_OK) {
-			throw new \BaseFrame\Exception\Gateway\BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
 		}
 	}
 
 	/**
 	 * Накатить миграции на компании
 	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino
-	 * @param int                                          $company_id
 	 *
-	 * @return void
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \BaseFrame\Exception\Gateway\SocketException
+	 * @throws ParseFatalException
+	 * @throws BusFatalException
+	 * @throws SocketException
 	 * @throws \busException
 	 */
-	public static function migrateUp(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $company_id):void {
+	public static function migrateUp(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $company_id): void
+	{
 
 		$grpcRequest = new \DatabaseControllerGrpc\MigrateRequestStruct([
 			"company_id" => $company_id,
@@ -320,9 +297,10 @@ class Gateway_Bus_DatabaseController {
 	 * инициализируем поиск для пространства
 	 *
 	 * @throws BusFatalException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function initSearch(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $space_id):void {
+	public static function initSearch(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $space_id): void
+	{
 
 		$request = new \DatabaseControllerGrpc\InitSearchRequestStruct([
 			"space_id" => $space_id,
@@ -340,9 +318,10 @@ class Gateway_Bus_DatabaseController {
 	 * удаляет поисковый индекс пространства
 	 *
 	 * @throws BusFatalException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function dropSearchTable(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $space_id):void {
+	public static function dropSearchTable(Struct_Db_PivotCompanyService_DominoRegistry $domino, int $space_id): void
+	{
 
 		$request = new \DatabaseControllerGrpc\DropSearchTableRequestStruct([
 			"space_id" => $space_id,
@@ -360,9 +339,10 @@ class Gateway_Bus_DatabaseController {
 	 * обновляет деплой для баз данных пространств на домино
 	 *
 	 * @throws BusFatalException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 */
-	public static function updateDeployment(Struct_Db_PivotCompanyService_DominoRegistry $domino):void {
+	public static function updateDeployment(Struct_Db_PivotCompanyService_DominoRegistry $domino): void
+	{
 
 		//только для on-premise сервера
 		if (!ServerProvider::isOnPremise()) {
@@ -386,12 +366,12 @@ class Gateway_Bus_DatabaseController {
 	/**
 	 * Ожидает завершения удаленной рутины.
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \BaseFrame\Exception\Gateway\SocketException
-	 * @throws \busException
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
+	 * @throws SocketException
 	 */
-	protected static function _waitResponseRoutine(Struct_Db_PivotCompanyService_DominoRegistry $domino, string $routine_key, int $status, string $message, int $deadline):void {
+	protected static function _waitResponseRoutine(Struct_Db_PivotCompanyService_DominoRegistry $domino, string $routine_key, int $status, string $message, int $deadline): void
+	{
 
 		while ($status === static::_ROUTINE_STATUS_PENDING || $deadline < time()) {
 
@@ -412,27 +392,25 @@ class Gateway_Bus_DatabaseController {
 
 		// если рутина закончилась ошибкой
 		if ($status === static::_ROUTINE_STATUS_ERROR) {
-			throw new \BaseFrame\Exception\Gateway\SocketException($message);
+			throw new SocketException($message);
 		}
 
 		// если случился таймаут для рутины
 		if ($status !== static::_ROUTINE_STATUS_DONE) {
-			throw new \BaseFrame\Exception\Gateway\SocketException("routine deadline exceeded");
+			throw new SocketException("routine deadline exceeded");
 		}
 	}
 
 	/**
 	 * Делаем grpc запрос к указанному методу с переданными данными
 	 *
-	 * @param Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row
-	 * @param string                                       $method_name
-	 * @param mixed                                        $request
+	 * @param mixed $request
 	 *
-	 * @return array
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws ParseFatalException
+	 * @throws BusFatalException
 	 */
-	protected static function _doCallGrpc(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, string $method_name, \Google\Protobuf\Internal\Message $request):array {
+	protected static function _doCallGrpc(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, string $method_name, \Google\Protobuf\Internal\Message $request): array
+	{
 
 		$go_database_controller_host = Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerHost($domino_registry_row->extra);
 		$conf                        = [
@@ -443,19 +421,21 @@ class Gateway_Bus_DatabaseController {
 		];
 
 		$connection = \Bus::configured(
-			$conf, \DatabaseControllerGrpc\databaseControllerClient::class, "database_controller_" . $domino_registry_row->domino_id);
+			$conf,
+			\DatabaseControllerGrpc\databaseControllerClient::class,
+			"database_controller_" . $domino_registry_row->domino_id
+		);
 		return $connection->callGrpc($method_name, $request);
 	}
 
 	/**
 	 * Генерируем подпись запроса
 	 *
-	 * @param string $domino_id
 	 *
-	 * @return string
 	 * @throws
 	 */
-	protected static function _generateSignature(string $domino_id):string {
+	protected static function _generateSignature(string $domino_id): string
+	{
 
 		$secret_key = getConfig("DOMINO_ENTRYPOINT")[$domino_id]["domino_secret_key"];
 		$secret_key = base64_decode($secret_key);

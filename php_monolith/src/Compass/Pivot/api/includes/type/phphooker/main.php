@@ -307,7 +307,7 @@ class Type_Phphooker_Main {
 	/**
 	 * Отправка в Bitrix информации о новом зарегистрированном пользователе
 	 */
-	public static function sendBitrixOnUserRegistered(int $user_id, string|null $force_stage_id = null):void {
+	public static function sendBitrixOnUserRegistered(int $user_id, ?string $force_stage_id = null):void {
 
 		if ((isTestServer() && !isBackendTest() && !isLocalServer()) || !IS_BITRIX_USER_ANALYTICS_ENABLED || ServerProvider::isOnPremise()) {
 			return;

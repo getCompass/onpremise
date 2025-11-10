@@ -74,9 +74,9 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         const isNewPoll = data.type === COMMAND_NEW_POLL;
 
         if (data?.type === POLL_STATUS_UPDATED) {
-
+        
             if (data.status !== "approved") {
-
+                        
                 dispatch(showNotification({
                     titleKey: 'notify.messageIsRestrictedTitle',
                     descriptionKey: 'notify.messageIsRestricted',
@@ -87,7 +87,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
             break;
         }
-
+                        
         _handleReceivePollsMessage({
             ...data,
             senderId: isNewPoll ? id : undefined,

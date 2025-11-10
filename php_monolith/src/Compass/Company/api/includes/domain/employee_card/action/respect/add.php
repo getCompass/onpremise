@@ -27,7 +27,7 @@ class Domain_EmployeeCard_Action_Respect_Add {
 	 * @throws \returnException
 	 * @long
 	 */
-	public static function do(int $user_id, int $receiver_user_id, string $respect_text, int $created_at = null):Struct_Domain_Usercard_Respect {
+	public static function do(int $user_id, int $receiver_user_id, string $respect_text, ?int $created_at = null):Struct_Domain_Usercard_Respect {
 
 		if (is_null($created_at)) {
 			$created_at = time();

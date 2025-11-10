@@ -111,8 +111,8 @@ class Migration_Export_Messages {
 	 */
 	protected function _doExportMessageBlocks(array $export_conversation, string $file_dir):void {
 
-		$block_id_list     = [];
-		$save_message_list = [];
+		$block_id_list          = [];
+		$save_message_list      = [];
 		$user_hidden_by_message = [];
 		do {
 
@@ -480,7 +480,10 @@ class Migration_Export_Messages {
 	 */
 	protected function _addFiles(array $message, array $formatted):array {
 
-		$formatted["files"][] = $this->_formatFileInfo($message);
+		$file_list = Gateway_Socket_FileBalancer::getFileList([$message["data"]["file_map"]]);
+		if (count($file_list) > 0) {
+			$formatted["files"][] = $this->_formatFileInfo($message, $file_list[0]);
+		}
 		return $formatted;
 	}
 
@@ -488,11 +491,9 @@ class Migration_Export_Messages {
 	 * Форматирование информации о файле
 	 * @long
 	 */
-	protected function _formatFileInfo($message):array {
+	protected function _formatFileInfo($message, array $file):array {
 
-		$file_key  = \CompassApp\Pack\File::doEncrypt($message["data"]["file_map"]);
-		$file_list = Gateway_Socket_FileBalancer::getFileList([$message["data"]["file_map"]]);
-		$file      = $file_list[0];
+		$file_key = \CompassApp\Pack\File::doEncrypt($message["data"]["file_map"]);
 
 		$base = [
 			"id"                   => $file_key,
@@ -648,7 +649,11 @@ class Migration_Export_Messages {
 		foreach ($message_list as $message) {
 
 			if (isset($message["data"]["file_map"]) && mb_strlen($message["data"]["file_map"]) > 0) {
-				$files[] = $this->_formatFileInfo($message);
+
+				$file_list = Gateway_Socket_FileBalancer::getFileList([$message["data"]["file_map"]]);
+				if (count($file_list) > 0) {
+					$files[] = $this->_formatFileInfo($message, $file_list[0]);
+				}
 			}
 
 			// Рекурсивно проверяем вложенные сообщения

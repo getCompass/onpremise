@@ -8,6 +8,8 @@ import { Button } from "../../components/button.tsx";
 import { useAtomValue } from "jotai";
 import {
 	activeDialogIdState,
+	authLdapCredentialsState,
+	authLdapState,
 	authState,
 	joinLinkState,
 	passwordInputState,
@@ -21,10 +23,16 @@ import { MobileRefreshButton, MobileRefreshButtonSmall } from "../../components/
 import dayjs from "dayjs";
 import { plural } from "../../lib/plural.ts";
 import {
+	ALREADY_MEMBER_ERROR_CODE,
+	API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL,
+	API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_NEW_MAIL,
+	API_COMMAND_SCENARIO_DATA_STAGE_GET_LDAP_AUTH_TOKEN,
+	APIAuthInfo,
 	APIAuthInfoDataTypeRegisterLoginResetPasswordByMail,
 	APIAuthTypeLoginByMail,
 	APIAuthTypeRegisterByMail,
 	APIAuthTypeResetPasswordByMail,
+	APICommandData,
 	INACTIVE_LINK_ERROR_CODE,
 	INCORRECT_LINK_ERROR_CODE,
 	LIMIT_ERROR_CODE,
@@ -36,68 +44,74 @@ import { useSetAtom } from "jotai/index";
 import { DynamicTimerEmail } from "../../components/DynamicTimerEmail.tsx";
 import { useApiSecurityMailConfirmResetPassword } from "../../api/security/mail.ts";
 import PinInput from "../../components/PinInput.tsx";
+import {
+	useApiFederationLdapAuthGetToken,
+	useApiFederationLdapMailConfirm,
+	useApiPivotAuthLdapBegin
+} from "../../api/auth/ldap.ts";
+import useLdap2FaStage from "../../lib/useLdap2FaStage.ts";
 
-const ConfirmCodeEmailDialogContentDesktop = () => {
-	const langStringErrorsNetworkError = useLangString("errors.network_error");
-	const langStringErrorsServerError = useLangString("errors.server_error");
-	const langStringErrorsConfirmCodeIncorrectCodeError = useLangString("errors.confirm_code_incorrect_code_error");
+type ConfirmCodeEmailDialogContentProps = {
+	auth: APIAuthInfo | null,
+	authLdap: APICommandData | null,
+	isLdapConfirm: boolean,
+	isAuthBlocked: boolean,
+	isCompleted: boolean,
+	setCompleted: (value: boolean) => void,
+	confirmCode: string,
+	setConfirmCode: (value: string) => void,
+	nextResend: number,
+	setNextResend: (value: number) => void,
+	nextAttempt: number,
+	isLoading: boolean,
+	setIsLoading: (value: boolean) => void,
+	isSuccess: boolean,
+	isError: boolean,
+	setIsError: (value: boolean) => void,
+	isNetworkError: boolean,
+	setIsNetworkError: (value: boolean) => void,
+	isServerError: boolean,
+	setIsServerError: (value: boolean) => void,
+	activeDialogId: string,
+}
+
+const ConfirmCodeEmailDialogContentDesktop = ({
+	auth,
+	authLdap,
+	isLdapConfirm,
+	isAuthBlocked,
+	isCompleted,
+	setCompleted,
+	confirmCode,
+	setConfirmCode,
+	nextResend,
+	setNextResend,
+	nextAttempt,
+	isLoading,
+	setIsLoading,
+	isSuccess,
+	isError,
+	setIsError,
+	isNetworkError,
+	setIsNetworkError,
+	isServerError,
+	setIsServerError,
+	activeDialogId,
+}: ConfirmCodeEmailDialogContentProps) => {
 	const langStringOneMinute = useLangString("one_minute");
 	const langStringTwoMinutes = useLangString("two_minutes");
 	const langStringFiveMinutes = useLangString("five_minutes");
 
-	const langStringConfirmCodeEmailDialogTitle = useLangString("confirm_code_email_dialog.title_desktop");
+	const langStringConfirmCodeEmailDialogTitle = useLangString("confirm_code_email_dialog.title");
+	const langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmCurrent = useLangString("confirm_code_email_dialog.title_ldap_change_mail_confirm_current");
+	const langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmNew = useLangString("confirm_code_email_dialog.title_ldap_change_mail_confirm_new");
 	const langStringConfirmCodeEmailDialogDesc = useLangString("confirm_code_email_dialog.desc");
+	const langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent = useLangString("confirm_code_email_dialog.desc_ldap_change_mail_confirm_current");
 	const langStringConfirmCodeEmailDialogBackButton = useLangString("confirm_code_email_dialog.back_button");
 	const langStringConfirmCodeEmailDialogAuthBlocked = useLangString("confirm_code_email_dialog.auth_blocked");
 
-	const apiAuthMailConfirmFullAuthCode = useApiAuthMailConfirmFullAuthCode();
-	const apiSecurityMailConfirmResetPassword = useApiSecurityMailConfirmResetPassword();
 	const apiAuthMailCancel = useApiAuthMailCancel();
 	const { navigateToDialog } = useNavigateDialog();
-	const activeDialogId = useAtomValue(activeDialogIdState);
-	const auth = useAtomValue(authState);
-	const joinLink = useAtomValue(joinLinkState);
-	const setPrepareJoinLinkError = useSetAtom(prepareJoinLinkErrorState);
-	const setPasswordInput = useSetAtom(passwordInputState);
-	const showToast = useShowToast(activeDialogId);
-
-	const [ isAuthBlocked, setIsAuthBlocked ] = useState(false);
-	const [ isCompleted, setCompleted ] = useState<boolean>(false);
-	const [ confirmCode, setConfirmCode ] = useState<string>("");
-	const [ nextAttempt, setNextAttempt ] = useState(0);
-	const [ nextResend, setNextResend ] = useState(0);
-	const [ isLoading, setIsLoading ] = useState(false);
-	const [ isSuccess, setIsSuccess ] = useState(false);
-	const [ isError, setIsError ] = useState(false);
-	const [ isNetworkError, setIsNetworkError ] = useState(false);
-	const [ isServerError, setIsServerError ] = useState(false);
-
-	useEffect(() => {
-		// сбрасываем пароль если это логин
-		if (auth !== null && auth.type === APIAuthTypeLoginByMail) {
-			setPasswordInput("");
-		}
-	}, []);
-
-	useEffect(() => {
-		if (
-			auth === null ||
-			(auth.type !== APIAuthTypeRegisterByMail &&
-				auth.type !== APIAuthTypeLoginByMail &&
-				auth.type !== APIAuthTypeResetPasswordByMail)
-		) {
-			return;
-		}
-
-		if ((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).code_available_attempts < 1) {
-			setIsAuthBlocked(true);
-			setNextAttempt((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).expire_at);
-			setNextResend((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).expire_at);
-			return;
-		}
-
-		setNextResend((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).next_resend);
-	}, [ auth ]);
 
 	const renderedPreloaderButton = useMemo(() => {
 		if (isNetworkError) {
@@ -116,7 +130,7 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 	}, [ isCompleted, isServerError, isNetworkError, isLoading ]);
 
 	const renderedPinInput = useMemo(() => {
-		if (isAuthBlocked && auth !== null) {
+		if (isAuthBlocked && (auth !== null || authLdap !== null)) {
 			return (
 				<Text
 					mt = "16px"
@@ -162,145 +176,7 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 				</Box>
 			</HStack>
 		);
-	}, [ confirmCode, auth, isSuccess, isError, isCompleted, isLoading, nextAttempt, isAuthBlocked ]);
-
-	useEffect(() => {
-		if (isCompleted && auth !== null) {
-			if (confirmCode.length != 6) {
-				return;
-			}
-
-			if (auth.type === APIAuthTypeRegisterByMail || auth.type === APIAuthTypeLoginByMail) {
-				apiAuthMailConfirmFullAuthCode.mutate(
-					{
-						auth_key: auth.auth_key,
-						code: confirmCode,
-						setIsSuccess: setIsSuccess,
-						join_link_uniq: joinLink?.join_link_uniq ?? undefined,
-					},
-					{
-						onError: (error) => {
-							if (error instanceof NetworkError) {
-								setIsNetworkError(true);
-								setCompleted(false);
-								showToast(langStringErrorsNetworkError, "warning");
-								return;
-							}
-
-							if (error instanceof ServerError) {
-								setIsServerError(true);
-								setCompleted(false);
-								showToast(langStringErrorsServerError, "warning");
-								return;
-							}
-
-							if (error instanceof ApiError) {
-								if (
-									error.error_code === INCORRECT_LINK_ERROR_CODE ||
-									error.error_code === INACTIVE_LINK_ERROR_CODE
-								) {
-									setConfirmCode("");
-									setCompleted(false);
-									setPrepareJoinLinkError({ error_code: error.error_code });
-									return;
-								}
-
-								if (error.error_code === 1708113) {
-									setIsError(true);
-									setConfirmCode("");
-									setCompleted(false);
-									showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
-									setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
-									return;
-								}
-
-								if (error.error_code === 1708399 || error.error_code === LIMIT_ERROR_CODE) {
-									setIsAuthBlocked(true);
-									setNextAttempt(error.next_attempt);
-									setConfirmCode("");
-									setCompleted(false);
-									return;
-								}
-
-								setIsError(true);
-								setCompleted(false);
-								showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
-							}
-						},
-					}
-				);
-
-				return;
-			}
-
-			if (auth.type === APIAuthTypeResetPasswordByMail) {
-				apiSecurityMailConfirmResetPassword.mutate(
-					{
-						auth_key: auth.auth_key,
-						code: confirmCode,
-						setIsSuccess: setIsSuccess,
-					},
-					{
-						onError: (error) => {
-							if (error instanceof NetworkError) {
-								setIsNetworkError(true);
-								setCompleted(false);
-								showToast(langStringErrorsNetworkError, "warning");
-								return;
-							}
-
-							if (error instanceof ServerError) {
-								setIsServerError(true);
-								setCompleted(false);
-								showToast(langStringErrorsServerError, "warning");
-								return;
-							}
-
-							if (error instanceof ApiError) {
-								if (
-									error.error_code === INCORRECT_LINK_ERROR_CODE ||
-									error.error_code === INACTIVE_LINK_ERROR_CODE
-								) {
-									setConfirmCode("");
-									setCompleted(false);
-									setPrepareJoinLinkError({ error_code: error.error_code });
-									return;
-								}
-
-								if (error.error_code === 1708113) {
-									setIsError(true);
-									setConfirmCode("");
-									setCompleted(false);
-									showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
-									setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
-									return;
-								}
-
-								if (error.error_code === 1708399 || error.error_code === LIMIT_ERROR_CODE) {
-									setIsAuthBlocked(true);
-									setNextAttempt(error.next_attempt);
-									setConfirmCode("");
-									setCompleted(false);
-									return;
-								}
-
-								setIsError(true);
-								setCompleted(false);
-								showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
-							}
-						},
-					}
-				);
-
-				return;
-			}
-		}
-	}, [ isCompleted, joinLink, auth ]);
-
-	if (auth === null) {
-		navigateToDialog("auth_email_phone_number");
-		return <></>;
-	}
+	}, [ confirmCode, auth, authLdap, isSuccess, isError, isCompleted, isLoading, nextAttempt, isAuthBlocked ]);
 
 	return (
 		<VStack w = "100%" gap = "0px">
@@ -308,7 +184,10 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 				<MailIcon80 />
 
 				<Text mt = "16px" style = "lato_18_24_900" ls = "-02">
-					{langStringConfirmCodeEmailDialogTitle}
+					{authLdap === null ? langStringConfirmCodeEmailDialogTitle : (
+						authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL ? langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmCurrent
+							: authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_NEW_MAIL ? langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmNew : langStringConfirmCodeEmailDialogTitle
+					)}
 				</Text>
 
 				<Text
@@ -320,9 +199,10 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 					overflow = "wrapEllipsis"
 					userSelect = "text"
 				>
-					{langStringConfirmCodeEmailDialogDesc}
+					{(authLdap !== null && authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL)
+						? langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent : langStringConfirmCodeEmailDialogDesc}
 					<styled.span fontFamily = "lato_bold">
-						«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
+						«{isLdapConfirm ? authLdap?.scenario_data.mail_mask : (auth?.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
 				</Text>
 
@@ -335,12 +215,24 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 						textSize = "md_desktop"
 						color = "2574a9"
 						onClick = {() => {
-							if (auth.type == APIAuthTypeRegisterByMail) {
+							if (auth?.type == APIAuthTypeRegisterByMail) {
 								navigateToDialog("auth_email_register");
 								return;
 							}
 
-							apiAuthMailCancel.mutate({ auth_key: auth.auth_key });
+							if (isLdapConfirm) {
+
+								if (authLdap !== null && authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_NEW_MAIL) {
+
+									navigateToDialog("auth_ldap_2fa_attach_mail");
+									return;
+								}
+
+								navigateToDialog("auth_sso_ldap");
+								return;
+							}
+
+							apiAuthMailCancel.mutate({ auth_key: auth?.auth_key ?? "" });
 						}}
 					>
 						<HStack gap = "2px">
@@ -373,8 +265,10 @@ const ConfirmCodeEmailDialogContentDesktop = () => {
 						size = "px8py8"
 						textSize = "lato_13_18_400"
 						isCompleted = {isCompleted}
-						authKey = {auth.auth_key}
-						authType = {auth.type}
+						authKey = {auth?.auth_key}
+						authType = {auth?.type}
+						mailConfirmStoryKey = {authLdap?.mail_confirm_story_key}
+						isLdapConfirm = {isLdapConfirm}
 						activeDialogId = {activeDialogId}
 					/>
 				</HStack>
@@ -437,67 +331,43 @@ const ConfirmCodePhoneNumberDialogContentMobilePinInput = ({
 	);
 };
 
-const ConfirmCodeEmailDialogContentMobile = () => {
-	const langStringErrorsNetworkError = useLangString("errors.network_error");
-	const langStringErrorsServerError = useLangString("errors.server_error");
-	const langStringErrorsConfirmCodeIncorrectCodeError = useLangString("errors.confirm_code_incorrect_code_error");
+const ConfirmCodeEmailDialogContentMobile = ({
+	auth,
+	authLdap,
+	isLdapConfirm,
+	isAuthBlocked,
+	isCompleted,
+	setCompleted,
+	confirmCode,
+	setConfirmCode,
+	nextResend,
+	setNextResend,
+	nextAttempt,
+	isLoading,
+	setIsLoading,
+	isSuccess,
+	isError,
+	setIsError,
+	isNetworkError,
+	setIsNetworkError,
+	isServerError,
+	setIsServerError,
+	activeDialogId,
+}: ConfirmCodeEmailDialogContentProps) => {
 	const langStringOneMinute = useLangString("one_minute");
 	const langStringTwoMinutes = useLangString("two_minutes");
 	const langStringFiveMinutes = useLangString("five_minutes");
 
-	const langStringConfirmCodeEmailDialogTitle = useLangString("confirm_code_email_dialog.title_mobile");
+	const langStringConfirmCodeEmailDialogTitle = useLangString("confirm_code_email_dialog.title");
+	const langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmCurrent = useLangString("confirm_code_email_dialog.title_ldap_change_mail_confirm_current");
+	const langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmNew = useLangString("confirm_code_email_dialog.title_ldap_change_mail_confirm_new");
 	const langStringConfirmCodeEmailDialogDesc = useLangString("confirm_code_email_dialog.desc");
+	const langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent = useLangString("confirm_code_email_dialog.desc_ldap_change_mail_confirm_current");
 	const langStringConfirmCodeEmailDialogBackButton = useLangString("confirm_code_email_dialog.back_button");
 	const langStringConfirmCodeEmailDialogAuthBlocked = useLangString("confirm_code_email_dialog.auth_blocked");
 
-	const apiAuthMailConfirmFullAuthCode = useApiAuthMailConfirmFullAuthCode();
-	const apiSecurityMailConfirmResetPassword = useApiSecurityMailConfirmResetPassword();
 	const apiAuthMailCancel = useApiAuthMailCancel();
 	const { navigateToDialog } = useNavigateDialog();
-	const activeDialogId = useAtomValue(activeDialogIdState);
-	const auth = useAtomValue(authState);
-	const joinLink = useAtomValue(joinLinkState);
-	const setPrepareJoinLinkError = useSetAtom(prepareJoinLinkErrorState);
-	const setPasswordInput = useSetAtom(passwordInputState);
-	const showToast = useShowToast(activeDialogId);
-
-	const [ isAuthBlocked, setIsAuthBlocked ] = useState(false);
-	const [ isCompleted, setCompleted ] = useState<boolean>(false);
-	const [ confirmCode, setConfirmCode ] = useState<string>("");
-	const [ nextAttempt, setNextAttempt ] = useState(0);
-	const [ nextResend, setNextResend ] = useState(0);
-	const [ isLoading, setIsLoading ] = useState(false);
-	const [ isSuccess, setIsSuccess ] = useState(false);
-	const [ isError, setIsError ] = useState(false);
-	const [ isNetworkError, setIsNetworkError ] = useState(false);
-	const [ isServerError, setIsServerError ] = useState(false);
-
-	useEffect(() => {
-		// сбрасываем пароль если это логин
-		if (auth !== null && auth.type === APIAuthTypeLoginByMail) {
-			setPasswordInput("");
-		}
-	}, []);
-
-	useEffect(() => {
-		if (
-			auth === null ||
-			(auth.type !== APIAuthTypeRegisterByMail &&
-				auth.type !== APIAuthTypeLoginByMail &&
-				auth.type !== APIAuthTypeResetPasswordByMail)
-		) {
-			return;
-		}
-
-		if ((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).code_available_attempts < 1) {
-			setIsAuthBlocked(true);
-			setNextAttempt((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).expire_at);
-			setNextResend((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).expire_at);
-			return;
-		}
-
-		setNextResend((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).next_resend);
-	}, [ auth ]);
 
 	const screenWidth = useMemo(() => document.body.clientWidth, [ document.body.clientWidth ]);
 
@@ -548,151 +418,16 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 		return <></>;
 	}, [ isCompleted, isServerError, isNetworkError, isLoading, screenWidth ]);
 
-	useEffect(() => {
-		if (isCompleted && auth !== null) {
-			if (confirmCode.length != 6) {
-				return;
-			}
-
-			if (auth.type === APIAuthTypeRegisterByMail || auth.type === APIAuthTypeLoginByMail) {
-				apiAuthMailConfirmFullAuthCode.mutate(
-					{
-						auth_key: auth.auth_key,
-						code: confirmCode,
-						setIsSuccess: setIsSuccess,
-						join_link_uniq: joinLink?.join_link_uniq ?? undefined,
-					},
-					{
-						onError: (error) => {
-							if (error instanceof NetworkError) {
-								setIsNetworkError(true);
-								setCompleted(false);
-								showToast(langStringErrorsNetworkError, "warning");
-								return;
-							}
-
-							if (error instanceof ServerError) {
-								setIsServerError(true);
-								setCompleted(false);
-								showToast(langStringErrorsServerError, "warning");
-								return;
-							}
-
-							if (error instanceof ApiError) {
-								if (
-									error.error_code === INCORRECT_LINK_ERROR_CODE ||
-									error.error_code === INACTIVE_LINK_ERROR_CODE
-								) {
-									setConfirmCode("");
-									setCompleted(false);
-									setPrepareJoinLinkError({ error_code: error.error_code });
-									return;
-								}
-
-								if (error.error_code === 1708113) {
-									setIsError(true);
-									setConfirmCode("");
-									setCompleted(false);
-									showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
-									setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
-									return;
-								}
-
-								if (error.error_code === 1708399 || error.error_code === LIMIT_ERROR_CODE) {
-									setIsAuthBlocked(true);
-									setNextAttempt(error.next_attempt);
-									setConfirmCode("");
-									setCompleted(false);
-									return;
-								}
-
-								setIsError(true);
-								setCompleted(false);
-								showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
-							}
-						},
-					}
-				);
-
-				return;
-			}
-
-			if (auth.type === APIAuthTypeResetPasswordByMail) {
-				apiSecurityMailConfirmResetPassword.mutate(
-					{
-						auth_key: auth.auth_key,
-						code: confirmCode,
-						setIsSuccess: setIsSuccess,
-					},
-					{
-						onError: (error) => {
-							if (error instanceof NetworkError) {
-								setIsNetworkError(true);
-								setCompleted(false);
-								showToast(langStringErrorsNetworkError, "warning");
-								return;
-							}
-
-							if (error instanceof ServerError) {
-								setIsServerError(true);
-								setCompleted(false);
-								showToast(langStringErrorsServerError, "warning");
-								return;
-							}
-
-							if (error instanceof ApiError) {
-								if (
-									error.error_code === INCORRECT_LINK_ERROR_CODE ||
-									error.error_code === INACTIVE_LINK_ERROR_CODE
-								) {
-									setConfirmCode("");
-									setCompleted(false);
-									setPrepareJoinLinkError({ error_code: error.error_code });
-									return;
-								}
-
-								if (error.error_code === 1708113) {
-									setIsError(true);
-									setConfirmCode("");
-									setCompleted(false);
-									showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
-									setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
-									return;
-								}
-
-								if (error.error_code === 1708399 || error.error_code === LIMIT_ERROR_CODE) {
-									setIsAuthBlocked(true);
-									setNextAttempt(error.next_attempt);
-									setConfirmCode("");
-									setCompleted(false);
-									return;
-								}
-
-								setIsError(true);
-								setCompleted(false);
-								showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
-							}
-						},
-					}
-				);
-
-				return;
-			}
-		}
-	}, [ isCompleted, joinLink, auth ]);
-
-	if (auth === null) {
-		navigateToDialog("auth_email_phone_number");
-		return <></>;
-	}
-
 	return (
 		<VStack w = "100%" gap = "0px">
 			<VStack gap = "0px" mt = "16px">
 				<MailIcon80 />
 
 				<Text mt = "16px" style = "lato_20_28_700" ls = "-03">
-					{langStringConfirmCodeEmailDialogTitle}
+					{authLdap === null ? langStringConfirmCodeEmailDialogTitle : (
+						authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL ? langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmCurrent
+							: authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_NEW_MAIL ? langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmNew : langStringConfirmCodeEmailDialogTitle
+					)}
 				</Text>
 
 				<Text
@@ -703,9 +438,10 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 					overflow = "wrapEllipsis"
 					userSelect = "text"
 				>
-					{langStringConfirmCodeEmailDialogDesc}
+					{(authLdap !== null && authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL)
+						? langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent : langStringConfirmCodeEmailDialogDesc}
 					<styled.span fontFamily = "lato_bold">
-						«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
+						«{isLdapConfirm ? authLdap?.scenario_data.mail_mask : (auth?.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
 				</Text>
 
@@ -772,12 +508,24 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 						color = "2574a9"
 						disabled = {isCompleted}
 						onClick = {() => {
-							if (auth.type == APIAuthTypeRegisterByMail) {
+							if (auth?.type == APIAuthTypeRegisterByMail) {
 								navigateToDialog("auth_email_register");
 								return;
 							}
 
-							apiAuthMailCancel.mutate({ auth_key: auth.auth_key });
+							if (isLdapConfirm) {
+
+								if (authLdap !== null && authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_NEW_MAIL) {
+
+									navigateToDialog("auth_ldap_2fa_attach_mail");
+									return;
+								}
+
+								navigateToDialog("auth_sso_ldap");
+								return;
+							}
+
+							apiAuthMailCancel.mutate({ auth_key: auth?.auth_key ?? "" });
 						}}
 					>
 						<HStack gap = "4px">
@@ -810,8 +558,10 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 						size = {screenWidth <= 375 ? "px0py8" : "px8py8"}
 						textSize = "lato_16_22_400"
 						isCompleted = {isCompleted}
-						authKey = {auth.auth_key}
-						authType = {auth.type}
+						authKey = {auth?.auth_key}
+						authType = {auth?.type}
+						mailConfirmStoryKey = {authLdap?.mail_confirm_story_key}
+						isLdapConfirm = {isLdapConfirm}
 						activeDialogId = {activeDialogId}
 					/>
 				</HStack>
@@ -823,11 +573,355 @@ const ConfirmCodeEmailDialogContentMobile = () => {
 const ConfirmCodeEmailDialogContent = () => {
 	const isMobile = useIsMobile();
 
-	if (isMobile) {
-		return <ConfirmCodeEmailDialogContentMobile />;
+	const langStringErrorsNetworkError = useLangString("errors.network_error");
+	const langStringErrorsServerError = useLangString("errors.server_error");
+	const langStringErrorsConfirmCodeConfirmIsExpiredError = useLangString("errors.confirm_code_confirm_is_expired_error");
+	const langStringErrorsConfirmCode2FaIsDisabledError = useLangString("errors.confirm_code_2fa_is_disabled_error");
+	const langStringErrorsConfirmCodeIncorrectCodeError = useLangString("errors.confirm_code_incorrect_code_error");
+
+	const apiAuthMailConfirmFullAuthCode = useApiAuthMailConfirmFullAuthCode();
+	const apiSecurityMailConfirmResetPassword = useApiSecurityMailConfirmResetPassword();
+
+	const apiFederationLdapMailConfirm = useApiFederationLdapMailConfirm();
+	const apiFederationLdapAuthGetToken = useApiFederationLdapAuthGetToken();
+	const apiPivotAuthLdapBegin = useApiPivotAuthLdapBegin();
+
+	const { navigateToDialog } = useNavigateDialog();
+	const { navigateByStage } = useLdap2FaStage();
+
+	const joinLink = useAtomValue(joinLinkState);
+	const auth = useAtomValue(authState);
+	const authLdap = useAtomValue(authLdapState);
+	const authLdapCredentials = useAtomValue(authLdapCredentialsState);
+	const setPrepareJoinLinkError = useSetAtom(prepareJoinLinkErrorState);
+	const activeDialogId = useAtomValue(activeDialogIdState);
+	const showToast = useShowToast(activeDialogId);
+	const setPasswordInput = useSetAtom(passwordInputState);
+	const prepareJoinLinkError = useAtomValue(prepareJoinLinkErrorState);
+
+	const isLdapConfirm = useMemo(() => authLdap !== null, [ authLdap ])
+	const [ isAuthBlocked, setIsAuthBlocked ] = useState(false);
+	const [ isCompleted, setCompleted ] = useState<boolean>(false);
+	const [ confirmCode, setConfirmCode ] = useState<string>("");
+	const [ nextResend, setNextResend ] = useState(0);
+	const [ nextAttempt, setNextAttempt ] = useState(0);
+	const [ isLoading, setIsLoading ] = useState(false);
+	const [ isSuccess, setIsSuccess ] = useState(false);
+	const [ isError, setIsError ] = useState(false);
+	const [ isNetworkError, setIsNetworkError ] = useState(false);
+	const [ isServerError, setIsServerError ] = useState(false);
+
+	useEffect(() => {
+		// сбрасываем пароль если это логин
+		if (auth !== null && auth.type === APIAuthTypeLoginByMail) {
+			setPasswordInput("");
+		}
+	}, []);
+
+	// next_resend для обычной почты
+	useEffect(() => {
+		if (
+			auth === null ||
+			(auth.type !== APIAuthTypeRegisterByMail &&
+				auth.type !== APIAuthTypeLoginByMail &&
+				auth.type !== APIAuthTypeResetPasswordByMail)
+		) {
+			return;
+		}
+
+		if ((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).code_available_attempts < 1) {
+			setIsAuthBlocked(true);
+			setNextAttempt((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).expire_at);
+			setNextResend((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).expire_at);
+			return;
+		}
+
+		setNextResend((auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).next_resend);
+	}, [ auth ]);
+
+	// next_resend для 2fa ldap
+	useEffect(() => {
+		if (authLdap === null) {
+			return;
+		}
+
+		if (authLdap.scenario_data.code_available_attempts < 1) {
+			setIsAuthBlocked(true);
+			setNextAttempt(authLdap.scenario_data.expires_at);
+			setNextResend(authLdap.scenario_data.expires_at);
+			return;
+		}
+
+		setNextResend(authLdap.scenario_data.next_resend_at);
+	}, [ authLdap ]);
+
+	// подтверждение обычной авторизации
+	useEffect(() => {
+		if (isCompleted && auth !== null) {
+			if (confirmCode.length != 6) {
+				return;
+			}
+
+			if (auth.type === APIAuthTypeRegisterByMail || auth.type === APIAuthTypeLoginByMail) {
+				apiAuthMailConfirmFullAuthCode.mutate(
+					{
+						auth_key: auth.auth_key,
+						code: confirmCode,
+						setIsSuccess: setIsSuccess,
+						join_link_uniq: joinLink?.join_link_uniq ?? undefined,
+					}, {
+						onError: (error) => {
+							if (error instanceof NetworkError) {
+								setIsNetworkError(true);
+								setCompleted(false);
+								showToast(langStringErrorsNetworkError, "warning");
+								return;
+							}
+
+							if (error instanceof ServerError) {
+								setIsServerError(true);
+								setCompleted(false);
+								showToast(langStringErrorsServerError, "warning");
+								return;
+							}
+
+							if (error instanceof ApiError) {
+
+								switch (error.error_code) {
+									case INCORRECT_LINK_ERROR_CODE:
+									case INACTIVE_LINK_ERROR_CODE:
+										setConfirmCode("");
+										setCompleted(false);
+										setPrepareJoinLinkError({ error_code: error.error_code });
+										break;
+									case 1708113:
+										setIsError(true);
+										setConfirmCode("");
+										setCompleted(false);
+										showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
+										setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
+										break;
+									case 1708399:
+									case LIMIT_ERROR_CODE:
+										setIsAuthBlocked(true);
+										setNextAttempt(error.next_attempt);
+										setConfirmCode("");
+										setCompleted(false);
+										break;
+									default:
+										setIsError(true);
+										setCompleted(false);
+										showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
+										break;
+								}
+							}
+						},
+					}
+				);
+
+				return;
+			}
+
+			if (auth.type === APIAuthTypeResetPasswordByMail) {
+				apiSecurityMailConfirmResetPassword.mutate(
+					{
+						auth_key: auth.auth_key,
+						code: confirmCode,
+						setIsSuccess: setIsSuccess,
+					},
+					{
+						onError: (error) => {
+							if (error instanceof NetworkError) {
+								setIsNetworkError(true);
+								setCompleted(false);
+								showToast(langStringErrorsNetworkError, "warning");
+								return;
+							}
+
+							if (error instanceof ServerError) {
+								setIsServerError(true);
+								setCompleted(false);
+								showToast(langStringErrorsServerError, "warning");
+								return;
+							}
+
+							if (error instanceof ApiError) {
+								switch (error.error_code) {
+									case INCORRECT_LINK_ERROR_CODE:
+									case INACTIVE_LINK_ERROR_CODE:
+										setConfirmCode("");
+										setCompleted(false);
+										setPrepareJoinLinkError({ error_code: error.error_code });
+										break;
+									case 1708113:
+										setIsError(true);
+										setConfirmCode("");
+										setCompleted(false);
+										showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
+										setTimeout(() => setIsError(false), 2900); // должен быть на 100ms меньше времени пропадания тостера
+										break;
+									case 1708399:
+									case LIMIT_ERROR_CODE:
+										setIsAuthBlocked(true);
+										setNextAttempt(error.next_attempt);
+										setConfirmCode("");
+										setCompleted(false);
+										break;
+									default:
+										setIsError(true);
+										setCompleted(false);
+										showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
+										break;
+								}
+							}
+						},
+					}
+				);
+
+				return;
+			}
+		}
+	}, [ isCompleted, joinLink, auth ]);
+
+	// подтверждение ldap авторизации
+	useEffect(() => {
+		if (isCompleted && authLdap !== null) {
+			if (confirmCode.length != 6) {
+				return;
+			}
+
+			setIsLoading(true);
+			(async () => {
+				try {
+					const federationLdapMailConfirmResponse = await apiFederationLdapMailConfirm.mutateAsync(
+						{
+							mail_confirm_story_key: authLdap.mail_confirm_story_key,
+							confirm_code: confirmCode,
+							setIsSuccess,
+						}
+					);
+
+					// если время получать токен не пришло и нужно сходить в другую локацию
+					if (federationLdapMailConfirmResponse.ldap_mail_confirm_story_info.scenario_data.stage !== API_COMMAND_SCENARIO_DATA_STAGE_GET_LDAP_AUTH_TOKEN) {
+
+						navigateByStage(federationLdapMailConfirmResponse.ldap_mail_confirm_story_info);
+						return;
+					}
+
+					const { ldap_auth_token } = await apiFederationLdapAuthGetToken.mutateAsync({
+						username: authLdapCredentials.username,
+						password: authLdapCredentials.password,
+						mail_confirm_story_key: authLdap.mail_confirm_story_key,
+					});
+
+					await apiPivotAuthLdapBegin.mutateAsync({
+						ldap_auth_token,
+						join_link:
+							prepareJoinLinkError === null || prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE
+								? window.location.href
+								: undefined,
+					});
+				} catch (error) {
+					if (error instanceof NetworkError) {
+						setIsNetworkError(true);
+						showToast(langStringErrorsNetworkError, "warning");
+					} else if (error instanceof ServerError) {
+						setIsServerError(true);
+						showToast(langStringErrorsServerError, "warning");
+					} else if (error instanceof ApiError) {
+						switch (error.error_code) {
+							case 1708005:
+							case 1708006:
+							case 1708008:
+							case 1708013:
+								navigateToDialog("auth_sso_ldap");
+								showToast(langStringErrorsConfirmCodeConfirmIsExpiredError, "warning");
+								break;
+							case 1708007:
+								setIsError(true);
+								setConfirmCode("");
+								showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
+								setTimeout(() => setIsError(false), 2900);
+								break;
+							case 1708009:
+								setIsAuthBlocked(true);
+								setNextAttempt(error.expires_at);
+								setConfirmCode("");
+								break;
+							case 1708016:
+								navigateToDialog("auth_sso_ldap");
+								showToast(langStringErrorsConfirmCode2FaIsDisabledError, "warning");
+								break;
+							default:
+								setIsError(true);
+								showToast(langStringErrorsConfirmCodeIncorrectCodeError, "warning");
+								break;
+						}
+					}
+				} finally {
+					// в любом случае выключаем спиннер
+					setIsLoading(false);
+					setCompleted(false);
+				}
+			})();
+		}
+	}, [ isCompleted, joinLink, authLdap ]);
+
+	if (auth === null && authLdap === null) {
+
+		navigateToDialog("auth_email_phone_number");
+		return <></>;
 	}
 
-	return <ConfirmCodeEmailDialogContentDesktop />;
+	if (isMobile) {
+		return <ConfirmCodeEmailDialogContentMobile
+			auth = {auth}
+			authLdap = {authLdap}
+			isLdapConfirm = {isLdapConfirm}
+			isAuthBlocked = {isAuthBlocked}
+			isCompleted = {isCompleted}
+			setCompleted = {setCompleted}
+			confirmCode = {confirmCode}
+			setConfirmCode = {setConfirmCode}
+			nextResend = {nextResend}
+			setNextResend = {setNextResend}
+			nextAttempt = {nextAttempt}
+			isLoading = {isLoading}
+			setIsLoading = {setIsLoading}
+			isSuccess = {isSuccess}
+			isError = {isError}
+			setIsError = {setIsError}
+			isNetworkError = {isNetworkError}
+			setIsNetworkError = {setIsNetworkError}
+			isServerError = {isServerError}
+			setIsServerError = {setIsServerError}
+			activeDialogId = {activeDialogId}
+		/>;
+	}
+
+	return <ConfirmCodeEmailDialogContentDesktop
+		auth = {auth}
+		authLdap = {authLdap}
+		isLdapConfirm = {isLdapConfirm}
+		isAuthBlocked = {isAuthBlocked}
+		isCompleted = {isCompleted}
+		setCompleted = {setCompleted}
+		confirmCode = {confirmCode}
+		setConfirmCode = {setConfirmCode}
+		nextResend = {nextResend}
+		setNextResend = {setNextResend}
+		nextAttempt = {nextAttempt}
+		isLoading = {isLoading}
+		setIsLoading = {setIsLoading}
+		isSuccess = {isSuccess}
+		isError = {isError}
+		setIsError = {setIsError}
+		isNetworkError = {isNetworkError}
+		setIsNetworkError = {setIsNetworkError}
+		isServerError = {isServerError}
+		setIsServerError = {setIsServerError}
+		activeDialogId = {activeDialogId}
+	/>;
 };
 
 export default ConfirmCodeEmailDialogContent;

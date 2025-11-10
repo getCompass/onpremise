@@ -12,25 +12,25 @@ use CompassApp\Domain\Member\Struct\Short;
 /**
  * хелпер для групп
  */
-class Helper_Groups {
-
+class Helper_Groups
+{
 	/**
 	 * Создаем группу
 	 *
-	 * @param int    $user_id
-	 * @param string $group_name
-	 * @param string $file_map
-	 * @param string $description
-	 * @param int    $group_type
-	 * @param bool   $is_favorite
-	 * @param bool   $is_mentioned
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws BusFatalException
 	 */
-	public static function create(int $user_id, string $group_name, string $file_map = "", string $description = "",
-						int $group_type = CONVERSATION_TYPE_GROUP_DEFAULT, bool $is_favorite = false, bool $is_mentioned = false, bool $is_channel = false):array {
+	public static function create(
+		int $user_id,
+		string $group_name,
+		string $file_map = "",
+		string $description = "",
+		int $group_type = CONVERSATION_TYPE_GROUP_DEFAULT,
+		bool $is_favorite = false,
+		bool $is_mentioned = false,
+		bool $is_channel = false
+	): array {
 
 		// если пришел неадекватный тип диалога для группы
 		if (!Type_Conversation_Meta::isSubtypeOfGroup($group_type)) {
@@ -38,10 +38,19 @@ class Helper_Groups {
 		}
 
 		// создаем групповой диалог
-		$meta_row = Type_Conversation_Group::add($user_id, $group_name, $group_type, $is_favorite, $is_mentioned, $file_map, $description, is_channel: $is_channel);
+		[$left_menu_row, $meta_row] = Type_Conversation_Group::add($user_id, $group_name, $group_type, $is_favorite, $is_mentioned, $file_map, $description, is_channel: $is_channel);
 
 		// отправляем событие пользователю, что добавлен диалог в левом меню
-		Gateway_Bus_Sender::conversationAdded($user_id, $meta_row["conversation_map"]);
+		if ($left_menu_row !== []) {
+
+			$prepared_left_menu_row  = Type_Conversation_Utils::prepareLeftMenuForFormat($left_menu_row);
+			$formatted_left_menu_row = Apiv1_Format::leftMenu($prepared_left_menu_row);
+
+			// LEGACY убрать, как ios уберет ws ку event.conversation_added
+			Gateway_Bus_Sender::conversationAdded($user_id, $left_menu_row["conversation_map"]);
+
+			Gateway_Bus_Sender::conversationLeftMenuUpdated($user_id, $formatted_left_menu_row);
+		}
 
 		// инкрементим количество действий
 		Domain_User_Action_IncActionCount::incGroupCreated($user_id, $meta_row["conversation_map"]);
@@ -54,9 +63,20 @@ class Helper_Groups {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function doJoin(string $conversation_map, int $user_id, int|false $member_role = false, int|false $member_permissions = false,
-						int    $inviter_user_id = 0, int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT, bool $is_favorite = false,
-						bool   $is_mentioned = false, string $userbot_id = "", bool $is_need_silent = false, int $migration_clear_until = 0, bool $is_migration_muted = false):array {
+	public static function doJoin(
+		string $conversation_map,
+		int $user_id,
+		int | false $member_role = false,
+		int | false $member_permissions = false,
+		int $inviter_user_id = 0,
+		int $role = Type_Conversation_Meta_Users::ROLE_DEFAULT,
+		bool $is_favorite = false,
+		bool $is_mentioned = false,
+		string $userbot_id = "",
+		bool $is_need_silent = false,
+		int $migration_clear_until = 0,
+		bool $is_migration_muted = false
+	): array {
 
 		// если пользователь администратор всех групп - добавляем в группу как администратора
 		if (Permission::isGroupAdministrator($member_role, $member_permissions)) {
@@ -65,7 +85,13 @@ class Helper_Groups {
 
 		// добавляем пользователя в группу
 		[$conversation_data] = Type_Conversation_Group::addUserToGroup(
-			$conversation_map, $user_id, $role, $is_favorite, $is_mentioned, $userbot_id, $is_migration_muted
+			$conversation_map,
+			$user_id,
+			$role,
+			$is_favorite,
+			$is_mentioned,
+			$userbot_id,
+			$is_migration_muted
 		);
 		$meta_row      = Type_Conversation_Utils::getMetaRowFromConversationData($conversation_data);
 		$left_menu_row = Type_Conversation_Utils::getLeftMenuRowFromConversationData($conversation_data);
@@ -94,7 +120,7 @@ class Helper_Groups {
 		}
 
 		// действия после вступления пользователя в групповой диалог
-		self::_onJoinUserToGroup($conversation_map, $user_id, $meta_row["users"], $inviter_user_id, $role, $is_need_silent);
+		self::_onJoinUserToGroup($conversation_map, $left_menu_row, $user_id, $meta_row["users"], $inviter_user_id, $role, $is_need_silent);
 
 		// ставим диалог на индексацию
 		Domain_Search_Entity_Conversation_Task_Reindex::queueForUser($conversation_map, [$user_id]);
@@ -104,7 +130,8 @@ class Helper_Groups {
 	}
 
 	// устанавливаем очистку диалога при вступлении в группу
-	public static function setClearMessagesConversationForJoinGroup(int $user_id, int $member_role, string $conversation_map, array $left_menu_row, array $meta_row, bool $is_need_silent = false, int $migration_clear_until = 0):void {
+	public static function setClearMessagesConversationForJoinGroup(int $user_id, int $member_role, string $conversation_map, array $left_menu_row, array $meta_row, bool $is_need_silent = false, int $migration_clear_until = 0): void
+	{
 
 		// если для диалога убрана опция — "Показывать историю сообщений" — очищаем
 		if ((!Type_Conversation_Meta_Extra::isShowHistoryForNewMembers($meta_row["extra"]) || Member::ROLE_GUEST === $member_role)) {
@@ -148,14 +175,22 @@ class Helper_Groups {
 
 	// действия после вступления пользователя в группе
 	// @long
-	protected static function _onJoinUserToGroup(string $conversation_map, int $user_id, array $users, int $inviter_user_id, int $role, bool $is_need_silent = false):void {
+	protected static function _onJoinUserToGroup(string $conversation_map, array $left_menu_row, int $user_id, array $users, int $inviter_user_id, int $role, bool $is_need_silent = false): void
+	{
 
 		// обновляем количество пользователей в left_menu, очищаем meta кэш и отправляем событие пользователю, что добавлен диалог в левом меню
 		Type_Phphooker_Main::updateMembersCount($conversation_map, $users);
 		Type_Phphooker_Main::sendClearThreadMetaCache($conversation_map);
 
 		if (!$is_need_silent) {
-			Gateway_Bus_Sender::conversationAdded($user_id, $conversation_map);
+
+			$prepared_left_menu_row  = Type_Conversation_Utils::prepareLeftMenuForFormat($left_menu_row);
+			$formatted_left_menu_row = Apiv1_Format::leftMenu($prepared_left_menu_row);
+
+			// LEGACY убрать, как ios уберет ws ку event.conversation_added
+			Gateway_Bus_Sender::conversationAdded($user_id, $left_menu_row["conversation_map"]);
+
+			Gateway_Bus_Sender::conversationLeftMenuUpdated($user_id, $formatted_left_menu_row);
 		}
 
 		$talking_user_list = Type_Conversation_Meta_Users::getTalkingUserList($users);
@@ -185,13 +220,18 @@ class Helper_Groups {
 			$talking_user_list[] = Gateway_Bus_Sender::makeTalkingUserItem($user_id, false);
 			$talking_user_list[] = Gateway_Bus_Sender::makeTalkingUserItem($invite_row["sender_user_id"], false);
 			Gateway_Bus_Sender::conversationInviteStatusChanged(
-				$talking_user_list, $invite_row["invite_map"], $user_id, Type_Invite_Handler::STATUS_ACCEPTED, $conversation_map
+				$talking_user_list,
+				$invite_row["invite_map"],
+				$user_id,
+				Type_Invite_Handler::STATUS_ACCEPTED,
+				$conversation_map
 			);
 		}
 	}
 
 	// бросаем экзепшен если статус не accepted
-	protected static function _throwIfInviteIsNotAccepted(array $invite_row):void {
+	protected static function _throwIfInviteIsNotAccepted(array $invite_row): void
+	{
 
 		if ($invite_row["status"] != Type_Invite_Handler::STATUS_ACCEPTED && $invite_row["status"] != Type_Invite_Handler::STATUS_AUTO_ACCEPTED) {
 			throw new ParseFatalException(__METHOD__ . " invite is not accepted");
@@ -199,7 +239,8 @@ class Helper_Groups {
 	}
 
 	// кикаем юзера $user_id из группы
-	public static function doUserKick(array $meta_row, int $user_id, bool $is_need_unfollow_threads = false, string $userbot_id = ""):void {
+	public static function doUserKick(array $meta_row, int $user_id, bool $is_need_unfollow_threads = false, string $userbot_id = ""): void
+	{
 
 		// пользователь является участником диалога?
 		if (!Type_Conversation_Meta_Users::isMember($user_id, $meta_row["users"])) {
@@ -241,7 +282,8 @@ class Helper_Groups {
 	}
 
 	// переименовывает группу
-	public static function doChangeName(int $user_id, string $conversation_map, string $group_name, array $meta_row):void {
+	public static function doChangeName(int $user_id, string $conversation_map, string $group_name, array $meta_row): void
+	{
 
 		// переименовываем группу
 		Type_Conversation_Group::setName($conversation_map, $group_name);
@@ -269,7 +311,8 @@ class Helper_Groups {
 	 *
 	 * @throws \parseException
 	 */
-	public static function doChangeAvatar(string $conversation_map, string $file_map, array $meta_row):void {
+	public static function doChangeAvatar(string $conversation_map, string $file_map, array $meta_row): void
+	{
 
 		// обновляем аватар группы
 		Type_Conversation_Group::setAvatar($conversation_map, $file_map);
@@ -296,19 +339,13 @@ class Helper_Groups {
 	/**
 	 * изменяем основную информацию о группе (название группы, описание, аватарка)
 	 *
-	 * @param int          $user_id
-	 * @param string       $conversation_map
-	 * @param array        $meta_row
-	 * @param string|false $name
-	 * @param string|false $file_map
-	 * @param string|false $description
 	 *
-	 * @return array
 	 * @throws Domain_Member_Exception_ActionNotAllowed
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	public static function doChangeBaseInfo(int $user_id, string $conversation_map, array $meta_row, string|false $name, string|false $file_map, string|false $description):array {
+	public static function doChangeBaseInfo(int $user_id, string $conversation_map, array $meta_row, string | false $name, string | false $file_map, string | false $description): array
+	{
 
 		// выбрасываем ошибку, если чату не доступно действие
 		if ($name !== false) {
@@ -350,14 +387,11 @@ class Helper_Groups {
 	/**
 	 * отправляем системные сообщения после изменения информации группового диалога
 	 *
-	 * @param int          $user_id
-	 * @param string       $conversation_map
-	 * @param string|false $group_name
-	 * @param array        $meta_row
 	 *
 	 * @mixed - $group_name, $file_map могут быть false
 	 */
-	protected static function _sendSystemMessagesAfterChangedGroupInfo(int $user_id, string $conversation_map, string|false $group_name, array $meta_row):void {
+	protected static function _sendSystemMessagesAfterChangedGroupInfo(int $user_id, string $conversation_map, string | false $group_name, array $meta_row): void
+	{
 
 		if ($group_name !== false) {
 
@@ -374,17 +408,12 @@ class Helper_Groups {
 	/**
 	 * отправляем участникам диалога уведомления об изменения информации группового диалога
 	 *
-	 * @param array        $talking_user_list
-	 * @param string       $conversation_map
-	 * @param string|false $group_name
-	 * @param string|false $file_map
-	 * @param string|false $description
-	 * @param array        $meta_row
 	 *
 	 * @throws ParseFatalException
 	 * @mixed - $group_name, $file_map могут быть false
 	 */
-	protected static function _sendEventsAfterChangedGroupInfo(array $talking_user_list, string $conversation_map, string|false $group_name, string|false $file_map, string|false $description, array $meta_row):void {
+	protected static function _sendEventsAfterChangedGroupInfo(array $talking_user_list, string $conversation_map, string | false $group_name, string | false $file_map, string | false $description, array $meta_row): void
+	{
 
 		Gateway_Bus_Sender::conversationGroupChangedBaseInfo($talking_user_list, $conversation_map, $group_name, $file_map, $description, $meta_row);
 
@@ -405,7 +434,8 @@ class Helper_Groups {
 	}
 
 	// позволяет пользователю выйти из группы
-	public static function doLeave(string $conversation_map, int $user_id, array $meta_row, bool $is_need_notify_about_group_left = true, bool $is_need_unfollow_threads = false, bool $is_need_notify_about_company_left = false):void {
+	public static function doLeave(string $conversation_map, int $user_id, array $meta_row, bool $is_need_notify_about_group_left = true, bool $is_need_unfollow_threads = false, bool $is_need_notify_about_company_left = false): void
+	{
 
 		// получаем сокращенную информацию по пользователю
 		$user_info = self::_getUserInfo($user_id);
@@ -467,13 +497,11 @@ class Helper_Groups {
 	/**
 	 * Проверяем кто пытается ливнуть с чата
 	 *
-	 * @param Short  $user_info
-	 * @param string $conversation
 	 *
-	 * @return bool
 	 * @throws \cs_RowIsEmpty
 	 */
-	protected static function _isOwnerTryToLeaveGeneralConversation(Short $user_info, string $conversation):bool {
+	protected static function _isOwnerTryToLeaveGeneralConversation(Short $user_info, string $conversation): bool
+	{
 
 		if ($user_info->role != Member::ROLE_ADMINISTRATOR
 			|| !Permission::hasOwnerPermissions($user_info->permissions)) {
@@ -492,13 +520,11 @@ class Helper_Groups {
 	/**
 	 * Проверяем кто пытается ливнуть с чата спасибо
 	 *
-	 * @param Short  $user_info
-	 * @param string $conversation
 	 *
-	 * @return bool
 	 * @throws \cs_RowIsEmpty
 	 */
-	protected static function _isOwnerTryToLeaveRespectConversation(Short $user_info, string $conversation):bool {
+	protected static function _isOwnerTryToLeaveRespectConversation(Short $user_info, string $conversation): bool
+	{
 
 		if ($user_info->role != Member::ROLE_ADMINISTRATOR
 			|| !Permission::hasOwnerPermissions($user_info->permissions)) {
@@ -522,7 +548,8 @@ class Helper_Groups {
 	 * @throws \paramException
 	 * @throws \returnException
 	 */
-	protected static function _getUserInfo(int $user_id):Short {
+	protected static function _getUserInfo(int $user_id): Short
+	{
 
 		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList([$user_id]);
 		if (!isset($user_info_list[$user_id])) {
@@ -532,7 +559,8 @@ class Helper_Groups {
 	}
 
 	// проверяем нужно ли добавить нового овнера
-	protected static function _isNeedAddOwner(array $users, int $leaved_user_id):bool {
+	protected static function _isNeedAddOwner(array $users, int $leaved_user_id): bool
+	{
 
 		// если единственный участник или роль простого участника, то ничего не трогаем
 		if (count($users) <= 1 || Type_Conversation_Meta_Users::isDefaultMember($leaved_user_id, $users)) {
@@ -552,14 +580,31 @@ class Helper_Groups {
 	}
 
 	// добавляем нового овнера из пользователей группы
-	protected static function _setNewOwnerFromMembers(int $old_owner_user_id, array $users, string $conversation_map):void {
+	protected static function _setNewOwnerFromMembers(int $old_owner_user_id, array $users, string $conversation_map): void
+	{
 
 		// убираем пользователя из списка пользователей, чтобы не назначить его же овнером
 		unset($users[$old_owner_user_id]);
 
+		// проверяем на наличие гостей в группе
+		$member_list = Gateway_Bus_CompanyCache::getMemberList(array_keys($users));
+		foreach ($member_list as $member) {
+
+			// если гость, убираем из списка
+			if ($member->role == Member::ROLE_GUEST) {
+				unset($users[$member->user_id]);
+			}
+		}
+
 		// получаем пользователя, который станет новым овнером
 		// (если участник, то раньше всех вступившего в группу; если админ - раньше всех получивший роль)
-		$user_id_list      = Type_Conversation_Meta_Users::getUserIdListSortedByJoinTime($users);
+		$user_id_list = Type_Conversation_Meta_Users::getUserIdListSortedByJoinTime($users);
+
+		// если участников для назначения администратором нету
+		if (count($user_id_list) < 1) {
+			return;
+		}
+
 		$new_owner_user_id = array_shift($user_id_list);
 
 		// отправляем задачу для установки роли овнера пользователю
@@ -567,14 +612,18 @@ class Helper_Groups {
 	}
 
 	// устанавливаем роль пользователю в диалоге
-	public static function setRole(string $conversation_map, int $user_id, int $role):void {
+	public static function setRole(string $conversation_map, int $user_id, int $role): void
+	{
 
 		// устанавливаем роль пользователю в диалоге
 		Type_Conversation_Group::setRole($conversation_map, $user_id, $role);
 
 		// пушим событие, что пользователь сменил роль
 		Gateway_Event_Dispatcher::dispatch(Type_Event_UserConversation_UserRoleChanged::create(
-			$user_id, $conversation_map, $role, time()
+			$user_id,
+			$conversation_map,
+			$role,
+			time()
 		));
 
 		// очищаем кэш-мета для всех тредов текущего диалога
@@ -582,7 +631,8 @@ class Helper_Groups {
 	}
 
 	// устанавливаем опции диалога
-	public static function doChangeOptions(int $user_id, string $conversation_map, array $meta_row, array $modifiable_options):void {
+	public static function doChangeOptions(int $user_id, string $conversation_map, array $meta_row, array $modifiable_options): void
+	{
 
 		// обновляем extra
 		$is_channel_before = Type_Conversation_Meta_Extra::isChannel($meta_row["extra"]) ? 1 : 0;
@@ -625,7 +675,8 @@ class Helper_Groups {
 	}
 
 	// актуализируем поле extra с учетом изменяемых опций
-	protected static function _updateExtraOnChangeOptions(array $extra, array $modifiable_options):array {
+	protected static function _updateExtraOnChangeOptions(array $extra, array $modifiable_options): array
+	{
 
 		// пробегаемся по изменениям
 		foreach ($modifiable_options as $option => $new_value) {
@@ -651,7 +702,8 @@ class Helper_Groups {
 	/**
 	 * Отправляем системные сообщения после смены статуса группы на диалог и обратно
 	 */
-	protected static function _sendSystemMessagesAfterChangeChannelGroupOption(int $user_id, int $is_channel, array $meta_row):void {
+	protected static function _sendSystemMessagesAfterChangeChannelGroupOption(int $user_id, int $is_channel, array $meta_row): void
+	{
 
 		$system_message_list[] = Type_Conversation_Message_Main::getLastVersionHandler()::makeSystemChannelOptionChanged(
 			$user_id,
@@ -665,7 +717,8 @@ class Helper_Groups {
 	// -------------------------------------------------------
 
 	// убирает юзера из группы
-	protected static function _removeUserFromGroup(string $conversation_map, int $user_id, int $leave_reason, string $userbot_id = ""):array {
+	protected static function _removeUserFromGroup(string $conversation_map, int $user_id, int $leave_reason, string $userbot_id = ""): array
+	{
 
 		[$after_meta_row] = Type_Conversation_Group::removeUserFromGroup($conversation_map, $user_id, $leave_reason, $userbot_id);
 
@@ -673,7 +726,8 @@ class Helper_Groups {
 	}
 
 	// выполняем все что необходимо когда юзер покидает группу (независимо от причины)
-	protected static function _onUserLeftGroupForAnyReason(string $conversation_map, array $meta_row, int $left_user_id, int $leave_reason):void {
+	protected static function _onUserLeftGroupForAnyReason(string $conversation_map, array $meta_row, int $left_user_id, int $leave_reason): void
+	{
 
 		// обновляем количество пользователей в left_menu
 		Type_Phphooker_Main::updateMembersCount($conversation_map, $meta_row["users"]);
@@ -692,7 +746,8 @@ class Helper_Groups {
 	}
 
 	// добавляем системное сообщение
-	protected static function _addSystemMessage(string $conversation_map, array $system_message, array $meta_row, bool $is_silent):void {
+	protected static function _addSystemMessage(string $conversation_map, array $system_message, array $meta_row, bool $is_silent): void
+	{
 
 		Type_Phphooker_Main::addMessage(
 			$conversation_map,

@@ -14,7 +14,7 @@ class Domain_Ldap_Action_AuthenticateStrategy_AttributeDnSearch implements Domai
 
 	public function isActual():bool {
 
-		return Domain_Ldap_Entity_Config::getUserUniqueAttribute() !== ""
+		return Domain_Ldap_Entity_Config::getUserLoginAttribute() !== ""
 			&& Domain_Ldap_Entity_Config::getUserSearchBase() !== ""
 			&& Domain_Ldap_Entity_Config::getUserSearchAccountDn() !== ""
 			&& Domain_Ldap_Entity_Config::getUserSearchAccountPassword() !== ""
@@ -37,7 +37,7 @@ class Domain_Ldap_Action_AuthenticateStrategy_AttributeDnSearch implements Domai
 		$client->bind(Domain_Ldap_Entity_Config::getUserSearchAccountDn(), Domain_Ldap_Entity_Config::getUserSearchAccountPassword());
 
 		// пытаемся найти DN целевой учетной записи, в которую пытаются авторизоваться
-		$search_filter = Domain_Ldap_Entity_Utils::formatUserFilterByUniqueAttribute(Domain_Ldap_Entity_Config::getUserUniqueAttribute(), $username);
+		$search_filter = Domain_Ldap_Entity_Utils::formatUserFilterByUniqueAttribute(Domain_Ldap_Entity_Config::getUserLoginAttribute(), $username);
 		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), $search_filter, 1);
 
 		// если не удалось ничего найти

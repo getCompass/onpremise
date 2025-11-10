@@ -21,6 +21,7 @@ const DEFAULT_STATE: ISettingsState = {
     disableCallIntegration: undefined,
     disableCrashReporting: undefined,
     disableP2P: undefined,
+    disableAGC: false,
     disableSelfView: false,
     displayName: undefined,
     email: undefined,
@@ -60,6 +61,7 @@ export interface ISettingsState {
     disableCallIntegration?: boolean;
     disableCrashReporting?: boolean;
     disableP2P?: boolean;
+    disableAGC?: boolean;
     disableSelfView?: boolean;
     displayName?: string;
     email?: string;

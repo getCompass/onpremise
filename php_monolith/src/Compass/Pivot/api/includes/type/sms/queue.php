@@ -38,6 +38,7 @@ class Type_Sms_Queue {
 			IOS_TEST_PHONE4,
 			ELECTRON_TEST_PHONE,
 			ANDROID_TEST_PHONE,
+			ANDROID_TEST_PHONE2,
 		])) {
 
 			return $sms_id;

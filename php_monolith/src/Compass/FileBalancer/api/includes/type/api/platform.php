@@ -23,7 +23,7 @@ class Type_Api_Platform {
 	];
 
 	// получение платформы
-	public static function getPlatform(string $user_agent = null):string {
+	public static function getPlatform(?string $user_agent = null):string {
 
 		// если работаем из консоли и не передали ua - возвращаем платформу other
 		if (isCLi() && is_null($user_agent)) {

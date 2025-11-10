@@ -83,6 +83,7 @@ import { default as IconMicSlash } from './mic-slash.svg';
 import { default as IconMicSlashMobile } from './mic-slash-mobile.svg';
 import { default as IconMicThin } from './mic-thin.svg';
 import { default as IconMic } from './mic.svg';
+import { default as IconMicAutoLeveling } from './mic-auto-leveling.svg';
 import { default as IconMicMobile } from './mic-mobile.svg';
 import { default as IconMicFilled } from './mic-filled.svg';
 import { default as IconModerator } from './moderator.svg';
@@ -252,6 +253,7 @@ export const DEFAULT_ICON: Record<string, any> = {
     IconMicSlashMobile,
     IconMicSlashThin,
     IconMicFilled,
+    IconMicAutoLeveling,
     IconModerator,
     IconModeratorSettings,
     IconNoiseSuppressionOff,

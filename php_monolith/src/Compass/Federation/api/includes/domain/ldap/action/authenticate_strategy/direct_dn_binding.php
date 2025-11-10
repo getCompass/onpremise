@@ -13,7 +13,7 @@ class Domain_Ldap_Action_AuthenticateStrategy_DirectDnBinding implements Domain_
 
 	public function isActual():bool {
 
-		return Domain_Ldap_Entity_Config::getUserUniqueAttribute() !== "" && Domain_Ldap_Entity_Config::getUserSearchBase() !== "";
+		return Domain_Ldap_Entity_Config::getUserLoginAttribute() !== "" && Domain_Ldap_Entity_Config::getUserSearchBase() !== "";
 	}
 
 	public function authenticate(string $username, string $password):array {
@@ -30,7 +30,7 @@ class Domain_Ldap_Action_AuthenticateStrategy_DirectDnBinding implements Domain_
 		$client->bind(self::_makeUserDN($username), $password);
 
 		// получаем информацию об учетной записе
-		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), Domain_Ldap_Entity_Utils::formatUserFilterByUniqueAttribute(Domain_Ldap_Entity_Config::getUserUniqueAttribute(), $username), 1);
+		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), Domain_Ldap_Entity_Utils::formatUserFilterByUniqueAttribute(Domain_Ldap_Entity_Config::getUserLoginAttribute(), $username), 1);
 
 		// закрываем соединение
 		$client->unbind();
@@ -46,6 +46,6 @@ class Domain_Ldap_Action_AuthenticateStrategy_DirectDnBinding implements Domain_
 	/** формируем user DN */
 	protected static function _makeUserDN(string $username):string {
 
-		return sprintf("%s=%s,%s", Domain_Ldap_Entity_Config::getUserUniqueAttribute(), $username, Domain_Ldap_Entity_Config::getUserSearchBase());
+		return sprintf("%s=%s,%s", Domain_Ldap_Entity_Config::getUserLoginAttribute(), $username, Domain_Ldap_Entity_Config::getUserSearchBase());
 	}
 }

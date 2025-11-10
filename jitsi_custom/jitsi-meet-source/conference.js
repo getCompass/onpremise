@@ -134,7 +134,6 @@ import {
     isUserInteractionRequiredForUnmute
 } from './react/features/base/tracks/functions';
 import { downloadJSON } from './react/features/base/util/downloadJSON';
-import { openLeaveReasonDialog } from './react/features/conference/actions.web';
 import { showConfirmDialog, showDesktopPicker } from './react/features/desktop-picker/actions';
 import { appendSuffix } from './react/features/display-name/functions';
 import { maybeOpenFeedbackDialog, submitFeedback } from './react/features/feedback/actions';
@@ -2367,18 +2366,13 @@ export default {
         let feedbackResultPromise = Promise.resolve({});
 
         if (requestFeedback) {
-            const feedbackDialogClosed = (feedbackResult = {}) => {
-                if (!feedbackResult.wasDialogShown && hangupReason) {
-                    return APP.store.dispatch(
-                        openLeaveReasonDialog(hangupReason)).then(() => feedbackResult);
-                }
 
+            const feedbackDialogClosed = (feedbackResult = {}) => {
                 return Promise.resolve(feedbackResult);
             };
 
-            feedbackResultPromise
-                = APP.store.dispatch(maybeOpenFeedbackDialog(room, hangupReason))
-                    .then(feedbackDialogClosed, feedbackDialogClosed);
+            feedbackResultPromise = APP.store.dispatch(maybeOpenFeedbackDialog(room, hangupReason))
+                .then(feedbackDialogClosed, feedbackDialogClosed);
         }
 
         const leavePromise = this.leaveRoom().catch(() => Promise.resolve());

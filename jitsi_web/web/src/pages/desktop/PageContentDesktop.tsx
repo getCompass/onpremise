@@ -14,13 +14,15 @@ import PageContentDesktopLeaveConference from "./PageContentDesktopLeaveConferen
 import PageContentDesktopConferenceLimit from "./PageContentDesktopConferenceLimit.tsx";
 import PageContentDesktopUnsupportedBrowser from "./PageContentDesktopUnsupportedBrowser.tsx";
 import { isUnsupportedDesktopBrowser } from "../../lib/functions.ts";
+import PageContentDesktopKickedFromConference from "./PageContentDesktopKickedFromConference.tsx";
 
 const PageContentDesktop = () => {
 	const conferenceData = useAtomValue(conferenceDataState);
 	const conferenceDataErrorCode = useAtomValue(conferenceDataErrorCodeState);
 
-	const [searchParams] = useSearchParams();
+	const [ searchParams ] = useSearchParams();
 	const isLeaveConference = Number(searchParams.get("is_leave"));
+	const isKickedFromConference = Number(searchParams.get("is_kicked"));
 
 	// если браузер не поддерживается
 	if (isUnsupportedDesktopBrowser()) {
@@ -45,6 +47,10 @@ const PageContentDesktop = () => {
 
 	if (isLeaveConference === 1) {
 		return <PageContentDesktopLeaveConference />;
+	}
+
+	if (isKickedFromConference === 1) {
+		return <PageContentDesktopKickedFromConference />;
 	}
 
 	if (conferenceData.is_private) {

@@ -9,13 +9,6 @@ class Domain_WelcomeVideo_Action_ReplacePreview {
 
 	// массив ключей заменяемых превью
 	protected const _WELCOME_VIDEO_REPLACE_PREVIEW_LIST = [
-		"hiring_conversation_welcome_video_desktop_ru"  => "replace_preview_hiring_conversation_welcome_video_desktop_ru",
-		"hiring_conversation_welcome_video_mobile_ru"   => "replace_preview_hiring_conversation_welcome_video_mobile_ru",
-		"hiring_conversation_welcome_video_mobile_de"   => "replace_preview_hiring_conversation_welcome_video_mobile_de",
-		"hiring_conversation_welcome_video_mobile_en"   => "replace_preview_hiring_conversation_welcome_video_mobile_en",
-		"hiring_conversation_welcome_video_mobile_es"   => "replace_preview_hiring_conversation_welcome_video_mobile_es",
-		"hiring_conversation_welcome_video_mobile_fr"   => "replace_preview_hiring_conversation_welcome_video_mobile_fr",
-		"hiring_conversation_welcome_video_mobile_it"   => "replace_preview_hiring_conversation_welcome_video_mobile_it",
 		"general_conversation_welcome_video_desktop_ru" => "replace_preview_general_conversation_welcome_video_desktop_ru",
 		"general_conversation_welcome_video_desktop_de" => "replace_preview_general_conversation_welcome_video_desktop_de",
 		"general_conversation_welcome_video_desktop_en" => "replace_preview_general_conversation_welcome_video_desktop_en",

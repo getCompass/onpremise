@@ -2899,7 +2899,7 @@ class Type_Thread_Message_Handler_Default {
 	 * @return array
 	 * @throws \parseException
 	 */
-	public static function prepareConversationMessageListBeforeRepost(array $message_list, array $allow_message_types = null):array {
+	public static function prepareConversationMessageListBeforeRepost(array $message_list, ?array $allow_message_types = null):array {
 
 		// индекс сообщений
 		$message_index           = 0;

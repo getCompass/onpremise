@@ -198,6 +198,11 @@ export type AuthSsoInfo = {
 	};
 };
 
+export type LdapAuthCredentials = {
+	username: string
+	password: string
+}
+
 export const ELECTRON_VERSION_22 = "22";
 export const ELECTRON_VERSION_30 = "30";
 
@@ -220,3 +225,36 @@ export const ONPREMISE_SMS_LOGIN_TYPE = 100;
 export const ONPREMISE_EMAIL_LOGIN_TYPE = 101;
 export const ONPREMISE_LDAP_LOGIN_TYPE = 102;
 export const ONPREMISE_SSO_LOGIN_TYPE = 103;
+
+export const API_COMMAND_TYPE_NEED_CONFIRM_LDAP_MAIL = "need_confirm_ldap_mail";
+
+export const API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CURRENT_MAIL = "confirm_current_mail";
+export const API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL = "confirm_changing_mail";
+export const API_COMMAND_SCENARIO_DATA_STAGE_ENTER_NEW_MAIL = "enter_new_mail";
+export const API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_NEW_MAIL = "confirm_new_mail";
+export const API_COMMAND_SCENARIO_DATA_STAGE_GET_LDAP_AUTH_TOKEN = "get_ldap_auth_token";
+
+export type APICommandScenarioDefaultConfirm = "default_confirm";
+
+export type APICommandScenarioDataStageConfirmCurrentMail = "confirm_current_mail";
+export type APICommandScenarioDataStageConfirmChangingMail = "confirm_changing_mail";
+export type APICommandScenarioDataStageEnterNewMail = "enter_new_mail";
+export type APICommandScenarioDataStageConfirmNewMail = "confirm_new_mail";
+export type APICommandScenarioDataStageGetLdapAuthToken = "get_ldap_auth_token";
+
+export type APICommandData = {
+	mail_confirm_story_key: string,
+	scenario: APICommandScenarioDefaultConfirm,
+	scenario_data: {
+		code_available_attempts: number
+		expires_at: number
+		is_manual_add_enabled: number
+		mail_mask: string
+		next_resend_at: number
+		stage: APICommandScenarioDataStageConfirmCurrentMail |
+			APICommandScenarioDataStageConfirmChangingMail |
+			APICommandScenarioDataStageEnterNewMail |
+			APICommandScenarioDataStageConfirmNewMail |
+			APICommandScenarioDataStageGetLdapAuthToken
+	},
+};

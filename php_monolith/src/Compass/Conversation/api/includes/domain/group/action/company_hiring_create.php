@@ -30,7 +30,7 @@ class Domain_Group_Action_CompanyHiringCreate {
 
 			try {
 				// создаем дефолтную группу
-				$meta_row = Type_Conversation_Group::add(
+				[$_, $meta_row] = Type_Conversation_Group::add(
 					$creator_user_id,
 					Domain_Group_Entity_Company::getDefaultGroupNameByKey($group_key_name, $locale),
 					CONVERSATION_TYPE_GROUP_HIRING,

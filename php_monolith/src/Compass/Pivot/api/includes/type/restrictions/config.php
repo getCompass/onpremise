@@ -7,8 +7,9 @@ use BaseFrame\Server\ServerProvider;
 /**
  * задача класса работать с конфигом ограничений на сервере
  */
-class Type_Restrictions_Config {
-
+class Type_Restrictions_Config
+{
+	// константы ограничений
 	protected const _PHONE_CHANGE_ENABLED       = "phone_change_enabled";
 	protected const _MAIL_CHANGE_ENABLED        = "mail_change_enabled";
 	protected const _NAME_CHANGE_ENABLED        = "name_change_enabled";
@@ -16,12 +17,28 @@ class Type_Restrictions_Config {
 	protected const _BADGE_CHANGE_ENABLED       = "badge_change_enabled";
 	protected const _DESCRIPTION_CHANGE_ENABLED = "description_change_enabled";
 	protected const _STATUS_CHANGE_ENABLED      = "status_change_enabled";
+	protected const _PROFILE_DELETION_ENABLED   = "deletion_enabled";
+
+	// список доступных ключей ограничений
+	protected const _ALLOWED_RESTRICTIONS_KEY = [
+		self::_PHONE_CHANGE_ENABLED,
+		self::_MAIL_CHANGE_ENABLED,
+		self::_NAME_CHANGE_ENABLED,
+		self::_AVATAR_CHANGE_ENABLED,
+		self::_BADGE_CHANGE_ENABLED,
+		self::_DESCRIPTION_CHANGE_ENABLED,
+		self::_STATUS_CHANGE_ENABLED,
+		self::_PROFILE_DELETION_ENABLED,
+	];
+
+	// ключ для мока конфига
+	protected const _MOCK_KEY = "TEST_MOCK_RESTRICTIONS_PROFILE";
 
 	/**
 	 * Разрешено ли менять номер телефона
-	 * @return bool
 	 */
-	public static function isPhoneChangeEnabled():bool {
+	public static function isPhoneChangeEnabled(): bool
+	{
 
 		if (!ServerProvider::isOnPremise()) {
 			return true;
@@ -33,9 +50,9 @@ class Type_Restrictions_Config {
 
 	/**
 	 * Разрешено ли менять почту
-	 * @return bool
 	 */
-	public static function isMailChangeEnabled():bool {
+	public static function isMailChangeEnabled(): bool
+	{
 
 		if (!ServerProvider::isOnPremise()) {
 			return true;
@@ -47,9 +64,9 @@ class Type_Restrictions_Config {
 
 	/**
 	 * Разрешено ли менять имя
-	 * @return bool
 	 */
-	public static function isNameChangeEnabled():bool {
+	public static function isNameChangeEnabled(): bool
+	{
 
 		if (!ServerProvider::isOnPremise()) {
 			return true;
@@ -61,9 +78,9 @@ class Type_Restrictions_Config {
 
 	/**
 	 * Разрешено ли менять аватар
-	 * @return bool
 	 */
-	public static function isAvatarChangeEnabled():bool {
+	public static function isAvatarChangeEnabled(): bool
+	{
 
 		if (!ServerProvider::isOnPremise()) {
 			return true;
@@ -75,9 +92,9 @@ class Type_Restrictions_Config {
 
 	/**
 	 * Разрешено ли менять бадж
-	 * @return bool
 	 */
-	public static function isBadgeChangeEnabled():bool {
+	public static function isBadgeChangeEnabled(): bool
+	{
 
 		if (!ServerProvider::isOnPremise()) {
 			return true;
@@ -89,9 +106,9 @@ class Type_Restrictions_Config {
 
 	/**
 	 * Разрешено ли менять описание
-	 * @return bool
 	 */
-	public static function isDescriptionChangeEnabled():bool {
+	public static function isDescriptionChangeEnabled(): bool
+	{
 
 		if (!ServerProvider::isOnPremise()) {
 			return true;
@@ -103,9 +120,9 @@ class Type_Restrictions_Config {
 
 	/**
 	 * Разрешено ли менять статус
-	 * @return bool
 	 */
-	public static function isStatusChangeEnabled():bool {
+	public static function isStatusChangeEnabled(): bool
+	{
 
 		if (!ServerProvider::isOnPremise()) {
 			return true;
@@ -116,10 +133,24 @@ class Type_Restrictions_Config {
 	}
 
 	/**
-	 * Получаем ограничения профиля
-	 * @return array
+	 * Разрешено ли удалять профиль пользователям
 	 */
-	public static function getProfileRestrictions():array {
+	public static function isProfileDeletionEnabled(): bool
+	{
+
+		if (!ServerProvider::isOnPremise()) {
+			return true;
+		}
+
+		$config = self::_getProfile();
+		return $config[self::_PROFILE_DELETION_ENABLED] ?? true;
+	}
+
+	/**
+	 * Получаем ограничения профиля
+	 */
+	public static function getProfileRestrictions(): array
+	{
 
 		$profile_config = self::_getProfile();
 

@@ -287,6 +287,25 @@ class Gateway_Db_PivotCompany_CompanyList extends Gateway_Db_PivotCompany_Main {
 
 	/**
 	 * Возвращает список всех компаний.
+	 * Нужно только для тестового backdoor вызова, поэтому ищет только в одном шарде.
+	 *
+	 */
+	public static function getFullIdList(int $count = 1000, int $offset = 0):array {
+
+		assertTestServer();
+
+		$shard_key  = self::_getDbKey(1);
+		$table_name = self::_getTableKey(1);
+
+		$query  = "SELECT `company_id` FROM `?p` WHERE TRUE LIMIT ?i OFFSET ?i";
+		$result = ShardingGateway::database($shard_key)->getAll($query, $table_name, $count, $offset);
+
+		// возвращаем массив идентификаторов
+		return array_map(fn(array $row) => (int) $row["company_id"], $result);
+	}
+
+	/**
+	 * Возвращает список всех компаний.
 	 * Нужно только для crm, пока ищет только в одном шарде.
 	 *
 	 */

@@ -103,7 +103,7 @@ MiddlewareRegistry.register(store => next => action => {
             break;
         }
 
-        const { message, name } = action.error;
+        const { message, name} = action.error;
 
         const cameraJitsiTrackErrorMsg
             = JITSI_TRACK_ERROR_TO_MESSAGE_KEY_MAP.camera[name];
@@ -123,7 +123,14 @@ MiddlewareRegistry.register(store => next => action => {
         if (isPrejoinPageVisible(store.getState())) {
             store.dispatch(setDeviceStatusWarning(titleKey));
         }
-
+        try {
+            const constraints = action?.error?.gum?.constraints;
+            const originalError = action?.error?.gum?.error;
+            console.info('Полная ошибка', action.error);
+            console.error('Ошибка включения камеры', JSON.stringify(name), JSON.stringify(message), JSON.stringify(constraints), originalError);
+        } catch(error) {
+            console.error('Ошибка доступа к полям камеры', error);
+        }
         break;
     }
     case NOTIFY_MIC_ERROR: {
@@ -151,6 +158,14 @@ MiddlewareRegistry.register(store => next => action => {
 
         if (isPrejoinPageVisible(store.getState())) {
             store.dispatch(setDeviceStatusWarning(titleKey));
+        }
+        try {
+            const constraints = action?.error?.gum?.constraints;
+            const originalError = action?.error?.gum?.error;
+            console.info('Полная ошибка', action.error);
+            console.error('Ошибка включения микрофона', JSON.stringify(name), JSON.stringify(message), JSON.stringify(constraints), originalError);
+        } catch(error) {
+            console.error('Ошибка доступа к полям микрофона', error);
         }
 
         break;

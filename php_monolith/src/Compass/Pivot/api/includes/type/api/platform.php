@@ -45,7 +45,7 @@ class Type_Api_Platform {
 	 *
 	 * @throws cs_PlatformNotFound
 	 */
-	public static function getPlatform(string $user_agent = null):string {
+	public static function getPlatform(?string $user_agent = null):string {
 
 		// если работаем из консоли и не передали ua - возвращаем платформу other
 		if (isCLi() && is_null($user_agent)) {
@@ -77,7 +77,7 @@ class Type_Api_Platform {
 	 * @return string
 	 * @throws cs_PlatformNotFound
 	 */
-	public static function getElectronPlatformOS(string $user_agent = null):string {
+	public static function getElectronPlatformOS(?string $user_agent = null):string {
 
 		// получаем платформу
 		$platform = self::getPlatform($user_agent);
@@ -130,7 +130,7 @@ class Type_Api_Platform {
 	 * Получить название приложения из user_agent
 	 *
 	 */
-	public static function getAppNameByUserAgent(string $user_agent = null):string {
+	public static function getAppNameByUserAgent(?string $user_agent = null):string {
 
 		if (is_null($user_agent)) {
 			$user_agent = getUa();

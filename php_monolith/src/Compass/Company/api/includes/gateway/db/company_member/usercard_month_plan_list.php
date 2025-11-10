@@ -12,7 +12,7 @@ class Gateway_Db_CompanyMember_UsercardMonthPlanList extends Gateway_Db_CompanyM
 	/**
 	 * Добавляем новую запись плана на месяц в базу
 	 */
-	public static function insertOrUpdate(int $user_id, int $type, int $month_start_at, int $plan_value, int $user_value = null):void {
+	public static function insertOrUpdate(int $user_id, int $type, int $month_start_at, int $plan_value, ?int $user_value = null):void {
 
 		// корректируем время
 		$month_start_at = Type_User_Card_MonthPlan::getCorrectedMonthStartAt($month_start_at);

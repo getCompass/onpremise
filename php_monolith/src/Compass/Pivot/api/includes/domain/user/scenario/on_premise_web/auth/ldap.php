@@ -2,7 +2,9 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\CaseException;
 
 /**
@@ -207,19 +209,18 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	}
 
 	/**
-	 * актуализируем данные о пользователе
+	 * Актуализируем данные о пользователе
 	 *
 	 * @throws ReturnFatalException
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
+	 * @throws ParseFatalException
+	 * @throws BusFatalException
 	 * @throws \busException
-	 * @throws \cs_CurlError
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws cs_FileIsNotImage
 	 */
-	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data):void {
+	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data, int $is_empty_attributes_update_enabled = 1):void {
 
 		/**
 		 * подготавливаем параметры для обновления аватара пользователя
@@ -228,16 +229,42 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		 */
 		[$avatar_action, $avatar_file_key] = Domain_User_Action_Sso_ActualizeProfileData::prepareAvatarData($sso_account_data->avatar);
 
+		// обрабатываем атрибуты с учетом флага
+		$name  = self::_processAttributeValue($sso_account_data->name, $is_empty_attributes_update_enabled);
+		$badge = self::_processAttributeValue($sso_account_data->badge, $is_empty_attributes_update_enabled);
+		$role  = self::_processAttributeValue($sso_account_data->role, $is_empty_attributes_update_enabled);
+		$bio   = self::_processAttributeValue($sso_account_data->bio, $is_empty_attributes_update_enabled);
+
 		// записываем актуальную информацию о пользователе
 		Domain_User_Action_Sso_ActualizeProfileData::do(
 			$user_id,
-			is_null($sso_account_data->name) ? false : $sso_account_data->name,
+			is_null($name) ? false : $name,
 			$avatar_action,
 			$avatar_file_key,
-			is_null($sso_account_data->badge) ? false : $sso_account_data->badge,
-			is_null($sso_account_data->role) ? false : $sso_account_data->role,
-			is_null($sso_account_data->bio) ? false : $sso_account_data->bio,
+			is_null($badge) ? false : $badge,
+			is_null($role) ? false : $role,
+			is_null($bio) ? false : $bio,
 		);
+	}
+
+	/**
+	 * Обрабатываем значение атрибута в зависимости от флага.
+	 */
+	private static function _processAttributeValue(mixed $value, int $is_empty_attributes_update_enabled):mixed {
+
+		// если флаг разрешает обновление пустыми значениями, возвращаем значение как есть
+		if ($is_empty_attributes_update_enabled) {
+			return $value;
+		}
+
+		// если флаг запрещает обновление пустыми значениями:
+		// возвращаем значение только если оно не пустое
+		// в противном случае возвращаем false, чтобы не обновлять поле
+		if (is_null($value)) {
+			return false;
+		}
+
+		return $value;
 	}
 
 	/**

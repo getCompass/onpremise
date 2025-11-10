@@ -438,18 +438,19 @@ class Migration_Export_Threads {
 	 */
 	protected function _addFiles(array $message, array $formatted):array {
 
-		$formatted["files"][] = $this->_formatFileInfo($message);
+		$file_list = Gateway_Socket_FileBalancer::getFileList([$message["data"]["file_map"]]);
+		if (count($file_list) > 0) {
+			$formatted["files"][] = $this->_formatFileInfo($message, $file_list[0]);
+		}
 		return $formatted;
 	}
 
 	/**
 	 * Форматирование информации о файле
 	 */
-	protected function _formatFileInfo($message):array {
+	protected function _formatFileInfo($message, array $file):array {
 
-		$file_key  = \CompassApp\Pack\File::doEncrypt($message["data"]["file_map"]);
-		$file_list = Gateway_Socket_FileBalancer::getFileList([$message["data"]["file_map"]]);
-		$file      = $file_list[0];
+		$file_key = \CompassApp\Pack\File::doEncrypt($message["data"]["file_map"]);
 
 		$base = [
 			"id"                   => $file_key,
@@ -605,7 +606,10 @@ class Migration_Export_Threads {
 		foreach ($message_list as $message) {
 
 			if (isset($message["data"]["file_map"]) && mb_strlen($message["data"]["file_map"]) > 0) {
-				$files[] = $this->_formatFileInfo($message);
+				$file_list = Gateway_Socket_FileBalancer::getFileList([$message["data"]["file_map"]]);
+				if (count($file_list) > 0) {
+					$files[] = $this->_formatFileInfo($message, $file_list[0]);
+				}
 			}
 
 			// Рекурсивно проверяем вложенные сообщения

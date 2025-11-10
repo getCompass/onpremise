@@ -1,4 +1,6 @@
-<?php /** @noinspection DuplicatedCode */
+<?php
+
+/** @noinspection DuplicatedCode */
 
 namespace Compass\FileBalancer;
 
@@ -8,17 +10,17 @@ use BaseFrame\Exception\Domain\ParseFatalException;
  * Класс шардинга для изоляции настроек подключения внутри модуля.
  * @package Compass\FileBalancer
  */
-class ShardingGateway extends \ShardingGateway {
-
+class ShardingGateway extends \ShardingGateway
+{
 	protected static ?ShardingGateway $_instance = null;
 
 	/**
 	 * Инициализирует экземпляр работы с шардящимися подключениями.
 	 *
-	 * @return static
 	 * @throws \parseException
 	 */
-	public static function instance():static {
+	public static function instance(): static
+	{
 
 		if (is_null(static::$_instance)) {
 
@@ -37,7 +39,8 @@ class ShardingGateway extends \ShardingGateway {
 	/**
 	 * Возвращает класс для работы с шиной данных.
 	 */
-	public static function cache():\mCache {
+	public static function cache(): \mCache
+	{
 
 		// получаем конфиг с базой данных
 		return \CompassApp\Gateway\Memcached::configured(static::instance()->_config_list[static::CACHE_KEY]);
@@ -46,15 +49,18 @@ class ShardingGateway extends \ShardingGateway {
 	/**
 	 * Возвращает класс для работы с шиной данных.
 	 *
-	 * @param string $bus
 	 *
-	 * @return \Rabbit
 	 * @throws ParseFatalException
 	 */
-	public static function rabbit(string $bus = "bus"):\Rabbit {
+	public static function rabbit(string $bus = "bus"): \Rabbit
+	{
 
 		$rabbit = parent::rabbit();
-		$rabbit->setPostfixQueue(COMPANY_ID % 10);
+
+		if (DOMINO_ID !== "") {
+			$rabbit->setPostfixQueue(COMPANY_ID % 10);
+		}
+
 		return $rabbit;
 	}
 }

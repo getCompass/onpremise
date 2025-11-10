@@ -168,6 +168,52 @@ class Gateway_Socket_FileNode extends Gateway_Socket_Default {
 	}
 
 	/**
+	 * заменяем нарезанный дефолтный файл
+	 *
+	 * @param string $node_url
+	 * @param string $file_key
+	 * @param int    $replace_size
+	 * @param string $file_path
+	 *
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws \cs_CurlError
+	 */
+	public static function replaceResizedDefaultFile(string $node_url, string $file_key, int $replace_size, string $file_path):void {
+
+		$params      = [
+			"file_key"     => $file_key,
+			"replace_size" => $replace_size,
+		];
+		$json_params = toJson($params);
+
+		// получаем url и подпись
+		$signature = Type_Socket_Auth_Handler::getSignature(
+			Type_Socket_Auth_Handler::AUTH_TYPE_KEY, SOCKET_KEY_PIVOT, $json_params
+		);
+
+		$ar_post = [
+			"method"        => "nodes.replaceResizedDefaultFile",
+			"company_id"    => 0,
+			"user_id"       => 0,
+			"sender_module" => CURRENT_MODULE,
+			"json_params"   => $json_params,
+			"signature"     => $signature,
+		];
+
+		$url = $node_url . "api/socket/";
+
+		// загружаем файл на ноду через curl
+		$curl     = new \Curl();
+		$response = $curl->uploadFile($url, $ar_post, $file_path);
+		$response = fromJson($response);
+
+		if ($response["status"] !== "ok") {
+			throw new ReturnFatalException("unexpected response");
+		}
+	}
+
+	/**
 	 * Загружаем файл по url
 	 *
 	 * @throws \parseException

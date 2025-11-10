@@ -93,6 +93,7 @@ import { HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE } from "../../filmstrip/const
 import { setTileView } from "../../video-layout/actions.any";
 import { isScreenSharePlaying } from "../../screen-share/functions";
 import { isMobileBrowser } from "../environment/utils";
+import { endConference } from "../conference/actions.any";
 
 /**
  * Middleware that captures CONFERENCE_JOINED and CONFERENCE_LEFT actions and
@@ -345,6 +346,12 @@ MiddlewareRegistry.register(store => next => action => {
 
         // специально делаем -1, т.к при получении этого ивента ливнувший пользователь все еще числится в списке
         store.dispatch(setHorizontalViewDimensions(Math.min(remoteParticipantsLength, HORIZONTAL_MAX_PARTICIPANT_COUNT_PER_PAGE)));
+
+        // только если это реальный пользователь вышел
+        if (!action.participant.fakeParticipant) {
+            _tryEndConference(store, remoteParticipantsLength);
+        }
+
         break;
     }
 
@@ -939,4 +946,24 @@ function _registerSounds({ dispatch }: IStore) {
 function _unregisterSounds({ dispatch }: IStore) {
     dispatch(unregisterSound(PARTICIPANT_JOINED_SOUND_ID));
     dispatch(unregisterSound(PARTICIPANT_LEFT_SOUND_ID));
+}
+
+
+function _tryEndConference({ getState, dispatch }: IStore, conferenceLength: number) {
+    const state = getState();
+    const configState = state['features/base/config'];
+
+    const isNeedToEnd = !!configState?.flags?.isSingleConference && getParticipantCount(state) <= 2;
+
+    // Иногда не сразу обновляется
+    setTimeout(() => {
+        const participantCount = getParticipantCount(state);
+
+        // Если это сингл-звонок и осталось меньше одного участника,
+        // то завершаем конференцию
+        if (isNeedToEnd && (participantCount <= 1)) {
+            dispatch(endConference());
+        }
+    }, 500);
+
 }

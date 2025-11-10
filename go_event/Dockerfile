@@ -1,5 +1,5 @@
 FROM docker.getcompass.ru/service/packages:0.1.15 AS packages
-FROM docker.getcompass.ru/service/go:1.23.7-1
+FROM docker.getcompass.ru/service/go:1.24.6-1
 COPY --from=packages /tmp/migrate /usr/local/bin/migrate
 
 COPY . /app

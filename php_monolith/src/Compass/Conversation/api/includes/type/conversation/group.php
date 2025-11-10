@@ -35,10 +35,11 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 			$group_type, ALLOW_STATUS_GREEN_LIGHT, $creator_user_id, $users, $extra, $group_name, $avatar_file_map,
 		);
 
+		$left_menu_row = [];
 		if ($is_need_add_creator) {
 
 			// создаем запись в левом меню создателя, записываем 0 т.к. allow_status_alias не существует для групповых диалогов
-			self::_createUserCloudData(
+			$left_menu_row = self::_createUserCloudData(
 				$creator_user_id, $meta_row["conversation_map"], Type_Conversation_Meta_Users::ROLE_OWNER,
 				$group_type, 0, count($users), $group_name, $avatar_file_map, $is_favorite, $is_mentioned, is_channel: $is_channel
 			);
@@ -54,7 +55,7 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 			self::_sendSystemMessageUserAddGroup($meta_row["conversation_map"], $meta_row, $creator_user_id, $group_name);
 		}
 
-		return $meta_row;
+		return [$left_menu_row, $meta_row];
 	}
 
 	/**
@@ -511,11 +512,12 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 	protected static function _insertUserDynamicOnUserJoinToGroup(int $user_id):void {
 
 		$insert = [
-			"user_id"                   => $user_id,
-			"message_unread_count"      => 0,
-			"conversation_unread_count" => 0,
-			"created_at"                => time(),
-			"updated_at"                => 0,
+			"user_id"                          => $user_id,
+			"message_unread_count"             => 0,
+			"conversation_unread_count"        => 0,
+			"single_conversation_unread_count" => 0,
+			"created_at"                       => time(),
+			"updated_at"                       => 0,
 		];
 		Gateway_Db_CompanyConversation_UserInbox::insert($insert);
 	}
@@ -611,9 +613,10 @@ class Type_Conversation_Group extends Type_Conversation_Default {
 
 		// обновляем значение total_unread_count
 		Gateway_Db_CompanyConversation_UserInbox::set($user_id, [
-			"message_unread_count"      => $total_unread_count_row["message_unread_count"] ?? 0,
-			"conversation_unread_count" => $total_unread_count_row["conversation_unread_count"] ?? 0,
-			"updated_at"                => time(),
+			"message_unread_count"             => $total_unread_count_row["message_unread_count"] ?? 0,
+			"conversation_unread_count"        => $total_unread_count_row["conversation_unread_count"] ?? 0,
+			"single_conversation_unread_count" => $total_unread_count_row["single_conversation_unread_count"] ?? 0,
+			"updated_at"                       => time(),
 		]);
 	}
 }

@@ -10,7 +10,7 @@ use BaseFrame\Exception\Domain\ReturnFatalException;
 class Gateway_Socket_Company extends Gateway_Socket_Default {
 
 	// добавляем Требовательность в карточку пользователя
-	public static function addExactingnessToEmployeeCard(int $sender_user_id, array $user_id_list, int $created_at = null):array {
+	public static function addExactingnessToEmployeeCard(int $sender_user_id, array $user_id_list, ?int $created_at = null):array {
 
 		$created_at = is_null($created_at) ? time() : $created_at;
 		$ar_post    = [

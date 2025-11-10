@@ -13,7 +13,7 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	const FILES_GETINFOFORUPLOAD = [
 		"key"    => "FILES_GETINFOFORUPLOAD",
-		"limit"  => 60,
+		"limit"  => 100,
 		"expire" => 60 * 5,
 	];
 
@@ -35,7 +35,7 @@ class Type_Antispam_User extends Type_Antispam_Main {
 
 	// проверяем на срабатывание блокировок по конкретному ключу
 	// пишем статистику по срабатыванию блокировки если необходимо
-	public static function throwIfBlocked(int $user_id, array $block_key, string $namespace = null):void {
+	public static function throwIfBlocked(int $user_id, array $block_key, ?string $namespace = null):void {
 
 		if (self::needCheckIsBlocked()) {
 			return;

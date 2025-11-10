@@ -12,11 +12,6 @@ use JetBrains\PhpStorm\Pure;
  */
 class Type_Preview_Main {
 
-	// исключаемсые первые октеты для ссылок типа ip
-	protected const _EXCLUDED_FIRST_OCTET_LIST = [
-		10, 127, 192, 0,
-	];
-
 	// список доступных протоколов
 	protected const _ALLOWED_PROTOCOL_LIST = [
 		"http://", "https://",

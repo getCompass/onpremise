@@ -23,19 +23,11 @@ class Domain_Company_Entity_JoinLink_Main {
 	 */
 	public static function getByLink(string $link):Struct_Db_PivotData_CompanyJoinLinkRel {
 
-		// пробуем получить join_link_uniq из ссылки
-		$matches = [];
-		preg_match("/\/join\/" . self::_PREG_REGEXP . "/", $link, $matches);
+		$join_link_uniq = static::_parseUniqFromRawLink($link);
 
-		// если не нашли строку для join_link_uniq
-		if (!isset($matches[1]) || substr_count($link, "http") > 1) {
-			throw new cs_IncorrectJoinLink();
+		if ($join_link_uniq === false) {
+			throw new cs_IncorrectJoinLink("passed incorrect link");
 		}
-
-		$join_link_uniq = $matches[1];
-
-		// если переданы некорректные символы
-		self::assertJoinLinkUniq($join_link_uniq);
 
 		try {
 			return Gateway_Db_PivotData_CompanyJoinLinkRel::get($join_link_uniq);
@@ -49,35 +41,64 @@ class Domain_Company_Entity_JoinLink_Main {
 	 */
 	public static function isJoinLink(string $link):bool {
 
-		// пробуем получить join_link_uniq из ссылки
-		$matches = [];
-		preg_match("/\/join\/" . self::_PREG_REGEXP . "/", $link, $matches);
-
-		// если не нашли строку для join_link_uniq
-		if (!isset($matches[1]) || substr_count($link, "http") > 1) {
-			return false;
-		}
-
-		$join_link_uniq = $matches[1];
-
-		// если переданы некорректные символы
-		if (!preg_match("/" . self::_PREG_REGEXP . "/", $join_link_uniq)) {
-			return false;
-		}
-
-		return true;
+		return is_string(static::_parseUniqFromRawLink($link));
 	}
 
 	/**
-	 * Выбрасываем исключение если передан некорректный join_link_uniq
-	 *
-	 * @throws cs_IncorrectJoinLink
+	 * Пытается вытащить из ссылки значение join link uniq.
+	 * Если join link uniq в ссылке не найден, вернет false.
 	 */
-	public static function assertJoinLinkUniq(string $join_link_uniq):void {
+	public static function _parseUniqFromRawLink(string $link):string|false {
 
-		if (!preg_match("/" . self::_PREG_REGEXP . "/", $join_link_uniq)) {
-			throw new cs_IncorrectJoinLink();
+		// пробуем получить join_link_uniq из ссылки
+		$matches = [];
+
+		// сначала сверяем на соответствие любому из join адресов
+		foreach (PUBLIC_ENTRYPOINT_JOIN_VARIETY as $variety) {
+
+			if ($variety === "") {
+				continue;
+			}
+
+			$variety = str_starts_with($variety, WEB_PROTOCOL_PUBLIC)
+				? mb_substr($variety, mb_strlen(WEB_PROTOCOL_PUBLIC) + 3) // +3 для ://
+				: $variety;
+
+			preg_match("#" . $variety . "/" . self::_PREG_REGEXP . "#", $link, $matches);
+
+			if (isset($matches[1])) {
+				break;
+			}
 		}
+
+		// если не нашли по точкам входа, используем старую логику с /join
+		if (!isset($matches[1])) {
+
+			// еcли не нашли, то пробуем по старому форматированию определить ссылку
+			preg_match("#/join/" . self::_PREG_REGEXP . "#", $link, $matches);
+
+			if (!isset($matches[1]) || substr_count($link, "http") > 1) {
+				return false;
+			}
+		}
+
+		if (substr_count($link, "http") > 1) {
+			return false;
+		}
+
+		if (!static::checkJoinLinkUniq($matches[1])) {
+			return false;
+		}
+
+		return $matches[1];
+	}
+
+	/**
+	 * Проверяет, является ли переданное значение корректным join_link_uniq.
+	 */
+	public static function checkJoinLinkUniq(string $join_link_uniq):bool {
+
+		return preg_match("/" . self::_PREG_REGEXP . "/", $join_link_uniq);
 	}
 
 	/**

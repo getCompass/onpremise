@@ -213,6 +213,9 @@ class Domain_User_Action_Auth_PhoneNumber {
 		if ($phone_number == ANDROID_TEST_PHONE) {
 			$sms_code = ANDROID_TEST_SMS_CODE;
 		}
+		if ($phone_number == ANDROID_TEST_PHONE2) {
+			$sms_code = ANDROID_TEST_SMS_CODE2;
+		}
 
 		return $sms_code;
 	}

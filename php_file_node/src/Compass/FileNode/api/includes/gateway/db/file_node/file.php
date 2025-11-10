@@ -2,6 +2,8 @@
 
 namespace Compass\FileNode;
 
+use BaseFrame\Exception\Gateway\QueryFatalException;
+
 /**
  * класс-интерфейс для таблицы file_node.file
  */
@@ -48,11 +50,46 @@ class Gateway_Db_FileNode_File extends Gateway_Db_FileNode_Main {
 		\sharding::pdo(self::_getDbKey())->update($query, self::_TABLE_KEY, $set, $file_key, 1);
 	}
 
-	// метод для получения списка файлов
-	public static function getList(int $expire, int $limit, int $offset):array {
+	/**
+	 * Обновляем несколько записей
+	 *
+	 * @param array $file_key_list
+	 * @param array $set
+	 *
+	 * @return void
+	 * @throws QueryFatalException
+	 */
+	public static function updateList(array $file_key_list, array $set):void {
 
-		// запрос проверен на EXPLAIN (INDEX=is_deleted,last_access_at)
-		$query = "SELECT * FROM `?p` WHERE is_deleted = ?i AND  `last_access_at` < ?i LIMIT ?i OFFSET ?i";
-		return \sharding::pdo(self::_getDbKey())->getAll($query, "file", 0, $expire, $limit, $offset);
+		// запрос проверен на EXPLAIN (INDEX=PRIMARY)
+		$query = "UPDATE `?p` SET ?u WHERE file_key IN (?a) LIMIT ?i";
+		\sharding::pdo(self::_getDbKey())->update($query, self::_TABLE_KEY, $set, $file_key_list, count($file_key_list));
+	}
+
+	/**
+	 * Получить файлы до которых обращались до определенного времени
+	 *
+	 * @param int $last_access_at
+	 * @param int $limit
+	 * @param int $offset
+	 *
+	 * @return array
+	 * @throws QueryFatalException
+	 */
+	public static function getBeforeLastAccessAt(int $last_access_at, int $limit, int $offset):array {
+
+		$output = [];
+
+		// запрос проверен на EXPLAIN (INDEX=is_deleted,last_access_at) 09.06.25 Федореев М.
+		$query  = "SELECT * FROM `?p` WHERE is_deleted = ?i AND `last_access_at` < ?i LIMIT ?i OFFSET ?i";
+		$result = \sharding::pdo(self::_getDbKey())->getAll($query, "file", 0, $last_access_at, $limit, $offset);
+
+		foreach ($result as $row) {
+
+			$row["extra"] = fromJson($row["extra"]);
+			$output[]     = $row;
+		}
+
+		return $output;
 	}
 }

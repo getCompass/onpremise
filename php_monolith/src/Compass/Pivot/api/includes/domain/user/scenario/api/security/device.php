@@ -91,9 +91,17 @@ class Domain_User_Scenario_Api_Security_Device {
 		// разлогиниваем сессию устройства пользователя
 		Type_Session_Main::doLogoutDevice($user_id, $session_for_logout->session_uniq);
 
-		// отправляем ws-событие с device_id устройства
 		$device_id = Domain_User_Entity_SessionExtra::getDeviceId($session_for_logout->extra);
-		mb_strlen($device_id) > 0 && Gateway_Bus_SenderBalancer::authenticatedDeviceLogout($user_id, [$device_id]);
+
+		if (mb_strlen($device_id) < 1) {
+			return;
+		}
+
+		// удаляем устройство из списка для отправки пуш-уведомлений
+		Type_User_Notifications::deleteDeviceForUser($user_id, $device_id);
+
+		// отправляем ws-событие с device_id устройства
+		Gateway_Bus_SenderBalancer::authenticatedDeviceLogout($user_id, [$device_id]);
 	}
 
 	/**
@@ -135,7 +143,14 @@ class Domain_User_Scenario_Api_Security_Device {
 		// разлогиниваем сессии устройств пользователя
 		count($filtered_active_session_list) > 0 && Type_Session_Main::doLogoutDeviceList($user_id, $filtered_active_session_list);
 
+		if (count($device_id_list) < 1) {
+			return;
+		}
+
+		// удаляем устройство из списка для отправки пуш-уведомлений
+		Type_User_Notifications::deleteDeviceListForUser($user_id, $device_id_list);
+
 		// отправляем ws-событие с device_id устройства
-		count($device_id_list) > 0 && Gateway_Bus_SenderBalancer::authenticatedDeviceLogout($user_id, $device_id_list);
+		Gateway_Bus_SenderBalancer::authenticatedDeviceLogout($user_id, $device_id_list);
 	}
 }

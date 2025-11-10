@@ -41,6 +41,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 		"security_mail",
 		"security_phone",
 		"security_device",
+		"smartapp",
 		"user_online",
 	];
 

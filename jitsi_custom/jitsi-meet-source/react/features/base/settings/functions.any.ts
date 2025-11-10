@@ -108,6 +108,11 @@ export function isAudioSharingEnabled(stateful: IStateful) {
     return state['features/base/settings'].isAudioSharingEnabled;
 }
 
+export function isAGCDisabled(stateful: IStateful) {
+    const state = toState(stateful);
+    return state['features/base/settings'].disableAGC;
+}
+
 /**
  * Should we hide the helper dialog when a user tries to do audio only screen sharing.
  *

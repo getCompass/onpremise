@@ -20,6 +20,8 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 		"setGeneralChatNotifications",
 		"getActivityData",
 		"setUnlimitedMessagesEditing",
+		"setUnlimitedMessagesDeleting",
+		"setLocalLinks",
 	];
 
 	// список запрещенных методов по ролям
@@ -31,6 +33,8 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 			"clearAvatar",
 			"setGeneralChatNotifications",
 			"setUnlimitedMessagesEditing",
+			"setUnlimitedMessagesDeleting",
+			"setLocalLinks",
 		],
 	];
 
@@ -128,6 +132,52 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 
 		try {
 			Domain_Company_Scenario_Api::setUnlimitedMessagesEditing($this->role, $this->permissions, $is_unlimited_messages_editing_enabled);
+		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
+			throw new CaseException(2235001, "User is not a company owner");
+		} catch (cs_InvalidConfigValue) {
+			throw new ParamException("Incorrect params");
+		}
+
+		return $this->ok();
+	}
+
+	/**
+	 * Изменяем настройки ограничения удаления сообщений
+	 *
+	 * @throws CaseException
+	 * @throws ParseFatalException
+	 * @throws BlockException
+	 * @throws ParamException
+	 * @throws \queryException
+	 */
+	public function setUnlimitedMessagesDeleting():array {
+
+		$is_unlimited_messages_deleting_enabled = $this->post(\Formatter::TYPE_INT, "is_unlimited_messages_deleting_enabled");
+
+		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::COMPANY_SET_UNLIMITED_MESSAGES_DELETING);
+
+		try {
+			Domain_Company_Scenario_Api::setUnlimitedMessagesDeleting($this->role, $this->permissions, $is_unlimited_messages_deleting_enabled);
+		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
+			throw new CaseException(2235001, "User is not a company owner");
+		} catch (cs_InvalidConfigValue) {
+			throw new ParamException("Incorrect params");
+		}
+
+		return $this->ok();
+	}
+
+	/**
+	 * Изменяем настройки включения локальных ссылок для клиентов
+	 */
+	public function setLocalLinks():array {
+
+		$is_local_links_enabled = $this->post(\Formatter::TYPE_INT, "is_local_links_enabled");
+
+		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::COMPANY_SET_LOCAL_LINKS);
+
+		try {
+			Domain_Company_Scenario_Api::setLocalLinks($this->role, $this->permissions, $is_local_links_enabled);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2235001, "User is not a company owner");
 		} catch (cs_InvalidConfigValue) {

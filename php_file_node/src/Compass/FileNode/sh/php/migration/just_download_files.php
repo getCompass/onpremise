@@ -96,18 +96,21 @@ class Migration_Just_Download_Files {
 
 				// делаем вывод чтобы было понятно что скрипт что-то делает
 				console("Успешно скачали файл: {$file_url}");
-			} catch (Domain_File_Exception_IncorrectFileName|cs_DownloadFailed|\cs_CurlError) {
+			} catch (Domain_File_Exception_IncorrectFileName|cs_DownloadFailed|\cs_CurlError $e) {
 
 				console(yellowText("Не удалось скачать файл: {$file_url}, uniq: {$raw_file["uniq"]}"));
-				Type_System_Admin::log("migration-file-download-error", "uniq: {$raw_file["uniq"]} download_link: {$raw_file["download_link"]}");
-			} catch (cs_InvalidFileTypeForSource) {
+				Type_System_Admin::log(
+					"migration-file-download-error", "uniq: {$raw_file["uniq"]} download_link: {$raw_file["download_link"]} error: " . $e->getMessage());
+			} catch (cs_InvalidFileTypeForSource $e) {
 
 				console(yellowText("Невалидный file_source $file_source для файла {$file_url}"));
-				Type_System_Admin::log("migration-file-download-error", "uniq: {$raw_file["uniq"]} download_link: {$raw_file["download_link"]}");
-			} catch (Exception) {
+				Type_System_Admin::log(
+					"migration-file-download-error", "uniq: {$raw_file["uniq"]} download_link: {$raw_file["download_link"]} error: " . $e->getMessage());
+			} catch (Exception $e) {
 
 				console(yellowText("Не удалось скачать файл: {$file_url}"));
-				Type_System_Admin::log("migration-file-download-error", "uniq: {$raw_file["uniq"]} download_link: {$raw_file["download_link"]}");
+				Type_System_Admin::log(
+					"migration-file-download-error", "uniq: {$raw_file["uniq"]} download_link: {$raw_file["download_link"]} error: " . $e->getMessage());
 			}
 
 			$file_url_counter++;
@@ -155,14 +158,14 @@ class Migration_Just_Download_Files {
 		self::_setTimeout($curl, $timeout);
 
 		// получаем файл
-		$curl->setOpt(CURLOPT_NOBODY, true);
+		$curl->setOpt(CURLOPT_NOBODY, false);
 		$curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
 		$curl->setOpt(CURLOPT_MAXREDIRS, self::_REDIRECT_MAX_COUNT);
 
 		$curl->get($file_url);
 
 		if ($curl->getResponseCode() != 200) {
-			throw new cs_DownloadFailed();
+			throw new cs_DownloadFailed("curl response code != 200. ({$curl->getResponseCode()})");
 		}
 
 		// если нам отдали хедер content-length, то на берегу проверяем, что мы можем скачать файл такой длины
@@ -177,7 +180,7 @@ class Migration_Just_Download_Files {
 
 			// если размер контента больше 1000mb - выходим
 			if ($headers["content-length"] > $max_file_size) {
-				throw new cs_DownloadFailed();
+				throw new cs_DownloadFailed("file content-length {$headers["content-length"]} more than max_size {$max_file_size}");
 			}
 		}
 
@@ -196,14 +199,14 @@ class Migration_Just_Download_Files {
 
 		try {
 			$content = $curl->getImage($file_url);
-		} catch (\cs_CurlError) {
+		} catch (\cs_CurlError $e) {
 
 			// ошибка курла возникнет, если вышли за пределы загружаемого или поймали таймаут
-			throw new cs_DownloadFailed();
+			throw new cs_DownloadFailed("curl error: {$e->getMessage()}");
 		}
 
 		if ($curl->getResponseCode() != 200) {
-			throw new cs_DownloadFailed();
+			throw new cs_DownloadFailed("curl getImage response code != 200. ({$curl->getResponseCode()})");
 		}
 		return $content;
 	}

@@ -29,7 +29,7 @@ ini_set("display_errors", "1");
 set_time_limit(0);
 
 /**
- * Пишем сообщение
+ * Загрузить файлы для миграции.
  */
 class Migration_Just_Upload_Files {
 
@@ -71,7 +71,7 @@ class Migration_Just_Upload_Files {
 
 				// делаем вывод чтобы было понятно что скрипт что-то делает
 				console("Успешно загрузили файл {$file_map}");
-			} catch (Domain_File_Exception_IncorrectFileName|cs_DownloadFailed|\cs_CurlError $e) {
+			} catch (Domain_File_Exception_IncorrectFileName|cs_DownloadFailed|\cs_CurlError) {
 
 				console("Не смогли загрузить файл {$tmp_file_path}");
 				Type_System_Admin::log("migration-file-upload-error", "uniq: {$raw_file["uniq"]}");
@@ -95,8 +95,14 @@ class Migration_Just_Upload_Files {
 	 */
 	protected function _getFiles(string $log_name):array {
 
-		$output           = [];
-		$content          = file_get_contents(mb_strtolower($log_name) . ".log");
+		$output = [];
+
+		$file_name = mb_strtolower($log_name) . ".log";
+		if (!file_exists($file_name)) {
+			return $output;
+		}
+
+		$content          = file_get_contents($file_name);
 		$file_string_list = explode(PHP_EOL, $content);
 		foreach ($file_string_list as $file_string) {
 

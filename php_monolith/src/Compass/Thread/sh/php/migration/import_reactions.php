@@ -47,8 +47,7 @@ class Migration_Import_Reactions {
 		console("Всего тредов для импорта реакций: {$thread_count}");
 
 		// разбиваем по 50 тредов
-		$chunked_bound_thread_list   = array_chunk($export_bound_thread_list, 50);
-		$chunked_bound_thread_list[] = $chunked_bound_thread_list[0];
+		$chunked_bound_thread_list = array_chunk($export_bound_thread_list, 50);
 
 		// проходимся по одной пачке из 50 тредов
 		$thread_counter = 0;

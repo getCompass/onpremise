@@ -11,12 +11,13 @@ set_time_limit(0);
 /**
  * Скрипт для актвиации сервера
  */
-class Server_Activate {
-
+class Server_Activate
+{
 	/**
 	 * Запускаем работу скрипта
 	 */
-	public function run():void {
+	public function run(): void
+	{
 
 		$yc_identity_document                  = Type_Script_InputParser::getArgumentValue("--yc-identity-document", required: false);
 		$yc_identity_document_base64_signature = Type_Script_InputParser::getArgumentValue("--yc-identity-document-base64-signature", required: false);

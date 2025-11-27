@@ -10,8 +10,8 @@ use BaseFrame\Exception\Request\CaseException;
 /**
  * контроллер для методов api/v2/premiselicense/...
  */
-class Apiv2_PremiseLicense extends Api {
-
+class Apiv2_PremiseLicense extends Api
+{
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"getAuthenticationToken",
@@ -24,13 +24,13 @@ class Apiv2_PremiseLicense extends Api {
 	/**
 	 * Метод для получения токена аутентификации
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public function getAuthenticationToken():array {
+	public function getAuthenticationToken(): array
+	{
 
 		try {
 			$auth_token = Domain_License_Scenario_Api::getAuthenticationToken($this->user_id);

@@ -26,6 +26,23 @@ class Gateway_Socket_Premise extends Gateway_Socket_Default {
 		self::_doCallSocket("premise.userRegistered", $ar_post);
 	}
 
+	/**
+	 * Выполняется при регистрации пользователя.
+	 */
+	public static function setPermissions(array $premise_permissions, int $admin_user_id, int $member_user_id):void {
+
+		if (!ServerProvider::isOnPremise()) {
+			return;
+		}
+
+		$ar_post = [
+			"premise_permissions" => $premise_permissions,
+			"admin_user_id"       => $admin_user_id,
+			"member_user_id"      => $member_user_id,
+		];
+		self::_doCallSocket("premise.setPermissions", $ar_post);
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------

@@ -4,6 +4,8 @@ namespace Compass\Premise;
 
 use BaseFrame\Controller\Api;
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\RowNotFoundException;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 use cs_RowIsEmpty;
@@ -12,8 +14,8 @@ use Formatter;
 /**
  * контроллер для методов api/v2/premiseuser/...
  */
-class Apiv2_PremiseUser extends Api {
-
+class Apiv2_PremiseUser extends Api
+{
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"getPersonalCode",
@@ -33,9 +35,13 @@ class Apiv2_PremiseUser extends Api {
 	 *
 	 * @return array
 	 * @throws CaseException
+	 * @throws Gateway_Premise_Exception_ServerNotFound
 	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws RowNotFoundException
 	 */
-	public function getPersonalCode():array {
+	public function getPersonalCode(): array
+	{
 
 		try {
 			$personal_code = Domain_User_Scenario_Api::getPersonalCode($this->user_id);
@@ -55,7 +61,8 @@ class Apiv2_PremiseUser extends Api {
 	 * @throws ParseFatalException
 	 * @throws cs_RowIsEmpty
 	 */
-	public function getCounters():array {
+	public function getCounters(): array
+	{
 
 		try {
 			[$member_count, $guest_count] = Domain_User_Scenario_Api::getCounters($this->user_id);
@@ -71,10 +78,9 @@ class Apiv2_PremiseUser extends Api {
 
 	/**
 	 * Метод для получения подписи
-	 *
-	 * @return array
 	 */
-	public function getSignature():array {
+	public function getSignature(): array
+	{
 
 		$signature = Domain_User_Scenario_Api::getSignature($this->user_id);
 
@@ -89,7 +95,8 @@ class Apiv2_PremiseUser extends Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	public function getInfoBatching():array {
+	public function getInfoBatching(): array
+	{
 
 		$batch_premise_user_list = $this->post(Formatter::TYPE_JSON, "batch_premise_user_list");
 		$need_premise_user_list  = $this->post(Formatter::TYPE_JSON, "need_premise_user_list", []);
@@ -110,13 +117,13 @@ class Apiv2_PremiseUser extends Api {
 	/**
 	 * Метод для получения пользователей по поисковому запросу
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws cs_RowIsEmpty
 	 */
-	public function getIdList():array {
+	public function getIdList(): array
+	{
 
 		$query = $this->post(Formatter::TYPE_STRING, "query", "");
 
@@ -136,13 +143,13 @@ class Apiv2_PremiseUser extends Api {
 	/**
 	 * Метод для получения пользователей, сгруппированных по правам
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws cs_RowIsEmpty
 	 */
-	public function getGroupedByPermissionList():array {
+	public function getGroupedByPermissionList(): array
+	{
 
 		$premise_space_id = $this->post(Formatter::TYPE_INT, "premise_space_id", 0);
 

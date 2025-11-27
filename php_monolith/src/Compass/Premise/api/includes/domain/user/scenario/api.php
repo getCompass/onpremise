@@ -1,22 +1,26 @@
-<?php declare(strict_types = 1);
+<?php
+
+declare(strict_types=1);
 
 namespace Compass\Premise;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\RowNotFoundException;
+use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\ParamException;
-use CompassApp\Domain\Member\Entity\Member;
-use CompassApp\Domain\Member\Entity\Permission;
+use BaseFrame\Server\ServerProvider;
 
 /**
  * Класс для сценариев api сущности пользователя
  */
-class Domain_User_Scenario_Api {
-
+class Domain_User_Scenario_Api
+{
 	/**
 	 * Получить подпись для пользователя
 	 */
-	public static function getSignature(int $user_id):string {
+	public static function getSignature(int $user_id): string
+	{
 
 		return Domain_User_Action_GetSignature::do($user_id);
 	}
@@ -24,15 +28,17 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Получить персональный код
 	 *
-	 * @param int $user_id
-	 *
-	 * @return string
-	 *
-	 * @throws Domain_Premise_Exception_ServerNotFound
+	 * @throws Gateway_Premise_Exception_ServerNotFound
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
+	 * @throws RowNotFoundException
 	 */
-	public static function getPersonalCode(int $user_id):string {
+	public static function getPersonalCode(int $user_id): string
+	{
+
+		if (ServerProvider::isLocalLicense()) {
+			throw new ControllerMethodNotFoundException("method is not allowed");
+		}
 
 		try {
 			$premise_user = Gateway_Db_PremiseUser_UserList::getOne($user_id);
@@ -62,24 +68,18 @@ class Domain_User_Scenario_Api {
 		// формируем данные для получения персонального кода
 		$personal_code_data = new Struct_PersonalCode_Data($user->full_name, $formatted_space_list);
 
-		try {
-			return Gateway_Premise_License::getPersonalCode($user_id, $personal_code_data);
-		} catch (Gateway_Socket_Exception_ServerNotFound) {
-			throw new Domain_Premise_Exception_ServerNotFound("server not found");
-		}
+		return Gateway_Premise_License::getPersonalCode($user_id, $personal_code_data);
 	}
 
 	/**
 	 * Получить количество гостей и участников на сервере
 	 *
-	 * @param int $user_id
-	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws \cs_RowIsEmpty
 	 * @throws Domain_User_Exception_UserHaveNotPermissions
 	 */
-	public static function getCounters(int $user_id):array {
+	public static function getCounters(int $user_id): array
+	{
 
 		$user = Gateway_Db_PremiseUser_UserList::getOne($user_id);
 
@@ -94,21 +94,17 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Установить права для указанного пользователя
 	 *
-	 * @param int   $user_id
-	 * @param int   $set_user_id
-	 * @param array $premise_permissions
-	 *
 	 * @throws Domain_User_Exception_IsDisabled
 	 * @throws Domain_User_Exception_NotFound
 	 * @throws Domain_User_Exception_SelfDisabledPermissions
 	 * @throws Domain_User_Exception_UserHaveNotPermissions
 	 * @throws ParamException
 	 * @throws ParseFatalException
-	 * @throws ReturnFatalException
 	 * @throws \parseException
 	 * @long
 	 */
-	public static function setPermissions(int $user_id, int $set_user_id, array $premise_permissions):void {
+	public static function setPermissions(int $user_id, int $set_user_id, array $premise_permissions): void
+	{
 
 		// приводим к формату полученный от клиента права для изменения
 		[$enabled_permission_list, $disabled_permission_list] = Domain_User_Entity_Permissions::formatToList($premise_permissions);
@@ -152,7 +148,7 @@ class Domain_User_Scenario_Api {
 
 		// если забрали права администратора и бухгалтера
 		// отправляем запрос в php_license для отзыва токена аутентификации
-		if ($new_premise_permissions == Domain_User_Entity_Permissions::DEFAULT) {
+		if ($new_premise_permissions == Domain_User_Entity_Permissions::DEFAULT && !ServerProvider::isLocalLicense()) {
 
 			try {
 				Gateway_Premise_License::disableAuthenticationToken($set_user_id);
@@ -167,15 +163,12 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Получить информацию по пользователям
 	 *
-	 * @param array $batch_premise_user_list
-	 * @param array $need_premise_user_list
-	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws cs_IncorrectUserId
 	 * @throws cs_WrongSignature
 	 */
-	public static function getInfoBatching(array $batch_premise_user_list, array $need_premise_user_list):array {
+	public static function getInfoBatching(array $batch_premise_user_list, array $need_premise_user_list): array
+	{
 
 		Domain_User_Entity_Validator::assertNeedUserIdList($need_premise_user_list);
 
@@ -206,15 +199,12 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Получить id пользователей по поисковому запросу
 	 *
-	 * @param int    $user_id
-	 * @param string $query
-	 *
-	 * @return array
 	 * @throws Domain_User_Exception_UserHaveNotPermissions
 	 * @throws \cs_RowIsEmpty
 	 * @throws ParseFatalException
 	 */
-	public static function getIdList(int $user_id, string $query):array {
+	public static function getIdList(int $user_id, string $query): array
+	{
 
 		// проверяем права пользователя
 		$user = Gateway_Db_PremiseUser_UserList::getOne($user_id);
@@ -229,15 +219,12 @@ class Domain_User_Scenario_Api {
 	/**
 	 * Получить пользователей, сгруппированных по правам
 	 *
-	 * @param int $user_id
-	 * @param int $premise_space_id
-	 *
-	 * @return array
 	 * @throws Domain_User_Exception_UserHaveNotPermissions
 	 * @throws ParseFatalException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public static function getGroupedByPermissionList(int $user_id, int $premise_space_id = 0):array {
+	public static function getGroupedByPermissionList(int $user_id, int $premise_space_id = 0): array
+	{
 
 		// проверяем права пользователя
 		$current_user = Gateway_Db_PremiseUser_UserList::getOne($user_id);
@@ -255,19 +242,20 @@ class Domain_User_Scenario_Api {
 		}
 
 		// сортируем по времени вступления
-		uasort($user_list, fn(Struct_Db_PremiseUser_User $a, Struct_Db_PremiseUser_User $b) => $b->created_at <=> $a->created_at);
+		uasort($user_list, fn (Struct_Db_PremiseUser_User $a, Struct_Db_PremiseUser_User $b) => $b->created_at <=> $a->created_at);
 
 		$premise_administrator_list = [];
 		$premise_accountant_list    = [];
 
 		// является ли вызывавший пользователь администратором
 		$can_get_administrator_list = Domain_User_Entity_Permissions::hasPermission(
-			$current_user->premise_permissions, Domain_User_Entity_Permissions::SERVER_ADMINISTRATOR);
+			$current_user->premise_permissions,
+			Domain_User_Entity_Permissions::SERVER_ADMINISTRATOR
+		);
 
 		foreach ($user_list as $user) {
 
-			$is_administrator =
-				Domain_User_Entity_Permissions::hasPermission($user->premise_permissions, Domain_User_Entity_Permissions::SERVER_ADMINISTRATOR);
+			$is_administrator = Domain_User_Entity_Permissions::hasPermission($user->premise_permissions, Domain_User_Entity_Permissions::SERVER_ADMINISTRATOR);
 
 			// собираем, если текущий пользователь администратор
 			// и получили из базы администратора
@@ -288,12 +276,12 @@ class Domain_User_Scenario_Api {
 	 * Отфильтровать по команде
 	 *
 	 * @param Struct_Db_PremiseUser_User[] $user_list
-	 * @param int                          $premise_space_id
 	 *
 	 * @return Struct_Db_PremiseUser_User[]
 	 * @throws ParseFatalException
 	 */
-	protected static function _filterBySpace(array $user_list, int $premise_space_id):array {
+	protected static function _filterBySpace(array $user_list, int $premise_space_id): array
+	{
 
 		$output_user_list = [];
 		$user_space_list  = Gateway_Db_PremiseUser_SpaceList::getByUserListAndSpace(array_keys($user_list), $premise_space_id);

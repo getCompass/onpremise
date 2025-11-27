@@ -7,6 +7,7 @@ use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\CompanyIsHibernatedException;
 use BaseFrame\Exception\Request\CompanyNotServedException;
 use BaseFrame\Exception\Request\ParamException;
+use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Exception\ActionNotAllowed;
 use CompassApp\Domain\Member\Exception\UserIsGuest;
 
@@ -23,12 +24,12 @@ class Socket_Space_Member extends \BaseFrame\Controller\Socket {
 		"addConversationMessage",
 		"incConferenceMembershipRating",
 		"checkSession",
+		"setPermissions",
 	];
 
 	/**
 	 * Обновляем права в пространстве
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \busException
 	 * @throws \parseException
@@ -75,7 +76,6 @@ class Socket_Space_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Проверяет возможность создавать сингл звонки указанным пользователем.
 	 *
-	 * @return array
 	 * @throws ReturnFatalException
 	 * @throws BusFatalException
 	 * @throws CompanyIsHibernatedException
@@ -109,7 +109,6 @@ class Socket_Space_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Инкрементим статистику участия пользователя в конференции
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \busException
@@ -139,6 +138,36 @@ class Socket_Space_Member extends \BaseFrame\Controller\Socket {
 			return $this->error($e->getCode(), $e->getMessage());
 		}
 
+		return $this->ok();
+	}
+
+	/**
+	 * Выдаем права пользователю
+	 */
+	public function setPermissions():array {
+
+		$permissions = $this->post(\Formatter::TYPE_JSON, "permissions", []);
+
+		try {
+
+			// устанавливаем права
+			Domain_Member_Scenario_Socket::setPermissions($this->user_id, $permissions);
+
+			// обновляем рут пользователя
+			Domain_Company_Entity_Config::set(Domain_Company_Entity_Config::ROOT_USER_ID, $this->user_id);
+		} catch (\cs_CompanyUserIncorrectRole) {
+			throw new ParamException("incorrect role");
+		} catch (Domain_Member_Exception_IncorrectUserId) {
+			throw new ParamException("incorrect user_id");
+		} catch (\cs_RowIsEmpty|\CompassApp\Domain\Member\Exception\IsLeft) {
+			return $this->error(2209006, "member not found");
+		} catch (Domain_Member_Exception_SelfSetPermissions) {
+			return $this->error(2209002, "tried to set permissions for self");
+		} catch (\CompassApp\Domain\Member\Exception\AccountDeleted) {
+			return $this->error(2209007, "member deleted account");
+		} catch (UserIsGuest) {
+			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "not access for action");
+		}
 		return $this->ok();
 	}
 }

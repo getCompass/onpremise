@@ -9,23 +9,19 @@ use BaseFrame\Server\ServerProvider;
 /**
  * класс-интерфейс для работы с модулем CRM
  */
-class Gateway_Premise_License extends Gateway_Premise_Default {
-
+class Gateway_Premise_License extends Gateway_Premise_Default
+{
 	/**
 	 * Получаем персональный код
 	 *
-	 * @param int                      $user_id
-	 * @param Struct_PersonalCode_Data $personal_code_data
-	 *
-	 * @return string
 	 * @throws Gateway_Premise_Exception_ServerNotFound
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
 	public static function getPersonalCode(
-		int                      $user_id,
+		int $user_id,
 		Struct_PersonalCode_Data $personal_code_data,
-	):string {
+	): string {
 
 		[$status, $response] = self::_call("user.getPersonalCode", [
 			"user_id"   => $user_id,
@@ -39,7 +35,6 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 			}
 
 			throw match ($response["error_code"]) {
-
 				6801001 => new Gateway_Premise_Exception_ServerNotFound("server not found"),
 				default => new ReturnFatalException("unexpected error code"),
 			};
@@ -51,17 +46,14 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 	/**
 	 * Регистририуем сервер
 	 *
-	 * @param string $endpoint_url
-	 * @param string $server_uid
-	 *
-	 * @return string
 	 * @throws Gateway_Premise_Exception_ServerAlreadyRegistered
 	 * @throws Gateway_Premise_Exception_ServerCountExceeded
 	 * @throws Gateway_Premise_Exception_ServerIsNotAvailable
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public static function register(string $endpoint_url, string $server_uid, string|false $yc_identity_document, string|false $yc_identity_document_base64_signature):string {
+	public static function register(string $endpoint_url, string $server_uid, string | false $yc_identity_document, string | false $yc_identity_document_base64_signature): string
+	{
 
 		$ar_post = [
 			"endpoint_url" => $endpoint_url,
@@ -81,7 +73,6 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 			}
 
 			throw match ($response["error_code"]) {
-
 				6801005 => new Gateway_Premise_Exception_ServerAlreadyRegistered("server already registered"),
 				6801004 => new Gateway_Premise_Exception_ServerCountExceeded("server count exceeded"),
 				6801003 => new Gateway_Premise_Exception_ServerIsNotAvailable("server is not available"),
@@ -96,15 +87,12 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 	 * Обновить secret_key onpremise сервера
 	 * !!! Только для тестового/стейдж сервера
 	 *
-	 * @param string $endpoint_url
-	 * @param string $server_uid
-	 *
-	 * @return string
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws \ParseException
 	 */
-	public static function updateServerKey(string $endpoint_url, string $server_uid):string {
+	public static function updateServerKey(string $endpoint_url, string $server_uid): string
+	{
 
 		if (!ServerProvider::isTest() && !ServerProvider::isStage()) {
 			throw new \ParseException("called is not test or stage server");
@@ -125,14 +113,12 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 	/**
 	 * Получить токен аутентификации
 	 *
-	 * @param int $user_id
-	 *
-	 * @return Struct_Premise_AuthToken
 	 * @throws Gateway_Premise_Exception_ServerNotFound
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public static function getAuthenticationToken(int $user_id):Struct_Premise_AuthToken {
+	public static function getAuthenticationToken(int $user_id): Struct_Premise_AuthToken
+	{
 
 		$ar_post = [
 			"user_id" => $user_id,
@@ -147,7 +133,6 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 			}
 
 			throw match ($response["error_code"]) {
-
 				6801001 => new Gateway_Premise_Exception_ServerNotFound("server not found"),
 				default => new ReturnFatalException("unexpected error code"),
 			};
@@ -165,7 +150,8 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public static function disableAuthenticationToken(int $user_id):void {
+	public static function disableAuthenticationToken(int $user_id): void
+	{
 
 		$ar_post = [
 			"user_id" => $user_id,
@@ -188,14 +174,11 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 	/**
 	 * Делаем вызов
 	 *
-	 * @param string $method
-	 * @param array  $params
-	 *
-	 * @return array
 	 * @throws ReturnFatalException
 	 * @throws ParseFatalException
 	 */
-	protected static function _call(string $method, array $params):array {
+	protected static function _call(string $method, array $params): array
+	{
 
 		if (ServerProvider::isSaas()) {
 			return ["", []];
@@ -214,10 +197,9 @@ class Gateway_Premise_License extends Gateway_Premise_Default {
 
 	/**
 	 * Возвращаем url
-	 *
-	 * @return string
 	 */
-	protected static function _getUrl():string {
+	protected static function _getUrl(): string
+	{
 
 		$premise_url           = getConfig("PREMISE_URL");
 		$premise_module_config = getConfig("PREMISE_MODULE");

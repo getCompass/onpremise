@@ -63,13 +63,6 @@ class Domain_Member_Scenario_Event {
 				Domain_Member_Entity_Menu::createOrUpdate(
 					$not_found_owner_id_list, $found_owner_id_list, $hiring_request->candidate_user_id, Domain_Member_Entity_Menu::JOIN_REQUEST
 				);
-
-				$data = ["join_request_id" => $hiring_request->hiring_request_id];
-
-				// шлем событие новому администратору о новом заявке на вступление
-				Gateway_Bus_Sender::memberMenuNewNotificationForUser(
-					$event_data->user_id, $hiring_request->candidate_user_id, Domain_Member_Entity_Menu::JOIN_REQUEST, $data
-				);
 			}
 
 			// обновляем бадж для администратора

@@ -15,7 +15,7 @@ $url_list = [
 	"captcha_enterprise"         => PUBLIC_ENTRYPOINT_CAPTCHA_ENTERPRISE . "/",
 	"yandex_captcha"             => PUBLIC_ENTRYPOINT_YANDEX_CAPTCHA . "/",
 	"join"                       => PUBLIC_ENTRYPOINT_JOIN . "/",
-	"join_variety"               => array_map(static fn(string $e) => "$e/", array_filter(PUBLIC_ENTRYPOINT_JOIN_VARIETY)),
+	"join_variety"               => array_map(static fn (string $e) => "$e/", array_filter(PUBLIC_ENTRYPOINT_JOIN_VARIETY)),
 	"invite"                     => PUBLIC_ENTRYPOINT_INVITE . "/",
 	"premise"                    => PUBLIC_ENTRYPOINT_PREMISE . "/",
 	"solution"                   => "",
@@ -24,6 +24,7 @@ $url_list = [
 	"electron_update"            => PUBLIC_ENTRYPOINT_ELECTRON_UPDATE . "/",
 	"electron_update30"          => PUBLIC_ENTRYPOINT_ELECTRON_UPDATE30 . "/",
 	"electron_update_cdn"        => PUBLIC_ENTRYPOINT_ELECTRON_UPDATE_CDN . "/",
+	"license_server_url"         => PUBLIC_ENTRYPOINT_LICENSE,
 ];
 
 foreach ($url_list as &$url) {

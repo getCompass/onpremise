@@ -13,18 +13,18 @@ set_time_limit(0);
 /**
  * Дожидаемся появления default-файлов приложения
  */
-class WaitDefaultFiles {
-
-	protected const _PATH_TO_FILE = PATH_WWW . "default_file/";
-
-	protected const _WAIT_FILES_TIMEOUT = 300;
+class WaitDefaultFiles
+{
+	protected const _PATH_TO_FILE       = PATH_WWW . "default_file/";
+	protected const _WAIT_FILES_TIMEOUT = 1200;
 
 	/**
 	 * Выполняем
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public static function run():void {
+	public static function run(): void
+	{
 
 		$manifest_file = File::init(self::_PATH_TO_FILE, "manifest.json");
 

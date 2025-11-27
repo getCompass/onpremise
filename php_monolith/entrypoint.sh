@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# region script-header
+# set -Eeuo pipefail
+# trap cleanup SIGINT SIGTERM ERR EXIT
+# shellcheck disable=SC2034
+SCRIPT_PATH=$(cd -- "$(dirname "$0")" || exit 1 >/dev/null 2>&1 ; pwd -P);
+NO_COLOR='\033[0m';BLACK='\033[0;30m';RED='\033[0;31m';GREEN='\033[0;32m';YELLOW='\033[0;33m';BLUE='\033[0;34m';PURPLE='\033[0;35m';CYAN='\033[0;36m';WHITE='\033[0;37m';
+# shellcheck disable=SC2034
+SCRIPT_PATH=$(cd -- "$(dirname "$0")" || exit 1 >/dev/null 2>&1 ; pwd -P);
+
 # подставляем дефолтные значения в файлы констант
 envsubst < /app/private/main.local.php > /app/private/main.php
 envsubst < /app/private/custom.local.php > /app/private/custom.php
@@ -44,7 +53,7 @@ bash "/app/src/Compass/Jitsi/init_submodule.sh" "Jitsi" || exit 1;
 # раздаем права, инициализируем пустые директории
 cd /app && sh install.sh
 
-cat /app/sql/init_system.sql | mariadb --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P $MYSQL_PORT --skip-ssl
+mariadb --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" --port="$MYSQL_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
 migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false up
 migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false version
 

@@ -5,6 +5,7 @@ namespace Compass\Pivot;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\GatewayException;
+use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\CompanyNotServedException;
 use BaseFrame\Exception\Request\ParamException;
 use cs_SocketRequestIsFailed;
@@ -1040,9 +1041,9 @@ class Gateway_Socket_Company {
 		if ($status != "ok") {
 
 			throw match ($response["error_code"]) {
-				404 => new cs_JoinLinkIsNotActive(),
-				406 => new cs_Text_IsTooLong(),
-				408 => new cs_ExitTaskInProgress(),
+				404     => new cs_JoinLinkIsNotActive(),
+				406     => new cs_Text_IsTooLong(),
+				408     => new cs_ExitTaskInProgress(),
 				default => new ParseFatalException("passed unknown error_code: " . $response["error_code"])
 			};
 		}
@@ -1935,6 +1936,42 @@ class Gateway_Socket_Company {
 				$company->domino_id,
 				Domain_Company_Entity_Company::getPrivateKey($company->extra));
 		} catch (\cs_SocketRequestIsFailed $e) {
+
+			if ($e->getHttpStatusCode() == 503) {
+				throw new cs_CompanyIsHibernate();
+			}
+			throw $e;
+		}
+
+		if ($status != "ok") {
+
+			if (!isset($response["error_code"])) {
+				throw new ReturnFatalException("wrong response");
+			}
+
+			throw new ParseFatalException("passed unknown error_code: " . $response["error_code"]);
+		}
+	}
+
+	/**
+	 * Выдаем права пользователю
+	 */
+	public static function setPermissions(Struct_Db_PivotCompany_Company $company, int $member_user_id, array $permissions):void {
+
+		$params = [
+			"permissions" => toJson($permissions),
+		];
+
+		// отправим запрос на удаление из списка
+		try {
+
+			[$status, $response] = self::_call("space.member.setPermissions",
+				$params,
+				$member_user_id,
+				$company->company_id,
+				$company->domino_id,
+				Domain_Company_Entity_Company::getPrivateKey($company->extra));
+		} catch (cs_SocketRequestIsFailed $e) {
 
 			if ($e->getHttpStatusCode() == 503) {
 				throw new cs_CompanyIsHibernate();

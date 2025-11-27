@@ -40,7 +40,7 @@ $CONFIG["SOCKET_MODULE"] = [
 ];
 
 $CONFIG["SOCKET_ALLOW_KEY"] = [
-	"pivot" => [
+	"pivot"         => [
 		"auth_type"     => \BaseFrame\Socket\Authorization\Handler::AUTH_TYPE_SSL,
 		"auth_key"      => PIVOT_TO_COMPANY_PUBLIC_KEY,
 		"allow_methods" => [
@@ -108,6 +108,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 			"smartapp.getCreatedSmartAppsStatFromSuggestionList",
 			"smartapp.getCreatedPersonalSmartApps",
 			"space.member.updatePermissions",
+			"space.member.setPermissions",
 			"space.member.isMediaConferenceCreatingAllowed",
 			"space.member.checkIsAllowedForCall",
 			"space.member.incConferenceMembershipRating",

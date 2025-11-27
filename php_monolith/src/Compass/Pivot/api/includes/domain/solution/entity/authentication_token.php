@@ -1,4 +1,6 @@
-<?php declare(strict_types = 1);
+<?php
+
+declare(strict_types=1);
 
 namespace Compass\Pivot;
 
@@ -8,14 +10,15 @@ use BaseFrame\Crypt\CryptProvider;
  * Класс для работы с токенами аутентификации.
  * Токен используется для аутентификации в приложении после успешной аутентификации на сайте.
  */
-class Domain_Solution_Entity_AuthenticationToken {
-
+class Domain_Solution_Entity_AuthenticationToken
+{
 	protected const _PAYLOAD_VERSION = 1;
 
 	/**
 	 * Генерирует токен аутентификации.
 	 */
-	public static function generate(int $user_id, int $expires_at, string $authentication_key, string|false $join_link_uniq = false):string {
+	public static function generate(int $user_id, int $expires_at, string $authentication_key, string | false $join_link_uniq = false): string
+	{
 
 		$payload = static::_makePayload($user_id, $expires_at, $authentication_key, $join_link_uniq);
 		$sign    = static::_singPayload($payload, Gateway_Lic_OnPremise::getSignKey());
@@ -31,7 +34,8 @@ class Domain_Solution_Entity_AuthenticationToken {
 	 * Раскодирует переданный токен и расшифровывает ключ.
 	 * @throws Domain_Solution_Exception_BadAuthenticationToken
 	 */
-	public static function decrypt(string $token):Struct_Solution_AuthenticationToken {
+	public static function decrypt(string $token): Struct_Solution_AuthenticationToken
+	{
 
 		// извлекаем полезную нагрузку из токена
 		$payload = static::_extractPayload($token);
@@ -40,7 +44,11 @@ class Domain_Solution_Entity_AuthenticationToken {
 		$iv_length      = openssl_cipher_iv_length(ENCRYPT_CIPHER_METHOD);
 		$iv             = substr(CryptProvider::default()->vector(), 0, $iv_length);
 		$decrypt_result = openssl_decrypt(
-			$payload["authentication_key"], ENCRYPT_CIPHER_METHOD, CryptProvider::default()->key(), 0, $iv
+			$payload["authentication_key"],
+			ENCRYPT_CIPHER_METHOD,
+			CryptProvider::default()->key(),
+			0,
+			$iv
 		);
 
 		if ($decrypt_result === false) {
@@ -62,14 +70,19 @@ class Domain_Solution_Entity_AuthenticationToken {
 	/**
 	 * Генерирует массив с полезной нагрузкой токена.
 	 */
-	protected static function _makePayload(int $user_id, int $expires_at, string $authentication_key, string|false $join_link_uniq = false):array {
+	protected static function _makePayload(int $user_id, int $expires_at, string $authentication_key, string | false $join_link_uniq = false): array
+	{
 
 		$iv_length = openssl_cipher_iv_length(ENCRYPT_CIPHER_METHOD);
 		$iv        = substr(CryptProvider::default()->vector(), 0, $iv_length);
 
 		// шифруем ключ
 		$encrypted_authentication_key = openssl_encrypt(
-			$authentication_key, ENCRYPT_CIPHER_METHOD, CryptProvider::default()->key(), 0, $iv
+			$authentication_key,
+			ENCRYPT_CIPHER_METHOD,
+			CryptProvider::default()->key(),
+			0,
+			$iv
 		);
 
 		return [
@@ -78,6 +91,7 @@ class Domain_Solution_Entity_AuthenticationToken {
 			"pivot_domain"       => substr(PUBLIC_ENTRYPOINT_PIVOT, strlen(WEB_PROTOCOL_PUBLIC . "://")),
 			"pivot_url"          => PUBLIC_ENTRYPOINT_PIVOT,
 			"protocol"           => WEB_PROTOCOL_PUBLIC,
+			"license_server_url" => PUBLIC_ENTRYPOINT_LICENSE,
 			"user_id"            => $user_id,
 			"expires_at"         => $expires_at,
 			"join_link_uniq"     => $join_link_uniq !== false ? $join_link_uniq : "",
@@ -88,9 +102,12 @@ class Domain_Solution_Entity_AuthenticationToken {
 	/**
 	 * Подписывает полезную нагрузку токена.
 	 */
-	protected static function _singPayload(array $payload, string $sign_key):string {
+	protected static function _singPayload(array $payload, string $sign_key): string
+	{
 
 		ksort($payload);
+
+		// nosemgrep
 		return md5(hash_hmac("sha1", toJson($payload), $sign_key));
 	}
 
@@ -98,7 +115,8 @@ class Domain_Solution_Entity_AuthenticationToken {
 	 * Извлекает полезную нагрузку из токена аутентификации.
 	 * @throws Domain_Solution_Exception_BadAuthenticationToken
 	 */
-	protected static function _extractPayload(string $token):array {
+	protected static function _extractPayload(string $token): array
+	{
 
 		$json_token = \BaseFrame\String\Base58::decode($token);
 

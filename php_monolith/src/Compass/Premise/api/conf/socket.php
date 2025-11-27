@@ -31,6 +31,7 @@ $CONFIG["SOCKET_ALLOW_KEY"] = [
 		"auth_key"      => SOCKET_KEY_PIVOT,
 		"allow_methods" => [
 			"premise.userRegistered",
+			"premise.setPermissions",
 		],
 	],
 ];

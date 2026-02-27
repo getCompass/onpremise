@@ -155,7 +155,7 @@ class Gateway_Db_PivotRating_ActionRawList extends Gateway_Db_PivotRating_Main {
 		$table_name = self::_getTableKey($shard_id);
 
 		$query = "OPTIMIZE TABLE `{$shard_key}`.`{$table_name}`;";
-		ShardingGateway::database($shard_key)->query($query);
+		ShardingGateway::database($shard_key)->execQuery($query);
 	}
 
 	// -------------------------------------------------------

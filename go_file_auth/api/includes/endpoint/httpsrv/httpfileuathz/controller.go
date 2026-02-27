@@ -2,7 +2,7 @@ package httpfileuathz
 
 import (
 	"context"
-	"github.com/service/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_file_auth/api/includes/type/authz"
 	"go_file_auth/api/includes/type/fileauthz"
 	"net/http"

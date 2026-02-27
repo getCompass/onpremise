@@ -29,6 +29,14 @@ bash "/app/wait-services.sh" || die "service waiting failed"
 # чиним миграции
 php "${SCRIPT_PATH}/sh/php/update/fix_migration.php"
 
+# нужны ли миграции на резервном сервере
+IS_STOP_MIGRATE=$(php "/app/sh/php/tools/reserve/check_server.php");
+if [[ "${IS_STOP_MIGRATE}" == "true" ]]; then
+  CURRENT_FOLDER=$(basename "$SCRIPT_PATH")
+  echo "reserve: запуск миграции пропускается в $CURRENT_FOLDER"
+  exit 0
+fi
+
 # приступаем к миграциям
 mariadb --user="${MYSQL_USER}" --password="${MYSQL_PASS}" --host="${MYSQL_HOST}" --port="${MYSQL_PORT}" --skip-ssl < "${SCRIPT_PATH}/sql/init_pivot.sql"
 

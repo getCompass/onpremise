@@ -83,7 +83,7 @@ class DominoDatabaseMigrator {
 			$str_1 = str_replace("::table_name", $table_name, $migrate_query_1);
 			$str_2 = str_replace("::table_name", $table_name, $migrate_query_2);
 
-			ShardingGateway::database("pivot_company_service")->query("$str_1;$str_2");
+			ShardingGateway::database("pivot_company_service")->execQuery("$str_1;$str_2");
 		}
 
 		console("migrate up 'add host' on " . implode(", ", $to_migrate) . " completed");

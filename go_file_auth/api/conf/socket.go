@@ -2,8 +2,8 @@ package conf
 
 import (
 	"fmt"
-	"github.com/service/go_base_frame"
-	"github.com/service/go_base_frame/api/system/flags"
+	"github.com/getCompassUtils/go_base_frame"
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"os"
 	"path"
 	"runtime"

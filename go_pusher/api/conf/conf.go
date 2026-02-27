@@ -3,11 +3,12 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"os"
 	"path"
 	"runtime"
 	"sync/atomic"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 )
 
 // структура конфига
@@ -27,6 +28,13 @@ type ConfigStruct struct {
 	ServerAccommodation string `json:"server_accommodation"`
 
 	PushMonitoringCompanyId int `json:"push_monitoring_company_id"`
+
+	DominoConfigPath string `json:"domino_config_path"`
+
+	ServiceLabel              string `json:"service_label"`
+	CompaniesRelationshipFile string `json:"companies_relationship_file"`
+
+	ServerTagList []string `json:"server_tag_list"`
 }
 
 // переменная содержащая конфигурацию

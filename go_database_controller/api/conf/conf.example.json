@@ -33,5 +33,8 @@
 	"mysql_host_private_key": "${MYSQL_HOST_PRIVATE_KEY}",
 	"domino_secret_key": "${DOMINO_SECRET_KEY}",
 	"domino_network": "${DOMINO_NETWORK}",
-	"database_driver": "${DATABASE_DRIVER}"
+	"database_driver": "${DATABASE_DRIVER}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"domino_config_path": "${DOMINO_CONFIG_PATH}",
+	"server_tag_list": ${SERVER_TAG_LIST}
 }

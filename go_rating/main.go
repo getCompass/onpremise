@@ -47,7 +47,7 @@ func main() {
 func start() {
 
 	config := conf.GetConfig()
-	err := server.Init(config.ServerTagList)
+	err := server.Init(config.ServerTagList, config.ServiceLabel, config.DominoConfigPath, config.CompaniesRelationshipFile)
 
 	if err != nil {
 		panic(err)

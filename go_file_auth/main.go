@@ -6,13 +6,15 @@ package main
 
 import (
 	"context"
-	"github.com/service/go_base_frame/api/system/flags"
-	"github.com/service/go_base_frame/api/system/log"
 	"go_file_auth/api/conf"
 	"go_file_auth/www"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 )
 
 // основаная функция
@@ -26,6 +28,11 @@ func main() {
 func start() {
 
 	config := conf.GetConfig()
+	err := server.Init(config.ServerTagList, config.ServiceLabel, config.DominoConfigPath, config.CompaniesRelationshipFile)
+
+	if err != nil {
+		panic(err)
+	}
 
 	ctx := context.Background()
 	globalCtx, cancelFn := context.WithCancel(ctx)

@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.6
 
 require (
-	github.com/getCompassUtils/go_base_frame v1.0.4
+	github.com/getCompassUtils/go_base_frame v1.0.13
 	github.com/getCompassUtils/pivot_protobuf_schemes v1.1.10
 	golang.org/x/crypto v0.26.0
 	google.golang.org/grpc v1.65.0

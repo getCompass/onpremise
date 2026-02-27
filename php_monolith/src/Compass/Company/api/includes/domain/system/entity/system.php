@@ -71,7 +71,7 @@ class Domain_System_Entity_System {
 				$query = implode("\n", $query_list);
 
 				// делаем запрос
-				$connect->query($query);
+				$connect->execQuery($query);
 
 				// дебажим запросы
 				Type_System_Admin::log("purge_database_queries", $query_list);

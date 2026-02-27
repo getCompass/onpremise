@@ -5,12 +5,13 @@ namespace Compass\Pivot;
 /**
  * Action для создания компании резервного сервера
  */
-class Domain_System_Action_CreateReserveServerCompany {
-
+class Domain_System_Action_CreateReserveServerCompany
+{
 	/**
 	 * Выполняем
 	 */
-	public static function do(int $company_id, string $domino_id, int $port, string $host):array|null {
+	public static function do(int $company_id, string $domino_id, int $port, string $host): array | null
+	{
 
 		// проверяем наличие конфига компании
 		try {
@@ -23,12 +24,10 @@ class Domain_System_Action_CreateReserveServerCompany {
 
 		$domino_row = Gateway_Db_PivotCompanyService_DominoRegistry::getOne($domino_id);
 
-		Domain_Domino_Action_CreateVacantCompany::create($domino_row, $company_id);
-
-		$port_row = Domain_Domino_Action_Port_LockForReserveCompany::run($domino_row, $company_id, HOUR1, $port, $host);
+		$port_row = Gateway_Db_PivotCompanyService_PortRegistry::getOne($domino_row->domino_id, $port, $host);
 
 		// занимаем порт на доминошке
-		Domain_Domino_Action_Port_Bind::run($domino_row, $port_row, $company_id, Domain_Domino_Action_Port_Bind::POLICY_RESERVE_CREATING, true);
+		Domain_Domino_Action_Port_ReserveBind::run($domino_row, $port_row, $company_id, Domain_Domino_Action_Port_Bind::POLICY_RESERVE_CREATING);
 
 		// создаём/обновляем конфиг mysql для компании
 		$company = Gateway_Db_PivotCompany_CompanyList::getOne($company_id);

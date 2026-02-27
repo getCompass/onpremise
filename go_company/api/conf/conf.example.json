@@ -16,5 +16,8 @@
 	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC},
 	"is_isolation_create_repeat": ${IS_ISOLATION_CREATE_REPEAT},
 	"encrypt_iv_action": "${ENCRYPT_IV_ACTION}",
-	"encrypt_passphrase_action": "${ENCRYPT_PASSPHRASE_ACTION}"
+	"encrypt_passphrase_action": "${ENCRYPT_PASSPHRASE_ACTION}",
+	"service_label": "${SERVICE_LABEL}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"domino_config_path": "${DOMINO_CONFIG_PATH}"
 }

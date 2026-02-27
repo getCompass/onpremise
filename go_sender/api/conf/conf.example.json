@@ -23,5 +23,8 @@
 	"server_tag_list": ${SERVER_TAG_LIST},
 	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC},
 	"is_isolation_create_repeat": ${IS_ISOLATION_CREATE_REPEAT},
-	"ca_certificate": "${CA_CERTIFICATE}"
+	"ca_certificate": "${CA_CERTIFICATE}",
+	"service_label": "${SERVICE_LABEL}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"domino_config_path": "${DOMINO_CONFIG_PATH}"
 }

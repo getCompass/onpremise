@@ -6,9 +6,6 @@ package main
 
 import (
 	"context"
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
-	"github.com/getCompassUtils/go_base_frame/api/system/server"
 	"go_sender/api/conf"
 	GlobalIsolation "go_sender/api/includes/type/global_isolation"
 	Isolation "go_sender/api/includes/type/isolation"
@@ -21,6 +18,10 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 )
 
 // основаная функция
@@ -36,8 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	err = server.Init(config.ServerTagList)
-
+	err = server.Init(config.ServerTagList, config.ServiceLabel, config.DominoConfigPath, config.CompaniesRelationshipFile)
 	if err != nil {
 		panic(err)
 	}

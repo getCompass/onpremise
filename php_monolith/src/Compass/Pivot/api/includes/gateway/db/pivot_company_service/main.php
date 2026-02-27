@@ -63,7 +63,7 @@ class Gateway_Db_PivotCompanyService_Main {
 	 */
 	public static function query(string $query):\PDOStatement|bool {
 
-		return ShardingGateway::database(self::_getDbKey())->query($query);
+		return ShardingGateway::database(self::_getDbKey())->execQuery($query);
 	}
 
 	// -------------------------------------------------------

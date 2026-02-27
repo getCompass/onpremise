@@ -4,7 +4,7 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"fmt"
-	"github.com/service/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
 )
 
 // Пакет шифрования Compass. Назначение — расшифровывать шифртексты, зашифрованные другими частями приложения.

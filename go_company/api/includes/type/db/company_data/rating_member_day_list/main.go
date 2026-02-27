@@ -194,7 +194,7 @@ func getCountUserDayListByInterval(ctx context.Context, dbConn *company_data.DbC
 	offset int) ([]*UserRatingDayRow, int, error) {
 
 	// выполняем запрос для получения записей
-	query := fmt.Sprintf("SELECT user_id, day_start, is_disabled_alias, created_at, updated_at, data FROM `%s` USE INDEX (`day_start`) WHERE `day_start` >= ? AND `day_start` <= ? ORDER BY `day_start`, `is_disabled_alias` ASC LIMIT %d OFFSET %d", tableName, maxCount, offset)
+	query := fmt.Sprintf("SELECT user_id, day_start, is_disabled_alias, created_at, updated_at, data FROM `%s` FORCE INDEX (`day_start_is_disabled_alias`) WHERE `day_start` >= ? AND `day_start` <= ? ORDER BY `day_start`, `is_disabled_alias` ASC LIMIT %d OFFSET %d", tableName, maxCount, offset)
 
 	queryCtx, cancel := context.WithTimeout(ctx, mysql.QueryTimeout)
 	defer cancel()

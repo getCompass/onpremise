@@ -153,7 +153,7 @@ class Gateway_Db_PivotRating_ScreenTimeRawList extends Gateway_Db_PivotRating_Ma
 		$table_name = self::_getTableKey($shard_id);
 
 		$query = "OPTIMIZE TABLE `{$shard_key}`.`{$table_name}`;";
-		ShardingGateway::database($shard_key)->query($query);
+		ShardingGateway::database($shard_key)->execQuery($query);
 	}
 
 	// -------------------------------------------------------

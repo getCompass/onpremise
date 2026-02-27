@@ -3,12 +3,13 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"os"
 	"path"
 	"runtime"
 	"sync/atomic"
 	"time"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 )
 
 // ConfigStruct структура конфига
@@ -23,6 +24,13 @@ type ConfigStruct struct {
 	RabbitExchange string `json:"rabbit_exchange"`
 
 	GetUserTimeoutMs time.Duration `json:"get_activity_timeout_ms"`
+
+	DominoConfigPath string `json:"domino_config_path"`
+
+	ServiceLabel              string `json:"service_label"`
+	CompaniesRelationshipFile string `json:"companies_relationship_file"`
+
+	ServerTagList []string `json:"server_tag_list"`
 }
 
 // переменная содержащая конфигурацию

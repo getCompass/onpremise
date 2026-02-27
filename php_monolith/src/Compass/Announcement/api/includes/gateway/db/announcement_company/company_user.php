@@ -201,7 +201,7 @@ class Gateway_Db_AnnouncementCompany_CompanyUser extends Gateway_Db_Announcement
 
 			// EXPLAIN не требуется
 			$query = "OPTIMIZE TABLE `{$shard_key}`.`{$table_key}`;";
-			ShardingGateway::database($shard_key)->query($query);
+			ShardingGateway::database($shard_key)->execQuery($query);
 		}
 	}
 

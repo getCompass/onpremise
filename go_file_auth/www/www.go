@@ -2,7 +2,7 @@ package www
 
 import (
 	"context"
-	"github.com/service/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_file_auth/api/conf"
 	"go_file_auth/api/includes/endpoint/httpsrv"
 	"sync"

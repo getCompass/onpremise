@@ -220,6 +220,8 @@ class Helper_Single {
 	// завершаем звонок между пользователями, если таковой имелся
 	protected static function _doFinishSingleCallIfExist(int $user_id, int $opponent_user_id):void {
 
+		return;
+
 		// отправляем сокет-запрос на php_speaker для завершения звонка
 		$ar_post = [
 			"opponent_user_id" => $opponent_user_id,

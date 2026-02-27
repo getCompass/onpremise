@@ -2,12 +2,17 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Gateway\SocketException;
+
 /**
  * Действие привязки порта домино к компании.
  * !!! Не пересоздает конфигурационный файл для компании, оно лишь связывает порт и компанию.
  */
-class Domain_Domino_Action_Port_Bind {
-
+class Domain_Domino_Action_Port_Bind
+{
 	// политики поведения при отсутствии директорий с данными компании
 	protected const _NON_EXISTING_DATA_DIR_POLICY_ALLOW    = 1; // разрешено работать с несуществующими директориями
 	protected const _NON_EXISTING_DATA_DIR_POLICY_DISALLOW = 2; // работать без директории нельзя
@@ -66,15 +71,14 @@ class Domain_Domino_Action_Port_Bind {
 	 *
 	 * !!! Не пересоздает конфигурационный файл для компании, оно лишь связывает порт и компанию.
 	 *
+	 * @throws BusFatalException
 	 * @throws Domain_Domino_Exception_PortBindingIsNotAllowed
-	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
-	 * @throws \returnException
-	 * @throws \Exception
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws SocketException
 	 */
-	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list, bool $is_skip_unbind = false):Struct_Db_PivotCompanyService_PortRegistry {
+	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list): Struct_Db_PivotCompanyService_PortRegistry
+	{
 
 		console("начинаем привязку порта {$port->port} для компании {$company_id}");
 		$port_to_bound = static::_makeLocalBinding($domino, $port, $company_id);
@@ -85,7 +89,7 @@ class Domain_Domino_Action_Port_Bind {
 		$go_database_controller_host = $go_database_controller_host !== "" ? $go_database_controller_host : $domino->database_host;
 		$go_database_controller_port = Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerPort($domino->extra);
 		Type_System_Admin::log("start_company_process", "Привязываем компанию к порту в микросервисе go_database: host {$go_database_controller_host}, port {$go_database_controller_port}");
-		static::_makeRemoteBinding($domino, $port, $company_id, $policy_list, $is_skip_unbind);
+		static::_makeRemoteBinding($domino, $port, $company_id, $policy_list);
 		console("выполнили привязку порта и компании {$company_id} на удаленном сервере");
 		Type_System_Admin::log("start_company_process", "Выполнили привязку порта и компании {$company_id} на удаленном сервере");
 
@@ -95,12 +99,12 @@ class Domain_Domino_Action_Port_Bind {
 	/**
 	 * Выполняет привязку порта и компании на локальном сервере.
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \returnException
 	 * @throws Domain_Domino_Exception_PortBindingIsNotAllowed
-	 * @throws \Exception
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
 	 */
-	protected static function _makeLocalBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id):Struct_Db_PivotCompanyService_PortRegistry {
+	protected static function _makeLocalBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id): Struct_Db_PivotCompanyService_PortRegistry
+	{
 
 		/** начало транзакции */
 		Gateway_Db_PivotCompanyService_Main::beginTransaction();
@@ -111,7 +115,7 @@ class Domain_Domino_Action_Port_Bind {
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 			Gateway_Db_PivotCompanyService_Main::rollback();
-			throw new \BaseFrame\Exception\Domain\ParseFatalException("passed non-existing port {$port->port}");
+			throw new ParseFatalException("passed non-existing port {$port->port}");
 		}
 
 		// проверяем, что этот порт можно связать с этой компаний;
@@ -152,11 +156,12 @@ class Domain_Domino_Action_Port_Bind {
 	/**
 	 * Выполняет привязку порта и компании на удаленном сервере.
 	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException|\Exception
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
+	 * @throws SocketException
 	 */
-	protected static function _makeRemoteBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list, bool $is_skip_unbind):void {
+	protected static function _makeRemoteBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list): void
+	{
 
 		try {
 
@@ -165,16 +170,17 @@ class Domain_Domino_Action_Port_Bind {
 		} catch (\Exception $e) {
 
 			// если что-то пошло не так, то нужно вызвать инвалидацию порта
-			!$is_skip_unbind && Domain_Domino_Action_Port_Invalidate::run($domino, $port, "error on remote bind");
+			Domain_Domino_Action_Port_Invalidate::run($domino, $port, "error on remote bind");
 			throw $e;
 		}
 	}
 
 	/**
 	 * Обновляет данные порта.
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 * @throws ParseFatalException
 	 */
-	protected static function _update(Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, string $domino_id):Struct_Db_PivotCompanyService_PortRegistry {
+	protected static function _update(Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, string $domino_id): Struct_Db_PivotCompanyService_PortRegistry
+	{
 
 		// обновляем данные для порта
 		$port->status     = Domain_Domino_Entity_Port_Registry::STATUS_ACTIVE;

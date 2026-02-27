@@ -2,7 +2,7 @@ package fileauthz
 
 import (
 	"fmt"
-	"github.com/service/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"strings"
 	"sync"
 	"time"

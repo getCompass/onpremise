@@ -2,14 +2,15 @@ package observer
 
 import (
 	"context"
-	"github.com/getCompassUtils/go_base_frame"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
-	"github.com/getCompassUtils/go_base_frame/api/system/server"
 	"go_event/api/conf"
 	CompanyEnvironment "go_event/api/includes/type/company_config"
 	"os"
 	"sync/atomic"
 	"time"
+
+	"github.com/getCompassUtils/go_base_frame"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 )
 
 var (
@@ -108,7 +109,7 @@ func isReserveServer() bool {
 	}
 
 	// открываем файл
-	file, err := os.Open(conf.GetConfig().GlobalConfigPath + "/" + conf.GetConfig().CompaniesRelationshipFile)
+	file, err := os.Open(conf.GetConfig().DominoConfigPath + "/" + conf.GetConfig().CompaniesRelationshipFile)
 	if err != nil {
 
 		log.Errorf("unable open file %s, error: %v", conf.GetConfig().CompaniesRelationshipFile, err)

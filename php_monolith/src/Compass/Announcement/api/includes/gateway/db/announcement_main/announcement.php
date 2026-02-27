@@ -412,7 +412,7 @@ class Gateway_Db_AnnouncementMain_Announcement extends Gateway_Db_AnnouncementMa
 
 		// EXPLAIN не требуется
 		$query = "OPTIMIZE TABLE `{$shard_key}`.`{$table_key}`;";
-		ShardingGateway::database($shard_key)->query($query);
+		ShardingGateway::database($shard_key)->execQuery($query);
 	}
 
 	// -------------------------------------------------------

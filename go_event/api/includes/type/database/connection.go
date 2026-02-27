@@ -5,8 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"github.com/getCompassUtils/go_base_frame/api/system/mysql"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
+
 	"go_event/api/conf"
 	CompanyEnvironment "go_event/api/includes/type/company_config"
 	Isolation "go_event/api/includes/type/isolation"
@@ -227,12 +230,32 @@ func (c *Connection) GetOne(ctx context.Context, query string, args ...interface
 	}
 }
 
+type emptyResult struct {
+	lastInsertID int64
+	rowsAffected int64
+}
+
+func (r emptyResult) LastInsertId() (int64, error) {
+	return r.lastInsertID, nil
+}
+
+func (r emptyResult) RowsAffected() (int64, error) {
+	return r.rowsAffected, nil
+}
+
 // InsertIgnore Выполняет вставку записи в указанном контексте
 // если контекста нет, то нужно передать nil
 func (c *Connection) InsertIgnore(ctx context.Context, tableName string, insert interface{}) (sql.Result, error) {
 
 	if err := c.ping(ctx); err != nil {
 		return nil, err
+	}
+
+	if server.IsReserveServer() {
+		return emptyResult{
+			lastInsertID: 0,
+			rowsAffected: 0,
+		}, nil
 	}
 
 	query, args := FormatInsertOrUpdate(tableName, insert)
@@ -249,6 +272,10 @@ func (c *Connection) Update(ctx context.Context, query string, update interface{
 
 	if err = c.ping(ctx); err != nil {
 		return err
+	}
+
+	if server.IsReserveServer() {
+		return nil
 	}
 
 	keyString, args := FormatUpdate(update)
@@ -270,6 +297,10 @@ func (c *Connection) Delete(ctx context.Context, query string, args ...interface
 
 	if err = c.ping(ctx); err != nil {
 		return err
+	}
+
+	if server.IsReserveServer() {
+		return nil
 	}
 
 	if ctx == nil {

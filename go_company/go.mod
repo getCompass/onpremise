@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/getCompassUtils/company_protobuf_schemes v1.1.90
-	github.com/getCompassUtils/go_base_frame v1.0.7
+	github.com/getCompassUtils/go_base_frame v1.0.13
 	google.golang.org/grpc v1.65.0
 )
 

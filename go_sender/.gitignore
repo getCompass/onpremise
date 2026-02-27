@@ -1,7 +1,6 @@
 .idea
 .DS_Store
 main
-sender
 main.pid
 /api/conf/conf.json
 /api/conf/sharding.json

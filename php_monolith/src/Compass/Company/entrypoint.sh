@@ -26,6 +26,14 @@ envsubst < "${SCRIPT_PATH}/private/custom.local.php" > "${SCRIPT_PATH}/private/c
 # возможно это стоит делать отдельным шагом инициализации
 bash "/app/wait-services.sh" || die "service waiting failed"
 
+# нужны ли миграции на резервном сервере
+IS_STOP_MIGRATE=$(php "/app/sh/php/tools/reserve/check_server.php");
+if [[ "${IS_STOP_MIGRATE}" == "true" ]]; then
+  CURRENT_FOLDER=$(basename "$SCRIPT_PATH")
+  echo "reserve: запуск миграции пропускается в $CURRENT_FOLDER"
+  exit 0
+fi
+
 mariadb --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" -P "$MYSQL_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
 
 migrate -path "${SCRIPT_PATH}/sql/system_compass_company" -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false up

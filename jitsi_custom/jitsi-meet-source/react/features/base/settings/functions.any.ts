@@ -108,6 +108,21 @@ export function isAudioSharingEnabled(stateful: IStateful) {
     return state['features/base/settings'].isAudioSharingEnabled;
 }
 
+export function isAudioEnabledOnEnterConference(stateful: IStateful) {
+    const state = toState(stateful);
+    return state['features/base/settings'].isStartWithAudio;
+}
+
+export function isVideoEnabledOnEnterConference(stateful: IStateful) {
+    const state = toState(stateful);
+    return state['features/base/settings'].isStartWithVideo;
+}
+
+export function isLobbyEnabledOnJoin(stateful: IStateful) {
+    const state = toState(stateful);
+    return state['features/base/settings'].isLobbyEnabledOnJoin;
+}
+
 export function isAGCDisabled(stateful: IStateful) {
     const state = toState(stateful);
     return state['features/base/settings'].disableAGC;

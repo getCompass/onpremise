@@ -51,6 +51,9 @@ const DEFAULT_STATE: ISettingsState = {
     userSelectedMicDeviceLabel: undefined,
     userSelectedSkipPrejoin: undefined,
     isAudioSharingEnabled: true,
+    isLobbyEnabledOnJoin: true,
+    isStartWithAudio: true,
+    isStartWithVideo: true,
 };
 
 export interface ISettingsState {
@@ -95,6 +98,9 @@ export interface ISettingsState {
     videoSettingsVisible?: boolean;
     visible?: boolean;
     isAudioSharingEnabled?: boolean;
+    isLobbyEnabledOnJoin?: boolean;
+    isStartWithAudio?: boolean;
+    isStartWithVideo?: boolean;
 }
 
 const STORE_NAME = 'features/base/settings';

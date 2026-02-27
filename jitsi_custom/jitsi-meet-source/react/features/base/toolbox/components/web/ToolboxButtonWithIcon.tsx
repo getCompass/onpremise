@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {MouseEventHandler} from 'react';
 
 import { NOTIFY_CLICK_MODE } from '../../../../toolbox/types';
 import Icon from '../../../icons/components/Icon';
@@ -81,6 +81,9 @@ interface IProps {
      * Whether or not the button is hovered.
      */
     hovered?: boolean;
+
+    onMouseLeave?: () => void;
+    onMouseEnter?: () => void;
 }
 
 /**
@@ -105,7 +108,9 @@ export default function ToolboxButtonWithIcon(props: IProps) {
         ariaControls,
         ariaExpanded,
         iconId,
-        hovered
+        hovered,
+        onMouseLeave,
+        onMouseEnter,
     } = props;
 
     const iconProps: {
@@ -142,10 +147,12 @@ export default function ToolboxButtonWithIcon(props: IProps) {
         iconProps.ariaExpanded = ariaExpanded;
         iconProps.containerId = iconId;
     }
-
+    const emptyFunction = () => {};
 
     return (
         <div
+            onMouseLeave = {onMouseLeave ?? emptyFunction}
+            onMouseEnter = {onMouseEnter ?? emptyFunction}
             className = 'settings-button-container'
             style = { styles }>
             {children}

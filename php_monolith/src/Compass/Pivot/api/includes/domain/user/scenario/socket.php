@@ -5,25 +5,23 @@ namespace Compass\Pivot;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Exception\Request\ParamException;
+use http\Exception\InvalidArgumentException;
 
 /**
  * Сценарии для сокет методов
  */
-class Domain_User_Scenario_Socket {
-
+class Domain_User_Scenario_Socket
+{
 	/**
 	 * Сценарий генерации 2fa токена
 	 *
-	 * @param int $user_id
-	 * @param int $company_id
-	 * @param int $action_type
-	 *
-	 * @return Struct_Db_PivotAuth_TwoFa
 	 * @throws cs_TwoFaTypeIsInvalid
 	 * @throws \parseException
 	 * @throws \queryException|cs_blockException
 	 */
-	public static function doGenerateTwoFaToken(int $user_id, int $company_id, int $action_type):Struct_Db_PivotAuth_TwoFa {
+	public static function doGenerateTwoFaToken(int $user_id, int $company_id, int $action_type): Struct_Db_PivotAuth_TwoFa
+	{
 
 		Domain_User_Entity_Confirmation_Main::assertTypeIsValid($action_type);
 
@@ -33,7 +31,7 @@ class Domain_User_Scenario_Socket {
 			$two_fa_story->assertNotExpired()
 				->assertNotFinished()
 				->assertNotActive();
-		} catch (\cs_RowIsEmpty|cs_TwoFaIsExpired|cs_TwoFaIsFinished|cs_TwoFaIsActive) {
+		} catch (\cs_RowIsEmpty | cs_TwoFaIsExpired | cs_TwoFaIsFinished | cs_TwoFaIsActive) {
 
 			self::_checkAntispamIfNeed($user_id, $action_type);
 			$two_fa_data  = Domain_User_Action_TwoFa_GenerateToken::do($user_id, $action_type, $company_id);
@@ -49,13 +47,10 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Проверяем антиспам если необходимо
 	 *
-	 * @param int $user_id
-	 * @param int $action_type
-	 *
-	 * @return void
 	 * @throws cs_blockException
 	 */
-	protected static function _checkAntispamIfNeed(int $user_id, int $action_type):void {
+	protected static function _checkAntispamIfNeed(int $user_id, int $action_type): void
+	{
 
 		switch ($action_type) {
 
@@ -71,11 +66,6 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Сценарий валидации 2fa токена
 	 *
-	 * @param int    $user_id
-	 * @param int    $company_id
-	 * @param int    $action_type
-	 * @param string $two_fa_key
-	 *
 	 * @throws \blockException
 	 * @throws \cs_DecryptHasFailed
 	 * @throws cs_TwoFaInvalidCompany
@@ -88,7 +78,8 @@ class Domain_User_Scenario_Socket {
 	 * @throws \cs_UnpackHasFailed
 	 * @throws cs_WrongTwoFaKey
 	 */
-	public static function tryValidateTwoFaToken(int $user_id, int $company_id, int $action_type, string $two_fa_key):void {
+	public static function tryValidateTwoFaToken(int $user_id, int $company_id, int $action_type, string $two_fa_key): void
+	{
 
 		// проверяем не заблокирована ли проверка
 		Type_Antispam_Company::check($company_id, Type_Antispam_Company::WRONG_TWO_FA_TOKEN);
@@ -114,14 +105,12 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Сценарий инвалидации 2fa токена
 	 *
-	 * @param int    $user_id
-	 * @param string $two_fa_map
-	 *
 	 * @throws cs_TwoFaInvalidUser
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
 	 */
-	public static function setTwoFaTokenAsInactive(int $user_id, string $two_fa_map):void {
+	public static function setTwoFaTokenAsInactive(int $user_id, string $two_fa_map): void
+	{
 
 		try {
 
@@ -137,11 +126,6 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Получает пользователя
 	 *
-	 * @param int $user_id
-	 * @param int $company_id
-	 *
-	 * @return Struct_Db_PivotUser_User
-	 *
 	 * @throws \busException
 	 * @throws \cs_RowIsEmpty
 	 * @throws cs_UserNotFound
@@ -149,7 +133,8 @@ class Domain_User_Scenario_Socket {
 	 * @throws \userAccessException
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function getUserInfo(int $user_id, int $company_id):Struct_Db_PivotUser_User {
+	public static function getUserInfo(int $user_id, int $company_id): Struct_Db_PivotUser_User
+	{
 
 		// получаем список пользователей
 		$user_info_list = Domain_Company_Action_GetUserList::do($company_id, [$user_id]);
@@ -162,9 +147,6 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Получает список пользователей
 	 *
-	 * @param array $user_id_list
-	 * @param int   $company_id
-	 *
 	 * @return Struct_Db_PivotUser_User[]
 	 *
 	 * @throws \busException
@@ -174,7 +156,8 @@ class Domain_User_Scenario_Socket {
 	 * @throws \userAccessException
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function getUserInfoList(array $user_id_list, int $company_id):array {
+	public static function getUserInfoList(array $user_id_list, int $company_id): array
+	{
 
 		// получаем список пользователей
 		return Domain_Company_Action_GetUserList::do($company_id, $user_id_list);
@@ -183,16 +166,11 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Сценарий обновления токена компании
 	 *
-	 * @param int    $user_id
-	 * @param string $token
-	 * @param string $device_id
-	 * @param int    $company_id
-	 * @param int    $is_add
-	 *
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public static function setUserCompanyToken(int $user_id, string $token, string $device_id, int $company_id, int $is_add):void {
+	public static function setUserCompanyToken(int $user_id, string $token, string $device_id, int $company_id, int $is_add): void
+	{
 
 		if ($is_add) {
 
@@ -206,7 +184,8 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * получаем активные звонки нескольких пользователей
 	 */
-	public static function getUserListActiveLastCall(array $user_id_list):array {
+	public static function getUserListActiveLastCall(array $user_id_list): array
+	{
 
 		$user_busy_call_list = Gateway_Db_PivotUser_UserLastCall::getListActive($user_id_list);
 
@@ -221,11 +200,10 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * получаем записи о последнем звонке нескольких пользователей
 	 *
-	 * @param array $user_id_list
-	 *
 	 * @return Struct_Db_PivotUser_UserLastCall[]
 	 */
-	public static function getUserListLastCall(array $user_id_list):array {
+	public static function getUserListLastCall(array $user_id_list): array
+	{
 
 		return Gateway_Db_PivotUser_UserLastCall::getList($user_id_list);
 	}
@@ -233,25 +211,20 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * получаем все активные звонки
 	 *
-	 * @param int $company_id
-	 *
 	 * @return Struct_Db_PivotUser_UserLastCall[]
 	 * @throws \parseException
 	 */
-	public static function getAllActiveCalls(int $company_id):array {
+	public static function getAllActiveCalls(int $company_id): array
+	{
 
 		return Gateway_Db_PivotUser_UserLastCall::getAllActive($company_id);
 	}
 
 	/**
 	 * получаем последний звонок пользователя
-	 *
-	 * @param int $user_id
-	 * @param int $company_id
-	 *
-	 * @return Struct_Db_PivotUser_UserLastCall|false
 	 */
-	public static function getUserLastCall(int $user_id, int $company_id):Struct_Db_PivotUser_UserLastCall|false {
+	public static function getUserLastCall(int $user_id, int $company_id): Struct_Db_PivotUser_UserLastCall | false
+	{
 
 		try {
 
@@ -268,13 +241,9 @@ class Domain_User_Scenario_Socket {
 
 	/**
 	 * обновляем последний звонок
-	 *
-	 * @param array  $user_id_list
-	 * @param string $call_key
-	 * @param int    $is_finished
-	 * @param int    $company_id
 	 */
-	public static function setLastCall(array $user_id_list, string $call_key, int $is_finished, int $company_id):void {
+	public static function setLastCall(array $user_id_list, string $call_key, int $is_finished, int $company_id): void
+	{
 
 		$time = time();
 
@@ -301,7 +270,8 @@ class Domain_User_Scenario_Socket {
 	 *
 	 * @throws cs_OneOfUsersHaveActiveCall
 	 */
-	public static function tryMarkCallLineAsBusy(array $user_id_list, string $call_key, int $company_id):void {
+	public static function tryMarkCallLineAsBusy(array $user_id_list, string $call_key, int $company_id): void
+	{
 
 		// проверяем занятость телефонной линии переданных пользователей
 		$user_last_call_list      = Gateway_Db_PivotUser_UserLastCall::getList($user_id_list);
@@ -326,17 +296,11 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * Обновить счетчик непрочитанных сообщений пользователю
 	 *
-	 * @param int   $user_id
-	 * @param int   $company_id
-	 * @param int   $messages_unread_count
-	 * @param int   $inbox_unread_count
-	 * @param array $conversation_key_list
-	 * @param array $thread_key_list
-	 *
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public static function updateBadgeCount(int $user_id, int $company_id, int $messages_unread_count, int $inbox_unread_count, array $conversation_key_list, array $thread_key_list):void {
+	public static function updateBadgeCount(int $user_id, int $company_id, int $messages_unread_count, int $inbox_unread_count, array $conversation_key_list, array $thread_key_list): void
+	{
 
 		// обновляем количество непрочитанных сообщений
 		Domain_User_Action_Company_SetUnreadCount::do($user_id, $company_id, $messages_unread_count, $inbox_unread_count);
@@ -385,7 +349,8 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * получаем данные для партнёрки
 	 */
-	public static function getInfoForPartner(array $user_id_list):array {
+	public static function getInfoForPartner(array $user_id_list): array
+	{
 
 		$output = [];
 		foreach ($user_id_list as $user_id) {
@@ -397,7 +362,7 @@ class Domain_User_Scenario_Socket {
 				$country_code = $phone_number_obj->countryCode();
 				$country      = \BaseFrame\Conf\Country::get($country_code);
 				$country_name = $country->name;
-			} catch (cs_UserPhoneSecurityNotFound|\BaseFrame\Exception\Domain\InvalidPhoneNumber) {
+			} catch (cs_UserPhoneSecurityNotFound | \BaseFrame\Exception\Domain\InvalidPhoneNumber) {
 
 				$phone_number_obj = null;
 				$country_name     = "";
@@ -426,7 +391,8 @@ class Domain_User_Scenario_Socket {
 	 * @throws \userAccessException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public static function getUserAvatarFileLinkList(array $user_id_list):array {
+	public static function getUserAvatarFileLinkList(array $user_id_list): array
+	{
 
 		// получаем информацию о пользователе
 		$user_info_list = Gateway_Bus_PivotCache::getUserListInfo($user_id_list);
@@ -475,7 +441,8 @@ class Domain_User_Scenario_Socket {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function isAllowBatchPay(int $user_id, int $company_id):bool {
+	public static function isAllowBatchPay(int $user_id, int $company_id): bool
+	{
 
 		// получаем компанию
 		$company = Domain_Company_Entity_Company::get($company_id);
@@ -488,13 +455,9 @@ class Domain_User_Scenario_Socket {
 
 	/**
 	 * Получаем статистику по экранному времени пользователя
-	 *
-	 * @param int $user_id
-	 * @param int $days_count
-	 *
-	 * @return array
 	 */
-	public static function getScreenTimeStat(int $user_id, int $days_count):array {
+	public static function getScreenTimeStat(int $user_id, int $days_count): array
+	{
 
 		// формируем список дней за которые нужно получить
 		$day_list = [];
@@ -523,10 +486,9 @@ class Domain_User_Scenario_Socket {
 
 	/**
 	 * Получаем список компаний в которых состоят как user_id_1, так и user_id_2
-	 *
-	 * @return array
 	 */
-	public static function getUsersIntersectSpaces(int $user_id_1, int $user_id_2):array {
+	public static function getUsersIntersectSpaces(int $user_id_1, int $user_id_2): array
+	{
 
 		$user_1_company_id_list = array_column(Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id_1), "company_id");
 		$user_2_company_id_list = array_column(Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id_2), "company_id");
@@ -539,7 +501,8 @@ class Domain_User_Scenario_Socket {
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	public static function incConferenceMembershipRating(int $user_id, int $space_id):void {
+	public static function incConferenceMembershipRating(int $user_id, int $space_id): void
+	{
 
 		// если пользователь не участник пространства
 		if (!Domain_Company_Entity_User_Member::isMember($user_id, $space_id)) {
@@ -549,7 +512,7 @@ class Domain_User_Scenario_Socket {
 		// получаем информаицю о пространстве
 		try {
 			$space = Domain_Company_Entity_Company::get($space_id);
-		} catch (cs_CompanyNotExist|cs_CompanyIncorrectCompanyId) {
+		} catch (cs_CompanyNotExist | cs_CompanyIncorrectCompanyId) {
 			return;
 		}
 
@@ -569,7 +532,8 @@ class Domain_User_Scenario_Socket {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function blockUserAuthentication(int $user_id):void {
+	public static function blockUserAuthentication(int $user_id): void
+	{
 
 		// завершаем все активные сессии на пивоте и в командах
 		Type_Session_Main::clearAllUserPivotAndCompanySessions($user_id);
@@ -589,7 +553,8 @@ class Domain_User_Scenario_Socket {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function unblockUserAuthentication(int $user_id):void {
+	public static function unblockUserAuthentication(int $user_id): void
+	{
 
 		// запрещаем авторизовываться, помечая профиль заблокированным
 		Domain_User_Action_EnableProfile::do($user_id);
@@ -602,13 +567,19 @@ class Domain_User_Scenario_Socket {
 	 * @throws ReturnFatalException
 	 * @throws BusFatalException
 	 * @throws \busException
-	 * @throws \cs_CurlError
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws cs_FileIsNotImage
 	 */
-	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data, int $is_empty_attributes_update_enabled):void {
+	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data, int $is_empty_attributes_update_enabled): void
+	{
+
+		// проверяем и приводим в bool
+		if (!in_array($is_empty_attributes_update_enabled, [0, 1], true)) {
+			throw new InvalidArgumentException("is_empty_attributes_update_enabled not 0 or 1");
+		}
+		$is_empty_attributes_update_enabled = (bool) $is_empty_attributes_update_enabled;
 
 		Domain_User_Scenario_OnPremiseWeb_Auth_Ldap::actualizeProfileData($user_id, $sso_account_data, $is_empty_attributes_update_enabled);
 	}
@@ -621,7 +592,8 @@ class Domain_User_Scenario_Socket {
 	 * @throws \BaseFrame\Exception\Gateway\DBShardingNotFoundException
 	 * @throws \BaseFrame\Exception\Gateway\QueryFatalException
 	 */
-	public static function getDeviceLoginHistory(int $user_id):array {
+	public static function getDeviceLoginHistory(int $user_id): array
+	{
 
 		if ($user_id < 1) {
 			return [];
@@ -653,10 +625,10 @@ class Domain_User_Scenario_Socket {
 	/**
 	 * валидация pivot-сессии пользователя
 	 *
-	 * @return string
 	 * @throws \cs_DecryptHasFailed
 	 */
-	public static function validateSession(string $pivot_session):string {
+	public static function validateSession(string $pivot_session): string
+	{
 
 		// проверяем, начинается ли строка с "Bearer "
 		if (str_starts_with($pivot_session, "Bearer ")) {

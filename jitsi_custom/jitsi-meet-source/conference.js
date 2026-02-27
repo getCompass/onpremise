@@ -21,12 +21,12 @@ import {
     _conferenceWillJoin,
     authStatusChanged,
     conferenceFailed,
-    conferenceJoined,
     conferenceJoinInProgress,
+    conferenceJoined,
     conferenceLeft,
+    conferenceLocalJoinTimestampChanged,
     conferenceSubjectChanged,
     conferenceTimestampChanged,
-    conferenceLocalJoinTimestampChanged,
     conferenceUniqueIdSet,
     conferenceWillInit,
     conferenceWillLeave,
@@ -68,13 +68,15 @@ import {
     logDevices,
     setAudioOutputDeviceId
 } from './react/features/base/devices/functions.web';
+import { isMobileBrowser } from './react/features/base/environment/utils';
+import i18next from './react/features/base/i18n/i18next';
 import {
-    browser,
     JitsiConferenceErrors,
     JitsiConferenceEvents,
     JitsiE2ePingEvents,
     JitsiMediaDevicesEvents,
-    JitsiTrackEvents
+    JitsiTrackEvents,
+    browser
 } from './react/features/base/lib-jitsi-meet';
 import {
     gumPending,
@@ -135,6 +137,7 @@ import {
 } from './react/features/base/tracks/functions';
 import { downloadJSON } from './react/features/base/util/downloadJSON';
 import { showConfirmDialog, showDesktopPicker } from './react/features/desktop-picker/actions';
+import { getWindowQueryData } from './react/features/desktop-picker/functions';
 import { appendSuffix } from './react/features/display-name/functions';
 import { maybeOpenFeedbackDialog, submitFeedback } from './react/features/feedback/actions';
 import { initKeyboardShortcuts } from './react/features/keyboard-shortcuts/actions';
@@ -161,11 +164,9 @@ import { toggleScreenshotCaptureSummary } from './react/features/screenshot-capt
 import { AudioMixerEffect } from './react/features/stream-effects/audio-mixer/AudioMixerEffect';
 import { createRnnoiseProcessor } from './react/features/stream-effects/rnnoise';
 import { handleToggleVideoMuted } from './react/features/toolbox/actions.any';
+import { setTileView } from './react/features/video-layout/actions.any';
 import { muteLocal } from './react/features/video-menu/actions.any';
-import i18next from "./react/features/base/i18n/i18next";
-import { setTileView } from "./react/features/video-layout/actions.any";
-import { isMobileBrowser } from "./react/features/base/environment/utils";
-import { iAmVisitor } from "./react/features/visitors/functions";
+import { iAmVisitor } from './react/features/visitors/functions';
 
 const logger = Logger.getLogger(__filename);
 let room;
@@ -425,7 +426,7 @@ export default {
         // compass changes
         // Always get a handle on the audio input device so that we have statistics (such as "No audio input" or
         // "Are you trying to speak?" ) even if the user joins the conference muted.
-        const initialDevices = [];
+        let initialDevices = [];
         let requestedAudio = false;
         let requestedVideo = false;
 
@@ -457,6 +458,18 @@ export default {
             timeout,
             firePermissionPromptIsShownEvent: true
         };
+
+        // Для нового электрона с предбанником устанавливаем свои значения
+        const {isSingleConference, isSupportPreJoinPage} = getWindowQueryData();
+
+        if (isSupportPreJoinPage && !isSingleConference) {
+            const settings = APP.store.getState()['features/base/settings'];
+            initialDevices = [];
+            requestedAudio = settings.isStartWithAudio;
+            requestedAudio && initialDevices.push(MEDIA_TYPE.AUDIO);
+            requestedVideo = settings.isStartWithVideo;
+            requestedVideo && initialDevices.push(MEDIA_TYPE.VIDEO);
+        }
 
         // Spot uses the _desktopSharingSourceDevice config option to use an external video input device label as
         // screenshare and calls getUserMedia instead of getDisplayMedia for capturing the media.
@@ -2064,6 +2077,8 @@ export default {
      */
     _onConferenceJoined() {
         const { dispatch } = APP.store;
+        const queryData = getWindowQueryData();
+
 
         APP.UI.initConference();
 
@@ -2086,10 +2101,19 @@ export default {
         // compass changes
         // если пользователь компасс включаем и микрофон и выключаем камеру насильно
         if (isCompassUser && !imVisitor) {
-            dispatch(muteLocal(false, MEDIA_TYPE.AUDIO));
-
-            // для электрона камера сохраняет свое прошлое положение
-            !browser.isElectron() && dispatch(muteLocal(true, MEDIA_TYPE.VIDEO));
+            const settings = APP.store.getState()['features/base/settings'];
+            const isNewElectron = queryData.isSupportPreJoinPage && !queryData.isSingleConference;
+            /**
+             * @remark код дублируется еще в
+             * jitsi-meet-source/react/features/base/settings/middleware.web.ts
+             * так как для страницы предбанника тут может не вызватся
+             */
+            if (!browser.isElectron()) {
+                dispatch(muteLocal(false, MEDIA_TYPE.AUDIO));
+                dispatch(muteLocal(true, MEDIA_TYPE.VIDEO));
+            } else if (!isNewElectron) {
+                dispatch(muteLocal(false, MEDIA_TYPE.AUDIO));
+            }
         }
         if (jwt?.user?.hiddenFromRecorder && !imVisitor) {
             dispatch(muteLocal(true, MEDIA_TYPE.AUDIO));
@@ -2367,9 +2391,7 @@ export default {
 
         if (requestFeedback) {
 
-            const feedbackDialogClosed = (feedbackResult = {}) => {
-                return Promise.resolve(feedbackResult);
-            };
+            const feedbackDialogClosed = (feedbackResult = {}) => Promise.resolve(feedbackResult);
 
             feedbackResultPromise = APP.store.dispatch(maybeOpenFeedbackDialog(room, hangupReason))
                 .then(feedbackDialogClosed, feedbackDialogClosed);

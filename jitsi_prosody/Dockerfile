@@ -1,6 +1,13 @@
 FROM docker.getcompass.ru/service/prosody:stable-9753
 
-RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd
+RUN set -eux; \
+    # игнорируем неуспешный update, нам нужны только старые списки пакетов
+    apt-get update || true; \
+    apt-get install -y --no-install-recommends wget gnupg; \
+    wget -O- https://prosody.im/files/prosody-debian-packages.key | apt-key add -; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends netcat-openbsd; \
+    rm -rf /var/lib/apt/lists/*
 
 COPY defaults/prosody.cfg.lua /defaults/prosody.cfg.lua
 COPY defaults/conf.d/visitors.cfg.lua /defaults/conf.d/visitors.cfg.lua

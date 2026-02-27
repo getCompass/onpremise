@@ -114,7 +114,8 @@ class Domain_Jitsi_Entity_UserActiveConference {
 	public static function onConferenceFinished(string $conference_id):void {
 
 		// очищаем ID активной конференции для всех у кого она сейчас стоит активной
-		Gateway_Db_JitsiData_UserActiveConferenceRel::setByActiveConferenceId($conference_id, [
+		$rel_list = Gateway_Db_JitsiData_UserActiveConferenceRel::getByActiveConferenceId($conference_id);
+		Gateway_Db_JitsiData_UserActiveConferenceRel::setList(array_column($rel_list, "user_id"), [
 			"active_conference_id" => "",
 			"updated_at"           => time(),
 		]);

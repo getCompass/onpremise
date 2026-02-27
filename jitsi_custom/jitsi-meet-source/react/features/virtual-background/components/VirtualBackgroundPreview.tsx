@@ -115,7 +115,16 @@ const styles = (theme: Theme) => {
             justifyContent: 'center',
             width: '100%',
             height: '220px',
-            position: 'relative' as const
+            position: 'relative' as const,
+            padding: '17px 12px',
+            backgroundColor: '#2C2C2C',
+            fontSize: '12px',
+            borderRadius: '6px',
+            letterSpacing: '-0.15px',
+            textAlign: 'center' as const,
+            verticalAlign: 'middle' as const,
+            color: '#FFFFFFBF',
+            boxSizing: 'border-box' as const
         }
     };
 };

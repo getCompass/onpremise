@@ -258,7 +258,7 @@
             "pairDevice": "Pair device"
         },
         "noPermission": "Permission not granted",
-        "previewUnavailable": "Preview unavailable",
+        "previewUnavailable": "No access to the camera. Please check the permission to use camera in your computer settings or select a different one.",
         "selectADevice": "Select a device",
         "testAudio": "Test"
     },
@@ -715,7 +715,12 @@
         "notificationTitle": "Lobby",
         "passwordJoinButton": "Join",
         "title": "Lobby",
-        "toggleLabel": "Enable lobby"
+        "toggleLabel": "Enable lobby",
+        "previewWindow": {
+            "check_option": "Always show the preview window when joining",
+            "tooltip": "To join meetings instantly, disable this option. You can re-enable the preview later in conference settings.",
+            "button": "Join the meeting"
+        }
     },
     "localRecording": {
         "clientState": {
@@ -1199,6 +1204,12 @@
                 "titleDisabled": "Automatic microphone level is off",
                 "description": "The setting will be applied after restarting the conference."
             }
+        },
+        "joinSettings": {
+            "title": "When joining a conference",
+            "option_1": "Turn on my microphone",
+            "option_2": "Turn on my camera",
+            "option_3": "Show preview window"
         }
     },
     "moderatorSettings": {

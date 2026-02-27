@@ -5,12 +5,13 @@ namespace Compass\Pivot;
 /**
  * Класс для основной работы по отправке смс
  */
-class Type_Sms_Queue {
-
+class Type_Sms_Queue
+{
 	/**
 	 * этапы отправки смс
 	 */
-	public const STAGE_NEED_SEND_SMS         = 0; // на этом этапе выбираем провайдера и отправляем смс
+	public const STAGE_NEED_SEND_SMS = 0; // на этом этапе выбираем провайдера и отправляем смс
+
 	public const STAGE_NEED_CHECK_STATUS_SMS = 1; // на этом этапе отслеживаем статус отправки смс, в конце пишем в историю и удаляем задачу
 
 	/**
@@ -24,7 +25,8 @@ class Type_Sms_Queue {
 	 *
 	 * @throws \queryException
 	 */
-	public static function send(string $phone_number, string $text, int $story_type, string $story_id, string $sms_id = "", array $excluded_provider_list = [], string $resend_for_sms_id = "", string $force_send_via_provider_id = ""):string {
+	public static function send(string $phone_number, string $text, int $story_type, string $story_id, string $sms_id = "", array $excluded_provider_list = [], string $resend_for_sms_id = "", string $force_send_via_provider_id = ""): string
+	{
 
 		// если не прислали sms_id, то генерируем сами
 		if ($sms_id === "") {
@@ -63,7 +65,8 @@ class Type_Sms_Queue {
 	 *
 	 * @throws \queryException
 	 */
-	public static function resend(string $phone_number, string $text, string $resend_for_sms_id, int $story_type, string $story_id, string $sms_id = ""):string {
+	public static function resend(string $phone_number, string $text, string $resend_for_sms_id, int $story_type, string $story_id, string $sms_id = ""): string
+	{
 
 		// получаем историю отправки этого смс
 		$send_history_list = Gateway_Db_PivotHistoryLogs_SendHistory::getBySmsId($resend_for_sms_id);
@@ -93,14 +96,16 @@ class Type_Sms_Queue {
 	 * Сохраним задачу в базу
 	 * @throws \queryException
 	 */
-	protected static function _doSaveTask(string $phone_number,
-							  string $text,
-							  string $sms_id = "",
-							  array  $excluded_provider_list = [],
-							  string $resend_for_sms_id = "",
-							  string $force_send_via_provider_id = "",
-							  int    $story_type = 0,
-							  string $story_map = ""):void {
+	protected static function _doSaveTask(
+		string $phone_number,
+		string $text,
+		string $sms_id = "",
+		array $excluded_provider_list = [],
+		string $resend_for_sms_id = "",
+		string $force_send_via_provider_id = "",
+		int $story_type = 0,
+		string $story_map = ""
+	): void {
 
 		// инициализируем и собираем extra
 		$extra = Type_Sms_Queue_Extra::init($excluded_provider_list, $resend_for_sms_id, $story_type, $story_map);

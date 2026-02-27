@@ -8,7 +8,7 @@ RUN \
 	--mount=type=cache,target=/tmp/v8-compile-cache-0,sharing=locked \
 	--mount=type=cache,target=/root/.npm,sharing=locked \
     cd jitsi-meet-source \
-    && npm install \
+    && npm install --force \
     && make clean \
     && make source-package
 

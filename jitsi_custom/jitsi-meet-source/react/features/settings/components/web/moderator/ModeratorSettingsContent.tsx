@@ -36,8 +36,9 @@ import {
     requestEnableVideoModeration
 } from "../../../../av-moderation/actions";
 import { startLocalVideoRecording, stopLocalVideoRecording } from "../../../../recording/actions.any";
-import { isScreenSharingSupported } from "../../../../desktop-picker/functions";
+import {getWindowQueryData, isScreenSharingSupported} from "../../../../desktop-picker/functions";
 import UnsupportedScreenSharing from "../UnsupportedScreenSharing";
+import OnJoinSettings from "../onJoin/OnJoinSettings";
 
 export interface IProps {
     isAlreadyRecording: boolean;
@@ -53,6 +54,7 @@ const useStyles = makeStyles()(theme => {
             marginBottom: '16px',
             maxHeight: 'calc(100dvh - 100px)',
             overflow: 'auto',
+            boxSizing: 'border-box',
         },
 
         contextMenuItemGroup: {
@@ -351,6 +353,7 @@ const ModeratorSettingsContent = (props: IProps) => {
             text: t('moderatorSettings.participantsCanScreenshare')
         }
     ];
+    const { isSupportPreJoinPage } = getWindowQueryData();
 
     return (
         <ContextMenu
@@ -378,6 +381,16 @@ const ModeratorSettingsContent = (props: IProps) => {
             </div>
             <ContextMenuItemGroup
                 actions = {checkBoxActions} />
+
+            {isSupportPreJoinPage && <div>
+                <div className = {classes.separateLineContainer} style = {{
+                    marginTop: "4px",
+                    marginBottom: "9px",
+                }}>
+                    <div className = {classes.separateLine} />
+                </div>
+                <OnJoinSettings />
+            </div>}
         </ContextMenu>
     );
 };

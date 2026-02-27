@@ -1151,4 +1151,3 @@ export function redirect(vnode: string, focusJid: string, username: string) {
             });
     };
 }
-

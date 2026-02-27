@@ -245,7 +245,7 @@
             "pairDevice": "Emparejar dispositivo"
         },
         "noPermission": "Permiso no concedido",
-        "previewUnavailable": "Vista previa no disponible",
+        "previewUnavailable": "No hay acceso a la cámara. Compruebe el permiso de uso de la cámara en la configuración del ordenador o selecciona otra cámara.",
         "selectADevice": "Seleccionar un dispositivo",
         "testAudio": "Reproducir un sonido de prueba"
     },
@@ -658,7 +658,12 @@
         "passwordField": "Introduce la contraseña de la reunión",
         "passwordJoinButton": "Entrar",
         "title": "Sala de espera",
-        "toggleLabel": "Activar sala de espera"
+        "toggleLabel": "Activar sala de espera",
+        "previewWindow": {
+            "check_option": "Mostrar siempre la ventana de vista previa al unirse",
+            "tooltip": "Para unirse a las reuniones al instante, desactiva esta opción. Puedes volver a activar la vista previa en la configuración de la conferencia.",
+            "button": "Unirse a la reunión"
+        }
     },
     "localRecording": {
         "clientState": {
@@ -1112,6 +1117,12 @@
                 "titleDisabled": "Nivel automático del micrófono desactivado",
                 "description": "La configuración se aplicará después de reiniciar la conferencia."
             }
+        },
+        "joinSettings": {
+            "title": "Al unirse a la conferencia",
+            "option_1": "Activar mi micrófono",
+            "option_2": "Activar mi cámara",
+            "option_3": "Mostrar la ventana de vista previa"
         }
     },
     "moderatorSettings": {

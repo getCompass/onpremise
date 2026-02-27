@@ -12,6 +12,8 @@ import ModeratorButton from './ModeratorButton';
 import { getLocalParticipant, isParticipantModerator } from "../../../base/participants/functions";
 import ModeratorSettingsPopup from "../../../settings/components/web/moderator/ModeratorSettingsPopup";
 import { isNeedShowElectronOnlyElements } from "../../../base/environment/utils_web";
+import {iAmVisitor} from "../../../visitors/functions";
+import {getWindowQueryData} from "../../../desktop-picker/functions";
 
 interface IProps extends WithTranslation {
 
@@ -127,10 +129,12 @@ class ModeratorSettingsButton extends Component<IProps> {
 function mapStateToProps(state: IReduxState) {
     const localParticipant = getLocalParticipant(state);
     const isModerator = isParticipantModerator(localParticipant);
+    const { isSupportPreJoinPage } = getWindowQueryData();
+    const canShowOnElectron = !iAmVisitor(state) && isSupportPreJoinPage;
 
     return {
         isOpen: Boolean(getModeratorSettingsVisibility(state)),
-        visible: !isMobileBrowser() && isModerator
+        visible: (!isMobileBrowser() && isModerator) || canShowOnElectron,
     };
 }
 

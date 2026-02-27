@@ -14,6 +14,11 @@ import logger from './logger';
 
 import './middleware.any';
 import { user2participant } from "../jwt/middleware";
+import {browser} from "../lib-jitsi-meet";
+import {isAudioEnabledOnEnterConference, isLobbyEnabledOnJoin, isVideoEnabledOnEnterConference} from "./functions.any";
+import {muteLocal} from "../../video-menu/actions.any";
+import {handleToggleVideoMuted} from "../../toolbox/actions.any";
+import {getWindowQueryData} from "../../desktop-picker/functions";
 
 /**
  * The middleware of the feature base/settings. Distributes changes to the state
@@ -58,7 +63,6 @@ function _initializeShowPrejoin({ dispatch, getState }: IStore) {
     let isCreator = false; // является ли создателем конференции
 
     // если нашли jwt - идем дальше
-    // isCreator нигде не обновляется, это не ошибка, просто изменилась логика и он здесь не нужен
     // но флаг пока оставил
     if (jwt) {
 
@@ -70,21 +74,57 @@ function _initializeShowPrejoin({ dispatch, getState }: IStore) {
             if (jwtPayload) {
 
                 // получаем контекст, если удалось - супер
-                const { context } = jwtPayload;
+                const { context, room } = jwtPayload;
+                let userId: number | string | undefined;
+                let roomId: number | string | undefined;
                 if (context) {
-
                     const user = user2participant(context.user || {});
                     if (user !== undefined && user.type === "compass_user") {
                         isCompassUser = true;
+
+                        userId = typeof user.id === 'string' ? user.id.split(":")[1] : undefined;
+                        if (userId) {
+                            userId = Number(userId);
+                        }
                     }
+                }
+
+                if (room && userId) {
+                    roomId = typeof room === 'string' ? room.split("_")[0] : undefined;
+                    if (roomId) {
+                        roomId = Number(roomId);
+                    }
+
+                    isCreator = roomId === userId;
                 }
             }
         } catch (e) {
         }
     }
 
-    if (isCompassUser || isCreator) {
-        dispatch(setPrejoinPageVisibility(false));
+    try {
+        const isElectron = browser.isElectron();
+        const state = getState();
+        const queryData = getWindowQueryData();
+
+        const canSkipPreJoinPage = Boolean((isCompassUser && !isElectron) || isCreator);
+        const shouldShowPreJoinPage = Boolean(isLobbyEnabledOnJoin(state));
+
+        if (canSkipPreJoinPage) {
+            dispatch(setPrejoinPageVisibility(false));
+        } else if (isElectron) {
+            const {isSingleConference, isSupportPreJoinPage} = queryData;
+            const canShowPreJoinPage = shouldShowPreJoinPage && isSupportPreJoinPage && !isSingleConference;
+            dispatch(setPrejoinPageVisibility(canShowPreJoinPage));
+        }
+    } catch (error) {
+        try {
+            // еще раз скипнем страницу prejoin чтобы в случае ошибки не было этой страницы у пользователя
+            isCompassUser && dispatch(setPrejoinPageVisibility(false));
+        } catch (e) {
+            console.error('[ERROR INIT CONFERENCE] setPrejoinPageVisibility ', error);
+        }
+        console.error('[ERROR INIT CONFERENCE] ', error);
     }
 }
 

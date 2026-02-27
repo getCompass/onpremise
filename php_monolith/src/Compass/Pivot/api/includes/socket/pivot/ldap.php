@@ -10,8 +10,8 @@ use BaseFrame\Exception\Request\ParamException;
 /**
  * Socket методы для работы с LDAP
  */
-class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
-
+class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket
+{
 	public const ALLOW_METHODS = [
 		"blockUserAuthentication",
 		"kickUserFromAllCompanies",
@@ -25,14 +25,14 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 	/**
 	 * Блокируем пользователю возможность аутентифицироваться в приложении
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function blockUserAuthentication():array {
+	public function blockUserAuthentication(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -47,14 +47,14 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 
 	/**
 	 * Исключаем пользователя из всех команд
-	 * @return array
 	 * @throws Domain_User_Exception_PhoneNumberBinding
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws cs_DamagedActionException
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public function kickUserFromAllCompanies():array {
+	public function kickUserFromAllCompanies(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -66,14 +66,14 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 	/**
 	 * Разблокируем пользователю возможность аутентифицироваться в приложении
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function unblockUserAuthentication():array {
+	public function unblockUserAuthentication(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -85,15 +85,15 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 	/**
 	 * Включена ли возможность авторизации через LDAP
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public function isLdapAuthAvailable():array {
+	public function isLdapAuthAvailable(): array
+	{
 
 		$is_ldap_auth_available = (
-				Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
+			Domain_User_Entity_Auth_Method::isMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
 				|| Domain_User_Entity_Auth_Method::isGuestMethodAvailable(Domain_User_Entity_Auth_Method::METHOD_SSO)
-			) && Domain_User_Entity_Auth_Config::getSsoProtocol() == Domain_User_Entity_Auth_Method::SSO_PROTOCOL_LDAP;
+		) && Domain_User_Entity_Auth_Config::getSsoProtocol() == Domain_User_Entity_Auth_Method::SSO_PROTOCOL_LDAP;
 
 		return $this->ok([
 			"is_available" => (int) $is_ldap_auth_available,
@@ -107,7 +107,8 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 	 * @throws BusFatalException
 	 * @throws ParamException
 	 */
-	public function getUserInfo():array {
+	public function getUserInfo(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -130,19 +131,23 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 	 * @throws BusFatalException
 	 * @throws ParamException
 	 * @throws \busException
-	 * @throws \cs_CurlError
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 * @throws \queryException
 	 * @throws cs_FileIsNotImage
 	 */
-	public function actualizeProfileData():array {
+	public function actualizeProfileData(): array
+	{
 
 		$user_id                            = $this->post(\Formatter::TYPE_INT, "user_id");
 		$ldap_account_data                  = $this->post(\Formatter::TYPE_ARRAY, "ldap_account_data");
 		$is_empty_attributes_update_enabled = $this->post(\Formatter::TYPE_INT, "is_empty_attributes_update_enabled");
 
-		Domain_User_Scenario_Socket::actualizeProfileData($user_id, Struct_User_Auth_Ldap_AccountData::arrayToStruct($ldap_account_data), $is_empty_attributes_update_enabled);
+		try {
+			Domain_User_Scenario_Socket::actualizeProfileData($user_id, Struct_User_Auth_Ldap_AccountData::arrayToStruct($ldap_account_data), $is_empty_attributes_update_enabled);
+		} catch (\InvalidArgumentException) {
+			throw new ParamException("is_empty_attributes_update_enabled not 0 or 1");
+		}
 
 		return $this->ok();
 	}
@@ -150,11 +155,11 @@ class Socket_Pivot_Ldap extends \BaseFrame\Controller\Socket {
 	/**
 	 * Отправить проверочный код на почту
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \queryException
 	 */
-	public function sendMailConfirmCode():array {
+	public function sendMailConfirmCode(): array
+	{
 
 		$mail         = $this->post(\Formatter::TYPE_STRING, "mail");
 		$confirm_code = $this->post(\Formatter::TYPE_STRING, "confirm_code");

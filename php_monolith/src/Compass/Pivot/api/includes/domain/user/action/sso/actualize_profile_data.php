@@ -6,12 +6,11 @@ namespace Compass\Pivot;
  * класс описывает действие по актуализации информации в профиле пользователя на основе данных, полученных из SSO
  * @package Compass\Pivot
  */
-class Domain_User_Action_Sso_ActualizeProfileData {
-
+class Domain_User_Action_Sso_ActualizeProfileData
+{
 	protected const _DEFAULT_AVATAR_MIME_TYPE = "image/jpeg";
 	protected const _DEFAULT_AVATAR_FILE_NAME = "avatar.jpeg";
-
-	protected const _BLOB_REGEX = "/[^\x20-\x7E\t\r\n]/";
+	protected const _BLOB_REGEX               = "/[^\x20-\x7E\t\r\n]/";
 
 	/**
 	 * актуализируем информацию в профиле пользователя на основе данных, полученных из SSO
@@ -25,7 +24,8 @@ class Domain_User_Action_Sso_ActualizeProfileData {
 	 * @throws \queryException
 	 * @throws cs_FileIsNotImage
 	 */
-	public static function do(int $user_id, false|string $name, Domain_User_Action_Sso_ActualizeProfileData_AvatarAction $avatar_action, string $avatar_file_key, false|string $badge, false|string $role, false|string $description):void {
+	public static function do(int $user_id, false | string $name, Domain_User_Action_Sso_ActualizeProfileData_AvatarAction $avatar_action, string $avatar_file_key, false | string $badge, false | string $role, false | string $description): void
+	{
 
 		// подготавливаем имя
 		$name = Domain_User_Entity_Sanitizer::sanitizeProfileName($name);
@@ -53,26 +53,31 @@ class Domain_User_Action_Sso_ActualizeProfileData {
 	/**
 	 * подготавливаем параметры для обновления аватара пользователя
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	public static function prepareAvatarData(?string $sso_account_data):array {
+	public static function prepareAvatarData(?string $sso_avatar_data, bool $is_empty_attributes_update_enabled = true): array
+	{
 
 		// если пришел null, то нет никакого маппинга – ничего делать не нужно
-		if (is_null($sso_account_data)) {
+		if (is_null($sso_avatar_data)) {
 			return [Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::NO_ACTION, ""];
 		}
 
 		// если пришла пустота – значит аватара у учетной записи нет
-		// сотрем аватар пользователю
-		if ($sso_account_data === "") {
+		if ($sso_avatar_data === "") {
+
+			// если отключено обновление при пустом аттрибуте - не обновляем
+			if (!$is_empty_attributes_update_enabled) {
+				return [Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::NO_ACTION, ""];
+			}
+
 			return [Domain_User_Action_Sso_ActualizeProfileData_AvatarAction::CLEAR, ""];
 		}
 
 		// иначе загружаем аватар
 		try {
-			$avatar_file_key = self::uploadSsoAvatar($sso_account_data);
+			$avatar_file_key = self::uploadSsoAvatar($sso_avatar_data);
 		} catch (\cs_CurlError $e) {
 
 			// логируем
@@ -88,12 +93,12 @@ class Domain_User_Action_Sso_ActualizeProfileData {
 	/**
 	 * загружаем аватар из sso
 	 *
-	 * @return string
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \cs_CurlError
 	 */
-	public static function uploadSsoAvatar(string $raw_avatar_data):string {
+	public static function uploadSsoAvatar(string $raw_avatar_data): string
+	{
 
 		// если не передали аватар
 		if (mb_strlen($raw_avatar_data) == 0) {

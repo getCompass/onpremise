@@ -75,11 +75,12 @@ ReducerRegistry.register<IPrejoinState>(
             };
         }
 
-        case SET_PREJOIN_PAGE_VISIBILITY:
+        case SET_PREJOIN_PAGE_VISIBILITY: {
             return {
                 ...state,
                 showPrejoin: action.value
             };
+        }
 
         case SET_PREJOIN_DEVICE_ERRORS: {
             const status = getStatusFromErrors(action.value);

@@ -5,8 +5,8 @@ namespace Compass\Pivot;
 /**
  * задача класса работать с конфигом каталога приложений
  */
-class Domain_SmartApp_Entity_SuggestedCatalog {
-
+class Domain_SmartApp_Entity_SuggestedCatalog
+{
 	public const CATEGORY_POPULAR            = "popular";
 	public const CATEGORY_OFFICE_APPS        = "office_apps";
 	public const CATEGORY_MAIL               = "mail";
@@ -25,18 +25,18 @@ class Domain_SmartApp_Entity_SuggestedCatalog {
 
 	/**
 	 * Получаем весь конфиг
-	 * @return array
 	 */
-	public static function getSuggestedCatalog():array {
+	public static function getSuggestedCatalog(): array
+	{
 
 		return self::_getCatalogConfig();
 	}
 
 	/**
 	 * Получаем урезанный конфиг для getStartData
-	 * @return array
 	 */
-	public static function getStartDataSuggestedCatalog():array {
+	public static function getStartDataSuggestedCatalog(): array
+	{
 
 		$smart_app_suggested_list = self::_getCatalogConfig();
 
@@ -55,19 +55,18 @@ class Domain_SmartApp_Entity_SuggestedCatalog {
 
 	/**
 	 * Получаем весь конфиг
-	 * @return array
 	 */
-	public static function getCategoryLocalization():array {
+	public static function getCategoryLocalization(): array
+	{
 
 		return self::_getLocalizationConfig();
 	}
 
 	/**
 	 * Получаем дефолтную аватарку для приложения
-	 *
-	 * @return string
 	 */
-	public static function getDefaultSmartAppAvatar():string {
+	public static function getDefaultSmartAppAvatar(): string
+	{
 
 		try {
 			$default_file = Gateway_Db_PivotSystem_DefaultFileList::get("smart_app_default_avatar");
@@ -80,12 +79,9 @@ class Domain_SmartApp_Entity_SuggestedCatalog {
 
 	/**
 	 * Получаем аватарку для приложения из каталога
-	 *
-	 * @param int $catalog_item_id
-	 *
-	 * @return string
 	 */
-	public static function getCatalogSmartAppAvatar(int $catalog_item_id):string {
+	public static function getCatalogSmartAppAvatar(int $catalog_item_id): string
+	{
 
 		try {
 			$default_file = Gateway_Db_PivotSystem_DefaultFileList::get("smart_app_avatar_{$catalog_item_id}");
@@ -101,7 +97,8 @@ class Domain_SmartApp_Entity_SuggestedCatalog {
 	/**
 	 * Получить содержимое конфиг-файла
 	 */
-	protected static function _getCatalogConfig():array {
+	protected static function _getCatalogConfig(): array
+	{
 
 		$key = self::class . "_catalog";
 
@@ -118,7 +115,8 @@ class Domain_SmartApp_Entity_SuggestedCatalog {
 	/**
 	 * Получить содержимое конфиг-файла
 	 */
-	protected static function _getLocalizationConfig():array {
+	protected static function _getLocalizationConfig(): array
+	{
 
 		$key = self::class . "_category_localization";
 

@@ -178,7 +178,7 @@
     },
     "deviceSelection": {
         "noPermission": "Permiso no concedido",
-        "previewUnavailable": "Vista previa no disponible",
+        "previewUnavailable": "No hay acceso a la cámara. Compruebe el permiso de uso de la cámara en la configuración del ordenador o selecciona otra cámara.",
         "selectADevice": "Seleccionar un dispositivo",
         "testAudio": "Reproducir un sonido de prueba"
     },

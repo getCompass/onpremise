@@ -109,6 +109,10 @@ class Domain_Ldap_Entity_Utils {
 	 */
 	public static function getLoginAttributeValue(array $entry, string $login_attribute):string {
 
+		if (mb_strlen($login_attribute) < 1) {
+			return "";
+		}
+
 		$login_attribute = mb_strtolower($login_attribute);
 		if (!isset($entry[$login_attribute])) {
 			throw new ParseFatalException("incorrect login attribute");

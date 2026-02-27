@@ -1,5 +1,6 @@
 import logger from './logger';
 import { ElectronWindowType } from './types';
+import {browser} from "../base/lib-jitsi-meet";
 
 
 /**
@@ -127,4 +128,35 @@ export function _separateSourcesByType(sources: Array<{ id: string; name: string
     });
 
     return sourcesByType;
+}
+
+export function getWindowQueryData(): {isSingleConference: boolean, isSupportPreJoinPage: boolean} {
+    const location = window.location;
+    const isElectron = browser.isElectron();
+
+    try {
+        const searchParams = new URL(location.href).searchParams;
+
+        if (!searchParams || !isElectron) {
+            return {
+                isSingleConference: false,
+                isSupportPreJoinPage: false,
+            }
+        }
+
+        const isSupportPreJoinPage = searchParams.get('isSupportPreJoinPage') ?? '0';
+        const isSingleConference = searchParams.get('isSingleConference') ?? '0';
+        const fixQueryPrams = (str: string) => str.replace(/\D/g, '');
+
+        return {
+            isSingleConference: Boolean(Number(fixQueryPrams(isSingleConference))),
+            isSupportPreJoinPage: Boolean(Number(fixQueryPrams(isSupportPreJoinPage))),
+        }
+    } catch (error) {
+        console.error('[ERROR GET QUERY PARAM] ', error);
+        return {
+            isSingleConference: false,
+            isSupportPreJoinPage: false,
+        }
+    }
 }

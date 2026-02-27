@@ -54,6 +54,7 @@ import {
     _AUDIO_INITIAL_MEDIA_STATE,
     _VIDEO_INITIAL_MEDIA_STATE
 } from './reducer';
+import {getWindowQueryData} from "../../desktop-picker/functions";
 
 /**
  * Implements the entry point of the middleware of the feature base/media.
@@ -221,8 +222,13 @@ function _setRoom({ dispatch, getState }: IStore, next: Function, action: AnyAct
     const { room } = action;
     const roomIsValid = isRoomValid(room);
 
+    // Для нового электрона с предбанником не делаем потоки замьюченными/выключенными
+    // Они при старте уже либо создаются, либо нет
+    const {isSingleConference, isSupportPreJoinPage} = getWindowQueryData();
+    const isNewElectron = isSupportPreJoinPage && !isSingleConference;
+
     // when going to welcomepage on web(room is not valid) we want to skip resetting the values of startWithA/V
-    if (roomIsValid || navigator.product === 'ReactNative') {
+    if ((roomIsValid || navigator.product === 'ReactNative') && !isNewElectron) {
         const audioMuted = roomIsValid ? getStartWithAudioMuted(state) : _AUDIO_INITIAL_MEDIA_STATE.muted;
         const videoMuted = roomIsValid ? getStartWithVideoMuted(state) : _VIDEO_INITIAL_MEDIA_STATE.muted;
 

@@ -2,8 +2,12 @@
 	"logging_level": ${LOGGING_LEVEL},
 	"server_type": "${SERVER_TYPE}",
 	"tcp_port": ${TCP_PORT},
-    "grpc_port": ${GRPC_PORT},
-    "rabbit_queue": "${RABBIT_QUEUE}",
-    "rabbit_exchange": "${RABBIT_EXCHANGE}",
-    "custom_salt": "${SALT_SENDER_BALANCER_HASH}"
+	"grpc_port": ${GRPC_PORT},
+	"rabbit_queue": "${RABBIT_QUEUE}",
+	"rabbit_exchange": "${RABBIT_EXCHANGE}",
+	"custom_salt": "${SALT_SENDER_BALANCER_HASH}",
+	"service_label": "${SERVICE_LABEL}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"domino_config_path": "${DOMINO_CONFIG_PATH}",
+	"server_tag_list": ${SERVER_TAG_LIST}
 }

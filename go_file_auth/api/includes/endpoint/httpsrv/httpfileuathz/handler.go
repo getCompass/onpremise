@@ -3,7 +3,7 @@ package httpfileuathz
 import (
 	"context"
 	"encoding/json"
-	"github.com/service/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_file_auth/api/includes/type/authz"
 	"net/http"
 	"strings"

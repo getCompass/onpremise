@@ -2,12 +2,13 @@ package conf
 
 import (
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame"
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"os"
 	"path"
 	"runtime"
 	"time"
+
+	"github.com/getCompassUtils/go_base_frame"
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 )
 
 // структура конфига
@@ -31,7 +32,7 @@ type ConfigStruct struct {
 
 	CapacityLimit    int    `json:"capacity_limit"`
 	WorldConfigPath  string `json:"world_config_path"`
-	GlobalConfigPath string `json:"global_config_path"`
+	DominoConfigPath string `json:"domino_config_path"`
 
 	ServiceRoleSet            string `json:"service_role_set"`
 	ServiceLabel              string `json:"service_label"`

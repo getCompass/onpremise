@@ -5,5 +5,9 @@
 	"grpc_port": ${GRPC_PORT},
 	"socket_key_me": "${SOCKET_KEY_GO_FILE_AUTH}",
 	"token_encrypt_key": "${ENCRYPT_KEY_DOWNLOAD_TOKEN}",
-	"trusted_entrypoint_list": "${TRUSTED_ENTRYPOINT_LIST}"
+	"trusted_entrypoint_list": "${TRUSTED_ENTRYPOINT_LIST}",
+	"service_label": "${SERVICE_LABEL}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"domino_config_path": "${DOMINO_CONFIG_PATH}",
+	"server_tag_list": ${SERVER_TAG_LIST}
 }

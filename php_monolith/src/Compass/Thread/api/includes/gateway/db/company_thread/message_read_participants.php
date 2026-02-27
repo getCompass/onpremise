@@ -8,8 +8,8 @@ use CompassApp\Pack\Message;
 /**
  * класс-интерфейс для таблицы dynamic в company_thread
  */
-class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_CompanyThread_Main {
-
+class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_CompanyThread_Main
+{
 	protected const _TABLE_KEY = "message_read_participants";
 
 	// -------------------------------------------------------
@@ -17,7 +17,8 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 	// -------------------------------------------------------
 
 	// метод для обновления записи
-	public static function set(string $thread_map, int $user_id, array $set):void {
+	public static function set(string $thread_map, int $user_id, array $set): void
+	{
 
 		$shard_key = static::_getDbKey();
 		$table_key = static::_getTable($thread_map);
@@ -28,7 +29,8 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 	}
 
 	// метод для получения записи
-	public static function getOne(string $thread_map, int $user_id):Struct_Db_CompanyThread_MessageReadParticipant {
+	public static function getOne(string $thread_map, int $user_id): Struct_Db_CompanyThread_MessageReadParticipant
+	{
 
 		$shard_key = static::_getDbKey();
 		$table_key = static::_getTable($thread_map);
@@ -47,19 +49,17 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 	/**
 	 * Получить прочитавших сообщение пользователей
 	 *
-	 * @param string $thread_map
-	 * @param int    $thread_message_index
-	 *
 	 * @return Struct_Db_CompanyThread_MessageReadParticipant_Participant[]
 	 * @throws QueryFatalException
 	 */
-	public static function getReadParticipants(string $thread_map, int $thread_message_index):array {
+	public static function getReadParticipants(string $thread_map, int $thread_message_index): array
+	{
 
 		$shard_key = static::_getDbKey();
 		$table_key = static::_getTable($thread_map);
 
 		// запрос проверен на EXPLAIN (INDEX=PRIMARY) Федореев М. 07.03.2025
-		$query  = "SELECT `user_id`, `thread_message_index`, `read_at` FROM `?p` WHERE `thread_map` = ?s AND `thread_message_index` >= ?i 
+		$query = "SELECT `user_id`, `thread_message_index`, `read_at` FROM `?p` WHERE `thread_map` = ?s AND `thread_message_index` >= ?i 
                                                 ORDER BY `thread_message_index` ASC LIMIT ?i";
 		$result = static::_connect($shard_key)->getAll($query, $table_key, $thread_map, $thread_message_index, 10000);
 
@@ -79,12 +79,10 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 	/**
 	 * Получаем запись для определенного сообщения
 	 *
-	 * @param string $message_map
-	 *
-	 * @return array
 	 * @throws QueryFatalException
 	 */
-	public static function getByMessageMap(string $message_map):array {
+	public static function getByMessageMap(string $message_map): array
+	{
 
 		$shard_key = static::_getDbKey();
 		$table_key = static::_getTable(Message\Thread::getThreadMap($message_map));
@@ -93,18 +91,17 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 		$query  = "SELECT * FROM `?p` WHERE message_map = ?s LIMIT ?i";
 		$result = static::_connect($shard_key)->getAll($query, $table_key, $message_map, 10000);
 
-		return array_map(static fn(array $el) => self::_rowToObject($el), $result);
+		return array_map(static fn (array $el) => self::_rowToObject($el), $result);
 	}
 
 	/**
 	 * Получаем запись для определенных сообщений
 	 *
-	 * @param array $message_map_list
-	 *
 	 * @return Struct_Db_CompanyThread_MessageReadParticipant[]
 	 * @throws QueryFatalException
 	 */
-	public static function getByMessageMapList(array $message_map_list):array {
+	public static function getByMessageMapList(array $message_map_list): array
+	{
 
 		$shard_key = static::_getDbKey();
 
@@ -141,13 +138,10 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 	/**
 	 * Удалить записи из таблицы по message_created_at
 	 *
-	 * @param int $table_shard
-	 * @param int $message_created_at
-	 *
-	 * @return void
 	 * @throws QueryFatalException
 	 */
-	public static function deleteByMessageCreatedAt(int $table_shard, int $message_created_at):void {
+	public static function deleteByMessageCreatedAt(int $table_shard, int $message_created_at): void
+	{
 
 		$shard_key           = static::_getDbKey();
 		$table_key           = self::_TABLE_KEY . "_" . $table_shard;
@@ -158,8 +152,8 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 		do {
 
 			// запрос проверен на EXPLAIN (INDEX=message_created_at) Федореев М. 11.03.2025
-			$query               = "DELETE FROM `?p` WHERE `message_created_at` < ?i LIMIT ?i";
-			$deleted_count       = static::_connect($shard_key)->delete($query, $table_key, $message_created_at, $limit);
+			$query         = "DELETE FROM `?p` WHERE `message_created_at` < ?i LIMIT ?i";
+			$deleted_count = static::_connect($shard_key)->delete($query, $table_key, $message_created_at, $limit);
 			$total_deleted_count += $deleted_count;
 		} while ($deleted_count == $limit);
 
@@ -172,18 +166,15 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 
 	/**
 	 * Оптимизировать таблицу
-	 *
-	 * @param int $table_shard
-	 *
-	 * @return void
 	 */
-	protected static function _optimize(int $table_shard):void {
+	protected static function _optimize(int $table_shard): void
+	{
 
 		$shard_key = static::_getDbKey();
 		$table_key = self::_TABLE_KEY . "_" . $table_shard;
 
 		$query = "OPTIMIZE TABLE `{$shard_key}`.`{$table_key}`;";
-		static::_connect($shard_key)->query($query);
+		static::_connect($shard_key)->execQuery($query);
 	}
 
 	// -------------------------------------------------------
@@ -191,7 +182,8 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 	// -------------------------------------------------------
 
 	// получаем таблицу
-	protected static function _getTable(string $thread_map):string {
+	protected static function _getTable(string $thread_map): string
+	{
 
 		$table_id = \CompassApp\Pack\Thread::getTableId($thread_map);
 
@@ -201,7 +193,8 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 	/**
 	 * Создаем структуру из строки бд
 	 */
-	protected static function _rowToObject(array $row):Struct_Db_CompanyThread_MessageReadParticipant {
+	protected static function _rowToObject(array $row): Struct_Db_CompanyThread_MessageReadParticipant
+	{
 
 		return new Struct_Db_CompanyThread_MessageReadParticipant(
 			$row["thread_map"],
@@ -218,7 +211,8 @@ class Gateway_Db_CompanyThread_MessageReadParticipants extends Gateway_Db_Compan
 	/**
 	 * Создаем структуру прочитанного сообщения из строки бд
 	 */
-	protected static function _rowToParticipantObject(array $row):Struct_Db_CompanyThread_MessageReadParticipant_Participant {
+	protected static function _rowToParticipantObject(array $row): Struct_Db_CompanyThread_MessageReadParticipant_Participant
+	{
 
 		return new Struct_Db_CompanyThread_MessageReadParticipant_Participant(
 			$row["user_id"],

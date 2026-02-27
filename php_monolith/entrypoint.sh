@@ -53,9 +53,16 @@ bash "/app/src/Compass/Jitsi/init_submodule.sh" "Jitsi" || exit 1;
 # раздаем права, инициализируем пустые директории
 cd /app && sh install.sh
 
-mariadb --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" --port="$MYSQL_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
-migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false up
-migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false version
+# нужны ли миграции на резервном сервере
+IS_STOP_MIGRATE=$(php "/app/sh/php/tools/reserve/check_server.php");
+if [[ "${IS_STOP_MIGRATE}" == "true" ]]; then
+  CURRENT_FOLDER=$(basename "$SCRIPT_PATH")
+  echo "reserve: запуск миграции пропускается для монолита"
+else
+  mariadb --user="${MYSQL_SYSTEM_USER}" --password="${MYSQL_PASS}" --host="$MYSQL_HOST" --port="$MYSQL_PORT" --skip-ssl < "${SCRIPT_PATH}/sql/init_system.sql"
+  migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false up
+  migrate -path /app/sql/system_compass_company -database mysql://${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)/system_compass_company?tls=false version
+fi
 
 # инициализируем модули
 bash /app/src/Compass/_entrypoint.sh || die "entrypoint.sh unsuccessful";

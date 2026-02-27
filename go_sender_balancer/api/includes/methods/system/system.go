@@ -2,14 +2,15 @@ package system
 
 import (
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/functions"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_sender_balancer/api/conf"
-	"google.golang.org/grpc/status"
 	"os"
 	"runtime"
 	"runtime/pprof"
 	"time"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/functions"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"google.golang.org/grpc/status"
 )
 
 // пакет, в который вынесена вся бизнес-логика группы методов system
@@ -129,12 +130,12 @@ func writeCpuProfileToFile(file *os.File, fileName string, profileTime int) {
 }
 
 // обновляем конфигурацию
-func ReloadConfig() (conf.ConfigStruct, error) {
+func ReloadConfig() (*conf.ConfigStruct, error) {
 
 	// обновляем конфигурацию
 	err := conf.UpdateConfig()
 	if err != nil {
-		return conf.ConfigStruct{}, status.Error(504, "unable to update config")
+		return nil, status.Error(504, "unable to update config")
 	}
 
 	// логируем обновление

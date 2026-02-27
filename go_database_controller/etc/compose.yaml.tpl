@@ -35,7 +35,6 @@ services:
         --gtid-mode=ON
         --enforce-gtid-consistency=ON
         --log-slave-updates=ON
-        --slave_skip_errors=1007,1032,1050,1054,1060,1061,1062,1091,1396
         --max_binlog_cache_size=10485760
         --ssl=ON
         --ssl-ca="/etc/mysql/ssl/mysqlRootCA.crt"

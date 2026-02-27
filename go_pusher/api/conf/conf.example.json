@@ -7,5 +7,9 @@
 	"http_port": ${HTTP_PORT},
 	"rabbit_queue": "${RABBIT_QUEUE}",
 	"rabbit_exchange": "${RABBIT_EXCHANGE}",
-    "socket_key_me": "${SOCKET_KEY_GO_PUSHER}"
+    	"socket_key_me": "${SOCKET_KEY_GO_PUSHER}",
+	"service_label": "${SERVICE_LABEL}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"domino_config_path": "${DOMINO_CONFIG_PATH}",
+	"server_tag_list": ${SERVER_TAG_LIST}
 }

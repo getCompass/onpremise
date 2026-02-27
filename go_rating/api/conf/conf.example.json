@@ -9,5 +9,8 @@
 	"capacity_limit": 10000,
 	"world_config_path": "/config",
 	"server_tag_list": ${SERVER_TAG_LIST},
-	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC}
+	"force_company_config_update_interval_sec": ${FORCE_COMPANY_CONFIG_UPDATE_INTERVAL_SEC},
+	"service_label": "${SERVICE_LABEL}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"domino_config_path": "${DOMINO_CONFIG_PATH}"
 }

@@ -22,6 +22,14 @@ function cleanup() { trap - SIGINT SIGTERM ERR EXIT; }
 # возможно это стоит делать отдельным шагом инициализации
 bash "/app/wait-services.sh" || die "service waiting failed"
 
+# нужны ли миграции на резервном сервере
+IS_STOP_MIGRATE=$(php "/app/sh/php/tools/reserve/check_server.php");
+if [[ "${IS_STOP_MIGRATE}" == "true" ]]; then
+  CURRENT_FOLDER=$(basename "$SCRIPT_PATH")
+  echo "reserve: запуск миграции пропускается в $CURRENT_FOLDER"
+  exit 0
+fi
+
 # приступаем к миграциям
 # грязные мерзкие хаки, но почему-то без них не заводится подключение
 migrate -path "${SCRIPT_PATH}/sql/announcement_service" -database mysql://${MYSQL_ROOT_USER}:${MYSQL_PASS}@tcp\($MYSQL_HOST:$MYSQL_PORT\)/hax?tls=false up

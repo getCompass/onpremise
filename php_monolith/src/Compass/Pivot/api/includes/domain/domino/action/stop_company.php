@@ -2,11 +2,16 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
+use BaseFrame\Exception\Gateway\BusFatalException;
+use BaseFrame\Server\ServerProvider;
+
 /**
  * Выполняет остановку компании на домино.
  */
-class Domain_Domino_Action_StopCompany {
-
+class Domain_Domino_Action_StopCompany
+{
 	/**
 	 * Выполняет остановку активной компании на домино.
 	 * Останавливает компанию только на обычных портах.
@@ -16,13 +21,14 @@ class Domain_Domino_Action_StopCompany {
 	 *
 	 * @throws Domain_Domino_Exception_CompanyInOnMaintenance
 	 * @throws Domain_Domino_Exception_CompanyNotBound
-	 *
-	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
-	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
-	 * @throws \busException
-	 * @throws \returnException
+	 * @throws ParseFatalException
+	 * @throws ReturnFatalException
+	 * @throws BusFatalException
+	 * @throws \cs_RowIsEmpty
+	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompany_Company $company, string $unbind_reason = ""):void {
+	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompany_Company $company, string $unbind_reason = ""): void
+	{
 
 		try {
 
@@ -39,7 +45,11 @@ class Domain_Domino_Action_StopCompany {
 		}
 
 		// запускаем отвязываем компании от порта
-		Domain_Domino_Action_Port_Unbind::run($domino, $active_port, $unbind_reason);
+		if (ServerProvider::isReserveServer()) {
+			Domain_Domino_Action_Port_ReserveUnbind::run($domino, $active_port, $unbind_reason);
+		} else {
+			Domain_Domino_Action_Port_Unbind::run($domino, $active_port, $unbind_reason);
+		}
 
 		// меняем флаг в реестре компаний
 		Gateway_Db_PivotCompanyService_CompanyRegistry::set($company->domino_id, $company->company_id, [

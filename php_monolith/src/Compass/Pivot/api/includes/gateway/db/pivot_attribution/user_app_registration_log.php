@@ -98,6 +98,6 @@ class Gateway_Db_PivotAttribution_UserAppRegistrationLog extends Gateway_Db_Pivo
 		$table_name = self::_TABLE_KEY;
 
 		$query = "OPTIMIZE TABLE `{$db_key}`.`{$table_name}`;";
-		ShardingGateway::database($db_key)->query($query);
+		ShardingGateway::database($db_key)->execQuery($query);
 	}
 }

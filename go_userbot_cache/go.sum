@@ -5,6 +5,12 @@ github.com/getCompassUtils/go_base_frame v1.0.3 h1:aECGEq/rskb/XucxoLt/TR/sT9gP/
 github.com/getCompassUtils/go_base_frame v1.0.3/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
 github.com/getCompassUtils/go_base_frame v1.0.5 h1:VOtSwUFSGdWID9tDywz97hXtJMAn2ScX7T6PqWnw3Mo=
 github.com/getCompassUtils/go_base_frame v1.0.5/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
+github.com/getCompassUtils/go_base_frame v1.0.9-0.20251128055951-688a3e50f72a h1:wvcCICGVQW0F29qbgA0SEXM8RDp+n1DJ8C0JFul2vVM=
+github.com/getCompassUtils/go_base_frame v1.0.9-0.20251128055951-688a3e50f72a/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
+github.com/getCompassUtils/go_base_frame v1.0.9 h1:iKQ4uMInpYFKnUjp8m/I8ROW8v+w+OCXpAb+6ZQN0TA=
+github.com/getCompassUtils/go_base_frame v1.0.9/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
+github.com/getCompassUtils/go_base_frame v1.0.13 h1:BvEfmi7nGr3We4rIJvo5W2KW+VlqI/IxDV+IRMDpIrM=
+github.com/getCompassUtils/go_base_frame v1.0.13/go.mod h1:4MLD2wg8VahMdNraUzb77cjJ8Al7CMz4X6TZ/mnMRsk=
 github.com/getCompassUtils/pivot_protobuf_schemes v1.1.1 h1:eN5c+ughwr+MErshgsUwfkIGgwihS43qxEbNK5VKUC4=
 github.com/getCompassUtils/pivot_protobuf_schemes v1.1.1/go.mod h1:UvQcFoz/HTWkf/51Cput3T4lTjtO/X2g/e4qqAwzBjA=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=

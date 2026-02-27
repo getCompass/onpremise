@@ -6,8 +6,8 @@ namespace Compass\Pivot;
  * Действие удаления связи порта и компании.
  * !!! Не пересоздает конфигурационный файл для компании, работает только со связью.
  */
-class Domain_Domino_Action_Port_Unbind {
-
+class Domain_Domino_Action_Port_Unbind
+{
 	/**
 	 * Отвязывает компанию от порта на домино.
 	 * !!! Не пересоздает конфигурационный файл для компании, работает только со связью.
@@ -16,7 +16,8 @@ class Domain_Domino_Action_Port_Unbind {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \Exception
 	 */
-	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, string $unbind_reason = ""):Struct_Db_PivotCompanyService_PortRegistry {
+	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, string $unbind_reason = ""): Struct_Db_PivotCompanyService_PortRegistry
+	{
 
 		console("анбиндю порт {$port->port}");
 		static::_makeRemoteUnbinding($domino, $port);
@@ -29,7 +30,8 @@ class Domain_Domino_Action_Port_Unbind {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \Exception
 	 */
-	protected static function _makeLocalUnbinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, string $unbind_reason):Struct_Db_PivotCompanyService_PortRegistry {
+	protected static function _makeLocalUnbinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, string $unbind_reason): Struct_Db_PivotCompanyService_PortRegistry
+	{
 
 		try {
 
@@ -70,7 +72,8 @@ class Domain_Domino_Action_Port_Unbind {
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \Exception
 	 */
-	protected static function _makeRemoteUnbinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port):void {
+	protected static function _makeRemoteUnbinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port): void
+	{
 
 		try {
 
@@ -88,7 +91,8 @@ class Domain_Domino_Action_Port_Unbind {
 	 * Обновляет данные порта.
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	protected static function _update(Struct_Db_PivotCompanyService_PortRegistry $port, string $domino_id, string $unbind_reason):Struct_Db_PivotCompanyService_PortRegistry {
+	protected static function _update(Struct_Db_PivotCompanyService_PortRegistry $port, string $domino_id, string $unbind_reason): Struct_Db_PivotCompanyService_PortRegistry
+	{
 
 		$old_company_id = $port->company_id;
 

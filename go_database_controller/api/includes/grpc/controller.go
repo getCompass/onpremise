@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	pb "github.com/getCompassUtils/pivot_protobuf_schemes/go/database_controller"
 	"go_database_controller/api/includes/type/backup"
 	"go_database_controller/api/includes/type/keeper"
 	"go_database_controller/api/includes/type/manticore"
@@ -10,8 +9,10 @@ import (
 	"go_database_controller/api/includes/type/port_registry"
 	"go_database_controller/api/includes/type/relocation"
 	"go_database_controller/api/includes/type/routine"
-	"google.golang.org/grpc/status"
 	"time"
+
+	pb "github.com/getCompassUtils/pivot_protobuf_schemes/go/database_controller"
+	"google.golang.org/grpc/status"
 )
 
 // пакет с gRPC контролером — содержит в себе все методы микросервиса
@@ -266,5 +267,5 @@ func (s *Server) DropSearchTable(_ context.Context, in *pb.DropSearchTableReques
 // UpdateDeployment обновить деплой
 func (s *Server) UpdateDeployment(ctx context.Context, _ *pb.NullRequestStruct) (*pb.NullResponseStruct, error) {
 
-	return &pb.NullResponseStruct{}, keeper.UpdateDeployment(ctx)
+	return &pb.NullResponseStruct{}, keeper.UpdateDeployment(ctx, 0)
 }

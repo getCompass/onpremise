@@ -262,7 +262,7 @@ class myPDObasic extends PDO {
 
 		//
 		$this->_showDebugIfNeed($query);
-		$result = $this->query($query);
+		$result = $this->execQuery($query);
 		return $result->rowCount();
 	}
 
@@ -279,7 +279,7 @@ class myPDObasic extends PDO {
 
 		//
 		$this->_showDebugIfNeed($query);
-		$result = $this->query($query);
+		$result = $this->execQuery($query);
 		return $result->rowCount();
 	}
 
@@ -316,7 +316,7 @@ class myPDObasic extends PDO {
 		";
 
 		$this->_showDebugIfNeed($query);
-		$result = $this->query($query);
+		$result = $this->execQuery($query);
 		return $result->rowCount();
 	}
 
@@ -330,7 +330,7 @@ class myPDObasic extends PDO {
 
 		$query = $this->_formatArray($table, [$insert], $is_ignore);
 		$this->_showDebugIfNeed($query);
-		$this->query($query);
+		$this->execQuery($query);
 		return $this->lastInsertId();
 	}
 
@@ -343,7 +343,7 @@ class myPDObasic extends PDO {
 
 		$query = $this->_formatArray($table, $list);
 		$this->_showDebugIfNeed($query);
-		$result = $this->query($query);
+		$result = $this->execQuery($query);
 		return $result->rowCount();
 	}
 

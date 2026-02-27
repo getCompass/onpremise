@@ -5,5 +5,9 @@
 	"grpc_port": ${GRPC_PORT},
 	"rabbit_queue": "${RABBIT_QUEUE}",
 	"rabbit_exchange": "${RABBIT_EXCHANGE}",
-	"get_activity_timeout_ms": ${GET_ACTIVITY_TIMEOUT_MS}
+	"get_activity_timeout_ms": ${GET_ACTIVITY_TIMEOUT_MS},
+	"service_label": "${SERVICE_LABEL}",
+	"companies_relationship_file": "${COMPANIES_RELATIONSHIP_FILE}",
+	"domino_config_path": "${DOMINO_CONFIG_PATH}",
+	"server_tag_list": ${SERVER_TAG_LIST}
 }

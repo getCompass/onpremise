@@ -2,11 +2,12 @@ package conf
 
 import (
 	"fmt"
-	"github.com/service/go_base_frame"
-	"github.com/service/go_base_frame/api/system/flags"
 	"os"
 	"path"
 	"runtime"
+
+	"github.com/getCompassUtils/go_base_frame"
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 )
 
 // ConfigStruct структура конфига
@@ -22,6 +23,13 @@ type ConfigStruct struct {
 
 	SessionCacheTTLSec    int64  `json:"session_cache_ttl_sec"`
 	TrustedEntrypointList string `json:"trusted_entrypoint_list"`
+
+	DominoConfigPath string `json:"domino_config_path"`
+
+	ServiceLabel              string `json:"service_label"`
+	CompaniesRelationshipFile string `json:"companies_relationship_file"`
+
+	ServerTagList []string `json:"server_tag_list"`
 }
 
 // переменная содержащая конфигурацию

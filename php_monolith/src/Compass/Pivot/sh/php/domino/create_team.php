@@ -11,8 +11,8 @@ set_time_limit(0);
 /**
  * Скрипт для создания новой компании
  */
-class Domino_CreateTeam {
-
+class Domino_CreateTeam
+{
 	protected const _INITIAL_TARIFF_MEMBER_LIMIT  = 1000;
 	protected const _INITIAL_TARIFF_DAYS_DURATION = 365;
 
@@ -21,7 +21,8 @@ class Domino_CreateTeam {
 	/**
 	 * Запускаем работу скрипта
 	 */
-	public function run(string $company_name):void {
+	public function run(string $company_name): void
+	{
 
 		$user_id = Domain_User_Entity_OnpremiseRoot::getUserId();
 
@@ -48,12 +49,13 @@ class Domino_CreateTeam {
 				Domain_Company_Entity_Company::ALLOW_AVATAR_COLOR_ID_LIST[array_rand(Domain_Company_Entity_Company::ALLOW_AVATAR_COLOR_ID_LIST)],
 				$company_name,
 				generateUUID(),
-				false);
+				false
+			);
 
 			$company = Gateway_Db_PivotCompany_CompanyList::getOne($user_company_api->company_id);
 			$domino  = Gateway_Db_PivotCompanyService_DominoRegistry::getOne($company->domino_id);
 			$port    = Gateway_Db_PivotCompanyService_PortRegistry::getActiveByCompanyId($domino->domino_id, $company->company_id);
-			console("Успешно создали команду $user_company_api->company_id с портом $port->port");
+			console("company_id=$user_company_api->company_id;port=$port->port");
 
 			// устанавливаем стартовый тарифный план
 			$alteration = Domain_SpaceTariff_Plan_MemberCount_Product_ActivateDefault::makeAlteration(self::_INITIAL_TARIFF_MEMBER_LIMIT, self::_INITIAL_TARIFF_DAYS_DURATION);
@@ -68,12 +70,12 @@ class Domino_CreateTeam {
 	/**
 	 * Получаем параметры для скрипта
 	 *
-	 * @return void
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\EndpointAccessDeniedException
 	 */
-	public function start():void {
+	public function start(): void
+	{
 
 		// если прислали аргумент --help
 		if (Type_Script_InputHelper::needShowUsage()) {

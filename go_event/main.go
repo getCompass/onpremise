@@ -6,9 +6,6 @@ package main
 
 import (
 	"context"
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
-	"github.com/getCompassUtils/go_base_frame/api/system/server"
 	"go_event/api/conf"
 	AppTask "go_event/api/includes/type/async_task"
 	AsyncTrap "go_event/api/includes/type/async_trap"
@@ -24,6 +21,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 )
 
 // основаная функция
@@ -61,7 +62,7 @@ func main() {
 func start() {
 
 	config := conf.GetConfig()
-	err := server.Init(config.ServerTagList)
+	err := server.Init(config.ServerTagList, config.ServiceLabel, config.DominoConfigPath, config.CompaniesRelationshipFile)
 
 	if err != nil {
 		panic(err)

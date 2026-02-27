@@ -1,11 +1,13 @@
 package conf
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"os"
-	"sync/atomic"
+	"path"
+	"runtime"
+
+	"github.com/getCompassUtils/go_base_frame"
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 )
 
 // структура конфига
@@ -20,10 +22,17 @@ type ConfigStruct struct {
 	RabbitExchange string `json:"rabbit_exchange"`
 
 	CustomSalt string `json:"custom_salt"`
+
+	DominoConfigPath string `json:"domino_config_path"`
+
+	ServiceLabel              string `json:"service_label"`
+	CompaniesRelationshipFile string `json:"companies_relationship_file"`
+
+	ServerTagList []string `json:"server_tag_list"`
 }
 
 // переменная содержащая конфигурацию
-var configuration atomic.Value
+var configuration *ConfigStruct
 
 // -------------------------------------------------------
 // PUBLIC
@@ -32,33 +41,41 @@ var configuration atomic.Value
 // обновляем конфигурацию
 func UpdateConfig() error {
 
+	tempPath := flags.ConfDir
+	if tempPath == "" {
+
+		_, b, _, _ := runtime.Caller(0)
+		tempPath = path.Join(path.Dir(b)) // nosemgrep
+	}
+
 	// сохраняем конфигурацию
-	decodedInfo, err := getConfigFromFile(flags.ConfDir + "/conf.json")
+	decodedInfo, err := getConfigFromFile(tempPath + "/conf.json")
 	if err != nil {
 		return err
 	}
 
 	// записываем конфигурацию в хранилище
-	configuration.Store(decodedInfo)
+	configuration = decodedInfo
 
 	return nil
 }
 
 // получаем конфиг из файла
-func getConfigFromFile(path string) (ConfigStruct, error) {
+func getConfigFromFile(path string) (*ConfigStruct, error) {
 
 	// открываем файл с конфигурацией
 	file, err := os.Open(path)
 	if err != nil {
-		return ConfigStruct{}, fmt.Errorf("unable read file conf.json, error: %v", err)
+		return nil, fmt.Errorf("unable read file conf.json, error: %v", err)
 	}
 
 	// считываем информацию из файла в переменную
-	decoder := json.NewDecoder(file)
-	var decodedInfo ConfigStruct
-	err = decoder.Decode(&decodedInfo)
+	decoder := go_base_frame.Json.NewDecoder(file)
+	decodedInfo := &ConfigStruct{}
+
+	err = decoder.Decode(decodedInfo)
 	if err != nil {
-		return ConfigStruct{}, fmt.Errorf("unable decode file conf.json, error: %v", err)
+		return nil, fmt.Errorf("unable decode file conf.json, error: %v", err)
 	}
 
 	// закрываем файл
@@ -68,13 +85,10 @@ func getConfigFromFile(path string) (ConfigStruct, error) {
 }
 
 // получаем конфигурацию custom
-func GetConfig() ConfigStruct {
-
-	// получаем конфиг
-	config := configuration.Load()
+func GetConfig() *ConfigStruct {
 
 	// если конфига еще нет
-	if config == nil {
+	if configuration == nil {
 
 		// обновляем конфиг
 		err := UpdateConfig()
@@ -82,9 +96,7 @@ func GetConfig() ConfigStruct {
 			panic(err)
 		}
 
-		// подгружаем новый
-		config = configuration.Load()
 	}
 
-	return config.(ConfigStruct)
+	return configuration
 }

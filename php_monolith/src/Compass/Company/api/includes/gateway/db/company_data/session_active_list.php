@@ -191,7 +191,7 @@ class Gateway_Db_CompanyData_SessionActiveList extends Gateway_Db_CompanyData_Ma
 		$table_name = self::_TABLE_KEY;
 
 		$query = "TRUNCATE TABLE `{$table_name}`";
-		ShardingGateway::database(self::_DB_KEY)->query($query);
+		ShardingGateway::database(self::_DB_KEY)->execQuery($query);
 	}
 
 	/**

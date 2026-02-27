@@ -5,9 +5,6 @@ package main
 // -------------------------------------------------------
 
 import (
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
-	"github.com/getCompassUtils/go_base_frame/api/system/functions"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_sender_balancer/api/conf"
 	"go_sender_balancer/api/includes/gateway/tcp"
 	"go_sender_balancer/api/includes/type/balancer"
@@ -15,6 +12,11 @@ import (
 	"go_sender_balancer/www"
 	"runtime"
 	"sync"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
+	"github.com/getCompassUtils/go_base_frame/api/system/functions"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 )
 
 const (
@@ -34,6 +36,13 @@ func main() {
 
 // стартуем микросервис
 func start() {
+
+	config := conf.GetConfig()
+	err := server.Init(config.ServerTagList, config.ServiceLabel, config.DominoConfigPath, config.CompaniesRelationshipFile)
+
+	if err != nil {
+		panic(err)
+	}
 
 	flags.SetFlags()
 	flags.Parse()

@@ -2,6 +2,8 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\Server\ServerProvider;
+
 require_once __DIR__ . "/../../../../../../start.php";
 
 ini_set("memory_limit", "4096M");
@@ -49,7 +51,11 @@ console(blueText("Пробую стартануть компанию"));
 
 // запускаем компанию
 Type_System_Admin::log("start_company_process", "Выполняем старт компании {$company_row->company_id}");
-[$company_row] = Domain_Domino_Action_StartCompany::run($domino_row, $company_row);
+if (ServerProvider::isReserveServer()) {
+	[$company_row] = Domain_Domino_Action_StartReserveCompany::run($domino_row, $company_row);
+} else {
+	[$company_row] = Domain_Domino_Action_StartCompany::run($domino_row, $company_row);
+}
 
 // конфиг обновляется каждые 2 секунды - нужно дождаться, когда компания станет доступной
 sleep(2);

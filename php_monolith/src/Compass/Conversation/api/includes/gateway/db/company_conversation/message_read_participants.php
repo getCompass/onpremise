@@ -4,13 +4,12 @@ namespace Compass\Conversation;
 
 use BaseFrame\Exception\Gateway\QueryFatalException;
 use BaseFrame\Exception\Gateway\RowNotFoundException;
-use CompassApp\Pack\Message;
 
 /**
  * класс-интерфейс для таблицы dynamic в company_conversation
  */
-class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_CompanyConversation_Main {
-
+class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_CompanyConversation_Main
+{
 	protected const _TABLE_KEY = "message_read_participants";
 
 	// -------------------------------------------------------
@@ -18,7 +17,8 @@ class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_
 	// -------------------------------------------------------
 
 	// метод для получения записи
-	public static function getOne(string $conversation_map, int $conversation_message_index, int $user_id):Struct_Db_CompanyConversation_MessageReadParticipant {
+	public static function getOne(string $conversation_map, int $conversation_message_index, int $user_id): Struct_Db_CompanyConversation_MessageReadParticipant
+	{
 
 		$shard_key = static::_getDbKey();
 		$table_key = static::_getTable($conversation_map);
@@ -37,19 +37,17 @@ class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_
 	/**
 	 * Получить прочитавших сообщение пользователей
 	 *
-	 * @param string $conversation_map
-	 * @param int    $conversation_message_index
-	 *
 	 * @return Struct_Db_CompanyConversation_MessageReadParticipant_Participant[]
 	 * @throws QueryFatalException
 	 */
-	public static function getReadParticipants(string $conversation_map, int $conversation_message_index):array {
+	public static function getReadParticipants(string $conversation_map, int $conversation_message_index): array
+	{
 
 		$shard_key = static::_getDbKey();
 		$table_key = static::_getTable($conversation_map);
 
 		// запрос проверен на EXPLAIN (INDEX=PRIMARY) Федореев М. 07.03.2025
-		$query  = "SELECT `user_id`, `conversation_message_index`, `read_at` FROM `?p` WHERE `conversation_map` = ?s AND `conversation_message_index` >= ?i 
+		$query = "SELECT `user_id`, `conversation_message_index`, `read_at` FROM `?p` WHERE `conversation_map` = ?s AND `conversation_message_index` >= ?i 
                                                 ORDER BY `conversation_message_index` ASC LIMIT ?i";
 		$result = static::_connect($shard_key)->getAll($query, $table_key, $conversation_map, $conversation_message_index, 10000);
 
@@ -69,13 +67,10 @@ class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_
 	/**
 	 * Удалить записи из таблицы по message_created_at
 	 *
-	 * @param int $table_shard
-	 * @param int $message_created_at
-	 *
-	 * @return void
 	 * @throws QueryFatalException
 	 */
-	public static function deleteByMessageCreatedAt(int $table_shard, int $message_created_at):void {
+	public static function deleteByMessageCreatedAt(int $table_shard, int $message_created_at): void
+	{
 
 		$shard_key           = static::_getDbKey();
 		$table_key           = self::_TABLE_KEY . "_" . $table_shard;
@@ -86,8 +81,8 @@ class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_
 		do {
 
 			// запрос проверен на EXPLAIN (INDEX=message_created_at) Федореев М. 11.03.2025
-			$query               = "DELETE FROM `?p` WHERE `message_created_at` < ?i LIMIT ?i";
-			$deleted_count       = static::_connect($shard_key)->delete($query, $table_key, $message_created_at, $limit);
+			$query         = "DELETE FROM `?p` WHERE `message_created_at` < ?i LIMIT ?i";
+			$deleted_count = static::_connect($shard_key)->delete($query, $table_key, $message_created_at, $limit);
 			$total_deleted_count += $deleted_count;
 		} while ($deleted_count == $limit);
 
@@ -100,18 +95,15 @@ class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_
 
 	/**
 	 * Оптимизировать таблицу
-	 *
-	 * @param int $table_shard
-	 *
-	 * @return void
 	 */
-	protected static function _optimize(int $table_shard):void {
+	protected static function _optimize(int $table_shard): void
+	{
 
 		$shard_key = static::_getDbKey();
 		$table_key = self::_TABLE_KEY . "_" . $table_shard;
 
 		$query = "OPTIMIZE TABLE `{$shard_key}`.`{$table_key}`;";
-		static::_connect($shard_key)->query($query);
+		static::_connect($shard_key)->execQuery($query);
 	}
 
 	// -------------------------------------------------------
@@ -119,7 +111,8 @@ class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_
 	// -------------------------------------------------------
 
 	// получаем таблицу
-	protected static function _getTable(string $conversation_map):string {
+	protected static function _getTable(string $conversation_map): string
+	{
 
 		$table_id = \CompassApp\Pack\Conversation::getTableId($conversation_map);
 
@@ -129,7 +122,8 @@ class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_
 	/**
 	 * Создаем структуру из строки бд
 	 */
-	protected static function _rowToObject(array $row):Struct_Db_CompanyConversation_MessageReadParticipant {
+	protected static function _rowToObject(array $row): Struct_Db_CompanyConversation_MessageReadParticipant
+	{
 
 		return new Struct_Db_CompanyConversation_MessageReadParticipant(
 			$row["conversation_map"],
@@ -146,7 +140,8 @@ class Gateway_Db_CompanyConversation_MessageReadParticipants extends Gateway_Db_
 	/**
 	 * Создаем структуру прочитанного сообщения из строки бд
 	 */
-	protected static function _rowToParticipantObject(array $row):Struct_Db_CompanyConversation_MessageReadParticipant_Participant {
+	protected static function _rowToParticipantObject(array $row): Struct_Db_CompanyConversation_MessageReadParticipant_Participant
+	{
 
 		return new Struct_Db_CompanyConversation_MessageReadParticipant_Participant(
 			$row["user_id"],

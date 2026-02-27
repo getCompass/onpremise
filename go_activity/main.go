@@ -6,8 +6,6 @@ package main
 
 import (
 	"context"
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_activity/api/conf"
 	"go_activity/api/observer"
 	"go_activity/www"
@@ -15,6 +13,10 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 )
 
 // основанная функция
@@ -41,6 +43,13 @@ func main() {
 
 // стартуем микросервис
 func start() {
+
+	config := conf.GetConfig()
+	err := server.Init(config.ServerTagList, config.ServiceLabel, config.DominoConfigPath, config.CompaniesRelationshipFile)
+
+	if err != nil {
+		panic(err)
+	}
 
 	flags.SetFlags()
 	flags.Parse()

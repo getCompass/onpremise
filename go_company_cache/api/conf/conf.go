@@ -3,11 +3,12 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 	"os"
 	"path"
 	"runtime"
 	"time"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/flags"
 )
 
 // структура конфига
@@ -21,8 +22,12 @@ type ConfigStruct struct {
 	RabbitQueue    string `json:"rabbit_queue"`
 	RabbitExchange string `json:"rabbit_exchange"`
 
-	CapacityLimit   int    `json:"capacity_limit"`
-	WorldConfigPath string `json:"world_config_path"`
+	CapacityLimit    int    `json:"capacity_limit"`
+	WorldConfigPath  string `json:"world_config_path"`
+	DominoConfigPath string `json:"domino_config_path"`
+
+	ServiceLabel              string `json:"service_label"`
+	CompaniesRelationshipFile string `json:"companies_relationship_file"`
 
 	GetMemberTimeoutMs time.Duration `json:"get_member_timeout_ms"`
 

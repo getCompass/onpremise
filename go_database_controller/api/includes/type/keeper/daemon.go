@@ -3,14 +3,16 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/functions"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_database_controller/api/conf"
 	"go_database_controller/api/includes/type/port_registry"
 	"go_database_controller/api/includes/type/sh"
 	"net"
 	"os/exec"
 	"time"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/functions"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 )
 
 // Start стартуем mysql
@@ -38,7 +40,7 @@ func Start(ctx context.Context, portValue int32, host string) error {
 
 	time.Sleep(500 * time.Millisecond)
 
-	err = UpdateDeployment(ctx)
+	err = UpdateDeployment(ctx, 0)
 
 	if err != nil {
 		return err
@@ -58,7 +60,7 @@ func Stop(ctx context.Context, portValue int32, host string) error {
 
 	log.Infof("пытаюсь остановить контейнер на порте %d...", portValue)
 
-	err := UpdateDeployment(ctx)
+	err := UpdateDeployment(ctx, portValue)
 
 	if err != nil {
 		return err
@@ -76,12 +78,27 @@ func Stop(ctx context.Context, portValue int32, host string) error {
 }
 
 // UpdateDeployment обновить стак деплоя
-func UpdateDeployment(ctx context.Context) error {
+func UpdateDeployment(ctx context.Context, skipPort int32) error {
 
 	// получаем все порты, занятые компаниями, в мире
 	portList, err := port_registry.GetAllCompanyPortList(ctx)
 	if err != nil {
 		return err
+	}
+
+	// если передан portValue - удаляем его из списка на резерве
+	if skipPort > 0 && server.IsReserveServer() {
+
+		filtered := make([]*port_registry.PortRegistryStruct, 0, len(portList))
+		for _, p := range portList {
+			if p.Port == skipPort {
+
+				// пропускаем этот порт
+				continue
+			}
+			filtered = append(filtered, p)
+		}
+		portList = filtered
 	}
 
 	// если не осталось портов - удаляем стак

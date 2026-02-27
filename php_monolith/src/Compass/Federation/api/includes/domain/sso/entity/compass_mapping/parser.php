@@ -6,8 +6,8 @@ namespace Compass\Federation;
  * класс описывающий парсер данных учетной записи SSO, которые маппятся в профиль Compass пользователя
  * @package Compass\Federation
  */
-class Domain_Sso_Entity_CompassMapping_Parser {
-
+class Domain_Sso_Entity_CompassMapping_Parser
+{
 	/** @var string регулярное выражение для парсинга всех атрибутов из строки */
 	protected const _PARSE_ATTRIBUTE_REGEX = "/\{(\w+)\}/";
 
@@ -20,10 +20,10 @@ class Domain_Sso_Entity_CompassMapping_Parser {
 	/**
 	 * парсим поле
 	 *
-	 * @return string
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public static function parseField(string $field_name, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser):?string {
+	public static function parseField(string $field_name, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser): ?string
+	{
 
 		// получаем содержимое поля из конфига
 		$field_content = Domain_Sso_Entity_CompassMapping_Config::getMappedFieldContent($field_name);
@@ -43,14 +43,9 @@ class Domain_Sso_Entity_CompassMapping_Parser {
 
 	/**
 	 * Парсим содержимое поля, заменяя на значения атрибутов и сущности AD
-	 *
-	 * @param string                                           $field_content
-	 * @param mixed                                            $sso_entity_data
-	 * @param Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser
-	 *
-	 * @return string|null
 	 */
-	public static function parseFieldContent(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser):?string {
+	public static function parseFieldContent(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser): ?string
+	{
 
 		// если пустое значение, то возвращаем null
 		if (mb_strlen($field_content) == 0) {
@@ -59,10 +54,15 @@ class Domain_Sso_Entity_CompassMapping_Parser {
 
 		$field_content = self::_parseForeignFields($field_content, $sso_entity_data, $sso_protocol_field_parser);
 
+		// может оказаться так, что не нашли значение для замены, и ключ останется не тронутым
+		// в таком случае стираем оставшиеся ключи, чтобы не оставались висеть в карточке
+		$field_content = preg_replace(self::_PARSE_FOREIGN_ATTRIBUTE_REGEX, "", $field_content);
+
 		return self::_parseFields($field_content, $sso_entity_data, $sso_protocol_field_parser);
 	}
 
-	protected static function _parseFields(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser):string {
+	protected static function _parseFields(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser): string
+	{
 
 		// получаем все атрибуты, которые нужно спарсить из учетной записи SSO
 		preg_match_all(self::_PARSE_ATTRIBUTE_REGEX, $field_content, $attribute_list);
@@ -84,13 +84,14 @@ class Domain_Sso_Entity_CompassMapping_Parser {
 		return format($field_content, $attribute_value_map);
 	}
 
-	protected static function _parseForeignFields(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser):string {
+	protected static function _parseForeignFields(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser): string
+	{
 
 		[$search_entity_data_list, $field_content] = self::_parseAssignments($field_content, $sso_entity_data, $sso_protocol_field_parser);
 
 		// если ничего не присваивали - тогда и заменять будет нечего
 		if ($search_entity_data_list === []) {
-			return $field_content;
+			return trim($field_content);
 		}
 
 		preg_match_all(self::_PARSE_FOREIGN_ATTRIBUTE_REGEX, $field_content, $foreign_attribute_matches);
@@ -119,7 +120,8 @@ class Domain_Sso_Entity_CompassMapping_Parser {
 		return trim($field_content);
 	}
 
-	protected static function _parseAssignments(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser):array {
+	protected static function _parseAssignments(string $field_content, mixed $sso_entity_data, Domain_Sso_Entity_CompassMapping_ParserInterface $sso_protocol_field_parser): array
+	{
 
 		// получаем все выражения, которые нужно спарсить из учетной записи SSO
 		preg_match_all(self::_PARSE_ASSIGMENT_REGEX, $field_content, $assignment_matches);

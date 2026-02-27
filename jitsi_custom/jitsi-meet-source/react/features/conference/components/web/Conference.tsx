@@ -44,6 +44,8 @@ import { setTileView } from "../../../video-layout/actions.any";
 import CompassToolbox from "../../../toolbox/components/web/CompassToolbox";
 import Toolbox from "../../../toolbox/components/web/Toolbox";
 import FontPreload from "./FontPreload";
+import {browser} from "../../../base/lib-jitsi-meet";
+import PrejoinElectron from "../../../prejoin/electron/Prejoin";
 
 /**
  * DOM events for when full screen mode has changed. Different browsers need
@@ -302,7 +304,8 @@ class Conference extends AbstractConference<IProps, any> {
 
                     <CalleeInfoContainer />
 
-                    {(_showPrejoin && !_showVisitorsQueue) && <Prejoin />}
+                    {(_showPrejoin && !_showVisitorsQueue && !browser.isElectron()) && <Prejoin />}
+                    {(_showPrejoin && !_showVisitorsQueue && browser.isElectron()) && <PrejoinElectron />}
                     {(_showLobby && !_showVisitorsQueue) && <LobbyScreen />}
                     {_showVisitorsQueue && <VisitorsQueue />}
                 </div>

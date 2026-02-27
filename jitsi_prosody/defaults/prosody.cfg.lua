@@ -106,13 +106,13 @@ modules_enabled = {
                 --"watchregistrations"; -- Alert admins of registrations
                 --"motd"; -- Send a message to users when they log in
                 --"legacyauth"; -- Legacy authentication. Only used by some old clients and bots.
-                "http_health";
+                --"http_health";
                 {{ if eq .Env.PROSODY_MODE "brewery" -}}
                 "firewall"; -- Enable firewalling
                 "secure_interfaces";
                 {{ end -}}
                 {{ if $ENABLE_S2S -}}
-                "dialback"; -- s2s dialback support
+                --"dialback"; -- s2s dialback support
                 "s2s_bidi";
                 "certs_s2soutinjection";
                 "s2sout_override";
@@ -215,7 +215,9 @@ c2s_interfaces = { "*" }
 
 {{ if $ENABLE_S2S -}}
 -- set s2s port
+s2s_require_encryption = false;
 s2s_ports = { {{ $S2S_PORT }} } -- Listen on specific s2s port
+s2s_interfaces = { "*", "::" }
 
 {{ if eq .Env.PROSODY_MODE "visitors" -}}
 s2s_whitelist = {
@@ -298,6 +300,8 @@ s2s_secure_auth = false
 -- for information about using the hashed backend.
 
 authentication = "internal_hashed"
+
+archive_expires_after = "1w" -- Remove archived messages after 1 week
 
 -- Select the storage backend to use. By default Prosody uses flat files
 -- in its configured data directory, but it also supports more backends

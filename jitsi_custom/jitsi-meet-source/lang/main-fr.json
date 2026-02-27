@@ -258,7 +258,7 @@
             "pairDevice": "Connecter un appareil"
         },
         "noPermission": "Permission non accordée",
-        "previewUnavailable": "Aperçu non disponible",
+        "previewUnavailable": "Pas d'accès à la caméra. Vérifiez si on est permis d'utiliser la caméra dans les paramètres de l’ordinateur ou sélectionner une autre caméra.",
         "selectADevice": "Sélectionner un périphérique",
         "testAudio": "Tester la sortie audio"
     },
@@ -711,7 +711,12 @@
         "notificationTitle": "Salle d'attente",
         "passwordJoinButton": "Rejoindre",
         "title": "Salle d'attente",
-        "toggleLabel": "Activer la salle d'attente"
+        "toggleLabel": "Activer la salle d'attente",
+        "previewWindow": {
+            "check_option": "Toujours afficher la fenêtre d’aperçu lors de la connexion",
+            "tooltip": "Pour rejoindre instantanément les réunions, désactivez cette option. L’aperçu peut être réactivé dans les paramètres.",
+            "button": "Rejoindre la réunion"
+        }
     },
     "localRecording": {
         "clientState": {
@@ -1184,6 +1189,12 @@
                 "titleDisabled": "Niveau automatique du microphone désactivé",
                 "description": "Le paramètre sera appliqué après le redémarrage de la conférence."
             }
+        },
+        "joinSettings": {
+            "title": "À la connexion à la conférence",
+            "option_1": "Activer mon microphone",
+            "option_2": "Activer ma caméra",
+            "option_3": "Afficher la fenêtre d’aperçu"
         }
     },
     "moderatorSettings": {

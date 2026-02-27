@@ -232,6 +232,32 @@ function table_contains(tbl, element)
     return false
 end
 
+-- храним состояние по стабильному ключу (room.jid). Никаких weak keys
+local room_state = {}  -- [room_jid] = EventData
+
+-- создаем/восстанавливаем состояние при необходимости
+local function ensure_event_data(room)
+    local key = room.jid
+    local event_data = room_state[key]
+    if event_data then
+        return event_data
+    end
+
+    module:log("warn", "esync: state missing for %s — late init", key);
+    event_data = new_EventData(key)
+    room_state[key] = event_data
+
+    -- пометим, что создание уже отправляли, чтобы не задваивать
+    room._data = room._data or {}
+    if not room._data.esync_created then
+        local payload = { event_name = 'muc-room-created', created_at = event_data.created_at }
+        update_with_room_attributes(payload, room)
+        room._data.esync_created = true
+        room:save()
+    end
+    return event_data
+end
+
 --- Callback when new room created
 function room_created(event)
     if is_system_event(event) then
@@ -242,7 +268,10 @@ function room_created(event)
 
     module:log("info", "Start tracking occupants for %s", room.jid);
     local room_data = new_EventData(room.jid);
-    room.event_data = room_data;
+    room_state[room.jid] = room_data;
+    room._data = room._data or {};
+    room._data.esync_created = true;
+    room:save();
 
     local payload = {
         ['event_name'] = 'muc-room-created';
@@ -258,13 +287,14 @@ function room_destroyed(event)
     end
 
     local room = event.room;
-    local room_data = room.event_data;
+    local key = room.jid
+    local room_data = room_state[key]; -- при уничтожении не создаем заново
     local destroyed_at = now();
 
-    module:log("info", "Room destroyed - %s", room.jid);
+    module:log("info", "Room destroyed - %s", key);
 
     if not room_data then
-        module:log("error", "(room destroyed) Room has no Event data - %s", room.jid);
+        module:log("error", "(room destroyed) Room has no Event data - %s", key);
         return ;
     end
 
@@ -275,6 +305,9 @@ function room_destroyed(event)
         ['all_occupants'] = room_data:get_occupant_array();
     };
     update_with_room_attributes(payload, room);
+
+    -- явная очистка состояния
+    room_state[key] = nil
 end
 
 -- Возвращает словарь только для тех, у кого left_at == nil.
@@ -282,7 +315,8 @@ end
 local function build_active_participants_map(room)
     local participants_map = {};
 
-    local all_participants_array = room.event_data:get_occupant_array();
+    local event_data = ensure_event_data(room)
+    local all_participants_array = event_data:get_occupant_array();
     for _, occupant_data in pairs(all_participants_array) do
         -- проверяем, что участник ещё в комнате
         if occupant_data.left_at == nil then
@@ -309,11 +343,7 @@ function occupant_joined(event)
     end
 
     local room = event.room;
-    local room_data = room.event_data;
-    if not room_data then
-        module:log("error", "(occupant joined) Room has no Event data - %s", room.jid);
-        return ;
-    end
+    local room_data = ensure_event_data(room);
 
     local occupant_jid = event.occupant.jid;
     local occupant_data = room_data:on_occupant_joined(occupant_jid, event.origin);
@@ -383,12 +413,7 @@ function occupant_left(event)
     end
 
     local room = event.room;
-    local room_data = room.event_data;
-
-    if not room_data then
-        module:log("error", "(occupant left) Room has no Event data - %s", room.jid);
-        return ;
-    end
+    local room_data = ensure_event_data(room);
 
     local occupant_jid = event.occupant.jid;
     local occupant_data = room_data:on_occupant_leave(occupant_jid, room);
@@ -561,34 +586,39 @@ end
 local get_room_by_name_and_subdomain = module:require "util".get_room_by_name_and_subdomain;
 
 function occupant_groupchat(event)
-    local room_name = event.room.event_data.room_name;
-    local room = get_room_by_name_and_subdomain(room_name);
-    local stanza = event.stanza;
-    local body = stanza:get_child_text('body');
+    -- иногда groupchat-событие приходит раньше, чем сработал room_created
+    if event.room then
 
-    if body then
+        local event_data = room_state[event.room.jid] or ensure_event_data(event.room)
+        local room_name = event_data.room_name
+        local room = get_room_by_name_and_subdomain(room_name);
+        local stanza = event.stanza;
+        local body = stanza:get_child_text('body');
 
-        local data = json.decode(body)
-        if data and type(data) == "table" then
+        if body then
 
-            if data.type == 'quality-level' then
-                local qualityLevel = data.qualityLevel;
-                local event_occupant_jid = event.stanza.attr.from;
-                local event_occupant = room:get_occupant_by_real_jid(event_occupant_jid);
-                if not event_occupant then
-                    module:log("error", "Occupant %s was not found in room %s", event_occupant_jid, room.jid)
-                    return
+            local data = json.decode(body)
+            if data and type(data) == "table" then
+
+                if data.type == 'quality-level' then
+                    local qualityLevel = data.qualityLevel;
+                    local event_occupant_jid = event.stanza.attr.from;
+                    local event_occupant = room:get_occupant_by_real_jid(event_occupant_jid);
+                    if not event_occupant then
+                        module:log("error", "Occupant %s was not found in room %s", event_occupant_jid, room.jid)
+                        return
+                    end
+
+                    -- Access control: Check if the occupant is a moderator
+                    local affiliation = room:get_affiliation(event_occupant.bare_jid);
+                    if affiliation ~= 'owner' and affiliation ~= 'admin' then
+                        module:log('warn', 'Unauthorized user %s attempted to update quality_level', event_occupant.jid);
+                        return
+                    end
+
+                    -- обновляем quality_level в room
+                    room.quality_level = tostring(qualityLevel)
                 end
-
-                -- Access control: Check if the occupant is a moderator
-                local affiliation = room:get_affiliation(event_occupant.bare_jid);
-                if affiliation ~= 'owner' and affiliation ~= 'admin' then
-                    module:log('warn', 'Unauthorized user %s attempted to update quality_level', event_occupant.jid);
-                    return ;
-                end
-
-                -- обновляем quality_level в room
-                room.quality_level = tostring(qualityLevel)
             end
         end
     end

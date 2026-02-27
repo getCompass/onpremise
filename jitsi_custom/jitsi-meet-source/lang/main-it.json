@@ -216,7 +216,7 @@
     },
     "deviceSelection": {
         "noPermission": "Permesso negato",
-        "previewUnavailable": "Anteprima non disponibile",
+        "previewUnavailable": "Nessun accesso alla fotocamera. Controlla l'autorizzazione della fotocamera nelle impostazioni del computer oppure seleziona un’altra fotocamera.",
         "selectADevice": "Scegli un dispositivo",
         "testAudio": "Riproduci un suono di prova"
     },
@@ -622,7 +622,12 @@
         "passwordField": "Inserisci la password della riunione",
         "passwordJoinButton": "Entra",
         "title": "Sala d'attesa",
-        "toggleLabel": "Attiva sala d'attesa"
+        "toggleLabel": "Attiva sala d'attesa",
+        "previewWindow": {
+            "check_option": "Mostra sempre la finestra  anteprima alla connessione",
+            "tooltip": "Per connetterti subito alle riunioni, disattiva questa opzione. Puoi riattivare l’anteprima nelle impostazioni della conferenza.",
+            "button": "Partecipa alla riunione"
+        }
     },
     "localRecording": {
         "clientState": {
@@ -1059,6 +1064,12 @@
                 "titleDisabled": "Livello automatico del microfono disattivato",
                 "description": "L'impostazione verrà applicata dopo il riavvio della conferenza."
             }
+        },
+        "joinSettings": {
+            "title": "All’accesso alla conferenza",
+            "option_1": "Attiva il mio microfono",
+            "option_2": "Attiva la mia fotocamera",
+            "option_3": "Mostra la finestra di anteprima"
         }
     },
     "moderatorSettings": {

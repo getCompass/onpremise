@@ -44,7 +44,6 @@ import { createDeferred } from '../../util/helpers';
 import AudioLevels from '../audio_levels/AudioLevels';
 
 import { VIDEO_CONTAINER_TYPE, VideoContainer } from './VideoContainer';
-import { isMobileBrowser } from "../../../react/features/base/environment/utils";
 
 const logger = Logger.getLogger(__filename);
 
@@ -151,6 +150,8 @@ export default class LargeVideoManager {
 
         this._dominantSpeakerAvatarContainer
             = document.getElementById('dominantSpeakerAvatarContainer');
+
+        this._disalbeLowConnectionMessage = true;
     }
 
     /**
@@ -419,7 +420,7 @@ export default class LargeVideoManager {
     updateParticipantConnStatusIndication(id, messageKey) {
         const state = APP.store.getState();
 
-        if (isMobileBrowser()) {
+        if (this._disalbeLowConnectionMessage) {
             return;
         }
 
@@ -567,7 +568,7 @@ export default class LargeVideoManager {
      * @returns {void}
      */
     updatePresenceLabel(id) {
-        const isConnectionMessageVisible = isMobileBrowser() ? false : getComputedStyle(
+        const isConnectionMessageVisible = this._disalbeLowConnectionMessage ? false : getComputedStyle(
             document.getElementById('remoteConnectionMessage')).display !== 'none';
 
         if (isConnectionMessageVisible) {
@@ -627,7 +628,7 @@ export default class LargeVideoManager {
      * the user's connection is either interrupted or inactive.
      */
     showRemoteConnectionMessage(show) {
-        if (isMobileBrowser()) {
+        if (this._disalbeLowConnectionMessage) {
             return;
         }
 
@@ -659,7 +660,7 @@ export default class LargeVideoManager {
      * @private
      */
     _setRemoteConnectionMessage(msgKey, msgOptions) {
-        if (isMobileBrowser()) {
+        if (this._disalbeLowConnectionMessage) {
             return;
         }
 
@@ -752,10 +753,6 @@ export default class LargeVideoManager {
 
         if (LargeVideoManager.isVideoContainer(this.state)) {
             this.showWatermark(false);
-
-            if (!isMobileBrowser()) {
-                this.showRemoteConnectionMessage(false);
-            }
         }
         oldContainer.hide();
 

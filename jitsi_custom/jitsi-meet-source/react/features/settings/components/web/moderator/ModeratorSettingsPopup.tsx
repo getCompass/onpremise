@@ -9,6 +9,9 @@ import { getModeratorSettingsVisibility } from '../../../functions.web';
 
 import ModeratorSettingsContent from './ModeratorSettingsContent';
 import { toggleModeratorSettings } from "../../../actions.web";
+import {getLocalParticipant, isParticipantModerator} from "../../../../base/participants/functions";
+import UserSettings from "../user/UserSettings";
+import {getWindowQueryData} from "../../../../desktop-picker/functions";
 
 
 interface IProps {
@@ -32,6 +35,8 @@ interface IProps {
      * The popup placement enum value.
      */
     popupPlacement: string;
+
+    isModerator: boolean;
 }
 
 const useStyles = makeStyles()(() => {
@@ -52,14 +57,23 @@ function ModeratorSettingsPopup({
     isOpen,
     onClose,
     popupPlacement,
+    isModerator,
 }: IProps) {
     const { classes, cx } = useStyles();
+    const { isSupportPreJoinPage } = getWindowQueryData();
+
+    const content = () => {
+        if (isSupportPreJoinPage) {
+            return isModerator ? <ModeratorSettingsContent /> : <UserSettings/>;
+        }
+        return <ModeratorSettingsContent />;
+    }
 
     return (
         <div className = { classes.container }>
             <Popover
                 allowClick = { true }
-                content = { <ModeratorSettingsContent /> }
+                content = { content() }
                 headingId = 'moderator-settings-button'
                 onPopoverClose = { onClose }
                 position = { popupPlacement }
@@ -79,10 +93,13 @@ function ModeratorSettingsPopup({
  */
 function mapStateToProps(state: IReduxState) {
     const { clientWidth } = state['features/base/responsive-ui'];
+    const localParticipant = getLocalParticipant(state);
+    const isModerator = isParticipantModerator(localParticipant);
 
     return {
         popupPlacement: clientWidth <= Number(SMALL_MOBILE_WIDTH) ? 'auto' : 'top-mid',
         isOpen: Boolean(getModeratorSettingsVisibility(state)),
+        isModerator,
     };
 }
 

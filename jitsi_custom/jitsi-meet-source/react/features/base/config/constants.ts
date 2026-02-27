@@ -11,6 +11,7 @@ export const _CONFIG_STORE_PREFIX = 'config.js';
  * The toolbar buttons to show on premeeting screens.
  */
 export const PREMEETING_BUTTONS = [ 'premeeting-microphone', 'premeeting-camera', 'premeeting-select-background' ];
+export const PREMEETING_BUTTONS_ELECTRON = [ 'premeeting-microphone', 'premeeting-camera', 'hangup'];
 
 export const PREMEETING_BUTTONS_MOBILE = [ 'camera', 'microphone' ];
 

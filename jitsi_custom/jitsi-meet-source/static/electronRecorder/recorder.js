@@ -10,15 +10,10 @@ let previousLocalTrackId;
 let replaceLocalTrackTimeoutId;
 let notificationPermissionUid;
 let drawId;
-let resizeTimerId;
 let intervalId;
 
 // окно ВКС свернуто?
 let isWindowMinimized = false;
-let windowSize = {
-    width: window.innerWidth,
-    height: window.innerHeight
-};
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 const convertedImages = new Map();
@@ -463,28 +458,32 @@ function drawWithAnimationFrame() {
  * @param isAnimationFrame - сейчас идет отрисовка через requestAnimationFrame ?
  */
 function drawFrame(isAnimationFrame) {
-    const canvasW = canvasSize.width;
-    const canvasH = canvasSize.height;
-    const isInScreenShare = isScreenShare();
-    const isInSpeakerMode = isSpeakerMode();
-    const isOneParticipant = getParticipantCount() <= 1 && !isInScreenShare;
+    try {
+        const canvasW = canvasSize.width;
+        const canvasH = canvasSize.height;
+        const isInScreenShare = isScreenShare();
+        const isInSpeakerMode = isSpeakerMode();
+        const isOneParticipant = getParticipantCount() <= 1 && !isInScreenShare;
 
-    ctx.fillStyle = '#171717';
-    ctx.fillRect(0, 0, canvasW, canvasH);
+        ctx.fillStyle = '#171717';
+        ctx.fillRect(0, 0, canvasW, canvasH);
 
-    // Режим спикера
-    // рисуем одного участника на весь канвас
-    if (isInSpeakerMode) {
-        drawSpeakerMode();
+        // Режим спикера
+        // рисуем одного участника на весь канвас
+        if (isInSpeakerMode) {
+            drawSpeakerMode();
 
-        // если только 1 участник
-        // его тоже отрисуем на весь канвас
-    } else if (isOneParticipant) {
-        drawOnlyOneParticipant();
-    } else {
+            // если только 1 участник
+            // его тоже отрисуем на весь канвас
+        } else if (isOneParticipant) {
+            drawOnlyOneParticipant();
+        } else {
 
-        // рисуем в режиме плитки
-        drawParticipants();
+            // рисуем в режиме плитки
+            drawParticipants();
+        }
+    } catch (e) {
+        console.error('[ERROR DRAW FRAME] ', e);
     }
 
     const isMinimizedAndUsingAnimationRender = isAnimationFrame && isWindowMinimized;
@@ -1055,12 +1054,3 @@ function saveConvertedImages({ url, dataUrl }) {
     };
     img.src = dataUrl;
 }
-
-
-window.onresize = () => {
-    clearTimeout(resizeTimerId);
-    resizeTimerId = setTimeout(() => {
-        windowSize.width = window.innerWidth;
-        windowSize.height = window.innerHeight;
-    }, 300);
-};

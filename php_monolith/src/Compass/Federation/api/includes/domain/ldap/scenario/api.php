@@ -54,16 +54,17 @@ class Domain_Ldap_Scenario_Api {
 		$prepared_entry = Domain_Ldap_Entity_Utils::prepareEntry($entry);
 		$entry          = self::_prepareBinaryData($entry);
 
+		$user_login_attribute = Domain_Ldap_Entity_Config::getUserLoginAttribute();
 		[$user_login_attribute_value, $user_unique_attribute_value, $dn]
 			= Domain_Ldap_Entity_Utils::parseEntryAttributes(
 			$prepared_entry,
-			Domain_Ldap_Entity_Config::getUserLoginAttribute(),
+			$user_login_attribute,
 			Domain_Ldap_Entity_Config::getUserUniqueAttribute());
 
 		// проверяем что по уникальному атрибуту совпали с переданными данными для авторизации
 		$normalized_username                   = mb_strtolower($username);
 		$normalized_user_login_attribute_value = mb_strtolower($user_login_attribute_value);
-		if ($normalized_username !== $normalized_user_login_attribute_value) {
+		if (mb_strlen($user_login_attribute) > 0 && $normalized_username !== $normalized_user_login_attribute_value) {
 
 			// если не совпали, значит нашли не свою запись
 			throw new Domain_Ldap_Exception_ProtocolError_FilterError("incorrect ldap.user_search_filter");

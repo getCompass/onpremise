@@ -31,7 +31,7 @@ interface ICheckboxProps {
     /**
      * The label of the input.
      */
-    label: string;
+    label: string | React.ReactNode;
 
     /**
      * The name of the input.

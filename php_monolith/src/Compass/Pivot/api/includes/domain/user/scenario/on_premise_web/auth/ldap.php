@@ -10,12 +10,11 @@ use BaseFrame\Exception\Request\CaseException;
 /**
  * Сценарии для работы с аутентификаций через LDAP
  */
-class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
-
+class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap
+{
 	/**
 	 * проводим попытку аутентификации через LDAP
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws Domain_Link_Exception_TemporaryUnavailable
 	 * @throws Domain_User_Exception_AuthStory_Expired
@@ -39,7 +38,8 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	 * @throws cs_UserNotFound
 	 * @long
 	 */
-	public static function begin(int $user_id, string $ldap_auth_token, string|bool $join_link, string $pivot_session_uniq):array {
+	public static function begin(int $user_id, string $ldap_auth_token, string | bool $join_link, string $pivot_session_uniq): array
+	{
 
 		// проверяем, что нет текущей активной сессии
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
@@ -127,7 +127,8 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	/**
 	 * Выполняет кусок логики подтверждения аутентификации для уже зарегистрированного пользователя.
 	 */
-	protected static function _confirmRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, Struct_User_Auth_Ldap_AccountData $ldap_account_data, string|false $join_link_uniq):array {
+	protected static function _confirmRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, Struct_User_Auth_Ldap_AccountData $ldap_account_data, string | false $join_link_uniq): array
+	{
 
 		$user_id = $story->getUserId();
 
@@ -157,7 +158,8 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		if (Domain_User_Entity_Auth_Config::isProfileDataActualizationEnabled()) {
 
 			// актуализируем информацию
-			self::actualizeProfileData($user_id, $ldap_account_data);
+			$is_empty_attributes_update_enabled = Domain_User_Entity_Ldap_Config::isEmptyAttributesUpdateEnabled();
+			self::actualizeProfileData($user_id, $ldap_account_data, $is_empty_attributes_update_enabled);
 		}
 
 		return [$user_id, null];
@@ -166,7 +168,8 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	/**
 	 * Выполняет кусок логики для создания нового пользователя и подтверждения аутентификации.
 	 */
-	protected static function _confirmNotRegisteredUserAuthentication(Struct_User_Auth_Ldap_AccountData $ldap_account_data, string|false $join_link_uniq):array {
+	protected static function _confirmNotRegisteredUserAuthentication(Struct_User_Auth_Ldap_AccountData $ldap_account_data, string | false $join_link_uniq): array
+	{
 
 		// если нет автовступления и не передали ссылку, то возвращаем ошибку
 		if (Domain_User_Entity_Auth_Config::getAutoJoinToTeam() === Domain_User_Entity_Auth_Config_AutoJoinEnum::DISABLED && $join_link_uniq === false) {
@@ -220,14 +223,15 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	 * @throws \queryException
 	 * @throws cs_FileIsNotImage
 	 */
-	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data, int $is_empty_attributes_update_enabled = 1):void {
+	public static function actualizeProfileData(int $user_id, Struct_User_Auth_Ldap_AccountData $sso_account_data, bool $is_empty_attributes_update_enabled = true): void
+	{
 
 		/**
 		 * подготавливаем параметры для обновления аватара пользователя
 		 *
 		 * @var Domain_User_Action_Sso_ActualizeProfileData_AvatarAction $avatar_action
 		 */
-		[$avatar_action, $avatar_file_key] = Domain_User_Action_Sso_ActualizeProfileData::prepareAvatarData($sso_account_data->avatar);
+		[$avatar_action, $avatar_file_key] = Domain_User_Action_Sso_ActualizeProfileData::prepareAvatarData($sso_account_data->avatar, $is_empty_attributes_update_enabled);
 
 		// обрабатываем атрибуты с учетом флага
 		$name  = self::_processAttributeValue($sso_account_data->name, $is_empty_attributes_update_enabled);
@@ -238,30 +242,38 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 		// записываем актуальную информацию о пользователе
 		Domain_User_Action_Sso_ActualizeProfileData::do(
 			$user_id,
-			is_null($name) ? false : $name,
+			$name,
 			$avatar_action,
 			$avatar_file_key,
-			is_null($badge) ? false : $badge,
-			is_null($role) ? false : $role,
-			is_null($bio) ? false : $bio,
+			$badge,
+			$role,
+			$bio,
 		);
 	}
 
 	/**
 	 * Обрабатываем значение атрибута в зависимости от флага.
+	 *
+	 * Возвращает:
+	 * false - если не нужно обновлять атрибут
+	 * mixed - значение атрибута
 	 */
-	private static function _processAttributeValue(mixed $value, int $is_empty_attributes_update_enabled):mixed {
+	private static function _processAttributeValue(mixed $value, bool $is_empty_attributes_update_enabled): mixed
+	{
 
-		// если флаг разрешает обновление пустыми значениями, возвращаем значение как есть
-		if ($is_empty_attributes_update_enabled) {
-			return $value;
+		// если пустые значения обновлять запрещено, а значение null
+		if (!$is_empty_attributes_update_enabled && $value === null) {
+			return false;
 		}
 
-		// если флаг запрещает обновление пустыми значениями:
-		// возвращаем значение только если оно не пустое
-		// в противном случае возвращаем false, чтобы не обновлять поле
-		if (is_null($value)) {
+		// если пустые значения обновлять запрещено, а значение "пустое"
+		if (!$is_empty_attributes_update_enabled && $value === "") {
 			return false;
+		}
+
+		// если значение null - заменяем на пустое
+		if ($value === null) {
+			$value = "";
 		}
 
 		return $value;
@@ -269,10 +281,9 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 
 	/**
 	 * Подготавливаем Имя Фамилия, полученные от LDAP провайдера
-	 *
-	 * @return string
 	 */
-	protected static function _prepareFullName(Struct_User_Auth_Ldap_AccountData $ldap_account_data):string {
+	protected static function _prepareFullName(Struct_User_Auth_Ldap_AccountData $ldap_account_data): string
+	{
 
 		return trim($ldap_account_data->name);
 	}
@@ -282,11 +293,11 @@ class Domain_User_Scenario_OnPremiseWeb_Auth_Ldap {
 	 *
 	 * @throws Domain_User_Exception_AuthStory_Sso_IncorrectFullName
 	 */
-	protected static function _throwIfIncorrectFullName(string $full_name):void {
+	protected static function _throwIfIncorrectFullName(string $full_name): void
+	{
 
 		if (mb_strlen($full_name) < 1) {
 			throw new Domain_User_Exception_AuthStory_Sso_IncorrectFullName();
 		}
 	}
-
 }

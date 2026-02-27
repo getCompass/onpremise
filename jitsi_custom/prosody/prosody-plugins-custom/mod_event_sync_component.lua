@@ -232,6 +232,33 @@ function table_contains(tbl, element)
     return false
 end
 
+-- храним состояние по стабильному ключу (room.jid). Никаких weak keys
+local room_state = {}  -- [room_jid] = EventData
+
+-- создаем/восстанавливаем состояние при необходимости
+local function ensure_event_data(room)
+    local key = room.jid
+    local event_data = room_state[key]
+    if event_data then
+        return event_data
+    end
+
+    module:log("warn", "esync: state missing for %s — late init", key);
+    event_data = new_EventData(key)
+    room_state[key] = event_data
+
+    -- пометим, что создание уже отправляли, чтобы не задваивать
+    room._data = room._data or {}
+    if not room._data.esync_created then
+        local payload = { event_name = 'muc-room-created', created_at = event_data.created_at }
+        update_with_room_attributes(payload, room)
+        async_http_request(URL_EVENT_ENDPOINT, { headers = http_headers; method = "POST"; body = json.encode(payload) })
+        room._data.esync_created = true
+        room:save()
+    end
+    return event_data
+end
+
 --- Callback when new room created
 function room_created(event)
     if is_system_event(event) then
@@ -242,7 +269,10 @@ function room_created(event)
 
     module:log("info", "Start tracking occupants for %s", room.jid);
     local room_data = new_EventData(room.jid);
-    room.event_data = room_data;
+    room_state[room.jid] = room_data;
+    room._data = room._data or {};
+    room._data.esync_created = true;
+    room:save();
 
     local payload = {
         ['event_name'] = 'muc-room-created';
@@ -264,13 +294,14 @@ function room_destroyed(event)
     end
 
     local room = event.room;
-    local room_data = room.event_data;
+    local key = room.jid
+    local room_data = room_state[key]; -- при уничтожении не создаем заново
     local destroyed_at = now();
 
-    module:log("info", "Room destroyed - %s", room.jid);
+    module:log("info", "Room destroyed - %s", key);
 
     if not room_data then
-        module:log("error", "(room destroyed) Room has no Event data - %s", room.jid);
+        module:log("error", "(room destroyed) Room has no Event data - %s", key);
         return ;
     end
 
@@ -287,6 +318,9 @@ function room_destroyed(event)
         method = "POST";
         body = json.encode(payload);
     })
+
+    -- явная очистка состояния
+    room_state[key] = nil
 end
 
 -- Возвращает словарь только для тех, у кого left_at == nil.
@@ -294,7 +328,8 @@ end
 local function build_active_participants_map(room)
     local participants_map = {};
 
-    local all_participants_array = room.event_data:get_occupant_array();
+    local event_data = ensure_event_data(room)
+    local all_participants_array = event_data:get_occupant_array();
     for _, occupant_data in pairs(all_participants_array) do
         -- проверяем, что участник ещё в комнате
         if occupant_data.left_at == nil then
@@ -321,11 +356,7 @@ function occupant_joined(event)
     end
 
     local room = event.room;
-    local room_data = room.event_data;
-    if not room_data then
-        module:log("error", "(occupant joined) Room has no Event data - %s", room.jid);
-        return ;
-    end
+    local room_data = ensure_event_data(room);
 
     local occupant_jid = event.occupant.jid;
     local occupant_data = room_data:on_occupant_joined(occupant_jid, event.origin);
@@ -395,12 +426,7 @@ function occupant_left(event)
     end
 
     local room = event.room;
-    local room_data = room.event_data;
-
-    if not room_data then
-        module:log("error", "(occupant left) Room has no Event data - %s", room.jid);
-        return ;
-    end
+    local room_data = ensure_event_data(room);
 
     local occupant_jid = event.occupant.jid;
     local occupant_data = room_data:on_occupant_leave(occupant_jid, room);
@@ -573,160 +599,158 @@ end
 -- когда участнику конференции изменили права
 function occupant_affiliation_changed(event)
 
-    if not event.room or not event.room.event_data then
-        return ;
-    end
+    if event.room then
+        local event_data = room_state[event.room.jid] or ensure_event_data(event.room)
 
-    -- сюда запишем нового модератора
-    local new_moderator = nil
-    if event.affiliation == "owner" and event.previous_affiliation == "member" then
+        -- сюда запишем нового модератора
+        local new_moderator = nil
+        if event.affiliation == "owner" and event.previous_affiliation == "member" then
 
-        -- пройдемся по каждому участнику комнаты
-        local room = event.room;
-        for _, occupant in pairs(room.event_data.occupants) do
+            -- пройдемся по каждому участнику комнаты
+            for _, occupant in pairs(event_data.occupants) do
 
-            if string.find(occupant.occupant_jid, event.jid, 1, true) then
+                if string.find(occupant.occupant_jid, event.jid, 1, true) then
 
-                new_moderator = occupant
-                break
+                    new_moderator = occupant
+                    break
+                end
             end
         end
+
+        -- если не смогли найти участника, которому выдали модератора
+        if new_moderator == nil then
+
+            module:log("info", "new moderator occupant not found");
+            return
+        end
+
+        local payload = {
+            ["event_name"] = "moderator-rights-granted";
+            ["occupant"] = new_moderator;
+            ["room_name"] = event_data.room_name;
+        };
+
+        async_http_request(URL_EVENT_ENDPOINT, {
+            headers = http_headers;
+            method = "POST";
+            body = json.encode(payload);
+        })
     end
-
-    -- если не смогли найти участника, которому выдали модератора
-    if new_moderator == nil then
-
-        module:log("info", "new moderator occupant not found");
-        return
-    end
-
-    local payload = {
-        ["event_name"] = "moderator-rights-granted";
-        ["occupant"] = new_moderator;
-        ["room_name"] = event.room.event_data.room_name;
-    };
-
-    async_http_request(URL_EVENT_ENDPOINT, {
-        headers = http_headers;
-        method = "POST";
-        body = json.encode(payload);
-    })
 end
 
 local get_room_by_name_and_subdomain = module:require "util".get_room_by_name_and_subdomain;
 
 function occupant_groupchat(event)
     -- иногда groupchat-событие приходит раньше, чем сработал room_created
-    if not event.room or not event.room.event_data then
-        return
-    end
+    if event.room then
 
-    local room_name = event.room.event_data.room_name;
-    local room = get_room_by_name_and_subdomain(room_name);
-    local stanza = event.stanza;
-    local body = stanza:get_child_text('body');
+        local event_data = room_state[event.room.jid] or ensure_event_data(event.room)
+        local room_name = event_data.room_name
+        local room = get_room_by_name_and_subdomain(room_name);
+        local stanza = event.stanza;
+        local body = stanza:get_child_text('body');
 
-    if body then
+        if body then
 
-        local data = json.decode(body)
-        if data and type(data) == "table" then
+            local data = json.decode(body)
+            if data and type(data) == "table" then
 
-            if data.type == 'quality-level' then
-                local qualityLevel = data.qualityLevel;
-                local event_occupant_jid = event.stanza.attr.from;
-                local event_occupant = room:get_occupant_by_real_jid(event_occupant_jid);
-                if not event_occupant then
-                    module:log("error", "Occupant %s was not found in room %s", event_occupant_jid, room.jid)
-                    return
-                end
-
-                -- Access control: Check if the occupant is a moderator
-                local affiliation = room:get_affiliation(event_occupant.bare_jid);
-                if affiliation ~= 'owner' and affiliation ~= 'admin' then
-                    module:log('warn', 'Unauthorized user %s attempted to update quality_level', event_occupant.jid);
-                    return
-                end
-
-                -- обновляем quality_level в room
-                room.quality_level = tostring(qualityLevel)
-            end
-
-            if data.type == 'participant-stats' then
-                -- Пример, что нужно отправить method=stat.log, request=<json> в форме
-                local form_data = {
-                    method = "stat.log",
-                    request = json.encode(data.payload)
-                };
-
-                -- Собираем тело формы
-                local collector_parts = {};
-                for k, v in pairs(form_data) do
-                    table.insert(collector_parts, urlencode(k) .. "=" .. urlencode(v));
-                end
-                local collector_body = table.concat(collector_parts, "&");
-
-                -- Делаем HTTP-запрос только если URL_COLLECTOR_ENDPOINT указан и не пуст
-                if URL_COLLECTOR_ENDPOINT and URL_COLLECTOR_ENDPOINT ~= "" then
-                    async_http_request(URL_COLLECTOR_ENDPOINT, {
-                        headers = collector_headers;
-                        method = "POST";
-                        body = collector_body;
-                    })
-                end
-            end
-
-            if data.type == 'update-user-recording' then
-                local action = data.action;
-                local event_occupant_jid = event.stanza.attr.from;
-                local event_occupant = room:get_occupant_by_real_jid(event_occupant_jid);
-                if not event_occupant then
-                    module:log("error", "Occupant %s was not found in room %s", event_occupant_jid, room.jid)
-                    return
-                end
-
-                -- Access control: Check if the occupant is a moderator
-                local affiliation = room:get_affiliation(event_occupant.bare_jid);
-                if affiliation ~= 'owner' and affiliation ~= 'admin' then
-                    module:log('warn', 'Unauthorized user %s attempted to update user_recording_users', event_occupant.jid);
-                    return ;
-                end
-
-                -- инициализируем массив записывающих пользователей, если его ещё нет
-                local user_recording_users = room.user_recording_users or {};
-                room.user_recording_users = user_recording_users;
-
-                -- обновляем массив записывающих пользователей
-                if action == 'inc' then
-                    if not table_contains(user_recording_users, event_occupant_jid) then
-                        table.insert(user_recording_users, event_occupant_jid);
+                if data.type == 'quality-level' then
+                    local qualityLevel = data.qualityLevel;
+                    local event_occupant_jid = event.stanza.attr.from;
+                    local event_occupant = room:get_occupant_by_real_jid(event_occupant_jid);
+                    if not event_occupant then
+                        module:log("error", "Occupant %s was not found in room %s", event_occupant_jid, room.jid)
+                        return
                     end
-                else
-                    for i, recording_jid in ipairs(user_recording_users) do
-                        if recording_jid == event_occupant_jid then
-                            table.remove(user_recording_users, i);
-                            break ;
+
+                    -- Access control: Check if the occupant is a moderator
+                    local affiliation = room:get_affiliation(event_occupant.bare_jid);
+                    if affiliation ~= 'owner' and affiliation ~= 'admin' then
+                        module:log('warn', 'Unauthorized user %s attempted to update quality_level', event_occupant.jid);
+                        return
+                    end
+
+                    -- обновляем quality_level в room
+                    room.quality_level = tostring(qualityLevel)
+                end
+
+                if data.type == 'participant-stats' then
+                    local form_data = {
+                        method = "stat.log",
+                        request = json.encode(data.payload)
+                    };
+
+                    -- собираем тело формы
+                    local collector_parts = {};
+                    for k, v in pairs(form_data) do
+                        table.insert(collector_parts, urlencode(k) .. "=" .. urlencode(v));
+                    end
+                    local collector_body = table.concat(collector_parts, "&");
+
+                    -- делаем HTTP-запрос только если URL_COLLECTOR_ENDPOINT указан и не пуст
+                    if URL_COLLECTOR_ENDPOINT and URL_COLLECTOR_ENDPOINT ~= "" then
+                        async_http_request(URL_COLLECTOR_ENDPOINT, {
+                            headers = collector_headers;
+                            method = "POST";
+                            body = collector_body;
+                        })
+                    end
+                end
+
+                if data.type == 'update-user-recording' then
+                    local action = data.action;
+                    local event_occupant_jid = event.stanza.attr.from;
+                    local event_occupant = room:get_occupant_by_real_jid(event_occupant_jid);
+                    if not event_occupant then
+                        module:log("error", "Occupant %s was not found in room %s", event_occupant_jid, room.jid)
+                        return
+                    end
+
+                    -- Access control: Check if the occupant is a moderator
+                    local affiliation = room:get_affiliation(event_occupant.bare_jid);
+                    if affiliation ~= 'owner' and affiliation ~= 'admin' then
+                        module:log('warn', 'Unauthorized user %s attempted to update user_recording_users', event_occupant.jid);
+                        return ;
+                    end
+
+                    -- инициализируем массив записывающих пользователей, если его ещё нет
+                    local user_recording_users = room.user_recording_users or {};
+                    room.user_recording_users = user_recording_users;
+
+                    -- обновляем массив записывающих пользователей
+                    if action == 'inc' then
+                        if not table_contains(user_recording_users, event_occupant_jid) then
+                            table.insert(user_recording_users, event_occupant_jid);
+                        end
+                    else
+                        for i, recording_jid in ipairs(user_recording_users) do
+                            if recording_jid == event_occupant_jid then
+                                table.remove(user_recording_users, i);
+                                break ;
+                            end
                         end
                     end
-                end
 
-                -- отправляем сообщение каждому участнику о текущем количестве записывающих пользователей
-                local recording_data = {
-                    type = "user-recording-count",
-                    value = #user_recording_users,
-                };
-                local recording_json_msg_str, error = json.encode(recording_data);
-                if not recording_json_msg_str then
-                    module:log('error', 'Error encoding data room:%s error:%s', room.jid, error);
-                end
-                for _, occupant_data in pairs(event.room._occupants) do
-                    local recording_stanza = st.message({
-                        from = room.jid,
-                        to = occupant_data.jid
-                    })
-                                               :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
-                                               :text(recording_json_msg_str)
-                                               :up();
-                    room:route_stanza(recording_stanza);
+                    -- отправляем сообщение каждому участнику о текущем количестве записывающих пользователей
+                    local recording_data = {
+                        type = "user-recording-count",
+                        value = #user_recording_users,
+                    };
+                    local recording_json_msg_str, error = json.encode(recording_data);
+                    if not recording_json_msg_str then
+                        module:log('error', 'Error encoding data room:%s error:%s', room.jid, error);
+                    end
+                    for _, occupant_data in pairs(event.room._occupants) do
+                        local recording_stanza = st.message({
+                            from = room.jid,
+                            to = occupant_data.jid
+                        })
+                                                   :tag("json-message", { xmlns = "http://jitsi.org/jitmeet" })
+                                                   :text(recording_json_msg_str)
+                                                   :up();
+                        room:route_stanza(recording_stanza);
+                    end
                 end
             end
         end

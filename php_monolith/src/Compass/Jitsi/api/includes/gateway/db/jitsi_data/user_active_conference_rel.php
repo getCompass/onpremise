@@ -117,6 +117,19 @@ class Gateway_Db_JitsiData_UserActiveConferenceRel extends Gateway_Db_JitsiData_
 	}
 
 	/**
+	 * обновляем записи в базе по PK
+	 *
+	 * @return int
+	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
+	 */
+	public static function setList(array $user_id_list, array $set):int {
+
+		// EXPLAIN PRIMARY KEY
+		$query = "UPDATE `?p` SET ?u WHERE `user_id` IN (?a) LIMIT ?i";
+		return ShardingGateway::database(self::_DB_KEY)->update($query, self::_TABLE_NAME, $set, $user_id_list, count($user_id_list));
+	}
+
+	/**
 	 * обновляем все записи по значению active_conference_id
 	 *
 	 * @return int

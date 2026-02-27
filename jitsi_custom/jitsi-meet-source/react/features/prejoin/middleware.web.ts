@@ -3,7 +3,7 @@ import { AnyAction } from 'redux';
 import { IStore } from '../app/types';
 import { CONFERENCE_FAILED, CONFERENCE_JOINED } from '../base/conference/actionTypes';
 import { CONNECTION_FAILED } from '../base/connection/actionTypes';
-import { SET_AUDIO_MUTED, SET_VIDEO_MUTED } from '../base/media/actionTypes';
+import {SET_AUDIO_MUTED, SET_START_WITH_AUDIO, SET_START_WITH_VIDEO, SET_VIDEO_MUTED} from '../base/media/actionTypes';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import { updateSettings } from '../base/settings/actions';
 import {
@@ -36,6 +36,20 @@ MiddlewareRegistry.register(store => next => action => {
     case SET_VIDEO_MUTED: {
         store.dispatch(updateSettings({
             startWithVideoMuted: Boolean(action.muted)
+        }));
+        break;
+    }
+
+    case SET_START_WITH_AUDIO: {
+        store.dispatch(updateSettings({
+            isStartWithAudio: Boolean(action.muted)
+        }));
+        break;
+    }
+
+    case SET_START_WITH_VIDEO: {
+        store.dispatch(updateSettings({
+            isStartWithVideo: Boolean(action.muted)
         }));
         break;
     }

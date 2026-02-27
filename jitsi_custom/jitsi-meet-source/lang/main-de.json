@@ -258,7 +258,7 @@
             "pairDevice": "Gerät verbinden"
         },
         "noPermission": "Berechtigungen nicht erteilt",
-        "previewUnavailable": "Keine Vorschau verfügbar",
+        "previewUnavailable": "Kein Zugriff auf die Kamera. Bitte überprüfen Sie die Genehmigung für die Verwendung der Kamera in den Computereinstellungen oder wählen Sie eine andere Kamera aus.",
         "selectADevice": "Ein Gerät wählen",
         "testAudio": "Prüfton wiedergeben"
     },
@@ -714,7 +714,12 @@
         "notificationTitle": "Lobby",
         "passwordJoinButton": "Beitreten",
         "title": "Lobby",
-        "toggleLabel": "Lobby aktivieren"
+        "toggleLabel": "Lobby aktivieren",
+        "previewWindow": {
+            "check_option": "Vorschaufenster beim Beitritt immer anzeigen",
+            "tooltip": "Um Besprechungen sofort beizutreten, deaktivieren Sie diese Option. Die Vorschau kann in den Konferenzeinstellungen wieder aktiviert werden.",
+            "button": "Der Besprechung beitreten"
+        }
     },
     "localRecording": {
         "clientState": {
@@ -1192,6 +1197,12 @@
                 "titleDisabled": "Automatische Mikrofonregelung aus",
                 "description": "Die Einstellung wird nach dem Neustart der Konferenz übernommen."
             }
+        },
+        "joinSettings": {
+            "title": "Beim Beitritt zur Konferenz",
+            "option_1": "Mein Mikrofon einschalten",
+            "option_2": "Meine Kamera einschalten",
+            "option_3": "Vorschaufenster anzeigen"
         }
     },
     "moderatorSettings": {

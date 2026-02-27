@@ -67,6 +67,7 @@ export function connect(id?: string, password?: string) {
  */
 export function hangup(requestFeedback = false, feedbackTitle?: string, isLeave?: boolean) {
     // XXX For web based version we use conference hanging up logic from the old app.
+
     return async (dispatch: IStore['dispatch']) => {
         if (LocalRecordingManager.isRecordingLocally()) {
             dispatch(stopLocalVideoRecording());

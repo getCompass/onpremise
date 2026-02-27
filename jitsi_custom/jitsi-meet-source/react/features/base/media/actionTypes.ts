@@ -31,6 +31,26 @@ export const SET_AUDIO_AVAILABLE = 'SET_AUDIO_AVAILABLE';
 export const SET_AUDIO_MUTED = 'SET_AUDIO_MUTED';
 
 /**
+ * The type of (redux) action to set the muted state of the local audio.
+ *
+ * {
+ *     type: SET_START_WITH_AUDIO,
+ *     muted: boolean
+ * }
+ */
+export const SET_START_WITH_AUDIO = 'SET_START_WITH_AUDIO';
+
+/**
+ * The type of (redux) action to set the muted state of the local audio.
+ *
+ * {
+ *     type: SET_START_WITH_VIDEO,
+ *     muted: boolean
+ * }
+ */
+export const SET_START_WITH_VIDEO = 'SET_START_WITH_AUDIO';
+
+/**
  * The type of (redux) action to enable/disable the audio mute icon.
  *
  * {

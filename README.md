@@ -1,10 +1,10 @@
 <p align="center">
-  <a href="https://getcompass.ru">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://getcompass.ru/static/github/ru/logo_dark.png">
-      <img src="https://getcompass.ru/static/github/ru/logo_light.png" height="150" alt="Compass logo">
-    </picture>
-  </a>
+    <a href="https://vimeo.com/1187628360" target="_blank" rel="nofollow noopener noreferrer">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://getcompass.ru/static/github/ru/logo_dark.png">
+            <img src="https://getcompass.ru/static/github/ru/logo_light.png" height="150" alt="Смотреть видео">
+        </picture>
+    </a>
 </p>
 
 <h3 align="center">Быстрый корпоративный мессенджер на вашем сервере</h3>

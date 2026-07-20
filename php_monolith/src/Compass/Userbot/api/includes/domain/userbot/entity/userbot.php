@@ -12,6 +12,7 @@ class Domain_Userbot_Entity_Userbot {
 	public const USERBOT_WEBHOOK_VERSION_1 = 1;
 	public const USERBOT_WEBHOOK_VERSION_2 = 2;
 	public const USERBOT_WEBHOOK_VERSION_3 = 3;
+	public const USERBOT_WEBHOOK_VERSION_4 = 4;
 
 	// список статусов бота
 	public const STATUS_DISABLE = 0; // бот неактивен

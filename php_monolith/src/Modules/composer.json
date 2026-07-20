@@ -11,7 +11,7 @@
 		"backend_compass_dev_2/php_analytic_utils": "1.0.0",
 		"backend_compass_dev_2/compass_space": "v1.0.6",
 		"service/phone_carrier_lookup": "1.0.0",
-		"get_compass/userbot": "dev-master#13db5d754b5904756a2fa65500fa9273d8b67dd9",
+		"get_compass/userbot": "dev-master#ab5f281e12ce0912fdcae7a72ea2b82572734b4f",
 		"wamania/php-stemmer": "v3.0.0",
 		"phpseclib/phpseclib": "3.0.42",
 		"service/announcement_template": "1.0.0",

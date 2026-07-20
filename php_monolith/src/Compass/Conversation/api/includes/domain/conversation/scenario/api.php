@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Conversation;
 
@@ -9,17 +9,16 @@ use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
+use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Member;
 use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\User\Exception\NotAllowedType;
-use JetBrains\PhpStorm\ArrayShape;
-use BaseFrame\Exception\Request\ParamException;
 
 /**
  * API-сценарии домена «диалоги».
  */
-class Domain_Conversation_Scenario_Api {
-
+class Domain_Conversation_Scenario_Api
+{
 	/** @var int Время после которого не нужно отдавать уволенных пользователей (при необходимости) */
 	protected const _TIME_NOT_ADDED_DISMISSED_USER = DAY7;
 
@@ -39,21 +38,21 @@ class Domain_Conversation_Scenario_Api {
 	 * @long
 	 */
 	public static function getLeftMenu(
-		int    $user_id,
-		int    $limit,
-		int    $offset,
+		int $user_id,
+		int $limit,
+		int $offset,
 		string $search_query = "",
-		int    $filter_favorite = 0,
-		int    $filter_unread = 0,
-		int    $filter_single = 0,
-		int    $filter_unblocked = 0,
-		int    $filter_owner = 0,
-		int    $filter_system = 0,
-		int    $is_mentioned_first = 0,
-		int    $filter_blocked_time = 0,
-		int    $filter_support = 0,
-		array  $filter_npc_type = []
-	):array {
+		int $filter_favorite = 0,
+		int $filter_unread = 0,
+		int $filter_single = 0,
+		int $filter_unblocked = 0,
+		int $filter_owner = 0,
+		int $filter_system = 0,
+		int $is_mentioned_first = 0,
+		int $filter_blocked_time = 0,
+		int $filter_support = 0,
+		array $filter_npc_type = []
+	): array {
 
 		// проверяем что переданы правильные типы пользователей
 		Type_User_Main::assertUserTypeList($filter_npc_type);
@@ -110,10 +109,12 @@ class Domain_Conversation_Scenario_Api {
 	 * @long много неразрывной логики
 	 * @throws \parseException
 	 */
-	protected static function _updateSingleDialogWithAccountDeleteUser(int $user_id, array $single_left_menu_row, array $left_menu_list, array $user_list):array {
+	protected static function _updateSingleDialogWithAccountDeleteUser(int $user_id, array $single_left_menu_row, array $left_menu_list, array $user_list): array
+	{
 
 		// собираем список пользователей из single-диалогов из записей левого меню
-		$deleted_conversation_map_list = [];
+		$deleted_conversation_map_list     = [];
+		$was_deleted_conversation_map_list = [];
 		foreach ($user_list as $user) {
 
 			// если пользователь удалил аккаунт
@@ -132,10 +133,8 @@ class Domain_Conversation_Scenario_Api {
 				self::_setUnmutedIfNeed($user_id, $conversation_map, $left_menu_row);
 				$deleted_conversation_map_list[] = $conversation_map;
 
-				// обновляем is_allowed диалога, ставим статус — ALLOW_STATUS_NEED_CHECK, а не ALLOW_STATUS_MEMBER_DISABLED
-				// чтобы система сама обновила диалог до статуса ALLOW_STATUS_MEMBER_DISABLED и произвела все необходимые действия
-				// для блокировки диалога и скрываем single диалог
-				// записываем allow_status_alias в левоем меню собеседнику уволенного сотрудника
+				// обновляем allow_status диалога, устанавливая статус ALLOW_STATUS_MEMBER_DELETED
+				// записываем allow_status_alias в левое меню собеседнику удалённого сотрудника
 				Gateway_Db_CompanyConversation_ConversationMeta::set($conversation_map, [
 					"allow_status" => ALLOW_STATUS_MEMBER_DELETED,
 					"updated_at"   => time(),
@@ -143,6 +142,27 @@ class Domain_Conversation_Scenario_Api {
 				Type_Phphooker_Main::sendClearThreadMetaCache($conversation_map);
 
 				$set["allow_status_alias"] = Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DELETED;
+				Domain_User_Action_Conversation_UpdateLeftMenu::do($user_id, $conversation_map, $set);
+			} else {
+
+				// со стороны оппонента - проверяем в левое меню о том что пользователь был удален
+				$left_menu_row    = $single_left_menu_row[$user->user_id];
+				$conversation_map = $left_menu_row["conversation_map"];
+
+				if ($left_menu_row["allow_status_alias"] != Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DELETED) {
+					continue;
+				}
+
+				$was_deleted_conversation_map_list[] = $conversation_map;
+
+				// обновляем allow_status диалога, устанавливая статус ALLOW_STATUS_NEED_CHECK
+				// записываем allow_status_alias в левое меню собеседнику
+				Gateway_Db_CompanyConversation_ConversationMeta::set($conversation_map, [
+					"allow_status" => ALLOW_STATUS_NEED_CHECK,
+					"updated_at"   => time(),
+				]);
+
+				$set["allow_status_alias"] = Type_Conversation_Utils::ALLOW_STATUS_OK;
 				Domain_User_Action_Conversation_UpdateLeftMenu::do($user_id, $conversation_map, $set);
 			}
 		}
@@ -156,6 +176,13 @@ class Domain_Conversation_Scenario_Api {
 					$left_menu_list[$k1]["allow_status_alias"] = Type_Conversation_Utils::ALLOW_STATUS_MEMBER_IS_DELETED;
 				}
 			}
+
+			foreach ($was_deleted_conversation_map_list as $v2) {
+
+				if ($v1["conversation_map"] == $v2) {
+					$left_menu_list[$k1]["allow_status_alias"] = Type_Conversation_Utils::ALLOW_STATUS_OK;
+				}
+			}
 		}
 
 		return $left_menu_list;
@@ -165,11 +192,9 @@ class Domain_Conversation_Scenario_Api {
 	 * убираем уволенных в зависимости от времени их увольнения
 	 *
 	 * @param \CompassApp\Domain\Member\Struct\Main[] $user_list
-	 * @param array                                   $left_menu_list
-	 *
-	 * @return array
 	 */
-	protected static function _prepareDismissedUserForTime(array $left_menu_list, array $user_list):array {
+	protected static function _prepareDismissedUserForTime(array $left_menu_list, array $user_list): array
+	{
 
 		// получаем временную метку увольнения, менее которой не нужно отдавать уволенных
 		$not_added_dismissed_user_timestamp = time() - self::_TIME_NOT_ADDED_DISMISSED_USER;
@@ -207,28 +232,24 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * помечаем прочитанными все диалоги пользователя
 	 *
-	 * @param int    $user_id
-	 * @param string $local_date
-	 * @param string $local_time
-	 * @param int    $filter_favorites
-	 *
 	 * @throws BusFatalException
 	 * @throws ParseFatalException
 	 * @throws BlockException
 	 * @throws \parseException
 	 */
-	public static function doReadAll(int $user_id, string $local_date, string $local_time, int $filter_favorites = 0):void {
+	public static function doReadAll(int $user_id, string $local_date, string $local_time, int $filter_favorites = 0): void
+	{
 
 		Domain_Conversation_Action_DoReadAll::do($user_id, $local_date, $local_time, $filter_favorites);
 	}
 
 	/**
-	 *
 	 * @throws \busException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public static function getAllowedConversationsForAddMessage(array $conversation_key_list, int $user_id):array {
+	public static function getAllowedConversationsForAddMessage(array $conversation_key_list, int $user_id): array
+	{
 
 		$conversation_map_list = Domain_Conversation_Action_GetMapFromConversationKey::do($conversation_key_list);
 
@@ -271,8 +292,12 @@ class Domain_Conversation_Scenario_Api {
 	 * @throws \parseException
 	 * @long - switch..case
 	 */
-	protected static function _addToOutputForGetAllowedConversationsForAddMessage(int   $user_id, array $output, array $meta_row,
-														array $opponent_user_info_list_grouped_by_id):array {
+	protected static function _addToOutputForGetAllowedConversationsForAddMessage(
+		int $user_id,
+		array $output,
+		array $meta_row,
+		array $opponent_user_info_list_grouped_by_id
+	): array {
 
 		switch ((int) $meta_row["type"]) {
 
@@ -321,14 +346,6 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * Прочитать чат
 	 *
-	 * @param int    $user_id
-	 * @param int    $member_role
-	 * @param int    $member_permissions
-	 * @param string $conversation_map
-	 * @param string $message_map
-	 * @param string $local_date
-	 * @param string $local_time
-	 *
 	 * @throws BusFatalException
 	 * @throws ParamException
 	 * @throws ParseFatalException
@@ -338,7 +355,8 @@ class Domain_Conversation_Scenario_Api {
 	 * @throws \parseException
 	 * @throws cs_LeftMenuRowIsNotExist
 	 */
-	public static function doRead(int $user_id, int $member_role, int $member_permissions, string $conversation_map, string $message_map, string $local_date, string $local_time):void {
+	public static function doRead(int $user_id, int $member_role, int $member_permissions, string $conversation_map, string $message_map, string $local_date, string $local_time): void
+	{
 
 		$message = [];
 
@@ -384,16 +402,13 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * Пометить чат непрочитанным
 	 *
-	 * @param int    $user_id
-	 * @param string $conversation_map
-	 *
-	 * @return int
 	 * @throws cs_LeftMenuRowIsNotExist
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws \parseException
 	 */
-	public static function setAsUnread(int $user_id, string $conversation_map):int {
+	public static function setAsUnread(int $user_id, string $conversation_map): int
+	{
 
 		Domain_Conversation_Action_SetAsUnread::do($user_id, $conversation_map);
 
@@ -420,7 +435,8 @@ class Domain_Conversation_Scenario_Api {
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \cs_RowIsEmpty
 	 */
-	public static function getInvited(int $user_id, int $user_role, int $method_version, string $conversation_map):array {
+	public static function getInvited(int $user_id, int $user_role, int $method_version, string $conversation_map): array
+	{
 
 		Member::assertUserNotGuest($user_role);
 
@@ -444,13 +460,10 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * Получить общие группы
 	 *
-	 * @param int $user_id
-	 * @param int $opponent_user_id
-	 *
-	 * @return array
 	 * @throws cs_IncorrectUserId
 	 */
-	public static function getShared(int $user_id, int $opponent_user_id):array {
+	public static function getShared(int $user_id, int $opponent_user_id): array
+	{
 
 		// проверяем opponent_user_id
 		if (!Type_Api_Validator::isCorrectUserId($opponent_user_id)) {
@@ -464,11 +477,6 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * отправить собеседнику контакты на пользователей
 	 *
-	 * @param int    $user_id
-	 * @param string $conversation_map
-	 * @param array  $share_user_id_list
-	 *
-	 * @return array
 	 * @throws \busException
 	 * @throws \paramException
 	 * @throws \parseException
@@ -478,7 +486,8 @@ class Domain_Conversation_Scenario_Api {
 	 * @throws cs_UserIsNotCompanyMember
 	 * @throws cs_UserIsNotMember
 	 */
-	public static function shareMember(int $user_id, string $conversation_map, array $share_user_id_list):array {
+	public static function shareMember(int $user_id, string $conversation_map, array $share_user_id_list): array
+	{
 
 		//проверяем присланный список контактов
 		if (count($share_user_id_list) < 1 || count($share_user_id_list) > self::_MAX_SEND_CONTACT_USER_ID_COUNT) {
@@ -528,13 +537,11 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * Проверяем список пользователей-контактов кем хотим поделиться
 	 *
-	 * @param array $share_user_id_list
-	 * @param array $user_info_list
-	 *
 	 * @throws cs_IncorrectUserIdList
 	 * @throws cs_UserIdListIsNotCompanyMember
 	 */
-	protected static function _checkShareUserIdList(array $share_user_id_list, array $user_info_list):void {
+	protected static function _checkShareUserIdList(array $share_user_id_list, array $user_info_list): void
+	{
 
 		// проверяем значения user_id
 		if (min($share_user_id_list) < 1) {
@@ -564,7 +571,8 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * Добавляем реакцию к сообщению
 	 */
-	public static function addReaction(string $message_map, string $reaction_name, int $user_id, bool $is_restricted_access):void {
+	public static function addReaction(string $message_map, string $reaction_name, int $user_id, bool $is_restricted_access): void
+	{
 
 		if (!\CompassApp\Pack\Message::isFromConversation($message_map)) {
 			throw new ParamException("The message is not from conversation");
@@ -595,7 +603,8 @@ class Domain_Conversation_Scenario_Api {
 	/**
 	 * Удаляем реакцию с сообщения
 	 */
-	public static function removeReaction(string $message_map, string $reaction_name, int $user_id, bool $is_restricted_access):void {
+	public static function removeReaction(string $message_map, string $reaction_name, int $user_id, bool $is_restricted_access): void
+	{
 
 		if (!\CompassApp\Pack\Message::isFromConversation($message_map)) {
 			throw new ParamException("The message is not from conversation");
@@ -630,7 +639,8 @@ class Domain_Conversation_Scenario_Api {
 	 *
 	 * @throws \parseException
 	 */
-	protected static function _setUnmutedIfNeed(int $user_id, string $conversation_map, array $left_menu_row):array {
+	protected static function _setUnmutedIfNeed(int $user_id, string $conversation_map, array $left_menu_row): array
+	{
 
 		// если мьютили диалог
 		$set = [];

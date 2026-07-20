@@ -1,8 +1,8 @@
-import { AnyAction } from 'redux';
+import {AnyAction} from 'redux';
 
-import { PARTICIPANT_ID_CHANGED } from '../participants/actionTypes';
+import {PARTICIPANT_ID_CHANGED} from '../participants/actionTypes';
 import ReducerRegistry from '../redux/ReducerRegistry';
-import { set } from '../redux/functions';
+import {set} from '../redux/functions';
 
 import {
     SET_NO_SRC_DATA_NOTIFICATION_UID,
@@ -14,7 +14,7 @@ import {
     TRACK_UPDATED,
     TRACK_WILL_CREATE
 } from './actionTypes';
-import { ITrack } from './types';
+import {ITrack} from './types';
 
 /**
  * Reducer function for a single track.
@@ -33,50 +33,50 @@ import { ITrack } from './types';
  */
 function track(state: ITrack, action: AnyAction) {
     switch (action.type) {
-    case PARTICIPANT_ID_CHANGED:
-        if (state.participantId === action.oldValue) {
-            return {
-                ...state,
-                participantId: action.newValue
-            };
+        case PARTICIPANT_ID_CHANGED:
+            if (state.participantId === action.oldValue) {
+                return {
+                    ...state,
+                    participantId: action.newValue
+                };
+            }
+            break;
+
+        case TRACK_UPDATED: {
+            const t = action.track;
+
+            if (state.jitsiTrack === t.jitsiTrack) {
+                // Make sure that there's an actual update in order to reduce the
+                // risk of unnecessary React Component renders.
+                for (const p in t) {
+                    // @ts-ignore
+                    if (state[p] !== t[p]) {
+                        // There's an actual update.
+                        return {
+                            ...state,
+                            ...t
+                        };
+                    }
+                }
+            }
+            break;
         }
-        break;
 
-    case TRACK_UPDATED: {
-        const t = action.track;
+        case TRACK_NO_DATA_FROM_SOURCE: {
+            const t = action.track;
 
-        if (state.jitsiTrack === t.jitsiTrack) {
-            // Make sure that there's an actual update in order to reduce the
-            // risk of unnecessary React Component renders.
-            for (const p in t) {
-                // @ts-ignore
-                if (state[p] !== t[p]) {
-                    // There's an actual update.
+            if (state.jitsiTrack === t.jitsiTrack) {
+                const isReceivingData = t.jitsiTrack.isReceivingData();
+
+                if (state.isReceivingData !== isReceivingData) {
                     return {
                         ...state,
-                        ...t
+                        isReceivingData
                     };
                 }
             }
+            break;
         }
-        break;
-    }
-
-    case TRACK_NO_DATA_FROM_SOURCE: {
-        const t = action.track;
-
-        if (state.jitsiTrack === t.jitsiTrack) {
-            const isReceivingData = t.jitsiTrack.isReceivingData();
-
-            if (state.isReceivingData !== isReceivingData) {
-                return {
-                    ...state,
-                    isReceivingData
-                };
-            }
-        }
-        break;
-    }
     }
 
     return state;
@@ -89,35 +89,43 @@ export type ITracksState = ITrack[];
  */
 ReducerRegistry.register<ITracksState>('features/base/tracks', (state = [], action): ITracksState => {
     switch (action.type) {
-    case PARTICIPANT_ID_CHANGED:
-    case TRACK_NO_DATA_FROM_SOURCE:
-    case TRACK_UPDATED:
-        return state.map((t: ITrack) => track(t, action));
-    case TRACK_ADDED: {
-        let withoutTrackStub = state;
+        case PARTICIPANT_ID_CHANGED:
+        case TRACK_NO_DATA_FROM_SOURCE:
+        case TRACK_UPDATED:
+            console.info(`trackLogs - ${action.type}`);
+            return state.map((t: ITrack) => track(t, action));
+        case TRACK_ADDED: {
+            let withoutTrackStub = state;
 
-        if (action.track.local) {
-            withoutTrackStub
-                = state.filter(
+            if (action.track.local) {
+                withoutTrackStub
+                    = state.filter(
                     (t: ITrack) => !t.local || t.mediaType !== action.track.mediaType);
+            }
+            state.forEach(track => {
+                if (track.mediaType === action.track.mediaType && track.participantId === action.track.participantId) {
+                    console.info('trackLogs', track, action.track);
+                    console.error('trackLogs - Added additional audio/video to participant');
+                }
+            })
+            console.info('trackLogs - TRACK_ADDED', action.track);
+            return [...withoutTrackStub, action.track];
         }
 
-        return [ ...withoutTrackStub, action.track ];
-    }
+        case TRACK_CREATE_CANCELED:
+        case TRACK_CREATE_ERROR: {
+            return state.filter((t: ITrack) => !t.local || t.mediaType !== action.trackType);
+        }
 
-    case TRACK_CREATE_CANCELED:
-    case TRACK_CREATE_ERROR: {
-        return state.filter((t: ITrack) => !t.local || t.mediaType !== action.trackType);
-    }
+        case TRACK_REMOVED:
+            console.info('trackLogs - TRACK_REMOVED', action.track);
+            return state.filter((t: ITrack) => t.jitsiTrack !== action.track.jitsiTrack);
 
-    case TRACK_REMOVED:
-        return state.filter((t: ITrack) => t.jitsiTrack !== action.track.jitsiTrack);
+        case TRACK_WILL_CREATE:
+            return [...state, action.track];
 
-    case TRACK_WILL_CREATE:
-        return [ ...state, action.track ];
-
-    default:
-        return state;
+        default:
+            return state;
     }
 });
 
@@ -130,11 +138,10 @@ export interface INoSrcDataState {
  */
 ReducerRegistry.register<INoSrcDataState>('features/base/no-src-data', (state = {}, action): INoSrcDataState => {
     switch (action.type) {
-    case SET_NO_SRC_DATA_NOTIFICATION_UID:
-        return set(state, 'noSrcDataNotificationUid', action.uid);
+        case SET_NO_SRC_DATA_NOTIFICATION_UID:
+            return set(state, 'noSrcDataNotificationUid', action.uid);
 
-    default:
-        return state;
+        default:
+            return state;
     }
 });
-

@@ -55,6 +55,20 @@ class Gateway_Db_LdapData_TotpUserRel extends Gateway_Db_LdapData_Main
 	}
 
 	/**
+	 * обновляем запись в базе по PK
+	 *
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 */
+	public static function set(string $uid, array $set): int
+	{
+
+		// EXPLAIN PRIMARY KEY
+		$query = "UPDATE `?p` SET ?u WHERE `uid` = ?s LIMIT ?i";
+		return ShardingGateway::database(self::_DB_KEY)->update($query, self::_TABLE_NAME, $set, $uid, 1);
+	}
+
+	/**
 	 * Удалить запись по PK
 	 *
 	 * @throws DBShardingNotFoundException

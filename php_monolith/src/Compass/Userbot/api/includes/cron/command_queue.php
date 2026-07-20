@@ -161,19 +161,12 @@ class Cron_CommandQueue extends \Cron_Default {
 		$curl->setTimeout(self::_WEBHOOK_REQUEST_CURL_TIMEOUT);
 
 		// в зависимости от версии готовим данные для запроса
-		switch ($webhook_version) {
-
-			case Domain_Userbot_Entity_Userbot::USERBOT_WEBHOOK_VERSION_3:
-				[$formatted_params, $headers] = $this->_getDataForV3($token, $signature, $params);
-				break;
-
-			case Domain_Userbot_Entity_Userbot::USERBOT_WEBHOOK_VERSION_2:
-				[$formatted_params, $headers] = $this->_getDataForV2($token, $signature, $params);
-				break;
-
-			default:
-				[$formatted_params, $headers] = $this->_getDataForV1($token, $signature, $params);
-		}
+		[$formatted_params, $headers] = match ($webhook_version) {
+			Domain_Userbot_Entity_Userbot::USERBOT_WEBHOOK_VERSION_4 => $this->_getDataForV4($token, $params),
+			Domain_Userbot_Entity_Userbot::USERBOT_WEBHOOK_VERSION_3 => $this->_getDataForV3($token, $signature, $params),
+			Domain_Userbot_Entity_Userbot::USERBOT_WEBHOOK_VERSION_2 => $this->_getDataForV2($token, $signature, $params),
+			default                                                  => $this->_getDataForV1($token, $signature, $params),
+		};
 
 		// отправляем запрос
 		try {
@@ -234,6 +227,19 @@ class Cron_CommandQueue extends \Cron_Default {
 		$headers = [
 			"Authorization" => "bearer={$token}",
 			"Signature"     => "signature={$signature}",
+			"Content-Type"  => "application/json",
+		];
+
+		return [toJson($params), $headers];
+	}
+
+	/**
+	 * получаем данные для v4 ботов
+	 */
+	protected function _getDataForV4(string $token, array $params):array {
+
+		$headers = [
+			"Authorization" => "Bearer {$token}",
 			"Content-Type"  => "application/json",
 		];
 

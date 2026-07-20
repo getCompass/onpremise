@@ -9,18 +9,17 @@ use BaseFrame\Exception\ExceptionUtils;
 /**
  * Класс для взаимодействия с компаниями
  */
-class Domain_Company_Entity_Company {
-
+class Domain_Company_Entity_Company
+{
 	public const COMPANY_CREATE_USER_LIMIT = 24; // число доступных для создания компаний пользователем
-
-	public const AVATAR_COLOR_GREEN_ID  = 1;
-	public const AVATAR_COLOR_SEA_ID    = 2;
-	public const AVATAR_COLOR_BLUE_ID   = 3;
-	public const AVATAR_COLOR_YELLOW_ID = 4;
-	public const AVATAR_COLOR_ORANGE_ID = 5;
-	public const AVATAR_COLOR_RED_ID    = 6;
-	public const AVATAR_COLOR_METAL_ID  = 7;
-	public const AVATAR_COLOR_BLACK_ID  = 8;
+	public const AVATAR_COLOR_GREEN_ID     = 1;
+	public const AVATAR_COLOR_SEA_ID       = 2;
+	public const AVATAR_COLOR_BLUE_ID      = 3;
+	public const AVATAR_COLOR_YELLOW_ID    = 4;
+	public const AVATAR_COLOR_ORANGE_ID    = 5;
+	public const AVATAR_COLOR_RED_ID       = 6;
+	public const AVATAR_COLOR_METAL_ID     = 7;
+	public const AVATAR_COLOR_BLACK_ID     = 8;
 
 	// список доступных цветов аватара
 	public const ALLOW_AVATAR_COLOR_ID_LIST = [
@@ -33,7 +32,6 @@ class Domain_Company_Entity_Company {
 		self::AVATAR_COLOR_METAL_ID,
 		self::AVATAR_COLOR_BLACK_ID,
 	];
-
 	public const COMPANY_STATUS_CREATING   = 0; // статус компании - создается
 	public const COMPANY_STATUS_VACANT     = 1; // статус компании - свободна
 	public const COMPANY_STATUS_ACTIVE     = 2; // статус компании - активная
@@ -51,7 +49,6 @@ class Domain_Company_Entity_Company {
 		Domain_Company_Entity_Company::COMPANY_STATUS_INVALID    => "invalid",
 		Domain_Company_Entity_Company::COMPANY_STATUS_DELETED    => "deleted",
 	];
-
 	protected const _EXTRA_VERSION = 5; // версия упаковщика
 	protected const _EXTRA_SCHEMA  = [  // схема extra
 
@@ -155,10 +152,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Создать новую структуру для extra
-	 *
-	 * @return array
 	 */
-	public static function initExtra():array {
+	public static function initExtra(): array
+	{
 
 		return [
 			"version" => self::_EXTRA_VERSION,
@@ -168,13 +164,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Добавляем количество участников в компании
-	 *
-	 * @param array $extra
-	 * @param int   $member_count
-	 *
-	 * @return array
 	 */
-	public static function setMemberCount(array $extra, int $member_count):array {
+	public static function setMemberCount(array $extra, int $member_count): array
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -185,12 +177,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получаем количество участников в компании
-	 *
-	 * @param array $extra
-	 *
-	 * @return int
 	 */
-	public static function getMemberCount(array $extra):int {
+	public static function getMemberCount(array $extra): int
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -199,13 +188,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Добавляем количество гостей
-	 *
-	 * @param array $extra
-	 * @param int   $guest_count
-	 *
-	 * @return array
 	 */
-	public static function setGuestCount(array $extra, int $guest_count):array {
+	public static function setGuestCount(array $extra, int $guest_count): array
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -216,12 +201,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получаем количество гостей в компании
-	 *
-	 * @param array $extra
-	 *
-	 * @return int
 	 */
-	public static function getGuestCount(array $extra):int {
+	public static function getGuestCount(array $extra): int
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -230,12 +212,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получаем public_key
-	 *
-	 * @param array $extra
-	 *
-	 * @return string
 	 */
-	public static function getPublicKey(array $extra):string {
+	public static function getPublicKey(array $extra): string
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -244,12 +223,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получаем private_key
-	 *
-	 * @param array $extra
-	 *
-	 * @return string
 	 */
-	public static function getPrivateKey(array $extra):string {
+	public static function getPrivateKey(array $extra): string
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -258,12 +234,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получаем passphrase
-	 *
-	 * @param array $extra
-	 *
-	 * @return array
 	 */
-	public static function getPassphrase(array $extra):array {
+	public static function getPassphrase(array $extra): array
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -272,13 +245,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 *  Добавляем client_company_id в extra
-	 *
-	 * @param array  $extra
-	 * @param string $client_company_id
-	 *
-	 * @return array
 	 */
-	public static function setClientCompanyId(array $extra, string $client_company_id):array {
+	public static function setClientCompanyId(array $extra, string $client_company_id): array
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -289,12 +258,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получаем client_company_id в extra
-	 *
-	 * @param array $extra
-	 *
-	 * @return string
 	 */
-	public static function getClientCompanyId(array $extra):string {
+	public static function getClientCompanyId(array $extra): string
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -304,7 +270,8 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Добавляем особое промо в список особых промо компании.
 	 */
-	public static function addPremiumExtraPromo(array $extra, string $promo_label):array {
+	public static function addPremiumExtraPromo(array $extra, string $promo_label): array
+	{
 
 		$extra                                        = self::_getExtra($extra);
 		$extra["extra"]["premium_extra_promo_list"][] = $promo_label;
@@ -318,7 +285,8 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Убираем особое промо из списка особых промо компании.
 	 */
-	public static function removePremiumExtraPromo(array $extra, string $promo_label):array {
+	public static function removePremiumExtraPromo(array $extra, string $promo_label): array
+	{
 
 		$extra = self::_getExtra($extra);
 
@@ -335,11 +303,10 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Получаем список особых промо для компании.
 	 *
-	 * @param array $extra
-	 *
 	 * @return string[]
 	 */
-	public static function getPremiumExtraPromoList(array $extra):array {
+	public static function getPremiumExtraPromoList(array $extra): array
+	{
 
 		$extra = self::_getExtra($extra);
 		return $extra["extra"]["premium_extra_promo_list"];
@@ -347,10 +314,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получаем дефолтные файлы.
-	 *
-	 * @return Struct_File_Default
 	 */
-	public static function getDefaultFileListStruct():Struct_File_Default {
+	public static function getDefaultFileListStruct(): Struct_File_Default
+	{
 
 		try {
 
@@ -369,13 +335,13 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Получаем дефолтных ботов
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\EndpointAccessDeniedException
 	 * @throws cs_UserNotFound
 	 */
-	public static function getBotList():array {
+	public static function getBotList(): array
+	{
 
 		$bot_id_list   = [AUTH_BOT_USER_ID, REMIND_BOT_USER_ID, SUPPORT_BOT_USER_ID];
 		$bot_info_list = Gateway_Bus_PivotCache::getUserListInfo($bot_id_list);
@@ -397,13 +363,11 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Получаем запись компании
 	 *
-	 * @param int $company_id
-	 *
-	 * @return Struct_Db_PivotCompany_Company
 	 * @throws cs_CompanyNotExist
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function get(int $company_id):Struct_Db_PivotCompany_Company {
+	public static function get(int $company_id): Struct_Db_PivotCompany_Company
+	{
 
 		try {
 			$company = Gateway_Db_PivotCompany_CompanyList::getOne($company_id);
@@ -416,13 +380,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получаем компанию из кэша
-	 *
-	 * @param int    $user_id
-	 * @param string $client_company_id
-	 *
-	 * @return mixed
 	 */
-	public static function getCompanyInCache(int $user_id, string $client_company_id):mixed {
+	public static function getCompanyInCache(int $user_id, string $client_company_id): mixed
+	{
 
 		return ShardingGateway::cache()->get(self::_getKeyForCompany($user_id, $client_company_id));
 	}
@@ -432,7 +392,8 @@ class Domain_Company_Entity_Company {
 	 *
 	 * @throws \cs_MemcacheRowIfExist
 	 */
-	public static function setCompanyInCache(int $user_id, string $client_company_id):void {
+	public static function setCompanyInCache(int $user_id, string $client_company_id): void
+	{
 
 		ShardingGateway::cache()->add(self::_getKeyForCompany($user_id, $client_company_id), $client_company_id);
 	}
@@ -440,11 +401,11 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Проверить, что компания жива
 	 *
-	 * @return void
 	 * @throws Domain_Company_Exception_ConfigNotExist
 	 * @throws Domain_Company_Exception_IsNotHibernated
 	 */
-	public static function assertCompanyIsAwaken(Struct_Db_PivotCompany_Company $company):void {
+	public static function assertCompanyIsAwaken(Struct_Db_PivotCompany_Company $company): void
+	{
 
 		if (Domain_Domino_Entity_Config::get($company)->status != Domain_Company_Entity_Company::COMPANY_STATUS_HIBERNATED) {
 			throw new Domain_Company_Exception_IsNotHibernated("company isnt hibernated, cant wake up");
@@ -461,11 +422,18 @@ class Domain_Company_Entity_Company {
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public static function updateUserCompanyInfo(Struct_Db_PivotUser_User $user_info, string $client_launch_uuid):void {
+	public static function updateUserCompanyInfo(Struct_Db_PivotUser_User $user_info, string $client_launch_uuid, bool $is_need_update_disable_flag = true): void
+	{
 
 		$company_list = Gateway_Db_PivotUser_CompanyList::getCompanyList($user_info->user_id);
-		$is_deleted   = Type_User_Main::isDisabledProfile($user_info->extra) ? 1 : 0;
-		$disabled_at  = Type_User_Main::getProfileDisabledAt($user_info->extra);
+
+		$is_deleted  = null;
+		$disabled_at = null;
+		if ($is_need_update_disable_flag) {
+
+			$is_deleted  = Type_User_Main::isDisabledProfile($user_info->extra) ? 1 : 0;
+			$disabled_at = Type_User_Main::getProfileDisabledAt($user_info->extra);
+		}
 
 		if (count($company_list) < 1) {
 			return;
@@ -497,10 +465,12 @@ class Domain_Company_Entity_Company {
 					$company->domino_id,
 					$private_key
 				);
-			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
+			} catch (Gateway_Socket_Exception_CompanyIsNotServed | cs_CompanyIsHibernate) {
 
-				Type_System_Admin::log("update_user_info_in_company_error",
-					"Не смогли обновить данные пользователя {$user_info->user_id} в компании {$company->company_id}");
+				Type_System_Admin::log(
+					"update_user_info_in_company_error",
+					"Не смогли обновить данные пользователя {$user_info->user_id} в компании {$company->company_id}"
+				);
 			} catch (\cs_SocketRequestIsFailed $e) {
 
 				// пишем лог в файл
@@ -513,14 +483,14 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Разослать во все компании событие разлогина
 	 *
-	 * @param int                                           $user_id
 	 * @param Struct_Db_PivotUser_UserCompanySessionToken[] $user_company_session_token_list
 	 *
 	 * @throws cs_CompanyIncorrectCompanyId
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function logoutUserSessionList(int $user_id, array $user_company_session_token_list):void {
+	public static function logoutUserSessionList(int $user_id, array $user_company_session_token_list): void
+	{
 
 		$token_grouped_by_company_id = [];
 		foreach ($user_company_session_token_list as $v) {
@@ -541,11 +511,15 @@ class Domain_Company_Entity_Company {
 
 				// делаем запрос в компанию
 				Gateway_Socket_Company::logoutUserSessionList(
-					$user_id, $token_grouped_by_company_id[$company->company_id], $company->company_id, $company->domino_id, $private_key
+					$user_id,
+					$token_grouped_by_company_id[$company->company_id],
+					$company->company_id,
+					$company->domino_id,
+					$private_key
 				);
-			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
+			} catch (Gateway_Socket_Exception_CompanyIsNotServed | cs_CompanyIsHibernate) {
 				// !!! если вдруг компания неактивна, то не останавливаемся и пытаемся разлогинить в других компаниях
-			} catch (ReturnFatalException|ParseFatalException $e) {
+			} catch (ReturnFatalException | ParseFatalException $e) {
 
 				// пишем лог в файл
 				$exception_message = ExceptionUtils::makeMessage($e, HTTP_CODE_500);
@@ -557,12 +531,10 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Проверяем, является ли пользователь создателем компании
 	 *
-	 * @param Struct_Db_PivotCompany_Company $company
-	 * @param int                            $user_id
-	 *
 	 * @throws cs_UserIsNotCreatorOfCompany
 	 */
-	public static function assertUserIsCreator(Struct_Db_PivotCompany_Company $company, int $user_id):void {
+	public static function assertUserIsCreator(Struct_Db_PivotCompany_Company $company, int $user_id): void
+	{
 
 		if ($company->created_by_user_id !== $user_id) {
 			throw new cs_UserIsNotCreatorOfCompany();
@@ -571,12 +543,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Проверяет, можно ли выполнить очистку компании.
-	 *
-	 * @param Struct_Db_PivotCompany_Company $company
-	 *
-	 * @return bool
 	 */
-	public static function isAllowedForPurge(Struct_Db_PivotCompany_Company $company):bool {
+	public static function isAllowedForPurge(Struct_Db_PivotCompany_Company $company): bool
+	{
 
 		return !in_array($company->status, [
 			self::COMPANY_STATUS_HIBERNATED,
@@ -589,13 +558,11 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Получаем количество созданных компаний пользователем
 	 *
-	 * @param int   $user_id
-	 * @param array $company_list
-	 *
 	 * @throws cs_CompanyCreateExceededLimit
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function getCountCompanyCreatedByUserId(int $user_id, array $company_list):int {
+	public static function getCountCompanyCreatedByUserId(int $user_id, array $company_list): int
+	{
 
 		// получаем записи компаний
 		$company_list = Gateway_Db_PivotCompany_CompanyList::getList(array_column($company_list, "company_id"));
@@ -615,13 +582,11 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Проверяем количество созданных компаний пользователем
 	 *
-	 * @param int   $user_id
-	 * @param array $company_list
-	 *
 	 * @throws cs_CompanyCreateExceededLimit
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function checkCountCompanyCreatedByUserId(int $user_id, array $company_list):void {
+	public static function checkCountCompanyCreatedByUserId(int $user_id, array $company_list): void
+	{
 
 		// получаем количество созданных компаний пользователем
 		$created_company_count = self::getCountCompanyCreatedByUserId($user_id, $company_list);
@@ -639,7 +604,8 @@ class Domain_Company_Entity_Company {
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function incCounterByRole(int $space_id, int $npc_type, int $user_role, int $increment_value):Struct_Db_PivotCompany_Company {
+	public static function incCounterByRole(int $space_id, int $npc_type, int $user_role, int $increment_value): Struct_Db_PivotCompany_Company
+	{
 
 		// если пространство покидает полноценный участник пространства
 		if (in_array($user_role, Domain_Company_Entity_User_Member::SPACE_RESIDENT_ROLE_LIST)) {
@@ -661,16 +627,12 @@ class Domain_Company_Entity_Company {
 	/**
 	 * функция которая увеличивает количество участников в компании
 	 *
-	 * @param int $company_id
-	 * @param int $npc_type
-	 * @param int $value
-	 *
-	 * @return Struct_Db_PivotCompany_Company
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function incMemberCount(int $company_id, int $npc_type, int $value = 1):Struct_Db_PivotCompany_Company {
+	public static function incMemberCount(int $company_id, int $npc_type, int $value = 1): Struct_Db_PivotCompany_Company
+	{
 
 		Gateway_Db_PivotCompany_CompanyList::beginTransaction($company_id);
 		try {
@@ -709,16 +671,12 @@ class Domain_Company_Entity_Company {
 	/**
 	 * функция которая увеличивает количество гостей в компании
 	 *
-	 * @param int $company_id
-	 * @param int $npc_type
-	 * @param int $value
-	 *
-	 * @return Struct_Db_PivotCompany_Company
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	public static function incGuestCount(int $company_id, int $npc_type, int $value = 1):Struct_Db_PivotCompany_Company {
+	public static function incGuestCount(int $company_id, int $npc_type, int $value = 1): Struct_Db_PivotCompany_Company
+	{
 
 		Gateway_Db_PivotCompany_CompanyList::beginTransaction($company_id);
 		try {
@@ -757,7 +715,8 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Проверяет, можно ли занять компанию.
 	 */
-	public static function isAllowedToTake(Struct_Db_PivotCompany_Company $company):bool {
+	public static function isAllowedToTake(Struct_Db_PivotCompany_Company $company): bool
+	{
 
 		return $company->status === static::COMPANY_STATUS_VACANT;
 	}
@@ -765,14 +724,12 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Проверяем, что компания активная
 	 *
-	 * @param Struct_Db_PivotCompany_Company $company
-	 *
-	 * @return void
 	 * @throws Domain_Company_Exception_IsHibernated
 	 * @throws Domain_Company_Exception_IsNotServed
 	 * @throws Domain_Company_Exception_IsRelocating
 	 */
-	public static function assertCompanyActive(Struct_Db_PivotCompany_Company $company):void {
+	public static function assertCompanyActive(Struct_Db_PivotCompany_Company $company): void
+	{
 
 		if ($company->status === self::COMPANY_STATUS_HIBERNATED) {
 			throw new Domain_Company_Exception_IsHibernated("company is hibernated");
@@ -790,13 +747,14 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Возвращаем true/false в зависимости от статуса компании
 	 */
-	public static function isCompanyActive(Struct_Db_PivotCompany_Company $company):bool {
+	public static function isCompanyActive(Struct_Db_PivotCompany_Company $company): bool
+	{
 
 		// идем проверять статус компании
 		try {
 
 			Domain_Company_Entity_Company::assertCompanyActive($company);
-		} catch (Domain_Company_Exception_IsHibernated|Domain_Company_Exception_IsRelocating|Domain_Company_Exception_IsNotServed) {
+		} catch (Domain_Company_Exception_IsHibernated | Domain_Company_Exception_IsRelocating | Domain_Company_Exception_IsNotServed) {
 
 			return false;
 		}
@@ -807,7 +765,8 @@ class Domain_Company_Entity_Company {
 	/**
 	 * Проверяет, доступна ли компания для выполнения пользовательских действий.
 	 */
-	public static function isAllowedForUserActions(Struct_Db_PivotCompany_Company $company):bool {
+	public static function isAllowedForUserActions(Struct_Db_PivotCompany_Company $company): bool
+	{
 
 		return $company->status === self::COMPANY_STATUS_ACTIVE;
 	}
@@ -818,12 +777,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Получить актуальную структуру для extra
-	 *
-	 * @param array $extra
-	 *
-	 * @return array
 	 */
-	protected static function _getExtra(array $extra):array {
+	protected static function _getExtra(array $extra): array
+	{
 
 		// если версия не совпадает - дополняем её до текущей
 		if ($extra["version"] != self::_EXTRA_VERSION) {
@@ -837,13 +793,9 @@ class Domain_Company_Entity_Company {
 
 	/**
 	 * Метод для получения ключа mCache для компании
-	 *
-	 * @param int    $user_id
-	 * @param string $client_company_id
-	 *
-	 * @return string
 	 */
-	protected static function _getKeyForCompany(int $user_id, string $client_company_id):string {
+	protected static function _getKeyForCompany(int $user_id, string $client_company_id): string
+	{
 
 		return __CLASS__ . "_" . $user_id . "_" . $client_company_id;
 	}

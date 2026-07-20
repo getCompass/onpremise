@@ -317,7 +317,8 @@ class Gateway_Socket_Company {
 	 * @throws cs_CompanyIsHibernate
 	 * @throws \cs_SocketRequestIsFailed
 	 */
-	public static function updateUserInfo(Struct_User_Info $user_info, int $profile_created_at, string $client_launch_uuid, int $is_deleted, int $disabled_at, int $company_id, string $domino_id, string $private_key):void {
+	public static function updateUserInfo(Struct_User_Info $user_info, int $profile_created_at, string $client_launch_uuid, ?int $is_deleted, ?int $disabled_at, int $company_id, string $domino_id, string $private_key): void
+	{
 
 		$params = [
 			"user_id"                 => $user_info->user_id,
@@ -329,9 +330,11 @@ class Gateway_Socket_Company {
 			"avg_message_answer_time" => $user_info->avg_message_answer_time,
 			"profile_created_at"      => $profile_created_at,
 			"client_launch_uuid"      => $client_launch_uuid,
-			"is_deleted"              => $is_deleted,
-			"disabled_at"             => $disabled_at,
+			"disable_flag_data"       => [],
 		];
+
+		!is_null($is_deleted) && $params["disable_flag_data"]["is_deleted"]   = $is_deleted;
+		!is_null($disabled_at) && $params["disable_flag_data"]["disabled_at"] = $disabled_at;
 
 		// обновляем данные в компании
 		[$status, $response] = self::_call("company.member.updateUserInfo", $params, 0, $company_id, $domino_id, $private_key);

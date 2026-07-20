@@ -59,7 +59,7 @@ class Domain_Rating_Action_UpdateUserRating {
 			]);
 
 			Gateway_Bus_PivotCache::clearUserCacheInfo($user_id);
-			Type_Phphooker_Main::onUserInfoChange($user_id);
+			Type_Phphooker_Main::onUserInfoChange($user_id, is_need_update_disable_flag: false);
 		}
 	}
 

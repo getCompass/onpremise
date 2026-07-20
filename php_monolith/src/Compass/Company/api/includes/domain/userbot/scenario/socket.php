@@ -2,34 +2,28 @@
 
 namespace Compass\Company;
 
-use AnalyticUtils\Domain\Event\Entity\User;
-use AnalyticUtils\Domain\Event\Entity\Main;
-
 /**
  * сценарии пользовательских ботов для socket методов
  */
-class Domain_Userbot_Scenario_Socket {
-
+class Domain_Userbot_Scenario_Socket
+{
 	/**
 	 * получаем информацию по пользователям для бота
 	 *
 	 * @throws \returnException
 	 */
-	public static function getUserInfo(int $count, int $offset):array {
+	public static function getUserInfo(int $count, int $offset): array
+	{
 
 		// достаём пользователей
-		$member_list = Gateway_Db_CompanyData_MemberList::getAllActiveMember($count, $offset);
+		$member_list = Gateway_Db_CompanyData_MemberList::getAllActiveMemberWithNpcFilter($count, $offset);
 
 		// фильтруем, нам нужны только реальные люди
 		$filtered_member_list = [];
 		foreach ($member_list as $member) {
 
 			// убираем удаливших аккаунт
-			if (\CompassApp\Domain\Member\Entity\Extra::getIsDeleted($member->extra)) {
-				continue;
-			}
-
-			if (\CompassApp\Domain\User\Main::isHuman($member->npc_type)) {
+			if (!\CompassApp\Domain\Member\Entity\Extra::getIsDeleted($member->extra)) {
 				$filtered_member_list[] = $member;
 			}
 		}
@@ -60,7 +54,8 @@ class Domain_Userbot_Scenario_Socket {
 	/**
 	 * получаем userbot_id бота
 	 */
-	public static function getUserbotId(int $user_id):string {
+	public static function getUserbotId(int $user_id): string
+	{
 
 		$userbot_list = Gateway_Db_CompanyData_UserbotList::getByUserIdList([$user_id]);
 
@@ -70,7 +65,8 @@ class Domain_Userbot_Scenario_Socket {
 	/**
 	 * получаем статус бота
 	 */
-	public static function getUserbotStatus(int $user_id):string {
+	public static function getUserbotStatus(int $user_id): string
+	{
 
 		$userbot_list = Gateway_Db_CompanyData_UserbotList::getByUserIdList([$user_id]);
 
@@ -80,7 +76,8 @@ class Domain_Userbot_Scenario_Socket {
 	/**
 	 * кикаем бота из группы
 	 */
-	public static function kickUserbotFromGroup(int $user_id, string $conversation_map):string {
+	public static function kickUserbotFromGroup(int $user_id, string $conversation_map): string
+	{
 
 		$userbot_list = Gateway_Db_CompanyData_UserbotList::getByUserIdList([$user_id]);
 		$userbot      = $userbot_list[0];
@@ -96,8 +93,10 @@ class Domain_Userbot_Scenario_Socket {
 	 * @throws Domain_Userbot_Exception_IncorrectParam
 	 * @throws Domain_Userbot_Exception_UserbotNotFound
 	 * @throws \parseException
+     * @long
 	 */
-	public static function updateCommandList(string $userbot_id, array $command_list):void {
+	public static function updateCommandList(string $userbot_id, array $command_list): void
+	{
 
 		// проверяем список команд на корректность
 		Domain_Userbot_Entity_Validator::assertCorrectCommandsLimit($command_list);
@@ -141,7 +140,10 @@ class Domain_Userbot_Scenario_Socket {
 
 		// отправляем ивент об обновлении списка команд бота
 		Gateway_Event_Dispatcher::dispatch(Type_Event_Userbot_CommandListUpdated::create(
-			Apiv2_Format::userbot($userbot), $userbot->user_id, $developer_user_id_list, $conversation_map_list
+			Apiv2_Format::userbot($userbot),
+			$userbot->user_id,
+			$developer_user_id_list,
+			$conversation_map_list
 		), true);
 	}
 
@@ -150,7 +152,8 @@ class Domain_Userbot_Scenario_Socket {
 	 *
 	 * @throws Domain_Userbot_Exception_UserbotNotFound
 	 */
-	public static function getCommandList(string $userbot_id):array {
+	public static function getCommandList(string $userbot_id): array
+	{
 
 		// достаём бота
 		$userbot = Gateway_Db_CompanyData_UserbotList::getOne($userbot_id);
@@ -166,7 +169,8 @@ class Domain_Userbot_Scenario_Socket {
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \returnException
 	 */
-	public static function getGroupList(string $userbot_id):array {
+	public static function getGroupList(string $userbot_id): array
+	{
 
 		// получаем список связи бота и его диалогов
 		$userbot_conversation_rel_list = Gateway_Db_CompanyData_UserbotConversationRel::getByUserbotId($userbot_id);
@@ -218,7 +222,8 @@ class Domain_Userbot_Scenario_Socket {
 	 * @throws \returnException
 	 * @long         - switch..case
 	 */
-	public static function doCommand(string $token, string $command_text, string $user_id, string $conversation_key, string $message_key):void {
+	public static function doCommand(string $token, string $command_text, string $user_id, string $conversation_key, string $message_key): void
+	{
 
 		// !!! ничего не творим на паблике
 		if (!isTestServer() && !isStageServer()) {
@@ -226,7 +231,7 @@ class Domain_Userbot_Scenario_Socket {
 		}
 
 		[$userbot_id] = Gateway_Socket_Pivot::getUserbotInfo($token);
-		$userbot = Gateway_Db_CompanyData_UserbotList::getOne($userbot_id);
+		$userbot      = Gateway_Db_CompanyData_UserbotList::getOne($userbot_id);
 
 		switch (Domain_Userbot_Action_PreparePatternCommand::do($command_text)) {
 

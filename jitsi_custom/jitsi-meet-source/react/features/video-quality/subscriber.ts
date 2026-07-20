@@ -39,16 +39,27 @@ import logger from './logger';
 import { getNumberOfPartipantsForTileView } from "../filmstrip/functions.web";
 import { getQualityGroupByQualityLevel } from "../quality-control/actions";
 
+const RECEIVER_VIDEO_CONSTRAINTS_DEBOUNCE_MS = 750;
+const RECEIVER_VIDEO_CONSTRAINTS_MAX_WAIT_MS = 2000;
+
+let lastReceiverConstraintsConference: any;
+let lastReceiverConstraintsKey: string | undefined;
+
+const _debouncedUpdateReceiverVideoConstraints = debounce(
+    (store: IStore) => _setReceiverVideoConstraints(store),
+    RECEIVER_VIDEO_CONSTRAINTS_DEBOUNCE_MS,
+    { maxWait: RECEIVER_VIDEO_CONSTRAINTS_MAX_WAIT_MS });
+
 /**
- * Handles changes in the visible participants in the filmstrip. The listener is debounced
- * so that the client doesn't end up sending too many bridge messages when the user is
- * scrolling through the thumbnails prompting updates to the selected endpoints.
+ * Handles changes in the visible participants in the filmstrip. The update is debounced
+ * globally so that the client doesn't end up sending too many bridge messages when the user
+ * is scrolling through the thumbnails prompting updates to the selected endpoints.
  */
 StateListenerRegistry.register(
     /* selector */ state => state['features/filmstrip'].visibleRemoteParticipants,
-    /* listener */ debounce((visibleRemoteParticipants, store) => {
+    /* listener */ (_visibleRemoteParticipants, store) => {
         _updateReceiverVideoConstraints(store);
-    }, 100));
+    });
 
 StateListenerRegistry.register(
     /* selector */ state => state['features/base/tracks'],
@@ -73,7 +84,7 @@ StateListenerRegistry.register(
 StateListenerRegistry.register(
     state => state['features/base/conference'].conference,
     (conference, store) => {
-        _updateReceiverVideoConstraints(store);
+        _updateReceiverVideoConstraints(store, true);
     }
 );
 
@@ -298,7 +309,7 @@ StateListenerRegistry.register(
         }
 
         if (!maxVideoQualityChanged && Boolean(displayTileView) !== Boolean(previousState.displayTileView)) {
-            _updateReceiverVideoConstraints(store);
+            _updateReceiverVideoConstraints(store, true);
         }
 
     }, {
@@ -364,18 +375,70 @@ function _setSenderVideoConstraint(preferred: number, { getState }: IStore) {
 }
 
 /**
+ * Schedules receiver video constraints updates. This collapses bursts of UI changes
+ * from tile/filmstrip paging into a single bridge message.
+ *
+ * @param {*} store - The redux store.
+ * @param {boolean} immediate - Whether to apply the update without debounce.
+ * @returns {void}
+ */
+function _updateReceiverVideoConstraints(store: IStore, immediate = false) {
+    if (immediate) {
+        _debouncedUpdateReceiverVideoConstraints.cancel();
+        _setReceiverVideoConstraints(store);
+
+        return;
+    }
+
+    _debouncedUpdateReceiverVideoConstraints(store);
+}
+
+/**
+ * Builds a stable key for receiver constraints so duplicate updates are not sent to the bridge.
+ *
+ * @param {Object} receiverConstraints - The receiver constraints to key.
+ * @returns {string}
+ */
+function _getReceiverConstraintsKey(receiverConstraints: any) {
+    const constraints = Object.keys(receiverConstraints.constraints || {})
+        .sort()
+        .reduce((acc: any, sourceName) => {
+            acc[sourceName] = receiverConstraints.constraints[sourceName];
+
+            return acc;
+        }, {});
+
+    return JSON.stringify({
+        constraints,
+        defaultConstraints: receiverConstraints.defaultConstraints,
+        lastN: receiverConstraints.lastN,
+        onStageSources: receiverConstraints.onStageSources || [],
+        selectedSources: receiverConstraints.selectedSources || []
+    });
+}
+
+/**
  * Private helper to calculate the receiver video constraints and set them on the bridge channel.
  *
  * @param {*} store - The redux store.
  * @returns {void}
  */
-function _updateReceiverVideoConstraints({ getState }: IStore) {
+function _setReceiverVideoConstraints({ getState }: IStore) {
     const state = getState();
     const { conference } = state['features/base/conference'];
 
     if (!conference) {
+        lastReceiverConstraintsConference = undefined;
+        lastReceiverConstraintsKey = undefined;
+
         return;
     }
+
+    if (conference !== lastReceiverConstraintsConference) {
+        lastReceiverConstraintsConference = conference;
+        lastReceiverConstraintsKey = undefined;
+    }
+
     const { lastN } = state['features/base/lastn'];
     const {
         maxReceiverVideoQualityForTileView,
@@ -513,7 +576,14 @@ function _updateReceiverVideoConstraints({ getState }: IStore) {
     }
 
     try {
+        const receiverConstraintsKey = _getReceiverConstraintsKey(receiverConstraints);
+
+        if (receiverConstraintsKey === lastReceiverConstraintsKey) {
+            return;
+        }
+
         conference.setReceiverConstraints(receiverConstraints);
+        lastReceiverConstraintsKey = receiverConstraintsKey;
     } catch (error: any) {
         _handleParticipantError(error);
         reportError(error, `Failed to set receiver video constraints ${JSON.stringify(receiverConstraints)}`);

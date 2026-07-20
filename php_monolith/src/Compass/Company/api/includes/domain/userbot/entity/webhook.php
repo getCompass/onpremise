@@ -17,6 +17,15 @@ class Domain_Userbot_Entity_Webhook {
 	}
 
 	/**
+	 * это запрос бота версии 3?
+	 */
+	public static function isUserbotRequestV3():bool {
+
+		// если переданы в заголовках токен бота
+		return !isEmptyString(getHeader("HTTP_AUTHORIZATION"));
+	}
+
+	/**
 	 * получаем переданные post-данные
 	 */
 	public static function getPostData():array {
@@ -33,6 +42,20 @@ class Domain_Userbot_Entity_Webhook {
 		// ожидаем заголовок формата "Authorization: bearer=<токен бота>"
 		$header_for_token = getHeader("HTTP_AUTHORIZATION");
 		$tmp              = explode("=", $header_for_token);
-		return count($tmp) != 2 || $tmp[0] != "bearer" ? "" : $tmp[1];
+
+		if (count($tmp) != 2) {
+
+			// ожидаем заголовок формата "Authorization: Bearer <токен бота>"
+			$tmp = explode(" ", $header_for_token);
+			if (count($tmp) != 2) {
+				return "";
+			}
+		}
+
+		if (count($tmp) != 2 || trim(mb_strtolower($tmp[0])) != "bearer") {
+			return "";
+		}
+
+		return trim($tmp[1]);
 	}
 }

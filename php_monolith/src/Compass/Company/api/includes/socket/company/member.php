@@ -4,13 +4,12 @@ namespace Compass\Company;
 
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Request\ParamException;
-use CompassApp\Domain\Member\Entity\Permission;
 
 /**
  * контроллер для работы учатниками компании
  */
-class Socket_Company_Member extends \BaseFrame\Controller\Socket {
-
+class Socket_Company_Member extends \BaseFrame\Controller\Socket
+{
 	// список доступных методов
 	public const ALLOW_METHODS = [
 		"addCreator",
@@ -48,7 +47,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \queryException
 	 */
-	public function addCreator():array {
+	public function addCreator(): array
+	{
 
 		$pin_code                             = $this->post(\Formatter::TYPE_STRING, "pin_code", false);
 		$full_name                            = $this->post(\Formatter::TYPE_STRING, "full_name");
@@ -119,7 +119,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \queryException
 	 */
-	public function addByRole():array {
+	public function addByRole(): array
+	{
 
 		$user_role                    = $this->post(\Formatter::TYPE_INT, "user_role", \CompassApp\Domain\Member\Entity\Member::ROLE_MEMBER);
 		$pin_code                     = $this->post(\Formatter::TYPE_STRING, "pin_code", false);
@@ -181,7 +182,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 * @throws
 	 * @post kicked_user_id
 	 */
-	public function kick():array {
+	public function kick(): array
+	{
 
 		$kicked_user_id = $this->post(\Formatter::TYPE_INT, "kicked_user_id");
 
@@ -195,7 +197,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 *
 	 * @throws \Exception
 	 */
-	public function setMemberCount():array {
+	public function setMemberCount(): array
+	{
 
 		$member_count = $this->post(\Formatter::TYPE_INT, "member_count");
 		$guest_count  = $this->post(\Formatter::TYPE_INT, "guest_count");
@@ -210,7 +213,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 *
 	 * @throws \Exception
 	 */
-	public function getMemberCount():array {
+	public function getMemberCount(): array
+	{
 
 		$member_count = Domain_User_Scenario_Socket::getMemberCount();
 
@@ -222,7 +226,6 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Обновляем информацию пользователя
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws ReturnFatalException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
@@ -231,7 +234,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 */
-	public function updateUserInfo():array {
+	public function updateUserInfo(): array
+	{
 
 		$user_id                 = $this->post(\Formatter::TYPE_INT, "user_id");
 		$full_name               = $this->post(\Formatter::TYPE_STRING, "full_name");
@@ -242,12 +246,25 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 		$avg_message_answer_time = $this->post(\Formatter::TYPE_INT, "avg_message_answer_time");
 		$profile_created_at      = $this->post(\Formatter::TYPE_INT, "profile_created_at");
 		$client_launch_uuid      = $this->post(\Formatter::TYPE_STRING, "client_launch_uuid", "");
-		$is_deleted              = $this->post(\Formatter::TYPE_INT, "is_deleted", 0);
-		$disabled_at             = $this->post(\Formatter::TYPE_INT, "disabled_at", 0);
+		$disable_flag_data       = $this->post(\Formatter::TYPE_ARRAY, "disable_flag_data", []);
+
+		$is_deleted  = $disable_flag_data["is_deleted"] ?? null;
+		$disabled_at = $disable_flag_data["disabled_at"] ?? null;
 
 		// обновляем информацию пользователя
-		Domain_User_Scenario_Socket::updateUserInfo($user_id, $full_name, $avatar_file_key, $avatar_color_id, $avg_screen_time, $total_action_count,
-			$avg_message_answer_time, $profile_created_at, $disabled_at, $client_launch_uuid, $is_deleted);
+		Domain_User_Scenario_Socket::updateUserInfo(
+			$user_id,
+			$full_name,
+			$avatar_file_key,
+			$avatar_color_id,
+			$avg_screen_time,
+			$total_action_count,
+			$avg_message_answer_time,
+			$profile_created_at,
+			$disabled_at,
+			$client_launch_uuid,
+			$is_deleted
+		);
 
 		return $this->ok();
 	}
@@ -255,11 +272,11 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Обновляем данные карточки в компании пользователя
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \cs_UserIsNotMember
 	 */
-	public function updateMemberInfo():array {
+	public function updateMemberInfo(): array
+	{
 
 		$user_id        = $this->post(\Formatter::TYPE_INT, "user_id");
 		$description    = $this->post(\Formatter::TYPE_STRING, "description", false);
@@ -275,7 +292,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Получаем информацию о пользователе
 	 */
-	public function getUserInfo():array {
+	public function getUserInfo(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -304,7 +322,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 * @throws \parseException
 	 * @post user_id
 	 */
-	public function getUserRoleList():array {
+	public function getUserRoleList(): array
+	{
 
 		$roles = $this->post(\Formatter::TYPE_ARRAY_INT, "roles");
 
@@ -323,7 +342,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 *
 	 * @post user_id
 	 */
-	public function logoutUserSessionList():array {
+	public function logoutUserSessionList(): array
+	{
 
 		$user_company_session_token_list = $this->post(\Formatter::TYPE_ARRAY, "user_company_session_token_list");
 
@@ -339,7 +359,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 * @throws paramException
 	 * @throws \parseException
 	 */
-	public function getListOfActiveMembersByDay():array {
+	public function getListOfActiveMembersByDay(): array
+	{
 
 		$year    = $this->post(\Formatter::TYPE_INT, "year");
 		$day_num = $this->post(\Formatter::TYPE_INT, "day_num");
@@ -354,7 +375,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 *
 	 * @throws \busException|\parseException
 	 */
-	public function logoutAll():array {
+	public function logoutAll(): array
+	{
 
 		Domain_User_Scenario_Socket::logoutAll();
 
@@ -364,13 +386,13 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Может ли пользователь править настройки компании
 	 *
-	 * @return array
 	 * @throws ReturnFatalException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 */
-	public function checkCanEditSpaceSettings():array {
+	public function checkCanEditSpaceSettings(): array
+	{
 
 		$is_owner = Domain_User_Scenario_Socket::checkCanEditSpaceSettings($this->user_id);
 
@@ -382,13 +404,13 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Может ли пользователь привязать компанию в партнерке
 	 *
-	 * @return array
 	 * @throws ReturnFatalException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 */
-	public function checkCanAttachSpace():array {
+	public function checkCanAttachSpace(): array
+	{
 
 		$is_owner = Domain_User_Scenario_Socket::checkCanAttachSpace($this->user_id);
 
@@ -400,13 +422,13 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Является ли пользователь владельцем компании
 	 *
-	 * @return array
 	 * @throws ReturnFatalException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 */
-	public function checkIsOwner():array {
+	public function checkIsOwner(): array
+	{
 
 		$is_owner = Domain_User_Scenario_Socket::checkIsOwner($this->user_id);
 
@@ -422,7 +444,8 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 * @throws \returnException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public function deleteUser():array {
+	public function deleteUser(): array
+	{
 
 		Domain_User_Scenario_Socket::deleteUser($this->user_id);
 
@@ -432,10 +455,10 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	/**
 	 * Получаем количество активных пользователей за промежуток времени
 	 *
-	 * @return array
 	 * @throws ParamException
 	 */
-	public function getActivityCountList():array {
+	public function getActivityCountList(): array
+	{
 
 		$from_date_at = $this->post(\Formatter::TYPE_INT, "from_date_at");
 		$to_date_at   = $this->post(\Formatter::TYPE_INT, "to_date_at");
@@ -454,10 +477,9 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 
 	/**
 	 * Получаем участников пространства за все время
-	 *
-	 * @return array
 	 */
-	public function getAll():array {
+	public function getAll(): array
+	{
 
 		$is_only_user = $this->post(\Formatter::TYPE_INT, "is_only_user", 1) == 1;
 		$is_need_left = $this->post(\Formatter::TYPE_INT, "is_need_left", 1) == 1;
@@ -474,10 +496,9 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 	 * Устанавливаем разрешения участнику пространства
 	 *
 	 * Внимание! Метод работает даже с гостями, так что нужно быть аккуратным
-	 *
-	 * @return array
 	 */
-	public function setPermissions():array {
+	public function setPermissions(): array
+	{
 
 		$permissions = $this->post(\Formatter::TYPE_JSON, "permissions", []);
 
@@ -485,7 +506,7 @@ class Socket_Company_Member extends \BaseFrame\Controller\Socket {
 			Domain_Member_Scenario_Socket::setPermissions($this->user_id, $permissions);
 		} catch (\cs_CompanyUserIncorrectRole) {
 			throw new ParamException("incorrect role");
-		} catch (\cs_RowIsEmpty|\CompassApp\Domain\Member\Exception\IsLeft) {
+		} catch (\cs_RowIsEmpty | \CompassApp\Domain\Member\Exception\IsLeft) {
 			throw new \BaseFrame\Exception\Request\CaseException(2209006, "member not found");
 		} catch (\CompassApp\Domain\Member\Exception\AccountDeleted) {
 			throw new \BaseFrame\Exception\Request\CaseException(2209007, "member deleted account");

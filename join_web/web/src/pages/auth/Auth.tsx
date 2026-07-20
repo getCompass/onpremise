@@ -19,14 +19,12 @@ import {
 	authLdapState,
 	authState,
 	isGuestAuthState,
-	isLoginCaptchaRenderedState,
 	joinLinkState,
 	needShowForgotPasswordButtonState,
 	prepareJoinLinkErrorState,
 } from "../../api/_stores.ts";
 import CreateNewPasswordDialogContent from "./CreateNewPasswordDialogContent.tsx";
 import { useApiAuthMailCancel } from "../../api/auth/mail.ts";
-import { Property } from "../../../styled-system/types/csstype";
 import {
 	ALREADY_MEMBER_ERROR_CODE,
 	API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CURRENT_MAIL,
@@ -45,6 +43,11 @@ import useLdap2FaStage from "../../lib/useLdap2FaStage.ts";
 import { useApiFederationLdapMailChange } from "../../api/auth/ldap.ts";
 import Preloader16 from "../../components/Preloader16.tsx";
 import { Box } from "../../../styled-system/jsx";
+import AuthLdap2FaSetupTotpDialogContent from "./AuthLdap2FaSetupTotpDialogContent.tsx";
+import AuthLdap2FaConfirmTotpDialogContent from "./AuthLdap2FaConfirmTotpDialogContent.tsx";
+import TotpManualAddDialog from "../../components/TotpManualAddDialogDesktop.tsx";
+import HoverTooltipDesktop from "../../components/HoverTooltipDesktop.tsx";
+import ClickTooltipMobile from "../../components/ClickTooltipMobile.tsx";
 
 function Auth() {
 	const langStringErrorsNetworkError = useLangString("errors.network_error");
@@ -53,7 +56,7 @@ function Auth() {
 	const isMobile = useIsMobile();
 	const apiAuthMailCancel = useApiAuthMailCancel();
 	const apiFederationLdapMailChange = useApiFederationLdapMailChange();
-	const { activeDialog, navigateToDialog } = useNavigateDialog();
+	const { activeDialog, prevDialog, navigateToDialog } = useNavigateDialog();
 	const { navigateByStage } = useLdap2FaStage();
 	const [ auth, setAuth ] = useAtom(authState);
 	const [ authLdap, setAuthLdap ] = useAtom(authLdapState);
@@ -61,7 +64,6 @@ function Auth() {
 	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
 	const [ joinLink, setJoinLink ] = useAtom(joinLinkState);
 	const authInput = useAtomValue(authInputState);
-	const isLoginCaptchaRendered = useAtomValue(isLoginCaptchaRenderedState);
 	const activeDialogId = useAtomValue(activeDialogIdState);
 	const showToast = useShowToast(activeDialogId);
 	const dialogRef = useRef<HTMLDivElement>(null);
@@ -84,6 +86,9 @@ function Auth() {
 	const langStringEmailLoginDialogForgotPasswordButton = useLangString("email_login_dialog.forgot_password_button");
 	const langStringConfirmCodeEmailDialogChangeMailButton = useLangString("confirm_code_email_dialog.change_mail_button");
 	const langStringConfirmCodeEmailDialogLdap2FaChangeMailLimitError = useLangString("confirm_code_email_dialog.ldap_2fa_change_mail_limit_error");
+	const langStringLdap2faSetupTotpDialogCantScanQrButton = useLangString("ldap_2fa_setup_totp_dialog.cant_scan_qr_button");
+	const langStringLdap2faConfirmTotpDialogCantGetCodeButton = useLangString("ldap_2fa_confirm_totp_dialog.cant_get_code_button");
+	const langStringLdap2faConfirmTotpDialogCantGetCodeTooltip = useLangString("ldap_2fa_confirm_totp_dialog.cant_get_code_tooltip");
 
 	const onForgotPasswordButtonClick = useCallback(async () => {
 		if (apiSecurityMailTryResetPassword.isLoading) {
@@ -165,58 +170,6 @@ function Auth() {
 		}
 	}, [ email, prepareJoinLinkError, apiSecurityMailTryResetPassword, window.location.href ]);
 
-	const forgotPasswordButtonMt = useMemo<Property.MarginTop>(() => {
-		if (dialogRef.current === null || forgotPasswordButtonRef.current === null) {
-			return "371px";
-		}
-
-		return `${dialogRef.current.clientHeight + forgotPasswordButtonRef.current.clientHeight + 32}px`;
-	}, [
-		dialogRef.current?.clientHeight,
-		forgotPasswordButtonRef.current?.clientHeight,
-		isLoginCaptchaRendered,
-		needShowForgotPasswordButton,
-		activeDialog,
-	]);
-
-	const backButtonMt = useMemo<Property.MarginTop>(() => {
-		if (dialogRef.current === null || forgotPasswordButtonRef.current === null || backButtonRef.current === null) {
-			return "591px";
-		}
-
-		return `${
-			dialogRef.current.clientHeight +
-			32 +
-			forgotPasswordButtonRef.current.clientHeight +
-			188 +
-			backButtonRef.current.clientHeight
-		}px`;
-	}, [
-		dialogRef.current?.clientHeight,
-		forgotPasswordButtonRef.current?.clientHeight,
-		backButtonRef.current?.clientHeight,
-		isLoginCaptchaRendered,
-	]);
-
-	const changeMailMt = useMemo<Property.MarginTop>(() => {
-		if (dialogRef.current === null || changeMailRef.current === null) {
-			return "388px";
-		}
-
-		console.log(`dialogRef.current.clientHeight: ${dialogRef.current.clientHeight}; changeMailRef.current.clientHeight: ${changeMailRef.current.clientHeight}`);
-		return `${
-			dialogRef.current.clientHeight +
-			changeMailRef.current.clientHeight +
-			16 +
-			9
-		}px`;
-	}, [
-		dialogRef.current?.clientHeight,
-		changeMailRef.current,
-		changeMailRef.current?.clientHeight,
-		isLoginCaptchaRendered,
-	]);
-
 	const isNeedGuestBackButton = useMemo(() => {
 
 		return isGuestAuth && !isGuestJoinLink
@@ -239,9 +192,16 @@ function Auth() {
 			return;
 		}
 
-		if (activeDialog === "auth_ldap_2fa_attach_mail") {
+		if (activeDialog === "auth_ldap_2fa_attach_mail" || activeDialog === "auth_ldap_2fa_setup_totp") {
 
 			navigateToDialog("auth_sso_ldap");
+			return;
+		}
+
+		// возвращаемся на предыдущий
+		if (activeDialog === "auth_ldap_2fa_confirm_totp") {
+
+			navigateToDialog(prevDialog);
 			return;
 		}
 
@@ -281,6 +241,7 @@ function Auth() {
 	}, [ authLdap, isCanChangeLdapMail ]);
 
 	const content = useMemo(() => {
+
 		if (activeDialog === "auth_email_phone_number") {
 			return <EmailPhoneNumberDialogContent />;
 		}
@@ -321,100 +282,178 @@ function Auth() {
 			return <AuthLdap2FaAttachMailDialogContent />;
 		}
 
+		if (activeDialog === "auth_ldap_2fa_setup_totp") {
+			return <AuthLdap2FaSetupTotpDialogContent />;
+		}
+
+		if (activeDialog === "auth_ldap_2fa_confirm_totp") {
+			return <AuthLdap2FaConfirmTotpDialogContent />;
+		}
+
 		return <></>;
 	}, [ activeDialog ]);
 
 	if (isMobile) {
 		return (
-			<>
-				{/*<OpenLangMenuButton/>*/}
-				<DialogMobile content = {content} overflow = "hidden" isNeedExtraPaddingBottom = {false} />
-			</>
+			<Box
+				w="100%"
+				display="flex"
+				alignItems="center"
+				justifyContent="center"
+			>
+				<Box position="relative">
+					{/*<OpenLangMenuButton/>*/}
+					<DialogMobile content={content} overflow="hidden" isNeedExtraPaddingBottom={false} />
+
+					<Box
+						position="absolute"
+						top="100%"
+						left="0"
+						w="100%"
+						display="flex"
+						flexDirection="column"
+						alignItems="center"
+					>
+						{activeDialog === "auth_ldap_2fa_setup_totp" && (
+							<TotpManualAddDialog children={
+								<Button
+									mt="8px"
+									size="px0py0"
+									color="f8f8f8_30"
+									textSize="lato_16_22_400"
+								>
+									{langStringLdap2faSetupTotpDialogCantScanQrButton}
+								</Button>
+							} />
+						)}
+
+						{activeDialog === "auth_ldap_2fa_confirm_totp" && (
+							<ClickTooltipMobile
+								tooltipText={langStringLdap2faConfirmTotpDialogCantGetCodeTooltip}
+								children={
+									<Button
+										w="100%"
+										size="px0py0"
+										color="f8f8f8_30"
+										textSize="lato_16_22_400"
+									>
+										{langStringLdap2faConfirmTotpDialogCantGetCodeButton}
+									</Button>
+								}
+							/>
+						)}
+					</Box>
+				</Box>
+			</Box>
 		);
 	}
 
 	return (
-		<>
-			{/*<HStack*/}
-			{/*	w="100%"*/}
-			{/*	justify="end"*/}
-			{/*	position="absolute"*/}
-			{/*	top="0px"*/}
-			{/*	pt="32px"*/}
-			{/*	px="40px"*/}
-			{/*>*/}
-			{/*	<LangMenuSelectorDesktop/>*/}
-			{/*</HStack>*/}
-				<DialogDesktop dialogRef = {dialogRef} content = {content} overflow = "hidden" />
-			{activeDialog === "auth_email_login" && needShowForgotPasswordButton && (
-				<Button
-					ref = {forgotPasswordButtonRef}
-					position = "absolute"
-					size = "px0py0"
-					color = "f8f8f8_30"
-					textSize = "lato_13_18_400"
-					onClick = {() => onForgotPasswordButtonClick()}
-					style = {{
-						marginTop: forgotPasswordButtonMt,
-					}}
+		<Box
+			w="100%"
+			display="flex"
+			alignItems="center"
+			justifyContent="center"
+		>
+			<Box position="relative">
+				<DialogDesktop dialogRef={dialogRef} content={content} overflow="hidden" />
+
+				<Box
+					position="absolute"
+					top="100%"
+					left="0"
+					w="100%"
+					display="flex"
+					flexDirection="column"
+					alignItems="center"
 				>
-					{langStringEmailLoginDialogForgotPasswordButton}
-				</Button>
-			)}
-			{(activeDialog === "auth_email_confirm_code" && isCanChangeLdapMail) && (
-				<>
-					{apiFederationLdapMailChange.isLoading ? (
-						<Box
-							position = "absolute"
-							mt = "388px"
-							style = {{
-								marginTop: changeMailMt,
-							}}
-						>
-							<Preloader16 />
-						</Box>
-					) : (
+					{activeDialog === "auth_email_login" && needShowForgotPasswordButton && (
 						<Button
-							ref = {changeMailRef}
-							position = "absolute"
-							mt = "388px"
-							size = "px0py0"
-							color = "f8f8f8_30"
-							textSize = "lato_13_18_400"
-							onClick = {() => onChangeMailButtonClicked()}
-							style = {{
-								marginTop: changeMailMt,
-							}}
+							ref={forgotPasswordButtonRef}
+							mt="16px"
+							size="px0py0"
+							color="f8f8f8_30"
+							textSize="lato_13_18_400"
+							onClick={() => onForgotPasswordButtonClick()}
 						>
-							{langStringConfirmCodeEmailDialogChangeMailButton}
+							{langStringEmailLoginDialogForgotPasswordButton}
 						</Button>
 					)}
-				</>
-			)}
-				{(activeDialog === "auth_email_login" ||
-					activeDialog === "auth_email_register" ||
-					activeDialog === "auth_forgot_password" ||
-					activeDialog === "auth_sso_ldap" ||
-					activeDialog === "auth_ldap_2fa_attach_mail" ||
-					isNeedGuestBackButton) && (
-					<Button
-						ref = {backButtonRef}
-						position = "absolute"
-						mt = "575px"
-						size = "pl12pr14py6"
-						color = "ffffff_opacity30"
-						letterSpacing = "-0.15px"
-						textSize = "lato_14_20_400"
-						rounded = "30px"
-						onClick = {() => onBackButtonClicked()}
-						style = {{
-							marginTop: backButtonMt,
-						}}
-					>
-						{langStringEmailLoginDialogBackButton}
-					</Button>
-				)}
-		</>
+
+					{activeDialog === "auth_email_confirm_code" && isCanChangeLdapMail && (
+						apiFederationLdapMailChange.isLoading ? (
+							<Box mt="16px">
+								<Preloader16 />
+							</Box>
+						) : (
+							<Button
+								ref={changeMailRef}
+								mt="16px"
+								size="px0py0"
+								color="f8f8f8_30"
+								textSize="lato_13_18_400"
+								onClick={() => onChangeMailButtonClicked()}
+							>
+								{langStringConfirmCodeEmailDialogChangeMailButton}
+							</Button>
+						)
+					)}
+
+					{activeDialog === "auth_ldap_2fa_setup_totp" && (
+						<TotpManualAddDialog children={
+							<Button
+								mt="16px"
+								size="px0py0"
+								color="f8f8f8_30"
+								textSize="lato_13_18_400"
+							>
+								{langStringLdap2faSetupTotpDialogCantScanQrButton}
+							</Button>
+						} />
+					)}
+
+					{activeDialog === "auth_ldap_2fa_confirm_totp" && (
+						<HoverTooltipDesktop
+							tooltipText={langStringLdap2faConfirmTotpDialogCantGetCodeTooltip}
+							children={
+								<Button
+									w="100%"
+									mt="16px"
+									size="px0py0"
+									color="f8f8f8_30"
+									textSize="lato_13_18_400"
+								>
+									{langStringLdap2faConfirmTotpDialogCantGetCodeButton}
+								</Button>
+							}
+						/>
+					)}
+
+					{(activeDialog === "auth_email_login" ||
+						activeDialog === "auth_email_register" ||
+						activeDialog === "auth_forgot_password" ||
+						activeDialog === "auth_sso_ldap" ||
+						activeDialog === "auth_ldap_2fa_attach_mail" ||
+						activeDialog === "auth_ldap_2fa_setup_totp" ||
+						activeDialog === "auth_ldap_2fa_confirm_totp" ||
+						isNeedGuestBackButton) && (
+						<Button
+							ref={backButtonRef}
+							mt={activeDialog === "auth_ldap_2fa_confirm_totp" ? "85px" : "20px"}
+							zIndex={0}
+							size="pl12pr14py6"
+							color="ffffff_opacity30"
+							letterSpacing="-0.15px"
+							textSize="lato_14_20_400"
+							rounded="30px"
+							onClick={() => onBackButtonClicked()}
+						>
+							{langStringEmailLoginDialogBackButton}
+						</Button>
+					)}
+				</Box>
+			</Box>
+		</Box>
 	);
 }
 

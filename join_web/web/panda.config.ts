@@ -52,6 +52,7 @@ export default defineConfig({
 				},
 				fonts: {
 					lato_regular: { value: "var(--font-lato-regular), sans-serif" },
+					lato_medium: { value: "var(--font-lato-medium), sans-serif" },
 					lato_semibold: { value: "var(--font-lato-semibold), sans-serif" },
 					lato_bold: { value: "var(--font-lato-bold), sans-serif" },
 					lato_black: { value: "var(--font-lato-black), sans-serif" },

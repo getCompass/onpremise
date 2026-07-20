@@ -227,6 +227,8 @@ export const ONPREMISE_LDAP_LOGIN_TYPE = 102;
 export const ONPREMISE_SSO_LOGIN_TYPE = 103;
 
 export const API_COMMAND_TYPE_NEED_CONFIRM_LDAP_MAIL = "need_confirm_ldap_mail";
+export const API_COMMAND_TYPE_NEED_TOTP_CODE = "need_totp_code";
+export const API_COMMAND_TYPE_NEED_SETUP_TOTP = "need_setup_totp";
 
 export const API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CURRENT_MAIL = "confirm_current_mail";
 export const API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL = "confirm_changing_mail";
@@ -258,3 +260,9 @@ export type APICommandData = {
 			APICommandScenarioDataStageGetLdapAuthToken
 	},
 };
+
+export type APINeedSetupTotpCommandData = {
+	totp_seed: string
+	otpauth_uri: string
+	expires_at: number
+}

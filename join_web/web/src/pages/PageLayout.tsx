@@ -15,7 +15,7 @@ type PageLayoutProps = PropsWithChildren<{
 
 const PageLayoutDesktop = ({ isLoading, children }: PageLayoutProps) => {
 	const blockRef = useRef<HTMLDivElement>(null);
-	const [bgHeight, setBgHeight] = useState<Property.Height | null>(null);
+	const [ bgHeight, setBgHeight ] = useState<Property.Height | null>(null);
 
 	useEffect(() => {
 		const handleResize = () => {

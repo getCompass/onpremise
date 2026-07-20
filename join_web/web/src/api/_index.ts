@@ -2,6 +2,9 @@ import {APICommandData, APIResponse} from "./_types";
 import {FetchError, ofetch} from "ofetch";
 // @ts-ignore
 import {getPublicPathApi} from "../private/custom.ts";
+import {useSetAtom} from "jotai";
+import {serverTimeOffsetState} from "./_stores.ts";
+import dayjs from "dayjs";
 
 export class ApiError extends Error {
 	error_code: number;
@@ -103,6 +106,8 @@ function isCommandResponse<T>(r: APIResponse<T> | CommandResponse): r is Command
 }
 
 export function useGetResponse(module: GET_RESPONSE_MODULE) {
+	const setServerTimeOffsetState = useSetAtom(serverTimeOffsetState);
+
 	return async <T>(method: string, body: URLSearchParams, headerList: Record<string, string> = {}) => {
 		try {
 			const result = await ofetch<APIResponse<T>>(getPublicPathApi() + `/${module}/api/onpremiseweb/${method}/`, {
@@ -151,6 +156,8 @@ export function useGetResponse(module: GET_RESPONSE_MODULE) {
 					result.response.mail_allowed_domains ?? []
 				);
 			}
+
+			setServerTimeOffsetState(result.server_time - dayjs().unix());
 
 			// @ts-ignore добавляем в ответ
 			result.response.server_time = result.server_time

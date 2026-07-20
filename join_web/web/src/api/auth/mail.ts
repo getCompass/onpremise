@@ -7,7 +7,7 @@ import {
 	AUTH_MAIL_SCENARIO_SHORT,
 	ONPREMISE_EMAIL_LOGIN_TYPE,
 } from "../_types.ts";
-import {useAtomValue, useSetAtom} from "jotai/index";
+import {useAtomValue, useSetAtom} from "jotai";
 import {
 	authenticationSessionTimeLeftState,
 	authInputState,

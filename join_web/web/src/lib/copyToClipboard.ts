@@ -1,5 +1,5 @@
 // функция для копирования текста в буфер обмена
-export function copyToClipboard(text: string, parentScrollableBlock: HTMLDivElement, referenceElement: HTMLDivElement|false): void {
+export function copyToClipboard(text: string, parentScrollableBlock?: HTMLElement, referenceElement?: HTMLElement | false, container?: HTMLElement): void {
 
     // создание нового текстового поля (невидимого)
     const tempElement = document.createElement("textarea");
@@ -13,8 +13,10 @@ export function copyToClipboard(text: string, parentScrollableBlock: HTMLDivElem
     tempElement.style.left = "-9999px";
     tempElement.setAttribute("readonly", "");  // предотвращение отображения клавиатуры на мобильных устройствах
 
+    const mountNode = container ?? document.body;
+
     // добавление элемента в документ
-    document.body.appendChild(tempElement);
+    mountNode.appendChild(tempElement);
 
     // выбор текста внутри элемента
     tempElement.select();
@@ -24,14 +26,16 @@ export function copyToClipboard(text: string, parentScrollableBlock: HTMLDivElem
     document.execCommand("copy");
 
     // удаление временного элемента из документа
-    document.body.removeChild(tempElement);
+    mountNode.removeChild(tempElement);
 
     // показываем анимашку
-    showNotification(parentScrollableBlock, referenceElement);
+	if (parentScrollableBlock && referenceElement) {
+		showNotification(parentScrollableBlock, referenceElement);
+	}
 }
 
 
-function showNotification(parentScrollableBlock: HTMLDivElement, referenceElement: HTMLDivElement|false): void {
+function showNotification(parentScrollableBlock: HTMLElement, referenceElement: HTMLElement | false): void {
 
     // если элемента не существует
     if (!referenceElement) return;

@@ -56,7 +56,7 @@ const LANG_CONFIG: LangConfig = {
 			title: "Compass",
 			desc: "Для авторизации введите username и пароль от вашей корпоративной учётной записи LDAP:",
 			username_input_placeholder: "Username",
-			password_input_placeholder: "Пароль или пароль+одноразовый код",
+			password_input_placeholder: "Пароль",
 			back_button: "← Назад",
 			login_button: "Продолжить",
 			unknown_error:
@@ -73,6 +73,27 @@ const LANG_CONFIG: LangConfig = {
 			mail_input_placeholder: "Email",
 			confirm_button: "Продолжить",
 			change_mail_toast_success: "Почта для двухфакторной аутентификации изменена",
+		},
+		ldap_2fa_setup_totp_dialog: {
+			title: "Двухфакторная аутентификация",
+			desc: "Отсканируйте QR в мобильном приложении для одноразовых кодов.",
+			confirm_button: "Продолжить",
+			cant_scan_qr_button: "Не удается отсканировать QR-код?",
+		},
+		ldap_2fa_setup_totp_cant_scan_qr_dialog: {
+			title: "Настройка без QR",
+			first_step_desc_desktop: "В мобильном приложении для одноразовых кодов выберите ручной ввод ключа настройки.",
+			first_step_desc_mobile: "В мобильном приложении для одноразовых кодов выберите ручной ввод ключа настройки.",
+			second_step_desc: "Укажите ваш ключ:",
+			third_step_desc: "Убедитесь, что выбран параметр «По времени». Подтвердите добавление ключа.",
+		},
+		ldap_2fa_confirm_totp_dialog: {
+			title: "Код подтверждения",
+			desc: "Пожалуйста, введите код из мобильного приложения для одноразовых кодов.",
+			input_placeholder: "Код",
+			confirm_button: "Продолжить",
+			cant_get_code_button: "Не удается получить код?",
+			cant_get_code_tooltip: "Обратитесь к руководителю или системному администратору, чтобы получить новый код.",
 		},
 		forgot_password_dialog: {
 			title: "Compass",
@@ -263,6 +284,7 @@ const LANG_CONFIG: LangConfig = {
 				"Регистрация через LDAP недоступна. Обратитесь к руководителю или системному администратору для получения ссылки-приглашения.",
 			auth_sso_full_name_incorrect:
 				"Не удалось получить Имя Фамилию или другие данные из $SSO_PROVIDER_NAME. Обратитесь к руководителю или системному администратору.",
+			auth_sso_totp_code_incorrect: "Некорректный код. Пожалуйста, попробуйте ещё раз.",
 		},
 		token_life_time_desktop: "Код действителен в течение ",
 		token_life_time_mobile: "Код действителен ",

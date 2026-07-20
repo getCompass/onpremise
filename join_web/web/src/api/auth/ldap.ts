@@ -20,6 +20,7 @@ export type ApiFederationLdapAuthGetTokenArgs = {
 	username: string;
 	password: string;
 	mail_confirm_story_key?: string;
+	totp_code?: string;
 };
 
 export type ApiFederationLdapAuthGetToken = {
@@ -32,7 +33,7 @@ export function useApiFederationLdapAuthGetToken() {
 	return useMutation({
 		retry: false,
 		networkMode: "always",
-		mutationFn: async ({username, password, mail_confirm_story_key}: ApiFederationLdapAuthGetTokenArgs) => {
+		mutationFn: async ({username, password, mail_confirm_story_key, totp_code}: ApiFederationLdapAuthGetTokenArgs) => {
 			const body = new URLSearchParams({
 				username: username,
 				password: password,
@@ -40,6 +41,10 @@ export function useApiFederationLdapAuthGetToken() {
 
 			if (mail_confirm_story_key !== undefined) {
 				body.append("mail_confirm_story_key", mail_confirm_story_key);
+			}
+
+			if (totp_code !== undefined) {
+				body.append("totp_code", totp_code);
 			}
 
 			return await getResponse<ApiFederationLdapAuthGetToken>("ldap/auth/getToken", body);

@@ -20,7 +20,7 @@ class Onpremiseweb_Format
 		if (!is_null($mail)) {
 			$formatted_mail = $mail_confirm_story->stage === Domain_Ldap_Entity_Mail_ConfirmStory::STAGE_CONFIRM_NEW_MAIL ? $mail->mail() : $mail->obfuscate();
 		}
-		
+
 		return [
 			"mail_confirm_story_key" => Type_Pack_MailConfirmStory::doEncrypt($mail_confirm_story->mail_confirm_story_map),
 			"scenario"               => "default_confirm",

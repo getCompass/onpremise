@@ -46,7 +46,7 @@ RUN apk update && apk add --no-cache wget git libxslt-dev gnupg build-base linux
 
 # ставим pnpm
 RUN apk add --no-cache nodejs npm \
-    && npm install -g pnpm@8.15.7 \
+    && npm install -g pnpm@10 \
     && mkdir -p /root/.ssh \
     && ssh-keyscan github.com >> /root/.ssh/known_hosts
 
@@ -56,7 +56,7 @@ RUN cd /app \
     && chmod +x /app/entrypoint.sh
 
 RUN cd /app/web \
-    && pnpm install --force
+    && pnpm install --frozen-lockfile
 
 WORKDIR /app
 ENTRYPOINT ["sh", "/app/entrypoint.sh"]

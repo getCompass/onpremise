@@ -324,7 +324,7 @@ const AuthLdap2FaSetupTotpDialogContent = () => {
 			isExpired={isExpired}
 			totpLink={authLdapTotp.otpauth_uri}
 			onRefreshSecretKeyClickHandler={onRefreshSecretKeyClickHandler}
-		/>;
+		/>
 	}
 
 	return <AuthLdap2FaSetupTotpDialogContentDesktop
@@ -332,7 +332,7 @@ const AuthLdap2FaSetupTotpDialogContent = () => {
 		isExpired={isExpired}
 		totpLink={authLdapTotp.otpauth_uri}
 		onRefreshSecretKeyClickHandler={onRefreshSecretKeyClickHandler}
-	/>;
+	/>
 };
 
 export default AuthLdap2FaSetupTotpDialogContent;

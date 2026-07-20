@@ -13,7 +13,7 @@ const PageContentMobileConferenceEnded = () => {
 	const langStringMobileConferenceEndedContentTitle = useLangString("mobile.conference_ended_content.title");
 	const langStringMobileConferenceEndedContentDesc = useLangString("mobile.conference_ended_content.desc");
 	const langStringMobileConferenceEndedContentTryCompassButton = useLangString(
-		"mobile.conference_ended_content.try_compass_button"
+		"try_compass_button"
 	);
 
 	const [clickCount, setClickCount] = useState(0);

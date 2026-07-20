@@ -487,7 +487,7 @@ const AuthLdap2FaAttachMailDialogContent = () => {
 			setIsToolTipVisible={setIsToolTipVisible}
 			toolTipText={toolTipText}
 			setToolTipText={setToolTipText}
-		/>;
+		/>
 	}
 
 	return <AuthLdap2FaAttachMailDialogContentDesktop
@@ -506,7 +506,7 @@ const AuthLdap2FaAttachMailDialogContent = () => {
 		setIsToolTipVisible={setIsToolTipVisible}
 		toolTipText={toolTipText}
 		setToolTipText={setToolTipText}
-	/>;
+	/>
 };
 
 export default AuthLdap2FaAttachMailDialogContent;

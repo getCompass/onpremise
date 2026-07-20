@@ -2,12 +2,16 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * контроллер для технических методов клиента
  */
 class Apiv2_Global extends \BaseFrame\Controller\Api {
+
+	// зона ответственности для API токена
+	public const API_SCOPE = ScopePermission::SCOPE_GLOBAL;
 
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [

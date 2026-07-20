@@ -2,19 +2,35 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * Контроллер для методов изменения профиля компании
  */
-class Apiv1_Profile extends \BaseFrame\Controller\Api {
+class Apiv1_Profile extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_PROFILE;
 
-	const ALLOW_METHODS = [
+	// методы на чтение
+	public const READ_METHOD_LIST = [];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
 		"setName",
 		"setAvatar",
 		"setBaseInfo",
 	];
 
+	// разрешенные методы
+	public const ALLOW_METHODS = [
+		"setName",
+		"setAvatar",
+		"setBaseInfo",
+	];
+
+	// методы, влияющие на активность пользователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"setName",
 		"setAvatar",
@@ -24,7 +40,8 @@ class Apiv1_Profile extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменение имени компании
 	 */
-	public function setName():array {
+	public function setName(): array
+	{
 
 		$name = $this->post(\Formatter::TYPE_STRING, "name");
 
@@ -53,7 +70,8 @@ class Apiv1_Profile extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменение цвета аватара компании
 	 */
-	public function setAvatar():array {
+	public function setAvatar(): array
+	{
 
 		$avatar_color_id = $this->post(\Formatter::TYPE_INT, "avatar_color_id", Domain_Company_Entity_Validator::AVATAR_COLOR_GREEN_ID);
 
@@ -87,7 +105,8 @@ class Apiv1_Profile extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function setBaseInfo():array {
+	public function setBaseInfo(): array
+	{
 
 		$name            = $this->post(\Formatter::TYPE_STRING, "name", false);
 		$avatar_color_id = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
@@ -96,7 +115,12 @@ class Apiv1_Profile extends \BaseFrame\Controller\Api {
 
 		try {
 			[$current_name, $current_avatar_color_id] = Domain_Company_Scenario_Api::setBaseInfo(
-				$this->user_id, $this->role, $this->permissions, $name, $avatar_color_id);
+				$this->user_id,
+				$this->role,
+				$this->permissions,
+				$name,
+				$avatar_color_id
+			);
 		} catch (cs_CompanyIncorrectName) {
 			return $this->error(650, "Incorrect company name");
 		} catch (cs_CompanyIncorrectAvatarColorId) {

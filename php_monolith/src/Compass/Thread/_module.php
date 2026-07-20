@@ -78,5 +78,7 @@ CrypterProvider::add("database_crypt_key", \BaseFrame\Crypt\Crypter\OpenSSL::ins
 	$this->_key = $cipher_key;
 }));
 
+\BaseFrame\ApiGateway\GatewayHandler::init(GATEWAY_SECRET_KEY_B64);
+
 // возвращаем обработчики
 return include_once THREAD_MODULE_ROOT . "_module/route.php";

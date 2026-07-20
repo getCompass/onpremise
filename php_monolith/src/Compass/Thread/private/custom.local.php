@@ -10,3 +10,5 @@ namespace Compass\Thread;
 
 // соль для threads.getMenu/threads.getMenuItem
 define(__NAMESPACE__ . "\SALT_THREAD_LIST"			, "${SALT_THREAD_LIST}");
+
+define(__NAMESPACE__ . "\GATEWAY_SECRET_KEY_B64"				, "${GATEWAY_SECRET_KEY_B64}");

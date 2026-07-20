@@ -12,11 +12,24 @@ type ScopeListInt map[int64]int64
 // зоны ответственности
 // должны дублироваться в php_base_frame
 const (
-	SCOPE_UNDEFINED  = -1
-	SCOPE_GLOBAL     = 0
-	SCOPE_CONFERENCE = 1
-	SCOPE_SPACE      = 2
-	SCOPE_FILE       = 3
+	SCOPE_UNDEFINED = -1
+	SCOPE_GLOBAL    = 0
+
+	SCOPE_CONFERENCE       = 1
+	SCOPE_SPACE            = 2
+	SCOPE_FILE             = 3
+	SCOPE_SPACE_MANAGEMENT = 4
+	SCOPE_SPACE_MEMBER     = 5
+	SCOPE_SPACE_RATING     = 6
+	SCOPE_SPACE_PROFILE    = 7
+	SCOPE_SPACE_JOINLINK   = 8
+	SCOPE_USERBOT          = 9
+	SCOPE_SMARTAPP         = 10
+	SCOPE_CONVERSATION     = 11
+	SCOPE_THREAD           = 12
+	SCOPE_SEARCH           = 13
+	SCOPE_PROFILE          = 14
+	SCOPE_NOTIFICATIONS    = 15
 )
 
 // права к зоне ответственности
@@ -28,10 +41,22 @@ const (
 )
 
 // строковые значения для зон ответственности
-var scopeNames = map[int64]string{
-	SCOPE_CONFERENCE: "conference",
-	SCOPE_SPACE:      "space",
-	SCOPE_FILE:       "file",
+var ScopeNames = map[int64]string{
+	SCOPE_CONFERENCE:       "conference",
+	SCOPE_SPACE:            "space",
+	SCOPE_FILE:             "file",
+	SCOPE_SPACE_MANAGEMENT: "space_management",
+	SCOPE_SPACE_MEMBER:     "space_member",
+	SCOPE_SPACE_RATING:     "space_rating",
+	SCOPE_SPACE_PROFILE:    "space_profile",
+	SCOPE_SPACE_JOINLINK:   "space_joinlink",
+	SCOPE_USERBOT:          "userbot",
+	SCOPE_SMARTAPP:         "smartapp",
+	SCOPE_CONVERSATION:     "conversation",
+	SCOPE_THREAD:           "thread",
+	SCOPE_SEARCH:           "search",
+	SCOPE_PROFILE:          "profile",
+	SCOPE_NOTIFICATIONS:    "notifications",
 }
 
 // строковые значения для прав
@@ -101,7 +126,7 @@ func (sl ScopeList) ToInt() ScopeListInt {
 
 	sli := ScopeListInt{}
 
-	fsn := FlipMap(scopeNames)
+	fsn := FlipMap(ScopeNames)
 	fpn := FlipMap(permissionNames)
 
 	for scope, permission := range sl {
@@ -167,7 +192,7 @@ func (sli ScopeListInt) ToString() ScopeList {
 
 	for scope, permission := range sli {
 
-		if _, exists := scopeNames[scope]; !exists {
+		if _, exists := ScopeNames[scope]; !exists {
 			continue
 		}
 
@@ -175,7 +200,7 @@ func (sli ScopeListInt) ToString() ScopeList {
 			continue
 		}
 
-		sl[scopeNames[scope]] = permissionNames[permission]
+		sl[ScopeNames[scope]] = permissionNames[permission]
 	}
 
 	return sl

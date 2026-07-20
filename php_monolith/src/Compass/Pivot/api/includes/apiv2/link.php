@@ -2,12 +2,24 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\CaseException;
 
 /**
  * Контроллер для работы со ссылкой приглашением
  */
-class Apiv2_Link extends \BaseFrame\Controller\Api {
+class Apiv2_Link extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_JOINLINK;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"validate",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [];
 
 	// поддерживаемые методы, регистр не имеет значение
 	public const ALLOW_METHODS = [
@@ -17,7 +29,6 @@ class Apiv2_Link extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для валидации ссылки
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Request\BlockException
@@ -35,7 +46,8 @@ class Apiv2_Link extends \BaseFrame\Controller\Api {
 	 *
 	 * @long много исключений всяких-разных
 	 */
-	public function validate():array {
+	public function validate(): array
+	{
 
 		$link = $this->post(\Formatter::TYPE_STRING, "link");
 
@@ -43,11 +55,11 @@ class Apiv2_Link extends \BaseFrame\Controller\Api {
 
 		try {
 			$output = Domain_Link_Scenario_Api::validateLink($this->user_id, $link, $this->session_uniq, $this->method_version);
-		} catch (cs_JoinLinkIsExpired|cs_IncorrectJoinLink|cs_JoinLinkNotFound) {
+		} catch (cs_JoinLinkIsExpired | cs_IncorrectJoinLink | cs_JoinLinkNotFound) {
 
 			Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::JOIN_LINK_VALIDATE);
 			return $this->error(1199, "incorrect link");
-		} catch (cs_JoinLinkIsNotActive|cs_JoinLinkIsUsed) {
+		} catch (cs_JoinLinkIsNotActive | cs_JoinLinkIsUsed) {
 			return $this->error(1211002, "inactive link");
 		} catch (cs_UserAlreadyInCompany $e) {
 
@@ -63,7 +75,7 @@ class Apiv2_Link extends \BaseFrame\Controller\Api {
 			throw new \BaseFrame\Exception\Request\CompanyIsHibernatedPivotException("company is hibernated");
 		} catch (Domain_Company_Exception_IsNotServed) {
 			throw new \BaseFrame\Exception\Request\CompanyNotServedException("company is not served");
-		} catch (Domain_Link_Exception_LinkNotFound|Domain_InviteLink_Exception_InviteCodeNotExist) {
+		} catch (Domain_Link_Exception_LinkNotFound | Domain_InviteLink_Exception_InviteCodeNotExist) {
 			throw new CaseException(1205001, "can't validate link");
 		} catch (Domain_InviteLink_Exception_UserAlreadyAcceptInviteLink) {
 			throw new CaseException(1210001, "user already accept invite code");

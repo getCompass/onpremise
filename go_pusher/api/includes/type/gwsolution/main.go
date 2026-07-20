@@ -4,13 +4,16 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/getCompassUtils/go_base_frame/api/system/log"
 	"go_pusher/api/conf"
 	"go_pusher/api/includes/type/premise"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/getCompassUtils/go_base_frame/api/system/functions"
+	"github.com/getCompassUtils/go_base_frame/api/system/log"
+	"github.com/getCompassUtils/go_base_frame/api/system/server"
 )
 
 // ResponseStruct ожидаемая структура ответа от сервера
@@ -31,12 +34,81 @@ type rawHttpRequestData struct {
 var authAppender HttpAuthAppender
 
 // http-клиент, который будет вызывать удаленный севрер
-var client = &http.Client{
-	Transport: &http.Transport{
+var client *http.Client
+
+// поддерживаемые протоколы прокси
+const (
+	proxyProtocolHttp    = "http"
+	proxyProtocolHttps   = "https"
+	proxyProtocolSocks5  = "socks5"
+	proxyProtocolSocks5h = "socks5h"
+)
+
+func init() {
+	initClient()
+}
+
+func initClient() {
+
+	client = &http.Client{
+
+		Transport: &http.Transport{
+
+			// nosemgrep
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+
+	log.Infof("Инициализируем прокси сервер...")
+	config := conf.GetProxyConfig()
+
+	if config.ProxyProtocol == "" {
+		log.Infof("Прокси сервер не используется")
+		return
+	}
+
+	allowedProxyProtocolList := []string{proxyProtocolHttp, proxyProtocolHttps, proxyProtocolSocks5, proxyProtocolSocks5h}
+	exists, _ := functions.InArray(config.ProxyProtocol, allowedProxyProtocolList)
+	if !exists {
+
+		log.Errorf("Введен неподдерживаемый тип прокси %s, останавливаем его использование... Поддерживаемые протоколы %v", config.ProxyProtocol, allowedProxyProtocolList)
+		return
+	}
+
+	proxyStr := fmt.Sprintf("%s://%s:%d", config.ProxyProtocol, config.ProxyHost, config.ProxyPort)
+	if config.ProxyUsername != "" {
+		proxyStr = fmt.Sprintf("%s://%s:%s@%s:%d", config.ProxyProtocol, config.ProxyUsername, config.ProxyPassword, config.ProxyHost, config.ProxyPort)
+	}
+
+	proxyURL, err := url.Parse(proxyStr)
+	if err != nil {
+		log.Errorf("Не смогли спарсить адрес прокси %s, останавливаем его использование...", proxyStr)
+		return
+	}
+
+	client.Transport = &http.Transport{
+
+		// nosemgrep
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-	},
+		Proxy: http.ProxyURL(proxyURL),
+	}
+
+	log.Infof("Загрузили прокси сервер %s://%s:%d", config.ProxyProtocol, config.ProxyHost, config.ProxyPort)
+
+}
+
+// ReloadClient перезагрузить конфигурацию клиента, только для теста
+func ReloadClient() {
+
+	if !server.IsTest() {
+		return
+	}
+
+	initClient()
 }
 
 // получаем информацию по серверу

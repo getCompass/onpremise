@@ -2,16 +2,19 @@
 
 namespace Compass\Premise;
 
+use BaseFrame\Proxy\ProxyProvider;
+
 /**
  * задача класса общаться между проектами
  * универсальная функция - общение между серверами
  */
-class Type_Premise_Main {
-
+class Type_Premise_Main
+{
 	protected const _CURL_TIMEOUT = 10;
 
 	// обратиться к методу
-	public static function doCall(string $url, string $method, string $json_params, string $signature, string $domain_hash, string $server_uid):array {
+	public static function doCall(string $url, string $method, string $json_params, string $signature, string $domain_hash, string $server_uid): array
+	{
 
 		// формируем сообщение
 		$ar_post = [
@@ -47,13 +50,29 @@ class Type_Premise_Main {
 	}
 
 	// инициализируем cURL
-	protected static function _getCurl():\Curl {
+	protected static function _getCurl(): \Curl
+	{
 
 		$curl = new \Curl();
 		$curl->setTimeout(self::_CURL_TIMEOUT);
 
 		// включаем верификацию хоста
 		//$curl->needVerify();
+
+		// получаем информацию о прокси сервере
+		$proxy_config = Domain_License_Entity_Config_Proxy::instance();
+
+		// если в приложении включен прокси сервер, пускаем запросы через него
+		if ($proxy_config->getProtocol() !== "") {
+
+			$curl->setProxy(
+				$proxy_config->getProtocol(),
+				$proxy_config->getHost(),
+				$proxy_config->getPort(),
+				$proxy_config->getUsername(),
+				$proxy_config->getPassword(),
+			);
+		}
 
 		// необходимо для комфортного дебага + удобный функционал на любой окружении манипулировать таймаутами
 		// локально устанавливается в compass_docker/docker-compose.yml::app.environment
@@ -66,7 +85,8 @@ class Type_Premise_Main {
 	}
 
 	// записываем лог и выбрасываем ошибку
-	protected static function _onPremiseRequestFailed(int $http_status_code, string $url, array $response, string $method, string $message):void {
+	protected static function _onPremiseRequestFailed(int $http_status_code, string $url, array $response, string $method, string $message): void
+	{
 
 		Type_System_Admin::log("socket_request_error", [
 			"url"       => $url,
@@ -76,7 +96,10 @@ class Type_Premise_Main {
 		]);
 
 		throw new \cs_SocketRequestIsFailed(
-			$http_status_code, $url, $response, "Socket request '{$method}' failed; HTTP CODE: {$http_status_code}; Message: '{$message}'"
+			$http_status_code,
+			$url,
+			$response,
+			"Socket request '{$method}' failed; HTTP CODE: {$http_status_code}; Message: '{$message}'"
 		);
 	}
 }

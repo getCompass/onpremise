@@ -11,7 +11,7 @@ import { useApiFederationLdapAuthGetToken, useApiPivotAuthLdapBegin } from "../.
 import { ApiCommand, ApiError, NetworkError, ServerError } from "../../api/_index.ts";
 import { useAtom, useAtomValue, useSetAtom } from "jotai/index";
 import {
-	activeDialogIdState,
+	activeDialogIdState, defaultDictionaryDataStage,
 	dictionaryDataState,
 	isLdapChangeMailState,
 	prepareJoinLinkErrorState
@@ -67,7 +67,10 @@ const AuthLdapDialogContentDesktop = ({
 	);
 	const langStringLdapLoginDialogLoginButton = useLangString("ldap_login_dialog.login_button");
 
-	const ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
+	let ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
+	if (ssoLdapLoginDialogDesc === defaultDictionaryDataStage.auth_sso_ldap_description_text) {
+		ssoLdapLoginDialogDesc = useLangString("ldap_login_dialog.desc");
+	}
 
 	const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
 
@@ -179,7 +182,10 @@ const AuthLdapDialogContentMobile = ({
 	const langStringLdapLoginDialogBackButton = useLangString("ldap_login_dialog.back_button");
 	const langStringLdapLoginDialogLoginButton = useLangString("ldap_login_dialog.login_button");
 
-	const ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
+	let ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
+	if (ssoLdapLoginDialogDesc === defaultDictionaryDataStage.auth_sso_ldap_description_text) {
+		ssoLdapLoginDialogDesc = useLangString("ldap_login_dialog.desc");
+	}
 
 	const { navigateToDialog } = useNavigateDialog();
 
@@ -523,7 +529,7 @@ const AuthLdapDialogContent = () => {
 			setUsername={setUsername}
 			password={password}
 			setPassword={setPassword}
-		/>;
+		/>
 	}
 
 	return <AuthLdapDialogContentDesktop
@@ -538,7 +544,7 @@ const AuthLdapDialogContent = () => {
 		setUsername={setUsername}
 		password={password}
 		setPassword={setPassword}
-	/>;
+	/>
 };
 
 export default AuthLdapDialogContent;

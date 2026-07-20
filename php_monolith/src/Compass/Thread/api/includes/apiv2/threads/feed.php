@@ -2,6 +2,7 @@
 
 namespace Compass\Thread;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
@@ -19,6 +20,21 @@ use CompassApp\Domain\Member\Exception\UserIsGuest;
  */
 class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api
 {
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_THREAD;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getMessages",
+		"getMessageReadParticipants",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"repost",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"getMessages",
 		"repost",
@@ -220,7 +236,6 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api
 	/**
 	 * Расшифровать ключ чата и его сообщения для репоста
 	 *
-	 *
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \parseException
@@ -243,7 +258,6 @@ class Apiv2_Threads_Feed extends \BaseFrame\Controller\Api
 
 	/**
 	 * Расшифровать ключ треда и его сообщения для репоста
-	 *
 	 *
 	 * @throws ParamException
 	 */

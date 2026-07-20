@@ -8,6 +8,8 @@ use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Exception\Request\PaymentRequiredException;
 use CompassApp\Domain\Member\Entity\Permission;
 use BaseFrame\Handler\Api;
+use BaseFrame\Http\Header\XAuthSrc;
+use CompassApp\Controller\Middleware\CompanyGatewayAuthorization;
 
 /**
  * api Handler - version 2.0
@@ -26,8 +28,8 @@ use BaseFrame\Handler\Api;
  * 8. соотвественно все методы GLOBAL - анонимны
  * 9. методы регистро НЕ зависимые
  */
-class Apiv1_Handler extends Api implements \RouteHandler {
-
+class Apiv1_Handler extends Api implements \RouteHandler
+{
 	// поддерживаемые методы (при создании новой группы заносятся вручную)
 	public const ALLOW_CONTROLLERS = [
 		"auth",
@@ -57,7 +59,8 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	 * Возвращает обслуживаемые методы.
 	 * @return string[]
 	 */
-	public function getServedRoutes():array {
+	public function getServedRoutes(): array
+	{
 
 		return static::ALLOW_CONTROLLERS;
 	}
@@ -66,7 +69,8 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	 * Возвращает тип обработчика.
 	 * @return string[]
 	 */
-	public function getType():string {
+	public function getType(): string
+	{
 
 		return "apiv1";
 	}
@@ -75,7 +79,8 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	 * ToString конвертация.
 	 * @return string[]
 	 */
-	public function __toString():string {
+	public function __toString(): string
+	{
 
 		return static::class;
 	}
@@ -83,17 +88,16 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	/**
 	 * единая точка входа в API
 	 *
-	 * @param string $route     название метода вида test.code401
-	 * @param array  $post_data параметры post запроса которые будут использоваться внутри контролеров
-	 * @param int    $user_id   для отладки и тестов. действуйет только в режиме cli
+	 * @param string $route   название метода вида test.code401
+	 * @param int    $user_id для отладки и тестов. действуйет только в режиме cli
 	 *
-	 * @return array
 	 * @throws ControllerMethodNotFoundException
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @long
 	 */
-	public function handle(string $route, array $post, int $user_id = 0):array {
+	public function handle(string $route, array $post, int $user_id = 0): array
+	{
 
 		$extra = [
 			"company_cache_class"           => Gateway_Bus_CompanyCache::class,
@@ -113,6 +117,11 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 
 			$extra["need_user_id"] = $user_id;
 			$authorization_class   = Middleware_WithoutAuthorization::class;
+		}
+
+		// для запросов с API ключом используем авторизацию гейтвея
+		if ((new XAuthSrc())->getValue() === XAuthSrc::AUTH_SRC_GATEWAY) {
+			$authorization_class = CompanyGatewayAuthorization::class;
 		}
 
 		// здесь описана последовательность проверок
@@ -152,7 +161,7 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 
 			Type_System_Admin::log("decrypt failed ", "ip: " . getIp() . "message: " . $e->getMessage());
 			throw new ParamException("decrypt key was failed");
-		} catch (CaseException|PaymentRequiredException $e) {
+		} catch (CaseException | PaymentRequiredException $e) {
 			$response = $this->_handleBusinessError($e);
 		}
 

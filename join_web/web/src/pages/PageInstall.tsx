@@ -2,6 +2,7 @@ import useIsMobile from "../lib/useIsMobile.ts";
 import PageInstallMobile from "./PageInstallMobile.tsx";
 import PageInstallDesktop from "./PageInstallDesktop.tsx";
 import { useEffect } from "react";
+import PageHeaderLeft from "../components/PageHeaderLeft.tsx";
 
 const PageInstall = () => {
 	const isMobile = useIsMobile();
@@ -24,10 +25,16 @@ const PageInstall = () => {
 	}, []);
 
 	if (isMobile) {
-		return <PageInstallMobile/>;
+		return <>
+			<PageInstallMobile/>
+			<PageHeaderLeft />
+		</>
 	}
 
-	return <PageInstallDesktop/>;
+	return <>
+		<PageInstallDesktop/>
+		<PageHeaderLeft />
+	</>
 };
 
 export default PageInstall;

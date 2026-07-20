@@ -8,6 +8,7 @@ import LoadingLogoMobile from "../components/LoadingLogoMobile.tsx";
 import LoadingLogoDesktop from "../components/LoadingLogoDesktop.tsx";
 import { ALREADY_MEMBER_ERROR_CODE } from "../api/_types.ts";
 import { Property } from "../../styled-system/types/csstype";
+import PageHeaderLeft from "../components/PageHeaderLeft.tsx";
 
 type PageLayoutProps = PropsWithChildren<{
 	isLoading: boolean;
@@ -128,10 +129,16 @@ const PageLayout = ({ children }: PropsWithChildren) => {
 	const isLoading = useAtomValue(loadingState);
 
 	if (isMobile) {
-		return <PageLayoutMobile isLoading={isLoading} children={children} />;
+		return <>
+			<PageLayoutMobile isLoading={isLoading} children={children} />
+			<PageHeaderLeft />
+		</>
 	}
 
-	return <PageLayoutDesktop isLoading={isLoading} children={children} />;
+	return <>
+		<PageLayoutDesktop isLoading={isLoading} children={children} />
+		<PageHeaderLeft />
+	</>
 };
 
 export default PageLayout;

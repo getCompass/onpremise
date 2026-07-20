@@ -1,9 +1,10 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Member;
@@ -11,7 +12,29 @@ use CompassApp\Domain\Member\Entity\Member;
 /**
  * контроллер для работы с пользовательским ботом
  */
-class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
+class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API ключа
+	public const API_SCOPE = ScopePermission::SCOPE_USERBOT;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"list",
+		"getSensitiveData"
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"create",
+		"edit",
+		"refreshSecretKey",
+		"refreshToken",
+		"enable",
+		"disable",
+		"delete",
+		"addToGroup",
+		"removeFromGroup",
+	];
 
 	// все методы контроллера
 	public const ALLOW_METHODS = [
@@ -45,25 +68,33 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \blockException
 	 * @throws CaseException
 	 */
-	public function create():array {
+	public function create(): array
+	{
 
-		$name                     = $this->post(\Formatter::TYPE_STRING, "name");
-		$short_description        = $this->post(\Formatter::TYPE_STRING, "short_description");
-		$avatar_color_id          = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
-		$avatar_file_key          = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
-		$is_react_command         = $this->post(\Formatter::TYPE_INT, "is_react_command");
-		$webhook                  = $this->post(\Formatter::TYPE_STRING, "webhook", false);
+		$name              = $this->post(\Formatter::TYPE_STRING, "name");
+		$short_description = $this->post(\Formatter::TYPE_STRING, "short_description");
+		$avatar_color_id   = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
+		$avatar_file_key   = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
+		$is_react_command  = $this->post(\Formatter::TYPE_INT, "is_react_command");
+		$webhook           = $this->post(\Formatter::TYPE_STRING, "webhook", false);
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::USERBOT_CREATE);
 
 		try {
 
 			[$userbot, $sensitive_data] = Domain_Userbot_Scenario_Api::create(
-				$this->role, $this->permissions, $name, $avatar_color_id, $avatar_file_key, $short_description, $is_react_command, $webhook
+				$this->role,
+				$this->permissions,
+				$name,
+				$avatar_color_id,
+				$avatar_file_key,
+				$short_description,
+				$is_react_command,
+				$webhook
 			);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2216006, "user is not a developer");
-		} catch (\cs_InvalidProfileName|Domain_Userbot_Exception_IncorrectParam) {
+		} catch (\cs_InvalidProfileName | Domain_Userbot_Exception_IncorrectParam) {
 			throw new CaseException(2217001, "incorrect params");
 		} catch (Domain_Userbot_Exception_EmptyWebhook) {
 			throw new CaseException(2217003, "empty webhook");
@@ -85,13 +116,14 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws CaseException
 	 * @throws ParamException
 	 */
-	public function list():array {
+	public function list(): array
+	{
 
 		$filter_active = $this->post(\Formatter::TYPE_INT, "filter_active");
 
 		try {
 			$list = Domain_Userbot_Scenario_Api::getList($this->role, $this->permissions, $filter_active);
-		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed|\CompassApp\Domain\Member\Exception\UserIsGuest) {
+		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed | \CompassApp\Domain\Member\Exception\UserIsGuest) {
 			throw new CaseException(2216006, "user is not have permissions for this action");
 		}
 
@@ -114,27 +146,36 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @long - список параметров и ошибок длинный
 	 */
-	public function edit():array {
+	public function edit(): array
+	{
 
-		$userbot_id               = $this->post(\Formatter::TYPE_STRING, "userbot_id");
-		$name                     = $this->post(\Formatter::TYPE_STRING, "name", false);
-		$short_description        = $this->post(\Formatter::TYPE_STRING, "short_description", false);
-		$avatar_color_id          = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
-		$avatar_file_key          = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
-		$is_react_command         = $this->post(\Formatter::TYPE_INT, "is_react_command", false);
-		$webhook                  = $this->post(\Formatter::TYPE_STRING, "webhook", false);
+		$userbot_id        = $this->post(\Formatter::TYPE_STRING, "userbot_id");
+		$name              = $this->post(\Formatter::TYPE_STRING, "name", false);
+		$short_description = $this->post(\Formatter::TYPE_STRING, "short_description", false);
+		$avatar_color_id   = $this->post(\Formatter::TYPE_INT, "avatar_color_id", false);
+		$avatar_file_key   = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
+		$is_react_command  = $this->post(\Formatter::TYPE_INT, "is_react_command", false);
+		$webhook           = $this->post(\Formatter::TYPE_STRING, "webhook", false);
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::USERBOT_EDIT);
 
 		try {
 
 			$user_id = Domain_Userbot_Scenario_Api::edit(
-				$this->user_id, $this->role, $this->permissions, $userbot_id, $name, $short_description, $avatar_color_id, $avatar_file_key,
-				$is_react_command, $webhook
+				$this->user_id,
+				$this->role,
+				$this->permissions,
+				$userbot_id,
+				$name,
+				$short_description,
+				$avatar_color_id,
+				$avatar_file_key,
+				$is_react_command,
+				$webhook
 			);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2216006, "user is not have permissions for this action");
-		} catch (\cs_InvalidProfileName|Domain_Userbot_Exception_IncorrectParam) {
+		} catch (\cs_InvalidProfileName | Domain_Userbot_Exception_IncorrectParam) {
 			throw new CaseException(2217001, "incorrect param name");
 		} catch (Domain_Userbot_Exception_EmptyParam) {
 			throw new CaseException(2217002, "empty param");
@@ -162,7 +203,8 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function refreshSecretKey():array {
+	public function refreshSecretKey(): array
+	{
 
 		$userbot_id = $this->post(\Formatter::TYPE_STRING, "userbot_id");
 
@@ -196,7 +238,8 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \blockException
 	 */
-	public function refreshToken():array {
+	public function refreshToken(): array
+	{
 
 		$userbot_id = $this->post(\Formatter::TYPE_STRING, "userbot_id");
 
@@ -228,7 +271,8 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function enable():array {
+	public function enable(): array
+	{
 
 		$userbot_id = $this->post(\Formatter::TYPE_STRING, "userbot_id");
 
@@ -256,7 +300,8 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function disable():array {
+	public function disable(): array
+	{
 
 		$userbot_id = $this->post(\Formatter::TYPE_STRING, "userbot_id");
 
@@ -286,7 +331,8 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function delete():array {
+	public function delete(): array
+	{
 
 		$userbot_id = $this->post(\Formatter::TYPE_STRING, "userbot_id");
 
@@ -316,7 +362,8 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	public function getSensitiveData():array {
+	public function getSensitiveData(): array
+	{
 
 		$userbot_id = $this->post(\Formatter::TYPE_STRING, "userbot_id");
 
@@ -345,7 +392,8 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \blockException
 	 * @throws \cs_DecryptHasFailed
 	 */
-	public function addToGroup():array {
+	public function addToGroup(): array
+	{
 
 		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$userbot_id_list  = $this->post(\Formatter::TYPE_ARRAY, "userbot_id_list");
@@ -388,7 +436,8 @@ class Apiv2_Userbot_Developer extends \BaseFrame\Controller\Api {
 	 * @throws \blockException
 	 * @throws \blockException
 	 */
-	public function removeFromGroup():array {
+	public function removeFromGroup(): array
+	{
 
 		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$userbot_id       = $this->post(\Formatter::TYPE_STRING, "userbot_id");

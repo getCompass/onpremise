@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CaseException;
@@ -12,13 +13,27 @@ use CompassApp\Pack\Conversation;
 /**
  * контроллер, отвечающий за инвайты
  */
-class Apiv2_Conversations_Invites extends \BaseFrame\Controller\Api {
+class Apiv2_Conversations_Invites extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"addBatching",
+		"addBatchingForGroups",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"addBatching",
 		"addBatchingForGroups",
 	];
 
+	// методы, влияющие на активность пользователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"addBatching",
 		"addBatchingForGroups",
@@ -35,14 +50,14 @@ class Apiv2_Conversations_Invites extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для добавления в групповой диалог группе пользователей
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\ControllerMethodNotFoundException|CaseException
 	 */
-	public function addBatching():array {
+	public function addBatching(): array
+	{
 
 		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key", "");
 		$conversation_map = Conversation::tryDecrypt($conversation_key);
@@ -70,7 +85,6 @@ class Apiv2_Conversations_Invites extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для добавления в групповые диалоги пользователя
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws ParseFatalException
@@ -80,7 +94,8 @@ class Apiv2_Conversations_Invites extends \BaseFrame\Controller\Api {
 	 * @throws cs_Conversation_UserbotIsDeleted
 	 * @throws cs_Conversation_UserbotIsDisabled|CaseException
 	 */
-	public function addBatchingForGroups():array {
+	public function addBatchingForGroups(): array
+	{
 
 		$user_id                     = $this->post(\Formatter::TYPE_INT, "user_id");
 		$group_conversation_key_list = $this->post(\Formatter::TYPE_ARRAY, "group_conversation_key_list");
@@ -93,7 +108,7 @@ class Apiv2_Conversations_Invites extends \BaseFrame\Controller\Api {
 			throw new CaseException(2141001, "User is not conversation member");
 		} catch (cs_UserIsNotAdmin) {
 			throw new CaseException(2141002, "you are not allowed to do this action");
-		} catch (Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_MemberIsDisabled) {
+		} catch (Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_MemberIsDisabled) {
 			throw new CaseException(2141005, "You can't write to this conversation because your opponent delete account");
 		} catch (Domain_Conversation_Exception_Guest_AttemptInitialConversation) {
 			throw new CaseException(2141006, "You can't write to this conversation because your opponent delete account");

@@ -2,10 +2,16 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
+
 /**
  * контроллер для технических методов клиента
  */
-class Apiv1_Global extends \BaseFrame\Controller\Api {
+class Apiv1_Global extends \BaseFrame\Controller\Api
+{
+
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_GLOBAL;
 
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
@@ -20,7 +26,6 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод передает информацию о клиенте и загружает параметры, начальное состояние приложения
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \BaseFrame\Exception\Request\ParamException
@@ -28,7 +33,8 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	 * @throws cs_PlatformNotFound
 	 * @throws \queryException
 	 */
-	public function doStart():array {
+	public function doStart(): array
+	{
 
 		$permissions_output_version = match ($this->method_version) {
 			1       => 1,
@@ -44,8 +50,7 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 				"permissions_output_version" => $permissions_output_version,
 			]);
 
-			[$config, $ws_connection_info, $notification_preferences, $member_permission_list, $access, $has_confirmed_join_request] =
-				Domain_User_Scenario_Api::doStart($this->user_id, $this->role, $this->permissions);
+			[$config, $ws_connection_info, $notification_preferences, $member_permission_list, $access, $has_confirmed_join_request] = Domain_User_Scenario_Api::doStart($this->user_id, $this->role, $this->permissions);
 		} catch (\cs_RowIsEmpty) {
 			return $this->error(654, "User is not a member of the company");
 		} catch (cs_UserNotLoggedIn) {
@@ -79,7 +84,8 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 */
-	public function onApplicationFocused():array {
+	public function onApplicationFocused(): array
+	{
 
 		if ($this->user_id > 0) {
 

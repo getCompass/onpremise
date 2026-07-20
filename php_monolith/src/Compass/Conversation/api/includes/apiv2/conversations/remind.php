@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
@@ -14,13 +15,25 @@ use CompassApp\Domain\Member\Entity\Permission;
 /**
  * контроллер, отвечающий за Напоминания сообщений чата
  */
-class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
+class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
 
-	public const ALLOW_METHODS = [
+	// методы на чтение
+	public const READ_METHOD_LIST = [];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
 		"create",
 		"remove",
 	];
 
+	// разрешенные методы
+	public const ALLOW_METHODS = [
+		"create",
+		"remove",
+	];
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"create",
 		"remove",
@@ -44,7 +57,8 @@ class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @long try..catch разросся
 	 */
-	public function create():array {
+	public function create(): array
+	{
 
 		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key");
 		$message_map = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -62,11 +76,11 @@ class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
 			[$remind_id, $comment] = Domain_Remind_Scenario_Api::create($this->user_id, $message_map, $remind_at, $comment);
 		} catch (cs_Message_IsDeleted) {
 			throw new CaseException(2218003, "Message is deleted");
-		} catch (Domain_Conversation_Exception_Message_NotAllowForRemind|Domain_Conversation_Exception_Message_NotAllowForUser) {
+		} catch (Domain_Conversation_Exception_Message_NotAllowForRemind | Domain_Conversation_Exception_Message_NotAllowForUser) {
 			throw new CaseException(2218004, "You are not allowed to do this action");
 		} catch (cs_Message_IsTooLong) {
 			throw new CaseException(2218005, "Comment text is too long");
-		} catch (cs_Conversation_MemberIsDisabled|Domain_Conversation_Exception_User_IsAccountDeleted|cs_Conversation_UserbotIsDisabled|cs_Conversation_UserbotIsDeleted $e) {
+		} catch (cs_Conversation_MemberIsDisabled | Domain_Conversation_Exception_User_IsAccountDeleted | cs_Conversation_UserbotIsDisabled | cs_Conversation_UserbotIsDeleted $e) {
 
 			$error = Helper_Conversations::getCheckIsAllowedError($e, true);
 			throw new CaseException($error["error_code"], $error["message"]);
@@ -104,7 +118,8 @@ class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function remove():array {
+	public function remove(): array
+	{
 
 		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key");
 		$message_map = \CompassApp\Pack\Message\Conversation::tryDecrypt($message_key);
@@ -113,7 +128,7 @@ class Apiv2_Conversations_Remind extends \BaseFrame\Controller\Api {
 
 		try {
 			Domain_Remind_Scenario_Api::remove($this->user_id, $message_map, $this->role, $this->permissions);
-		} catch (Domain_Conversation_Exception_Message_NotAllowForRemind|Domain_Conversation_Exception_Message_NotAllowForUser) {
+		} catch (Domain_Conversation_Exception_Message_NotAllowForRemind | Domain_Conversation_Exception_Message_NotAllowForUser) {
 			throw new CaseException(2218004, "You are not allowed to do this action");
 		} catch (cs_Message_IsDeleted) {
 			throw new CaseException(2218003, "Message is deleted");

@@ -25,7 +25,7 @@ const PageContentDesktopLeaveConference = () => {
 	const langStringDesktopConferenceEndedContentTitle = useLangString("desktop.leave_conference_content.title");
 	const langStringDesktopConferenceEndedContentDesc = useLangString("desktop.leave_conference_content.desc");
 	const langStringDesktopConferenceEndedContentTryCompassButton = useLangString(
-		"desktop.leave_conference_content.try_compass_button"
+		"try_compass_button"
 	);
 	const langStringDesktopConferenceEndedContentJoinToConferenceAgainButton = useLangString(
 		"desktop.leave_conference_content.join_to_conference_again_button"

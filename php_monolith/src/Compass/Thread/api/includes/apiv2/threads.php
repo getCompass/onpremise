@@ -2,6 +2,7 @@
 
 namespace Compass\Thread;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
@@ -10,20 +11,31 @@ use BaseFrame\Exception\Request\ParamException;
 /**
  * контроллер, отвечающий за работу тредов
  */
-class Apiv2_Threads extends \BaseFrame\Controller\Api {
+class Apiv2_Threads extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_THREAD;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getMetaAndMenuBatching",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"getMetaAndMenuBatching",
 	];
 
-	############################	##############################
+	##########################################################
 	# region диалоги
 	##########################################################
 
 	/**
 	 * Метод для получения списка тредов
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
@@ -31,7 +43,8 @@ class Apiv2_Threads extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @long
 	 */
-	public function getMetaAndMenuBatching():array {
+	public function getMetaAndMenuBatching(): array
+	{
 
 		$thread_key_list = $this->post(\Formatter::TYPE_ARRAY, "thread_key_list");
 
@@ -56,7 +69,8 @@ class Apiv2_Threads extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если список тредов некорректный
-	protected function _throwIfThreadListIsIncorrect(array $thread_list):void {
+	protected function _throwIfThreadListIsIncorrect(array $thread_list): void
+	{
 
 		// если пришел пустой массив файлов
 		if (count($thread_list) < 1) {
@@ -70,7 +84,8 @@ class Apiv2_Threads extends \BaseFrame\Controller\Api {
 	}
 
 	// преобразуем пришедшие ключи в map
-	protected function _tryDecryptThreadList(array $thread_list):array {
+	protected function _tryDecryptThreadList(array $thread_list): array
+	{
 
 		$thread_map_list = [];
 		foreach ($thread_list as $key) {

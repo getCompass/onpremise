@@ -1,4 +1,4 @@
-FROM docker.getcompass.ru/service/php-8:8.4.12-3
+FROM docker.getcompass.ru/service/php-8:8.4.19-1
 
 COPY --chown=www-data:www-data . /app
 

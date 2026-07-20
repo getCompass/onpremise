@@ -27,7 +27,6 @@ import { useApiAuthGenerateToken } from "../api/auth.ts";
 import { copyToClipboard } from "../lib/copyToClipboard.ts";
 import { useApiJoinLinkAccept } from "../api/joinlink.ts";
 import useIsJoinLink from "../lib/useIsJoinLink.ts";
-import LogoutButtonMobile from "../components/LogoutButtonMobile.tsx";
 import { useAtom } from "jotai/index";
 import Toast, { useShowToast } from "../lib/Toast.tsx";
 import { DynamicTimerAuthenticationToken } from "../components/DynamicTimerAuthenticationToken.tsx";
@@ -618,9 +617,6 @@ const PageTokenMobile = () => {
 				position = "relative"
 				onClick = {() => setStoreMenuOpen(false)}
 			>
-				<HStack w = "100%" justify = "end">
-					<LogoutButtonMobile />
-				</HStack>
 				<VStack w = "100%" gap = "32px" userSelect = "none" px = "8px">
 					<VStack w = "100%">
 						<VStack w = "100%" gap = "24px">

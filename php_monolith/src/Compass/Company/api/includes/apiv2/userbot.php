@@ -1,17 +1,32 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\CaseException;
 
 /**
  * контроллер для работы с пользовательским ботом
  */
-class Apiv2_Userbot extends \BaseFrame\Controller\Api {
+class Apiv2_Userbot extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API ключа
+	public const API_SCOPE = ScopePermission::SCOPE_USERBOT;
 
-	const ALLOW_METHODS = [
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getCard",
+		"show",
+		"getUserRel",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [];
+
+	// разрешенные методы
+	public const ALLOW_METHODS = [
 		"getCard",
 		"show",
 		"getUserRel",
@@ -26,7 +41,8 @@ class Apiv2_Userbot extends \BaseFrame\Controller\Api {
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \returnException
 	 */
-	public function getCard():array {
+	public function getCard(): array
+	{
 
 		$userbot_id = $this->post(\Formatter::TYPE_STRING, "userbot_id");
 
@@ -52,7 +68,8 @@ class Apiv2_Userbot extends \BaseFrame\Controller\Api {
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 */
-	public function show():array {
+	public function show(): array
+	{
 
 		$userbot_id_list = $this->post(\Formatter::TYPE_ARRAY, "userbot_id_list");
 
@@ -70,7 +87,8 @@ class Apiv2_Userbot extends \BaseFrame\Controller\Api {
 	/**
 	 * получаем связь пользователя и бота
 	 */
-	public function getUserRel():array {
+	public function getUserRel(): array
+	{
 
 		$batch_user_list = $this->post(\Formatter::TYPE_ARRAY, "batch_user_list");
 

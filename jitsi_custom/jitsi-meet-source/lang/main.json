@@ -636,8 +636,7 @@
         "toggleParticipantsPane": "Show or hide the participants pane",
         "toggleScreensharing": "Switch between camera and screen sharing",
         "toggleShortcuts": "Show or hide keyboard shortcuts",
-        "videoMute": "Start or stop your camera",
-        "tileViewToggle": "Включить/выключить режим галереи"
+        "videoMute": "Start or stop your camera"
     },
     "largeVideo": {
         "screenIsShared": "You are sharing your screen",
@@ -804,8 +803,8 @@
         "me": "Me",
         "messageIsNotDeliveredTitle": "This action is not available",
         "messageIsNotDelivered": "The user has left the conference or is a viewer.",
-        "messageIsRestrictedTitle": "Отправка заблокирована",
-        "messageIsRestricted": "Руководитель команды ограничил отправку сообщений, содержащих чувствительные данные.",
+        "messageIsRestrictedTitle": "Sending blocked",
+        "messageIsRestricted": "The team owner has restricted the sending of messages with sensitive data.",
         "moderationInEffectCSDescription": "Please raise hand if you want to share your screen.",
         "moderationInEffectCSTitle": "Screen sharing is blocked by the moderator",
         "moderationInEffectDescription": "Please raise hand if you want to speak.",

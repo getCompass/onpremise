@@ -57,8 +57,7 @@ const AuthLdap2FaConfirmTotpDialogContentDesktop = ({
 				<Text mt="16px" style="lato_18_24_900" ls="-02">
 					{langStringLdap2faConfirmTotpDialogTitle}
 				</Text>
-				<Text mt="6px" textAlign="center" style="lato_14_20_400" ls="-015" maxW="328px"
-					  overflow="wrapEllipsis">
+				<Text mt="6px" textAlign="center" style="lato_14_20_400" ls="-015" maxW="328px" overflow="wrapEllipsis">
 					{langStringLdap2faConfirmTotpDialogDesc}
 				</Text>
 				<VStack w="100%" gap="0px" mt="20px">
@@ -425,7 +424,7 @@ const AuthLdap2FaConfirmTotpDialogContent = () => {
 			}
 			setIsLoading(false);
 		}
-	}, [ authLdapCredentials, confirmCode ]);
+	}, [ authLdapCredentials, confirmCode, langStringErrorsAuthSsoTotpCodeIncorrect ]);
 
 	if (isMobile) {
 
@@ -436,7 +435,7 @@ const AuthLdap2FaConfirmTotpDialogContent = () => {
 			isLoading={isLoading}
 			isError={isError}
 			onLoginClickHandler={onLoginClickHandler}
-		/>;
+		/>
 	}
 
 	return <AuthLdap2FaConfirmTotpDialogContentDesktop
@@ -446,7 +445,7 @@ const AuthLdap2FaConfirmTotpDialogContent = () => {
 		isLoading={isLoading}
 		isError={isError}
 		onLoginClickHandler={onLoginClickHandler}
-	/>;
+	/>
 };
 
 export default AuthLdap2FaConfirmTotpDialogContent;

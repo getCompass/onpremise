@@ -11,7 +11,7 @@ import {
 	authState,
 	captchaProviderState,
 	captchaPublicKeyState,
-	confirmPasswordState,
+	confirmPasswordState, defaultDictionaryDataStage,
 	dictionaryDataState, isGuestAuthState,
 	isPasswordChangedState,
 	isRegistrationState,
@@ -113,7 +113,10 @@ const EmailPhoneNumberDialogContentDesktop = ({
 	const langStringEmailPhoneNumberDialogProhibitedSymbolsTooltip = useLangString(
 		"email_phone_number_dialog.prohibited_symbols_tooltip"
 	);
-	const ssoButtonCustomText = useAtomValue(dictionaryDataState).auth_sso_start_button_text;
+	let ssoButtonCustomText = useAtomValue(dictionaryDataState).auth_sso_start_button_text;
+	if (ssoButtonCustomText === defaultDictionaryDataStage.auth_sso_start_button_text) {
+		ssoButtonCustomText = useLangString("email_phone_number_dialog.sso_button");
+	}
 
 	const joinLink = useAtomValue(joinLinkState);
 	const [ isGuestAuth, setIsGuestAuth ] = useAtom(isGuestAuthState);
@@ -178,7 +181,7 @@ const EmailPhoneNumberDialogContentDesktop = ({
 			</Button>;
 		}
 
-		return <></>;
+		return <></>
 	}, [
 		isGuestJoinLink,
 		isGuestAuth,
@@ -411,7 +414,10 @@ const EmailPhoneNumberDialogContentMobile = ({
 		return availableAuthMethodList;
 	}, [ isGuest, availableAuthGuestMethodList, availableAuthMethodList ]);
 
-	const ssoButtonCustomText = useAtomValue(dictionaryDataState).auth_sso_start_button_text;
+	let ssoButtonCustomText = useAtomValue(dictionaryDataState).auth_sso_start_button_text;
+	if (ssoButtonCustomText === defaultDictionaryDataStage.auth_sso_start_button_text) {
+		ssoButtonCustomText = useLangString("email_phone_number_dialog.sso_button");
+	}
 
 	const langStringEmailPhoneNumberDialogProhibitedSymbolsTooltip = useLangString(
 		"email_phone_number_dialog.prohibited_symbols_tooltip"
@@ -462,7 +468,7 @@ const EmailPhoneNumberDialogContentMobile = ({
 			</Button>;
 		}
 
-		return <></>;
+		return <></>
 	}, [
 		isGuestJoinLink,
 		isGuestAuth,

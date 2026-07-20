@@ -2,6 +2,7 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Member;
 use CompassApp\Domain\Member\Entity\Permission;
@@ -9,10 +10,22 @@ use CompassApp\Domain\Member\Entity\Permission;
 /**
  * Контроллер для методов рейтинга
  */
-class Apiv1_Company_Rating extends \BaseFrame\Controller\Api {
-
+class Apiv1_Company_Rating extends \BaseFrame\Controller\Api
+{
 	private const _DEFAULT_TOP_LIST_COUNT = 50; // количестов людей в топе по дефолту
 
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_RATING;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"get",
+		"getByUserId",
+		"getEventCountByInterval",
+		"getGeneralEventCountByInterval",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"get",
 		"getByUserId",
@@ -41,7 +54,8 @@ class Apiv1_Company_Rating extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public function get():array {
+	public function get(): array
+	{
 
 		$year            = $this->post(\Formatter::TYPE_INT, "year", (int) date("o"));
 		$week            = $this->post(\Formatter::TYPE_INT, "week", (int) date("W"));
@@ -54,7 +68,16 @@ class Apiv1_Company_Rating extends \BaseFrame\Controller\Api {
 		try {
 
 			[$rating, $user_id_list] = Domain_Rating_Scenario_Api::get(
-				$this->user_id, $this->role, $this->method_version, $event, $period_type, $year, $month, $week, $top_list_offset, $top_list_count
+				$this->user_id,
+				$this->role,
+				$this->method_version,
+				$event,
+				$period_type,
+				$year,
+				$month,
+				$week,
+				$top_list_offset,
+				$top_list_count
 			);
 		} catch (cs_RatingIncorrectOffset) {
 			return $this->error(657, "Incorrect offset");
@@ -66,7 +89,7 @@ class Apiv1_Company_Rating extends \BaseFrame\Controller\Api {
 			throw new ParamException("Invalid date params");
 		} catch (cs_RatingIncorrectEvent) {
 			throw new ParamException("Invalid event type");
-		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed|\CompassApp\Domain\Member\Exception\UserIsGuest) {
+		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed | \CompassApp\Domain\Member\Exception\UserIsGuest) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		}
 
@@ -83,7 +106,8 @@ class Apiv1_Company_Rating extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \busException
 	 */
-	public function getByUserId():array {
+	public function getByUserId(): array
+	{
 
 		$user_id    = $this->post(\Formatter::TYPE_INT, "user_id");
 		$year       = $this->post(\Formatter::TYPE_INT, "year");
@@ -112,7 +136,8 @@ class Apiv1_Company_Rating extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \busException
 	 */
-	public function getEventCountByInterval():array {
+	public function getEventCountByInterval(): array
+	{
 
 		$year       = $this->post(\Formatter::TYPE_INT, "year");
 		$start_week = $this->post(\Formatter::TYPE_INT, "start_week");
@@ -142,7 +167,8 @@ class Apiv1_Company_Rating extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \busException
 	 */
-	public function getGeneralEventCountByInterval():array {
+	public function getGeneralEventCountByInterval(): array
+	{
 
 		$year       = $this->post(\Formatter::TYPE_INT, "year");
 		$start_week = $this->post(\Formatter::TYPE_INT, "start_week");

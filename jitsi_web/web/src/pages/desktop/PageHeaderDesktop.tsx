@@ -5,11 +5,11 @@ import { useLangString } from "../../lib/getLangString.ts";
 import { Button } from "../../components/button.tsx";
 import { Icon } from "../../components/Icon.tsx";
 import DownloadMenu from "../../components/desktop/DownloadMenu.tsx";
-import {CLICK_COUNT_AFTER_SHOW_DOWNLOAD_POPOVER} from "../../api/_types.ts";
+import {APP_NAME_UPPERCASE, CLICK_COUNT_AFTER_SHOW_DOWNLOAD_POPOVER} from "../../api/_types.ts";
 import LangMenuSelector from "../../components/desktop/LangMenuSelector.tsx";
 
 const PageHeaderDesktop = () => {
-	const langStringDesktopLogoTitle = useLangString("desktop.logo.title");
+	const langStringDesktopLogoTitle = APP_NAME_UPPERCASE;
 	const langStringDesktopDownloadCompassButton = useLangString("desktop.download_compass.button");
 
 	return (

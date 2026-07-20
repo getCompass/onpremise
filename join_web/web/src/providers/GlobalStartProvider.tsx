@@ -466,5 +466,5 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 		}
 	}, [ prevIsAuthorized, is_authorized ]);
 
-	return <>{children}</>;
+	return <>{children}</>
 }

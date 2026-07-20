@@ -28,7 +28,7 @@ import {
 	MenuTrigger
 } from "./menu.tsx";
 import {Text} from "./text.tsx";
-import {useAtomValue} from "jotai";
+import {useAtomValue, useAtom} from "jotai";
 
 const getLangIcon = () => {
 
@@ -105,6 +105,28 @@ const LangMenuSelectorDesktop = () => {
 	}, []);
 
 	const setSelectedLang = useSetAtom(langState);
+	const [langCode] = useAtom(langState);
+
+	const getCheckedIcon = (locale: string) => {
+		if (langCode !== locale) {
+			return <></>
+		}
+
+		return <Box
+			w="20px"
+			h="20px"
+			userSelect="none"
+			flexShrink="0"
+			marginLeft={"auto"}
+		>
+			<svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+				 xmlns="http://www.w3.org/2000/svg">
+				<path fillRule="evenodd" clipRule="evenodd"
+					  d="M16.9109 4.82611C17.2363 4.50067 17.764 4.50067 18.0894 4.82611C18.4149 5.15155 18.4149 5.67918 18.0894 6.00462L17.5002 5.41536L16.9109 4.82611ZM8.3335 13.4035L16.9109 4.82611C16.911 4.82606 16.9109 4.82611 17.5002 5.41536C18.0894 6.00462 18.0895 6.00458 18.0894 6.00462L18.0888 6.00522L8.92275 15.1713C8.59731 15.4967 8.06968 15.4967 7.74424 15.1713L3.57757 11.0046C3.25214 10.6792 3.25214 10.1515 3.57757 9.82611C3.90301 9.50067 4.43065 9.50067 4.75609 9.82611L8.3335 13.4035Z"
+					  fill="#009FE6"/>
+			</svg>
+		</Box>
+	}
 
 	return (
 		<Menu
@@ -157,7 +179,7 @@ const LangMenuSelectorDesktop = () => {
 
 								return (
 									<MenuItem id={item.value} key={item.value}>
-										<HStack gap="12px">
+										<HStack gap="12px" width={"122px"}>
 											<Box
 												w="20px"
 												h="20px"
@@ -175,6 +197,8 @@ const LangMenuSelectorDesktop = () => {
 												color="333e49"
 												font="regular"
 											>{item.label}</Text>
+
+											{getCheckedIcon(item.value)}
 										</HStack>
 									</MenuItem>
 								);

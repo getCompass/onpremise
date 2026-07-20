@@ -181,6 +181,23 @@ class Gateway_Bus_Auth
 		return self::_makeApiKeyTemplateListStruct($response);
 	}
 
+	/**
+	 * Получить доступные зоны ответственности
+	 */
+	public static function getAvailableScopeNames(): array {
+
+		$request             = new \AuthGrpc\GetAvailableScopeNamesRequestStruct([]);
+
+		/** @var \AuthGrpc\GetAvailableScopeNamesResponseStruct $response */
+		[$response, $status] = self::_doCallGrpc("GetAvailableScopeNames", $request);
+		if ($status->code !== \Grpc\STATUS_OK) {
+
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . $status->code);
+		}
+
+		return iterator_to_array($response->getScopeNames()->getIterator());
+	}
+
 	// -------------------------------------------------------
 	// PROTECTED
 	// -------------------------------------------------------

@@ -13,3 +13,5 @@ define(__NAMESPACE__ . "\SALT_ALLOWED_USERS_FOR_INVITE"		, "${SALT_ALLOWED_USERS
 
 // флаг отправлять ли сообщение об успешной авторизации устройства
 define(__NAMESPACE__ . "\IS_ALLOW_SEND_DEVICE_LOGIN_SUCCESS"	, ${IS_ALLOW_SEND_DEVICE_LOGIN_SUCCESS});
+
+define(__NAMESPACE__ . "\GATEWAY_SECRET_KEY_B64"				, "${GATEWAY_SECRET_KEY_B64}");

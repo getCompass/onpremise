@@ -2,32 +2,43 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * контроллер, отвечающий за файлы в чате
  */
-class Apiv2_Conversations_Files extends \BaseFrame\Controller\Api {
+class Apiv2_Conversations_Files extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
 
-	public const ALLOW_METHODS = [
+	// методы на чтение
+	public const READ_METHOD_LIST = [
 		"get",
 	];
 
-	public const MEMBER_ACTIVITY_METHOD_LIST = [];
+	// методы на запись
+	public const WRITE_METHOD_LIST = [];
 
-	protected const _MAX_FILES_PER_REQUEST = 60;
+	// разрешенные методы
+	public const ALLOW_METHODS = [
+		"get",
+	];
+	public const MEMBER_ACTIVITY_METHOD_LIST = [];
+	protected const _MAX_FILES_PER_REQUEST   = 60;
 
 	/**
 	 * Метод для получения чатов
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \cs_UnpackHasFailed
 	 */
-	public function get():array {
+	public function get(): array
+	{
 
 		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$count            = $this->post(\Formatter::TYPE_INT, "count", self::_MAX_FILES_PER_REQUEST);
@@ -47,7 +58,13 @@ class Apiv2_Conversations_Files extends \BaseFrame\Controller\Api {
 		try {
 
 			[$conversation_file_list, $next_below_id] = Domain_Conversation_Scenario_Apiv2::getFiles(
-				$this->user_id, $conversation_map, $count, $below_id, $type_list, $filter_self_only, $parent_type_list
+				$this->user_id,
+				$conversation_map,
+				$count,
+				$below_id,
+				$type_list,
+				$filter_self_only,
+				$parent_type_list
 			);
 		} catch (cs_UserIsNotMember) {
 			throw new CaseException(2218001, "user is not member of conversation");

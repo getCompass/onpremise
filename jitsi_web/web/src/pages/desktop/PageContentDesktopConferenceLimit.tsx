@@ -57,7 +57,12 @@ const PageContentDesktopConferenceLimit = () => {
 			langStringDesktopConferenceLimitContentDescTwoMinutes,
 			langStringDesktopConferenceLimitContentDescFiveMinutes
 		).replace("$MINUTES", String(remainingLimitMinutes));
-	}, [limitNextAttempt]);
+	}, [langStringDesktopConferenceLimitContentDescFiveHours,
+		langStringDesktopConferenceLimitContentDescFiveMinutes,
+		langStringDesktopConferenceLimitContentDescOneHour,
+		langStringDesktopConferenceLimitContentDescOneMinute,
+		langStringDesktopConferenceLimitContentDescTwoHours,
+		langStringDesktopConferenceLimitContentDescTwoMinutes, limitNextAttempt]);
 
 	return (
 		<VStack minW="942px" mt="178px" px="32px" py="32px" rounded="20px" bgColor="255255255.03" gap="0px">

@@ -6,10 +6,10 @@ const PageToken = () => {
 	const isMobile = useIsMobile();
 
 	if (isMobile) {
-		return <PageTokenMobile />;
+		return <PageTokenMobile />
 	}
 
-	return <PageTokenDesktop />;
+	return <PageTokenDesktop />
 };
 
 export default PageToken;

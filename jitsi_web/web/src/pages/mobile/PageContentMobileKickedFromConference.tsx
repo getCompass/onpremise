@@ -13,7 +13,7 @@ const PageContentMobileKickedFromConference = () => {
 	const langStringMobileKickedFromConferenceContentTitle = useLangString("mobile.kicked_from_conference_content.title");
 	const langStringMobileKickedFromConferenceContentDesc = useLangString("mobile.kicked_from_conference_content.desc");
 	const langStringMobileKickedFromConferenceContentTryCompassButton = useLangString(
-		"mobile.kicked_from_conference_content.try_compass_button"
+		"try_compass_button"
 	);
 
 	const [ clickCount, setClickCount ] = useState(0);

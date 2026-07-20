@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\BlockException;
@@ -17,8 +18,26 @@ use CompassApp\Pack\Conversation;
 /**
  * контроллер, отвечающий за группы диалогов
  */
-class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
+class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getShared",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"addParticipant",
+		"add",
+		"edit",
+		"copy",
+		"copyWithUsers",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"getShared",
 		"addParticipant",
@@ -27,7 +46,6 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		"copy",
 		"copyWithUsers",
 	];
-
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"addParticipant",
 		"add",
@@ -52,7 +70,8 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	public function getShared():array {
+	public function getShared(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -78,7 +97,6 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для добавления участника в группы
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws BusFatalException
 	 * @throws CaseException
@@ -88,7 +106,8 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @long
 	 */
-	public function addParticipant():array {
+	public function addParticipant(): array
+	{
 
 		$user_id               = $this->post(\Formatter::TYPE_INT, "user_id");
 		$conversation_key_list = $this->post(\Formatter::TYPE_ARRAY, "conversation_key_list");
@@ -98,9 +117,13 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		try {
 
 			[$not_allowed_conversation_list, $not_group_conversation_list] = Domain_Conversation_Scenario_Apiv2::addParticipant(
-				$this->user_id, $this->role, $this->permissions, $user_id, $conversation_key_list
+				$this->user_id,
+				$this->role,
+				$this->permissions,
+				$user_id,
+				$conversation_key_list
 			);
-		} catch (\cs_DecryptHasFailed|\cs_UnpackHasFailed) {
+		} catch (\cs_DecryptHasFailed | \cs_UnpackHasFailed) {
 			throw new ParamException("passed wrong conversation key");
 		} catch (cs_IncorrectConversationMapList) {
 			throw new ParamException("incorrect conversation map list");
@@ -108,7 +131,7 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 			throw new ParamException("incorrect participant id");
 		} catch (AccountDeleted) {
 			throw new CaseException(2209007, "member deleted account");
-		} catch (\cs_RowIsEmpty|IsLeft) {
+		} catch (\cs_RowIsEmpty | IsLeft) {
 			throw new CaseException(2209006, "member not found");
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
@@ -131,7 +154,6 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * Создать группу
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws BusFatalException
 	 * @throws CaseException
@@ -140,7 +162,8 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	 * @throws ParseFatalException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public function add():array {
+	public function add(): array
+	{
 
 		$name            = $this->post(\Formatter::TYPE_STRING, "name");
 		$avatar_file_key = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", "");
@@ -180,14 +203,14 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменить группу
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @long - конвертации ключей в мапы
 	 */
-	public function edit():array {
+	public function edit(): array
+	{
 
 		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$name             = $this->post(\Formatter::TYPE_STRING, "name", false);
@@ -212,7 +235,12 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		try {
 
 			$prepared_conversation = Domain_Group_Scenario_Api::edit(
-				$this->user_id, $conversation_map, $name, $avatar_file_map, $description);
+				$this->user_id,
+				$conversation_map,
+				$name,
+				$avatar_file_map,
+				$description
+			);
 		} catch (Domain_Group_Exception_InvalidFileForAvatar) {
 			throw new ParamException("invalid file for avatar");
 		} catch (Domain_Group_Exception_InvalidName) {
@@ -231,7 +259,6 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * Продублировать группу
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws BusFatalException
 	 * @throws CaseException
@@ -241,7 +268,8 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @long - конвертации ключей в мапы
 	 */
-	public function copy():array {
+	public function copy(): array
+	{
 
 		$conversation_key      = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$name                  = $this->post(\Formatter::TYPE_STRING, "name");
@@ -263,7 +291,13 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		try {
 
 			$prepared_conversation = Domain_Group_Scenario_Api::copy(
-				$this->user_id, $conversation_map, $name, $avatar_file_map, $description, $excluded_user_id_list);
+				$this->user_id,
+				$conversation_map,
+				$name,
+				$avatar_file_map,
+				$description,
+				$excluded_user_id_list
+			);
 		} catch (Domain_Group_Exception_InvalidFileForAvatar) {
 			throw new ParamException("invalid file for avatar");
 		} catch (Domain_Group_Exception_InvalidName) {
@@ -282,7 +316,6 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * Продублировать группу с добавлением пользователей
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws BusFatalException
 	 * @throws CaseException
@@ -292,7 +325,8 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @long - конвертации ключей в мапы
 	 */
-	public function copyWithUsers():array {
+	public function copyWithUsers(): array
+	{
 
 		$conversation_key      = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$name                  = $this->post(\Formatter::TYPE_STRING, "name");
@@ -312,7 +346,13 @@ class Apiv2_Conversations_Groups extends \BaseFrame\Controller\Api {
 		try {
 
 			$prepared_conversation = Domain_Group_Scenario_Api::copyWithUsers(
-				$this->user_id, $conversation_map, $name, $avatar_file_map, $description, $excluded_user_id_list);
+				$this->user_id,
+				$conversation_map,
+				$name,
+				$avatar_file_map,
+				$description,
+				$excluded_user_id_list
+			);
 		} catch (Domain_Group_Exception_InvalidFileForAvatar) {
 			throw new ParamException("invalid file for avatar");
 		} catch (Domain_Group_Exception_InvalidName) {

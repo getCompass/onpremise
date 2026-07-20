@@ -57,7 +57,7 @@ const PageContentMobileConferenceLimit = () => {
 			langStringMobileConferenceLimitContentDescTwoMinutes,
 			langStringMobileConferenceLimitContentDescFiveMinutes
 		).replace("$MINUTES", String(remainingLimitMinutes));
-	}, [limitNextAttempt]);
+	}, [langStringMobileConferenceLimitContentDescFiveHours, langStringMobileConferenceLimitContentDescFiveMinutes, langStringMobileConferenceLimitContentDescOneHour, langStringMobileConferenceLimitContentDescOneMinute, langStringMobileConferenceLimitContentDescTwoHours, langStringMobileConferenceLimitContentDescTwoMinutes, limitNextAttempt]);
 
 	return (
 		<VStack w="100%" mt="163px" pt="32px" pb="24px" px="24px" rounded="16px" bgColor="255255255.04" gap="0px">

@@ -2,12 +2,16 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * контроллер для технических методов клиента
  */
-class Apiv1_Global extends \BaseFrame\Controller\Api {
+class Apiv1_Global extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_GLOBAL;
 
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
@@ -23,7 +27,6 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод передает информацию о клиенте и загружает параметры, начальное состояние приложения
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \busException
 	 * @throws cs_AnswerCommand
@@ -34,7 +37,8 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	 * @throws \userAccessException
 	 * @long
 	 */
-	public function doStart():array {
+	public function doStart(): array
+	{
 
 		$lang        = $this->post(\Formatter::TYPE_STRING, "lang");
 		$app_version = $this->post(\Formatter::TYPE_STRING, "app_version");
@@ -92,7 +96,8 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	/**
 	 * Отдаем список флагов стран
 	 */
-	public function getCountryFlagList():array {
+	public function getCountryFlagList(): array
+	{
 
 		// получаем список флагов
 		$country_flag_list = Domain_User_Scenario_Api::getFlagList();
@@ -106,7 +111,8 @@ class Apiv1_Global extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException|\cs_RowIsEmpty
 	 */
-	public function getPublicDocuments():array {
+	public function getPublicDocuments(): array
+	{
 
 		$lang = $this->post(\Formatter::TYPE_STRING, "lang");
 

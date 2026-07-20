@@ -363,7 +363,11 @@ const TotpManualAddDialogMobile = ({
 	const langStringLdap2faSetupTotpCantScanQrDialogThirdStepDesc = useLangString("ldap_2fa_setup_totp_cant_scan_qr_dialog.third_step_desc");
 
 	return (
-		<Dialog backdrop="opacity50" size="mobile_bottom" position="mobile_bottom" style="mobile_bottom">
+		<Dialog backdrop="opacity50" size="mobile_bottom" position="mobile_bottom" style="mobile_bottom"
+				onClose={() => {
+					window.scrollBy(0, 1);
+					window.scrollBy(0, -1);
+				}}>
 			<DialogTrigger asChild>
 				{children}
 			</DialogTrigger>
@@ -507,7 +511,7 @@ const TotpManualAddDialog = ({ children }: PropsWithChildren) => {
 			isExpired={isExpired}
 			onRefreshSecretKeyClickHandler={onRefreshSecretKeyClickHandler}
 			dialogId={dialogId}
-		/>;
+		/>
 	}
 
 	return <TotpManualAddDialogDesktop
@@ -517,7 +521,7 @@ const TotpManualAddDialog = ({ children }: PropsWithChildren) => {
 		isExpired={isExpired}
 		onRefreshSecretKeyClickHandler={onRefreshSecretKeyClickHandler}
 		dialogId={dialogId}
-	/>;
+	/>
 }
 
 export default TotpManualAddDialog;

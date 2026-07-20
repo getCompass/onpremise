@@ -35,6 +35,7 @@ import LinuxMenuItems from "../components/desktop/download/LinuxMenuItems.tsx";
 
 const Footer = () => {
 	const currentYear = useMemo(() => dayjs.unix(dayjs().unix()).format("YYYY"), []);
+	const footerText = useLangString("install_page.footer");
 
 	return (
 		<HStack w = "100%" mt = "80px" p = "32px" bgColor = "393a4d" justify = "space-between" userSelect = "none">
@@ -50,7 +51,7 @@ const Footer = () => {
 			</HStack>
 
 			<Text style = "inter_14_17_400" color = "248248248.03">
-				<styled.span>Сделано для вас&nbsp;</styled.span>
+				<styled.span>{footerText}&nbsp;</styled.span>
 				<styled.span color = "#c7544f">❤</styled.span>
 				️
 			</Text>

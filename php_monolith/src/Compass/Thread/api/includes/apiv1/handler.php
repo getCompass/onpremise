@@ -6,7 +6,9 @@ use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\PaymentRequiredException;
 use BaseFrame\Handler\Api;
+use BaseFrame\Http\Header\XAuthSrc;
 use BaseFrame\Server\ServerProvider;
+use CompassApp\Controller\Middleware\CompanyGatewayAuthorization;
 use CompassApp\Domain\Member\Entity\Permission;
 
 /**
@@ -21,8 +23,8 @@ use CompassApp\Domain\Member\Entity\Permission;
  * 8. Соотвественно все методы GLOBAL - анонимны
  * 9. Методы регистро НЕ зависимые
  */
-class Apiv1_Handler extends Api implements \RouteHandler {
-
+class Apiv1_Handler extends Api implements \RouteHandler
+{
 	// поддерживаемые методы (при создании новой группы заносятся в ручную)
 	public const ALLOW_CONTROLLERS = [
 		"threads",
@@ -35,25 +37,26 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	 * Возвращает обслуживаемые методы.
 	 * @return string[]
 	 */
-	public function getServedRoutes():array {
+	public function getServedRoutes(): array
+	{
 
 		return static::ALLOW_CONTROLLERS;
 	}
 
 	/**
 	 * Возвращает тип обработчика.
-	 * @return string
 	 */
-	public function getType():string {
+	public function getType(): string
+	{
 
 		return "apiv1";
 	}
 
 	/**
 	 * ToString конвертация.
-	 * @return string
 	 */
-	public function __toString():string {
+	public function __toString(): string
+	{
 
 		return static::class;
 	}
@@ -62,17 +65,13 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 	 * Точка входа в обработчик.
 	 * Возвращает результат исполнения метода.
 	 *
-	 * @param string $route
-	 * @param array  $post
-	 * @param int    $user_id
-	 *
-	 * @return array
 	 * @throws \paramException
 	 * @long
 	 */
-	public function handle(string $route, array $post_data, int $user_id = 0):array {
+	public function handle(string $route, array $post_data, int $user_id = 0): array
+	{
 
-		$extra               = [
+		$extra = [
 			"namespace"                     => __NAMESPACE__,
 			"api_type"                      => $this->getType(),
 			"company_cache_class"           => Gateway_Bus_CompanyCache::class,
@@ -91,6 +90,11 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 
 			$extra["need_user_id"] = $user_id;
 			$authorization_class   = Middleware_WithoutAuthorization::class;
+		}
+
+		// для запросов с API ключом используем авторизацию гейтвея
+		if ((new XAuthSrc())->getValue() === XAuthSrc::AUTH_SRC_GATEWAY) {
+			$authorization_class = CompanyGatewayAuthorization::class;
 		}
 
 		$router = new \BaseFrame\Router\Middleware([
@@ -127,7 +131,7 @@ class Apiv1_Handler extends Api implements \RouteHandler {
 			throw new ParamException("Platform not found");
 		} catch (\cs_DecryptHasFailed) {
 			throw new ParamException("decrypt key was failed");
-		} catch (CaseException|PaymentRequiredException $e) {
+		} catch (CaseException | PaymentRequiredException $e) {
 			return $this->_handleBusinessError($e);
 		}
 

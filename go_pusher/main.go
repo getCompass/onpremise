@@ -34,7 +34,7 @@ func main() {
 	start()
 
 	// врубаем ендпоинт для профайлера на тестовом
-	if conf.GetConfig().ServerType == "test-server" {
+	if server.IsTest() {
 
 		go func() {
 

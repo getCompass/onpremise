@@ -79,6 +79,7 @@ const EmailLoginDialogContentDesktop = ({
 
 	const langStringEmailLoginDialogTitle = useLangString("email_login_dialog.title");
 	const langStringEmailLoginDialogDesc = useLangString("email_login_dialog.desc");
+	const langStringEmailLoginDialogDescParts = langStringEmailLoginDialogDesc.split('$EMAIL');
 	const langStringEmailLoginDialogPasswordInputPlaceholder = useLangString(
 		"email_login_dialog.password_input_placeholder"
 	);
@@ -323,7 +324,7 @@ const EmailLoginDialogContentDesktop = ({
 
 	if (auth === null) {
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
 
 	return (
@@ -344,10 +345,11 @@ const EmailLoginDialogContentDesktop = ({
 					overflow = "wrapEllipsis"
 					userSelect = "text"
 				>
-					{langStringEmailLoginDialogDesc}
+					{langStringEmailLoginDialogDescParts[0]}
 					<styled.span fontFamily = "lato_bold">
 						«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
+					{langStringEmailLoginDialogDescParts[1] ?? ''}
 				</Text>
 
 				{isAuthBlocked ? (
@@ -457,6 +459,7 @@ const EmailLoginDialogContentMobile = ({
 
 	const langStringEmailLoginDialogTitle = useLangString("email_login_dialog.title");
 	const langStringEmailLoginDialogDesc = useLangString("email_login_dialog.desc");
+	const langStringEmailLoginDialogDescParts = langStringEmailLoginDialogDesc.split('$EMAIL');
 	const langStringEmailLoginDialogPasswordInputPlaceholder = useLangString(
 		"email_login_dialog.password_input_placeholder"
 	);
@@ -792,7 +795,7 @@ const EmailLoginDialogContentMobile = ({
 
 	if (auth === null) {
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
 
 	return (
@@ -823,10 +826,11 @@ const EmailLoginDialogContentMobile = ({
 						overflow = "wrapEllipsis"
 						userSelect = "text"
 					>
-						{langStringEmailLoginDialogDesc}
+						{langStringEmailLoginDialogDescParts[0]}
 						<styled.span fontFamily = "lato_bold">
 							«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 						</styled.span>
+						{langStringEmailLoginDialogDescParts[1] ?? ''}
 					</Text>
 
 					{isAuthBlocked ? (

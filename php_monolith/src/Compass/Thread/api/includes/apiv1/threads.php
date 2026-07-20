@@ -2,6 +2,7 @@
 
 namespace Compass\Thread;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Gateway\SocketException;
 use BaseFrame\Exception\Request\CaseException;
@@ -26,6 +27,47 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api
 	protected const _MAX_SELECTED_MESSAGES_COUNT_LEGACY = 150;
 	protected const _MAX_USER_ID_LIST_FOR_EXACTINGNESS  = 30; // максимальное количество пользователей для Требовательности
 	protected const _MAX_REACTION_COUNT                 = 20; // максимальное количество реакций в запросе
+
+	// зона ответственности API токена
+	public const API_SCOPE        = ScopePermission::SCOPE_THREAD;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getMenu",
+		"getMenuItem",
+		"getMeta",
+		"getMessages",
+		"getMyReactions",
+		"getReactionUsers",
+		"getReactionsUsersBatching",
+		"getMenuItemBatching",
+		"getMetaBatching",
+		"getTotalUnreadCount",
+		"getUnreadMenu",
+		"getMetaAndMenuBatching",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"doRead",
+		"addMessage",
+		"tryEditMessage",
+		"tryDeleteMessageList",
+		"tryHideMessageList",
+		"addMessageReaction",
+		"tryRemoveMessageReaction",
+		"addQuote",
+		"doReportMessage",
+		"doUnfollow",
+		"doFollow",
+		"addRepostToConversation",
+		"doInit",
+		"setAsUnread",
+		"doCommitWorkedHours",
+		"tryExacting",
+		"addToFavorite",
+		"removeFromFavorite",
+	];
 
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
@@ -1991,7 +2033,6 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api
 	/**
 	 * обработка ошибок из сокета
 	 *
-	 *
 	 * @long - switch ... case
 	 *
 	 * @throws \blockException
@@ -2312,7 +2353,6 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api
 
 	/**
 	 * Получаем сообщение из диалога
-	 *
 	 *
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \paramException
@@ -3149,7 +3189,6 @@ class Apiv1_Threads extends \BaseFrame\Controller\Api
 
 	/**
 	 * бросаем исключение если пользователь не является отправителем сообщения или сообщение нельзя удалить
-	 *
 	 *
 	 * @throws \paramException
 	 * @throws \parseException

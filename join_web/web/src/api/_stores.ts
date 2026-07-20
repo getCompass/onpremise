@@ -9,7 +9,7 @@ import {
 	ClientVersionMap,
 	ELECTRON_VERSION_22,
 	ELECTRON_VERSION_30,
-	Lang, LdapAuthCredentials,
+	Lang, LANG_CODES, LdapAuthCredentials,
 	PrepareJoinLinkErrorInfo,
 } from "./_types.ts";
 import {atomWithStorage} from "jotai/utils";
@@ -52,9 +52,13 @@ export const electronVersionState = atom<ClientVersionMap>({
 		min_version_code: 0,
 	},
 });
-export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({
+export const defaultDictionaryDataStage = {
 	auth_sso_start_button_text: "Войти через корп. портал (SSO LDAP)",
 	auth_sso_ldap_description_text: "Для авторизации введите username и пароль от вашей корпоративной учётной записи LDAP:"
+}
+export const dictionaryDataState = atomWithImmer<ApiGlobalStartDictionaryData>({
+	auth_sso_start_button_text: defaultDictionaryDataStage.auth_sso_start_button_text,
+	auth_sso_ldap_description_text: defaultDictionaryDataStage.auth_sso_ldap_description_text,
 });
 
 export const userInfoDataState = atomWithImmer<ApiUserInfoData | null>(null);
@@ -64,7 +68,38 @@ export const firstAuthState = atom(false);
 
 export const loadingState = atom(true);
 
-export const langState = atom<Lang>("ru");
+const KEY_OF_LANGUAGE_ON_LOCAL_STORAGE = "language";
+export const DEFAULT_LANG_CODE: Lang = 'en';
+
+export function currentLanguage() {
+	const changed_locale = localStorage.getItem(KEY_OF_LANGUAGE_ON_LOCAL_STORAGE) as Lang;
+	if (changed_locale) {
+		return LANG_CODES.includes(changed_locale) ? changed_locale : DEFAULT_LANG_CODE;
+	}
+
+	const lang_list = navigator?.languages ?? [];
+
+	const language_code_list = lang_list.map((lang) => lang.split('-')[0]) as Array<Lang>;
+	const uniq_language_code_list: Array<Lang> = Array.from(new Set(language_code_list));
+	const support_language = uniq_language_code_list.find((code) => LANG_CODES.includes(code));
+
+	return (support_language ?? DEFAULT_LANG_CODE) as Lang;
+}
+
+export function setLocale(locale: Lang) {
+	localStorage.setItem(KEY_OF_LANGUAGE_ON_LOCAL_STORAGE, locale);
+}
+
+export const baseLangAtom = atom<Lang>(currentLanguage());
+export const langState = atom(
+	(get) => {
+		return get(baseLangAtom);
+	},
+	(_, set, newValue: Lang) => {
+		setLocale(newValue);
+		set(baseLangAtom, newValue);
+	}
+);
 export const authenticationTokenExpiresAtState = atom(0);
 export const authenticationTokenTimeLeftState = atom(0);
 export const authenticationSessionTimeLeftState = atomWithStorage<number | null>(
@@ -137,6 +172,7 @@ export const authLdapState = atomWithStorage<APICommandData | null>(
 );
 
 export const isLdapChangeMailState = atom(false);
+export const isShouldShowLogoutButton = atom(false);
 
 export const authLdapCredentialsState = atom<LdapAuthCredentials>({
 	username: "",

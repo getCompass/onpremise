@@ -1,8 +1,12 @@
 import { Box, Center, VStack } from "../../../styled-system/jsx";
 import Background from "../../components/mobile/Background.tsx";
 import { css } from "../../../styled-system/css";
+import {useLangString} from "../../lib/getLangString.ts";
 
 const PagePreloaderMobile = () => {
+	const loadingText = useLangString(
+		"loading"
+	);
 	return (
 		<Center
 			h="100vh"
@@ -25,7 +29,7 @@ const PagePreloaderMobile = () => {
 						/>
 					</svg>
 				</Box>
-				<Box>Загрузка</Box>
+				<Box>{loadingText}</Box>
 			</VStack>
 		</Center>
 	);

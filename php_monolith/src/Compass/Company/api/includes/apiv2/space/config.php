@@ -2,6 +2,7 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Member;
@@ -9,15 +10,32 @@ use CompassApp\Domain\Member\Entity\Member;
 /**
  * Контроллер для методов изменения настроек пространства
  */
-class Apiv2_Space_Config extends \BaseFrame\Controller\Api {
+class Apiv2_Space_Config extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_MANAGEMENT;
 
-	const ALLOW_METHODS = [
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getMemberPermissions",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"setMemberPermissions",
+		"setAddToGeneralChatOnHiring",
+		"setShowMessageReadStatus",
+	];
+
+	// разрешенные API методы
+	public const ALLOW_METHODS = [
 		"setMemberPermissions",
 		"getMemberPermissions",
 		"setAddToGeneralChatOnHiring",
 		"setShowMessageReadStatus",
 	];
 
+	// методы, влияющие на активность польззователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"setMemberPermissions",
 		"getMemberPermissions",
@@ -37,7 +55,8 @@ class Apiv2_Space_Config extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \Exception
 	 */
-	public function setMemberPermissions():array {
+	public function setMemberPermissions(): array
+	{
 
 		$member_permission_list = $this->post(\Formatter::TYPE_ARRAY, "member_permission_list");
 
@@ -59,7 +78,8 @@ class Apiv2_Space_Config extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \Exception
 	 */
-	public function getMemberPermissions():array {
+	public function getMemberPermissions(): array
+	{
 
 		$member_permission_list = Domain_Company_Scenario_Api::getMemberPermissions();
 
@@ -71,7 +91,8 @@ class Apiv2_Space_Config extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменяем настройки добавлять ли пользователя в Главный чат при вступлении в пространство
 	 */
-	public function setAddToGeneralChatOnHiring():array {
+	public function setAddToGeneralChatOnHiring(): array
+	{
 
 		$is_add_to_general_chat_on_hiring = $this->post(\Formatter::TYPE_INT, "is_add_to_general_chat_on_hiring");
 
@@ -91,7 +112,8 @@ class Apiv2_Space_Config extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменяем настройки позволять смотреть статус просмотра сообщения
 	 */
-	public function setShowMessageReadStatus():array {
+	public function setShowMessageReadStatus(): array
+	{
 
 		$is_add_to_general_chat_on_hiring = $this->post(\Formatter::TYPE_INT, "show_message_read_status");
 

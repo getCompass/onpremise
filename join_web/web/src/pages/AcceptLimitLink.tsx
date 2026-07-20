@@ -220,10 +220,10 @@ const AcceptLimitLink = () => {
 	const isMobile = useIsMobile();
 
 	if (isMobile) {
-		return <DialogMobile content={<AcceptLimitLinkMobile/>} overflow="visible" isNeedExtraPaddingBottom={true}/>;
+		return <DialogMobile content={<AcceptLimitLinkMobile/>} overflow="visible" isNeedExtraPaddingBottom={true}/>
 	}
 
-	return <DialogDesktop content={<AcceptLimitLinkDesktop/>} overflow="visible"/>;
+	return <DialogDesktop content={<AcceptLimitLinkDesktop/>} overflow="visible"/>
 }
 
 export default AcceptLimitLink;

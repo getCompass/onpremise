@@ -30,6 +30,7 @@ const CreateNewPasswordDialogContentDesktop = () => {
 
 	const langStringCreateNewPasswordDialogTitle = useLangString("create_new_password_dialog.title");
 	const langStringCreateNewPasswordDialogDesc = useLangString("create_new_password_dialog.desc");
+	const langStringCreateNewPasswordDialogDescParts = langStringCreateNewPasswordDialogDesc.split('$EMAIL');
 	const langStringCreateNewPasswordDialogPasswordInputPlaceholder = useLangString(
 		"create_new_password_dialog.password_input_placeholder"
 	);
@@ -225,7 +226,7 @@ const CreateNewPasswordDialogContentDesktop = () => {
 	if (auth === null) {
 		setPassword("");
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
 
 	return (
@@ -251,10 +252,11 @@ const CreateNewPasswordDialogContentDesktop = () => {
 						maxW="328px"
 						overflow="wrapEllipsis"
 					>
-						{langStringCreateNewPasswordDialogDesc}
+						{langStringCreateNewPasswordDialogDescParts[0]}
 						<styled.span fontFamily="lato_bold">
 							«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 						</styled.span>
+						{langStringCreateNewPasswordDialogDescParts[1] ?? ''}
 					</Text>
 
 					<PasswordInput
@@ -353,6 +355,7 @@ const CreateNewPasswordDialogContentMobile = () => {
 
 	const langStringCreateNewPasswordDialogTitle = useLangString("create_new_password_dialog.title");
 	const langStringCreateNewPasswordDialogDesc = useLangString("create_new_password_dialog.desc");
+	const langStringCreateNewPasswordDialogDescParts = langStringCreateNewPasswordDialogDesc.split('$EMAIL');
 	const langStringCreateNewPasswordDialogPasswordInputPlaceholder = useLangString(
 		"create_new_password_dialog.password_input_placeholder"
 	);
@@ -553,7 +556,7 @@ const CreateNewPasswordDialogContentMobile = () => {
 	if (auth === null) {
 		setPassword("");
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
 
 	return (
@@ -572,10 +575,11 @@ const CreateNewPasswordDialogContentMobile = () => {
 					maxW={screenWidth <= 390 ? "326px" : "350px"}
 					overflow="wrapEllipsis"
 				>
-					{langStringCreateNewPasswordDialogDesc}
+					{langStringCreateNewPasswordDialogDescParts[0]}
 					<styled.span fontFamily="lato_bold">
 						«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
+					{langStringCreateNewPasswordDialogDescParts[1] ?? ''}
 				</Text>
 
 				<PasswordInput
@@ -700,10 +704,10 @@ const CreateNewPasswordDialogContent = () => {
 	const isMobile = useIsMobile();
 
 	if (isMobile) {
-		return <CreateNewPasswordDialogContentMobile />;
+		return <CreateNewPasswordDialogContentMobile />
 	}
 
-	return <CreateNewPasswordDialogContentDesktop />;
+	return <CreateNewPasswordDialogContentDesktop />
 };
 
 export default CreateNewPasswordDialogContent;

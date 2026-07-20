@@ -6,6 +6,8 @@ use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\PaymentRequiredException;
 use BaseFrame\Handler\Api;
+use BaseFrame\Http\Header\XAuthSrc;
+use CompassApp\Controller\Middleware\CompanyGatewayAuthorization;
 use CompassApp\Domain\Member\Entity\Permission;
 
 /**
@@ -25,8 +27,8 @@ use CompassApp\Domain\Member\Entity\Permission;
  * 8. соотвественно все методы GLOBAL - анонимны
  * 9. методы регистро НЕ зависимые
  */
-class Apiv2_Handler extends Api implements \RouteHandler {
-
+class Apiv2_Handler extends Api implements \RouteHandler
+{
 	// поддерживаемые методы (при создании новой группы заносятся в ручную)
 	public const ALLOW_CONTROLLERS = [
 		"conversations",
@@ -44,7 +46,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	 * Возвращает обслуживаемые методы.
 	 * @return string[]
 	 */
-	public function getServedRoutes():array {
+	public function getServedRoutes(): array
+	{
 
 		return static::ALLOW_CONTROLLERS;
 	}
@@ -53,7 +56,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	 * Возвращает тип обработчика.
 	 * @return string[]
 	 */
-	public function getType():string {
+	public function getType(): string
+	{
 
 		return "apiv2";
 	}
@@ -62,7 +66,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	 * ToString конвертация.
 	 * @return string[]
 	 */
-	public function __toString():string {
+	public function __toString(): string
+	{
 
 		return static::class;
 	}
@@ -73,7 +78,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	//	@$post_data 	параметры post запроса которые будут использоваться внутри контролеров
 	//	@user_id	для отладки и тестов. действуйет только в режиме cli
 	// @long
-	public function handle(string $route, array $post_data, int $user_id = 0):array {
+	public function handle(string $route, array $post_data, int $user_id = 0): array
+	{
 
 		\BaseFrame\Monitor\Core::init(new Type_Monitor_SenderLogMetric("text-metric-apiv2"), false, true, false);
 		\BaseFrame\Monitor\Core::getMetricAggregator()->setDefaultLabel("module", "php_" . CURRENT_MODULE);
@@ -96,6 +102,11 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 
 			$extra["need_user_id"] = $user_id;
 			$authorization_class   = Middleware_WithoutAuthorization::class;
+		}
+
+		// для запросов с API ключом используем авторизацию гейтвея
+		if ((new XAuthSrc())->getValue() === XAuthSrc::AUTH_SRC_GATEWAY) {
+			$authorization_class = CompanyGatewayAuthorization::class;
 		}
 
 		// здесь описана последовательность проверок
@@ -136,7 +147,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 
 			Type_System_Admin::log("decrypt failed ", "ip: " . getIp() . "message: " . $e->getMessage());
 			throw new ParamException("decrypt key was failed");
-		} catch (CaseException|PaymentRequiredException $exception) {
+		} catch (CaseException | PaymentRequiredException $exception) {
 
 			// обрабатываем ошибку, которая возникла во время работы запроса
 			$response = $this->_handleBusinessError($exception);

@@ -255,6 +255,21 @@ class Helper_Preview
 	protected static function _doCurlRequest(\Curl $curl, string $prepared_url): string
 	{
 
+		// получаем информацию о прокси сервере
+		$proxy_config = Domain_Config_Entity_Proxy::instance();
+
+		// если в приложении включен прокси сервер, пускаем запросы через него
+		if ($proxy_config->getProtocol() !== "") {
+
+			$curl->setProxy(
+				$proxy_config->getProtocol(),
+				$proxy_config->getHost(),
+				$proxy_config->getPort(),
+				$proxy_config->getUsername(),
+				$proxy_config->getPassword(),
+			);
+		}
+		
 		// получаем html ссылки
 		$html = $curl->get($prepared_url);
 		self::_checkRequestHttpCode($curl);

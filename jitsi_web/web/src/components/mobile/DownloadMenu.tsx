@@ -207,7 +207,7 @@ const DownloadMenu = ({ triggerEl, width, marginTop, isNeedDeviceAutoDetect, cli
 	return (
 		<Menu
 			isOpen={isStoreMenuOpen}
-			onSelect={({ value }) => onSelectHandler(value)}
+			onSelect={({ value }: {value: string}) => onSelectHandler(value)}
 			onClose={() => setStoreMenuOpen(false)}
 			onFocusOutside={() => setStoreMenuOpen(false)}
 			onInteractOutside={() => setStoreMenuOpen(false)}

@@ -165,7 +165,7 @@ const ForgotPasswordDialogContentDesktop = ({
 	if (email.length < 1) {
 		setPasswordInput("");
 		navigateToDialog("auth_email_login");
-		return <></>;
+		return <></>
 	}
 
 	return (
@@ -330,12 +330,12 @@ const ForgotPasswordDialogContentMobile = ({
 	if (email.length < 1) {
 		setPasswordInput("");
 		navigateToDialog("auth_email_login");
-		return <></>;
+		return <></>
 	}
 
 	if (auth === null) {
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
 
 	return (

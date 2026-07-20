@@ -2,14 +2,31 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use CompassApp\Domain\Member\Entity\Member;
-use \CompassApp\Domain\Member\Entity\Permission;
+use CompassApp\Domain\Member\Entity\Permission;
 use CompassApp\Domain\Member\Exception\IsNotAdministrator;
 
 /**
  * Класс для управление правами участников
  */
-class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
+class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_MANAGEMENT;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"get",
+		"getBatching",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"set",
+		"setProfileCard",
+		"upgradeGuest",
+	];
 
 	// доступные методы контроллера
 	public const ALLOW_METHODS = [
@@ -40,7 +57,6 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить права участника
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
@@ -48,7 +64,8 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 */
-	public function get():array {
+	public function get(): array
+	{
 
 		$member_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -71,7 +88,6 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить права участника
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Request\CaseException
 	 * @throws \BaseFrame\Exception\Request\ParamException
@@ -80,7 +96,8 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function getBatching():array {
+	public function getBatching(): array
+	{
 
 		$member_id_list = $this->post(\Formatter::TYPE_ARRAY_INT, "user_id_list");
 
@@ -114,7 +131,6 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	/**
 	 * Устанавливаем права участнику
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
@@ -126,7 +142,8 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @long несколько try-catch
 	 */
-	public function set():array {
+	public function set(): array
+	{
 
 		$member_id   = $this->post(\Formatter::TYPE_INT, "user_id");
 		$role        = $this->post(\Formatter::TYPE_STRING, "role", false);
@@ -153,7 +170,7 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 			Domain_Member_Scenario_Api::setPermissions($this->user_id, $member_id, $role, $permissions, $this->method_version);
 		} catch (\cs_CompanyUserIncorrectRole) {
 			throw new \BaseFrame\Exception\Request\ParamException("incorrect role");
-		} catch (\cs_RowIsEmpty|\CompassApp\Domain\Member\Exception\IsLeft) {
+		} catch (\cs_RowIsEmpty | \CompassApp\Domain\Member\Exception\IsLeft) {
 			throw new \BaseFrame\Exception\Request\CaseException(2209006, "member not found");
 		} catch (Domain_Member_Exception_SelfSetPermissions) {
 			throw new \BaseFrame\Exception\Request\CaseException(2209002, "tried to set permissions for self");
@@ -172,7 +189,6 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	 * Устанавливаем права в карточке пользователя
 	 *
 	 * @long
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
@@ -183,7 +199,8 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	 * @throws \busException
 	 * @throws \parseException
 	 */
-	public function setProfileCard():array {
+	public function setProfileCard(): array
+	{
 
 		$member_id   = $this->post(\Formatter::TYPE_INT, "user_id");
 		$permissions = $this->post(\Formatter::TYPE_JSON, "permissions");
@@ -204,7 +221,7 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 			Domain_Member_Scenario_Api::setPermissionsProfileCard($this->user_id, $this->role, $this->permissions, $member_id, $permissions);
 		} catch (\cs_CompanyUserIncorrectRole) {
 			throw new \BaseFrame\Exception\Request\ParamException("incorrect role");
-		} catch (\cs_RowIsEmpty|\CompassApp\Domain\Member\Exception\IsLeft) {
+		} catch (\cs_RowIsEmpty | \CompassApp\Domain\Member\Exception\IsLeft) {
 			throw new \BaseFrame\Exception\Request\CaseException(2209006, "member not found");
 		} catch (Domain_Member_Exception_SelfSetPermissions) {
 			throw new \BaseFrame\Exception\Request\CaseException(2209002, "tried to set permissions for self");
@@ -224,7 +241,6 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	/**
 	 * Повысить пользователя Гостя до Участника в пространстве
 	 *
-	 * @return array
 	 * @throws Domain_Space_Exception_ActionRestrictedByTariff
 	 * @throws \Throwable
 	 * @throws \BaseFrame\Exception\Domain\LocaleTextNotFound
@@ -240,7 +256,8 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 	 * @throws \busException
 	 * @throws \parseException
 	 */
-	public function upgradeGuest():array {
+	public function upgradeGuest(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -252,7 +269,7 @@ class Apiv2_Member_Permissions extends \BaseFrame\Controller\Api {
 			throw new \BaseFrame\Exception\Request\CaseException(2209006, "member not found");
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new \BaseFrame\Exception\Request\CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
-		} catch (cs_IncorrectUserId|\cs_UserChangeSelfRole|\cs_RowIsEmpty) {
+		} catch (cs_IncorrectUserId | \cs_UserChangeSelfRole | \cs_RowIsEmpty) {
 			throw new \BaseFrame\Exception\Request\ParamException("passed incorrect user_id");
 		} catch (Domain_Space_Exception_ActionRestrictedByTariff) {
 			throw new \BaseFrame\Exception\Request\PaymentRequiredException(2209011, "cant add new members");

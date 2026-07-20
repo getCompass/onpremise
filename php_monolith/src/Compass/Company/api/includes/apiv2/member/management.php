@@ -1,9 +1,10 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\ParamException;
@@ -15,8 +16,24 @@ use BaseFrame\Exception\Request\PaymentRequiredException;
 /**
  * Контроллер для работы с заявками пользователей.
  */
-class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
+class Apiv2_Member_Management extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_MANAGEMENT;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getInvited",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"confirm",
+		"reject",
+		"kick",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"getInvited",
 		"confirm",
@@ -24,6 +41,7 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 		"kick",
 	];
 
+	// методы, влияющие на активность пользователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"confirm",
 		"reject",
@@ -55,7 +73,8 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @throws \BaseFrame\Exception\Request\ControllerMethodNotFoundException
 	 */
-	public function getInvited():array {
+	public function getInvited(): array
+	{
 
 		$offset = $this->post(\Formatter::TYPE_INT, "offset", 0);
 		$limit  = $this->post(\Formatter::TYPE_INT, "limit", 100);
@@ -63,7 +82,12 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 		try {
 
 			$join_request_list = Domain_MemberManagement_Scenario_Api::getList(
-				$this->user_id, $this->role, $this->permissions, $this->method_version, $limit + 1, $offset
+				$this->user_id,
+				$this->role,
+				$this->permissions,
+				$this->method_version,
+				$limit + 1,
+				$offset
 			);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
@@ -79,7 +103,6 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 	 * Подтверджаем заявку на вступление
 	 *
 	 * @long
-	 * @return array
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
@@ -94,7 +117,8 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public function confirm():array {
+	public function confirm(): array
+	{
 
 		$join_request_id = $this->post(\Formatter::TYPE_INT, "join_request_id");
 		$entry_role      = $this->post(\Formatter::TYPE_STRING, "entry_role", Domain_HiringRequest_Entity_Request::CONFIRM_ENTRY_ROLE_MEMBER);
@@ -107,7 +131,7 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		} catch (cs_CompanyUserIsEmployee) {
 			throw new CaseException(2209001, "User has no rights to hire");
-		} catch (cs_HireRequestNotExist|cs_IncorrectHiringRequestId) {
+		} catch (cs_HireRequestNotExist | cs_IncorrectHiringRequestId) {
 			throw new ParamException("Hiring request doesnt exist");
 		} catch (cs_HiringRequestAlreadyRejected) {
 			throw new CaseException(2209004, "Request rejected");
@@ -136,7 +160,6 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 	/**
 	 * Отклоняем заявку на вступление
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws ParseFatalException
@@ -150,7 +173,8 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 	 * @throws cs_HiringRequestAlreadyConfirmed
 	 * @long много исключений
 	 */
-	public function reject():array {
+	public function reject(): array
+	{
 
 		$join_request_id = $this->post(\Formatter::TYPE_INT, "join_request_id");
 
@@ -202,7 +226,8 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public function kick():array {
+	public function kick(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -210,13 +235,13 @@ class Apiv2_Member_Management extends \BaseFrame\Controller\Api {
 
 		try {
 			Domain_MemberManagement_Scenario_Api::kick($this->user_id, $user_id, $this->method_version);
-		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed|cs_UserHasNotRightsToDismiss) {
+		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed | cs_UserHasNotRightsToDismiss) {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		} catch (cs_DismissalRequestIsAlreadyExist) {
 			throw new ParamException("Dismissal request already exist");
 		} catch (\cs_UserIsNotMember) {
 			throw new CaseException(2209006, "User is not member");
-		} catch (cs_IncorrectUserId|cs_ActionNotAvailable) {
+		} catch (cs_IncorrectUserId | cs_ActionNotAvailable) {
 			throw new ParamException("Incorrect user_id: $user_id");
 		} catch (cs_IncorrectDismissalRequestId) {
 			throw new ParamException("Invalid dismissal request id");

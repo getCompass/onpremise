@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
@@ -30,7 +31,60 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 	protected const _MAX_BATCHING_COUNT               = 50;       // максимальное количество сущностей, о которых можно получить информацию batching методами за раз
 	protected const _MAX_GET_MESSAGE_BATCHING_COUNT   = 100;      // максимальное количество сообщений, которые вернет в /conversations/getMessageBatching/
 	protected const _MAX_WORKED_HOURS                 = 48;       // максимальное число рабочих часов
-	public const ALLOW_METHODS                        = [
+
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"get",
+		"getByOpponentId",
+		"getAllowed",
+		"getExtra",
+		"getLeftMenu",
+		"getLeftMenuMeta",
+		"getLeftMenuDifference",
+		"getMessage",
+		"getMyReactions",
+		"getMessageReactions",
+		"getMessagesRemind",
+		"getReactionUsers",
+		"getReactionsUsersBatching",
+		"getBatching",
+		"getAllowedConversationsForAddMessage",
+		"getMessageBatching",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"addSingle",
+		"addToFavorites",
+		"doRemoveFromFavorites",
+		"doMute",
+		"doUnmute",
+		"doRead",
+		"setAsUnread",
+		"doClearMessages",
+		"doRemoveSingle",
+		"addMessage",
+		"tryEditMessage",
+		"tryDeleteMessageList",
+		"tryHideMessageList",
+		"addMessageReaction",
+		"tryRemoveMessageReaction",
+		"addQuote",
+		"addRepost",
+		"doReportMessage",
+		"doLiftUp",
+		"setMessageAsLast",
+		"doCommitWorkedHours",
+		"tryExacting",
+		"doReadMessage",
+		"shareMember",
+	];
+
+	// разрешенные методы
+	public const ALLOW_METHODS = [
 		"addSingle",
 		"addToFavorites",
 		"doRemoveFromFavorites",
@@ -2772,7 +2826,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 				];
 				break;
 
-			// если это файл - достаем file_map
+				// если это файл - достаем file_map
 			case CONVERSATION_MESSAGE_TYPE_FILE:
 			case CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_FILE:
 
@@ -2782,7 +2836,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 				];
 				break;
 
-			// если это звонок - достаем call_map
+				// если это звонок - достаем call_map
 			case CONVERSATION_MESSAGE_TYPE_CALL:
 
 				$message_data_list[] = [
@@ -2791,7 +2845,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 				];
 				break;
 
-			// если это репост - достаем text & данные репостнутых сообщений
+				// если это репост - достаем text & данные репостнутых сообщений
 			case CONVERSATION_MESSAGE_TYPE_REPOST:
 			case CONVERSATION_MESSAGE_TYPE_THREAD_REPOST:
 
@@ -2811,7 +2865,7 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 				];
 				break;
 
-			// если это цитата/старая версия цитаты - достаем text & quoted_message_list
+				// если это цитата/старая версия цитаты - достаем text & quoted_message_list
 			case CONVERSATION_MESSAGE_TYPE_QUOTE:
 			case CONVERSATION_MESSAGE_TYPE_MASS_QUOTE:
 			case CONVERSATION_MESSAGE_TYPE_THREAD_REPOST_ITEM_QUOTE:
@@ -3372,7 +3426,6 @@ class Apiv1_Conversations extends \BaseFrame\Controller\Api
 
 	/**
 	 * Проверка, что все полученные сообщения находятся в одном диалоге
-	 *
 	 *
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed

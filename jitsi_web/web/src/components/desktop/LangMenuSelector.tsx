@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import ruFlag14 from "../../img/flags/ru14.png";
 import enFlag14 from "../../img/flags/en14.png";
 import deFlag14 from "../../img/flags/de14.png";
@@ -11,7 +11,7 @@ import deFlag20 from "../../img/flags/de20.png";
 import frFlag20 from "../../img/flags/fr20.png";
 import esFlag20 from "../../img/flags/es20.png";
 import itFlag20 from "../../img/flags/it20.png";
-import {useEffect, useMemo} from "react";
+import { useMemo } from "react";
 import { Portal } from "@ark-ui/react";
 import { langState } from "../../api/_stores.ts";
 import { getLangFullName, Lang, LANG_CODES } from "../../api/_types.ts";
@@ -29,9 +29,7 @@ import { Box, HStack } from "../../../styled-system/jsx";
 import { css } from "../../../styled-system/css";
 import { Text } from "../text.tsx";
 
-const getLangIcon = () => {
-	const selectedLang = useAtomValue(langState);
-
+const getLangIcon = (selectedLang: Lang) => {
 	if (selectedLang === "ru") {
 		return ruFlag14;
 	}
@@ -101,18 +99,14 @@ const LangMenuSelector = () => {
 
 	const [selectedLang, setSelectedLang] = useAtom(langState);
 
-	// TODO пока не показываем локализацию
-	useEffect(() => setSelectedLang("ru"), []);
-	return <></>;
-
 	return (
 		<Menu
-			onSelect={({ value }) => setSelectedLang(value as Lang)}
+			onSelect={({ value }: { value: string }) => setSelectedLang(value as Lang)}
 			positioning={{ placement: "bottom-start", offset: { mainAxis: 7, crossAxis: 0 } }}
 			type="lang_desktop"
-			closeOnSelect={false}
+			closeOnSelect={true}
 		>
-			{({ isOpen }) => (
+			{({ isOpen }: { isOpen: boolean }) => (
 				<>
 					<MenuTrigger asChild>
 						<HStack
@@ -135,7 +129,7 @@ const LangMenuSelector = () => {
 								flexShrink="0"
 								mr="6px"
 								style={{
-									backgroundImage: `url(${getLangIcon()})`,
+									backgroundImage: `url(${getLangIcon(selectedLang)})`,
 								}}
 							/>
 							<Text style="lato_13_13_700" color="333e49" textTransform="uppercase">

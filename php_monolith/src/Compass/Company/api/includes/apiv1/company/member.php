@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Restrictions\Exception\ActionRestrictedException;
 use CompassApp\Domain\Member\Entity\Member;
@@ -14,6 +15,31 @@ use CompassApp\Domain\Member\Entity\Permission;
  */
 class Apiv1_Company_Member extends \BaseFrame\Controller\Api
 {
+
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_MEMBER;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getUserRoleList",
+		"getStatusUserList",
+		"getBatchingList",
+		"getListByMBTI",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		// "leave" // не включать методы, требующие 2fa
+		"setDescription",
+		"setStatus",
+		"setBadge",
+		"setMBTIType",
+		"setJoinTime",
+		"setDescriptionBadgeAndJoinTime",
+		"setProfile",
+	];
+
+	// разерешенные методы
 	public const ALLOW_METHODS = [
 		"getUserRoleList",
 		"getStatusUserList",
@@ -29,6 +55,7 @@ class Apiv1_Company_Member extends \BaseFrame\Controller\Api
 		"setProfile",
 	];
 
+	// методы, вклияющие на активность пользователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"leave",
 		"setDescription",

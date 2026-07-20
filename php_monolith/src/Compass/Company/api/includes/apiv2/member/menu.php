@@ -2,19 +2,35 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Member;
 
 /**
  * Контроллер для методов уведомлений администратора
  */
-class Apiv2_Member_Menu extends \BaseFrame\Controller\Api {
+class Apiv2_Member_Menu extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_MANAGEMENT;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getNotifications",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"readNotifications",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"getNotifications",
 		"readNotifications",
 	];
 
+	// методы, влияющие на активность пользователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"readNotifications",
 	];
@@ -36,15 +52,15 @@ class Apiv2_Member_Menu extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \Exception
 	 */
-	public function getNotifications():array {
+	public function getNotifications(): array
+	{
 
 		try {
 
 			[
 				$unread_active_member_list, $unread_guest_member_list, $unread_administrator_member_list, $unread_join_request_list,
 				$unread_left_member_list, $is_member_count_trial_period_unread,
-			] =
-				Domain_Company_Scenario_Api::getNotifications($this->user_id, $this->role);
+			] = Domain_Company_Scenario_Api::getNotifications($this->user_id, $this->role);
 		} catch (\CompassApp\Domain\Member\Exception\IsNotAdministrator) {
 
 			return $this->ok([
@@ -72,7 +88,8 @@ class Apiv2_Member_Menu extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \Exception
 	 */
-	public function readNotifications():array {
+	public function readNotifications(): array
+	{
 
 		$type_list = $this->post(\Formatter::TYPE_ARRAY, "type_list");
 

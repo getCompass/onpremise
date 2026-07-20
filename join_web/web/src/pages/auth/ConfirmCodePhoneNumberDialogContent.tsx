@@ -171,18 +171,18 @@ const ConfirmCodePhoneNumberDialogContentDesktop = ({
 
 	const renderedPreloaderButton = useMemo(() => {
 		if (isServerError) {
-			return <DesktopRefreshButton setIsServerError = {setIsServerError} setIsCompleted = {setCompleted} />;
+			return <DesktopRefreshButton setIsServerError = {setIsServerError} setIsCompleted = {setCompleted} />
 		}
 
 		if (isNetworkError) {
-			return <DesktopRefreshButton setIsServerError = {setIsNetworkError} setIsCompleted = {setCompleted} />;
+			return <DesktopRefreshButton setIsServerError = {setIsNetworkError} setIsCompleted = {setCompleted} />
 		}
 
 		if (isCompleted || isLoading) {
-			return <Preloader18 />;
+			return <Preloader18 />
 		}
 
-		return <></>;
+		return <></>
 	}, [ isCompleted, isServerError, isNetworkError, isLoading ]);
 
 	const renderedPinInput = useMemo(() => {
@@ -328,7 +328,7 @@ const ConfirmCodePhoneNumberDialogContentDesktop = ({
 
 	if (auth === null) {
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
 
 	return (
@@ -565,10 +565,10 @@ const ConfirmCodePhoneNumberDialogContentMobile = ({
 		}
 
 		if (isCompleted || isLoading) {
-			return <Preloader18Opacity30 key = "mobile_preloader18_opacity30" />;
+			return <Preloader18Opacity30 key = "mobile_preloader18_opacity30" />
 		}
 
-		return <></>;
+		return <></>
 	}, [ isCompleted, isServerError, isNetworkError, isLoading, screenWidth ]);
 
 	useEffect(() => {
@@ -664,7 +664,7 @@ const ConfirmCodePhoneNumberDialogContentMobile = ({
 
 	if (auth === null) {
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
 
 	return (

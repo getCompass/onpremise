@@ -264,7 +264,7 @@ const CreateProfileDialogContentDesktop = () => {
 			);
 		}
 
-		return <TooltipArrow width="8px" height="5px" />;
+		return <TooltipArrow width="8px" height="5px" />
 	}, [tooltipType]);
 
 	useEffect(() => {
@@ -658,7 +658,7 @@ const CreateProfileDialogContentMobile = () => {
 			);
 		}
 
-		return <TooltipArrow width="8px" height="5px" />;
+		return <TooltipArrow width="8px" height="5px" />
 	}, [tooltipType]);
 
 	useEffect(() => {
@@ -837,10 +837,10 @@ const CreateProfileDialogContentMobile = () => {
 const CreateProfileDialogContent = () => {
 	const isMobile = useIsMobile();
 	if (isMobile) {
-		return <CreateProfileDialogContentMobile />;
+		return <CreateProfileDialogContentMobile />
 	}
 
-	return <CreateProfileDialogContentDesktop />;
+	return <CreateProfileDialogContentDesktop />
 };
 
 export default CreateProfileDialogContent;

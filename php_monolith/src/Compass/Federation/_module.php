@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * Файл подключения request-обработчика модуля к проекту.
@@ -13,6 +15,8 @@
  */
 
 namespace Compass\Federation;
+
+use BaseFrame\Crypt\CrypterProvider;
 
 define("FEDERATION_MODULE_ROOT", dirname(__FILE__) . "/");
 define("FEDERATION_MODULE_API", FEDERATION_MODULE_ROOT . "api/");
@@ -34,6 +38,8 @@ include_once FEDERATION_MODULE_ROOT . "_module/sharding.php";
 \BaseFrame\Crypt\PackCryptProvider::init([
 	\BaseFrame\Crypt\PackCryptProvider::FILE => new \BaseFrame\Crypt\PackCryptData(SALT_PACK_FILE, \BaseFrame\Crypt\CryptProvider::default())
 ]);
+
+CrypterProvider::add(Domain_Ldap_Entity_Totp_UserRel::TOTP_SECRET_CRYPT_KEY, \BaseFrame\Crypt\Crypter\OpenSSL::instance(base64_decode(TOTP_SECRET_ENCRYPTION_KEY_B64)));
 
 \BaseFrame\Socket\SocketHandler::init(getConfig("SOCKET_URL"), getConfig("SOCKET_MODULE"), SOCKET_KEY_FEDERATION, CA_CERTIFICATE);
 

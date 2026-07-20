@@ -2,7 +2,7 @@ import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
 	activeDialogIdState,
-	authInputState, authLdapState,
+	authInputState, authLdapState, authLdapTotpState,
 	authSsoState,
 	authState, isGuestAuthState,
 	isLoadedState,
@@ -57,6 +57,7 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 	const authInput = useAtomValue(authInputState);
 	const auth = useAtomValue(authState);
 	const authLdap = useAtomValue(authLdapState);
+	const authLdapTotp = useAtomValue(authLdapTotpState);
 	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
 	const { is_authorized, need_fill_profile } = useAtomValue(profileState);
 	const isNeedShowCreateProfileDialogAfterSsoRegistration = useAtomValue(
@@ -426,13 +427,15 @@ export default function GlobalStartProvider({ children }: PropsWithChildren) {
 			} else {
 				if (authInputValue.length > 0) {
 					// чтобы не выкидывало при перезапросе start на ввод номера/почты
-					if (activeDialog !== "auth_sso_ldap" && authLdap === null) {
+					if (activeDialog !== "auth_sso_ldap" && authLdap === null
+						&& activeDialog !== "auth_ldap_2fa_setup_totp" && activeDialog !== "auth_ldap_2fa_confirm_totp" && authLdapTotp === null) {
 						navigateToPage("auth");
 						navigateToDialog("auth_email_phone_number");
 					}
 				} else {
 					// чтобы не выкидывало при перезапросе start на ввод номера/почты
-					if (!isJoinLink && activeDialog !== "auth_sso_ldap" && authLdap === null) {
+					if (!isJoinLink && activeDialog !== "auth_sso_ldap" && authLdap === null
+						&& activeDialog !== "auth_ldap_2fa_setup_totp" && activeDialog !== "auth_ldap_2fa_confirm_totp" && authLdapTotp === null) {
 						navigateToPage("auth");
 						navigateToDialog("auth_email_phone_number");
 					}

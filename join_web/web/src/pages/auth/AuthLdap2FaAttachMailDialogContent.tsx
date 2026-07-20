@@ -8,7 +8,7 @@ import { RefObject, useCallback, useMemo, useRef, useState } from "react";
 import { KeyIcon80 } from "../../components/KeyIcon80.tsx";
 import { useApiFederationLdapMailAdd } from "../../api/auth/ldap.ts";
 import { ApiCommand, ApiError, NetworkError, ServerError } from "../../api/_index.ts";
-import { useAtomValue } from "jotai/index";
+import { useAtomValue } from "jotai";
 import { activeDialogIdState, authLdapState } from "../../api/_stores.ts";
 import { useShowToast } from "../../lib/Toast.tsx";
 import {

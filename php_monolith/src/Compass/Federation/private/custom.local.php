@@ -8,6 +8,7 @@ define(__NAMESPACE__ . "\COMPASS_NOTICE_ENDPOINT"                      , "${COMP
 // расширенный ключ (32 символа)
 define(__NAMESPACE__ . "\EXTENDED_ENCRYPT_KEY_DEFAULT"                 , "${EXTENDED_ENCRYPT_KEY_DEFAULT}"); // ключ
 define(__NAMESPACE__ . "\EXTENDED_ENCRYPT_IV_DEFAULT"                  , "${EXTENDED_ENCRYPT_IV_DEFAULT}"); // вектор шифрования
+define(__NAMESPACE__ . "\TOTP_SECRET_ENCRYPTION_KEY_B64"                  	, "${TOTP_SECRET_ENCRYPTION_KEY_B64}"); // ключ шифрования
 
 // -------------------------------------------------------
 // SOCKET КЛЮЧИ ДЛЯ ДОВЕРЕННОГО ОБЩЕНИЯ МЕЖДУ МОДУЛЯМИ

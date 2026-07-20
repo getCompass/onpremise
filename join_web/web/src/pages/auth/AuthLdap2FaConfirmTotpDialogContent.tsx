@@ -4,143 +4,95 @@ import { Button } from "../../components/button.tsx";
 import { Text } from "../../components/text.tsx";
 import { useLangString } from "../../lib/getLangString.ts";
 import useIsMobile from "../../lib/useIsMobile.ts";
-import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KeyIcon80 } from "../../components/KeyIcon80.tsx";
-import PasswordInput from "../../components/PasswordInput.tsx";
-import { useApiFederationLdapAuthGetToken, useApiPivotAuthLdapBegin } from "../../api/auth/ldap.ts";
-import { ApiCommand, ApiError, NetworkError, ServerError } from "../../api/_index.ts";
-import { useAtom, useAtomValue, useSetAtom } from "jotai/index";
-import {
-	activeDialogIdState,
-	dictionaryDataState,
-	isLdapChangeMailState,
-	prepareJoinLinkErrorState
-} from "../../api/_stores.ts";
-import { useShowToast } from "../../lib/Toast.tsx";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigateDialog } from "../../components/hooks.ts";
 import {
 	ALREADY_MEMBER_ERROR_CODE,
-	API_COMMAND_TYPE_NEED_CONFIRM_LDAP_MAIL, API_COMMAND_TYPE_NEED_SETUP_TOTP, API_COMMAND_TYPE_NEED_TOTP_CODE,
+	API_COMMAND_TYPE_NEED_CONFIRM_LDAP_MAIL,
+	API_COMMAND_TYPE_NEED_SETUP_TOTP,
+	API_COMMAND_TYPE_NEED_TOTP_CODE,
 	INACTIVE_LINK_ERROR_CODE,
 	INCORRECT_LINK_ERROR_CODE,
 	LIMIT_ERROR_CODE,
-	SSO_PROTOCOL_OIDC,
+	SSO_PROTOCOL_OIDC
 } from "../../api/_types.ts";
+import { ApiCommand, ApiError, NetworkError, ServerError } from "../../api/_index.ts";
 import dayjs from "dayjs";
 import { plural } from "../../lib/plural.ts";
-import Preloader16 from "../../components/Preloader16.tsx";
-import { useNavigateDialog } from "../../components/hooks.ts";
+import { useAtom, useAtomValue } from "jotai";
+import { activeDialogIdState, authLdapCredentialsState, prepareJoinLinkErrorState } from "../../api/_stores.ts";
+import { useApiFederationLdapAuthGetToken, useApiPivotAuthLdapBegin } from "../../api/auth/ldap.ts";
 import useLdap2FaStage from "../../lib/useLdap2FaStage.ts";
+import { useShowToast } from "../../lib/Toast.tsx";
+import Preloader16 from "../../components/Preloader16.tsx";
 
-type AuthLdapDialogContentProps = {
-	onLoginClickHandler: () => void
-	usernameInputRef: RefObject<HTMLInputElement>
-	passwordInputRef: RefObject<HTMLInputElement>
+type AuthLdap2FaConfirmTotpDialogContentProps = {
+	confirmCode: string
+	setConfirmCode: (value: string) => void
 	apiIsLoading: boolean
 	isLoading: boolean
 	isError: boolean
-	setIsError: (value: boolean) => void
-	username: string
-	setUsername: (value: string) => void
-	password: string
-	setPassword: (value: string) => void
+	onLoginClickHandler: () => void
 }
 
-const AuthLdapDialogContentDesktop = ({
-	onLoginClickHandler,
-	usernameInputRef,
-	passwordInputRef,
+const AuthLdap2FaConfirmTotpDialogContentDesktop = ({
+	confirmCode,
+	setConfirmCode,
 	apiIsLoading,
 	isLoading,
 	isError,
-	setIsError,
-	username,
-	setUsername,
-	password,
-	setPassword
-}: AuthLdapDialogContentProps) => {
-	const langStringLdapLoginDialogTitle = useLangString("ldap_login_dialog.title");
-	const langStringLdapLoginDialogUsernameInputPlaceholder = useLangString(
-		"ldap_login_dialog.username_input_placeholder"
-	);
-	const langStringLdapLoginDialogPasswordInputPlaceholder = useLangString(
-		"ldap_login_dialog.password_input_placeholder"
-	);
-	const langStringLdapLoginDialogLoginButton = useLangString("ldap_login_dialog.login_button");
+	onLoginClickHandler,
+}: AuthLdap2FaConfirmTotpDialogContentProps) => {
 
-	const ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
-
-	const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
+	const langStringLdap2faConfirmTotpDialogTitle = useLangString("ldap_2fa_confirm_totp_dialog.title");
+	const langStringLdap2faConfirmTotpDialogDesc = useLangString("ldap_2fa_confirm_totp_dialog.desc");
+	const langStringLdap2faConfirmTotpDialogInputPlaceholder = useLangString("ldap_2fa_confirm_totp_dialog.input_placeholder");
+	const langStringLdap2faConfirmTotpDialogConfirmButton = useLangString("ldap_2fa_confirm_totp_dialog.confirm_button");
 
 	return (
 		<VStack w="100%" gap="0px">
 			<VStack gap="0px" mt="20px" minW="100%">
 				<KeyIcon80 />
 				<Text mt="16px" style="lato_18_24_900" ls="-02">
-					{langStringLdapLoginDialogTitle}
+					{langStringLdap2faConfirmTotpDialogTitle}
 				</Text>
 				<Text mt="6px" textAlign="center" style="lato_14_20_400" ls="-015" maxW="328px"
 					  overflow="wrapEllipsis">
-					{ssoLdapLoginDialogDesc}
+					{langStringLdap2faConfirmTotpDialogDesc}
 				</Text>
-				<Input
-					disabled={apiIsLoading}
-					ref={usernameInputRef}
-					tabIndex={1}
-					mt="20px"
-					type="search"
-					autoFocus={true}
-					autoComplete="nope"
-					value={username}
-					onChange={(changeEvent) => {
-						setUsername(changeEvent.target.value ?? "");
-						setIsError(false);
-					}}
-					autoCapitalize="none"
-					placeholder={langStringLdapLoginDialogUsernameInputPlaceholder}
-					size="default_desktop"
-					onKeyDown={(event: React.KeyboardEvent) => {
-						if (event.key === "Enter") {
-							if (password.length < 1 && passwordInputRef.current !== null) {
-								passwordInputRef.current.focus();
-								return;
+				<VStack w="100%" gap="0px" mt="20px">
+					<Input
+						disabled={apiIsLoading}
+						tabIndex={1}
+						type="search"
+						autoFocus={true}
+						autoComplete="nope"
+						value={confirmCode}
+						onChange={(changeEvent) => {
+							const value = changeEvent.target.value ?? "";
+							const digitsOnly = value.replace(/\D/g, ""); // удаляем все кроме
+
+							setConfirmCode(digitsOnly);
+						}}
+						maxLength={40}
+						autoCapitalize="none"
+						placeholder={langStringLdap2faConfirmTotpDialogInputPlaceholder}
+						size="default_desktop"
+						onKeyDown={(event: React.KeyboardEvent) => {
+							if (event.key === "Enter") {
+								onLoginClickHandler();
 							}
-							onLoginClickHandler();
-						}
-					}}
-					input={isError ? "error_default" : "default"}
-				/>
-				<PasswordInput
-					isDisabled={apiIsLoading}
-					mt="8px"
-					autoFocus={false}
-					password={password}
-					setPassword={setPassword}
-					inputPlaceholder={langStringLdapLoginDialogPasswordInputPlaceholder}
-					isToolTipVisible={false}
-					setIsToolTipVisible={() => null}
-					isNeedShowTooltip={false}
-					setIsNeedShowTooltip={() => null}
-					isError={isError}
-					setIsError={setIsError}
-					onEnterClick={() => {
-						if (username.length < 1 && usernameInputRef.current !== null) {
-							usernameInputRef.current.focus();
-							return;
-						}
-						onLoginClickHandler();
-					}}
-					inputRef={passwordInputRef}
-					isPasswordVisible={isPasswordVisible}
-					setIsPasswordVisible={setIsPasswordVisible}
-					maxLength={9999}
-					inputTabIndex={2}
-				/>
+						}}
+						input={isError ? "error_default" : "default"}
+					/>
+				</VStack>
 				<Button
 					mt="12px"
 					size="px12py6full"
 					textSize="lato_15_23_600"
 					rounded="6px"
-					disabled={username.length < 1 || password.length < 1}
+					disabled={confirmCode.length < 1}
 					onClick={() => onLoginClickHandler()}
 				>
 					{isLoading ? (
@@ -148,7 +100,7 @@ const AuthLdapDialogContentDesktop = ({
 							<Preloader16 />
 						</Box>
 					) : (
-						langStringLdapLoginDialogLoginButton
+						langStringLdap2faConfirmTotpDialogConfirmButton
 					)}
 				</Button>
 			</VStack>
@@ -156,34 +108,22 @@ const AuthLdapDialogContentDesktop = ({
 	);
 };
 
-const AuthLdapDialogContentMobile = ({
-	onLoginClickHandler,
-	usernameInputRef,
-	passwordInputRef,
+const AuthLdap2FaConfirmTotpDialogContentMobile = ({
+	confirmCode,
+	setConfirmCode,
 	apiIsLoading,
 	isLoading,
 	isError,
-	setIsError,
-	username,
-	setUsername,
-	password,
-	setPassword
-}: AuthLdapDialogContentProps) => {
-	const langStringLdapLoginDialogTitle = useLangString("ldap_login_dialog.title");
-	const langStringLdapLoginDialogUsernameInputPlaceholder = useLangString(
-		"ldap_login_dialog.username_input_placeholder"
-	);
-	const langStringLdapLoginDialogPasswordInputPlaceholder = useLangString(
-		"ldap_login_dialog.password_input_placeholder"
-	);
+	onLoginClickHandler,
+}: AuthLdap2FaConfirmTotpDialogContentProps) => {
+
 	const langStringLdapLoginDialogBackButton = useLangString("ldap_login_dialog.back_button");
-	const langStringLdapLoginDialogLoginButton = useLangString("ldap_login_dialog.login_button");
+	const langStringLdap2faConfirmTotpDialogTitle = useLangString("ldap_2fa_confirm_totp_dialog.title");
+	const langStringLdap2faConfirmTotpDialogDesc = useLangString("ldap_2fa_confirm_totp_dialog.desc");
+	const langStringLdap2faConfirmTotpDialogInputPlaceholder = useLangString("ldap_2fa_confirm_totp_dialog.input_placeholder");
+	const langStringLdap2faConfirmTotpDialogConfirmButton = useLangString("ldap_2fa_confirm_totp_dialog.confirm_button");
 
-	const ssoLdapLoginDialogDesc = useAtomValue(dictionaryDataState).auth_sso_ldap_description_text;
-
-	const { navigateToDialog } = useNavigateDialog();
-
-	const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
+	const { prevDialog, navigateToDialog } = useNavigateDialog();
 
 	const screenWidth = useMemo(() => document.body.clientWidth, [ document.body.clientWidth ]);
 
@@ -194,7 +134,7 @@ const AuthLdapDialogContentMobile = ({
 					color="2574a9"
 					textSize="lato_16_22_400"
 					size="px0py0"
-					onClick={() => navigateToDialog("auth_email_phone_number")}
+					onClick={() => navigateToDialog(prevDialog)}
 					disabled={isLoading}
 				>
 					{langStringLdapLoginDialogBackButton}
@@ -203,7 +143,7 @@ const AuthLdapDialogContentMobile = ({
 			<VStack gap="0px" mt="-6px" minW="100%">
 				<KeyIcon80 />
 				<Text mt="16px" style="lato_20_28_700" ls="-03">
-					{langStringLdapLoginDialogTitle}
+					{langStringLdap2faConfirmTotpDialogTitle}
 				</Text>
 				<Text
 					mt="4px"
@@ -212,64 +152,38 @@ const AuthLdapDialogContentMobile = ({
 					maxW={screenWidth <= 390 ? "326px" : "350px"}
 					overflow="wrapEllipsis"
 				>
-					{ssoLdapLoginDialogDesc}
+					{langStringLdap2faConfirmTotpDialogDesc}
 				</Text>
-				<Input
-					disabled={apiIsLoading}
-					ref={usernameInputRef}
-					mt="24px"
-					type="search"
-					autoFocus={true}
-					autoComplete="nope"
-					value={username}
-					onChange={(changeEvent) => {
-						setUsername(changeEvent.target.value ?? "");
-						setIsError(false);
-					}}
-					autoCapitalize="none"
-					placeholder={langStringLdapLoginDialogUsernameInputPlaceholder}
-					size="px12py10w100"
-					onKeyDown={(event: React.KeyboardEvent) => {
-						if (event.key === "Enter") {
-							if (password.length < 1 && passwordInputRef.current !== null) {
-								passwordInputRef.current.focus();
-								return;
+				<VStack w="100%" gap="0px" mt="24px">
+					<Input
+						disabled={apiIsLoading}
+						type="search"
+						autoFocus={true}
+						autoComplete="nope"
+						value={confirmCode}
+						onChange={(changeEvent) => {
+							const value = changeEvent.target.value ?? "";
+							const digitsOnly = value.replace(/\D/g, ""); // удаляем все кроме
+
+							setConfirmCode(digitsOnly);
+						}}
+						maxLength={40}
+						autoCapitalize="none"
+						placeholder={langStringLdap2faConfirmTotpDialogInputPlaceholder}
+						size="px12py10w100"
+						onKeyDown={(event: React.KeyboardEvent) => {
+							if (event.key === "Enter") {
+								onLoginClickHandler();
 							}
-							onLoginClickHandler();
-						}
-					}}
-					input={isError ? "error_default" : "default"}
-				/>
-				<PasswordInput
-					isDisabled={apiIsLoading}
-					mt="8px"
-					autoFocus={false}
-					password={password}
-					setPassword={setPassword}
-					inputPlaceholder={langStringLdapLoginDialogPasswordInputPlaceholder}
-					isToolTipVisible={false}
-					setIsToolTipVisible={() => null}
-					isNeedShowTooltip={false}
-					setIsNeedShowTooltip={() => null}
-					isError={isError}
-					setIsError={setIsError}
-					onEnterClick={() => {
-						if (username.length < 1 && usernameInputRef.current !== null) {
-							usernameInputRef.current.focus();
-							return;
-						}
-						onLoginClickHandler();
-					}}
-					inputRef={passwordInputRef}
-					isPasswordVisible={isPasswordVisible}
-					setIsPasswordVisible={setIsPasswordVisible}
-					maxLength={9999}
-				/>
+						}}
+						input={isError ? "error_default" : "default"}
+					/>
+				</VStack>
 				<Button
 					mt="12px"
 					size="px16py9full"
 					textSize="lato_17_26_600"
-					disabled={username.length < 1 || password.length < 1}
+					disabled={confirmCode.length < 1}
 					onClick={() => onLoginClickHandler()}
 				>
 					{isLoading ? (
@@ -277,7 +191,7 @@ const AuthLdapDialogContentMobile = ({
 							<Preloader16 />
 						</Box>
 					) : (
-						langStringLdapLoginDialogLoginButton
+						langStringLdap2faConfirmTotpDialogConfirmButton
 					)}
 				</Button>
 			</VStack>
@@ -285,8 +199,7 @@ const AuthLdapDialogContentMobile = ({
 	);
 };
 
-const AuthLdapDialogContent = () => {
-	const isMobile = useIsMobile();
+const AuthLdap2FaConfirmTotpDialogContent = () => {
 
 	const langStringErrorsNetworkError = useLangString("errors.network_error");
 	const langStringErrorsServerError = useLangString("errors.server_error");
@@ -303,29 +216,26 @@ const AuthLdapDialogContent = () => {
 	const langStringErrorsAuthLdapMethodDisabled = useLangString("errors.auth_ldap_method_disabled");
 	const langStringErrorsLdapRegistrationWithoutInvite = useLangString("errors.ldap_registration_without_invite");
 	const langStringErrorsAuthSsoFullNameIncorrect = useLangString("errors.auth_sso_full_name_incorrect");
+	const langStringErrorsAuthSsoTotpCodeIncorrect = useLangString("errors.auth_sso_totp_code_incorrect");
+
+	const isMobile = useIsMobile();
 
 	const apiFederationLdapAuthGetToken = useApiFederationLdapAuthGetToken();
 	const apiPivotAuthLdapBegin = useApiPivotAuthLdapBegin();
 
+	const authLdapCredentials = useAtomValue(authLdapCredentialsState);
+
 	const activeDialogId = useAtomValue(activeDialogIdState);
-	const setIsLdapChangeMail = useSetAtom(isLdapChangeMailState);
+	const showToast = useShowToast(activeDialogId);
 	const [ prepareJoinLinkError, setPrepareJoinLinkError ] = useAtom(prepareJoinLinkErrorState);
 	const { navigateByStage, navigateTotp } = useLdap2FaStage();
 
-	const usernameInputRef = useRef<HTMLInputElement>(null);
-	const passwordInputRef = useRef<HTMLInputElement>(null);
-
-	const [ username, setUsername ] = useState("");
-	const [ password, setPassword ] = useState("");
+	const [ confirmCode, setConfirmCode ] = useState<string>("");
 	const [ isError, setIsError ] = useState(false);
 	const [ isLoading, setIsLoading ] = useState(false);
 
-	const showToast = useShowToast(activeDialogId);
-
-	useEffect(() => setIsLdapChangeMail(false), []);
-
 	const onLoginClickHandler = useCallback(async () => {
-		if (username.length < 1 || password.length < 1) {
+		if (authLdapCredentials.username.length < 1 || authLdapCredentials.password.length < 1 || confirmCode.length < 1) {
 			return;
 		}
 
@@ -336,8 +246,9 @@ const AuthLdapDialogContent = () => {
 		try {
 			setIsLoading(true);
 			const federationLdapAuthGetTokenResponse = await apiFederationLdapAuthGetToken.mutateAsync({
-				username: username,
-				password: password,
+				username: authLdapCredentials.username,
+				password: authLdapCredentials.password,
+				totp_code: confirmCode,
 			});
 
 			await apiPivotAuthLdapBegin.mutateAsync({
@@ -361,16 +272,16 @@ const AuthLdapDialogContent = () => {
 				if (error.type === API_COMMAND_TYPE_NEED_CONFIRM_LDAP_MAIL) {
 
 					navigateByStage(error.data, setIsLoading, setIsError, {
-						username: username,
-						password: password,
+						username: authLdapCredentials.username,
+						password: authLdapCredentials.password,
 					});
 					return;
 				}
 				if (error.type === API_COMMAND_TYPE_NEED_TOTP_CODE || error.type === API_COMMAND_TYPE_NEED_SETUP_TOTP) {
 
 					navigateTotp(error, setIsLoading, setIsError, {
-						username: username,
-						password: password,
+						username: authLdapCredentials.username,
+						password: authLdapCredentials.password,
 					});
 					return;
 				}
@@ -378,10 +289,13 @@ const AuthLdapDialogContent = () => {
 
 			if (error instanceof ApiError) {
 
-				if ([ 1708001, 1708002, 1708003, LIMIT_ERROR_CODE, 1708118, 1000, 1708120, 1708015,
+				if ([ 1708018, 1708001, 1708002, 1708003, LIMIT_ERROR_CODE, 1708118, 1000, 1708120, 1708015,
 					INCORRECT_LINK_ERROR_CODE, INACTIVE_LINK_ERROR_CODE, ].includes(error.error_code)) {
 
 					switch (error.error_code) {
+						case 1708018:
+							showToast(langStringErrorsAuthSsoTotpCodeIncorrect, "warning");
+							break;
 						case 1708001:
 							showToast(langStringLdapLoginDialogIncorrectCredentialsError, "warning");
 							break;
@@ -434,8 +348,9 @@ const AuthLdapDialogContent = () => {
 					try {
 						const federationLdapAuthGetTokenResponse =
 							await apiFederationLdapAuthGetToken.mutateAsync({
-								username: username,
-								password: password,
+								username: authLdapCredentials.username,
+								password: authLdapCredentials.password,
+								totp_code: confirmCode,
 							});
 
 						await apiPivotAuthLdapBegin.mutateAsync({
@@ -451,10 +366,13 @@ const AuthLdapDialogContent = () => {
 
 						if (error instanceof ApiError) {
 
-							if ([ 1708001, 1708002, 1708003, LIMIT_ERROR_CODE, 1708118, 1000, 1708120, 1708015,
+							if ([ 1708018, 1708001, 1708002, 1708003, LIMIT_ERROR_CODE, 1708118, 1000, 1708120, 1708015,
 								INCORRECT_LINK_ERROR_CODE, INACTIVE_LINK_ERROR_CODE, ].includes(error.error_code)) {
 
 								switch (error.error_code) {
+									case 1708018:
+										showToast(langStringErrorsAuthSsoTotpCodeIncorrect, "warning");
+										break;
 									case 1708001:
 										showToast(langStringLdapLoginDialogIncorrectCredentialsError, "warning");
 										break;
@@ -507,38 +425,28 @@ const AuthLdapDialogContent = () => {
 			}
 			setIsLoading(false);
 		}
-	}, [ username, password ]);
+	}, [ authLdapCredentials, confirmCode ]);
 
 	if (isMobile) {
 
-		return <AuthLdapDialogContentMobile
-			onLoginClickHandler={onLoginClickHandler}
-			usernameInputRef={usernameInputRef}
-			passwordInputRef={passwordInputRef}
+		return <AuthLdap2FaConfirmTotpDialogContentMobile
+			confirmCode={confirmCode}
+			setConfirmCode={setConfirmCode}
 			apiIsLoading={apiFederationLdapAuthGetToken.isLoading || apiPivotAuthLdapBegin.isLoading}
 			isLoading={isLoading}
 			isError={isError}
-			setIsError={setIsError}
-			username={username}
-			setUsername={setUsername}
-			password={password}
-			setPassword={setPassword}
+			onLoginClickHandler={onLoginClickHandler}
 		/>;
 	}
 
-	return <AuthLdapDialogContentDesktop
-		onLoginClickHandler={onLoginClickHandler}
-		usernameInputRef={usernameInputRef}
-		passwordInputRef={passwordInputRef}
+	return <AuthLdap2FaConfirmTotpDialogContentDesktop
+		confirmCode={confirmCode}
+		setConfirmCode={setConfirmCode}
 		apiIsLoading={apiFederationLdapAuthGetToken.isLoading || apiPivotAuthLdapBegin.isLoading}
 		isLoading={isLoading}
 		isError={isError}
-		setIsError={setIsError}
-		username={username}
-		setUsername={setUsername}
-		password={password}
-		setPassword={setPassword}
+		onLoginClickHandler={onLoginClickHandler}
 	/>;
 };
 
-export default AuthLdapDialogContent;
+export default AuthLdap2FaConfirmTotpDialogContent;

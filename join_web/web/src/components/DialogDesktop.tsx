@@ -17,7 +17,7 @@ function DialogDesktop({ dialogRef, content, overflow }: DialogDesktopProps) {
 	const toastConfig = useToastConfig(dialogId);
 	const setActiveDialogId = useSetAtom(activeDialogIdState);
 
-	useEffect(() => setActiveDialogId(dialogId), [dialogId]);
+	useEffect(() => setActiveDialogId(dialogId), [ dialogId ]);
 
 	return (
 		<VStack
@@ -27,7 +27,6 @@ function DialogDesktop({ dialogRef, content, overflow }: DialogDesktopProps) {
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
-				padding: "16px",
 			})}
 		>
 			<VStack

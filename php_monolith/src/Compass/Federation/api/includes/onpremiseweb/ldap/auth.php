@@ -53,6 +53,7 @@ class Onpremiseweb_Ldap_Auth extends \BaseFrame\Controller\Api {
 		$username               = $this->post(\Formatter::TYPE_STRING, "username");
 		$password               = $this->post(\Formatter::TYPE_STRING, "password");
 		$mail_confirm_story_key = $this->post(\Formatter::TYPE_STRING, "mail_confirm_story_key", false);
+		$totp_code              = $this->post(\Formatter::TYPE_STRING, "totp_code", "");
 
 		try {
 
@@ -61,7 +62,11 @@ class Onpremiseweb_Ldap_Auth extends \BaseFrame\Controller\Api {
 				$mail_confirm_story_map = Type_Pack_MailConfirmStory::doDecrypt($mail_confirm_story_key);
 			}
 
-			$ldap_auth_token = Domain_Ldap_Scenario_Api::getToken($username, $password, $mail_confirm_story_map);;
+			$ldap_auth_token = Domain_Ldap_Scenario_Api::getToken($username, $password, $mail_confirm_story_map, $totp_code);
+		} catch (Domain_Ldap_Exception_Totp_CodeIsIncorrect) {
+			throw new CaseException(1708018, "totp code is incorrect");
+		} catch (Domain_Ldap_Exception_Totp_PendingSetupExpired) {
+			throw new CaseException(1708019, "totp setup session expired, please re-authenticate");
 		} catch (Domain_Ldap_Exception_Mail_LdapMailNotFound) {
 			throw new CaseException(1708015, "ldap mail required");
 		} catch (\cs_DecryptHasFailed) {
@@ -71,13 +76,13 @@ class Onpremiseweb_Ldap_Auth extends \BaseFrame\Controller\Api {
 		} catch (Domain_Ldap_Exception_Mail_StageIsInvalid) {
 			throw new CaseException(1708013, "cant be on that stage");
 		} catch (Domain_Ldap_Exception_Auth_BindFailed|Domain_Ldap_Exception_ProtocolError_InvalidCredentials|Domain_Ldap_Exception_ProtocolError_InvalidDnSyntax) {
-			return $this->error(1708001, "invalid username or password");
+			throw new CaseException(1708001, "invalid username or password");
 		} catch (Domain_Ldap_Exception_ProtocolError_UnwillingToPerform) {
-			return $this->error(1708002, "LDAP provider unwilling to perform this action");
+			throw new CaseException(1708002, "LDAP provider unwilling to perform this action");
 		} catch (Domain_Ldap_Exception_ProtocolError_TimeoutExceeded) {
-			return $this->error(1708004, "timeout exceeded");
+			throw new CaseException(1708004, "timeout exceeded");
 		} catch (Domain_Ldap_Exception_ProtocolError_FilterError) {
-			return $this->error(1708003, "incorrect ldap.user_search_filter");
+			throw new CaseException(1708003, "incorrect ldap.user_search_filter");
 		} catch (Domain_Ldap_Exception_ProtocolError) {
 			throw new ParseFatalException("unexpected error");
 		} catch (BlockException $e) {

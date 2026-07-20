@@ -6,9 +6,8 @@ import {useSetAtom} from "jotai";
 import {
 	authenticationTokenExpiresAtState,
 	authenticationTokenState,
-	authenticationTokenTimeLeftState, serverTimeOffsetState
+	authenticationTokenTimeLeftState
 } from "./_stores.ts";
-import dayjs from "dayjs";
 
 export function useApiAuthLogout() {
 	const getResponse = useGetResponse("pivot");
@@ -53,7 +52,6 @@ export function useApiAuthGenerateToken() {
 	const setAuthenticationToken = useSetAtom(authenticationTokenState);
 	const setExpiresAt = useSetAtom(authenticationTokenExpiresAtState);
 	const setTimeLeft = useSetAtom(authenticationTokenTimeLeftState);
-	const setServerTimeOffsetState = useSetAtom(serverTimeOffsetState);
 
 	return useMutation({
 		retry: false,
@@ -69,7 +67,6 @@ export function useApiAuthGenerateToken() {
 			}
 
 			const response = await getResponse<ApiAuthGenerateToken>("auth/generateToken", body);
-			setServerTimeOffsetState(response.server_time - dayjs().unix());
 			setTimeLeft(response.expires_at - response.server_time);
 			setAuthenticationToken(response.authentication_token);
 			setExpiresAt(response.expires_at);

@@ -3,7 +3,7 @@ import {
 	APIAuthInfo,
 	APICommandData,
 	ApiGlobalStartDictionaryData,
-	APIJoinLinkInfo,
+	APIJoinLinkInfo, APINeedSetupTotpCommandData,
 	ApiUserInfoData,
 	AuthSsoInfo,
 	ClientVersionMap,
@@ -141,4 +141,10 @@ export const isLdapChangeMailState = atom(false);
 export const authLdapCredentialsState = atom<LdapAuthCredentials>({
 	username: "",
 	password: "",
+});
+
+export const authLdapTotpState = atom<APINeedSetupTotpCommandData>({
+	totp_seed: "",
+	otpauth_uri: "",
+	expires_at: 0,
 });

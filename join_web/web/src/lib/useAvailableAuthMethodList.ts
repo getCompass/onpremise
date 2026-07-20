@@ -1,4 +1,4 @@
-import {useAtomValue} from "jotai/index";
+import {useAtomValue} from "jotai";
 import {availableAuthGuestMethodListState, availableAuthMethodListState} from "../api/_stores.ts";
 
 export const AUTH_METHOD_PHONE_NUMBER = "phone_number";

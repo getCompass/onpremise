@@ -5,7 +5,6 @@ namespace Compass\Federation;
 use BaseFrame\Exception\Domain\InvalidMail;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
-use BaseFrame\Exception\DomainException;
 use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
 use BaseFrame\Exception\Gateway\QueryFatalException;
 use BaseFrame\Exception\Request\AnswerCommandException;
@@ -16,21 +15,18 @@ use BaseFrame\System\Mail;
  * класс содержит логику аутентификации по протоколу LDAP
  * @package Compass\Federation
  */
-class Domain_Ldap_Scenario_Api {
-
+class Domain_Ldap_Scenario_Api
+{
 	/**
 	 * пытаемся аутентифицировать учетную запись в LDAP
 	 *
-	 * @param string $username
-	 * @param string $password
-	 *
-	 * @return string
 	 * @throws BlockException
 	 * @throws \queryException
 	 * @throws Domain_Ldap_Exception_ProtocolError
 	 * @throws ParseFatalException
 	 */
-	public static function tryAuthenticate(string $username, string $password):Struct_Db_LdapData_LdapAuth {
+	public static function tryAuthenticate(string $username, string $password): Struct_Db_LdapData_LdapAuth
+	{
 
 		// проверяем, достигнут ли лимит неудачных попыток аутентификации для этого IP адреса
 		$antispam_block_key = Type_Antispam_Ip::overrideBlockKeyLimit(Type_Antispam_Ip::LDAP_FAILED_TRY_AUTHENTICATE, Domain_Ldap_Entity_Config::getLimitOfIncorrectAuthAttempts());
@@ -57,9 +53,10 @@ class Domain_Ldap_Scenario_Api {
 		$user_login_attribute = Domain_Ldap_Entity_Config::getUserLoginAttribute();
 		[$user_login_attribute_value, $user_unique_attribute_value, $dn]
 			= Domain_Ldap_Entity_Utils::parseEntryAttributes(
-			$prepared_entry,
-			$user_login_attribute,
-			Domain_Ldap_Entity_Config::getUserUniqueAttribute());
+				$prepared_entry,
+				$user_login_attribute,
+				Domain_Ldap_Entity_Config::getUserUniqueAttribute()
+			);
 
 		// проверяем что по уникальному атрибуту совпали с переданными данными для авторизации
 		$normalized_username                   = mb_strtolower($username);
@@ -79,13 +76,8 @@ class Domain_Ldap_Scenario_Api {
 	}
 
 	/**
-	 * пытаемся аутентифицировать учетную запись в LDAP
+	 * Получить токен авторизации
 	 *
-	 * @param string       $username
-	 * @param string       $password
-	 * @param string|false $mail_confirm_story_map
-	 *
-	 * @return string
 	 * @throws AnswerCommandException
 	 * @throws BlockException
 	 * @throws DBShardingNotFoundException
@@ -93,6 +85,8 @@ class Domain_Ldap_Scenario_Api {
 	 * @throws Domain_Ldap_Exception_Mail_LdapMailNotFound
 	 * @throws Domain_Ldap_Exception_Mail_StageIsInvalid
 	 * @throws Domain_Ldap_Exception_ProtocolError
+	 * @throws Domain_Ldap_Exception_Totp_CodeIsIncorrect
+	 * @throws Domain_Ldap_Exception_Totp_PendingSetupExpired
 	 * @throws ParseFatalException
 	 * @throws QueryFatalException
 	 * @throws ReturnFatalException
@@ -100,7 +94,8 @@ class Domain_Ldap_Scenario_Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public static function getToken(string $username, string $password, string|false $mail_confirm_story_map):string {
+	public static function getToken(string $username, string $password, string | false $mail_confirm_story_map, string $totp_code = ""): string
+	{
 
 		$antispam_block_key = Type_Antispam_Ip::overrideBlockKeyLimit(Type_Antispam_Ip::LDAP_FAILED_TRY_AUTHENTICATE, Domain_Ldap_Entity_Config::getLimitOfIncorrectAuthAttempts());
 
@@ -113,6 +108,12 @@ class Domain_Ldap_Scenario_Api {
 			return $auth_token->ldap_auth_token;
 		}
 
+		// если включен totp
+		if ($config_2fa->isTotpAuthMethodEnabled()) {
+			return self::_handleTotpFlow($auth_token, $username, $totp_code, $config_2fa->totp_issuer, $antispam_block_key);
+		}
+
+		// все остальное отправляем на mail пока
 		// если передали мапу истории, то проверяем, правильный ли этап. Если да, отдаем токен
 		if ($mail_confirm_story_map) {
 
@@ -152,19 +153,169 @@ class Domain_Ldap_Scenario_Api {
 	}
 
 	/**
+	 * Обрабатывает TOTP ветку авторизации
+	 *
+	 * Возможные сценарии:
+	 *  - TOTP привязан, код не передан → AnswerCommandException("need_totp_code")
+	 *  - TOTP привязан, код передан → проверяем, возвращаем токен или бросаем CodeIsIncorrect
+	 *  - TOTP не привязан, код не передан → генерируем/достаем из кэша seed, AnswerCommandException("need_setup_totp")
+	 *  - TOTP не привязан, код передан → ищем в кэше, если есть - проверяем и привязываем, иначе PendingSetupExpired
+	 *
+	 * @throws AnswerCommandException
+	 * @throws Domain_Ldap_Exception_Totp_CodeIsIncorrect
+	 * @throws Domain_Ldap_Exception_Totp_PendingSetupExpired
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 */
+	protected static function _handleTotpFlow(Struct_Db_LdapData_LdapAuth $auth_token, string $username, string $totp_code, string $totp_issuer, array $antispam_block_key): string
+	{
+
+		$uid = $auth_token->uid;
+
+		$totp_user_rel = [];
+		$is_bound      = false;
+
+		// проверяем, привязан ли TOTP
+		try {
+			$totp_user_rel = Domain_Ldap_Entity_Totp_UserRel::get($uid);
+			$is_bound      = true;
+		} catch (Domain_Ldap_Exception_Totp_NotBound) {
+			// ничего не делаем
+		}
+
+		// TOTP привязан - обычная верификация
+		if ($is_bound) {
+
+			Type_Antispam_Ip::checkAndIncrementBlock($antispam_block_key);
+			return self::_verifyBoundTotp($auth_token, $totp_user_rel, $totp_code);
+		}
+
+		// TOTP не привязан - флоу первичной настройки
+		// если не привязан - лимит чекаем но не инкрементим
+		Type_Antispam_Ip::check($antispam_block_key);
+		return self::_handleTotpSetup($auth_token, $username, $totp_code, $totp_issuer);
+	}
+
+	/**
+	 * Верификация кода для уже привязанного TOT
+	 * Принимает TOTP-код
+	 *
+	 * @throws AnswerCommandException
+	 * @throws Domain_Ldap_Exception_Totp_CodeIsIncorrect
+	 */
+	protected static function _verifyBoundTotp(Struct_Db_LdapData_LdapAuth $auth_token, Domain_Ldap_Entity_Totp_UserRel $totp_user_rel, string $totp_code): string
+	{
+
+		// нет кода - просим ввести
+		if ($totp_code === "") {
+			throw new AnswerCommandException("need_totp_code", []);
+		}
+
+		// проверяем TOTP: текущий и соседние 30-секундные интервалы для допуска небольшого рассинхрона часов
+		$current_interval = (int) floor(time() / 30);
+		foreach ([-1, 0, 1] as $offset) {
+
+			$totp_seed = \BaseFrame\Crypt\CrypterProvider::get(Domain_Ldap_Entity_Totp_UserRel::TOTP_SECRET_CRYPT_KEY)->decrypt($totp_user_rel->crypted_totp_secret);
+			$expected  = Domain_Totp_Entity_Generator::getCode($totp_seed, 6, $current_interval + $offset);
+			if (hash_equals($expected, $totp_code)) {
+				return $auth_token->ldap_auth_token;
+			}
+		}
+
+		throw new Domain_Ldap_Exception_Totp_CodeIsIncorrect();
+	}
+
+	/**
+	 * Флоу первичной настройки TOTP (когда TOTP еще не привязан)
+	 *
+	 * Шаг 1 (totp_code пустой): генерируем/достаем из кэша seed и бекап-коды → отдаем клиенту QR
+	 * Шаг 2 (totp_code передан): проверяем код против кэша → при успехе сохраняем в БД → возвращаем токен
+	 *
+	 * @throws AnswerCommandException
+	 * @throws Domain_Ldap_Exception_Totp_CodeIsIncorrect
+	 * @throws Domain_Ldap_Exception_Totp_PendingSetupExpired
+	 * @throws DBShardingNotFoundException
+	 * @throws QueryFatalException
+	 */
+	protected static function _handleTotpSetup(Struct_Db_LdapData_LdapAuth $auth_token, string $username, string $totp_code, string $totp_issuer): string
+	{
+
+		$uid = $auth_token->uid;
+
+		// шаг 2: пользователь отправил код - пытаемся подтвердить настройку
+		if ($totp_code !== "") {
+
+			$pending = Domain_Ldap_Entity_Totp_PendingSetup::find($uid);
+			if ($pending === false) {
+				throw new Domain_Ldap_Exception_Totp_PendingSetupExpired();
+			}
+
+			// проверяем переданный код против временного секрета
+			$current_interval = (int) floor(time() / 30);
+			$code_is_valid    = false;
+			foreach ([-1, 0, 1] as $offset) {
+
+				$totp_seed = \BaseFrame\Crypt\CrypterProvider::get(Domain_Ldap_Entity_Totp_UserRel::TOTP_SECRET_CRYPT_KEY)->decrypt($pending->crypted_totp_secret);
+				$expected  = Domain_Totp_Entity_Generator::getCode($totp_seed, 6, $current_interval + $offset);
+				if (hash_equals($expected, $totp_code)) {
+					$code_is_valid = true;
+					break;
+				}
+			}
+
+			if (!$code_is_valid) {
+				throw new Domain_Ldap_Exception_Totp_CodeIsIncorrect();
+			}
+
+			// код верный - сохраняем TOTP и бекап-коды в БД, чистим кэш
+			Domain_Ldap_Entity_Totp_UserRel::create($uid, $pending->crypted_totp_secret);
+			Domain_Ldap_Entity_Totp_PendingSetup::delete($uid);
+
+			return $auth_token->ldap_auth_token;
+		}
+
+		// шаг 1: кода нет - достаем или создаем pending setup
+		$pending = Domain_Ldap_Entity_Totp_PendingSetup::find($uid);
+		if ($pending === false) {
+			$pending = Domain_Ldap_Entity_Totp_PendingSetup::create($uid);
+		}
+
+		$totp_seed   = \BaseFrame\Crypt\CrypterProvider::get(Domain_Ldap_Entity_Totp_UserRel::TOTP_SECRET_CRYPT_KEY)->decrypt($pending->crypted_totp_secret);
+		$otpauth_uri = self::_makeOtpauthUri($totp_seed, $username, $totp_issuer);
+
+		throw new AnswerCommandException("need_setup_totp", [
+			"totp_seed"   => $totp_seed,
+			"otpauth_uri" => $otpauth_uri,
+			"expires_at"  => $pending->expires_at,
+		]);
+	}
+
+	/**
+	 * Сформировать otpauth:// URI для генерации QR-кода на стороне клиента
+	 */
+	protected static function _makeOtpauthUri(string $totp_secret, string $username, string $issuer): string
+	{
+
+		$label = rawurlencode($issuer) . ":" . rawurlencode($username);
+
+		return sprintf(
+			"otpauth://totp/%s?secret=%s&issuer=%s&algorithm=SHA1&digits=6&period=30",
+			$label,
+			$totp_secret,
+			rawurlencode($issuer)
+		);
+	}
+
+	/**
 	 * Привязать почту с LDAP
 	 *
-	 * @param string $uid
-	 * @param string $mail_mapped_field
-	 * @param array  $entry
-	 *
-	 * @return void
 	 * @throws DBShardingNotFoundException
 	 * @throws Domain_Ldap_Exception_Mail_LdapMailNotFound
 	 * @throws ParseFatalException
 	 * @throws QueryFatalException
 	 */
-	public static function _bindLdapMail(string $uid, string $mail_mapped_field, array $entry):void {
+	public static function _bindLdapMail(string $uid, string $mail_mapped_field, array $entry): void
+	{
 
 		$mail_mapped_field = trim($mail_mapped_field, "{}");
 		$prepared_entry    = Domain_Ldap_Entity_Utils::prepareEntry($entry);
@@ -192,10 +343,8 @@ class Domain_Ldap_Scenario_Api {
 	/**
 	 * Создать новую запись подтверждения почты
 	 *
-	 * @param Struct_Db_LdapData_LdapAuth $auth_token
-	 * @param string|false                $mail
+	 * @param string|false $mail
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \BaseFrame\Exception\Gateway\DBShardingNotFoundException
@@ -203,7 +352,8 @@ class Domain_Ldap_Scenario_Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	protected static function _createConfirmMailStory(Struct_Db_LdapData_LdapAuth $auth_token, ?string $mail = null):array {
+	protected static function _createConfirmMailStory(Struct_Db_LdapData_LdapAuth $auth_token, ?string $mail = null): array
+	{
 
 		// если почты нет, то перекидываем на этап добавления новой
 		$stage = $mail
@@ -239,10 +389,10 @@ class Domain_Ldap_Scenario_Api {
 	/**
 	 * подготавливаем avatar blob, кодируя его в base64
 	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 */
-	protected static function _prepareAvatarBlob(array $entry):array {
+	protected static function _prepareAvatarBlob(array $entry): array
+	{
 
 		// проверяем, мапится ли аватар в приложение
 		// если мапится, то ничего не делаем
@@ -294,12 +444,9 @@ class Domain_Ldap_Scenario_Api {
 
 	/**
 	 * Переводим бинарные данные в вид, который можно сохранять в базу
-	 *
-	 * @param array $entry
-	 *
-	 * @return array
 	 */
-	protected static function _prepareBinaryData(array $entry):array {
+	protected static function _prepareBinaryData(array $entry): array
+	{
 
 		if (isset($entry["objectsid"])) {
 			$entry["objectsid"][0] = Domain_Ldap_Entity_Utils::sidBinToString($entry["objectsid"][0]);

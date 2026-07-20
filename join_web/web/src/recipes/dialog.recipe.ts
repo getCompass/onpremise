@@ -60,6 +60,11 @@ export const dialog = defineSlotRecipe({
 					borderRadius: "15px",
 				},
 			},
+			mobile_bottom: {
+				content: {
+					borderRadius: "15px 15px 0 0",
+				},
+			},
 		},
 		backdrop: {
 			opacity0: {
@@ -97,6 +102,11 @@ export const dialog = defineSlotRecipe({
 					padding: "16px",
 				},
 			},
+			mobile_bottom: {
+				content: {
+					width: "100%",
+				},
+			},
 		},
 		position: {
 			start: {
@@ -113,6 +123,13 @@ export const dialog = defineSlotRecipe({
 					alignItems: "center",
 					justifyContent: "center",
 					padding: "16px",
+				},
+			},
+			mobile_bottom: {
+				container: {
+					display: "flex",
+					alignItems: "flex-end",
+					justifyContent: "center",
 				},
 			},
 		},

@@ -31,7 +31,7 @@ class Socket_Conference extends \BaseFrame\Controller\Socket
 		$user_id  = $this->post(\Formatter::TYPE_INT, "user_id");
 		$space_id = $this->post(\Formatter::TYPE_INT, "space_id");
 
-		Domain_Jitsi_Entity_PermanentConference::removeWhenUserKick($user_id, $space_id);
+		Domain_Jitsi_Action_Conference_RemoveWhenUserKick::do($user_id, $space_id);
 
 		return $this->ok();
 	}

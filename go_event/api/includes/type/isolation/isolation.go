@@ -65,61 +65,20 @@ type Isolation struct {
 	isGlobal     bool
 	companyId    int64
 	abstractList map[string]interface{}
-	lifeChannel  chan bool
 	mainCtx      context.Context
-	cancelCtx    context.CancelFunc
-}
-
-// функция жизненного цикла изоляции
-func (i *Isolation) lifeRoutine() {
-
-	needBreak := false
-
-	Inc("isolation-routine")
-	defer Dec("isolation-routine")
-
-	for {
-
-		if needBreak {
-			break
-		}
-
-		select {
-		case <-i.lifeChannel:
-
-			// если закрылся канал, просто выходим из цикла
-			log.Info("инвалидирую изоляцию — получен сигнал закрытия канала")
-			needBreak = true
-		case <-i.mainCtx.Done():
-
-			// пытаемся инвалидиировать через глобальный метод, чтобы закрыть канал;
-			// сразу после этого попадем в case выше, если канал не закрылся,
-			// то выходим из цикла, что-то могло закрыть его прям в этот момент
-			log.Info("инвалидирую изоляцию — глобальный контекст завершился")
-			if i.Invalidate() != nil {
-				needBreak = true
-			}
-		}
-	}
-
-	// останавливаем все, что было привязано к изоляции
-	if err := i.invalidate(); err != nil {
-		log.Errorf("не удалось инвалидировать изоляцию %s", err.Error())
-	}
-
-	// не забываем остановить контекст изоляции
-	i.cancelCtx()
+	CancelCtx    context.CancelFunc
 }
 
 // инвалидирует изоляцию
-func (i *Isolation) invalidate() error {
+func (i *Isolation) Invalidate() error {
 
 	// применяем все первичные модифицирующие вызовы
 	if err := modifyIsolation(i, invalidateFnList); err != nil {
 		return err
 	}
 
-	i.cancelCtx()
+	i.CancelCtx()
+
 	return nil
 }
 
@@ -171,23 +130,6 @@ func (i *Isolation) GetContext() context.Context {
 	return i.mainCtx
 }
 
-// Invalidate инвалидирует изоляцию
-func (i *Isolation) Invalidate() (err error) {
-
-	defer func() {
-
-		if recover() != nil {
-
-			err = errors.New("attempt to invalidate closed isolation")
-			log.Error(err.Error())
-		}
-	}()
-
-	close(i.lifeChannel)
-	err = nil
-	return err
-}
-
 // GetUniq уникальный ключ изоляции
 func (i *Isolation) GetUniq() string {
 
@@ -211,9 +153,8 @@ func MakeIsolation(uniq string, companyId int64) (*Isolation, error) {
 		isGlobal:     false,
 		companyId:    companyId,
 		abstractList: map[string]interface{}{},
-		lifeChannel:  make(chan bool),
 		mainCtx:      ctx,
-		cancelCtx:    cancel,
+		CancelCtx:    cancel,
 	}
 
 	// применяем все первичные модифицирующие вызовы
@@ -226,7 +167,6 @@ func MakeIsolation(uniq string, companyId int64) (*Isolation, error) {
 		return nil, err
 	}
 
-	go isolation.lifeRoutine()
 	return isolation, nil
 }
 
@@ -252,7 +192,7 @@ func MakeGlobalIsolation(ctx context.Context) *Isolation {
 		companyId:    0,
 		abstractList: map[string]interface{}{},
 		mainCtx:      ctx,
-		cancelCtx:    func() {},
+		CancelCtx:    func() {},
 	}
 
 	// применяем все первичные модифицирующие вызовы

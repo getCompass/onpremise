@@ -3,10 +3,8 @@ package observer
 import (
 	"context"
 	"go_event/api/conf"
-	CompanyEnvironment "go_event/api/includes/type/company_config"
 	"os"
 	"sync/atomic"
-	"time"
 
 	"github.com/getCompassUtils/go_base_frame"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
@@ -34,18 +32,6 @@ func doWorkInfinite(ctx context.Context) {
 		return
 	}
 
-	isSecondWorker.Store(true)
-
-	for {
-
-		if ctx.Err() != nil {
-			break
-		}
-
-		// нон-стоп обновляем конф
-		CompanyEnvironment.UpdateWorldConfig()
-		time.Sleep(100 * time.Millisecond)
-	}
 }
 
 // каждую минуту
@@ -56,40 +42,6 @@ func doWork1MinuteInfinite(ctx context.Context) {
 		return
 	}
 
-	isMinute1Worker.Store(true)
-
-	for {
-
-		if ctx.Err() != nil {
-			break
-		}
-
-		// если это резервный сервер
-		if isReserveServer() {
-
-			// отмечаем, что необходимо выполнить работу
-			if isNeedWorkMinute1Worker.Load() == nil || !isNeedWorkMinute1Worker.Load().(bool) {
-				isNeedWorkMinute1Worker.Store(true)
-			}
-			continue
-		}
-
-		if isNeedWorkMinute1Worker.Load() == nil {
-
-			isNeedWorkMinute1Worker.Store(false)
-			continue
-		}
-
-		// если нет необходимости выполнить работу
-		if !isNeedWorkMinute1Worker.Load().(bool) {
-			continue
-		}
-
-		CompanyEnvironment.ReloadIsolation()
-		isNeedWorkMinute1Worker.Store(false)
-
-		time.Sleep(time.Minute)
-	}
 }
 
 // проверяем, является ли сервер резервным

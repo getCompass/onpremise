@@ -11,6 +11,8 @@ use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Handler\Api;
+use BaseFrame\Http\Header\XAuthSrc;
+use BaseFrame\Router\Middleware\GatewayAuthorization;
 use JetBrains\PhpStorm\ArrayShape;
 
 /**
@@ -90,6 +92,11 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 
 				$extra["need_user_id"] = $user_id;
 				$authorization_class   = Middleware_WithoutAuthorization::class;
+			}
+
+			// для запросов с API ключом используем авторизацию гейтвея
+			if ((new XAuthSrc())->getValue() === XAuthSrc::AUTH_SRC_GATEWAY) {
+				$authorization_class = GatewayAuthorization::class;
 			}
 
 			$router = new \BaseFrame\Router\Middleware([

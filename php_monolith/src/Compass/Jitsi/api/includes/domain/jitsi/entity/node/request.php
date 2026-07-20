@@ -159,7 +159,7 @@ class Domain_Jitsi_Entity_Node_Request {
 	 */
 	protected function _prepareUrl():string {
 
-		return sprintf("https://%s/api/room", $this->_node_config->domain);
+        return sprintf("https://%s/api/room", $this->_node_config->domain);
 	}
 
 	/**

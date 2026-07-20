@@ -337,7 +337,7 @@ const ContextMenuItem = ({
                             textClassName,
                             !isMobile && 'context-text-item',
                             isMobile && 'is-mobile')}
-                        overflowType = {overflowType}>
+                        overflowType={TEXT_OVERFLOW_TYPES.SCROLL_ON_HOVER}>
                         {text}
                     </TextWithOverflow>
                 )}

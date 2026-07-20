@@ -1,6 +1,6 @@
-FROM docker.getcompass.ru/service/web:web-1.0.8187-1
+FROM docker.getcompass.ru/service/web:web-1.0.9093-1
 
-RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd
+RUN rm /etc/apt/sources.list.d/jitsi.list && apt-get update && apt-get install -y --no-install-recommends netcat-openbsd
 
 COPY defaults/default /defaults/default
 COPY defaults/ffdhe2048.txt /defaults/ffdhe2048.txt

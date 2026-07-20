@@ -11,6 +11,8 @@ use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\ControllerMethodNotFoundException;
 use BaseFrame\Handler\Api;
+use BaseFrame\Http\Header\XAuthSrc;
+use BaseFrame\Router\Middleware\GatewayAuthorization;
 use BaseFrame\Server\ServerProvider;
 use JetBrains\PhpStorm\ArrayShape;
 
@@ -26,8 +28,8 @@ use JetBrains\PhpStorm\ArrayShape;
  * 8. соотвественно все методы GLOBAL - анонимны
  * 9. методы регистро НЕ зависимые
  */
-class Apiv2_Handler extends Api implements \RouteHandler {
-
+class Apiv2_Handler extends Api implements \RouteHandler
+{
 	// поддерживаемые методы (при создании новой группы заносятся вручную)
 	public const ALLOW_CONTROLLERS = [
 		"company_hibernation",
@@ -43,6 +45,7 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 		"security_device",
 		"smartapp",
 		"user_online",
+		"auth_apikey",
 	];
 
 	// поддерживаемые методы которые доступны без авторизации (при создании новой группы заносятся вручную)
@@ -88,15 +91,17 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	/**
 	 * @inheritDoc
 	 */
-	public function getServedRoutes():array {
+	public function getServedRoutes(): array
+	{
 
-		return array_map(static fn(string $method) => str_replace("_", ".", $method), static::ALLOW_CONTROLLERS);
+		return array_map(static fn (string $method) => str_replace("_", ".", $method), static::ALLOW_CONTROLLERS);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function getType():string {
+	public function getType(): string
+	{
 
 		return "apiv2";
 	}
@@ -104,7 +109,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	/**
 	 * @inheritDoc
 	 */
-	public function __toString():string {
+	public function __toString(): string
+	{
 
 		return static::class;
 	}
@@ -115,7 +121,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	//	@$post_data 	параметры post запроса которые будут использоваться внутри контролеров
 	//	@user_id	для отладки и тестов. действуйет только в режиме cli
 	// @long
-	public function handle(string $route, array $post_data, int $user_id = 0):array {
+	public function handle(string $route, array $post_data, int $user_id = 0): array
+	{
 
 		// фиксируем идентификатор запроса
 		$request_id = (new \BaseFrame\Http\Header\RequestId())->getValue();
@@ -164,6 +171,11 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 
 				$extra["need_user_id"] = $user_id;
 				$authorization_class   = Middleware_WithoutAuthorization::class;
+			}
+
+			// для запросов с API ключом используем авторизацию гейтвея
+			if ((new XAuthSrc())->getValue() === XAuthSrc::AUTH_SRC_GATEWAY) {
+				$authorization_class = GatewayAuthorization::class;
 			}
 
 			$router = new \BaseFrame\Router\Middleware([
@@ -221,13 +233,10 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 
 	/**
 	 * Обработка ошибки при совершении запроса
-	 *
-	 * @param CaseException $exception
-	 *
-	 * @return array
 	 */
 	#[ArrayShape(["status" => "string", "response" => "object", "server_time" => "int"])]
-	public static function handleCaseError(CaseException $exception):array {
+	public static function handleCaseError(CaseException $exception): array
+	{
 
 		$error_code = $exception->getErrorCode();
 
@@ -252,7 +261,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	// ---------------------------------------------------
 
 	// выбрасываем ошибку, если контроллер недоступен
-	protected static function _throwIfControllerIsNotAllowed(string $controller):void {
+	protected static function _throwIfControllerIsNotAllowed(string $controller): void
+	{
 
 		// приводим все контроллеры из списка к нижнему регистру
 		$allow_controllers = array_map("strtolower", self::ALLOW_CONTROLLERS);
@@ -264,7 +274,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	}
 
 	// закрываем соединения, если запускали не из консоли
-	protected function _closeConnectionsIfRunFromNotCli():void {
+	protected function _closeConnectionsIfRunFromNotCli(): void
+	{
 
 		// если запуск был не из консоли - закрываем соединения
 		if (!isCLi()) {

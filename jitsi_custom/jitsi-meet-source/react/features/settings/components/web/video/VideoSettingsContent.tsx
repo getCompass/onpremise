@@ -94,7 +94,7 @@ const useStyles = makeStyles()(theme => {
             marginBottom: '4px',
             borderRadius: theme.shape.borderRadius,
             boxSizing: 'border-box',
-            overflow: 'hidden'
+            overflow: 'hidden',
         },
 
         selectedEntry: {
@@ -111,9 +111,20 @@ const useStyles = makeStyles()(theme => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            height: '100%',
             width: '100%',
-            position: 'absolute'
+            height: '100%',
+            position: 'absolute',
+
+            padding: '17px 12px',
+            backgroundColor: '#2C2C2C',
+            fontSize: '12px',
+            borderRadius: theme.shape.borderRadius,
+            letterSpacing: '-0.15px',
+            textAlign: 'center',
+            verticalAlign: 'middle',
+            color: '#FFFFFFBF',
+            boxSizing: 'border-box',
+            cursor: 'default',
         },
 
         labelContainer: {
@@ -255,20 +266,27 @@ const VideoSettingsContent = ({
      * @returns {React$Node}
      */
         // eslint-disable-next-line react/no-multi-comp
-    const _renderPreviewEntry = (data: { deviceId: string; error?: string; jitsiTrack: any | null; },
-            index: number) => {
-            const { error, jitsiTrack, deviceId } = data;
-            const isSelected = deviceId === currentCameraDeviceId;
-            const key = `vp-${index}`;
-            const tabIndex = '0';
+    const _renderPreviewEntry = (data: { deviceId: string; error?: string; jitsiTrack: any | null; isSelected: boolean },
+        index: number,
+    ) => {
+        const { error, jitsiTrack, deviceId } = data;
+        const key = `vp-${index}`;
+        const isSelected = data.isSelected;
+        const tabIndex = '0';
 
-            if (error) {
+        if (error) {
+                let className = classes.previewEntry
+                if (isSelected) {
+                   className =  cx(classes.previewEntry, classes.selectedEntry);
+                }
                 return (
                     <div
-                        className = {classes.previewEntry}
+                        className = {className}
                         key = {key}
                         tabIndex = {-1}>
-                        <div className = {classes.error}>{t(error)}</div>
+                        <div className={classes.error}>
+                             {t(error)}
+                        </div>
                     </div>
                 );
             }
@@ -308,7 +326,38 @@ const VideoSettingsContent = ({
                         videoTrack = {{ jitsiTrack }} />
                 </div>
             );
-        };
+    };
+
+    // Тип одного трека
+    interface ITrackData {
+        deviceId: string;
+        jitsiTrack: any;
+        error?: string; // 'deviceSelection.previewUnavailable' для сломанной камеры
+        [key: string]: any;
+    }
+
+    // Тип с флагом выделения
+    interface IRenderTrackData extends ITrackData {
+        isSelected: boolean;
+    }
+
+    const withSelection = (
+        trackData: ITrackData[],
+        currentCameraDeviceId?: string
+    ): IRenderTrackData[] => {
+        const firstNonWorkingIndex = !currentCameraDeviceId
+            ? trackData.findIndex(
+                (data) => data.error === 'deviceSelection.previewUnavailable'
+            )
+            : -1;
+
+        return trackData.map((data, i) => ({
+            ...data,
+            isSelected:
+                (currentCameraDeviceId && data.deviceId === currentCameraDeviceId) ||
+                (!currentCameraDeviceId && i === firstNonWorkingIndex),
+        }));
+    };
 
     useEffect(() => {
         _setTracks();
@@ -335,8 +384,10 @@ const VideoSettingsContent = ({
             id = 'video-settings-dialog'
             role = 'radiogroup'
             tabIndex = {-1}>
-            <ContextMenuItemGroup>
-                {trackData.map((data, i) => _renderPreviewEntry(data, i))}
+           <ContextMenuItemGroup>
+                {withSelection(trackData, currentCameraDeviceId).map((data, i) =>
+                    _renderPreviewEntry(data, i)
+                )}
             </ContextMenuItemGroup>
             <ContextMenuItemGroup>
                 {!disableLocalVideoFlip && (

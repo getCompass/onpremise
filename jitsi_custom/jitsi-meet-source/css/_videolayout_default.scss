@@ -277,13 +277,23 @@
     z-index: $zindex0;
 }
 
+#alwaysOnTop {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+}
+
 #alwaysOnTop .displayname {
-    font-size: 15px;
+    font-size: 18px;
     position: inherit;
+    font-weight: 500;
     width: 100%;
     left: 0px;
     top: 0px;
-    margin-top: 10px;
+    margin-top: 12px;
     max-width: calc(100% - 30px);
     padding: 0 15px;
     text-overflow: ellipsis;
@@ -452,13 +462,20 @@
 
 #videoNotAvailableScreen {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
     #avatarContainer {
         border-radius: 50%;
-        display: inline-block;
-        height: 50dvh;
-        margin-top: 25dvh;
+        margin-top: unset;
         overflow: hidden;
-        width: 50dvh;
+        height: 42dvh;
+        width: 42dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         #avatar {
             height: 100%;

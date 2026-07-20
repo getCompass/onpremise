@@ -21,7 +21,7 @@ type Server struct {
 // TaskPush метод для пуша задач
 func (s *Server) TaskPush(_ context.Context, in *pb.TaskPushRequestStruct) (*pb.TaskPushResponseStruct, error) {
 
-	isolation := CompanyEnvironment.GetEnv(in.GetCompanyId())
+	isolation := CompanyEnvironment.DefaultManager.GetEnv(in.GetCompanyId())
 	if isolation == nil {
 		return &pb.TaskPushResponseStruct{}, status.Error(503, "isolation not found")
 	}
@@ -46,7 +46,7 @@ func (s *Server) EventSetEventTrap(_ context.Context, in *pb.EventSetEventTrapRe
 		return nil, errors.New("passed bad data — key or event is empty")
 	}
 
-	isolation := CompanyEnvironment.GetEnv(in.GetCompanyId())
+	isolation := CompanyEnvironment.DefaultManager.GetEnv(in.GetCompanyId())
 
 	if isolation == nil {
 		return &pb.EventSetEventTrapResponseStruct{}, status.Error(503, "isolation not found")
@@ -66,7 +66,7 @@ func (s *Server) EventWaitEventTrap(_ context.Context, in *pb.EventWaitEventTrap
 		return nil, errors.New("passed bad data — key is empty")
 	}
 
-	isolation := CompanyEnvironment.GetEnv(in.GetCompanyId())
+	isolation := CompanyEnvironment.DefaultManager.GetEnv(in.GetCompanyId())
 
 	if isolation == nil {
 		return &pb.EventWaitEventTrapResponseStruct{}, status.Error(503, "isolation not found")

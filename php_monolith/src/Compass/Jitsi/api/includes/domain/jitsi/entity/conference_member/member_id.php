@@ -48,7 +48,22 @@ class Domain_Jitsi_Entity_ConferenceMember_MemberId {
 
 		return match ($stringify_member_type) {
 			self::_MEMBER_TYPE_COMPASS_USER => Domain_Jitsi_Entity_ConferenceMember_Type::COMPASS_USER,
-			self::_MEMBER_TYPE_GUEST        => Domain_Jitsi_Entity_ConferenceMember_Type::GUEST,
+			self::_MEMBER_TYPE_GUEST => Domain_Jitsi_Entity_ConferenceMember_Type::GUEST,
+		};
+	}
+
+	/**
+	 * Получить строковый member_type
+	 *
+	 * @param Domain_Jitsi_Entity_ConferenceMember_Type $member_type
+	 *
+	 * @return string
+	 */
+	public static function getStringifyMemberType(Domain_Jitsi_Entity_ConferenceMember_Type $member_type):string {
+
+		return match ($member_type) {
+			Domain_Jitsi_Entity_ConferenceMember_Type::COMPASS_USER => self::_MEMBER_TYPE_COMPASS_USER,
+			Domain_Jitsi_Entity_ConferenceMember_Type::GUEST => self::_MEMBER_TYPE_GUEST,
 		};
 	}
 
@@ -80,7 +95,7 @@ class Domain_Jitsi_Entity_ConferenceMember_MemberId {
 
 		return match ($member_type) {
 			Domain_Jitsi_Entity_ConferenceMember_Type::COMPASS_USER => self::_MEMBER_TYPE_COMPASS_USER,
-			Domain_Jitsi_Entity_ConferenceMember_Type::GUEST        => self::_MEMBER_TYPE_GUEST,
+			Domain_Jitsi_Entity_ConferenceMember_Type::GUEST => self::_MEMBER_TYPE_GUEST,
 		};
 	}
 }

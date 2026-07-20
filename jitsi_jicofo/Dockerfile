@@ -1,6 +1,7 @@
-FROM docker.getcompass.ru/service/jicofo:stable-9753
+FROM docker.getcompass.ru/service/jicofo:jicofo-1.0-1167-1
 
-RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd
+RUN rm /etc/apt/sources.list.d/jitsi.list \
+    && apt-get update && apt-get install -y --no-install-recommends netcat-openbsd
 
 COPY defaults/jicofo.conf /defaults/jicofo.conf
 

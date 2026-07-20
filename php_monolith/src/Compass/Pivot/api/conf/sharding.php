@@ -1288,7 +1288,7 @@ $CONFIG["SHARDING_MYSQL"] = [
 				"data" => [],
 			],
 			"tables"        => [
-				"send_queue"        => "message_id,stage,need_work,error_count,created_at_ms,updated_at,task_expire_at,mail,title,content,extra",
+				"send_queue" => "message_id,stage,need_work,error_count,created_at_ms,updated_at,task_expire_at,mail,title,content,extra",
 			],
 		],
 	],
@@ -1711,9 +1711,13 @@ $CONFIG["SHARDING_GO"] = [
 		"host" => GO_EVENT_GRPC_HOST,
 		"port" => GO_EVENT_GRPC_PORT,
 	],
-	"activity"           => [
+	"activity"        => [
 		"host" => GO_ACTIVITY_GRPC_HOST,
 		"port" => GO_ACTIVITY_GRPC_PORT,
+	],
+	"auth"            => [
+		"host" => GO_AUTH_GRPC_HOST,
+		"port" => GO_AUTH_GRPC_PORT,
 	],
 ];
 

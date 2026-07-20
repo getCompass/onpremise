@@ -1,0 +1,7 @@
+.idea
+.DS_Store
+main
+sender
+go_api_gateway
+api_gateway
+/logs

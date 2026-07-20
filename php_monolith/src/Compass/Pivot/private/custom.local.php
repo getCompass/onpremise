@@ -85,6 +85,8 @@ define(__NAMESPACE__ . "\SOCKET_KEY_BOTHUB"                            , "${SOCK
 
 define(__NAMESPACE__ . "\INTEGRATION_AUTHORIZATION_TOKEN"                , "${INTEGRATION_AUTHORIZATION_TOKEN}");
 
+define(__NAMESPACE__ . "\GATEWAY_SECRET_KEY_B64"				, "${GATEWAY_SECRET_KEY_B64}");
+
 // -------------------------------------------------------
 // SALT ДЛЯ УПАКОВЩИКОВ ПРОЕКТА
 // -------------------------------------------------------

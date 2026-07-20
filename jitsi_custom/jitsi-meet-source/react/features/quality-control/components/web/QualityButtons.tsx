@@ -117,11 +117,11 @@ export default function QualityButtons({ className }: IProps) {
     return (
         <div className = {cx(classes.qualityButtonsContainer, className ?? '')}>
             <QualityButton
-                quality = {t('moderatorSettings.highQuality')}
-                isActive = {activeQuality === 'high'}
+                quality = {t('moderatorSettings.lowQuality')}
+                isActive = {activeQuality === 'low'}
                 onClick = {(e: React.MouseEvent) => {
                     e.stopPropagation();
-                    handleQualityChange('high')
+                    handleQualityChange('low')
                 }}
             />
             <QualityButton
@@ -133,11 +133,11 @@ export default function QualityButtons({ className }: IProps) {
                 }}
             />
             <QualityButton
-                quality = {t('moderatorSettings.lowQuality')}
-                isActive = {activeQuality === 'low'}
+                quality = {t('moderatorSettings.highQuality')}
+                isActive = {activeQuality === 'high'}
                 onClick = {(e: React.MouseEvent) => {
                     e.stopPropagation();
-                    handleQualityChange('low')
+                    handleQualityChange('high')
                 }}
             />
         </div>

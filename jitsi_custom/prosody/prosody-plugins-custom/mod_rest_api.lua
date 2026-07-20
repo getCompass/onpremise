@@ -71,7 +71,7 @@ function create_room(event)
         local room, err = muc.create_room(room_address);
         if room then
 
-            room.quality_level = "high";
+            room.quality_level = "medium";
 
             -- если нужно включить лобби
             if lobby_enabled == "true" or lobby_enabled == "1" then

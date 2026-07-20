@@ -2,19 +2,32 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * группа методов для загрузки файлов
  */
-class ApiV2_Files extends \BaseFrame\Controller\Api {
-
+class ApiV2_Files extends \BaseFrame\Controller\Api
+{
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"getBatching",
 	];
 
-	protected const _MAX_FILES_COUNT = 150;     // максимальное количество файлов в запросе
+	// зона ответственности API ключа
+	public const API_SCOPE = ScopePermission::SCOPE_FILE;
+
+	// методы для чтения
+	public const READ_METHOD_LIST = [
+		"getBatching",
+	];
+
+	// методы, изменяющие состояние
+	public const WRITE_METHOD_LIST = [];
+
+	// максимальное количество файлов в запросе
+	protected const _MAX_FILES_COUNT = 150;
 
 	// -------------------------------------------------------
 	// WORK METHODS
@@ -23,11 +36,11 @@ class ApiV2_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить файлы по ключам
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	public function getBatching():array {
+	public function getBatching(): array
+	{
 
 		$file_key_list = $this->post(\Formatter::TYPE_ARRAY, "file_key_list");
 
@@ -51,12 +64,10 @@ class ApiV2_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * Форматируем список файлов
 	 *
-	 * @param array $file_list
-	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 */
-	protected function _formatFileList(array $file_list):array {
+	protected function _formatFileList(array $file_list): array
+	{
 
 		$output = [];
 		foreach ($file_list as $item) {
@@ -75,12 +86,10 @@ class ApiV2_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * Выбрасываем ошибку, если список файлов некорректный
 	 *
-	 * @param array $file_list
-	 *
-	 * @return void
 	 * @throws ParamException
 	 */
-	protected function _throwIfFileListIsIncorrect(array $file_list):void {
+	protected function _throwIfFileListIsIncorrect(array $file_list): void
+	{
 
 		// если пришел пустой массив файлов
 		if (count($file_list) < 1) {
@@ -96,12 +105,10 @@ class ApiV2_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * Преобразовать ключи в мапы
 	 *
-	 * @param array $file_list
-	 *
-	 * @return array
 	 * @throws ParamException
 	 */
-	protected function _doDecryptFileKeyList(array $file_list):array {
+	protected function _doDecryptFileKeyList(array $file_list): array
+	{
 
 		$file_map_list = [];
 		foreach ($file_list as $item) {
@@ -120,12 +127,10 @@ class ApiV2_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * Выбрасываем ошибку, если пришел файл с другого типа сервера
 	 *
-	 * @param string $file_map
-	 *
-	 * @return void
 	 * @throws ParamException
 	 */
-	protected function _throwIfPassedFileMapFromAnotherServerType(string $file_map):void {
+	protected function _throwIfPassedFileMapFromAnotherServerType(string $file_map): void
+	{
 
 		// получаем dpc файла
 		$server_type = Type_Pack_File::getServerType($file_map);

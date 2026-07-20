@@ -41,5 +41,10 @@ class Domain_Jitsi_Action_Conference_AcceptSingle {
 			$opponent_user_id,
 			[$opponent_user_id, $conference->creator_user_id]
 		);
+
+		$link            = Domain_Jitsi_Entity_ConferenceLink_Main::getHandlerProvider()::getByConference($conference)::prepareLandingConferenceLink($conference);
+		$conference_type = Struct_Api_Conference_Data::getStringifyConferenceType(Domain_Jitsi_Entity_Conference_Data::getConferenceType($conference->data));
+		Type_Analytics_ConferenceEvent::send(Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_USER_JOIN_TOKEN_GENERATED, $conference->conference_id, $conference->creator_user_id,
+			$conference->space_id, $conference_member->member_id, getUa(), getIp(), $link, $conference_type);
 	}
 }

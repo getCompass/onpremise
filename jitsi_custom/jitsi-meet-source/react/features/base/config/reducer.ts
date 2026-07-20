@@ -462,7 +462,7 @@ function _translateLegacyConfig(oldValue: IConfig) {
     }
 
     newValue.defaultLocalDisplayName
-        = newValue.defaultLocalDisplayName || 'me';
+        = newValue.defaultLocalDisplayName || '';
 
     if (oldValue.hideAddRoomButton) {
         newValue.breakoutRooms = {

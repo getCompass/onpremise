@@ -1,12 +1,30 @@
-FROM docker.getcompass.ru/service/go:1.25.8-1
+ARG MIGRATE_VERSION=4.19.1-4
+ARG GO_VERSION=1.26.4-2
 
-# curl нужен для healthcheck, чтобы проверить https сервер (nc генерит ошибки сертификата в логах)
-RUN apk add curl
+###MIGRATE_BUILDER###
+FROM docker.getcompass.ru/service/migrate:${MIGRATE_VERSION} AS migrate_builder
 
-COPY . /app
-RUN cd /app && mkdir -p logs && go build -o auth -mod vendor main.go && chmod +x ./entrypoint.sh
+###BUILDER###
+FROM docker.getcompass.ru/service/go:${GO_VERSION}.dev as builder
 
 WORKDIR /app
 
-# запускаем
+COPY . .
+
+RUN CGO_ENABLED=0 go build -o auth -mod vendor main.go
+
+###PRODUCTION###
+FROM docker.getcompass.ru/service/go:${GO_VERSION}.prod as production
+
+WORKDIR /app
+
+COPY --from=builder /app/auth .
+COPY --from=migrate_builder /usr/local/bin/migrate /usr/local/bin/migrate
+
+COPY --from=builder /app/sql ./sql
+COPY --from=builder /app/*.sh .
+
+RUN mkdir logs \
+&& chmod +x ./entrypoint.sh
+
 CMD ["sh", "/app/entrypoint.sh"]

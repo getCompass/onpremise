@@ -1,12 +1,25 @@
-FROM docker.getcompass.ru/service/go:1.24.6-1
+ARG GO_VERSION=1.26.4-2
 
-# curl нужен для healthcheck, чтобы проверить https сервер (nc генерит ошибки сертификата в логах)
-RUN apk add curl
-
-COPY . /app
-RUN cd /app && mkdir -p logs && go build -o api_gateway -mod vendor main.go && chmod +x ./entrypoint.sh
+###BUILDER###
+FROM docker.getcompass.ru/service/go:${GO_VERSION}.dev as builder
 
 WORKDIR /app
 
-# запускаем
+COPY . .
+
+RUN CGO_ENABLED=0 go build -o api_gateway -mod vendor main.go
+
+###PRODUCTION###
+FROM docker.getcompass.ru/service/go:${GO_VERSION}.prod as production
+
+RUN apk add curl
+
+WORKDIR /app
+
+COPY --from=builder /app/api_gateway .
+COPY --from=builder /app/*.sh .
+
+RUN mkdir logs \
+&& chmod +x ./entrypoint.sh
+
 CMD ["sh", "/app/entrypoint.sh"]

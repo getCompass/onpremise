@@ -217,3 +217,6 @@ define(__NAMESPACE__ . "\ATTRIBUTION_JOIN_SPACE_VISITS_MATCHING_PERIOD"      , $
 define(__NAMESPACE__ . "\DATABASE_DRIVER"                               , "${DATABASE_DRIVER}");
 
 define(__NAMESPACE__ . "\LAST_CLIENT_FORCE_RELOAD_AT"      			, ${LAST_CLIENT_FORCE_RELOAD_AT});
+
+// включенный драйвер SIEM
+define(__NAMESPACE__ . "\SIEM_ENABLED_DRIVER"      				, "${SIEM_ENABLED_DRIVER}");

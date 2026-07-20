@@ -36,11 +36,11 @@ class Domain_Company_Action_Take
 	 * @throws \queryException
 	 */
 	#[\JetBrains\PhpStorm\ArrayShape([0 => Struct_Db_PivotCompany_Company::class, 1 => Struct_Db_PivotUser_Company::class])]
-	public static function do(int $created_by_user_id, int $avatar_color_id, string $name, string $client_company_id, string $avatar_file_map, bool $is_need_create_intercom_conversation): array
+	public static function do(int $created_by_user_id, int $avatar_color_id, string $name, string $client_company_id, string $avatar_file_map, bool $is_need_create_intercom_conversation, ?int $vacant_company_id = null): array
 	{
 
 		// получаем свободную компанию для дальнейшей передачи пользователю
-		$company_init_registry = static::_getVacant();
+		$company_init_registry = static::_getVacant($vacant_company_id);
 
 		/** начало транзакции для списка компаний */
 		try {
@@ -98,7 +98,7 @@ class Domain_Company_Action_Take
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws cs_NoFreeCompanyFound
 	 */
-	protected static function _getVacant(): Struct_Db_PivotCompanyService_CompanyInitRegistry
+	protected static function _getVacant(?int $vacant_company_id = null): Struct_Db_PivotCompanyService_CompanyInitRegistry
 	{
 
 		/** начало транзакции для списка свободных компаний */
@@ -107,7 +107,16 @@ class Domain_Company_Action_Take
 
 		// получаем горячую свободную компанию
 		try {
-			$company_init_registry = Gateway_Db_PivotCompanyService_CompanyInitRegistry::getVacantForUpdate();
+			if (!is_null($vacant_company_id) && $vacant_company_id > 0) {
+
+				$company_init_registry = Gateway_Db_PivotCompanyService_CompanyInitRegistry::getForUpdate($vacant_company_id);
+				if (!$company_init_registry->is_vacant) {
+					Gateway_Db_PivotCompanyService_Main::rollback();
+					throw new cs_NoFreeCompanyFound("company {$vacant_company_id} is not vacant");
+				}
+			} else {
+				$company_init_registry = Gateway_Db_PivotCompanyService_CompanyInitRegistry::getVacantForUpdate();
+			}
 		} catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
 
 			// если вдруг горячих компаний не оказалось

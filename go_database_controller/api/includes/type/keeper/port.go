@@ -53,7 +53,7 @@ func InvalidatePort(ctx context.Context, port int32, host string) error {
 }
 
 // BindPort привязываем порт к указанной компании
-func BeginBindPort(portValue int32, host string, companyId int64, nonExistingDataDirPolicy, duplicateDataDirPolicy int32) string {
+func BeginBindPort(portValue int32, host string, companyId int64, nonExistingDataDirPolicy, duplicateDataDirPolicy int32, mysqlSettingsJSON string) string {
 
 	routineChan := make(chan *routine.Status)
 	routineUniq := functions.GenerateUuid()
@@ -61,9 +61,15 @@ func BeginBindPort(portValue int32, host string, companyId int64, nonExistingDat
 	// добавляем рутину в хранилище рутин
 	routineKey := bindPortRoutineStore.Push(routineUniq, routineChan, &logger.Log{})
 
-	go bindPort(routineChan, portValue, host, companyId, nonExistingDataDirPolicy, duplicateDataDirPolicy)
+	go bindPort(routineChan, portValue, host, companyId, nonExistingDataDirPolicy, duplicateDataDirPolicy, mysqlSettingsJSON)
 
 	return routineKey
+}
+
+// SetPortMysqlSettings сохраняет настройки MySQL для активного порта компании.
+func SetPortMysqlSettings(ctx context.Context, port int32, host string, companyId int64, mysqlSettingsJSON string) error {
+
+	return port_registry.SetMysqlSettings(ctx, port, host, companyId, mysqlSettingsJSON)
 }
 
 // UnbindPort отвязываем порт от любой компании, которая висит на нем
@@ -162,7 +168,7 @@ func ResetPort(ctx context.Context, portValue int32, host string) error {
 	return err
 }
 
-func bindPort(routineChan chan *routine.Status, portValue int32, host string, companyId int64, nonExistingDataDirPolicy, duplicateDataDirPolicy int32) {
+func bindPort(routineChan chan *routine.Status, portValue int32, host string, companyId int64, nonExistingDataDirPolicy, duplicateDataDirPolicy int32, mysqlSettingsJSON string) {
 
 	ctx := context.Background()
 
@@ -172,6 +178,22 @@ func bindPort(routineChan chan *routine.Status, portValue int32, host string, co
 
 		routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
 		return
+	}
+
+	if mysqlSettingsJSON != "" {
+
+		if err = port_registry.SetMysqlSettings(ctx, portValue, host, 0, mysqlSettingsJSON); err != nil {
+
+			routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
+			return
+		}
+
+		port, err = port_registry.GetByPort(ctx, portValue, host)
+		if err != nil {
+
+			routineChan <- routine.MakeRoutineStatus(routine.StatusError, err.Error())
+			return
+		}
 	}
 
 	// теперь нужно проверить наличие директории с данными компании и решить, как поступать дальше
@@ -198,7 +220,7 @@ func bindPort(routineChan chan *routine.Status, portValue int32, host string, co
 
 	if !isAlive {
 
-		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("Не смогли поднять порт %s за 120 секунд", portValue))
+		routineChan <- routine.MakeRoutineStatus(routine.StatusError, fmt.Sprintf("Не смогли поднять порт %d за 120 секунд", portValue))
 		return
 	}
 

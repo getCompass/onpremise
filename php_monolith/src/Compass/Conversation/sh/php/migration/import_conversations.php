@@ -1,11 +1,11 @@
-<?php declare(strict_types = 1);
+<?php
+
+declare(strict_types=1);
 
 namespace Compass\Conversation;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
-use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Search\Exception\ExecutionException;
-use BaseFrame\System\Locale;
 
 require_once "/app/src/Compass/Conversation/api/includes/type/script/input_parser.php";
 require_once "/app/src/Compass/Conversation/api/includes/type/script/input_helper.php";
@@ -28,21 +28,24 @@ ini_set("display_errors", "1");
 /**
  * Импортируем чаты
  */
-class Migration_Import_Conversations {
-
+class Migration_Import_Conversations
+{
 	protected const  _RAW_TABLE_NAME      = "raw_conversation";
 	protected const  _BOUND_TABLE_NAME    = "bound_conversation";
 	protected const  _BOUND_FILE_TABLE    = "bound_file";
 	protected const  _BOUND_USERS_TABLE   = "bound_user";
 	protected const  _USERS_COUNT         = 1000000;
 	protected const  _CONVERSATIONS_COUNT = 900;
+
 	protected string $_local_manticore_host;
-	protected int    $_local_manticore_port;
+
+	protected int $_local_manticore_port;
 
 	/**
 	 * @long
 	 */
-	public function run(string $local_manticore_host, int $local_manticore_port, bool $is_dry):void {
+	public function run(string $local_manticore_host, int $local_manticore_port, bool $is_dry): void
+	{
 
 		$this->_local_manticore_host = $local_manticore_host;
 		$this->_local_manticore_port = $local_manticore_port;
@@ -74,12 +77,10 @@ class Migration_Import_Conversations {
 	/**
 	 * Получаем чаты со слака
 	 *
-	 * @param int $offset
-	 *
-	 * @return array
 	 * @throws ExecutionException
 	 */
-	protected function _getConversations(int $offset):array {
+	protected function _getConversations(int $offset): array
+	{
 
 		$query = "SELECT * FROM ?t WHERE `creator_user_id` > ?i ORDER BY `id` ASC LIMIT ?i OFFSET ?i OPTION max_matches=?i";
 		return self::search()->select($query, [self::_RAW_TABLE_NAME, 0, self::_CONVERSATIONS_COUNT, $offset, self::_CONVERSATIONS_COUNT + $offset]);
@@ -88,12 +89,10 @@ class Migration_Import_Conversations {
 	/**
 	 * Создать диалог в php_world
 	 *
-	 * @param array $slack_conversation_list
-	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 */
-	protected function _createConversationMetaList(array $slack_conversation_list):array {
+	protected function _createConversationMetaList(array $slack_conversation_list): array
+	{
 
 		// создаём диалоги в php_world
 		$conversation_map_list = [];
@@ -102,7 +101,7 @@ class Migration_Import_Conversations {
 
 			$conversation_meta = match ((int) $slack_conversation["type"]) {
 				CONVERSATION_TYPE_SINGLE_DEFAULT => $this->_createSingleConversationMeta($slack_conversation),
-				default => $this->_createGroupConversationMeta($slack_conversation),
+				default                          => $this->_createGroupConversationMeta($slack_conversation),
 			};
 
 			if ($conversation_meta === false) {
@@ -124,7 +123,8 @@ class Migration_Import_Conversations {
 	 * Если чат уже существует, новый создан не будет.
 	 * @long
 	 */
-	protected function _createSingleConversationMeta(array $slack_conversation):array|false {
+	protected function _createSingleConversationMeta(array $slack_conversation): array | false
+	{
 
 		$member_list = fromJson($slack_conversation["members"]);
 
@@ -147,13 +147,19 @@ class Migration_Import_Conversations {
 		$conversation_type    = $compass_extra["meta_type"] ?? null;
 		$conversation_extra   = $compass_extra["meta_extra"] ?? null;
 		$conversation_dynamic = $compass_extra["conversation_dynamic"] ?? null;
+		$allow_status         = $compass_extra["allow_status"] ?? null;
 
 		if (!is_null($conversation_dynamic)) {
 			$conversation_dynamic = self::_prepareConversationDynamic($conversation_dynamic, [$user_id_1, $user_id_2]);
 		}
 
-		$conversation_meta                      = Type_Conversation_Single::addFromMigration(
-			$user_id_1, $user_id_2, $conversation_type, $conversation_extra, $conversation_dynamic
+		$conversation_meta = Type_Conversation_Single::addFromMigration(
+			$user_id_1,
+			$user_id_2,
+			$conversation_type,
+			$conversation_extra,
+			$conversation_dynamic,
+			$allow_status
 		);
 		$conversation_meta["conversation_name"] = "Личный чат";
 
@@ -165,7 +171,8 @@ class Migration_Import_Conversations {
 	 * Всегда создает новый диалог.
 	 * @long
 	 */
-	protected function _createGroupConversationMeta(array $slack_conversation):array|false {
+	protected function _createGroupConversationMeta(array $slack_conversation): array | false
+	{
 
 		if (mb_strlen($slack_conversation["name"]) === 0) {
 			$slack_conversation["name"] = "Группа";
@@ -201,7 +208,7 @@ class Migration_Import_Conversations {
 		if (!is_null($conversation_dynamic)) {
 
 			$member_list          = fromJson($slack_conversation["members"]);
-			$conversation_dynamic = self::_prepareConversationDynamic($conversation_dynamic, array_map(static fn($user_id) => (int) $user_id, $member_list));
+			$conversation_dynamic = self::_prepareConversationDynamic($conversation_dynamic, array_map(static fn ($user_id) => (int) $user_id, $member_list));
 		}
 
 		return Type_Conversation_Group::addByMigration(
@@ -218,12 +225,10 @@ class Migration_Import_Conversations {
 	/**
 	 * Получаем записи файлов из bound табли
 	 *
-	 * @param string $uniq
-	 *
-	 * @return array
 	 * @throws ExecutionException
 	 */
-	protected function _getBoundFile(string $uniq):array {
+	protected function _getBoundFile(string $uniq): array
+	{
 
 		$query = "SELECT * FROM ?t WHERE `uniq` = ?s LIMIT ?i OPTION max_matches=?i";
 		return self::search()->select($query, [self::_BOUND_FILE_TABLE, $uniq, 1, 100000]);
@@ -234,7 +239,8 @@ class Migration_Import_Conversations {
 	 *
 	 * @throws ExecutionException
 	 */
-	protected function _getBoundUsers(array $user_id_list):array {
+	protected function _getBoundUsers(array $user_id_list): array
+	{
 
 		$query = "SELECT * FROM ?t WHERE `user_id` IN (?an) LIMIT ?i OPTION max_matches=?i";
 		return self::search()->select($query, [self::_BOUND_USERS_TABLE, $user_id_list, count($user_id_list), self::_USERS_COUNT]);
@@ -243,11 +249,10 @@ class Migration_Import_Conversations {
 	/**
 	 * Создать связь id чата слака и conversation_map диалога нашего мира
 	 *
-	 * @param array $conversation_map_list_by_uniq
-	 *
 	 * @throws ExecutionException
 	 */
-	protected function _createConversationMapUniqRel(array $conversation_map_list_by_uniq):void {
+	protected function _createConversationMapUniqRel(array $conversation_map_list_by_uniq): void
+	{
 
 		$insert_array = [];
 		foreach ($conversation_map_list_by_uniq as $uniq => $conversation) {
@@ -271,7 +276,8 @@ class Migration_Import_Conversations {
 	 * Подготавливаем dynamic диалога для миграции
 	 * @throws ExecutionException
 	 */
-	protected function _prepareConversationDynamic(array $dynamic, array $users_id_list):array {
+	protected function _prepareConversationDynamic(array $dynamic, array $users_id_list): array
+	{
 
 		// получаем связь id участников группы
 		$bound_user_list = self::_getBoundUsers($users_id_list);
@@ -311,7 +317,8 @@ class Migration_Import_Conversations {
 	/**
 	 * Розетка для временного поднятого контейнера manticore
 	 */
-	public function search():\BaseFrame\Search\Manticore {
+	public function search(): \BaseFrame\Search\Manticore
+	{
 
 		$conf = [
 			"host" => $this->_local_manticore_host,
@@ -326,7 +333,8 @@ class Migration_Import_Conversations {
 /**
  * Получаем хост для manticore
  */
-function _getLocalManticoreHost():string {
+function _getLocalManticoreHost(): string
+{
 
 	try {
 
@@ -343,7 +351,8 @@ function _getLocalManticoreHost():string {
 /**
  * Получаем порт для manticore
  */
-function _getLocalManticorePort():int {
+function _getLocalManticorePort(): int
+{
 
 	try {
 
@@ -360,7 +369,8 @@ function _getLocalManticorePort():int {
 /**
  * Получаем url компании
  */
-function _getCompanyUrl():string {
+function _getCompanyUrl(): string
+{
 
 	try {
 
@@ -377,7 +387,8 @@ function _getCompanyUrl():string {
 /**
  * Получаем id пространства
  */
-function _getSpaceId():int {
+function _getSpaceId(): int
+{
 
 	try {
 
@@ -394,7 +405,8 @@ function _getSpaceId():int {
 /**
  * Получаем флаг is_dry
  */
-function _getDry():bool {
+function _getDry(): bool
+{
 
 	try {
 

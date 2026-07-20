@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\InvalidPhoneNumber;
@@ -25,7 +27,6 @@ class Domain_User_Scenario_Api
 
 	/**
 	 * Сценарий регистрации
-	 *
 	 *
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
@@ -130,6 +131,15 @@ class Domain_User_Scenario_Api
 
 			throw $e;
 		} catch (Domain_User_Exception_AuthStory_ErrorCountLimitExceeded) {
+
+			$user_agent = getUa();
+			Domain_Analytic_Entity_Siem::loginFail(
+				$story->getUserId(),
+				getDeviceId(),
+				getIp(),
+				Type_Api_Platform::getDeviceName($user_agent),
+				Type_Api_Platform::getVersion($user_agent),
+			);
 			throw new cs_AuthIsBlocked($story->getExpiresAt());
 		}
 
@@ -220,6 +230,16 @@ class Domain_User_Scenario_Api
 			"error_count"  => $story->getAuthPhoneHandler()->getErrorCount(),
 			"created_at"   => $story->getAuthPhoneHandler()->getCreatedAt(),
 		]);
+
+		// логируем удачную попытку входа
+		$user_agent = getUa();
+		Domain_Analytic_Entity_Siem::loginSuccess(
+			$user_id,
+			getDeviceId(),
+			getIp(),
+			Type_Api_Platform::getDeviceName($user_agent),
+			Type_Api_Platform::getVersion($user_agent),
+		);
 	}
 
 	/**
@@ -263,6 +283,15 @@ class Domain_User_Scenario_Api
 				->assertResendCountLimitNotExceeded()
 				->assertResendIsAvailable();
 		} catch (Domain_User_Exception_AuthStory_ErrorCountLimitExceeded) {
+
+			$user_agent = getUa();
+			Domain_Analytic_Entity_Siem::loginFail(
+				$user_id,
+				getDeviceId(),
+				getIp(),
+				Type_Api_Platform::getDeviceName($user_agent),
+				Type_Api_Platform::getVersion($user_agent),
+			);
 			throw new cs_AuthIsBlocked($story->getExpiresAt());
 		}
 
@@ -497,7 +526,6 @@ class Domain_User_Scenario_Api
 	/**
 	 * разлогинить пользователя
 	 *
-	 *
 	 * @throws ParseFatalException
 	 * @throws cs_IncorrectSaltVersion
 	 * @throws \returnException
@@ -514,6 +542,17 @@ class Domain_User_Scenario_Api
 
 			// открепляем текущий девайс от пользователя
 			Type_User_Notifications::deleteDeviceForUser($user_id, getDeviceId());
+
+			$user_agent = getUa();
+
+			// отправляем сообщение о том, что произошел логаут
+			Domain_Analytic_Entity_Siem::logout(
+				$user_id,
+				getDeviceId(),
+				getIp(),
+				Type_Api_Platform::getDeviceName($user_agent),
+				Type_Api_Platform::getVersion($user_agent)
+			);
 		} catch (cs_UserNotLoggedIn) {
 			// просто ничего не делаем
 		}
@@ -949,7 +988,6 @@ class Domain_User_Scenario_Api
 	/**
 	 * Выполняем ввод нового номера телефона при смене
 	 *
-	 *
 	 * @throws InvalidPhoneNumber
 	 * @throws BlockException
 	 * @throws cs_IncorrectSaltVersion
@@ -1071,7 +1109,6 @@ class Domain_User_Scenario_Api
 	/**
 	 * Получить данные о номере телефона
 	 *
-	 *
 	 * @throws InvalidPhoneNumber
 	 * @throws cs_UserPhoneSecurityNotFound
 	 */
@@ -1142,7 +1179,7 @@ class Domain_User_Scenario_Api
 		}
 
 		// если имеется активный звонок, то добавляем его к ответу
-		if ($last_call_row->is_finished != 0) {
+		if ($last_call_row->is_finished !== 0) {
 			return [$constants, false];
 		}
 
@@ -1338,7 +1375,6 @@ class Domain_User_Scenario_Api
 	/**
 	 * Завершить онбординг
 	 *
-	 *
 	 * @throws BusFatalException
 	 * @throws Domain_User_Exception_Onboarding_NotAllowedStatus
 	 * @throws Domain_User_Exception_Onboarding_NotAllowedStatusStep
@@ -1389,7 +1425,7 @@ class Domain_User_Scenario_Api
 
 		foreach ($onboarding_list as $onboarding) {
 
-			if (in_array($onboarding->status, [Domain_User_Entity_Onboarding::STATUS_ACTIVE, Domain_User_Entity_Onboarding::STATUS_FINISHED])) {
+			if (in_array($onboarding->status, [Domain_User_Entity_Onboarding::STATUS_ACTIVE, Domain_User_Entity_Onboarding::STATUS_FINISHED], true)) {
 				return;
 			}
 		}
@@ -1442,7 +1478,6 @@ class Domain_User_Scenario_Api
 
 	/**
 	 * получаем и возвращаем параметры подключения для WS у авторизованного юзера
-	 *
 	 *
 	 * @throws \busException
 	 * @throws cs_AnswerCommand

@@ -1,9 +1,24 @@
-FROM docker.getcompass.ru/service/go:1.25.8-1
+ARG GO_VERSION=1.26.4-2
 
-COPY . /app
-RUN cd /app && mkdir -p logs && go build -o pivot_cache -mod vendor main.go && chmod +x ./entrypoint.sh
+###BUILDER###
+FROM docker.getcompass.ru/service/go:${GO_VERSION}.dev as builder
 
 WORKDIR /app
 
-# запускаем
+COPY . .
+
+RUN CGO_ENABLED=0 go build -o pivot_cache -mod vendor main.go
+
+###PRODUCTION###
+FROM docker.getcompass.ru/service/go:${GO_VERSION}.prod as production
+
+WORKDIR /app
+
+COPY --from=builder /app/pivot_cache .
+COPY --from=builder /app/api/conf ./api/conf
+COPY --from=builder /app/*.sh .
+
+RUN mkdir logs \
+&& chmod +x ./entrypoint.sh
+
 CMD ["sh", "/app/entrypoint.sh"]

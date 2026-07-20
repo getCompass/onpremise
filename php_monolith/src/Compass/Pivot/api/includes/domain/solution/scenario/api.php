@@ -63,6 +63,8 @@ class Domain_Solution_Scenario_Api {
 
 		Domain_Solution_Action_InvalidateAuthenticationKey::exec($token_cache_key);
 
+		// логируем удачную попытку входа
+		Domain_Analytic_Entity_Siem::loginSuccess($user_id, getDeviceId(), getIp(), $device_name, $app_version);
 		// TODO: Здесь нужно собрать аналитику, по аналогии с tryConfirm
 		// TODO: возможно стоит вообще этот кусок вынести в отдельный action
 

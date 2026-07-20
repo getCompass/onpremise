@@ -18,7 +18,7 @@ bind_address = 0.0.0.0
 # Папка с данными MySQL
 datadir = /var/lib/mysql/
 
-innodb_buffer_pool_size = 8M            # кэш таблиц, данных и индексов
+innodb_buffer_pool_size = 128M            # кэш таблиц, данных и индексов
 innodb_thread_concurrency = 4           # кол-во одновременно обрабатываемых запросов, оптимально = кол-во ядер на машине если один mysql
 innodb_log_buffer_size = 1M             # буфера лога транзакций
 innodb_flush_log_at_trx_commit = 0      # сброс данных на диск, 0 - раз в секунду (быстро, ненадожно), 1 - при каждой транзакции (очень медленно), 2 - сброс в память системы, потом на диск

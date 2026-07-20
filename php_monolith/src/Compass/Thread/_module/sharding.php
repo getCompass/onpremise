@@ -1,4 +1,7 @@
-<?php /** @noinspection DuplicatedCode */
+<?php
+
+declare(strict_types=1);
+/** @noinspection DuplicatedCode */
 
 namespace Compass\Thread;
 
@@ -8,26 +11,27 @@ use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
  * Класс шардинга для изоляции настроек подключения внутри модуля.
  * @package Compass\Conversation
  */
-class ShardingGateway extends \ShardingGateway {
-
+class ShardingGateway extends \ShardingGateway
+{
 	protected static ?ShardingGateway $_instance = null;
 
 	/**
 	 * Инициализирует экземпляр работы с шардящимися подключениями.
 	 *
-	 * @return static
 	 * @throws \parseException
 	 */
-	public static function instance():static {
+	public static function instance(): static
+	{
 
 		if (is_null(static::$_instance)) {
 
 			static::$_instance = new ShardingGateway([
-				\ShardingGateway::DB_KEY     => getConfig("SHARDING_MYSQL"),
-				\ShardingGateway::BUS_KEY    => getConfig("SHARDING_RABBIT"),
-				\ShardingGateway::CACHE_KEY  => getConfig("SHARDING_MCACHE"),
-				\ShardingGateway::RPC_KEY    => getConfig("SHARDING_GO"),
-				\ShardingGateway::SEARCH_KEY => getConfig("SHARDING_MANTICORE"),
+				\ShardingGateway::DB_KEY         => getConfig("SHARDING_MYSQL"),
+				\ShardingGateway::BUS_KEY        => getConfig("SHARDING_RABBIT"),
+				\ShardingGateway::CACHE_KEY      => getConfig("SHARDING_MCACHE"),
+				\ShardingGateway::RPC_KEY        => getConfig("SHARDING_GO"),
+				\ShardingGateway::SEARCH_KEY     => getConfig("SHARDING_MANTICORE"),
+				\ShardingGateway::MSG_BROKER_KEY => null,
 			]);
 		}
 
@@ -37,7 +41,8 @@ class ShardingGateway extends \ShardingGateway {
 	/**
 	 * Возвращает класс для работы с шиной данных.
 	 */
-	public static function cache():\mCache {
+	public static function cache(): \mCache
+	{
 
 		// получаем конфиг с базой данных
 		return \CompassApp\Gateway\Memcached::configured(static::instance()->_config_list[static::CACHE_KEY]);
@@ -46,26 +51,23 @@ class ShardingGateway extends \ShardingGateway {
 	/**
 	 * Возвращает класс для работы с шиной данных.
 	 *
-	 * @param string $bus
-	 *
-	 * @return \Rabbit
 	 * @throws \parseException
 	 */
-	public static function rabbit(string $bus = "bus"):\Rabbit {
+	public static function rabbit(string $bus = "bus"): \Rabbit
+	{
 
 		$rabbit = parent::rabbit();
-		$rabbit->setPostfixQueue(COMPANY_ID % 10);
+		$rabbit->setPostfixQueue((string) (COMPANY_ID % 10));
 		return $rabbit;
 	}
 
 	/**
 	 * Возвращает объект для работы с базой данных.
 	 *
-	 * @param string $database
-	 * @return \BaseFrame\Database\PDODriver
 	 * @throws \BaseFrame\Exception\Gateway\DBShardingNotFoundException
 	 */
-	public static function database(string $database):\BaseFrame\Database\PDODriver {
+	public static function database(string $database): \BaseFrame\Database\PDODriver
+	{
 
 		// получаем конфиг с базой данных
 		$conf = static::instance()->_config_list[static::DB_KEY];
@@ -74,7 +76,7 @@ class ShardingGateway extends \ShardingGateway {
 			throw new DBShardingNotFoundException("database not found in sharding config");
 		}
 
-		$conn_conf  = new \BaseFrame\Database\Config\Connection(
+		$conn_conf = new \BaseFrame\Database\Config\Connection(
 			host: $conf[$database]["mysql"]["host"],
 			db_name: $conf[$database]["db"],
 			user: $conf[$database]["mysql"]["user"],

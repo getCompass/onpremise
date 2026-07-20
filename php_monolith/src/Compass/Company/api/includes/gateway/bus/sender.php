@@ -472,7 +472,7 @@ class Gateway_Bus_Sender {
 	 */
 	public static function clearUserNotificationCache(int $user_id):void {
 
-		$request = new \SenderGrpc\ClearUserNotificationCacheRequestStruct([
+		$request = new \Company\SenderGrpc\ClearUserNotificationCacheRequestStruct([
 			"user_id"    => $user_id,
 			"company_id" => COMPANY_ID,
 		]);
@@ -638,7 +638,7 @@ class Gateway_Bus_Sender {
 	 */
 	public static function closeConnectionsByUserIdWithWait(int $user_id, string $routine_key):void {
 
-		$grpc_request = new \SenderGrpc\SenderCloseConnectionsByUserIdWithWaitRequestStruct([
+		$grpc_request = new \Company\SenderGrpc\SenderCloseConnectionsByUserIdWithWaitRequestStruct([
 			"user_id"     => $user_id,
 			"routine_key" => $routine_key,
 			"company_id"  => COMPANY_ID,
@@ -662,7 +662,7 @@ class Gateway_Bus_Sender {
 	 */
 	public static function closeConnectionsByDeviceIdWithWait(int $user_id, string $device_id, string $routine_key):void {
 
-		$grpc_request = new \SenderGrpc\SenderCloseConnectionsByDeviceIdWithWaitRequestStruct([
+		$grpc_request = new \Company\SenderGrpc\SenderCloseConnectionsByDeviceIdWithWaitRequestStruct([
 			"user_id"     => $user_id,
 			"device_id"   => $device_id,
 			"routine_key" => $routine_key,
@@ -1158,7 +1158,7 @@ class Gateway_Bus_Sender {
 
 		$converted_user_list          = self::_convertReceiverUserListToGrpcStructure($user_list);
 		$converted_event_version_list = self::_convertEventVersionListToGrpcStructure($params["event_version_list"]);
-		$grpc_request                 = new \SenderGrpc\SenderSendEventRequestStruct([
+		$grpc_request                 = new \Company\SenderGrpc\SenderSendEventRequestStruct([
 			"user_list"          => $converted_user_list,
 			"event"              => $params["event"],
 			"event_version_list" => $converted_event_version_list,
@@ -1204,7 +1204,7 @@ class Gateway_Bus_Sender {
 		$params = self::_prepareParams($params);
 
 		$converted_event_version_list = self::_convertEventVersionListToGrpcStructure($params["event_version_list"]);
-		$grpc_request                 = new \SenderGrpc\SenderSendEventToAllRequestStruct([
+		$grpc_request                 = new \Company\SenderGrpc\SenderSendEventToAllRequestStruct([
 			"event"                => $params["event"],
 			"event_version_list"   => $converted_event_version_list,
 			"push_data"            => toJson($params["push_data"]),
@@ -1247,7 +1247,7 @@ class Gateway_Bus_Sender {
 		$output = [];
 		foreach ($user_list as $user_item) {
 
-			$output[] = new \SenderGrpc\EventUserStruct([
+			$output[] = new \Company\SenderGrpc\EventUserStruct([
 				"user_id"   => $user_item["user_id"],
 				"need_push" => $user_item["need_push"],
 			]);
@@ -1268,7 +1268,7 @@ class Gateway_Bus_Sender {
 		$output = [];
 		foreach ($event_version_list as $event_version_item) {
 
-			$output[] = new \SenderGrpc\EventVersionItem([
+			$output[] = new \Company\SenderGrpc\EventVersionItem([
 				"version" => (int) $event_version_item["version"],
 				"data"    => toJson((object) $event_version_item["data"]),
 			]);
@@ -1379,11 +1379,11 @@ class Gateway_Bus_Sender {
 	 * @param string $platform
 	 * @param string $device_id
 	 *
-	 * @return \SenderGrpc\SenderSetTokenRequestStruct
+	 * @return \Company\SenderGrpc\SenderSetTokenRequestStruct
 	 */
-	protected static function _prepareSetTokenParameters(int $user_id, string $new_token, string $platform, string $device_id):\SenderGrpc\SenderSetTokenRequestStruct {
+	protected static function _prepareSetTokenParameters(int $user_id, string $new_token, string $platform, string $device_id):\Company\SenderGrpc\SenderSetTokenRequestStruct {
 
-		return new \SenderGrpc\SenderSetTokenRequestStruct([
+		return new \Company\SenderGrpc\SenderSetTokenRequestStruct([
 			"user_id"    => $user_id,
 			"token"      => $new_token,
 			"platform"   => $platform,
@@ -1406,7 +1406,7 @@ class Gateway_Bus_Sender {
 	 */
 	protected static function _doCallGrpc(string $method_name, \Google\Protobuf\Internal\Message $request):array {
 
-		return ShardingGateway::rpc("sender", \SenderGrpc\senderClient::class)->callGrpc($method_name, $request);
+		return ShardingGateway::rpc("sender", \Company\SenderGrpc\senderClient::class)->callGrpc($method_name, $request);
 	}
 
 	/**

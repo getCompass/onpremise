@@ -1688,6 +1688,16 @@ $CONFIG["SHARDING_RABBIT"] = [
 	],
 ];
 
+$CONFIG["SHARDING_KAFKA"] = [
+	"default" => [
+		"host"     => KAFKA_HOST,
+		"port"     => KAFKA_PORT,
+		"user"     => KAFKA_USER,
+		"pass" 	   => KAFKA_PASS,
+		"need_ssl" => KAFKA_NEED_SSL,
+	]
+];
+
 $CONFIG["SHARDING_GO"] = [
 	"pivot_cache"     => [
 		"host" => GO_PIVOT_CACHE_GRPC_HOST,

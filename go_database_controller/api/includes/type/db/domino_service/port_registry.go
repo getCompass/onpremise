@@ -103,6 +103,18 @@ func UpdateStatus(ctx context.Context, port int32, host string, status int) (int
 	return conn.Update(ctx, query, functions.GetCurrentTimeStamp(), status, port, host)
 }
 
+// UpdateExtra метод для обновления extra порта.
+func UpdateExtra(ctx context.Context, port int32, host string, extra string) (int64, error) {
+
+	conn := sharding.Mysql(ctx, GetDbName())
+	if conn == nil {
+		return 0, fmt.Errorf("пришел DbName: %s для которого не найдено подключение", GetDbName())
+	}
+
+	query := fmt.Sprintf("UPDATE `%s` SET `updated_at` = ?, `extra` = ? WHERE `port` = ? AND `host` = ? LIMIT %d", portRegistryTableKey, 1)
+	return conn.Update(ctx, query, functions.GetCurrentTimeStamp(), extra, port, host)
+}
+
 // InsertIgnoreOne создать запись
 func InsertIgnoreOne(ctx context.Context, port int32, host string, status int32, portType int32, lockedTill int32, createdAt int32, updatedAt int32, companyId int64, extra string) error {
 

@@ -39,6 +39,8 @@ include_once PIVOT_MODULE_ROOT . "_module/sharding.php";
 
 \BaseFrame\Module\ModuleHandler::init(CURRENT_MODULE);
 
+\BaseFrame\Siem\SiemHandler::init(ShardingGateway::instance(), CURRENT_MODULE)->setDriver(SIEM_ENABLED_DRIVER);
+
 \BaseFrame\ApiGateway\GatewayHandler::init(GATEWAY_SECRET_KEY_B64);
 
 // возвращаем обработчики

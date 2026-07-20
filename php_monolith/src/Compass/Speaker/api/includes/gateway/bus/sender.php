@@ -29,7 +29,7 @@ class Gateway_Bus_Sender {
 		Type_Pack_Main::doSecurityTest($ar_post);
 
 		$converted_event_version_list = self::_convertEventVersionListToGrpcStructure($ar_post["event_version_list"]);
-		$request                      = new \SenderGrpc\SenderSendIncomingCallRequestStruct([
+		$request                      = new \Company\SenderGrpc\SenderSendIncomingCallRequestStruct([
 			"company_id"         => COMPANY_ID,
 			"user_id"            => $ar_post["user_id"],
 			"event_version_list" => $converted_event_version_list,
@@ -204,7 +204,7 @@ class Gateway_Bus_Sender {
 		// проводим тест безопасности, что в ответе нет map
 		Type_Pack_Main::doSecurityTest($ar_post);
 
-		$request = new \SenderGrpc\SenderSendVoIPRequestStruct([
+		$request = new \Company\SenderGrpc\SenderSendVoIPRequestStruct([
 			"user_id"    => $ar_post["user_id"],
 			"push_data"  => toJson($ar_post["push_data"]),
 			"uuid"       => generateUUID(),
@@ -326,7 +326,7 @@ class Gateway_Bus_Sender {
 
 		$user_list                    = self::_convertReceiverUserListToGrpcStructure($params["user_list"]);
 		$converted_event_version_list = self::_convertEventVersionListToGrpcStructure($params["event_version_list"]);
-		$grpc_request                 = new \SenderGrpc\SenderSendEventRequestStruct([
+		$grpc_request                 = new \Company\SenderGrpc\SenderSendEventRequestStruct([
 			"user_list"          => $user_list,
 			"event"              => $params["event"],
 			"event_version_list" => $converted_event_version_list,
@@ -377,7 +377,7 @@ class Gateway_Bus_Sender {
 		$output = [];
 		foreach ($user_list as $user_item) {
 
-			$output[] = new \SenderGrpc\EventUserStruct([
+			$output[] = new \Company\SenderGrpc\EventUserStruct([
 				"user_id"   => $user_item["user_id"],
 				"need_push" => $user_item["need_push"],
 			]);
@@ -398,7 +398,7 @@ class Gateway_Bus_Sender {
 		$output = [];
 		foreach ($event_version_list as $event_version_item) {
 
-			$output[] = new \SenderGrpc\EventVersionItem([
+			$output[] = new \Company\SenderGrpc\EventVersionItem([
 				"version" => (int) $event_version_item["version"],
 				"data"    => toJson((object) $event_version_item["data"]),
 			]);
@@ -469,7 +469,7 @@ class Gateway_Bus_Sender {
 	// делаем grpc запрос к указанному методу с переданными данными
 	protected static function _doCallGrpc(string $method_name, \Google\Protobuf\Internal\Message $request):array {
 
-		$connection = ShardingGateway::rpc("sender", \SenderGrpc\senderClient::class);
+		$connection = ShardingGateway::rpc("sender", \Company\SenderGrpc\senderClient::class);
 
 		return $connection->callGrpc($method_name, $request);
 	}

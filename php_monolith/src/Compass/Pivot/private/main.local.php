@@ -96,3 +96,15 @@ define(__NAMESPACE__ . "\GO_AUTH_GRPC_PORT"				, ${GO_AUTH_GRPC_PORT});
 
 # endregion
 ##########################################################
+
+##########################################################
+# region KAFKA
+##########################################################
+define("KAFKA_HOST"					, "${KAFKA_HOST}");
+define("KAFKA_PORT"					, "${KAFKA_PORT}");
+define("KAFKA_USER"					, "${KAFKA_USER}");
+define("KAFKA_PASS"					, "${KAFKA_PASS}");
+define("KAFKA_NEED_SSL"             , ${KAFKA_NEED_SSL});
+
+# endregion
+##########################################################

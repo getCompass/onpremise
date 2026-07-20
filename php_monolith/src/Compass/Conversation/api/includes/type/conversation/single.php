@@ -2,8 +2,8 @@
 
 namespace Compass\Conversation;
 
-use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Domain\ParseFatalException;
+use BaseFrame\Exception\Domain\ReturnFatalException;
 use CompassApp\Domain\Member\Entity\Member;
 
 /**
@@ -15,7 +15,7 @@ class Type_Conversation_Single extends Type_Conversation_Default
 	 * Создает диалог между двумя пользователями из данных миграции.
 	 * @long
 	 */
-	public static function addFromMigration(int $user_id, int $opponent_user_id, ?int $conversation_type = null, ?array $extra = null, ?array $dynamic = null): array
+	public static function addFromMigration(int $user_id, int $opponent_user_id, ?int $conversation_type = null, ?array $extra = null, ?array $dynamic = null, ?int $allow_status = null): array
 	{
 
 		// получаем данные о пользователях
@@ -36,9 +36,12 @@ class Type_Conversation_Single extends Type_Conversation_Default
 		$is_someone_deleted = \CompassApp\Domain\Member\Entity\Extra::getIsDeleted($initiator_user->extra)
 			|| \CompassApp\Domain\Member\Entity\Extra::getIsDeleted($opponent_user->extra);
 
-		$allow_status = ($is_someone_guest || $is_someone_left || $is_someone_deleted)
-			? ALLOW_STATUS_NEED_CHECK
-			: ALLOW_STATUS_GREEN_LIGHT;
+		if (is_null($allow_status)) {
+
+			$allow_status = ($is_someone_guest || $is_someone_left || $is_someone_deleted)
+				? ALLOW_STATUS_NEED_CHECK
+				: ALLOW_STATUS_GREEN_LIGHT;
+		}
 
 		$meta_type = is_null($conversation_type) ? CONVERSATION_TYPE_SINGLE_DEFAULT : $conversation_type;
 
@@ -222,7 +225,6 @@ class Type_Conversation_Single extends Type_Conversation_Default
 	/**
 	 * Прикрепить пользователя в первый раз
 	 *
-	 *
 	 * @throws ParseFatalException
 	 */
 	protected static function _attachNewUser(string $conversation_map, int $user_id, int $opponent_user_id, array $meta_row, bool $is_hidden, bool $is_migration_muted = false): array
@@ -267,7 +269,6 @@ class Type_Conversation_Single extends Type_Conversation_Default
 
 	/**
 	 * Перепривязать пользователя
-	 *
 	 *
 	 * @throws ParseFatalException
 	 */

@@ -40,7 +40,7 @@ class Domain_User_Entity_Phone {
 	 * @throws cs_UserPhoneSecurityNotFound
 	 * @throws ParseFatalException
 	 */
-	public static function getPhoneByUserId(string $user_id):string {
+	public static function getPhoneByUserId(int $user_id):string {
 
 		try {
 			$security = Gateway_Db_PivotUser_UserSecurity::getOne($user_id);

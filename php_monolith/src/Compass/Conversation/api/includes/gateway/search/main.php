@@ -387,7 +387,7 @@ class Gateway_Search_Main
 
 		$table = static::_getTableNameWithCluster();
 		$table = str_replace(":", "`:`", $table);
-		ShardingGateway::search()->execQuery("TRUNCATE TABLE `$table`");
+		ShardingGateway::search()->query("TRUNCATE TABLE `$table`");
 	}
 
 	/**

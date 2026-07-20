@@ -15,13 +15,13 @@ set_time_limit(0);
 /**
  * Класс для обновления данных пользователя в компасе соответственно данным в ldap
  */
-class Update_Ldap_User_Profile {
-
+class Update_Ldap_User_Profile
+{
 	/**
 	 * Основной метод выполнения скрипта
 	 */
-	public static function doWork():void {
-
+	public static function doWork(): void
+	{
 
 		// Если отключена возможность авторизации через LDAP, выходим
 		if (!Gateway_Socket_Pivot::isLdapAuthAvailable()) {
@@ -46,7 +46,7 @@ class Update_Ldap_User_Profile {
 			return;
 		}
 
-		$filter                       = "(objectClass=person)";
+		$filter                     = "(objectClass=person)";
 		$user_profile_update_filter = Domain_Ldap_Entity_Config::getUserProfileUpdateFilter();
 		if (mb_strlen($user_profile_update_filter) > 0) {
 			$filter = $user_profile_update_filter;
@@ -59,7 +59,7 @@ class Update_Ldap_User_Profile {
 			Domain_Ldap_Entity_Config::getUserSearchPageSize()
 		);
 
-		$entry_list = array_map(static fn(array $entry) => Domain_Ldap_Entity_Utils::prepareEntry($entry), $entry_list);
+		$entry_list = array_map(static fn (array $entry) => Domain_Ldap_Entity_Utils::prepareEntry($entry), $entry_list);
 
 		$entry_list_count = count($entry_list);
 		console("Всего пользователей в ldap {$entry_list_count}");
@@ -74,22 +74,42 @@ class Update_Ldap_User_Profile {
 		console("Всего пользователей со связью ldap в компас {$found_account_users_list_count}");
 
 		// актуализируем данные
-		self::_updateCompassProfileList($found_account_users_list);;
+		self::_updateCompassProfileList($found_account_users_list);
 	}
 
 	/**
 	 * Фильтруем список связей «учетная запись LDAP» <–> «Compass пользователей»
 	 */
-	protected static function _getExistProfileList(array $account_user_rel_list, array $found_entry_list):array {
+	protected static function _getExistProfileList(array $account_user_rel_list, array $found_entry_list): array
+	{
 
 		// оставим в списке только активные связи
-		$account_user_rel_list = array_filter($account_user_rel_list, static fn(Struct_Db_LdapData_LdapAccountUserRel $account_user_rel) => $account_user_rel->status == Domain_Ldap_Entity_AccountUserRel::STATUS_ACTIVE);
+		$account_user_rel_list = array_filter($account_user_rel_list, static fn (Struct_Db_LdapData_LdapAccountUserRel $account_user_rel) => $account_user_rel->status == Domain_Ldap_Entity_AccountUserRel::STATUS_ACTIVE);
 
 		// из списка связей сделаем словарь, чтобы можно быстрей получить нужную запись по uid
-		$account_user_rel_map = array_column($account_user_rel_list, null, "uid");
+		// и приводим к нижнему регистру
+		$account_user_rel_map = [];
+		foreach ($account_user_rel_list as $rel) {
+			$account_user_rel_map[mb_strtolower((string)$rel->uid)] = $rel;
+		}
 
 		// из списка учетных записей сделаем словарь, чтобы можно быстрей получить нужную запись по uid
 		$found_entry_map = array_column($found_entry_list, null, mb_strtolower(Domain_Ldap_Entity_Config::getUserUniqueAttribute()));
+
+		$unique_attr_key = mb_strtolower(Domain_Ldap_Entity_Config::getUserUniqueAttribute());
+
+		$normalized = [];
+		foreach ($found_entry_map as $uid => $entry) {
+
+			$uid_lower = mb_strtolower($uid);
+
+			// приводим значение внутри entry
+			$entry[$unique_attr_key] = $uid_lower;
+
+			// кладем с lower-ключом
+			$normalized[$uid_lower] = $entry;
+		}
+		$found_entry_map = $normalized;
 
 		// массив аккаунтов, что нашли в компасе
 		$found_account_users_list = [];
@@ -125,7 +145,8 @@ class Update_Ldap_User_Profile {
 	 * @throws \returnException
 	 * @throws ReturnFatalException
 	 */
-	protected static function _updateCompassProfileList(array $found_account_users_list):void {
+	protected static function _updateCompassProfileList(array $found_account_users_list): void
+	{
 
 		// ищем отключенные аккаунты
 		foreach ($found_account_users_list as $key => $account) {
@@ -150,7 +171,8 @@ class Update_Ldap_User_Profile {
 	/**
 	 * Заменяем null на пустые значения чтобы можно было отправить сокетом
 	 */
-	protected static function _prepareLdapAccountData(array $data):array {
+	protected static function _prepareLdapAccountData(array $data): array
+	{
 
 		foreach ($data as $key => $value) {
 

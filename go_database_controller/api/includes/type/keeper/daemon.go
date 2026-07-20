@@ -131,9 +131,14 @@ func update() error {
 		stackName = fmt.Sprintf("%s-%s-%s-company", conf.GetConfig().StackNamePrefix, conf.GetConfig().ServiceLabel, conf.GetConfig().DominoId)
 	}
 
+	resolveImageType := "changed"
+	if conf.GetConfig().LocalLicense == 1 {
+		resolveImageType = "never"
+	}
+
 	cmdStr := "/usr/bin/docker stack deploy " +
 		"--with-registry-auth " +
-		"--resolve-image=changed " +
+		fmt.Sprintf("--resolve-image=%s ", resolveImageType) +
 		"--prune " +
 		"--compose-file " + conf.GetConfig().ComposeFilePath + " " +
 		stackName

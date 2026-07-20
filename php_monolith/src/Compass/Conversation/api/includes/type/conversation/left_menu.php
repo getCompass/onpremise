@@ -366,6 +366,19 @@ class Type_Conversation_LeftMenu {
 		return $left_menu_row;
 	}
 
+	// устанавливает время очистки диалога для списка пользователей
+	public static function setClearUntilForUserIdList(array $user_id_list, string $conversation_map, int $clear_until):void {
+
+		// генерируем version (получаем previous_version из текущего времени, так как это выгоднее чем запросить по каждому пользователю запись левого меню)
+		$previous_version = Domain_User_Entity_Conversation_LeftMenu::getVersionByCurrentTime();
+		$version          = Domain_User_Entity_Conversation_LeftMenu::generateVersion($previous_version);
+
+		Gateway_Db_CompanyConversation_UserLeftMenu::setForUserIdList($user_id_list, $conversation_map, [
+			"clear_until" => $clear_until,
+			"version"     => $version,
+		]);
+	}
+
 	// формируем объект last_message
 	// @long - большая структура сообщения
 	public static function makeLastMessage(array $message):array {

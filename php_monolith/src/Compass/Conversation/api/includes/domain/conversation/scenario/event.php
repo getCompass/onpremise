@@ -9,15 +9,14 @@ use BaseFrame\Exception\Domain\ReturnFatalException;
  * Агрегатор подписок на событие для домена conversation.
  * Класс обработки сценариев событий.
  */
-class Domain_Conversation_Scenario_Event {
-
+class Domain_Conversation_Scenario_Event
+{
 	/**
 	 * Callback для события изменения имени диалога.
-	 *
-	 * @param Struct_Event_Conversation_ChangeConversationName $event_data
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Conversation_ChangeConversationName::EVENT_TYPE)]
-	public static function onChangeConversationName(Struct_Event_Conversation_ChangeConversationName $event_data):void {
+	public static function onChangeConversationName(Struct_Event_Conversation_ChangeConversationName $event_data): void
+	{
 
 		// проходимся по всем участникам диалога
 		foreach ($event_data->users as $k => $_) {
@@ -33,11 +32,10 @@ class Domain_Conversation_Scenario_Event {
 
 	/**
 	 * Callback для события изменения аватарки диалога.
-	 *
-	 * @param Struct_Event_Conversation_ChangeConversationAvatar $event_data
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Conversation_ChangeConversationAvatar::EVENT_TYPE)]
-	public static function onChangeConversationAvatar(Struct_Event_Conversation_ChangeConversationAvatar $event_data):void {
+	public static function onChangeConversationAvatar(Struct_Event_Conversation_ChangeConversationAvatar $event_data): void
+	{
 
 		// проходимся по всем участникам диалога
 		foreach ($event_data->users as $k => $_) {
@@ -53,11 +51,10 @@ class Domain_Conversation_Scenario_Event {
 
 	/**
 	 * Callback для события добавления нового сообщения в диалог.
-	 *
-	 * @param Struct_Event_Conversation_AddMessage $event_data
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Conversation_AddMessage::EVENT_TYPE)]
-	public static function onMessageAdd(Struct_Event_Conversation_AddMessage $event_data):void {
+	public static function onMessageAdd(Struct_Event_Conversation_AddMessage $event_data): void
+	{
 
 		try {
 
@@ -76,11 +73,10 @@ class Domain_Conversation_Scenario_Event {
 
 	/**
 	 * Callback для события создания сингл-диалогов для пользователя.
-	 *
-	 * @param Struct_Event_Conversation_AddSingleList $event_data
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Conversation_AddSingleList::EVENT_TYPE)]
-	public static function addSingleList(Struct_Event_Conversation_AddSingleList $event_data):void {
+	public static function addSingleList(Struct_Event_Conversation_AddSingleList $event_data): void
+	{
 
 		foreach ($event_data->opponent_user_id_list as $opponent_user_id) {
 
@@ -106,11 +102,10 @@ class Domain_Conversation_Scenario_Event {
 
 	/**
 	 * Callback для события обновления ласт_месседж при изменении сообщения диалога.
-	 *
-	 * @param Struct_Event_Conversation_UpdateLastMessageOnMessageUpdate $event_data
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Conversation_UpdateLastMessageOnMessageUpdate::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
-	public static function onUpdateLastMessageOnMessageUpdate(Struct_Event_Conversation_UpdateLastMessageOnMessageUpdate $event_data):void {
+	public static function onUpdateLastMessageOnMessageUpdate(Struct_Event_Conversation_UpdateLastMessageOnMessageUpdate $event_data): void
+	{
 
 		foreach ($event_data->users as $k => $_) {
 			self::_updateLeftMenuOnMessageUpdate($k, $event_data->conversation_map, $event_data->message);
@@ -118,7 +113,8 @@ class Domain_Conversation_Scenario_Event {
 	}
 
 	// обновляем last_message в left_menu при обновлении сообщения
-	protected static function _updateLeftMenuOnMessageUpdate(int $user_id, string $conversation_map, array $message):bool {
+	protected static function _updateLeftMenuOnMessageUpdate(int $user_id, string $conversation_map, array $message): bool
+	{
 
 		// получаем запись из левого меню
 		$left_menu_row = Gateway_Db_CompanyConversation_UserLeftMenu::getOne($user_id, $conversation_map);
@@ -152,13 +148,12 @@ class Domain_Conversation_Scenario_Event {
 	/**
 	 * Пользователь присоединился к диалогу.
 	 *
-	 * @param Struct_Event_UserConversation_UserJoinedConversation $event_data
-	 *
 	 * @throws \busException
 	 * @throws \paramException
 	 */
 	#[Type_Attribute_EventListener(Type_Event_UserConversation_UserJoinedConversation::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
-	public static function onUserJoinedConversation(Struct_Event_UserConversation_UserJoinedConversation $event_data):void {
+	public static function onUserJoinedConversation(Struct_Event_UserConversation_UserJoinedConversation $event_data): void
+	{
 
 		// получаем данные для диалога
 		$conversation_meta = Type_Conversation_Meta::get($event_data->conversation_map);
@@ -168,7 +163,7 @@ class Domain_Conversation_Scenario_Event {
 		$conversation_name = $conversation_meta["conversation_name"];
 
 		// если это сингл, то нужно получить имя собеседника
-		if (Type_Conversation_Meta::isSubtypeOfSingle((int) $conversation_meta["type"]) && $opponent_user_id !== 0) {
+		if (Type_Conversation_Meta::isSubtypeOfSingle((int)$conversation_meta["type"]) && $opponent_user_id !== 0) {
 
 			// получаем данные о пользователе
 			$user_info         = Gateway_Bus_CompanyCache::getMember($opponent_user_id);
@@ -182,12 +177,10 @@ class Domain_Conversation_Scenario_Event {
 	/**
 	 * обновляем левое меню пользователя и поисковый индекс по названию диалога
 	 *
-	 * @param Struct_Event_UserConversation_UserJoinedConversation $event_data
-	 * @param string                                               $conversation_name
-	 *
 	 * @long большие структуры
 	 */
-	protected static function _updateLeftMenu(Struct_Event_UserConversation_UserJoinedConversation $event_data, string $conversation_name):void {
+	protected static function _updateLeftMenu(Struct_Event_UserConversation_UserJoinedConversation $event_data, string $conversation_name): void
+	{
 
 		$last_message = self::_getLastMessageFromConversation($event_data);
 
@@ -199,15 +192,17 @@ class Domain_Conversation_Scenario_Event {
 	}
 
 	// получаем последнее сообщение из диалога
-	protected static function _getLastMessageFromConversation(Struct_Event_UserConversation_UserJoinedConversation $event_data):bool|array {
+	protected static function _getLastMessageFromConversation(Struct_Event_UserConversation_UserJoinedConversation $event_data): bool | array
+	{
 
 		$dynamic_row = Domain_Conversation_Entity_Dynamic::get($event_data->conversation_map);
 		if ($dynamic_row["last_block_id"] < 1) {
 			return false;
 		}
 
-		$block_row        = Domain_Conversation_Entity_Message_Block_Get::getBlockListRowByIdList(
-			$event_data->conversation_map, [$dynamic_row["last_block_id"]]
+		$block_row = Domain_Conversation_Entity_Message_Block_Get::getBlockListRowByIdList(
+			$event_data->conversation_map,
+			[$dynamic_row["last_block_id"]]
 		)[$dynamic_row["last_block_id"]];
 		$last_message_map = Type_Conversation_Message_Block::getLastMessageMap($block_row["data"], true);
 		if ($last_message_map == "") {
@@ -233,14 +228,13 @@ class Domain_Conversation_Scenario_Event {
 	/**
 	 * Нужно распарсить ссылку и добавить preview.
 	 *
-	 * @param Struct_Event_Conversation_LinkParseRequired $event_data
-	 *
 	 * @throws Domain_Conversation_Exception_Preview_IncorrectUrl
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Conversation_LinkParseRequired::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
-	public static function onLinkParseRequired(Struct_Event_Conversation_LinkParseRequired $event_data):void {
+	public static function onLinkParseRequired(Struct_Event_Conversation_LinkParseRequired $event_data): void
+	{
 
 		$worker = new Type_Preview_Worker();
 		$worker->doWork(
@@ -260,7 +254,8 @@ class Domain_Conversation_Scenario_Event {
 	 * @throws \parseException|\paramException
 	 * @long switch-case
 	 */
-	public static function onLeaveConversationInitiated(Struct_Event_UserConversation_LeaveConversationInitiated $event_data):void {
+	public static function onLeaveConversationInitiated(Struct_Event_UserConversation_LeaveConversationInitiated $event_data): void
+	{
 
 		$left_menu_row = Type_Conversation_LeftMenu::get($event_data->user_id, $event_data->conversation_map);
 
@@ -274,7 +269,7 @@ class Domain_Conversation_Scenario_Event {
 				Domain_Conversation_Action_DoLeaveSingle::do($event_data->conversation_map, $event_data->user_id, $left_menu_row["opponent_user_id"]);
 				break;
 
-			// случай для group дилога
+				// случай для group дилога
 			case CONVERSATION_TYPE_GROUP_DEFAULT:
 			case CONVERSATION_TYPE_GROUP_GENERAL:
 
@@ -297,7 +292,7 @@ class Domain_Conversation_Scenario_Event {
 				);
 				break;
 
-			// случай для hiring дилога
+				// случай для hiring дилога
 			case CONVERSATION_TYPE_GROUP_HIRING:
 
 				// покидаем групповой диалог
@@ -313,18 +308,18 @@ class Domain_Conversation_Scenario_Event {
 	/**
 	 * Требуется создать дефолтные группы
 	 *
-	 * @param Struct_Event_Company_ExtendedEmployeeCardEnabled $event_data
-	 *
 	 * @throws \parseException
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Company_ExtendedEmployeeCardEnabled::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
-	public static function onExtendedEmployeeCardEnabled(Struct_Event_Company_ExtendedEmployeeCardEnabled $event_data):void {
+	public static function onExtendedEmployeeCardEnabled(Struct_Event_Company_ExtendedEmployeeCardEnabled $event_data): void
+	{
 
 		Domain_Group_Action_CompanyExtendedCardJoin::do($event_data->user_id_list, $event_data->creator_user_id);
 	}
 
 	// получаем conversation_message_index текущего сообщения
-	protected static function _getCurrentMessageConversationIndex(array $message):int {
+	protected static function _getCurrentMessageConversationIndex(array $message): int
+	{
 
 		$message_map = Type_Conversation_Message_Main::getHandler($message)::getMessageMap($message);
 
@@ -332,13 +327,15 @@ class Domain_Conversation_Scenario_Event {
 	}
 
 	// получаем conversation_message_index последнего сообщения
-	protected static function _getLastMessageConversationIndex(array $last_message):int {
+	protected static function _getLastMessageConversationIndex(array $last_message): int
+	{
 
 		return Gateway_Db_CompanyConversation_UserLeftMenu::getConversationMessageIndex($last_message);
 	}
 
 	// нужно ли обновлять левое меню при обновлении сообщения (изменении текста сообщения, удалении/скрытии сообщения)
-	protected static function _isNeedUpdateLeftMenuOnMessageUpdate(int $current_message_conversation_message_index, int $last_message_conversation_message_index):bool {
+	protected static function _isNeedUpdateLeftMenuOnMessageUpdate(int $current_message_conversation_message_index, int $last_message_conversation_message_index): bool
+	{
 
 		// если conversation_message_index равен нулю, значит last_message пуст
 		if ($last_message_conversation_message_index == 0) {
@@ -355,7 +352,8 @@ class Domain_Conversation_Scenario_Event {
 
 	// формируем объект last_message
 	// @long - большая структура для формирования сообщения
-	protected static function _makeLastMessage(array $message, int $user_id):array {
+	protected static function _makeLastMessage(array $message, int $user_id): array
+	{
 
 		$last_message = Type_Conversation_LeftMenu::makeLastMessage($message);
 
@@ -370,12 +368,11 @@ class Domain_Conversation_Scenario_Event {
 	/**
 	 * Процесс очистки диалога у пользователей
 	 *
-	 * @param Struct_Event_Conversation_ClearConversationForUsers $event_data
-	 *
 	 * @throws \parseException
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Conversation_ClearConversationForUsers::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
-	public static function onClearConversationForUsers(Struct_Event_Conversation_ClearConversationForUsers $event_data):void {
+	public static function onClearConversationForUsers(Struct_Event_Conversation_ClearConversationForUsers $event_data): void
+	{
 
 		// пересчитываем total_unread_count для каждого пользователя из списка
 		foreach ($event_data->user_id_list as $user_id) {
@@ -394,14 +391,86 @@ class Domain_Conversation_Scenario_Event {
 	/**
 	 * Добавляем пользователя в список групп
 	 *
-	 * @param Struct_Event_Conversation_JoinToGroupList $event_data
-	 *
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws \parseException
 	 */
 	#[Type_Attribute_EventListener(Type_Event_Conversation_JoinToGroupList::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
-	public static function onJoinToGroupList(Struct_Event_Conversation_JoinToGroupList $event_data):void {
+	public static function onJoinToGroupList(Struct_Event_Conversation_JoinToGroupList $event_data): void
+	{
 
 		Domain_Conversation_Action_JoinToGroupList::do($event_data->user_id, $event_data->conversation_map_list);
+	}
+
+	/**
+	 * Процесс асинхронной очистки диалогов из source-скрипта
+	 *
+	 * @throws ReturnFatalException|ParseFatalException
+	 * @long
+	 */
+	#[Type_Attribute_EventListener(Type_Event_Conversation_AsyncSourceClearConversations::EVENT_TYPE, trigger_extra: ["group" => Type_Attribute_EventListener::SLOW_GROUP])]
+	public static function onAsyncSourceClearConversations(Struct_Event_Conversation_AsyncSourceClearConversations $event_data): void
+	{
+
+		$conversation_map_list = $event_data->conversation_map_list;
+		if (count($conversation_map_list) < 1) {
+			return;
+		}
+
+		// делим полученный список чатов на части:
+		// рабочий список, который обрабатываем в ивенте, и список для следующей итерации
+		$work_conversation_map_list       = array_slice($conversation_map_list, 0, 30);
+		$next_cycle_conversation_map_list = array_slice($conversation_map_list, 30);
+
+		$clear_until = $event_data->clear_until;
+
+		$meta_row_list = Type_Conversation_Meta::getAll($work_conversation_map_list, true);
+
+		// проходимся по диалогам компании
+		$all_user_id_list = [];
+		foreach ($work_conversation_map_list as $conversation_map) {
+
+			Type_Conversation_Meta::setConversationClearUntilForAll($conversation_map, $clear_until);
+
+			if (!isset($meta_row_list[$conversation_map])) {
+				continue;
+			}
+			$meta_row = $meta_row_list[$conversation_map];
+
+			// получаем пользователей состоящих в диалоге
+			$user_id_list = [];
+			foreach ($meta_row["users"] as $member_user_id => $_) {
+
+				if (Type_Conversation_Meta_Users::isMember($member_user_id, $meta_row["users"])) {
+
+					$user_id_list[]   = $member_user_id;
+					$all_user_id_list = array_merge($all_user_id_list, $user_id_list);
+				}
+			}
+
+			// устанавливаем clear_until в left_menu
+			Type_Conversation_LeftMenu::setClearUntilForUserIdList($user_id_list, $conversation_map, $clear_until);
+
+			// обновляем время очистки диалога для всех пользователей
+			Domain_Conversation_Entity_Dynamic::setClearUntilConversationForUserIdList($conversation_map, $user_id_list, $clear_until, true);
+
+			// делаем сокет запрос в модуль php_thread для обновления времени очистки диалога
+			Gateway_Socket_Thread::clearConversationForUserIdList($conversation_map, $clear_until, $user_id_list);
+
+			// обновляем badge с непрочитанными для списка пользователей
+			$extra = Gateway_Bus_Company_Timer::getExtraForUserIdListUpdateBadge($user_id_list, [$conversation_map], true);
+			Gateway_Bus_Company_Timer::setTimeoutForUserIdList(Gateway_Bus_Company_Timer::UPDATE_BADGE, generateRandomString(), [], $extra);
+		}
+
+		// пересчитываем total_unread_count для каждого пользователя из списка
+		foreach (array_unique($all_user_id_list) as $user_id) {
+			Type_Conversation_LeftMenu::recountTotalUnread($user_id);
+		}
+
+		Domain_Search_Entity_Conversation_Task_Reindex::queueList($work_conversation_map_list);
+
+		// отправляем оставшийся список чатов на следующую итерацию
+		count($next_cycle_conversation_map_list) > 0 && Gateway_Event_Dispatcher::dispatch(
+			Type_Event_Conversation_AsyncSourceClearConversations::create($next_cycle_conversation_map_list, $clear_until)
+		);
 	}
 }

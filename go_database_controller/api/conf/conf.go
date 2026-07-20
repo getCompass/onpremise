@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strconv"
 
 	"github.com/getCompassUtils/go_base_frame"
 	"github.com/getCompassUtils/go_base_frame/api/system/flags"
@@ -47,6 +48,7 @@ type ConfigStruct struct {
 	DominoNetwork                      string `json:"domino_network"`
 	DatabaseDriver                     string `json:"database_driver"`
 	DominoConfigPath                   string `json:"domino_config_path"`
+	LocalLicense                       int    `json:"local_license"`
 
 	CompaniesRelationshipFile string `json:"companies_relationship_file"`
 
@@ -75,6 +77,9 @@ func UpdateConfig() error {
 	if err != nil {
 		return err
 	}
+
+	localLicense, _ := strconv.Atoi(getEnv("LOCAL_LICENSE", ""))
+	decodedInfo.LocalLicense = localLicense
 
 	// записываем конфигурацию в хранилище
 	configuration = decodedInfo
@@ -121,4 +126,16 @@ func GetConfig() *ConfigStruct {
 	}
 
 	return configuration
+}
+
+// Получить переменную из env
+func getEnv(key string, defaultValue string) string {
+
+	value, found := os.LookupEnv(key)
+
+	if !found {
+		return defaultValue
+	}
+
+	return value
 }

@@ -76,3 +76,18 @@ func (port *PortRegistryStruct) GetEncryptedPassword() string {
 
 	return ""
 }
+
+// GetMysqlSettings вернуть настройки MySQL для порта.
+func (port *PortRegistryStruct) GetMysqlSettings() *MysqlSettingsStruct {
+
+	// инициализируем extra
+	port.initExtra()
+
+	switch port.ExtraField.Version {
+
+	case _handler1:
+		return port.ExtraField.ExtraBody.(extraHandlerVersion1).MysqlSettings
+	}
+
+	return nil
+}

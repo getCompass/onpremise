@@ -2,7 +2,7 @@ version: '3.8'
 
 configs:
   mysql-conf:
-     name: "mysql-conf{{ if ne $.ServiceLabel ""}}-{{$.ServiceLabel}}{{end}}-{{.DominoId}}"
+     name: "mysql-conf{{ if ne $.ServiceLabel ""}}-{{$.ServiceLabel}}{{end}}-{{.DominoId}}-{{.MysqlConfHash}}"
      file: {{.ConfPath}}
 services:
 
@@ -20,9 +20,12 @@ services:
       {{ end }}
     environment:
       MYSQL_TCP_PORT: {{$mysql_conf_block.Port}}
-    {{- if gt $.MysqlServerId 0 }}
     command: >
       mysqld
+        --innodb-buffer-pool-size={{$mysql_conf_block.InnodbBufferPoolSizeMb}}M
+        --innodb-thread-concurrency={{$mysql_conf_block.InnodbThreadConcurrency}}
+        --table-open-cache={{$mysql_conf_block.TableOpenCache}}
+    {{ if gt $.MysqlServerId 0 }}
         --log_bin=/var/lib/mysql/log-bin.log
         --binlog-format=ROW
         --log-replica-updates=1

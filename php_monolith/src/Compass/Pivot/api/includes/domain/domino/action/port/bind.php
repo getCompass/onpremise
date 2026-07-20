@@ -77,7 +77,7 @@ class Domain_Domino_Action_Port_Bind
 	 * @throws ReturnFatalException
 	 * @throws SocketException
 	 */
-	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list): Struct_Db_PivotCompanyService_PortRegistry
+	public static function run(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list, string $mysql_settings_json = ""): Struct_Db_PivotCompanyService_PortRegistry
 	{
 
 		console("начинаем привязку порта {$port->port} для компании {$company_id}");
@@ -89,7 +89,7 @@ class Domain_Domino_Action_Port_Bind
 		$go_database_controller_host = $go_database_controller_host !== "" ? $go_database_controller_host : $domino->database_host;
 		$go_database_controller_port = Domain_Domino_Entity_Registry_Extra::getGoDatabaseControllerPort($domino->extra);
 		Type_System_Admin::log("start_company_process", "Привязываем компанию к порту в микросервисе go_database: host {$go_database_controller_host}, port {$go_database_controller_port}");
-		static::_makeRemoteBinding($domino, $port, $company_id, $policy_list);
+		static::_makeRemoteBinding($domino, $port, $company_id, $policy_list, $mysql_settings_json);
 		console("выполнили привязку порта и компании {$company_id} на удаленном сервере");
 		Type_System_Admin::log("start_company_process", "Выполнили привязку порта и компании {$company_id} на удаленном сервере");
 
@@ -160,13 +160,13 @@ class Domain_Domino_Action_Port_Bind
 	 * @throws ParseFatalException
 	 * @throws SocketException
 	 */
-	protected static function _makeRemoteBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list): void
+	protected static function _makeRemoteBinding(Struct_Db_PivotCompanyService_DominoRegistry $domino, Struct_Db_PivotCompanyService_PortRegistry $port, int $company_id, array $policy_list, string $mysql_settings_json = ""): void
 	{
 
 		try {
 
 			// выполняем привязку порта на домино и сразу накатываем миграции
-			Gateway_Bus_DatabaseController::bindPort($domino, $port->port, $port->host, $company_id, $policy_list);
+			Gateway_Bus_DatabaseController::bindPort($domino, $port->port, $port->host, $company_id, $policy_list, $mysql_settings_json);
 		} catch (\Exception $e) {
 
 			// если что-то пошло не так, то нужно вызвать инвалидацию порта

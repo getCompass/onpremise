@@ -11,8 +11,15 @@ ini_set("display_errors", 1);
 set_time_limit(0);
 
 $company_id  = Type_Script_InputParser::getArgumentValue("company-id", Type_Script_InputParser::TYPE_INT);
+$mysql_settings_json = Type_Script_InputParser::getArgumentValue("--mysql-settings-json", Type_Script_InputParser::TYPE_STRING, "", false);
 $company_row = Gateway_Db_PivotCompany_CompanyList::getOne($company_id);
 $domino_row  = Gateway_Db_PivotCompanyService_DominoRegistry::getOne($company_row->domino_id);
+
+if ($mysql_settings_json !== "") {
+
+	$port_row = Gateway_Db_PivotCompanyService_PortRegistry::getActiveByCompanyId($domino_row->domino_id, $company_row->company_id);
+	Gateway_Bus_DatabaseController::setPortMysqlSettings($domino_row, $port_row->port, $port_row->host, $company_row->company_id, $mysql_settings_json);
+}
 
 console(blueText("Инвалидирую компанию"));
 Type_System_Admin::log("start_company_process", "--- Инвалидируем компанию {$company_row->company_id}");

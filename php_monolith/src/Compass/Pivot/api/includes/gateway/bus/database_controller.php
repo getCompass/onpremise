@@ -122,7 +122,7 @@ class Gateway_Bus_DatabaseController
 	 * @throws ParseFatalException
 	 * @throws SocketException
 	 */
-	public static function bindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $company_id, array $policy_list): void
+	public static function bindPort(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $company_id, array $policy_list, string $mysql_settings_json = ""): void
 	{
 
 		$request = new \DatabaseControllerGrpc\BindPortRequestStruct([
@@ -131,6 +131,7 @@ class Gateway_Bus_DatabaseController
 			"company_id"                   => $company_id,
 			"duplicate_data_dir_policy"    => $policy_list["duplicate_data_dir_policy"],
 			"non_existing_data_dir_policy" => $policy_list["non_existing_data_dir_policy"],
+			"mysql_settings_json"          => $mysql_settings_json,
 		]);
 
 		/** @var \DatabaseControllerGrpc\BindPortResponseStruct $response */
@@ -142,6 +143,30 @@ class Gateway_Bus_DatabaseController
 
 		// дожидаемся завершения рутины
 		static::_waitResponseRoutine($domino_registry_row, $response->getRoutineKey(), $response->getRoutine()->getStatus(), $response->getRoutine()->getMessage(), time() + 60);
+	}
+
+	/**
+	 * Сохраняет настройки MySQL для порта компании.
+	 *
+	 * @throws BusFatalException
+	 * @throws ParseFatalException
+	 */
+	public static function setPortMysqlSettings(Struct_Db_PivotCompanyService_DominoRegistry $domino_registry_row, int $port, string $host, int $company_id, string $mysql_settings_json): void
+	{
+
+		$request = new \DatabaseControllerGrpc\SetPortMysqlSettingsRequestStruct([
+			"port"                => $port,
+			"host"                => $host,
+			"company_id"          => $company_id,
+			"mysql_settings_json" => $mysql_settings_json,
+		]);
+
+		/** @var \DatabaseControllerGrpc\NullResponseStruct $response */
+		[$_, $status] = self::_doCallGrpc($domino_registry_row, "SetPortMysqlSettings", $request);
+		if ($status->code !== \Grpc\STATUS_OK) {
+
+			throw new BusFatalException("undefined error_code in " . __CLASS__ . " code " . formatArgs($status));
+		}
 	}
 
 	/**

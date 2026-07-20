@@ -86,12 +86,16 @@ func InitHttpServer(ph *ProxyHandler, mh *MonitoringHandler, caCertPEM []byte, c
 	mux.Handle("/api/monit", mh)
 	mux.Handle("/", ph)
 
+	// инициализируем трекер соединений
+	tracker := InitConnTracker()
+
 	return &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		TLSConfig:    serverTLSConfig,
 		Handler:      cleanPath(mux),
+		ConnState:    tracker.OnStateChange,
 	}, nil
 }
 

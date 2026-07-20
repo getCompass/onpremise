@@ -21,6 +21,8 @@ if (Type_Script_InputParser::getArgumentValue("--help", Type_Script_InputParser:
 	exit;
 }
 
+$mysql_settings_json = Type_Script_InputParser::getArgumentValue("--mysql-settings-json", Type_Script_InputParser::TYPE_STRING, "", false);
+
 try {
 	$domino_row = Gateway_Db_PivotCompanyService_DominoRegistry::getOneForCreate();
 } catch (\BaseFrame\Exception\Gateway\RowNotFoundException) {
@@ -30,7 +32,7 @@ try {
 }
 
 try {
-	$company_id = Domain_Domino_Action_CreateVacantCompany::do($domino_row);
+	$company_id = Domain_Domino_Action_CreateVacantCompany::do($domino_row, $mysql_settings_json);
 	console("created company {$company_id}");
 } catch (\Exception $e) {
 

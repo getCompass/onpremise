@@ -13,8 +13,8 @@ datadir = {{$.CompanyDbPath}}/mysql_company_{{$mysql_conf_block.CompanyId}}
 log-error = /var/log/mysql/{{$.ServerName}}-{{$mysql_conf_block.CompanyId}}-error.log
 bind-address = 0.0.0.0
 
-innodb_buffer_pool_size = 8M            # кэш таблиц, данных и индексов
-innodb_thread_concurrency = 4           # кол-во одновременно обрабатываемых запросов, оптимально = кол-во ядер на машине если один mysql
+innodb_buffer_pool_size = {{$mysql_conf_block.InnodbBufferPoolSizeMb}}M            # кэш таблиц, данных и индексов
+innodb_thread_concurrency = {{$mysql_conf_block.InnodbThreadConcurrency}}           # кол-во одновременно обрабатываемых запросов, оптимально = кол-во ядер на машине если один mysql
 innodb_log_buffer_size = 1M             # буфера лога транзакций
 innodb_flush_log_at_trx_commit = 0      # сброс данных на диск, 0 - раз в секунду (быстро, ненадожно), 1 - при каждой транзакции (очень медленно), 2 - сброс в память системы, потом на диск
 innodb_flush_method = {{$.DominoMysqlInnodbFlushMethod}}           # метод сброса данных на диск O_DIRECT - надёжнее, O_DSYNC - быстрее
@@ -30,7 +30,7 @@ key-buffer-size = 128K                  # кэш для индексов, исп
 thread-cache-size = 16                   # кол-во потоков которые будут хранится в кэше
 thread_stack = 256K                     # размер стека для каждого потока
 table-definition-cache = 5000            # кэш для структур таблиц, сам не занимает много места, но им можно мягко ограничить кол-во таблиц в кэше
-table-open-cache = 200                  # кол-во таблиц в кэше для всех потоков
+table-open-cache = {{$mysql_conf_block.TableOpenCache}}                  # кол-во таблиц в кэше для всех потоков
 tmp_table_size = 128K                   # кэш временных таблиц
 max_heap_table_size = 128K              # для innodb тоже самое что и tmp_table_size, для MEMORY ограничивает размер таблицы в памяти
 read_buffer_size = 128K                 # буфер при сканировании/чтении таблицы, для каждого потока

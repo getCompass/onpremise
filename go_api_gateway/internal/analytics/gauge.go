@@ -9,8 +9,9 @@ import (
 
 // названия для датчиков
 const (
-	memoryUsageName     = "memory_usage"
-	goroutinesCountName = "goroutines_count"
+	memoryUsageName          = "memory_usage"
+	goroutinesCountName      = "goroutines_count"
+	httpConnectionsCountName = "http_connections_count"
 )
 
 // инициализируем датчики для используемой памяти и запущенных горутин
@@ -23,6 +24,11 @@ var (
 	GoroutinesCount = DefaultMetricRegistry.NewGauge(
 		goroutinesCountName,
 		"Goroutines count of go microservice",
+		nil,
+	)
+	HttpConnectionsCount = DefaultMetricRegistry.NewGauge(
+		httpConnectionsCountName,
+		"Active http connections count of go microservice",
 		nil,
 	)
 )

@@ -16,7 +16,7 @@ class Gateway_Bus_Event {
 	 */
 	public static function pushTask(string $type, array $data = [], string $module = "", string $group = "default", int $need_work = 0):void {
 
-		$grpcRequest = new \EventGrpc\TaskPushRequestStruct([
+		$grpcRequest = new \Company\EventGrpc\TaskPushRequestStruct([
 			"unique_key"  => generateUUID(),
 			"type"        => $type,
 			"data"        => toJson($data),
@@ -48,7 +48,7 @@ class Gateway_Bus_Event {
 	 */
 	public static function setEventTrap(string $unique_key, string $subscriber, string $event_type, int $created_after, array $filter_list = []):void {
 
-		$grpcRequest = new \EventGrpc\EventSetEventTrapRequestStruct([
+		$grpcRequest = new \Company\EventGrpc\EventSetEventTrapRequestStruct([
 			"unique_key"    => $unique_key,
 			"subscriber"    => $subscriber,
 			"event_type"    => $event_type,
@@ -75,7 +75,7 @@ class Gateway_Bus_Event {
 	 */
 	public static function waitEventTrap(string $unique_key):bool {
 
-		$grpcRequest = new \EventGrpc\EventWaitEventTrapRequestStruct([
+		$grpcRequest = new \Company\EventGrpc\EventWaitEventTrapRequestStruct([
 			"unique_key" => $unique_key,
 			"company_id" => COMPANY_ID,
 		]);
@@ -95,6 +95,6 @@ class Gateway_Bus_Event {
 	 */
 	protected static function _doCallGrpc(string $method_name, \Google\Protobuf\Internal\Message $request):array {
 
-		return ShardingGateway::rpc("event", \EventGrpc\eventClient::class)->callGrpc($method_name, $request);
+		return ShardingGateway::rpc("event", \Company\EventGrpc\eventClient::class)->callGrpc($method_name, $request);
 	}
 }

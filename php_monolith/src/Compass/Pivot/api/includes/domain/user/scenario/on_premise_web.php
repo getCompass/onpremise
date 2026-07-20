@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\CountryNotFound;
@@ -12,12 +14,13 @@ use BaseFrame\Exception\Request\ParamException;
 /**
  * Сценарии для работы с веб-сайтом on-premise решений.
  */
-class Domain_User_Scenario_OnPremiseWeb {
-
+class Domain_User_Scenario_OnPremiseWeb
+{
 	/**
 	 * Метод получения информации при входе на сайт.
 	 */
-	public static function start(int $user_id):array {
+	public static function start(int $user_id): array
+	{
 
 		// доступные способы аутентификации
 		$available_auth_method_list       = Domain_User_Entity_Auth_Config::getAvailableMethodList();
@@ -49,10 +52,10 @@ class Domain_User_Scenario_OnPremiseWeb {
 	/**
 	 * собираем словарь dictionary, который возвращаем в global/start
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	protected static function _prepareStartDictionary():array {
+	protected static function _prepareStartDictionary(): array
+	{
 
 		return [
 			"auth_sso_start_button_text"     => Domain_User_Entity_Auth_Config::getSsoStartButtonText(),
@@ -62,9 +65,9 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 	/**
 	 * Собираем ограничения
-	 * @return array
 	 */
-	protected static function _prepareRestrictions():array {
+	protected static function _prepareRestrictions(): array
+	{
 
 		return [
 			"profile" => (array) Type_Restrictions_Config::getProfileRestrictions(),
@@ -97,7 +100,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	 *
 	 * @long очень много проверок
 	 */
-	public static function beginAuthentication(int $user_id, string $phone_number, string|false $grecaptcha_response, string|false $join_link):array {
+	public static function beginAuthentication(int $user_id, string $phone_number, string | false $grecaptcha_response, string | false $join_link): array
+	{
 
 		// проверяем, что нет текущей активной сессии
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
@@ -139,7 +143,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 				// получаем детальную информацию о ссылке
 				$invite_link_rel_row = Domain_Company_Entity_JoinLink_Main::getByLink($parsed_link);
-			} catch (Domain_Link_Exception_LinkNotFound|cs_IncorrectJoinLink|cs_JoinLinkNotFound) {
+			} catch (Domain_Link_Exception_LinkNotFound | cs_IncorrectJoinLink | cs_JoinLinkNotFound) {
 				throw new CaseException(1000, "passed bad invite");
 			}
 
@@ -154,7 +158,7 @@ class Domain_User_Scenario_OnPremiseWeb {
 			$auth_story = Domain_User_Entity_AuthStory::getFromSessionCache($phone_number)
 				->assertNotExpired()
 				->assertAuthParameter($phone_number);
-		} catch (cs_CacheIsEmpty|cs_AuthIsExpired|Domain_User_Exception_AuthStory_AuthParameterNotEqual) {
+		} catch (cs_CacheIsEmpty | cs_AuthIsExpired | Domain_User_Exception_AuthStory_AuthParameterNotEqual) {
 
 			if ($existing_user_id === 0) {
 
@@ -204,7 +208,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	 * @throws cs_WrongCode
 	 * @long try..catch
 	 */
-	public static function confirmAuthentication(int $user_id, string $auth_map, string $sms_code, string|false $join_link_uniq = false):array {
+	public static function confirmAuthentication(int $user_id, string $auth_map, string $sms_code, string | false $join_link_uniq = false): array
+	{
 
 		// проверяем, что нет текущей активной сессии
 		Domain_User_Entity_Validator::assertNotLoggedIn($user_id);
@@ -230,10 +235,19 @@ class Domain_User_Scenario_OnPremiseWeb {
 			$story->storeInSessionCache();
 
 			// если получен неверный код, и достигнут лимит, то кидаем ошибку лимита
-			self::_throwIfErrorCountLimitExceeded($story);
+			self::_throwIfErrorCountLimitExceeded($user_id, $story);
 
 			throw $e;
 		} catch (Domain_User_Exception_AuthStory_ErrorCountLimitExceeded) {
+
+			$user_agent = getUa();
+			Domain_Analytic_Entity_Siem::loginFail(
+				$user_id,
+				getDeviceId(),
+				getIp(),
+				Type_Api_Platform::getDeviceName($user_agent),
+				Type_Api_Platform::getVersion($user_agent),
+			);
 			throw new cs_AuthIsBlocked($story->getExpiresAt());
 		}
 
@@ -273,7 +287,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \queryException
 	 */
-	protected static function _onSuccessAuth(Domain_User_Entity_AuthStory $story, int $user_id):void {
+	protected static function _onSuccessAuth(Domain_User_Entity_AuthStory $story, int $user_id): void
+	{
 
 		// добавляем аутентификацию в историю
 		Gateway_Db_PivotHistoryLogs_UserAuthHistory::insert($story->getAuthMap(), $user_id, Domain_User_Entity_AuthStory::HISTORY_AUTH_STATUS_SUCCESS, time(), 0);
@@ -294,11 +309,21 @@ class Domain_User_Scenario_OnPremiseWeb {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws cs_AuthIsBlocked
 	 */
-	protected static function _throwIfErrorCountLimitExceeded(Domain_User_Entity_AuthStory $story):void {
+	protected static function _throwIfErrorCountLimitExceeded(int $user_id, Domain_User_Entity_AuthStory $story): void
+	{
 
 		try {
 			$story->getAuthPhoneHandler()->assertErrorCountLimitNotExceeded(Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber::ON_PREMISE_ERROR_COUNT_LIMIT);
 		} catch (Domain_User_Exception_AuthStory_ErrorCountLimitExceeded) {
+
+			$user_agent = getUa();
+			Domain_Analytic_Entity_Siem::loginFail(
+				$user_id,
+				getDeviceId(),
+				getIp(),
+				Type_Api_Platform::getDeviceName($user_agent),
+				Type_Api_Platform::getVersion($user_agent),
+			);
 			throw new cs_AuthIsBlocked($story->getExpiresAt());
 		}
 	}
@@ -306,7 +331,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	/**
 	 * Выполняет кусок логики подтверждения аутентификации для уже зарегистрированного пользователя.
 	 */
-	protected static function _confirmRegisteredUserAuthentication(int $user_id, Domain_User_Entity_AuthStory $story, string|false $join_link_uniq):array {
+	protected static function _confirmRegisteredUserAuthentication(int $user_id, Domain_User_Entity_AuthStory $story, string | false $join_link_uniq): array
+	{
 
 		if ($join_link_uniq !== false) {
 
@@ -347,7 +373,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	 * Выполняет кусок логики для создания нового пользователя и подтверждения аутентификации.
 	 * @long
 	 */
-	protected static function _confirmNotRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, string|false $join_link_uniq):array {
+	protected static function _confirmNotRegisteredUserAuthentication(Domain_User_Entity_AuthStory $story, string | false $join_link_uniq): array
+	{
 
 		try {
 
@@ -414,7 +441,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	 * @throws cs_WrongRecaptcha
 	 * @throws cs_WrongAuthKey
 	 */
-	public static function resendAuthenticationCode(int $user_id, string $auth_map, string|false $grecaptcha_response):Struct_User_Auth_Info {
+	public static function resendAuthenticationCode(int $user_id, string $auth_map, string | false $grecaptcha_response): Struct_User_Auth_Info
+	{
 
 		// получаем story по ключу и проверяем, что переотправка доступна
 		$story = Domain_User_Entity_AuthStory::getByMap($auth_map);
@@ -431,6 +459,15 @@ class Domain_User_Scenario_OnPremiseWeb {
 				->assertErrorCountLimitNotExceeded(Domain_User_Entity_AuthStory_MethodHandler_PhoneNumber::ON_PREMISE_ERROR_COUNT_LIMIT)
 				->assertResendIsAvailable();
 		} catch (Domain_User_Exception_AuthStory_ErrorCountLimitExceeded) {
+
+			$user_agent = getUa();
+			Domain_Analytic_Entity_Siem::loginFail(
+				$user_id,
+				getDeviceId(),
+				getIp(),
+				Type_Api_Platform::getDeviceName($user_agent),
+				Type_Api_Platform::getVersion($user_agent),
+			);
 			throw new cs_AuthIsBlocked($story->getExpiresAt());
 		}
 
@@ -459,7 +496,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws Domain_User_Exception_AuthStory_ResendCountLimitExceeded
 	 */
-	protected static function _throwIfResendCountLimitExceeded(Domain_User_Entity_AuthStory $story):void {
+	protected static function _throwIfResendCountLimitExceeded(Domain_User_Entity_AuthStory $story): void
+	{
 
 		try {
 			$story->getAuthPhoneHandler()->assertResendCountLimitNotExceeded();
@@ -472,7 +510,8 @@ class Domain_User_Scenario_OnPremiseWeb {
 	 * Завершаем активную сессию пользователя.
 	 * @throws \cs_RowIsEmpty
 	 */
-	public static function logout(int $user_id):void {
+	public static function logout(int $user_id): void
+	{
 
 		try {
 			Domain_User_Entity_Validator::assertLoggedIn($user_id);
@@ -482,5 +521,16 @@ class Domain_User_Scenario_OnPremiseWeb {
 
 		// разлогиниваем сессию пользователя
 		Type_Session_Main::doLogoutSession($user_id);
+
+		$user_agent = getUa();
+
+		// отправляем сообщение о том, что произошел логаут
+		Domain_Analytic_Entity_Siem::logout(
+			$user_id,
+			getDeviceId(),
+			getIp(),
+			Type_Api_Platform::getDeviceName($user_agent),
+			Type_Api_Platform::getVersion($user_agent)
+		);
 	}
 }

@@ -12,6 +12,7 @@ import (
 	"go_api_gateway/internal/grpc"
 	"go_api_gateway/internal/jwt"
 	"go_api_gateway/internal/ratelimiter"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -72,6 +73,9 @@ func InitProxyHandler(caCertPEM []byte, targetConfig *config.TargetConfigStruct,
 		middlewares: []MiddlewareHandler{},
 		targets:     map[string]*config.TargetStruct{},
 		clientTransportConfig: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout: 100 * time.Millisecond, // таймаут на connect
+			}).DialContext,
 			MaxIdleConns:        MaxIdleConns,        // Общее число idle соединений в пуле
 			MaxIdleConnsPerHost: MaxIdleConnsPerHost, // На один целевой хост
 			MaxConnsPerHost:     MaxConnsPerHost,     // Макс активных соединений на хост
@@ -194,6 +198,7 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					message:    fmt.Sprintf("gateway timeout error %v", context.Canceled.Error()),
 				}
 
+				http.Error(w, "Gateway timeout", pr.responseCode)
 				return
 			}
 

@@ -11,7 +11,8 @@ while ! mariadb-admin ping -h "${MYSQL_HOST}" -P ${MYSQL_PORT} --silent --skip-s
     fi
 done
 
-sh /app/wait-for-it.sh "${STACK_RABBIT_HOST}:${STACK_RABBIT_PORT}" -t 100
+sh /app/wait-for-it.sh "${RABBIT_HOST}:${RABBIT_PORT}" -t 100
+sh /app/wait-for-it.sh "${MCACHE_HOST}:${MCACHE_PORT}" -t 100
 sh /app/wait-for-it.sh "${GO_EVENT_HOST}:${GO_EVENT_PORT}" -t 120
 
 echo "Дождались всех сервисов"

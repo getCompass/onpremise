@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Compass\Pivot;
 
 use BaseFrame\Exception\Domain\InvalidMail;
@@ -10,14 +12,12 @@ use BaseFrame\Exception\Request\ParamException;
 /**
  * Сценарии для работы с безопасностью через почту авторизованным пользователем
  */
-class Domain_User_Scenario_Api_Security_Mail {
-
-	public const SCENARIO_SHORT_ADD = "short_add";
-	public const SCENARIO_FULL_ADD  = "full_add";
-
-	public const SCENARIO_SHORT_CHANGE = "short_change";
-	public const SCENARIO_FULL_CHANGE  = "full_change";
-
+class Domain_User_Scenario_Api_Security_Mail
+{
+	public const SCENARIO_SHORT_ADD      = "short_add";
+	public const SCENARIO_FULL_ADD       = "full_add";
+	public const SCENARIO_SHORT_CHANGE   = "short_change";
+	public const SCENARIO_FULL_CHANGE    = "full_change";
 	public const STAGE_ENTERING_PASSWORD = "entering_password";
 	public const STAGE_ENTERING_CODE     = "entering_code";
 
@@ -36,7 +36,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws Domain_User_Exception_Password_Mismatch
 	 * @throws \queryException|ParseFatalException|Domain_User_Exception_AuthMethodDisabled
 	 */
-	public static function changePassword(int $user_id, string $session_uniq, string $password, string $password_new):void {
+	public static function changePassword(int $user_id, string $session_uniq, string $password, string $password_new): void
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -59,7 +60,22 @@ class Domain_User_Scenario_Api_Security_Mail {
 
 		// меняем пароль
 		Domain_User_Action_Password_Mail::changePassword(
-			$user_id, $user_security->mail, $password, $password_new, $password_mail_story_data->password_mail_story_id
+			$user_id,
+			$user_security->mail,
+			$password,
+			$password_new,
+			$password_mail_story_data->password_mail_story_id
+		);
+
+		$user_agent = getUa();
+
+		// отправляем в siem успешную смену пароля
+		Domain_Analytic_Entity_Siem::passwordChangeSuccess(
+			$user_id,
+			getDeviceId(),
+			getIp(),
+			Type_Api_Platform::getDeviceName($user_agent),
+			Type_Api_Platform::getAppNameByUserAgent($user_agent),
 		);
 
 		// удаляем процесс из кеша
@@ -77,7 +93,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws \queryException
 	 * @throws cs_blockException|Domain_User_Exception_AuthMethodDisabled
 	 */
-	public static function tryResetPassword(int $user_id, string $session_uniq):array {
+	public static function tryResetPassword(int $user_id, string $session_uniq): array
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -107,16 +124,19 @@ class Domain_User_Scenario_Api_Security_Mail {
 				$e->setNextAttempt($story->getExpiresAt());
 				throw $e;
 			}
-		} catch (cs_CacheIsEmpty|Domain_User_Exception_Password_StoryIsExpired|Domain_User_Exception_Password_StoryIsNotActive|
-		Domain_User_Exception_Password_StoryIsSuccess|Domain_User_Exception_Password_NotFound|Domain_User_Exception_Password_StoryIsNotActive) {
+		} catch (cs_CacheIsEmpty | Domain_User_Exception_Password_StoryIsExpired | Domain_User_Exception_Password_StoryIsNotActive |
+		Domain_User_Exception_Password_StoryIsSuccess | Domain_User_Exception_Password_NotFound | Domain_User_Exception_Password_StoryIsNotActive) {
 
 			// создаем новый процесс
-			$story                  = Domain_User_Entity_PasswordMail_Story::createNewStory(
-				$user_id, $session_uniq, Domain_User_Entity_PasswordMail_Story::TYPE_RESET_PASSWORD
+			$story = Domain_User_Entity_PasswordMail_Story::createNewStory(
+				$user_id,
+				$session_uniq,
+				Domain_User_Entity_PasswordMail_Story::TYPE_RESET_PASSWORD
 			);
 			$password_mail_story_id = Gateway_Db_PivotMail_MailPasswordStory::insert($story->getStoryData());
 			$story                  = Domain_User_Entity_PasswordMail_Story::updateStory(
-				$story->getStoryData(), ["password_mail_story_id" => $password_mail_story_id]
+				$story->getStoryData(),
+				["password_mail_story_id" => $password_mail_story_id]
 			);
 			$story->storeInSessionCache($session_uniq, Domain_User_Entity_PasswordMail_Story::TYPE_RESET_PASSWORD);
 
@@ -143,7 +163,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws cs_InvalidConfirmCode
 	 * @throws cs_WrongCode
 	 */
-	public static function confirmResetPassword(int $user_id, string $session_uniq, string $code, string $password_mail_story_map):void {
+	public static function confirmResetPassword(int $user_id, string $session_uniq, string $code, string $password_mail_story_map): void
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -203,7 +224,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws \parseException
 	 * @throws Domain_User_Exception_UserNotAuthorized
 	 */
-	public static function finishResetPassword(int $user_id, string $session_uniq, string $password, string $password_mail_story_map):void {
+	public static function finishResetPassword(int $user_id, string $session_uniq, string $password, string $password_mail_story_map): void
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -249,7 +271,6 @@ class Domain_User_Scenario_Api_Security_Mail {
 	/**
 	 * добавляем почту (начало процесса)
 	 *
-	 * @return array
 	 * @throws Domain_User_Exception_AuthMethodDisabled
 	 * @throws Domain_User_Exception_AuthStory_Mail_DomainNotAllowed
 	 * @throws Domain_User_Exception_Mail_AlreadyExist
@@ -259,7 +280,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws \queryException
 	 * @throws Domain_User_Exception_Security_UserWasRegisteredBySso
 	 */
-	public static function add(int $user_id, string $session_uniq, string $mail):array {
+	public static function add(int $user_id, string $session_uniq, string $mail): array
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -289,7 +311,7 @@ class Domain_User_Scenario_Api_Security_Mail {
 
 			$story      = Domain_User_Entity_Security_AddMail_Story::getFromSessionCache($mail)->assertNotExpire()->assertNotSuccess();
 			$story_code = Domain_User_Entity_Security_AddMail_CodeStory::getFromSessionCache($mail)->assertNotSuccess();
-		} catch (cs_CacheIsEmpty|Domain_User_Exception_Mail_StoryIsExpired|Domain_User_Exception_Mail_StoryIsSuccess) {
+		} catch (cs_CacheIsEmpty | Domain_User_Exception_Mail_StoryIsExpired | Domain_User_Exception_Mail_StoryIsSuccess) {
 			[$story, $story_code] = Domain_User_Action_Security_AddMail_CreateStory::do($user_id, $session_uniq, $mail);
 		}
 
@@ -321,7 +343,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \parseException
 	 */
-	public static function setPasswordOnShortAdd(int $user_id, string $add_mail_story_key, string $password):string {
+	public static function setPasswordOnShortAdd(int $user_id, string $add_mail_story_key, string $password): string
+	{
 
 		$add_mail_story_map = Type_Pack_AddMailStory::doDecrypt($add_mail_story_key);
 
@@ -353,7 +376,6 @@ class Domain_User_Scenario_Api_Security_Mail {
 	/**
 	 * устанавливаем пароль при добавлении почты (полный сценарий - второй шаг)
 	 *
-	 * @return array
 	 * @throws Domain_User_Exception_AuthStory_Mail_DomainNotAllowed
 	 * @throws Domain_User_Exception_AuthMethodDisabled
 	 * @throws Domain_User_Exception_Mail_AlreadyExist
@@ -366,7 +388,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \queryException
 	 */
-	public static function setPasswordOnFullAdd(int $user_id, string $add_mail_story_key, string $password):array {
+	public static function setPasswordOnFullAdd(int $user_id, string $add_mail_story_key, string $password): array
+	{
 
 		$add_mail_story_map = Type_Pack_AddMailStory::doDecrypt($add_mail_story_key);
 
@@ -389,9 +412,9 @@ class Domain_User_Scenario_Api_Security_Mail {
 		// устанавливаем пароль
 		try {
 			[$story, $story_code] = Domain_User_Action_Mail_Add::doSetPasswordOnFullAdd($user_id, $add_mail_story_map, $mail, $password);
-		} catch (Domain_User_Exception_AuthStory_Mail_DomainNotAllowed|Domain_User_Exception_Mail_IsTaken|Domain_User_Exception_Mail_AlreadyExist
-		|Domain_User_Exception_Mail_AlreadyExist|Domain_User_Exception_UserNotAuthorized|Domain_User_Exception_Mail_StoryNotFound
-		|Domain_User_Exception_Mail_StoryIsExpired|Domain_User_Exception_Mail_StoryIsNotActive|Domain_User_Exception_Mail_StoryIsSuccess $e) {
+		} catch (Domain_User_Exception_AuthStory_Mail_DomainNotAllowed | Domain_User_Exception_Mail_IsTaken | Domain_User_Exception_Mail_AlreadyExist
+		| Domain_User_Exception_Mail_AlreadyExist | Domain_User_Exception_UserNotAuthorized | Domain_User_Exception_Mail_StoryNotFound
+		| Domain_User_Exception_Mail_StoryIsExpired | Domain_User_Exception_Mail_StoryIsNotActive | Domain_User_Exception_Mail_StoryIsSuccess $e) {
 
 			Domain_User_Action_Mail_Add::incErrorCount($add_mail_story_map);
 			throw $e;
@@ -418,7 +441,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws cs_CacheIsEmpty
 	 * @throws cs_WrongCode
 	 */
-	public static function confirmCodeOnFullAdd(int $user_id, string $add_mail_story_key, string $code):string {
+	public static function confirmCodeOnFullAdd(int $user_id, string $add_mail_story_key, string $code): string
+	{
 
 		$add_mail_story_map = Type_Pack_AddMailStory::doDecrypt($add_mail_story_key);
 
@@ -454,7 +478,6 @@ class Domain_User_Scenario_Api_Security_Mail {
 	/**
 	 * Метод переотправки проверочного кода по почте для авторизованного пользователя
 	 *
-	 * @return array
 	 * @throws Domain_User_Exception_AuthMethodDisabled
 	 * @throws Domain_User_Exception_Mail_AlreadyExist
 	 * @throws Domain_User_Exception_Mail_CodeResendCountExceeded
@@ -476,7 +499,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \queryException
 	 */
-	public static function resendCode(int $user_id, string $mail_story_key, string $mail_story_type):array {
+	public static function resendCode(int $user_id, string $mail_story_key, string $mail_story_type): array
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -507,7 +531,6 @@ class Domain_User_Scenario_Api_Security_Mail {
 	/**
 	 * переотправляем проверочный код для добавления почты
 	 *
-	 * @return array
 	 * @throws Domain_User_Exception_Mail_AlreadyExist
 	 * @throws Domain_User_Exception_Mail_CodeResendCountExceeded
 	 * @throws Domain_User_Exception_Mail_CodeResendNotAvailable
@@ -517,7 +540,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws Domain_User_Exception_UserNotAuthorized
 	 * @throws \queryException
 	 */
-	protected static function _resendCodeForAddMail(int $user_id, string $add_mail_story_map):array {
+	protected static function _resendCodeForAddMail(int $user_id, string $add_mail_story_map): array
+	{
 
 		// проверяем что почта не установлена
 		try {
@@ -560,7 +584,6 @@ class Domain_User_Scenario_Api_Security_Mail {
 	/**
 	 * переотправляем проверочный код для сброса пароля
 	 *
-	 * @return array
 	 * @throws Domain_User_Exception_Mail_CodeResendCountExceeded
 	 * @throws Domain_User_Exception_Mail_CodeResendNotAvailable
 	 * @throws Domain_User_Exception_Mail_NotFound
@@ -572,7 +595,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws Domain_User_Exception_UserNotAuthorized
 	 * @throws \queryException
 	 */
-	protected static function _resendCodeForResetPasswordMail(int $user_id, string $password_mail_story_map):array {
+	protected static function _resendCodeForResetPasswordMail(int $user_id, string $password_mail_story_map): array
+	{
 
 		// проверяем что почта не установлена
 		try {
@@ -608,7 +632,6 @@ class Domain_User_Scenario_Api_Security_Mail {
 	/**
 	 * переотправляем проверочный код для смены почты
 	 *
-	 * @return array
 	 * @throws Domain_User_Exception_Mail_CodeResendCountExceeded
 	 * @throws Domain_User_Exception_Mail_CodeResendNotAvailable
 	 * @throws Domain_User_Exception_Mail_NotFound
@@ -619,7 +642,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws Domain_User_Exception_Security_Mail_Change_StoryNotFound
 	 * @throws ParseFatalException
 	 */
-	protected static function _resendCodeForChangeMail(int $user_id, string $change_mail_story_map):array {
+	protected static function _resendCodeForChangeMail(int $user_id, string $change_mail_story_map): array
+	{
 
 		// проверяем что почта установлена
 		try {
@@ -663,7 +687,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws ParseFatalException
 	 * @throws \queryException
 	 */
-	public static function change(int $user_id, string $session_uniq):array {
+	public static function change(int $user_id, string $session_uniq): array
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -686,7 +711,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 		$story    = Domain_User_Entity_ChangeMail_Story::createNewStory($user_id, $session_uniq, Domain_User_Entity_ChangeMail_Story::STAGE_FIRST);
 		$story_id = Gateway_Db_PivotMail_MailChangeStory::insert($story->getStoryData());
 		$story    = Domain_User_Entity_ChangeMail_Story::updateStory(
-			$story->getStoryData(), ["change_mail_story_id" => $story_id]
+			$story->getStoryData(),
+			["change_mail_story_id" => $story_id]
 		);
 		$story->storeInSessionCache($session_uniq);
 
@@ -719,7 +745,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public static function setOnShortChange(int $user_id, string $session_uniq, string $change_mail_story_map, string $mail):string {
+	public static function setOnShortChange(int $user_id, string $session_uniq, string $change_mail_story_map, string $mail): string
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -745,7 +772,7 @@ class Domain_User_Scenario_Api_Security_Mail {
 		Domain_User_Entity_Mail::assertShortScenario();
 
 		// получаем story смены почты
-		$story      = Domain_User_Entity_ChangeMail_Story::getByMap($change_mail_story_map)
+		$story = Domain_User_Entity_ChangeMail_Story::getByMap($change_mail_story_map)
 			->assertUserAuthorized($user_id)
 			->assertNotSuccess()
 			->assertNotExpired()
@@ -763,6 +790,7 @@ class Domain_User_Scenario_Api_Security_Mail {
 		// обрабатываем успех и чистим кеши
 		$story->handleSuccess($story->getStoryData())->deleteSessionCache($session_uniq);
 		$code_story->handleSuccessCode($code_story->getCodeStoryData())->deleteSessionCache($session_uniq, Domain_User_Entity_ChangeMail_Story::STAGE_SECOND);
+
 		return $mail;
 	}
 
@@ -780,7 +808,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws ParseFatalException
 	 * @throws cs_WrongCode
 	 */
-	public static function confirmOldByCodeOnFullChange(int $user_id, string $session_uniq, string $change_mail_story_map, string $code):void {
+	public static function confirmOldByCodeOnFullChange(int $user_id, string $session_uniq, string $change_mail_story_map, string $code): void
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -845,7 +874,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws \queryException
 	 * @throws Domain_User_Exception_Mail_IsTaken
 	 */
-	public static function setOnFullChange(int $user_id, string $session_uniq, string $change_mail_story_map, string $mail):array {
+	public static function setOnFullChange(int $user_id, string $session_uniq, string $change_mail_story_map, string $mail): array
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -929,7 +959,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws cs_CacheIsEmpty
 	 * @throws cs_WrongCode
 	 */
-	public static function confirmNewByCodeOnFullChange(int $user_id, string $session_uniq, string $change_mail_story_map, string $code):string {
+	public static function confirmNewByCodeOnFullChange(int $user_id, string $session_uniq, string $change_mail_story_map, string $code): string
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);
@@ -938,7 +969,7 @@ class Domain_User_Scenario_Api_Security_Mail {
 		Domain_User_Entity_Mail::assertFullScenario();
 
 		// получаем story смены почты
-		$story      = Domain_User_Entity_ChangeMail_Story::getByMap($change_mail_story_map)
+		$story = Domain_User_Entity_ChangeMail_Story::getByMap($change_mail_story_map)
 			->assertUserAuthorized($user_id)
 			->assertNotSuccess()
 			->assertNotExpired()
@@ -947,13 +978,14 @@ class Domain_User_Scenario_Api_Security_Mail {
 
 		// проверяем что данная почта не занята другим пользователем
 		Domain_User_Entity_Mail::assertMailNotTakenAnotherUser($code_story->getCodeStoryData()->mail_new, $user_id);
-
+		$user_agent = getUa();
 		try {
 			$code_story->assertCodeErrorCountLimitNotExceeded()->assertEqualCode($code);
 		} catch (Domain_User_Exception_Security_Mail_Change_CodeErrorCountExceeded $e) {
 
 			// выкидываем ошибку о том, что смена почты временно заблокирована (из-за превышения кол-ва ошибок)
 			$e->setNextAttempt($story->getExpiresAt());
+
 			throw $e;
 		} catch (cs_WrongCode $e) {
 
@@ -980,10 +1012,6 @@ class Domain_User_Scenario_Api_Security_Mail {
 	/**
 	 * Метод подтверждения пароля
 	 *
-	 * @param int    $user_id
-	 * @param string $password
-	 * @param string $confirm_mail_password_story_map
-	 *
 	 * @throws Domain_User_Exception_Confirmation_Mail_ErrorCountExceeded
 	 * @throws Domain_User_Exception_Confirmation_Mail_InvalidMailPasswordStoryKey
 	 * @throws Domain_User_Exception_Confirmation_Mail_IsConfirmed
@@ -994,7 +1022,8 @@ class Domain_User_Scenario_Api_Security_Mail {
 	 * @throws ParseFatalException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public static function confirmMailPasswordStory(int $user_id, string $password, string $confirm_mail_password_story_map):void {
+	public static function confirmMailPasswordStory(int $user_id, string $password, string $confirm_mail_password_story_map): void
+	{
 
 		// проверяем аутентификация по почте включена в конфиге
 		Domain_User_Entity_Auth_Method::assertMethodEnabled(Domain_User_Entity_Auth_Method::METHOD_MAIL);

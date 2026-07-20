@@ -1,4 +1,7 @@
-<?php /** @noinspection DuplicatedCode */
+<?php
+
+declare(strict_types=1);
+/** @noinspection DuplicatedCode */
 
 namespace Compass\Userbot;
 
@@ -6,26 +9,27 @@ namespace Compass\Userbot;
  * Класс шардинга для изоляции настроек подключения внутри модуля.
  * @package Compass\Userbot
  */
-class ShardingGateway extends \ShardingGateway {
-
+class ShardingGateway extends \ShardingGateway
+{
 	protected static ?ShardingGateway $_instance = null;
 
 	/**
 	 * Инициализирует экземпляр работы с шардящимися подключениями.
 	 *
-	 * @return static
 	 * @throws \parseException
 	 */
-	public static function instance():static {
+	public static function instance(): static
+	{
 
 		if (is_null(static::$_instance)) {
 
 			static::$_instance = new ShardingGateway([
-				ShardingGateway::DB_KEY     => getConfig("SHARDING_MYSQL"),
-				ShardingGateway::BUS_KEY    => getConfig("SHARDING_RABBIT"),
-				ShardingGateway::CACHE_KEY  => getConfig("SHARDING_MCACHE"),
-				ShardingGateway::RPC_KEY    => getConfig("SHARDING_GO"),
-				ShardingGateway::SEARCH_KEY => getConfig("SHARDING_MANTICORE"),
+				ShardingGateway::DB_KEY         => getConfig("SHARDING_MYSQL"),
+				ShardingGateway::BUS_KEY        => getConfig("SHARDING_RABBIT"),
+				ShardingGateway::CACHE_KEY      => getConfig("SHARDING_MCACHE"),
+				ShardingGateway::RPC_KEY        => getConfig("SHARDING_GO"),
+				ShardingGateway::SEARCH_KEY     => getConfig("SHARDING_MANTICORE"),
+				ShardingGateway::MSG_BROKER_KEY => null,
 			]);
 		}
 

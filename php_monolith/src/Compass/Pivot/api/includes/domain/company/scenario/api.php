@@ -14,7 +14,7 @@ class Domain_Company_Scenario_Api {
 	 *
 	 * @long
 	 */
-	public static function create(int $user_id, int $avatar_color_id, string $name, string $client_company_id, string|false $avatar_file_key):Struct_User_Company {
+	public static function create(int $user_id, int $avatar_color_id, string $name, string $client_company_id, string|false $avatar_file_key, ?int $vacant_company_id = null):Struct_User_Company {
 
 		$name = Domain_Company_Entity_Sanitizer::sanitizeCompanyName($name);
 
@@ -64,7 +64,7 @@ class Domain_Company_Scenario_Api {
 		// выполняем действия по добавлению компании
 		/** @var Struct_Db_PivotCompany_Company $company */
 		$is_need_create_intercom_conversation = $is_user_first_company; // если это первое пространство пользователя, то нужно создать диалог в intercom
-		[$company, $user_company] = Domain_Company_Action_Take::do($user_id, $avatar_color_id, $name, $client_company_id, $avatar_file_map, $is_need_create_intercom_conversation);
+		[$company, $user_company] = Domain_Company_Action_Take::do($user_id, $avatar_color_id, $name, $client_company_id, $avatar_file_map, $is_need_create_intercom_conversation, $vacant_company_id);
 
 		// получаем данные связи пользователь-компания
 		$user_company_api = Struct_User_Company::createFromCompanyStruct($company, Struct_User_Company::ACTIVE_STATUS, $user_company->order);

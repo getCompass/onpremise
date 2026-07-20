@@ -21,7 +21,7 @@ class Domino_CreateTeam
 	/**
 	 * Запускаем работу скрипта
 	 */
-	public function run(string $company_name): void
+	public function run(string $company_name, int $vacant_company_id = 0): void
 	{
 
 		$user_id = Domain_User_Entity_OnpremiseRoot::getUserId();
@@ -49,7 +49,8 @@ class Domino_CreateTeam
 				Domain_Company_Entity_Company::ALLOW_AVATAR_COLOR_ID_LIST[array_rand(Domain_Company_Entity_Company::ALLOW_AVATAR_COLOR_ID_LIST)],
 				$company_name,
 				generateUUID(),
-				false
+				false,
+				$vacant_company_id > 0 ? $vacant_company_id : null
 			);
 
 			$company = Gateway_Db_PivotCompany_CompanyList::getOne($user_company_api->company_id);
@@ -86,7 +87,8 @@ class Domino_CreateTeam
 			exit(0);
 		}
 
-		$input_company_name = Type_Script_InputParser::getArgumentValue("--name", default: "", required: false);
+		$input_company_name  = Type_Script_InputParser::getArgumentValue("--name", default: "", required: false);
+		$vacant_company_id   = Type_Script_InputParser::getArgumentValue("--vacant-company-id", Type_Script_InputParser::TYPE_INT, 0, false);
 
 		try {
 
@@ -107,7 +109,7 @@ class Domino_CreateTeam
 			return;
 		}
 
-		$this->run($this->_company_name);
+		$this->run($this->_company_name, $vacant_company_id);
 	}
 }
 

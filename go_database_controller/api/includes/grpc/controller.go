@@ -61,7 +61,7 @@ func (s *Server) BindPort(ctx context.Context, in *pb.BindPortRequestStruct) (*p
 
 	// запускаем рутину и пробуем дождаться выполнения
 	// начало процесса мгновенное, туда можно не передавать контекст
-	routineKey := keeper.BeginBindPort(in.GetPort(), in.GetHost(), in.GetCompanyId(), in.NonExistingDataDirPolicy, in.DuplicateDataDirPolicy)
+	routineKey := keeper.BeginBindPort(in.GetPort(), in.GetHost(), in.GetCompanyId(), in.NonExistingDataDirPolicy, in.DuplicateDataDirPolicy, in.GetMysqlSettingsJson())
 	waitCtx, cancel := context.WithDeadline(ctx, time.Now().Add(5*time.Second))
 
 	// дожидаемся ответа рутины
@@ -237,6 +237,12 @@ func (s *Server) GetRoutineStatus(ctx context.Context, in *pb.GetRoutineStatusRe
 	}
 
 	return &response, nil
+}
+
+// SetPortMysqlSettings сохраняет настройки MySQL для порта компании.
+func (s *Server) SetPortMysqlSettings(ctx context.Context, in *pb.SetPortMysqlSettingsRequestStruct) (*pb.NullResponseStruct, error) {
+
+	return &pb.NullResponseStruct{}, keeper.SetPortMysqlSettings(ctx, in.GetPort(), in.GetHost(), in.GetCompanyId(), in.GetMysqlSettingsJson())
 }
 
 // SyncPortStatus выполняет синхронизацию порта между pivot-сервером и контроллером

@@ -1,31 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Compass\FileBalancer;
 
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
+use CompassApp\Company\CompanyProvider;
 
 /**
  * класс для работы с go_sender - микросервисом для общения с клиентами по websocket
  * PHP может слать запросы к go_sender указывая массив пользователей которым необходимо разослать эвенты
  * либо отправит push-уведомление если пользователя нет онлайн (и PHP попросил это сделать)
  */
-class Gateway_Bus_Sender {
-
+class Gateway_Bus_Sender
+{
 	protected const _WS_CHANNEL_PIVOT  = "pivot"; // канал всок для пивота
 	protected const _WS_CHANNEL_DOMINO = "domino"; // канал всок для домино
 
 	/**
 	 * отправляем ws при прослушивании голосовухи
 	 *
-	 * @param int    $user_id
-	 * @param string $file_map
-	 *
 	 * @throws busException
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 */
-	public static function doFileVoiceListen(int $user_id, string $file_map):void {
+	public static function doFileVoiceListen(int $user_id, string $file_map): void
+	{
 
 		// формируем список пользователей на отправку ws
 		$user_list[] = self::makeTalkingUserItem($user_id, false);
@@ -38,14 +39,12 @@ class Gateway_Bus_Sender {
 	/**
 	 * отправляем ws при обновлении статуса файла
 	 *
-	 * @param int    $user_id
-	 * @param string $file_map
-	 *
 	 * @throws busException
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 */
-	public static function fileStatusUpdated(int $user_id, array $prepared_file_row):void {
+	public static function fileStatusUpdated(int $user_id, array $prepared_file_row): void
+	{
 
 		// формируем список пользователей на отправку ws
 		$user_list[] = self::makeTalkingUserItem($user_id, false);
@@ -62,15 +61,13 @@ class Gateway_Bus_Sender {
 	 * отправляем событие
 	 *
 	 * @param Struct_Sender_Event[] $event_version_list
-	 * @param array                 $user_list
-	 * @param array                 $push_data
-	 * @param array                 $ws_users
 	 *
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @throws busException
 	 * @throws ParseFatalException
 	 */
-	protected static function _sendEvent(array $event_version_list, array $user_list, array $push_data = [], array $ws_users = [], string $routine_key = ""):void {
+	protected static function _sendEvent(array $event_version_list, array $user_list, array $push_data = [], array $ws_users = [], string $routine_key = ""): void
+	{
 
 		// проверяем что прислали корректные параметры
 		self::_assertSendEventParameters($event_version_list);
@@ -105,7 +102,8 @@ class Gateway_Bus_Sender {
 	 *
 	 * @throws ParseFatalException
 	 */
-	protected static function _assertSendEventParameters(array $event_version_list):void {
+	protected static function _assertSendEventParameters(array $event_version_list): void
+	{
 
 		// если прислали пустой массив версий метода
 		if (count($event_version_list) < 1) {
@@ -125,18 +123,12 @@ class Gateway_Bus_Sender {
 	/**
 	 * Отправить событие в go_sender
 	 *
-	 * @param string $event
-	 * @param array  $user_list
-	 * @param array  $event_version_list
-	 * @param array  $ws_user_list
-	 * @param array  $push_data
-	 * @param string $routine_key
-	 *
 	 * @long большие структуры
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 */
-	protected static function _sendEventRequest(string $event, array $user_list, array $event_version_list, array $ws_user_list = [], array $push_data = [], string $routine_key = ""):void {
+	protected static function _sendEventRequest(string $event, array $user_list, array $event_version_list, array $ws_user_list = [], array $push_data = [], string $routine_key = ""): void
+	{
 
 		// формируем параметры задачи для rabbitMq
 		$params = [
@@ -152,11 +144,12 @@ class Gateway_Bus_Sender {
 		];
 
 		// подготавливаем event_data (шифруем map -> key)
-		$params = Type_Pack_Main::replaceMapWithKeys($params);
+		$params     = Type_Pack_Main::replaceMapWithKeys($params);
+		$class_name = CompanyProvider::id() === 0 ? \SenderGrpc\SenderSendEventRequestStruct::class : \Company\SenderGrpc\SenderSendEventRequestStruct::class;
 
 		$converted_user_list          = self::_convertReceiverUserListToGrpcStructure($user_list);
 		$converted_event_version_list = self::_convertEventVersionListToGrpcStructure($params["event_version_list"]);
-		$grpc_request                 = new \SenderGrpc\SenderSendEventRequestStruct([
+		$grpc_request                 = new $class_name([
 			"user_list"          => $converted_user_list,
 			"event"              => $params["event"],
 			"event_version_list" => $converted_event_version_list,
@@ -176,17 +169,16 @@ class Gateway_Bus_Sender {
 
 	/**
 	 * конвертируем user_list в структуру понятную grpc
-	 *
-	 * @param array $user_list
-	 *
-	 * @return array
 	 */
-	protected static function _convertReceiverUserListToGrpcStructure(array $user_list):array {
+	protected static function _convertReceiverUserListToGrpcStructure(array $user_list): array
+	{
 
 		$output = [];
+
+		$class_name = CompanyProvider::id() == 0 ? \SenderGrpc\EventUserStruct::class : \Company\SenderGrpc\EventUserStruct::class;
 		foreach ($user_list as $user_item) {
 
-			$output[] = new \SenderGrpc\EventUserStruct([
+			$output[] = new $class_name([
 				"user_id"   => $user_item["user_id"],
 				"need_push" => $user_item["need_push"],
 			]);
@@ -197,17 +189,16 @@ class Gateway_Bus_Sender {
 
 	/**
 	 * конвертируем event_version_list в структуру понятную grpc
-	 *
-	 * @param array $event_version_list
-	 *
-	 * @return array
 	 */
-	protected static function _convertEventVersionListToGrpcStructure(array $event_version_list):array {
+	protected static function _convertEventVersionListToGrpcStructure(array $event_version_list): array
+	{
 
 		$output = [];
+
+		$class_name = CompanyProvider::id() === 0 ? \SenderGrpc\EventVersionItem::class : \Company\SenderGrpc\EventVersionItem::class;
 		foreach ($event_version_list as $event_version_item) {
 
-			$output[] = new \SenderGrpc\EventVersionItem([
+			$output[] = new $class_name([
 				"version" => (int) $event_version_item["version"],
 				"data"    => toJson((object) $event_version_item["data"]),
 			]);
@@ -223,12 +214,10 @@ class Gateway_Bus_Sender {
 	/**
 	 * Формируем объект talking_user_item
 	 *
-	 * @param int  $user_id
-	 * @param bool $is_need_push
-	 *
 	 * @return int[]
 	 */
-	public static function makeTalkingUserItem(int $user_id, bool $is_need_push):array {
+	public static function makeTalkingUserItem(int $user_id, bool $is_need_push): array
+	{
 
 		return [
 			"user_id"   => $user_id,
@@ -239,20 +228,17 @@ class Gateway_Bus_Sender {
 	/**
 	 * Выполняем grpc запрос
 	 *
-	 * @param string                            $method_name
-	 * @param \Google\Protobuf\Internal\Message $request
-	 *
-	 * @return array
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
 	 * @noinspection PhpUndefinedNamespaceInspection \Google\Protobuf\Internal\Message что ты такое
 	 * @noinspection PhpUndefinedClassInspection \Google\Protobuf\Internal\Message что ты такое
 	 */
-	protected static function _doCallGrpc(string $method_name, \Google\Protobuf\Internal\Message $request):array {
+	protected static function _doCallGrpc(string $method_name, \Google\Protobuf\Internal\Message $request): array
+	{
 
-		$connection = ShardingGateway::rpc("sender", \SenderGrpc\senderClient::class);
+		$sender_client_class = CompanyProvider::id() === 0 ? \SenderGrpc\senderClient::class : \Company\SenderGrpc\senderClient::class;
+		$connection          = ShardingGateway::rpc("sender", $sender_client_class);
 
 		return $connection->callGrpc($method_name, $request);
 	}
-
 }

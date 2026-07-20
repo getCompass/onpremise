@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection DuplicatedCode */
 
 namespace Compass\FileBalancer;
@@ -25,11 +27,12 @@ class ShardingGateway extends \ShardingGateway
 		if (is_null(static::$_instance)) {
 
 			static::$_instance = new ShardingGateway([
-				ShardingGateway::DB_KEY     => getConfig("SHARDING_MYSQL"),
-				ShardingGateway::BUS_KEY    => getConfig("SHARDING_RABBIT"),
-				ShardingGateway::CACHE_KEY  => getConfig("SHARDING_MCACHE"),
-				ShardingGateway::RPC_KEY    => getConfig("SHARDING_GO"),
-				ShardingGateway::SEARCH_KEY => getConfig("SHARDING_MANTICORE"),
+				ShardingGateway::DB_KEY         => getConfig("SHARDING_MYSQL"),
+				ShardingGateway::BUS_KEY        => getConfig("SHARDING_RABBIT"),
+				ShardingGateway::CACHE_KEY      => getConfig("SHARDING_MCACHE"),
+				ShardingGateway::RPC_KEY        => getConfig("SHARDING_GO"),
+				ShardingGateway::SEARCH_KEY     => getConfig("SHARDING_MANTICORE"),
+				ShardingGateway::MSG_BROKER_KEY => null,
 			]);
 		}
 
@@ -49,7 +52,6 @@ class ShardingGateway extends \ShardingGateway
 	/**
 	 * Возвращает класс для работы с шиной данных.
 	 *
-	 *
 	 * @throws ParseFatalException
 	 */
 	public static function rabbit(string $bus = "bus"): \Rabbit
@@ -58,7 +60,7 @@ class ShardingGateway extends \ShardingGateway
 		$rabbit = parent::rabbit();
 
 		if (DOMINO_ID !== "") {
-			$rabbit->setPostfixQueue(COMPANY_ID % 10);
+			$rabbit->setPostfixQueue((string) (COMPANY_ID % 10));
 		}
 
 		return $rabbit;

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Compass\Pivot;
 
 /**
  * Сценарии для работы с устройствами пользователя
  */
-class Domain_User_Scenario_Api_Security_Device {
-
+class Domain_User_Scenario_Api_Security_Device
+{
 	/**
 	 * Получить авторизованные устройства пользователя.
 	 *
@@ -15,12 +17,13 @@ class Domain_User_Scenario_Api_Security_Device {
 	 * @throws \BaseFrame\Exception\Gateway\QueryFatalException
 	 * @throws \queryException
 	 */
-	public static function getAuthenticatedList(int $user_id, string $current_session_uniq):array {
+	public static function getAuthenticatedList(int $user_id, string $current_session_uniq): array
+	{
 
 		$session_active_list = Gateway_Db_PivotUser_SessionActiveList::getActiveSessionList($user_id);
 
 		// сортируем полученные сессии по времени авторизации по убыванию
-		usort($session_active_list, function(Struct_Db_PivotUser_SessionActive $a, Struct_Db_PivotUser_SessionActive $b) {
+		usort($session_active_list, function (Struct_Db_PivotUser_SessionActive $a, Struct_Db_PivotUser_SessionActive $b) {
 
 			return $b->login_at <=> $a->login_at;
 		});
@@ -30,7 +33,7 @@ class Domain_User_Scenario_Api_Security_Device {
 		foreach ($session_active_list as $session_active) {
 
 			// если устройство авторизовано на сайте, то пропускаем его
-			if (Domain_User_Entity_SessionExtra::getLoginType($session_active->extra) == Domain_User_Entity_SessionExtra::ONPREMISE_WEB_LOGIN_TYPE) {
+			if (Domain_User_Entity_SessionExtra::getLoginType($session_active->extra) === Domain_User_Entity_SessionExtra::ONPREMISE_WEB_LOGIN_TYPE) {
 				continue;
 			}
 
@@ -38,7 +41,7 @@ class Domain_User_Scenario_Api_Security_Device {
 			$public_session_id = Domain_User_Action_Security_Device_GetSessionId::doEncrypt($session_active->session_uniq);
 
 			// для текущей сессии пользователя
-			if ($session_active->session_uniq == $current_session_uniq) {
+			if ($session_active->session_uniq === $current_session_uniq) {
 
 				$current_session_device = Apiv2_Format::sessionDevice($public_session_id, $session_active, true);
 				continue;
@@ -63,7 +66,8 @@ class Domain_User_Scenario_Api_Security_Device {
 	 * @throws \BaseFrame\Exception\Gateway\QueryFatalException
 	 * @throws \parseException
 	 */
-	public static function invalidate(int $user_id, string $current_session_uniq, string $public_session_id):void {
+	public static function invalidate(int $user_id, string $current_session_uniq, string $public_session_id): void
+	{
 
 		$session_uniq = Domain_User_Action_Security_Device_GetSessionId::doDecrypt($public_session_id);
 
@@ -73,7 +77,7 @@ class Domain_User_Scenario_Api_Security_Device {
 		foreach ($session_active_list as $session) {
 
 			// для текущей сессии проверяем, что сессия была авторизована давно
-			if ($session->session_uniq == $current_session_uniq) {
+			if ($session->session_uniq === $current_session_uniq) {
 
 				if (Domain_User_Action_Security_Device_IsRecentlyLoginSession::do($session->login_at)) {
 					throw new Domain_User_Exception_Security_Device_RecentlyLoginSession("current used session is recently login");
@@ -102,6 +106,20 @@ class Domain_User_Scenario_Api_Security_Device {
 
 		// отправляем ws-событие с device_id устройства
 		Gateway_Bus_SenderBalancer::authenticatedDeviceLogout($user_id, [$device_id]);
+
+		// логируем инвалидацию сессии
+		$current_user_agent = getUa();
+		Domain_Analytic_Entity_Siem::sessionInvalidation(
+			$user_id,
+			getDeviceId(),
+			getIp(),
+			Type_Api_Platform::getDeviceName($current_user_agent),
+			Type_Api_Platform::getVersion($current_user_agent),
+			Domain_User_Entity_SessionExtra::getDeviceId($session_for_logout->extra),
+			$session_for_logout->ip_address,
+			Domain_User_Entity_SessionExtra::getDeviceName($session_for_logout->extra),
+			Domain_User_Entity_SessionExtra::getAppVersion($session_for_logout->extra),
+		);
 	}
 
 	/**
@@ -114,7 +132,8 @@ class Domain_User_Scenario_Api_Security_Device {
 	 * @throws \parseException
 	 * @throws cs_IncorrectSaltVersion
 	 */
-	public static function invalidateOther(int $user_id, string $current_session_uniq):void {
+	public static function invalidateOther(int $user_id, string $current_session_uniq): void
+	{
 
 		$session_active_list = Gateway_Db_PivotUser_SessionActiveList::getActiveSessionList($user_id);
 
@@ -123,7 +142,7 @@ class Domain_User_Scenario_Api_Security_Device {
 		foreach ($session_active_list as $session_active) {
 
 			// если сессия принадлежит текущей сессии пользователя - пропускаем
-			if ($session_active->session_uniq == $current_session_uniq) {
+			if ($session_active->session_uniq === $current_session_uniq) {
 
 				if (Domain_User_Action_Security_Device_IsRecentlyLoginSession::do($session_active->login_at)) {
 					throw new Domain_User_Exception_Security_Device_RecentlyLoginSession("current used session is recently login");
@@ -152,5 +171,24 @@ class Domain_User_Scenario_Api_Security_Device {
 
 		// отправляем ws-событие с device_id устройства
 		Gateway_Bus_SenderBalancer::authenticatedDeviceLogout($user_id, $device_id_list);
+
+		$current_user_agent = getUa();
+
+		// отправляем события о том, что сессия была инвалидирована
+		foreach ($filtered_active_session_list as $session) {
+
+			// логируем инвалидацию сессии
+			Domain_Analytic_Entity_Siem::sessionInvalidation(
+				$user_id,
+				getDeviceId(),
+				getIp(),
+				Type_Api_Platform::getDeviceName($current_user_agent),
+				Type_Api_Platform::getVersion($current_user_agent),
+				Domain_User_Entity_SessionExtra::getDeviceId($session->extra),
+				$session->ip_address,
+				Domain_User_Entity_SessionExtra::getDeviceName($session->extra),
+				Domain_User_Entity_SessionExtra::getAppVersion($session->extra),
+			);
+		}
 	}
 }

@@ -283,7 +283,7 @@ class Domain_User_Entity_AuthStory {
 	/**
 	 * получаем время, когда протухнет попытка
 	 */
-	public function getExpiresAt():string {
+	public function getExpiresAt():int {
 
 		return $this->_auth->expires_at;
 	}

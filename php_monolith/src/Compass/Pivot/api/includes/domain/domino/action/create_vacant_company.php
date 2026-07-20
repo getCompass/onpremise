@@ -28,7 +28,7 @@ class Domain_Domino_Action_CreateVacantCompany {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public static function do(Struct_Db_PivotCompanyService_DominoRegistry $domino_row):int {
+	public static function do(Struct_Db_PivotCompanyService_DominoRegistry $domino_row, string $mysql_settings_json = ""):int {
 
 		// добавляем в базу запись для новой компании
 		$company = static::create($domino_row);
@@ -37,7 +37,7 @@ class Domain_Domino_Action_CreateVacantCompany {
 		$port_row = Domain_Domino_Action_Port_LockForCompany::run($domino_row, $company->company_id, Domain_Domino_Entity_Port_Registry::TYPE_COMMON, static::_PORT_LOCK_DURATION);
 
 		// занимаем порт на доминошке
-		Domain_Domino_Action_Port_Bind::run($domino_row, $port_row, $company->company_id, Domain_Domino_Action_Port_Bind::POLICY_CREATING);
+		Domain_Domino_Action_Port_Bind::run($domino_row, $port_row, $company->company_id, Domain_Domino_Action_Port_Bind::POLICY_CREATING, $mysql_settings_json);
 		Gateway_Db_PivotCompanyService_CompanyRegistry::set($company->domino_id, $company->company_id, ["is_mysql_alive" => 1]);
 
 		// поднимаем актуальную миграцию

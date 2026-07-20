@@ -11,7 +11,9 @@
 module:depends('room_destroy');
 
 local util = module:require "util";
+local get_room_from_jid = util.get_room_from_jid;
 local is_healthcheck_room = util.is_healthcheck_room;
+local jid_split = require 'util.jid'.split;
 local main_muc_component_host = module:get_option_string('main_muc');
 local lobby_muc_component_host = module:get_option_string('lobby_muc');
 
@@ -70,6 +72,11 @@ local lobby_muc_service;
 local main_muc_service;
 local main_muc_module;
 
+-- rooms that had lobby enabled: survives room:destroy() so lobby is
+-- automatically re-applied when Jicofo recreates the room.
+-- Cleared only by explicit REST API calls (destroy / disable_lobby).
+local lobby_rooms_registry = {};
+
 
 -- Helper methods to track rooms that have persistent lobby
 local function set_persistent_lobby(room)
@@ -106,11 +113,51 @@ run_when_component_loaded(main_muc_component_host, function(host_module, host_na
         main_muc_service = main_muc;  -- so it can be accessed from lobby muc event handlers
         main_muc_module = main_module;
 
+        -- When Jicofo (or anyone) creates a room that previously had lobby,
+        -- re-enable lobby automatically before anyone can join without it.
+        main_module:hook("muc-room-created", function(event)
+            local room = event.room;
+            if is_healthcheck_room(room.jid) then return; end
+
+            local node = jid_split(room.jid);
+            local entry = lobby_rooms_registry[node];
+            if entry and not room._data.lobbyroom then
+                module:log('info', 'Auto-enabling lobby for recreated room %s', room.jid);
+                room:set_password(entry.password);
+                prosody.events.fire_event("create-persistent-lobby-room", { room = room });
+            end
+        end);
+
+        -- Jicofo applies its stored config (membersonly=false) after joining,
+        -- which would disable lobby. Silently override it for registry rooms
+        -- without sending status 104 (to avoid a config-fight loop with Jicofo).
+        main_module:hook("muc-config-submitted", function(event)
+            local actor, room = event.actor, event.room;
+            if is_healthcheck_room(room.jid) then return; end
+
+            local actor_node = jid_split(actor);
+            if actor_node ~= 'focus' then return; end
+
+            local node = jid_split(room.jid);
+            if not lobby_rooms_registry[node] then return; end
+
+            if event.fields then
+                event.fields['muc#roomconfig_membersonly'] = true;
+            end
+            if not room:get_members_only() then
+                room:set_members_only(true);
+            end
+            if event.status_codes then
+                event.status_codes['104'] = nil;
+            end
+        end, 10);
+
         main_module:hook("muc-occupant-left", function(event)
             -- Check if room should be destroyed when someone leaves the main room
 
             local main_room = event.room;
-            if is_healthcheck_room(main_room.jid) or not has_persistent_lobby(main_room) then
+            if is_healthcheck_room(main_room.jid) or not has_persistent_lobby(main_room)
+                or main_room.destroying then
                 return;
             end
 
@@ -147,9 +194,13 @@ run_when_component_loaded(lobby_muc_component_host, function(host_module, host_n
 
         lobby_module:hook("muc-occupant-left", function(event)
             -- Check if room should be destroyed when someone leaves the lobby
-
             local lobby_room = event.room;
-            local main_room = lobby_room.main_room;
+
+            if not lobby_room.main_room_jid then
+                return;
+            end
+
+            local main_room = get_room_from_jid(lobby_room.main_room_jid);
 
             if not main_room or is_healthcheck_room(main_room.jid) or not has_persistent_lobby(main_room) then
                 return;
@@ -172,6 +223,11 @@ function handle_create_persistent_lobby(event)
 
     set_persistent_lobby(room);
     room:set_persistent(true);
+
+    local node = jid_split(room.jid);
+    lobby_rooms_registry[node] = {
+        password = room:get_password();
+    };
 end
 
 
@@ -200,3 +256,12 @@ function handle_maybe_destroy_main_room(event)
 end
 
 module:hook_global("maybe-destroy-room", handle_maybe_destroy_main_room);
+
+function handle_remove_persistent_lobby_registry(event)
+    if event.room_name then
+        module:log('info', 'Removing room %s from lobby registry', event.room_name);
+        lobby_rooms_registry[event.room_name] = nil;
+    end
+end
+
+module:hook_global('remove-persistent-lobby-registry', handle_remove_persistent_lobby_registry);

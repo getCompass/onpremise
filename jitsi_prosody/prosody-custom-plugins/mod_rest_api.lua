@@ -71,7 +71,7 @@ function create_room(event)
         local room, err = muc.create_room(room_address);
         if room then
 
-            room.quality_level = "high";
+            room.quality_level = "medium";
 
             -- если нужно включить лобби
             if lobby_enabled == "true" or lobby_enabled == "1" then
@@ -187,6 +187,7 @@ function disable_room_lobby(room_name)
         room = room,
         newjid = room.jid,
     });
+    prosody.events.fire_event("remove-persistent-lobby-registry", { room_name = room_name });
 end
 
 --- функция исключения участника из комнаты
@@ -244,6 +245,7 @@ function destroy_room(event)
     end
 
     room:destroy();
+    prosody.events.fire_event("remove-persistent-lobby-registry", { room_name = room_name });
     return { status_code = 200; };
 end
 

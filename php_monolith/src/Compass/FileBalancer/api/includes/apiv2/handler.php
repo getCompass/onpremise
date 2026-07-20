@@ -3,6 +3,9 @@
 namespace Compass\FileBalancer;
 
 use BaseFrame\Handler\Api;
+use BaseFrame\Http\Header\XAuthSrc;
+use BaseFrame\Router\Middleware\GatewayAuthorization;
+use CompassApp\Controller\Middleware\CompanyGatewayAuthorization;
 use CompassApp\Domain\Member\Entity\Permission;
 
 /**
@@ -17,8 +20,8 @@ use CompassApp\Domain\Member\Entity\Permission;
  * 8. соотвественно все методы GLOBAL - анонимны
  * 9. методы регистро НЕ зависимые
  */
-class Apiv2_Handler extends Api implements \RouteHandler {
-
+class Apiv2_Handler extends Api implements \RouteHandler
+{
 	// поддерживаемые методы (при создании новой группы заносятся вручную)
 	public const ALLOW_CONTROLLERS = [
 		"files",
@@ -28,25 +31,26 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	 * Возвращает обслуживаемые методы.
 	 * @return string[]
 	 */
-	public function getServedRoutes():array {
+	public function getServedRoutes(): array
+	{
 
-		return array_map(static fn(string $method) => str_replace("_", ".", $method), static::ALLOW_CONTROLLERS);
+		return array_map(static fn (string $method) => str_replace("_", ".", $method), static::ALLOW_CONTROLLERS);
 	}
 
 	/**
 	 * Возвращает тип обработчика.
-	 * @return string
 	 */
-	public function getType():string {
+	public function getType(): string
+	{
 
 		return "apiv2";
 	}
 
 	/**
 	 * ToString конвертация.
-	 * @return string
 	 */
-	public function __toString():string {
+	public function __toString(): string
+	{
 
 		return static::class;
 	}
@@ -57,7 +61,8 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 	//	@$post_data 	параметры post запроса которые будут использоваться внутри контролеров
 	//	@user_id	для отладки и тестов. действуйет только в режиме cli
 	// @long
-	public function handle(string $route, array $post_data, int $user_id = 0):array {
+	public function handle(string $route, array $post_data, int $user_id = 0): array
+	{
 
 		$extra = [
 			"company_cache_class"           => Gateway_Bus_CompanyCache::class,
@@ -81,6 +86,15 @@ class Apiv2_Handler extends Api implements \RouteHandler {
 
 				$extra["need_user_id"] = $user_id;
 				$authorization_class   = Middleware_WithoutAuthorization::class;
+			}
+
+			// для запросов с API ключом используем авторизацию гейтвея
+			if ((new XAuthSrc())->getValue() === XAuthSrc::AUTH_SRC_GATEWAY) {
+
+				$authorization_class = match (CURRENT_SERVER) {
+					CLOUD_SERVER => CompanyGatewayAuthorization::class,
+					PIVOT_SERVER => GatewayAuthorization::class,
+				};
 			}
 
 			// здесь описана последовательность проверок

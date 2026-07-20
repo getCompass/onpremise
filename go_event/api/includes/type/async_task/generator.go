@@ -52,7 +52,7 @@ func MakeTaskGenerator(taskName string, taskType TaskType, period int, data json
 	}
 
 	// пробегаемся по всем изоляциям и запускаем в них рутины генераторов
-	CompanyConfig.IterateOverActive(taskGeneratorStore.generatorList[taskName])
+	CompanyConfig.DefaultManager.IterateOverActive(taskGeneratorStore.generatorList[taskName])
 	_ = Generator.StartGenerator(generator)
 }
 

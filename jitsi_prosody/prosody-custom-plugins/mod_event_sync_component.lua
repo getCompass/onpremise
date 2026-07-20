@@ -213,12 +213,33 @@ function is_system_event(event)
     return false;
 end
 
+-- meeting_id (uuid-v4), тот же самый, что уходит в Colibri2 как meeting-id
+local function get_meeting_id(room)
+    if not room or not room._data then return nil end
+
+    -- если это breakout - всегда берем ID родительской комнаты
+    if room._data.event_sync_extra_payload
+        and room._data.event_sync_extra_payload.is_breakout
+        and room._data.main_room
+        and room._data.main_room._data
+        and room._data.main_room._data.meetingId then
+        return room._data.main_room._data.meetingId
+    end
+
+    return room._data.meetingId
+end
+
 --- Updates payload with additional attributes from room._data.event_sync_extra_payload
 function update_with_room_attributes(payload, room)
     if room._data and room._data.event_sync_extra_payload then
         for k, v in pairs(room._data.event_sync_extra_payload) do
             payload[k] = v;
         end
+    end
+
+    local mid = get_meeting_id(room)
+    if mid then
+        payload["meeting_id"] = mid
     end
 end
 

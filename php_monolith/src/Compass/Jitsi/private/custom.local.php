@@ -16,6 +16,8 @@ define(__NAMESPACE__ . "\EXTENDED_ENCRYPT_IV_DEFAULT"            , "${EXTENDED_E
 define(__NAMESPACE__ . "\SOCKET_KEY_JITSI"                       , "${SOCKET_KEY_JITSI}");
 define(__NAMESPACE__ . "\SOCKET_KEY_PROSODY"                       , "${SOCKET_KEY_PROSODY}");
 
+define(__NAMESPACE__ . "\GATEWAY_SECRET_KEY_B64"				, "${GATEWAY_SECRET_KEY_B64}");
+
 // -------------------------------------------------------
 // ОСТАЛЬНОЕ
 // -------------------------------------------------------

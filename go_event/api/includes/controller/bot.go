@@ -29,7 +29,7 @@ func (bot) handle(data request.Data) ResponseStruct {
 		return Error(105, "bad json in request")
 	}
 
-	isolation := CompanyEnvironment.GetEnv(data.CompanyId)
+	isolation := CompanyEnvironment.DefaultManager.GetEnv(data.CompanyId)
 
 	if isolation == nil {
 		return Error(400, "company is not served by service")
@@ -53,7 +53,7 @@ func (bot) handleTrigger(data request.Data) ResponseStruct {
 		return Error(105, "bad json in request")
 	}
 
-	isolation := CompanyEnvironment.GetEnv(data.CompanyId)
+	isolation := CompanyEnvironment.DefaultManager.GetEnv(data.CompanyId)
 
 	if isolation == nil {
 		return Error(400, "company is not served by service")

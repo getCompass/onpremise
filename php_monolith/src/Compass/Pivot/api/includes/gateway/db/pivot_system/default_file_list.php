@@ -34,6 +34,7 @@ class Gateway_Db_PivotSystem_DefaultFileList extends Gateway_Db_PivotSystem_Main
 	/**
 	 * Получение списка записей
 	 *
+	 * @return Struct_Db_PivotSystem_DefaultFile[]
 	 */
 	public static function getList(array $dictionary_key_list):array {
 

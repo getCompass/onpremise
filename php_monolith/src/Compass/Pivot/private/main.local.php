@@ -91,5 +91,8 @@ define(__NAMESPACE__ . "\MYSQL_PIVOT_ATTRIBUTION_SSL"		, false);
 define(__NAMESPACE__ . "\GO_PUSHER_HOST"					, "${GO_PUSHER_HOST}");
 define(__NAMESPACE__ . "\GO_PUSHER_GRPC_PORT"				, ${GO_PUSHER_GRPC_PORT});
 
+define(__NAMESPACE__ . "\GO_AUTH_GRPC_HOST"				, "${GO_AUTH_HOST}");
+define(__NAMESPACE__ . "\GO_AUTH_GRPC_PORT"				, ${GO_AUTH_GRPC_PORT});
+
 # endregion
 ##########################################################

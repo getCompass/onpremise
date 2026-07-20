@@ -64,8 +64,15 @@ class Domain_Jitsi_Scenario_Api_Permanent {
 		// создаем конференцию
 		$conference = Domain_Jitsi_Action_Conference_CreatePermanent::do($user_id, $space_id, $is_private, $is_lobby, $jitsi_node_config, $conference_url_custom_name, $description);
 
-		// формируем ответ
-		return Struct_Api_Conference_Data::buildFromDB($conference);
+		// инкрементим статистику кол-во созданных permanent конференций
+		Gateway_Bus_CollectorAgent::init()->inc("row2");
+
+		$conference_data = Struct_Api_Conference_Data::buildFromDB($conference);
+
+		Type_Analytics_ConferenceEvent::send(Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_CREATED, $conference_data->conference_id, $conference->creator_user_id, $conference_data->space_id,
+			"", getUa(), getIp(), $conference_data->link, $conference_data->conference_type);
+
+		return $conference_data;
 	}
 
 	/**

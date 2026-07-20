@@ -2,6 +2,7 @@
 
 namespace Compass\FileBalancer;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use CompassApp\Domain\Member\Entity\Permission;
 use JetBrains\PhpStorm\ArrayShape;
 use BaseFrame\Exception\Request\ParamException;
@@ -9,8 +10,8 @@ use BaseFrame\Exception\Request\ParamException;
 /**
  * группа методов для загрузки файлов
  */
-class ApiV1_Files extends \BaseFrame\Controller\Api {
-
+class ApiV1_Files extends \BaseFrame\Controller\Api
+{
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"getInfoForUpload",
@@ -22,7 +23,26 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 		"getAvatarBatching",
 	];
 
-	protected const _MAX_FILES_COUNT = 150;     // максимальное количество файлов в запросе
+	// зона ответственности API ключа
+	public const API_SCOPE = ScopePermission::SCOPE_FILE;
+
+	// методы для чтения
+	public const READ_METHOD_LIST = [
+		"get",
+		"goListen",
+		"getBatching",
+		"getAvatarBatching",
+		"getFileTypeRel",
+	];
+
+	// методы, изменяющие состояние
+	public const WRITE_METHOD_LIST = [
+		"getInfoForUpload", // фейковый get, позволяет загрузить файл на файловую ноду и записывает туда токен
+		"getInfoForCrop", // фейковый get, позволяет загрузить кропнутый файл на файловую ноду и записывает туда токен
+	];
+
+	// максимальное количество файлов в запросе
+	protected const _MAX_FILES_COUNT = 150;
 
 	// -------------------------------------------------------
 	// WORK METHODS
@@ -31,7 +51,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * метод возвращает ноду (url) выделенную для сохранения файла и токен
 	 */
-	public function getInfoForUpload():array {
+	public function getInfoForUpload(): array
+	{
 
 		$file_source = $this->post("?i", "file_source");
 
@@ -63,7 +84,6 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 *
 	 * выбрасываем ошибку, если передали не поддерживаемый file_source
 	 *
 	 * @param mixed $file_source
@@ -72,7 +92,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws paramException
 	 */
-	protected function _throwIfNotAllowedFileSource(int $file_source):void {
+	protected function _throwIfNotAllowedFileSource(int $file_source): void
+	{
 
 		if (!in_array($file_source, Type_File_Main::ALLOWED_FILE_SOURCE_LIST) &&
 			!in_array($file_source, Type_File_Main::ALLOWED_FILE_SOURCE_CDN_LIST)) {
@@ -82,7 +103,6 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	/**
-	 *
 	 * выбрасываем ошибку, если передали служебный file_source
 	 *
 	 * @param mixed $file_source
@@ -91,7 +111,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws paramException
 	 */
-	protected function _throwIfPassedServiceFileSource(int $file_source):void {
+	protected function _throwIfPassedServiceFileSource(int $file_source): void
+	{
 
 		// если на этом этапе передали служебный $file_source (88)
 		if ($file_source == FILE_SOURCE_MESSAGE_ANY) {
@@ -106,14 +127,15 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	// сохраняем токен на ноде
-	protected function _trySaveTokenForUpload(string $node_url, string $token, int $file_source):void {
+	protected function _trySaveTokenForUpload(string $node_url, string $token, int $file_source): void
+	{
 
 		// отправляем сокет запрос на ноду для записи токена
 		[$status,] = Gateway_Socket_FileNode::doCall($node_url . "/api/socket/", "nodes.trySaveToken", [
-			"token"              => $token,
-			"file_source"        => $file_source,
-			"company_id"         => CURRENT_SERVER == CLOUD_SERVER ? COMPANY_ID : 0,
-			"company_url"        => CURRENT_SERVER == CLOUD_SERVER ? self::_getCompanyUrl() : "",
+			"token"       => $token,
+			"file_source" => $file_source,
+			"company_id"  => CURRENT_SERVER == CLOUD_SERVER ? COMPANY_ID : 0,
+			"company_url" => CURRENT_SERVER == CLOUD_SERVER ? self::_getCompanyUrl() : "",
 		], $this->user_id);
 
 		// если не ок — бросаем экшепшен
@@ -125,7 +147,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для получения ноды для кропа картинки
 	 */
-	public function getInfoForCrop():array {
+	public function getInfoForCrop(): array
+	{
 
 		$file_key = $this->post("?s", "file_key");
 		$file_map = Type_Pack_File::tryDecrypt($file_key);
@@ -160,7 +183,7 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 			return $this->error(571, "File was deleted");
 		}
 
-		$file_source = Type_Pack_File::getFileSource($file_map);
+		$file_source             = Type_Pack_File::getFileSource($file_map);
 		[$node_url, $socket_url] = $this->_getRandomNode($file_source);
 
 		$file_url    = Type_File_Utils::getUrlByPartPath($node_url, $file_row["extra"]["original_part_path"]);
@@ -178,18 +201,19 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	// сохраняем токен на ноде
-	protected function _trySaveTokenForCrop(string $node_url, string $token, string $file_map, string $file_url, string $file_name, int $file_width, int $file_height):void {
+	protected function _trySaveTokenForCrop(string $node_url, string $token, string $file_map, string $file_url, string $file_name, int $file_width, int $file_height): void
+	{
 
 		// отправляем сокет запрос на ноду для записи токена
 		[$status,] = Gateway_Socket_FileNode::doCall($node_url . "/api/socket/", "nodes.trySaveTokenForCrop", [
-			"token"              => $token,
-			"file_key"           => Type_Pack_File::doEncrypt($file_map),
-			"file_url"           => $file_url,
-			"file_name"          => $file_name,
-			"file_width"         => $file_width,
-			"file_height"        => $file_height,
-			"company_id"         => CURRENT_SERVER == CLOUD_SERVER ? COMPANY_ID : 0,
-			"company_url"        => CURRENT_SERVER == CLOUD_SERVER ? self::_getCompanyUrl() : "",
+			"token"       => $token,
+			"file_key"    => Type_Pack_File::doEncrypt($file_map),
+			"file_url"    => $file_url,
+			"file_name"   => $file_name,
+			"file_width"  => $file_width,
+			"file_height" => $file_height,
+			"company_id"  => CURRENT_SERVER == CLOUD_SERVER ? COMPANY_ID : 0,
+			"company_url" => CURRENT_SERVER == CLOUD_SERVER ? self::_getCompanyUrl() : "",
 		], $this->user_id);
 
 		// если не ок — бросаем экзепшен
@@ -201,7 +225,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для получение файла по его key
 	 */
-	public function get():array {
+	public function get(): array
+	{
 
 		$file_key = $this->post("?s", "file_key");
 		$file_map = Type_Pack_File::tryDecrypt($file_key);
@@ -232,7 +257,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	 * метод для получение списка файлов по их ключам
 	 * @deprecated переезжаем на apiv2/files/getBarching
 	 */
-	public function getBatching():array {
+	public function getBatching(): array
+	{
 
 		$file_key_list = $this->post("?a", "file_key_list");
 
@@ -266,7 +292,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 
 	// формируем ответ для метода files.getBatching
 	#[ArrayShape(["file_list" => "array", "deleted_file_key_list" => "array"])]
-	protected function _makeGetBatchingOutput(array $not_deleted_file_list, array $deleted_file_map_list):array {
+	protected function _makeGetBatchingOutput(array $not_deleted_file_list, array $deleted_file_map_list): array
+	{
 
 		$deleted_file_key_list = [];
 
@@ -287,7 +314,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * прослушать голосовое сообщение
 	 */
-	public function doListen():array {
+	public function doListen(): array
+	{
 
 		$file_key = $this->post(\Formatter::TYPE_STRING, "file_key");
 		$file_map = Type_Pack_File::tryDecrypt($file_key);
@@ -312,7 +340,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * метод возвращает тип файла по его расширению и mime_type
 	 */
-	public function getFileTypeRel():array {
+	public function getFileTypeRel(): array
+	{
 
 		// получаем рандомную ноду из доступных
 		[, $socket_url] = $this->_getRandomNode(FILE_SOURCE_MESSAGE_DEFAULT);
@@ -337,7 +366,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для получение списка аватаров по их ключам
 	 */
-	public function getAvatarBatching():array {
+	public function getAvatarBatching(): array
+	{
 
 		$file_key_list = $this->post(\Formatter::TYPE_ARRAY, "file_key_list");
 
@@ -383,7 +413,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	 * @throws paramException
 	 * @throws returnException
 	 */
-	protected function _getRandomNode(int $file_source):array {
+	protected function _getRandomNode(int $file_source): array
+	{
 
 		// получаем id ноды для загрузки
 		$node_id = Type_Node_Config::getNodeIdForUpload($file_source);
@@ -393,7 +424,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если пришел файл с другого типа сервера
-	protected function _throwIfPassedFileMapFromAnotherServerType(string $file_map):void {
+	protected function _throwIfPassedFileMapFromAnotherServerType(string $file_map): void
+	{
 
 		// получаем dpc файла
 		$server_type = Type_Pack_File::getServerType($file_map);
@@ -405,7 +437,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если список файлов некорректный
-	protected function _throwIfFileListIsIncorrect(array $file_list):void {
+	protected function _throwIfFileListIsIncorrect(array $file_list): void
+	{
 
 		// если пришел пустой массив файлов
 		if (count($file_list) < 1) {
@@ -419,7 +452,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	// преобразуем пришедшие ключи в map
-	protected function _doDecryptFileKeyList(array $file_list, bool $is_avatar = false):array {
+	protected function _doDecryptFileKeyList(array $file_list, bool $is_avatar = false): array
+	{
 
 		$file_map_list = [];
 		foreach ($file_list as $item) {
@@ -440,7 +474,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	// бросаем ошибку, если файл не с перманент ноды
-	protected function _throwIfPassedNotAvatarFileKey(string $file_map):void {
+	protected function _throwIfPassedNotAvatarFileKey(string $file_map): void
+	{
 
 		// проверяем file_source
 		if (!in_array(Type_Pack_File::getFileSource($file_map), [FILE_SOURCE_AVATAR, FILE_SOURCE_AVATAR_DEFAULT, FILE_SOURCE_AVATAR_CDN])) {
@@ -454,7 +489,8 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 	}
 
 	// форматируем список файлов
-	protected function _formatFileList(array $file_list):array {
+	protected function _formatFileList(array $file_list): array
+	{
 
 		$output = [];
 		foreach ($file_list as $item) {
@@ -472,9 +508,9 @@ class ApiV1_Files extends \BaseFrame\Controller\Api {
 
 	/**
 	 * получаем url
-	 *
 	 */
-	protected static function _getCompanyUrl():string {
+	protected static function _getCompanyUrl(): string
+	{
 
 		$socket_url_config = getConfig("SOCKET_URL");
 		return $socket_url_config["company"];

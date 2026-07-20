@@ -15,3 +15,5 @@ define(__NAMESPACE__ . "\MOD_VALUE_FOR_PORT"	, "${MOD_VALUE_FOR_PORT}");
 
 // включен ли режим доступа к файлам только для авторизованных пользователей
 define(__NAMESPACE__ . "\IS_FILE_AUTH_RESTRICTION_ENABLED", ${IS_FILE_AUTH_RESTRICTION_ENABLED});
+
+define(__NAMESPACE__ . "\GATEWAY_SECRET_KEY_B64"				, "${GATEWAY_SECRET_KEY_B64}");

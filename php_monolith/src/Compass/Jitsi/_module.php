@@ -39,5 +39,7 @@ include_once JITSI_MODULE_ROOT . "_module/sharding.php";
 
 \BaseFrame\Module\ModuleHandler::init(CURRENT_MODULE);
 
+\BaseFrame\ApiGateway\GatewayHandler::init(GATEWAY_SECRET_KEY_B64);
+
 // возвращаем обработчики
 return include_once JITSI_MODULE_ROOT . "_module/route.php";

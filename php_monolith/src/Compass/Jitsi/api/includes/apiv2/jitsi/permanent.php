@@ -2,6 +2,7 @@
 
 namespace Compass\Jitsi;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\RowNotFoundException;
@@ -20,6 +21,19 @@ class Apiv2_Jitsi_Permanent extends \BaseFrame\Controller\Api {
 		"getList",
 		"remove",
 		"change",
+	];
+
+	// зона ответственности API ключа
+	public const API_SCOPE = ScopePermission::SCOPE_CONFERENCE;
+
+	public const READ_METHOD_LIST = [
+		"getList"
+	];
+
+	public const WRITE_METHOD_LIST = [
+		"create",
+		"remove",
+		"change"
 	];
 
 	// -------------------------------------------------------

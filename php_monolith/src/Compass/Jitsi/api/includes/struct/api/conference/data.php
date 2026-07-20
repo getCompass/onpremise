@@ -53,6 +53,18 @@ class Struct_Api_Conference_Data {
 		);
 	}
 
+	/**
+	 * Получаем строкове значение conference_type
+	 *
+	 * @param int $conference_type
+	 *
+	 * @return string
+	 */
+	public static function getStringifyConferenceType(int $conference_type):string {
+
+		return self::_CONFERENCE_TYPE_SCHEMA[$conference_type];
+	}
+
 	/** форматируем сущность для ответа */
 	public function format():array {
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"go_event/api/conf"
 	CompanyConfig "go_event/api/includes/type/company_config"
-	"go_event/api/observer"
 	"strings"
 )
 
@@ -15,8 +14,8 @@ func Begin(ctx context.Context) {
 		return
 	}
 
-	CompanyConfig.UpdateWorldConfig()
-	observer.Work(ctx)
+	CompanyConfig.DefaultManager.UpdateWorldConfig()
+	go CompanyConfig.InitWorkers(ctx, conf.GetConfig().InvalidationWorkerCount)
 }
 
 // isDomino проверяет, содержится ли 'domino' в строке role

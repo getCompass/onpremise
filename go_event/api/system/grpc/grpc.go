@@ -2,10 +2,13 @@ package grpc
 
 import (
 	"fmt"
+	grpcController "go_event/api/includes/grpc/controller"
+
 	pb "github.com/getCompassUtils/company_protobuf_schemes/go/event"
 	"github.com/getCompassUtils/go_base_frame/api/system/log"
-	grpcController "go_event/api/includes/grpc/controller"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
+
 	"net"
 	"time"
 )
@@ -39,7 +42,13 @@ func Listen(host string, port int64) {
 		return
 	}
 
-	grpcServer := grpc.NewServer(grpc.ConnectionTimeout(connectionTimeout), grpc.MaxConcurrentStreams(routinesMax), grpc.MaxSendMsgSize(maxMsgSize), grpc.MaxRecvMsgSize(maxMsgSize))
+	keepAliveParams := keepalive.ServerParameters{
+		MaxConnectionIdle: time.Minute * 2,
+		Timeout:           time.Second * 10,
+		Time:              time.Second * 30,
+	}
+
+	grpcServer := grpc.NewServer(grpc.ConnectionTimeout(connectionTimeout), grpc.MaxConcurrentStreams(routinesMax), grpc.MaxSendMsgSize(maxMsgSize), grpc.MaxRecvMsgSize(maxMsgSize), grpc.KeepaliveParams(keepAliveParams))
 	pb.RegisterEventServer(grpcServer, &grpcController.Server{})
 
 	// в конце концов перестаем слушать

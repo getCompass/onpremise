@@ -8,15 +8,16 @@ use BaseFrame\Exception\Domain\ParseFatalException;
  * класс с обработчиками событий в jitsi
  * @package Compass\Jitsi
  */
-class Domain_Jitsi_Scenario_Event {
-
+class Domain_Jitsi_Scenario_Event
+{
 	/**
 	 * При завершении конференции
 	 *
 	 * @throws \parseException
 	 * @throws ParseFatalException
 	 */
-	public static function onConferenceFinished(string $conference_id):void {
+	public static function onConferenceFinished(string $conference_id, string $meeting_id = ""): void
+	{
 
 		try {
 			$conference                  = Domain_Jitsi_Entity_Conference::get($conference_id);
@@ -48,6 +49,21 @@ class Domain_Jitsi_Scenario_Event {
 
 		// убираем активную конференцию для всех участников, чтобы ни у кого не повисла активная конференция
 		Domain_Jitsi_Entity_UserActiveConference::onConferenceFinished($conference_id);
+
+		$link            = Domain_Jitsi_Entity_ConferenceLink_Main::getHandlerProvider()::getByConference($conference)::prepareLandingConferenceLink($conference);
+		$conference_type = Struct_Api_Conference_Data::getStringifyConferenceType(Domain_Jitsi_Entity_Conference_Data::getConferenceType($conference->data));
+		Type_Analytics_ConferenceEvent::send(
+			Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_ENDED,
+			$conference_id,
+			$conference->creator_user_id,
+			$conference->space_id,
+			"",
+			getUa(),
+			getIp(),
+			$link,
+			$conference_type,
+			$meeting_id
+		);
 	}
 
 	/**
@@ -55,58 +71,109 @@ class Domain_Jitsi_Scenario_Event {
 	 *
 	 * @throws ParseFatalException
 	 */
-	public static function onConferenceStarted(string $conference_id):void {
+	public static function onConferenceStarted(string $conference_id, string $meeting_id = ""): void
+	{
 
 		// обновляем статус конференции
 		Domain_Jitsi_Entity_Conference::updateStatus($conference_id, Domain_Jitsi_Entity_Conference::STATUS_WAITING);
+
+		Type_Analytics_ConferenceEvent::send(
+			Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_STARTED,
+			$conference_id,
+			0,
+			0,
+			"",
+			getUa(),
+			getIp(),
+			"",
+			"",
+			$meeting_id
+		);
 	}
 
 	/**
 	 * при подключении участника в конференцию
 	 *
-	 * @param string $conference_id
-	 * @param string $member_id
+	 * @param string $meeting_id
 	 *
 	 * @throws Domain_Jitsi_Exception_ConferenceMember_IncorrectMemberId
 	 * @throws ParseFatalException
 	 * @long
 	 */
-	public static function onConferenceMemberJoined(string $conference_id, string $member_id):void {
+	public static function onConferenceMemberJoined(string $conference_id, string $member_id, string | false $name = false, string $meeting_id = ""): void
+	{
 
 		$member_type      = Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveMemberType($member_id);
 		$member_behaviour = Domain_Jitsi_Entity_ConferenceMember_Behavior_Strategy::get($member_type);
 		$member_behaviour->onJoinConference($conference_id, $member_id);
+
+		Type_Analytics_ConferenceEvent::send(
+			Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_USER_JOINED,
+			$conference_id,
+			0,
+			0,
+			$member_id,
+			getUa(),
+			getIp(),
+			"",
+			"",
+			$name,
+			$meeting_id
+		);
 	}
 
 	/**
 	 * при покидании конференции участником
 	 *
-	 * @param string $conference_id
-	 * @param string $member_id
-	 *
-	 * @throws ParseFatalException
 	 * @throws Domain_Jitsi_Exception_ConferenceMember_IncorrectMemberId
+	 * @throws ParseFatalException
 	 */
-	public static function onConferenceMemberLeft(string $conference_id, string $member_id, bool $is_lost_connections = false):void {
+	public static function onConferenceMemberLeft(string $conference_id, string $member_id, bool $is_lost_connections = false, string | false $name = false, string $meeting_id = ""): void
+	{
 
 		$member_type      = Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveMemberType($member_id);
 		$member_behaviour = Domain_Jitsi_Entity_ConferenceMember_Behavior_Strategy::get($member_type);
 		$member_behaviour->onLeftConference($conference_id, $member_id, $is_lost_connections);
+
+		Type_Analytics_ConferenceEvent::send(
+			Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_USER_LEFT,
+			$conference_id,
+			0,
+			0,
+			$member_id,
+			getUa(),
+			getIp(),
+			"",
+			"",
+			$name,
+			$meeting_id
+		);
 	}
 
 	/**
 	 * при выдаче прав модератора участнику конференции
 	 *
-	 * @param string $conference_id
-	 * @param string $member_id
-	 *
 	 * @throws ParseFatalException
 	 * @throws Domain_Jitsi_Exception_ConferenceMember_IncorrectMemberId
 	 */
-	public static function onConferenceMemberModeratorRightsGranted(string $conference_id, string $member_id):void {
+	public static function onConferenceMemberModeratorRightsGranted(string $conference_id, string $member_id, string $meeting_id = ""): void
+	{
 
 		$member_type      = Domain_Jitsi_Entity_ConferenceMember_MemberId::resolveMemberType($member_id);
 		$member_behaviour = Domain_Jitsi_Entity_ConferenceMember_Behavior_Strategy::get($member_type);
 		$member_behaviour->onConferenceModeratorRightsGranted($conference_id, $member_id);
+
+		Type_Analytics_ConferenceEvent::send(
+			Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_USER_MODERATOR_RIGHTS_GRANTED,
+			$conference_id,
+			0,
+			0,
+			$member_id,
+			getUa(),
+			getIp(),
+			"",
+			"",
+			$meeting_id
+		);
 	}
 }

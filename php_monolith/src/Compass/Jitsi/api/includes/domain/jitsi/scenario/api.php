@@ -61,7 +61,7 @@ class Domain_Jitsi_Scenario_Api {
 		$conference = Domain_Jitsi_Action_Conference_Create::do($user_id, $space_id, $is_private, $is_lobby, $jitsi_node_config, $custom_conference_id);
 
 		// подготавливаем все к подключению участника к конференции
-		[$conference_joining_data, $conference_member_data] = self::prepareConferenceJoiningData($user_id, $space_id, $conference);
+		[$conference_joining_data, $conference_member_data, $_, $member_id] = self::prepareConferenceJoiningData($user_id, $space_id, $conference);
 
 		// помечаем конференцию активной для создателя
 		Domain_Jitsi_Entity_UserActiveConference::set($user_id, $conference->conference_id);
@@ -70,8 +70,15 @@ class Domain_Jitsi_Scenario_Api {
 		$conference_creator      = Gateway_Bus_PivotCache::getUserInfo($conference->creator_user_id);
 		$conference_creator_data = Struct_Api_Conference_CreatorData::buildFromCache($conference_creator);
 
-		// формируем ответ
-		return [Struct_Api_Conference_Data::buildFromDB($conference), $conference_joining_data, $conference_member_data, $conference_creator_data];
+		// инкрементим статистику кол-во созданных временных конференций
+		Gateway_Bus_CollectorAgent::init()->inc("row0");
+
+		$conference_data = Struct_Api_Conference_Data::buildFromDB($conference);
+
+		Type_Analytics_ConferenceEvent::send(Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_CREATED, $conference_data->conference_id, $conference->creator_user_id,
+			$conference_data->space_id, $member_id, getUa(), getIp(), $conference_data->link, $conference_data->conference_type);
+
+		return [$conference_data, $conference_joining_data, $conference_member_data, $conference_creator_data];
 	}
 
 	/**
@@ -116,7 +123,7 @@ class Domain_Jitsi_Scenario_Api {
 		$conference = Domain_Jitsi_Entity_Conference::verifyConferenceLink($parsed_link);
 
 		// подготавливаем все к подключению участника к конференции
-		[$conference_joining_data, $conference_member_data, $conference_creator_data] = self::prepareConferenceJoiningData($user_id, $space_id, $conference);
+		[$conference_joining_data, $conference_member_data, $conference_creator_data, $member_id] = self::prepareConferenceJoiningData($user_id, $space_id, $conference);
 
 		// пересоздаем комнату в jitsi для постоянной конференции, если пользователь подключается к конференции первым
 		if (Domain_Jitsi_Entity_Conference::isPermanent($conference) && Domain_Jitsi_Entity_Conference::STATUS_NEW == $conference->status) {
@@ -141,9 +148,13 @@ class Domain_Jitsi_Scenario_Api {
 			$conference             = Domain_Jitsi_Action_Conference_UpgradeSingle::do($conference, $conference_member_list);
 		}
 
-		// формируем ответ
+		$conference_data = Struct_Api_Conference_Data::buildFromDB($conference);
+
+		Type_Analytics_ConferenceEvent::send(Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_USER_JOIN_TOKEN_GENERATED, $conference_data->conference_id, $conference->creator_user_id,
+			$conference_data->space_id, $member_id, getUa(), getIp(), $conference_data->link, $conference_data->conference_type);
+
 		return [
-			Struct_Api_Conference_Data::buildFromDB($conference),
+			$conference_data,
 			$conference_joining_data,
 			$conference_member_data,
 			$conference_creator_data,
@@ -194,6 +205,7 @@ class Domain_Jitsi_Scenario_Api {
 			Struct_Api_Conference_JoiningData::build($conference, $jwt_token),
 			Struct_Api_Conference_MemberData::buildFromDB($conference_member),
 			Struct_Api_Conference_CreatorData::buildFromCache($conference_creator),
+			$conference_member->member_id,
 		];
 	}
 
@@ -492,7 +504,7 @@ class Domain_Jitsi_Scenario_Api {
 		$conference_data = Struct_Api_Conference_Data::buildFromDB($conference);
 
 		// подготавливаем все к подключению участника к конференции
-		[$conference_joining_data, $conference_member_data] = self::prepareConferenceJoiningData($creator_user_id, $space_id, $conference, true);
+		[$conference_joining_data, $conference_member_data, $_, $member_id] = self::prepareConferenceJoiningData($creator_user_id, $space_id, $conference, true);
 
 		// помечаем конференцию активной для создателя
 		Domain_Jitsi_Entity_UserActiveConference::set($creator_user_id, $conference->conference_id);
@@ -524,7 +536,12 @@ class Domain_Jitsi_Scenario_Api {
 		// отправляем в go_event таск на проверку состояния соединения через определенное время
 		Domain_PhpJitsi_Entity_Event_NeedCheckSingleConference::create($conference->conference_id);
 
-		// формируем ответ
+		// инкрементим статистику кол-во созданных single конференций
+		Gateway_Bus_CollectorAgent::init()->inc("row1");
+
+		Type_Analytics_ConferenceEvent::send(Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_CREATED, $conference_data->conference_id, $conference->creator_user_id,
+			$conference_data->space_id, $member_id, getUa(), getIp(), $conference_data->link, $conference_data->conference_type);
+
 		return [$conference_data, $conference_joining_data, $conference_member_data, $conference_creator_data];
 	}
 
@@ -654,31 +671,7 @@ class Domain_Jitsi_Scenario_Api {
 			return;
 		}
 
-		// получаем сущность конференции
-		$conference = Domain_Jitsi_Entity_Conference::get($user_active_conference->active_conference_id);
-
 		// исключаем участника из конференции
-		try {
-
-			Domain_Jitsi_Entity_Node_Request::init(Domain_Jitsi_Entity_Node::getConfig($conference->jitsi_instance_domain))->kickMember(
-				$conference->conference_id,
-				Domain_Jitsi_Entity_ConferenceMember_MemberId::prepareId(Domain_Jitsi_Entity_ConferenceMember_Type::COMPASS_USER, $user_id)
-			);
-		} catch (Domain_Jitsi_Exception_Node_RequestFailed $e) {
-
-			// 404 возвращается в случае если конференция уже удалена, не сыпем логами просто так
-			if ($e->getResponseHttpCode() !== 404) {
-
-				// логируем ошибку и больше ничего не делаем
-				$exception_message = \BaseFrame\Exception\ExceptionUtils::makeMessage($e, HTTP_CODE_500);
-				\BaseFrame\Exception\ExceptionUtils::writeExceptionToLogs($e, $exception_message);
-			}
-		}
-
-		// покидаем конференцию
-		Domain_Jitsi_Scenario_Event::onConferenceMemberLeft(
-			$user_active_conference->active_conference_id,
-			Domain_Jitsi_Entity_ConferenceMember_MemberId::prepareId(Domain_Jitsi_Entity_ConferenceMember_Type::COMPASS_USER, $user_id)
-		);
+		Domain_Jitsi_Action_Conference_LeaveUserActiveConference::do($user_id, $user_active_conference);
 	}
 }

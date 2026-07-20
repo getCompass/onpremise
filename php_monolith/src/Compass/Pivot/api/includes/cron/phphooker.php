@@ -290,6 +290,9 @@ class Cron_Phphooker extends \Cron_Default {
 		// исключаем пользователя из анонсов
 		Gateway_Announcement_Main::invalidateUser($deleted_user_id);
 
+		// инвалидируем ключи пользователя
+		Gateway_Bus_Auth::removeAll($deleted_user_id);
+
 		// исключаем пользователя из всех его команд
 		return $this->_kickUserFromAllCompanies($deleted_user_id);
 	}

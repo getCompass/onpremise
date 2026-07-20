@@ -308,6 +308,37 @@ class Type_Antispam_User extends Type_Antispam_Main {
 	# endregion
 	##########################################################
 
+	##########################################################
+	# region apikey
+	##########################################################
+
+	const APIKEY_CREATE = [
+		"key"    => "APIKEY_CREATE",
+		"limit"  => 100,
+		"expire" => 20 * 60, // 20 минут
+	];
+
+	const APIKEY_REFRESH = [
+		"key"    => "APIKEY_REFRESH",
+		"limit"  => 10,
+		"expire" => 1 * 60, // 1 минута
+	];
+
+	const APIKEY_EDIT = [
+		"key"    => "APIKEY_EDIT",
+		"limit"  => 100,
+		"expire" => 20 * 60, // 20 минут
+	];
+	const APIKEY_REMOVE = [
+		"key"    => "APIKEY_REMOVE",
+		"limit"  => 10,
+		"expire" => 1 * 60, // 1 минута
+	];
+
+
+	# endregion
+	##########################################################
+
 	protected const _DB_KEY    = "pivot_system";
 	protected const _TABLE_KEY = "antispam_user";
 

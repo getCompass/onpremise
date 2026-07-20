@@ -611,7 +611,7 @@ class Filmstrip extends PureComponent <IProps, IState> {
             _filteredRemoteParticipants,
             _filteredRemoteParticipantsLength
         } = this.props;
-        const index = (rowIndex * _columns) + columnIndex;
+        const index = (rowIndex * _columns) + columnIndex + this.state.startIndexTileView;
 
         // When the thumbnails are reordered, local participant is inserted at index 0.
         const localIndex = _disableSelfView ? _filteredRemoteParticipantsLength : 0;

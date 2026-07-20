@@ -75,7 +75,7 @@ class Domain_Jitsi_Scenario_Www {
 		]);
 
 		// запускаем участника в конференцию
-		Domain_Jitsi_Entity_ConferenceMember::join($member_context, $conference);
+		$conference_member = Domain_Jitsi_Entity_ConferenceMember::join($member_context, $conference);
 
 		// создаем jwt токен для авторизованного пользователя
 		$jwt_token = Domain_Jitsi_Action_Conference_JoinAsGuest::do($guest_id, $conference);
@@ -87,6 +87,11 @@ class Domain_Jitsi_Scenario_Www {
 
 		// получаем конфиг ноды
 		$node_config = Domain_Jitsi_Entity_Node::getConfig($conference->jitsi_instance_domain);
+
+		$link            = Domain_Jitsi_Entity_ConferenceLink_Main::getHandlerProvider()::getByConference($conference)::prepareLandingConferenceLink($conference);
+		$conference_type = Struct_Api_Conference_Data::getStringifyConferenceType(Domain_Jitsi_Entity_Conference_Data::getConferenceType($conference->data));
+		Type_Analytics_ConferenceEvent::send(Type_Analytics_ConferenceEvent::EVENT_CONFERENCE_USER_JOIN_TOKEN_GENERATED, $conference->conference_id, $conference->creator_user_id,
+			$conference->space_id, $conference_member->member_id, getUa(), getIp(), $link, $conference_type);
 
 		return [
 			$jwt_token,

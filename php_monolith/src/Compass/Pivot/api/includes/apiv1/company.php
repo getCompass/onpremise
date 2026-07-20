@@ -2,14 +2,15 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * контроллер для работы с компаниями
  */
-class Apiv1_Company extends \BaseFrame\Controller\Api {
-
+class Apiv1_Company extends \BaseFrame\Controller\Api
+{
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"add",
@@ -21,6 +22,24 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 		"getBatching",
 	];
 
+	// поля для доступа по api ключу
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE;
+
+	// методы для чтения
+	public const READ_METHOD_LIST = [
+		"getList",
+		"getUserStatus",
+		"getBatching",
+	];
+
+	// методы, изменяющие состояние
+	public const WRITE_METHOD_LIST = [
+		"add",
+		"setCompanyListOrder",
+		"removeFromList",
+		"delete",
+	];
+
 	// -------------------------------------------------------
 	// WORK METHODS
 	// -------------------------------------------------------
@@ -28,7 +47,8 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для добавления (создания) компании
 	 */
-	public function add():array {
+	public function add(): array
+	{
 
 		$avatar_color_id   = $this->post(\Formatter::TYPE_INT, "avatar_color_id", Domain_Company_Entity_Company::AVATAR_COLOR_GREEN_ID);
 		$name              = $this->post(\Formatter::TYPE_STRING, "name");
@@ -70,10 +90,10 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения списка компании
 	 *
-	 * @return array
 	 * @throws ParamException
 	 */
-	public function getList():array {
+	public function getList(): array
+	{
 
 		$limit       = $this->post(\Formatter::TYPE_INT, "limit", Domain_Company_Entity_Filter::MAX_GET_USER_COMPANY_LIST);
 		$min_order   = $this->post(\Formatter::TYPE_INT, "min_order", 0);
@@ -93,7 +113,6 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для установки порядка компаний
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws BlockException
 	 * @throws \parseException
@@ -101,7 +120,8 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	 * @throws cs_MissedValue
 	 * @throws cs_blockException
 	 */
-	public function setCompanyListOrder():array {
+	public function setCompanyListOrder(): array
+	{
 
 		$company_order_list = $this->post(\Formatter::TYPE_ARRAY, "company_order");
 
@@ -127,7 +147,6 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * удаляем компанию из списка
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \busException
 	 * @throws \cs_SocketRequestIsFailed
@@ -137,7 +156,8 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @throws \userAccessException
 	 */
-	public function removeFromList():array {
+	public function removeFromList(): array
+	{
 
 		$company_id = $this->post(\Formatter::TYPE_INT, "company_id");
 
@@ -161,12 +181,12 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Удалить компанию
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Request\CompanyIsHibernatedPivotException
 	 * @throws \BaseFrame\Exception\Request\CompanyIsRelocatingPivotException
 	 */
-	public function delete():array {
+	public function delete(): array
+	{
 
 		// версия метода
 		return match ($this->method_version) {
@@ -180,7 +200,8 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	 *
 	 * @long чтобы поместился весь api-метод
 	 */
-	protected function _deleteV1():array {
+	protected function _deleteV1(): array
+	{
 
 		$company_id = $this->post(\Formatter::TYPE_INT, "company_id");
 		$two_fa_key = $this->post(\Formatter::TYPE_STRING, "two_fa_key", false);
@@ -195,7 +216,7 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 			return $this->error(1002, "user is not member of company");
 		} catch (cs_CompanyNotExist) {
 			return $this->error(1102, "not exist company");
-		} catch (cs_TwoFaIsInvalid|cs_WrongTwoFaKey|cs_UnknownKeyType|cs_TwoFaTypeIsInvalid|cs_TwoFaInvalidUser|cs_TwoFaInvalidCompany) {
+		} catch (cs_TwoFaIsInvalid | cs_WrongTwoFaKey | cs_UnknownKeyType | cs_TwoFaTypeIsInvalid | cs_TwoFaInvalidUser | cs_TwoFaInvalidCompany) {
 			return $this->error(2302, "2fa key is not valid");
 		} catch (cs_TwoFaIsNotActive) {
 			return $this->error(2303, "2fa key is not active. You need to confirm phone number");
@@ -220,7 +241,8 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	 *
 	 * @long чтобы поместился весь api-метод
 	 */
-	protected function _deleteV2():array {
+	protected function _deleteV2(): array
+	{
 
 		$company_id = $this->post(\Formatter::TYPE_INT, "company_id");
 		$two_fa_key = $this->post(\Formatter::TYPE_STRING, "two_fa_key", false);
@@ -239,7 +261,7 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 			return $this->error(1002, "user is not member of company");
 		} catch (cs_CompanyNotExist) {
 			return $this->error(1102, "not exist company");
-		} catch (cs_TwoFaIsInvalid|cs_WrongTwoFaKey|cs_UnknownKeyType|cs_TwoFaTypeIsInvalid|cs_TwoFaInvalidUser|cs_TwoFaInvalidCompany) {
+		} catch (cs_TwoFaIsInvalid | cs_WrongTwoFaKey | cs_UnknownKeyType | cs_TwoFaTypeIsInvalid | cs_TwoFaInvalidUser | cs_TwoFaInvalidCompany) {
 			return $this->error(2302, "2fa key is not valid");
 		} catch (cs_TwoFaIsNotActive) {
 			return $this->error(2303, "2fa key is not active. You need to confirm phone number");
@@ -261,12 +283,12 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * получаем статус пользователя в компании
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function getUserStatus():array {
+	public function getUserStatus(): array
+	{
 
 		$company_id = $this->post(\Formatter::TYPE_INT, "company_id");
 
@@ -286,11 +308,11 @@ class Apiv1_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения списка компании по массиву id
 	 *
-	 * @return array
 	 * @throws \paramException
 	 * @throws ParamException
 	 */
-	public function getBatching():array {
+	public function getBatching(): array
+	{
 
 		$company_id_list = $this->post(\Formatter::TYPE_ARRAY_INT, "company_id_list");
 		$only_active     = $this->post(\Formatter::TYPE_INT, "only_active", 1);

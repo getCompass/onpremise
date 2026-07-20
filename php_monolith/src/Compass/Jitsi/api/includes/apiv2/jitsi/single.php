@@ -2,6 +2,7 @@
 
 namespace Compass\Jitsi;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CaseException;
@@ -14,6 +15,16 @@ class Apiv2_Jitsi_Single extends \BaseFrame\Controller\Api {
 
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
+		"create",
+		"reject",
+		"accept"
+	];
+
+	// зона ответственности API ключа
+	public const API_SCOPE = ScopePermission::SCOPE_CONFERENCE;
+
+	// методы, изменяющие состояние
+	public const WRITE_METHOD_LIST = [
 		"create",
 		"reject",
 		"accept"

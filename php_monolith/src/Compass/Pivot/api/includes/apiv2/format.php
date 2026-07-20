@@ -11,10 +11,9 @@ use JetBrains\PhpStorm\ArrayShape;
  * в коде мы оперируем своими структурами и понятиями
  * к этому классу обращаемся строго отдачей результата в API
  * для форматирования стандартных сущностей
- *
  */
-class Apiv2_Format {
-
+class Apiv2_Format
+{
 	// массив для преобразования внутреннего типа stage во внешний для клиента
 	protected const _STAGE_PHONE_SCHEMA = [
 		Domain_User_Entity_Security_AddPhone_Story::STAGE_FIRST  => "entering_code",
@@ -46,7 +45,8 @@ class Apiv2_Format {
 	 * @throws ParseFatalException
 	 */
 	#[\JetBrains\PhpStorm\ArrayShape(["status_company" => "string"])]
-	public static function companySystemStatus(int $company_system_status):array {
+	public static function companySystemStatus(int $company_system_status): array
+	{
 
 		if (!isset(Domain_Company_Entity_Company::SYSTEM_COMPANY_STATUS_SCHEMA[$company_system_status])) {
 			throw new ParseFatalException("unknown company system type");
@@ -59,7 +59,8 @@ class Apiv2_Format {
 	/**
 	 * формируем ответ для служебных данных клиента
 	 */
-	public static function formatStartData(array $start_data):array {
+	public static function formatStartData(array $start_data): array
+	{
 
 		$output = [];
 
@@ -96,14 +97,10 @@ class Apiv2_Format {
 	/**
 	 * Форматируем тарифный план числа участников.
 	 * Здесь есть немного логики, для привода наших значений к клиентским.
-	 *
-	 * @param \Tariff\Plan\MemberCount\MemberCount $member_count_plan
-	 * @param int                                  $member_count
-	 *
-	 * @return array
 	 */
 	#[ArrayShape(["active_till" => "int", "limit" => "int", "current" => "int", "extend_policy" => "string", "allowed_action_list" => "array"])]
-	public static function memberCountPlan(\Tariff\Plan\MemberCount\MemberCount $member_count_plan, int $member_count):array {
+	public static function memberCountPlan(\Tariff\Plan\MemberCount\MemberCount $member_count_plan, int $member_count): array
+	{
 
 		// эту логику нужно держать в синхронизации с методом tariff/get пространства
 		// --------------------------------------------------------------------------
@@ -143,9 +140,9 @@ class Apiv2_Format {
 	 * Форматируем ответ для добавления номера телефона
 	 */
 	public static function addPhone(
-		Domain_User_Entity_Security_AddPhone_Story    $story,
+		Domain_User_Entity_Security_AddPhone_Story $story,
 		Domain_User_Entity_Security_AddPhone_SmsStory $sms_story
-	):array {
+	): array {
 
 		return [
 			"add_phone_story_info" => (object) [
@@ -164,15 +161,15 @@ class Apiv2_Format {
 	 * Форматируем ответ для пересылки смс
 	 */
 	public static function resendSms(
-		Domain_User_Entity_Security_AddPhone_Story|Domain_User_Entity_ChangePhone_Story       $story,
-		Domain_User_Entity_Security_AddPhone_SmsStory|Domain_User_Entity_ChangePhone_SmsStory $sms_story,
-		string                                                                                $phone_story_type
-	):array {
+		Domain_User_Entity_Security_AddPhone_Story | Domain_User_Entity_ChangePhone_Story $story,
+		Domain_User_Entity_Security_AddPhone_SmsStory | Domain_User_Entity_ChangePhone_SmsStory $sms_story,
+		string $phone_story_type
+	): array {
 
 		$phone_story_key = match ($phone_story_type) {
 			Domain_User_Entity_Security_AddPhone_Story::ACTION_TYPE => Type_Pack_AddPhoneStory::doEncrypt($story->getStoryMap()),
-			Domain_User_Entity_ChangePhone_Story::ACTION_TYPE => Type_Pack_ChangePhoneStory::doEncrypt($story->getStoryMap()),
-			default => "",
+			Domain_User_Entity_ChangePhone_Story::ACTION_TYPE       => Type_Pack_ChangePhoneStory::doEncrypt($story->getStoryMap()),
+			default                                                 => "",
 		};
 
 		return [
@@ -193,9 +190,9 @@ class Apiv2_Format {
 	 * Форматируем ответ для добавления номера телефона
 	 */
 	public static function mailResetPassword(
-		Domain_User_Entity_PasswordMail_Story     $story,
+		Domain_User_Entity_PasswordMail_Story $story,
 		Domain_User_Entity_PasswordMail_CodeStory $code_story
-	):array {
+	): array {
 
 		return [
 			"password_mail_story_info" => (object) [
@@ -215,9 +212,10 @@ class Apiv2_Format {
 	 * Форматируем ответ для смены почты
 	 */
 	public static function changeMail(
-		Domain_User_Entity_ChangeMail_Story     $story,
+		Domain_User_Entity_ChangeMail_Story $story,
 		Domain_User_Entity_ChangeMail_CodeStory $code_story,
-		string                                  $scenario):array {
+		string $scenario
+	): array {
 
 		return [
 			"change_mail_story_info" => (object) [
@@ -238,17 +236,17 @@ class Apiv2_Format {
 	 * Форматируем ответ для переотправки проверочного кода на почту
 	 */
 	public static function resendCode(
-		Domain_User_Entity_Security_AddMail_Story|Domain_User_Entity_PasswordMail_Story|Domain_User_Entity_ChangeMail_Story             $story,
-		Domain_User_Entity_Security_AddMail_CodeStory|Domain_User_Entity_PasswordMail_CodeStory|Domain_User_Entity_ChangeMail_CodeStory $story_code,
-		string                                                                                                                          $mail_story_type,
-		string                                                                                                                          $stage
-	):array {
+		Domain_User_Entity_Security_AddMail_Story | Domain_User_Entity_PasswordMail_Story | Domain_User_Entity_ChangeMail_Story $story,
+		Domain_User_Entity_Security_AddMail_CodeStory | Domain_User_Entity_PasswordMail_CodeStory | Domain_User_Entity_ChangeMail_CodeStory $story_code,
+		string $mail_story_type,
+		string $stage
+	): array {
 
 		$mail_story_key = match ($mail_story_type) {
-			Domain_User_Entity_Security_AddMail_Story::ACTION_TYPE => Type_Pack_AddMailStory::doEncrypt($story->getStoryMap()),
+			Domain_User_Entity_Security_AddMail_Story::ACTION_TYPE            => Type_Pack_AddMailStory::doEncrypt($story->getStoryMap()),
 			Domain_User_Entity_PasswordMail_Story::ACTION_TYPE_RESET_PASSWORD => Type_Pack_PasswordMailStory::doEncrypt($story->getStoryMap()),
-			Domain_User_Entity_ChangeMail_Story::ACTION_TYPE => Type_Pack_ChangeMailStory::doEncrypt($story->getStoryMap()),
-			default => throw new ParseFatalException("unknown type from format resend code"),
+			Domain_User_Entity_ChangeMail_Story::ACTION_TYPE                  => Type_Pack_ChangeMailStory::doEncrypt($story->getStoryMap()),
+			default                                                           => throw new ParseFatalException("unknown type from format resend code"),
 		};
 
 		return [
@@ -269,11 +267,11 @@ class Apiv2_Format {
 	 * Форматируем ответ для добавления почты пользователю
 	 */
 	public static function addMail(
-		Domain_User_Entity_Security_AddMail_Story     $story,
+		Domain_User_Entity_Security_AddMail_Story $story,
 		Domain_User_Entity_Security_AddMail_CodeStory $code_story,
-		string                                        $scenario,
-		string                                        $stage
-	):array {
+		string $scenario,
+		string $stage
+	): array {
 
 		return [
 			"add_mail_story_info" => (object) [
@@ -292,7 +290,8 @@ class Apiv2_Format {
 	/**
 	 * Форматируем данные сессии для устройства пользователя
 	 */
-	public static function sessionDevice(string $public_session_id, Struct_Db_PivotUser_SessionActive $session_active, bool $is_current):array {
+	public static function sessionDevice(string $public_session_id, Struct_Db_PivotUser_SessionActive $session_active, bool $is_current): array
+	{
 
 		return [
 			"session_id"     => (string) $public_session_id,
@@ -310,7 +309,8 @@ class Apiv2_Format {
 	/**
 	 * Форматируем ответ для получения онлайна пользователя
 	 */
-	public static function getOnline(int $last_online_at):array {
+	public static function getOnline(int $last_online_at): array
+	{
 
 		return [
 			"last_online_at" => (int) $last_online_at,
@@ -320,7 +320,8 @@ class Apiv2_Format {
 	/**
 	 * Форматируем ответ для получения списка онлайна пользователей
 	 */
-	public static function getOnlineList(array $user_online_list):array {
+	public static function getOnlineList(array $user_online_list): array
+	{
 
 		// подводим под формат
 		$formatted_user_online_list = [];
@@ -336,8 +337,17 @@ class Apiv2_Format {
 	/**
 	 * приводим к формату приложение в каталоге
 	 */
-	public static function smartAppSuggestedItem(int    $created_smart_app_id, int $catalog_item_id, int $is_popular, string $catalog_category, string $title,
-								   string $avatar_file_key, string $url, int $is_need_custom_user_agent, int $is_need_show_in_catalog):array {
+	public static function smartAppSuggestedItem(
+		int $created_smart_app_id,
+		int $catalog_item_id,
+		int $is_popular,
+		string $catalog_category,
+		string $title,
+		string $avatar_file_key,
+		string $url,
+		int $is_need_custom_user_agent,
+		int $is_need_show_in_catalog
+	): array {
 
 		return [
 			"created_smart_app_id"      => (int) $created_smart_app_id,
@@ -353,13 +363,62 @@ class Apiv2_Format {
 	}
 
 	/**
-	 * Формируем массив online_list
-	 *
-	 * @param Struct_Db_PivotUser_UserActivityList $user_online
-	 *
-	 * @return array
+	 * Объект шаблона для API ключа
 	 */
-	protected static function _makeOutputOnlineList(Struct_Db_PivotUser_UserActivityList $user_online):array {
+	public static function apiKeyTemplate(Struct_User_ApikeyTemplate $apikey_template, string $default_file_key, array $localization_keys): array
+	{
+
+		return [
+			"template_id"       => (int) $apikey_template->template_id,
+			"order"             => (int) $apikey_template->order,
+			"title"             => (string) $apikey_template->title,
+			"uniq_name"         => (string) $apikey_template->uniq_name,
+			"description"       => (string) $apikey_template->description,
+			"scope_list"        => (array) $apikey_template->scope_list,
+			"file_key"          => (string) $default_file_key,
+			"localization_keys" => (object) $localization_keys,
+		];
+	}
+
+	/**
+	 * Список шаблонов для API ключей
+	 */
+	public static function apiKeyTemplateList(array $apikey_template_list, array $default_file_key_list, array $description_locale_list): array
+	{
+
+		$output = [];
+
+		foreach ($apikey_template_list as $template) {
+
+			$default_file_key  = $default_file_key_list[$template->template_id] ?? "";
+			$localization_keys = $description_locale_list[$template->template_id] ?? [];
+			$output[]          = self::apiKeyTemplate($template, $default_file_key, $localization_keys);
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Формируем ключ
+	 */
+	public static function apiKeyData(Struct_User_Apikey $user_apikey): array
+	{
+
+		return [
+			"user_id"     => (int) $user_apikey->user_id,
+			"api_key"     => (string) $user_apikey->api_key,
+			"expires_at"  => (int) $user_apikey->expires_at,
+			"name"        => (string) $user_apikey->name,
+			"scope_list"  => (object) $user_apikey->scope_list,
+			"template_id" => (int) $user_apikey->template_id,
+		];
+	}
+
+	/**
+	 * Формируем массив online_list
+	 */
+	protected static function _makeOutputOnlineList(Struct_Db_PivotUser_UserActivityList $user_online): array
+	{
 
 		return [
 			"user_id"        => (int) $user_online->user_id,

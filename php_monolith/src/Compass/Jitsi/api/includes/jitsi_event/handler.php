@@ -12,18 +12,18 @@ use UnhandledMatchError;
  * класс обработчик событий приходящих от jitsi нод
  * @package Compass\Jitsi
  */
-class JitsiEvent_Handler {
-
+class JitsiEvent_Handler
+{
 	/**
 	 * обрабатываем события
 	 *
-	 * @return array
 	 * @throws Domain_Jitsi_Exception_ConferenceMember_IncorrectMemberId
 	 * @throws EndpointAccessDeniedException
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	public static function handle(array $event_data):array {
+	public static function handle(array $event_data): array
+	{
 
 		self::_assertEnv();
 
@@ -56,7 +56,8 @@ class JitsiEvent_Handler {
 	 *
 	 * @throws EndpointAccessDeniedException
 	 */
-	protected static function _assertEnv():void {
+	protected static function _assertEnv(): void
+	{
 
 		// на окружении для тестов данный хендлер работать не должен, так как поведение клиента в jitsi не симулируется
 		if (ServerProvider::isCi()) {
@@ -69,7 +70,8 @@ class JitsiEvent_Handler {
 	 *
 	 * @throws EndpointAccessDeniedException
 	 */
-	protected static function _assertAuthorizationToken():void {
+	protected static function _assertAuthorizationToken(): void
+	{
 
 		$jitsi_domain        = self::_getRequestJitsiDomain();
 		$authorization_token = getHeader("HTTP_AUTHORIZATION");
@@ -90,10 +92,9 @@ class JitsiEvent_Handler {
 
 	/**
 	 * получаем домен jitsi ноды, которая прислала событие
-	 *
-	 * @return string
 	 */
-	protected static function _getRequestJitsiDomain():string {
+	protected static function _getRequestJitsiDomain(): string
+	{
 
 		return getHeader("HTTP_JITSI_DOMAIN");
 	}
@@ -103,7 +104,8 @@ class JitsiEvent_Handler {
 	 *
 	 * @throws ParamException
 	 */
-	protected static function _assertEventStructure(array $event_data):void {
+	protected static function _assertEventStructure(array $event_data): void
+	{
 
 		if (!isset($event_data["event_name"])) {
 			throw new ParamException("incorrect event structure");
@@ -116,7 +118,8 @@ class JitsiEvent_Handler {
 	 * @throws ParseFatalException
 	 * @throws ParamException
 	 */
-	protected static function _handleRoomCreated(array $event_data):void {
+	protected static function _handleRoomCreated(array $event_data): void
+	{
 
 		if (!isset($event_data["room_name"])) {
 			throw new ParamException("incorrect event structure");
@@ -141,7 +144,7 @@ class JitsiEvent_Handler {
 			return;
 		}
 
-		Domain_Jitsi_Scenario_Event::onConferenceStarted($event_data["room_name"]);
+		Domain_Jitsi_Scenario_Event::onConferenceStarted($event_data["room_name"], $event_data["meeting_id"] ?? "");
 	}
 
 	/**
@@ -150,7 +153,8 @@ class JitsiEvent_Handler {
 	 * @throws ParseFatalException
 	 * @throws ParamException
 	 */
-	protected static function _handleRoomDestroyed(array $event_data):void {
+	protected static function _handleRoomDestroyed(array $event_data): void
+	{
 
 		if (!isset($event_data["room_name"])) {
 			throw new ParamException("incorrect event structure");
@@ -158,7 +162,7 @@ class JitsiEvent_Handler {
 
 		$event_data["room_name"] = self::_sanitizeRoomName($event_data["room_name"]);
 
-		Domain_Jitsi_Scenario_Event::onConferenceFinished($event_data["room_name"]);
+		Domain_Jitsi_Scenario_Event::onConferenceFinished($event_data["room_name"], $event_data["meeting_id"] ?? "");
 	}
 
 	/**
@@ -168,7 +172,8 @@ class JitsiEvent_Handler {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	protected static function _handleRoomMemberJoined(array $event_data):void {
+	protected static function _handleRoomMemberJoined(array $event_data): void
+	{
 
 		if (!isset($event_data["room_name"], $event_data["occupant"], $event_data["occupant"]["id"])) {
 			throw new ParamException("incorrect event structure");
@@ -176,7 +181,8 @@ class JitsiEvent_Handler {
 
 		$event_data["room_name"] = self::_sanitizeRoomName($event_data["room_name"]);
 
-		Domain_Jitsi_Scenario_Event::onConferenceMemberJoined($event_data["room_name"], $event_data["occupant"]["id"]);
+		$name = $event_data["occupant"]["name"] ?? false;
+		Domain_Jitsi_Scenario_Event::onConferenceMemberJoined($event_data["room_name"], $event_data["occupant"]["id"], $name, $event_data["meeting_id"] ?? "");
 	}
 
 	/**
@@ -186,7 +192,8 @@ class JitsiEvent_Handler {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	protected static function _handleRoomMemberLeft(array $event_data):void {
+	protected static function _handleRoomMemberLeft(array $event_data): void
+	{
 
 		if (!isset($event_data["room_name"], $event_data["occupant"], $event_data["occupant"]["id"])) {
 			throw new ParamException("incorrect event structure");
@@ -195,7 +202,8 @@ class JitsiEvent_Handler {
 		$event_data["room_name"] = self::_sanitizeRoomName($event_data["room_name"]);
 		$is_lost_connection      = self::_checkLostConnectionState($event_data);
 
-		Domain_Jitsi_Scenario_Event::onConferenceMemberLeft($event_data["room_name"], $event_data["occupant"]["id"], $is_lost_connection);
+		$name = $event_data["occupant"]["name"] ?? false;
+		Domain_Jitsi_Scenario_Event::onConferenceMemberLeft($event_data["room_name"], $event_data["occupant"]["id"], $is_lost_connection, $name, $event_data["meeting_id"] ?? "");
 	}
 
 	/**
@@ -205,7 +213,8 @@ class JitsiEvent_Handler {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	protected static function _handleModeratorRightsGranted(array $event_data):void {
+	protected static function _handleModeratorRightsGranted(array $event_data): void
+	{
 
 		if (!isset($event_data["room_name"], $event_data["occupant"], $event_data["occupant"]["id"])) {
 			throw new ParamException("incorrect event structure");
@@ -213,15 +222,14 @@ class JitsiEvent_Handler {
 
 		$event_data["room_name"] = self::_sanitizeRoomName($event_data["room_name"]);
 
-		Domain_Jitsi_Scenario_Event::onConferenceMemberModeratorRightsGranted($event_data["room_name"], $event_data["occupant"]["id"]);
+		Domain_Jitsi_Scenario_Event::onConferenceMemberModeratorRightsGranted($event_data["room_name"], $event_data["occupant"]["id"], $event_data["meeting_id"] ?? "");
 	}
 
 	/**
 	 * подготавливаем название комнаты
-	 *
-	 * @return string
 	 */
-	protected static function _sanitizeRoomName(string $room_name):string {
+	protected static function _sanitizeRoomName(string $room_name): string
+	{
 
 		// регулярное выражение для поиска текста в квадратных скобках
 		$pattern = "/\[.*?\]/";
@@ -233,7 +241,8 @@ class JitsiEvent_Handler {
 	/**
 	 * Проверяем было ли потеряно соединение
 	 */
-	protected static function _checkLostConnectionState(array $event_data):bool {
+	protected static function _checkLostConnectionState(array $event_data): bool
+	{
 
 		// проверяем наличие параметра stanza
 		if (!isset($event_data["stanza"]) || count($event_data["stanza"]) < 1) {
@@ -262,7 +271,7 @@ class JitsiEvent_Handler {
 
 		if (isset($status_tag["__array"]) && is_array($status_tag["__array"])) {
 
-			$lost_connection_item = array_filter($status_tag["__array"], function(mixed $item) {
+			$lost_connection_item = array_filter($status_tag["__array"], function (mixed $item) {
 
 				if (!is_string($item)) {
 					return false;

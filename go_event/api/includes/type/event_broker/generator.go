@@ -60,7 +60,7 @@ func MakeEventGenerator(eventType string, period int, data json.RawMessage, only
 	} else {
 
 		// пробегаемся по всем изоляциям и запускаем в них рутины генераторов
-		CompanyConfig.IterateOverActive(eventGeneratorStore.generatorList[eventType])
+		CompanyConfig.DefaultManager.IterateOverActive(eventGeneratorStore.generatorList[eventType])
 	}
 
 	_ = Generator.StartGenerator(generator)

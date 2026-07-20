@@ -50,6 +50,8 @@ include_once FILEBALANCER_MODULE_ROOT . "_module/sharding.php";
 	\BaseFrame\Crypt\PackCryptProvider::COMPANY => new \BaseFrame\Crypt\PackCryptData(SALT_PACK_COMPANY_SESSION, \BaseFrame\Crypt\CryptProvider::session()),
 ]);
 
+\BaseFrame\ApiGateway\GatewayHandler::init(GATEWAY_SECRET_KEY_B64);
+
 if (CURRENT_SERVER == CLOUD_SERVER) {
 
 	\CompassApp\Company\HibernationHandler::init(NEED_COMPANY_HIBERNATE, COMPANY_HIBERNATION_DELAYED_TIME);

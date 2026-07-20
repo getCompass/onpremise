@@ -5,8 +5,8 @@ namespace Compass\Company;
 /**
  * Действие обновления full_name
  */
-class Domain_Member_Action_SetPivotData {
-
+class Domain_Member_Action_SetPivotData
+{
 	/**
 	 * Экшен по обновлению данных пользователя
 	 *
@@ -18,8 +18,19 @@ class Domain_Member_Action_SetPivotData {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \parseException
 	 */
-	public static function do(int $user_id, string $full_name, string $avatar_file_key, int $avatar_color_id, int $avg_screen_time, int $total_action_count,
-					  int $avg_message_answer_time, int $profile_created_at, int $disabled_at, string $client_launch_uuid, int $is_deleted):void {
+	public static function do(
+		int $user_id,
+		string $full_name,
+		string $avatar_file_key,
+		int $avatar_color_id,
+		int $avg_screen_time,
+		int $total_action_count,
+		int $avg_message_answer_time,
+		int $profile_created_at,
+		?int $disabled_at,
+		string $client_launch_uuid,
+		?int $is_deleted
+	): void {
 
 		// формируем массив на обновление
 		$updated = [
@@ -31,8 +42,9 @@ class Domain_Member_Action_SetPivotData {
 		Gateway_Db_CompanyData_MemberList::beginTransaction();
 		$member = Gateway_Db_CompanyData_MemberList::getForUpdate($user_id);
 
-		$member->extra = \CompassApp\Domain\Member\Entity\Extra::setIsDeleted($member->extra, $is_deleted);
-		$member->extra = \CompassApp\Domain\Member\Entity\Extra::setAliasDisabledAt($member->extra, $disabled_at);
+		!is_null($is_deleted) && $member->extra  = \CompassApp\Domain\Member\Entity\Extra::setIsDeleted($member->extra, $is_deleted);
+		!is_null($disabled_at) && $member->extra = \CompassApp\Domain\Member\Entity\Extra::setAliasDisabledAt($member->extra, $disabled_at);
+
 		$member->extra = \CompassApp\Domain\Member\Entity\Extra::setAliasAvgScreenTime($member->extra, $avg_screen_time);
 		$member->extra = \CompassApp\Domain\Member\Entity\Extra::setAliasTotalActionCount($member->extra, $total_action_count);
 		$member->extra = \CompassApp\Domain\Member\Entity\Extra::setAliasAvgMessageAnswerTime($member->extra, $avg_message_answer_time);
@@ -64,7 +76,8 @@ class Domain_Member_Action_SetPivotData {
 		self::_afterSet($member, $full_name, $client_launch_uuid);
 	}
 
-	protected static function _afterSet(\CompassApp\Domain\Member\Struct\Main $member, string $full_name, string $client_launch_uuid):void {
+	protected static function _afterSet(\CompassApp\Domain\Member\Struct\Main $member, string $full_name, string $client_launch_uuid): void
+	{
 
 		// отправляем WS
 		Gateway_Bus_Sender::memberProfileUpdated($member, $client_launch_uuid);

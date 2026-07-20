@@ -15,7 +15,7 @@ class Domain_Userbot_Entity_Userbot {
 	 * @var int последняя актуальная версия webhook бота
 	 * !!! ВНИМАНИЕ !!! Версия webhook также указана в модуле php_userbot
 	 */
-	public const LAST_WEBHOOK_VERSION = 3;
+	public const LAST_WEBHOOK_VERSION = 4;
 
 	// !!! структура schema и версия webhook также продублирована в php_userbot
 	protected const _USERBOT_EXTRA_VERSION = 3; // версия упаковщика

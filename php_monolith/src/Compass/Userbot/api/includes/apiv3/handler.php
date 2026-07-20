@@ -95,7 +95,16 @@ class Apiv3_Handler extends Api implements \RouteHandler {
 		// ожидаем заголовок формата "Authorization: bearer=<токен бота>"
 		$header_for_token = getHeader("HTTP_AUTHORIZATION");
 		$tmp              = explode("=", $header_for_token);
-		if (count($tmp) != 2 || trim(mb_strtolower($tmp[0])) != "bearer") {
+		if (count($tmp) != 2) {
+
+			// ожидаем заголовок формата "Authorization: Bearer <токен бота>"
+			$tmp = explode(" ", $header_for_token);
+			if (count($tmp) != 2) {
+				throw new CaseException(CASE_EXCEPTION_CODE_1, "incorrect required header - \"authorization\"");
+			}
+		}
+
+		if (trim(mb_strtolower($tmp[0])) != "bearer") {
 			throw new CaseException(CASE_EXCEPTION_CODE_1, "incorrect required header - \"authorization\"");
 		}
 		return trim($tmp[1]);

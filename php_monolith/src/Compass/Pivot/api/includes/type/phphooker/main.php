@@ -8,8 +8,8 @@ use BaseFrame\Server\ServerProvider;
  * класс для исполнения задач через phphooker
  * ВАЖНО! для каждого типа задачи должна быть функция здесь
  */
-class Type_Phphooker_Main {
-
+class Type_Phphooker_Main
+{
 	##########################################################
 	# region типы задач
 	##########################################################
@@ -48,21 +48,22 @@ class Type_Phphooker_Main {
 
 	/**
 	 * событие обновлении пользовательских данных
-	 *
 	 */
-	public static function onUserInfoChange(int $user_id, string $client_launch_uuid = ""):void {
+	public static function onUserInfoChange(int $user_id, string $client_launch_uuid = "", bool $is_need_update_disable_flag = true): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_UPDATE_USER_COMPANY_INFO, 0, [
-			"user_id"            => $user_id,
-			"client_launch_uuid" => $client_launch_uuid,
+			"user_id"                     => $user_id,
+			"client_launch_uuid"          => $client_launch_uuid,
+			"is_need_update_disable_flag" => $is_need_update_disable_flag,
 		]);
 	}
 
 	/**
 	 * Событие удаления компании
-	 *
 	 */
-	public static function onCompanyDelete(int $deleted_by_user_id, int $company_id):void {
+	public static function onCompanyDelete(int $deleted_by_user_id, int $company_id): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_DELETE_COMPANY, 0, [
 			"deleted_by_user_id" => $deleted_by_user_id,
@@ -72,9 +73,9 @@ class Type_Phphooker_Main {
 
 	/**
 	 * событие при успешной авторизации
-	 *
 	 */
-	public static function onSuccessDeviceLogin(int $user_id, string $login_type, string $device_name, string $app_version, string $server_version, string $locale):void {
+	public static function onSuccessDeviceLogin(int $user_id, string $login_type, string $device_name, string $app_version, string $server_version, string $locale): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_ON_SUCCESS_DEVICE_LOGIN, 0, [
 			"user_id"        => $user_id,
@@ -88,9 +89,9 @@ class Type_Phphooker_Main {
 
 	/**
 	 * событие при разлогине пользователя
-	 *
 	 */
-	public static function onUserLogout(int $user_id, array $session_uniq_list):void {
+	public static function onUserLogout(int $user_id, array $session_uniq_list): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_LOGOUT_USER, 0, [
 			"user_id"           => $user_id,
@@ -100,9 +101,9 @@ class Type_Phphooker_Main {
 
 	/**
 	 * Запрос на исключение пользователя из компании.
-	 *
 	 */
-	public static function onKickUserFromCompanyRequested(int $user_id, int $user_role, int $company_id):void {
+	public static function onKickUserFromCompanyRequested(int $user_id, int $user_role, int $company_id): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_KICK_USER_FROM_COMPANY, 0, [
 			"user_id"    => $user_id,
@@ -113,9 +114,9 @@ class Type_Phphooker_Main {
 
 	/**
 	 * Событие удаления аккаунта пользователя
-	 *
 	 */
-	public static function onProfileDelete(int $deleted_user_id):void {
+	public static function onProfileDelete(int $deleted_user_id): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_DELETE_PROFILE, 0, [
 			"deleted_user_id" => $deleted_user_id,
@@ -125,7 +126,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Действие по исключению пользователя из всех его команд
 	 */
-	public static function kickUserFromAllCompanies(int $user_id):void {
+	public static function kickUserFromAllCompanies(int $user_id): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_KICK_USER_FROM_ALL_COMPANIES, 0, [
 			"user_id" => $user_id,
@@ -134,9 +136,9 @@ class Type_Phphooker_Main {
 
 	/**
 	 * Событие пересчета количества компаний
-	 *
 	 */
-	public static function onCountCompany(int $need_work):void {
+	public static function onCountCompany(int $need_work): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_COUNT_COMPANY, $need_work, []);
 	}
@@ -144,7 +146,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Пользователь запросил переотправку смс-сообщения.
 	 */
-	public static function onSmsResent(int $user_id, string $phone_number, int $remain_attempt_count, string $action, string $country_name, string $sms_id):void {
+	public static function onSmsResent(int $user_id, string $phone_number, int $remain_attempt_count, string $action, string $country_name, string $sms_id): void
+	{
 
 		$need_work = time();
 		if (!isTestServer()) {
@@ -167,7 +170,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Пользователь ввел некорректную invite-ссылку
 	 */
-	public static function onTryValidateIncorrectLink(int $user_id, string $link):void {
+	public static function onTryValidateIncorrectLink(int $user_id, string $link): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_INCORRECT_INVITE_LINK, time(), [
 			"user_id" => $user_id,
@@ -178,7 +182,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Попытка логина/регистрации истекла
 	 */
-	public static function onAuthStoryExpire(string $auth_map, int $expires_at):void {
+	public static function onAuthStoryExpire(string $auth_map, int $expires_at): void
+	{
 
 		if (ServerProvider::isOnPremise()) {
 			return;
@@ -201,7 +206,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Попытка подтверждения two_fa действия истекла
 	 */
-	public static function onTwoFaStoryExpire(string $two_fa_map, int $expires_at):void {
+	public static function onTwoFaStoryExpire(string $two_fa_map, int $expires_at): void
+	{
 
 		if (ServerProvider::isOnPremise()) {
 			return;
@@ -224,7 +230,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Попытка добавления номера телефона истекла
 	 */
-	public static function onPhoneAddStoryExpire(int $user_id, string $add_change_map, int $expires_at):void {
+	public static function onPhoneAddStoryExpire(int $user_id, string $add_change_map, int $expires_at): void
+	{
 
 		if (ServerProvider::isOnPremise()) {
 			return;
@@ -248,7 +255,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Попытка смены номера истекла
 	 */
-	public static function onPhoneChangeStoryExpire(int $user_id, string $phone_change_map, int $expires_at):void {
+	public static function onPhoneChangeStoryExpire(int $user_id, string $phone_change_map, int $expires_at): void
+	{
 
 		if (ServerProvider::isOnPremise()) {
 			return;
@@ -272,7 +280,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Отправка лога статуса пользователя
 	 */
-	public static function sendUserAccountLog(int $user_id, int $action, int $delay = 0):void {
+	public static function sendUserAccountLog(int $user_id, int $action, int $delay = 0): void
+	{
 
 		if ((isTestServer() && !isBackendTest() && !isLocalServer()) || ServerProvider::isOnPremise()) {
 			return;
@@ -292,7 +301,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Отправка лога статуса пространства
 	 */
-	public static function sendSpaceLog(int $action, int $company_id):void {
+	public static function sendSpaceLog(int $action, int $company_id): void
+	{
 
 		if (isTestServer() && !isBackendTest() && !isLocalServer() || ServerProvider::isOnPremise()) {
 			return;
@@ -307,7 +317,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Отправка в Bitrix информации о новом зарегистрированном пользователе
 	 */
-	public static function sendBitrixOnUserRegistered(int $user_id, ?string $force_stage_id = null):void {
+	public static function sendBitrixOnUserRegistered(int $user_id, ?string $force_stage_id = null): void
+	{
 
 		if ((isTestServer() && !isBackendTest() && !isLocalServer()) || !IS_BITRIX_USER_ANALYTICS_ENABLED || ServerProvider::isOnPremise()) {
 			return;
@@ -322,7 +333,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Отправки в Bitrix актуальной информации о ранее зарегистрированном пользователе
 	 */
-	public static function sendBitrixOnUserChangedInfo(int $user_id, array $changed_data):void {
+	public static function sendBitrixOnUserChangedInfo(int $user_id, array $changed_data): void
+	{
 
 		if ((isTestServer() && !isBackendTest() && !isLocalServer()) || !IS_BITRIX_USER_ANALYTICS_ENABLED || ServerProvider::isOnPremise()) {
 			return;
@@ -337,7 +349,8 @@ class Type_Phphooker_Main {
 	/**
 	 * получим и сохраним в Bitrix данные по рекламной кампании, с которой пользователь пришел в приложение
 	 */
-	public static function sendBitrixUserCampaignData(int $user_id, int $delay):void {
+	public static function sendBitrixUserCampaignData(int $user_id, int $delay): void
+	{
 
 		if ((isTestServer() && !isBackendTest() && !isLocalServer()) || !IS_BITRIX_USER_ANALYTICS_ENABLED || ServerProvider::isOnPremise()) {
 			return;
@@ -356,7 +369,8 @@ class Type_Phphooker_Main {
 	/**
 	 * совершаем некоторые действия в случае если пользователь покинул пространство слишком рано
 	 */
-	public static function onUserLeftSpaceEarly(int $user_id, int $company_id, int $entry_id):void {
+	public static function onUserLeftSpaceEarly(int $user_id, int $company_id, int $entry_id): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_ON_USER_LEFT_SPACE_EARLY, time(), [
 			"user_id"    => $user_id,
@@ -368,7 +382,8 @@ class Type_Phphooker_Main {
 	/**
 	 * Событие, когда пользователь попал в свою первую команду
 	 */
-	public static function onUserEnteringFirstCompany(int $user_id, int $company_id, int $entry_id):void {
+	public static function onUserEnteringFirstCompany(int $user_id, int $company_id, int $entry_id): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_USER_ENTERING_FIRST_SPACE, time(), [
 			"user_id"    => $user_id,
@@ -380,7 +395,8 @@ class Type_Phphooker_Main {
 	/**
 	 * обновляем данные на каждой из компаний пользователя
 	 */
-	public static function updateMemberInfoOnAllCompanies(int $user_id, int $need_work, false|string $badge_content, false|string $status, false|string $description):void {
+	public static function updateMemberInfoOnAllCompanies(int $user_id, int $need_work, false | string $badge_content, false | string $status, false | string $description): void
+	{
 
 		self::_addFromApi(self::TASK_TYPE_UPDATE_MEMBER_INFO_ON_ALL_COMPANIES, $need_work, [
 			"user_id"       => $user_id,
@@ -398,7 +414,8 @@ class Type_Phphooker_Main {
 	// -------------------------------------------------------
 
 	// добавить задачу в очередь из API запроса пользователя
-	protected static function _addFromApi(int $task_type, int $need_work, array $params):void {
+	protected static function _addFromApi(int $task_type, int $need_work, array $params): void
+	{
 
 		// если задача отложенного исполнения - не будем портить статистику created_at
 		$created_at = time();
@@ -419,7 +436,8 @@ class Type_Phphooker_Main {
 	}
 
 	// генерирует уникальный идентификатор для задачи
-	protected static function _generateTaskGlobalKey():string {
+	protected static function _generateTaskGlobalKey(): string
+	{
 
 		return sha1(getUniqId(128));
 	}

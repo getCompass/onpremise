@@ -10,23 +10,25 @@ use cs_RowIsEmpty;
 /**
  * крон для исполнения задач
  */
-class Cron_Phphooker extends \Cron_Default {
-
+class Cron_Phphooker extends \Cron_Default
+{
 	// макс кол-во ошибок
 	protected const _MAX_ERROR_COUNT = 3;
 
 	// база / таблица
-	protected const _DB_KEY    = "pivot_system";
-	protected const _TABLE_KEY = "phphooker_queue";
-
+	protected const _DB_KEY             = "pivot_system";
+	protected const _TABLE_KEY          = "phphooker_queue";
 	protected const _NEED_WORK_INTERVAL = 60; // интервал для продюсера
 	protected const _PRODUCER_LIMIT     = 20; // лимит записей за раз
 
 	protected string $queue_prefix = "_" . CURRENT_MODULE;
-	protected int    $memory_limit = 50;
-	protected int    $sleep_time   = 0;
 
-	public function work():void {
+	protected int $memory_limit = 50;
+
+	protected int $sleep_time = 0;
+
+	public function work(): void
+	{
 
 		// получаем задачи из базы
 		$list = $this->_getList();
@@ -53,7 +55,8 @@ class Cron_Phphooker extends \Cron_Default {
 	}
 
 	// функция для получения задачи из базы
-	protected function _getList():array {
+	protected function _getList(): array
+	{
 
 		$offset = $this->bot_num * self::_PRODUCER_LIMIT;
 		$query  = "SELECT * FROM `?p` WHERE `need_work` < ?i LIMIT ?i OFFSET ?i";
@@ -62,7 +65,8 @@ class Cron_Phphooker extends \Cron_Default {
 	}
 
 	// формируем массив для обновления задач
-	protected function _makeIn(array $list):array {
+	protected function _makeIn(array $list): array
+	{
 
 		// формируем in[]
 		$in = [];
@@ -76,7 +80,8 @@ class Cron_Phphooker extends \Cron_Default {
 	}
 
 	// функция для обновления записи с задачей в базе
-	protected function _updateTaskList(array $in):void {
+	protected function _updateTaskList(array $in): void
+	{
 
 		// обновляем need_work задачи и увеличиваем error_count
 		$set = [
@@ -89,7 +94,8 @@ class Cron_Phphooker extends \Cron_Default {
 	}
 
 	// функция для отправки задачи в doWork
-	protected function _sendToRabbit(array $list):void {
+	protected function _sendToRabbit(array $list): void
+	{
 
 		foreach ($list as $item) {
 
@@ -114,7 +120,8 @@ class Cron_Phphooker extends \Cron_Default {
 	 *
 	 * @throws \parseException
 	 */
-	public function doWork(array $item):void {
+	public function doWork(array $item): void
+	{
 
 		// проверяем задачу полученную из реббита
 		if ($item["task_time_start"] + self::_NEED_WORK_INTERVAL < time()) {
@@ -135,21 +142,17 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Выполнить задачу
 	 *
-	 * @param int   $task_id
-	 * @param int   $task_type
-	 * @param array $params
-	 *
-	 * @return bool
 	 * @long
 	 */
-	protected function _doTask(int $task_id, int $task_type, array $params):bool {
+	protected function _doTask(int $task_id, int $task_type, array $params): bool
+	{
 
 		try {
 
 			// развилка по типу задачи
 			return match ($task_type) {
 
-				Type_Phphooker_Main::TASK_TYPE_UPDATE_USER_COMPANY_INFO            => $this->_doUpdateUserCompanyInfo($params["user_id"], $params["client_launch_uuid"]),
+				Type_Phphooker_Main::TASK_TYPE_UPDATE_USER_COMPANY_INFO            => $this->_doUpdateUserCompanyInfo($params["user_id"], $params["client_launch_uuid"], $params["is_need_update_disable_flag"]),
 				Type_Phphooker_Main::TASK_TYPE_LOGOUT_USER                         => $this->_doLogoutUser($params["user_id"], $params["session_uniq_list"]),
 				Type_Phphooker_Main::TASK_TYPE_KICK_USER_FROM_COMPANY              => $this->_doKickUserFromCompany($params["user_id"], $params["user_role"], $params["company_id"]),
 				Type_Phphooker_Main::TASK_TYPE_DELETE_COMPANY                      => $this->_doActionsOnCompanyDelete($params["deleted_by_user_id"], $params["company_id"]),
@@ -190,14 +193,11 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * обновление пользовательских данных в компаниях
 	 *
-	 * @param int    $user_id
-	 * @param string $client_launch_uuid
-	 *
-	 * @return bool
 	 * @throws cs_CompanyIncorrectCompanyId
 	 * @throws \cs_RowIsEmpty
 	 */
-	protected function _doUpdateUserCompanyInfo(int $user_id, string $client_launch_uuid):bool {
+	protected function _doUpdateUserCompanyInfo(int $user_id, string $client_launch_uuid, bool $is_need_update_disable_flag): bool
+	{
 
 		try {
 			$user_data = Gateway_Db_PivotUser_UserList::getOne($user_id);
@@ -205,7 +205,7 @@ class Cron_Phphooker extends \Cron_Default {
 			return true;
 		}
 
-		Domain_Company_Entity_Company::updateUserCompanyInfo($user_data, $client_launch_uuid);
+		Domain_Company_Entity_Company::updateUserCompanyInfo($user_data, $client_launch_uuid, $is_need_update_disable_flag);
 
 		return true;
 	}
@@ -213,15 +213,12 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * разлогин сессий пользователя в компании
 	 *
-	 * @param int   $user_id
-	 * @param array $session_uniq_list
-	 *
-	 * @return bool
 	 * @throws cs_CompanyIncorrectCompanyId
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	protected function _doLogoutUser(int $user_id, array $session_uniq_list):bool {
+	protected function _doLogoutUser(int $user_id, array $session_uniq_list): bool
+	{
 
 		$user_company_session_token_list = Domain_Company_Entity_UserCompanySessionToken::setInactiveAndGetBySessionUniqList($user_id, $session_uniq_list);
 
@@ -237,7 +234,8 @@ class Cron_Phphooker extends \Cron_Default {
 	 * @throws \parseException
 	 * @throws \returnException|cs_CompanyUserIsNotFound
 	 */
-	protected function _doKickUserFromCompany(int $user_id, int $user_role, int $company_id):bool {
+	protected function _doKickUserFromCompany(int $user_id, int $user_role, int $company_id): bool
+	{
 
 		Domain_User_Action_KickUserFromCompany::do($user_id, $user_role, $company_id);
 		return true;
@@ -246,14 +244,11 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Произвести действия при удалении компании
 	 *
-	 * @param int $deleted_by_user_id
-	 * @param int $company_id
-	 *
-	 * @return bool
 	 * @throws Domain_System_Exception_IsNotAllowedServiceTask
 	 * @throws \queryException
 	 */
-	protected function _doActionsOnCompanyDelete(int $deleted_by_user_id, int $company_id):bool {
+	protected function _doActionsOnCompanyDelete(int $deleted_by_user_id, int $company_id): bool
+	{
 
 		Domain_User_Action_Company_RemoveAllUsersFromCompany::do($deleted_by_user_id, $company_id);
 
@@ -269,9 +264,6 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Произвести действия при удалении аккаунта пользователя
 	 *
-	 * @param int $deleted_user_id
-	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws cs_CompanyIncorrectCompanyId
@@ -282,7 +274,8 @@ class Cron_Phphooker extends \Cron_Default {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	protected function _doActionsOnProfileDelete(int $deleted_user_id):bool {
+	protected function _doActionsOnProfileDelete(int $deleted_user_id): bool
+	{
 
 		// очищаем девайсы и токены для пользователя
 		Type_User_Notifications::deleteDevicesForUser($deleted_user_id);
@@ -300,7 +293,6 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * исключаем пользователя из всех его команд
 	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \cs_SocketRequestIsFailed
@@ -312,7 +304,8 @@ class Cron_Phphooker extends \Cron_Default {
 	 * @throws cs_RowIsEmpty
 	 * @long
 	 */
-	protected function _kickUserFromAllCompanies(int $user_id):bool {
+	protected function _kickUserFromAllCompanies(int $user_id): bool
+	{
 
 		// получаем информацию о пользователе
 		$user_info = Gateway_Db_PivotUser_UserList::getOne($user_id);
@@ -335,7 +328,7 @@ class Cron_Phphooker extends \Cron_Default {
 
 				// чистим постоянные конференции
 				Gateway_Socket_Jitsi::removeAllPermanentConference($user_id, $company->company_id);
-			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
+			} catch (Gateway_Socket_Exception_CompanyIsNotServed | cs_CompanyIsHibernate) {
 				// !!! если вдруг компания неактивна, то продолжаем дальнейшее выполнение на пивоте
 			}
 		}
@@ -363,8 +356,14 @@ class Cron_Phphooker extends \Cron_Default {
 
 					$user_info = Struct_User_Info::createStruct($user_info);
 					Gateway_Socket_Company::revokeHiringRequest(
-						$user_id, $company_lobby->entry_id, $company->company_id, $company->domino_id, $private_key, $user_info);
-				} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
+						$user_id,
+						$company_lobby->entry_id,
+						$company->company_id,
+						$company->domino_id,
+						$private_key,
+						$user_info
+					);
+				} catch (Gateway_Socket_Exception_CompanyIsNotServed | cs_CompanyIsHibernate) {
 					// !!! если вдруг компания неактивна, то продолжаем дальнейшее выполнение на пивоте
 				}
 			}
@@ -376,11 +375,11 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Подсчитаем количество компаний
 	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 * @throws cs_CompanyIncorrectCompanyId
 	 */
-	protected function _doCountCompany():bool {
+	protected function _doCountCompany(): bool
+	{
 
 		$domino_list = Gateway_Db_PivotCompanyService_DominoRegistry::getAll();
 		$limit       = 10000;
@@ -399,7 +398,7 @@ class Cron_Phphooker extends \Cron_Default {
 				$company_id_list = Gateway_Db_PivotCompanyService_CompanyRegistry::getAllCompanyIdList($domino->domino_id, $limit + 1, $offset);
 				$has_next        = count($company_id_list) < $limit + 1 ? 0 : 1;
 				$company_id_list = array_slice($company_id_list, 0, $limit);
-				$offset          += $limit;
+				$offset += $limit;
 
 				$company_count_status_list = (array) Gateway_Db_PivotCompany_CompanyList::getStatusCountList($company_id_list, $company_count_status_list);
 				foreach ($company_count_status_list as $count) {
@@ -416,7 +415,8 @@ class Cron_Phphooker extends \Cron_Default {
 	}
 
 	// сохраняем статистику когда посчитали количество компаний на домино
-	protected function _saveStatisticOnCountCompany(string $domino_id, int $company_full, int $company_active, int $company_hibernated):void {
+	protected function _saveStatisticOnCountCompany(string $domino_id, int $company_full, int $company_active, int $company_hibernated): void
+	{
 
 		Type_System_Analytic::save(0, $domino_id, Type_System_Analytic::TYPE_COMPANY_FULL, ["value" => $company_full]);
 		Type_System_Analytic::save(0, $domino_id, Type_System_Analytic::TYPE_COMPANY_ACTIVE, ["value" => $company_active]);
@@ -426,7 +426,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Выполняет отправку уведомление о повторном запросе смс-сообщения.
 	 */
-	protected function _onSmsResent(array $param):bool {
+	protected function _onSmsResent(array $param): bool
+	{
 
 		Domain_User_Entity_Alert::onSmsResent((int) $param["user_id"],
 			$param["phone_number"],
@@ -441,7 +442,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Отправляет уведомление на ввод некорретной пригласительной ссылки после регистрации
 	 */
-	protected function _onTryValidateIncorrectLink(array $param):bool {
+	protected function _onTryValidateIncorrectLink(array $param): bool
+	{
 
 		Domain_User_Entity_Alert::onTryValidateIncorrectLink((int) $param["user_id"], $param["link"]);
 		return true;
@@ -450,7 +452,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Срабатывает сразу после протухания попытки залогиниться/зарегистрировать
 	 */
-	protected function _onAuthStoryExpire(string $auth_map):bool {
+	protected function _onAuthStoryExpire(string $auth_map): bool
+	{
 
 		Domain_User_Scenario_Phphooker::onAuthStoryExpire($auth_map);
 		return true;
@@ -459,7 +462,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Срабатывает сразу после протухания попытки two_fa
 	 */
-	protected function _onTwoFaStoryExpire(string $two_fa_map):bool {
+	protected function _onTwoFaStoryExpire(string $two_fa_map): bool
+	{
 
 		Domain_User_Scenario_Phphooker::onTwoFaStoryExpire($two_fa_map);
 		return true;
@@ -468,7 +472,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Срабатывает сразу после протухания попытки смены номера телефона
 	 */
-	protected function _onPhoneChangeStoryExpire(int $user_id, string $phone_change_story):bool {
+	protected function _onPhoneChangeStoryExpire(int $user_id, string $phone_change_story): bool
+	{
 
 		Domain_User_Scenario_Phphooker::onPhoneChangeStoryExpire($user_id, $phone_change_story);
 		return true;
@@ -477,7 +482,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Срабатывает сразу после истекания попытки добавления номера телефона
 	 */
-	protected function _onPhoneAddStoryExpire(int $user_id, string $phone_add_story):bool {
+	protected function _onPhoneAddStoryExpire(int $user_id, string $phone_add_story): bool
+	{
 
 		Domain_User_Scenario_Phphooker::onPhoneAddStoryExpire($user_id, $phone_add_story);
 		return true;
@@ -486,7 +492,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Отправляем лог о текущем статусе аккаунта пользователя
 	 */
-	protected function _onSendAccountStatusLog(int $user_id, int $action):bool {
+	protected function _onSendAccountStatusLog(int $user_id, int $action): bool
+	{
 
 		Domain_User_Scenario_Phphooker::onSendAccountStatusLog($user_id, $action);
 		return true;
@@ -495,7 +502,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Отправляем лог о текущем статусе аккаунта пространства
 	 */
-	protected function _onSendSpaceStatusLog(int $company_id, int $action):bool {
+	protected function _onSendSpaceStatusLog(int $company_id, int $action): bool
+	{
 
 		Domain_User_Scenario_Phphooker::onSendSpaceStatusLog($company_id, $action);
 		return true;
@@ -530,7 +538,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Обновляем в битриксе данные о пользователе после их изменений
 	 */
-	protected function _sendBitrixOnUserChangeData(int $task_id, int $user_id, array $changed_data):bool {
+	protected function _sendBitrixOnUserChangeData(int $task_id, int $user_id, array $changed_data): bool
+	{
 
 		if (ServerProvider::isOnPremise()) {
 			return true;
@@ -555,10 +564,9 @@ class Cron_Phphooker extends \Cron_Default {
 
 	/**
 	 * Получим и сохраним в Bitrix данные по рекламной кампании, с которой пользователь пришел в приложение
-	 *
-	 * @return bool
 	 */
-	protected function _sendBitrixUserCampaignData(int $task_id, int $user_id):bool {
+	protected function _sendBitrixUserCampaignData(int $task_id, int $user_id): bool
+	{
 
 		if (ServerProvider::isOnPremise()) {
 			return true;
@@ -592,10 +600,10 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Пользователь покинул пространство слишком рано
 	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 */
-	protected function _onUserLeftSpaceEarly(int $user_id, int $company_id, int $entry_id):bool {
+	protected function _onUserLeftSpaceEarly(int $user_id, int $company_id, int $entry_id): bool
+	{
 
 		if (ServerProvider::isOnPremise()) {
 			return true;
@@ -639,11 +647,11 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Пользователь вступил в первое пространство
 	 *
-	 * @return bool
 	 * @throws ParseFatalException
 	 * @long большая логика с различными сценариями
 	 */
-	protected function _onUserJoinFirstSpace(int $user_id, int $company_id, int $entry_id):bool {
+	protected function _onUserJoinFirstSpace(int $user_id, int $company_id, int $entry_id): bool
+	{
 
 		if (ServerProvider::isOnPremise()) {
 			return true;
@@ -712,10 +720,9 @@ class Cron_Phphooker extends \Cron_Default {
 
 	/**
 	 * обновляем данные пользователя во всех его командах
-	 *
-	 * @return bool
 	 */
-	protected function _updateMemberInfoOnAllCompanies(int $user_id, false|string $badge_content, false|string $status, false|string $description):bool {
+	protected function _updateMemberInfoOnAllCompanies(int $user_id, false | string $badge_content, false | string $status, false | string $description): bool
+	{
 
 		// получаем все компании пользователя
 		$user_company_list = Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id);
@@ -741,7 +748,7 @@ class Cron_Phphooker extends \Cron_Default {
 				// если передать color без badge_content то админу при установке снесет бейдж
 				$badge_color_id = $badge_content === false ? false : $current_badge_color_id;
 				Gateway_Socket_Company::updateMemberInfo($company->domino_id, $company->company_id, $private_key, $user_id, $description, $status, $badge_content, $badge_color_id);
-			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
+			} catch (Gateway_Socket_Exception_CompanyIsNotServed | cs_CompanyIsHibernate) {
 				// !!! если вдруг компания неактивна, то продолжаем
 			}
 		}
@@ -759,13 +766,14 @@ class Cron_Phphooker extends \Cron_Default {
 	 * @throws cs_CompanyIncorrectCompanyId
 	 * @throws cs_CompanyNotExist
 	 */
-	protected function _onSuccessDeviceLogin(int $user_id, string $login_type, string $device_name, string $app_version, string $server_version, string $locale):bool {
+	protected function _onSuccessDeviceLogin(int $user_id, string $login_type, string $device_name, string $app_version, string $server_version, string $locale): bool
+	{
 
 		// получаем все компании пользователя
 		$user_company_list = Gateway_Db_PivotUser_CompanyList::getCompanyList($user_id);
 
 		// сортируем по order компании
-		usort($user_company_list, function(Struct_Db_PivotUser_Company $a, Struct_Db_PivotUser_Company $b) {
+		usort($user_company_list, function (Struct_Db_PivotUser_Company $a, Struct_Db_PivotUser_Company $b) {
 
 			return $b->order <=> $a->order;
 		});
@@ -784,12 +792,20 @@ class Cron_Phphooker extends \Cron_Default {
 
 				$private_key = Domain_Company_Entity_Company::getPrivateKey($company->extra);
 				Gateway_Socket_Conversation::sendDeviceLoginSuccess(
-					$company->domino_id, $company->company_id, $private_key, $user_id, $login_type, $device_name, $app_version, $server_version, $locale
+					$company->domino_id,
+					$company->company_id,
+					$private_key,
+					$user_id,
+					$login_type,
+					$device_name,
+					$app_version,
+					$server_version,
+					$locale
 				);
 
 				// заканчиваем после первой же успешной отправки в активную компанию
 				return true;
-			} catch (Gateway_Socket_Exception_CompanyIsNotServed|cs_CompanyIsHibernate) {
+			} catch (Gateway_Socket_Exception_CompanyIsNotServed | cs_CompanyIsHibernate) {
 				// !!! если вдруг компания неактивна, то продолжаем
 			}
 		}
@@ -804,7 +820,8 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Возвращает экземпляр Rabbit для указанного ключа.
 	 */
-	protected static function _getBusInstance(string $bus_key):\Rabbit {
+	protected static function _getBusInstance(string $bus_key): \Rabbit
+	{
 
 		return ShardingGateway::rabbit($bus_key);
 	}
@@ -812,16 +829,17 @@ class Cron_Phphooker extends \Cron_Default {
 	/**
 	 * Определяет имя крон-бота.
 	 */
-	protected static function _resolveBotName():string {
+	protected static function _resolveBotName(): string
+	{
 
 		return "pivot_" . parent::_resolveBotName();
 	}
 
 	// удаляет задачу из очереди
-	protected function _deleteQueue(int $task_id):void {
+	protected function _deleteQueue(int $task_id): void
+	{
 
 		ShardingGateway::database(self::_DB_KEY)
 			->delete("DELETE FROM `?p` WHERE `task_id` = ?i LIMIT ?i", self::_TABLE_KEY, $task_id, 1);
 	}
-
 }

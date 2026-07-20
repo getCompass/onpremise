@@ -15,7 +15,7 @@ class Domain_Sso_Entity_CompassMapping_Parser
 	protected const _PARSE_ASSIGMENT_REGEX = "/\[\[([\s\S]+?(?=]]))\]\]/";
 
 	/** @var string регулярное выражение для парсинга всех сторонних атрибутов из строки */
-	protected const _PARSE_FOREIGN_ATTRIBUTE_REGEX = "/\{(\w+)=>(\w+)\}/";
+	protected const _PARSE_FOREIGN_ATTRIBUTE_REGEX = "/\{(\w+)\s*=>\s*(\w+)\}/";
 
 	/**
 	 * парсим поле

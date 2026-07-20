@@ -2,35 +2,38 @@
 
 namespace Compass\Company;
 
+use BaseFrame\Exception\Request\ParamException;
+
 /**
  * Класс action для валидации параметров при создании приложения
  */
-class Domain_SmartApp_Action_ValidateParamsOnCreate {
-
+class Domain_SmartApp_Action_ValidateParamsOnCreate
+{
 	/**
 	 * выполняем действие
 	 *
-	 * @param int          $user_id
-	 * @param string       $title
-	 * @param int|false    $catalog_item_id
-	 * @param string|false $smart_app_uniq_name
-	 * @param string|false $avatar_file_key
-	 * @param string|false $url
-	 * @param int          $is_open_in_new_window
-	 * @param int          $is_notifications_enabled
-	 * @param int          $is_sound_enabled
-	 * @param int          $is_background_work_enabled
-	 * @param string       $size
-	 *
-	 * @return array
+	 * @throws Domain_SmartApp_Exception_CreateCustomSmartAppDisabled
+	 * @throws Domain_SmartApp_Exception_CreateFromCatalogDisabled
 	 * @throws Domain_SmartApp_Exception_IncorrectParam
 	 * @throws Domain_SmartApp_Exception_IncorrectSmartAppUniqName
 	 * @throws Domain_SmartApp_Exception_IncorrectTitle
 	 * @throws Domain_SmartApp_Exception_IncorrectUrl
+	 * @throws ParamException
 	 * @long
 	 */
-	public static function do(int $user_id, string $title, int|false $catalog_item_id, string|false $smart_app_uniq_name, string|false $avatar_file_key, string|false $url,
-					  int $is_open_in_new_window, int $is_notifications_enabled, int $is_sound_enabled, int $is_background_work_enabled, string $size):array {
+	public static function do(
+		int $user_id,
+		string $title,
+		int | false $catalog_item_id,
+		string | false $smart_app_uniq_name,
+		string | false $avatar_file_key,
+		string | false $url,
+		int $is_open_in_new_window,
+		int $is_notifications_enabled,
+		int $is_sound_enabled,
+		int $is_background_work_enabled,
+		string $size
+	): array {
 
 		// проверяем данные приложения на корректность
 		$title = Domain_SmartApp_Entity_Sanitizer::sanitizeTitle($title);
@@ -46,7 +49,7 @@ class Domain_SmartApp_Action_ValidateParamsOnCreate {
 
 			// клиенты любят слать -1, поэтому отдельно проверяем
 			if ($catalog_item_id !== false && $catalog_item_id < 0) {
-				throw new Domain_SmartApp_Exception_IncorrectParam("incorrect catalog_item_id = {$catalog_item_id}");
+				throw new ParamException("incorrect catalog_item_id = {$catalog_item_id}");
 			}
 
 			// если отключено создание кастомных смарт аппов на сервере
@@ -86,7 +89,7 @@ class Domain_SmartApp_Action_ValidateParamsOnCreate {
 		try {
 			[$smart_app_uniq_name, $avatar_file_key, $url] = Gateway_Socket_Pivot::getSmartAppCatalogItem($user_id, $catalog_item_id);
 		} catch (\Exception) {
-			throw new Domain_SmartApp_Exception_IncorrectParam("incorrect catalog_item_id = {$catalog_item_id}");
+			throw new ParamException("incorrect catalog_item_id = {$catalog_item_id}");
 		}
 
 		$is_default_avatar = 1;

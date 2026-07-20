@@ -4,16 +4,16 @@ namespace Compass\Federation;
 
 use BaseFrame\Exception\BaseException;
 use BaseFrame\Exception\Domain\ParseFatalException;
-use Exception;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use cs_SocketRequestIsFailed;
+use Exception;
 
 /**
  * события LDAP
  * @package Compass\Federation
  */
-class Domain_Ldap_Scenario_Event {
-
+class Domain_Ldap_Scenario_Event
+{
 	/**
 	 * запускаем механизм автоматической блокировки пользователей Compass в ответ на блокировку связанных
 	 * с ними учетных записей в LDAP каталоге
@@ -24,7 +24,8 @@ class Domain_Ldap_Scenario_Event {
 	 * @long
 	 */
 	#[Type_Task_Attribute_Executor(Type_Event_Ldap_AccountChecker::EVENT_TYPE, Struct_Event_Ldap_AccountChecker::class)]
-	public static function checkingAccounts(Struct_Event_Ldap_AccountChecker $event_data):Type_Task_Struct_Response {
+	public static function checkingAccounts(Struct_Event_Ldap_AccountChecker $event_data): Type_Task_Struct_Response
+	{
 
 		// если отключен механизм автоматической блокировки Compass пользователей
 		// или отключена возможность авторизации через LDAP
@@ -59,7 +60,7 @@ class Domain_Ldap_Scenario_Event {
 
 		// получаем список всех учетных записей в LDAP, с пагинацией
 		[$count, $entry_list] = $client->searchEntries(Domain_Ldap_Entity_Config::getUserSearchBase(), "(objectClass=person)", Domain_Ldap_Entity_Config::getUserSearchPageSize(), $attribute_list);
-		$entry_list = array_map(static fn(array $entry) => Domain_Ldap_Entity_Utils::prepareEntry($entry), $entry_list);
+		$entry_list           = array_map(static fn (array $entry) => Domain_Ldap_Entity_Utils::prepareEntry($entry), $entry_list);
 
 		// закрываем соединение
 		$client->unbind();
@@ -87,7 +88,8 @@ class Domain_Ldap_Scenario_Event {
 	 * @long
 	 */
 	#[Type_Task_Attribute_Executor(Type_Event_Ldap_ProfileUpdater::EVENT_TYPE, Struct_Event_Ldap_ProfileUpdater::class)]
-	public static function updatingProfiles(Struct_Event_Ldap_ProfileUpdater $event_data):Type_Task_Struct_Response {
+	public static function updatingProfiles(Struct_Event_Ldap_ProfileUpdater $event_data): Type_Task_Struct_Response
+	{
 
 		// если отключен механизм автоматического обновления пользователей
 		// или отключена возможность авторизации через LDAP
@@ -138,7 +140,7 @@ class Domain_Ldap_Scenario_Event {
 
 		// добавляем в фильтр модификатор для времени поиска:
 		// ищем либо по whenChanged (AD), либо по modifyTimestamp (FreeIPA/OpenLDAP)
-		$filter                       = "(&(objectClass=person)(|(whenChanged>=$timestamp)(modifyTimestamp>=$timestamp)))";
+		$filter                     = "(&(objectClass=person)(|(whenChanged>=$timestamp)(modifyTimestamp>=$timestamp)))";
 		$user_profile_update_filter = Domain_Ldap_Entity_Config::getUserProfileUpdateFilter();
 		if (mb_strlen($user_profile_update_filter) > 0) {
 			$filter = "(&{$user_profile_update_filter}(|(whenChanged>=$timestamp)(modifyTimestamp>=$timestamp)))";
@@ -150,7 +152,7 @@ class Domain_Ldap_Scenario_Event {
 			$filter,
 			Domain_Ldap_Entity_Config::getUserSearchPageSize()
 		);
-		$entry_list = array_map(static fn(array $entry) => Domain_Ldap_Entity_Utils::prepareEntry($entry), $entry_list);
+		$entry_list = array_map(static fn (array $entry) => Domain_Ldap_Entity_Utils::prepareEntry($entry), $entry_list);
 
 		// закрываем соединение
 		$client->unbind();
@@ -159,7 +161,7 @@ class Domain_Ldap_Scenario_Event {
 		$found_account_users_list = self::_getExistProfileList($account_user_rel_list, $entry_list);
 
 		// актуализируем данные
-		self::_updateCompassProfileList($found_account_users_list);;
+		self::_updateCompassProfileList($found_account_users_list);
 
 		// выполним задачу снова через интервал указанный в конфиге
 		return Type_Task_Struct_Response::build(Type_Task_Handler::DELIVERY_STATUS_NEXT_ITERATION_REQUIRED, $next_time + Domain_Ldap_Entity_Utils::convertIntervalToSec($interval));
@@ -168,16 +170,37 @@ class Domain_Ldap_Scenario_Event {
 	/**
 	 * Фильтруем список связей «учетная запись LDAP» <–> «Compass пользователей»
 	 */
-	protected static function _getExistProfileList(array $account_user_rel_list, array $found_entry_list):array {
+	protected static function _getExistProfileList(array $account_user_rel_list, array $found_entry_list): array
+	{
 
 		// оставим в списке только активные связи
-		$account_user_rel_list = array_filter($account_user_rel_list, static fn(Struct_Db_LdapData_LdapAccountUserRel $account_user_rel) => $account_user_rel->status == Domain_Ldap_Entity_AccountUserRel::STATUS_ACTIVE);
+		$account_user_rel_list = array_filter($account_user_rel_list, static fn (Struct_Db_LdapData_LdapAccountUserRel $account_user_rel) => $account_user_rel->status == Domain_Ldap_Entity_AccountUserRel::STATUS_ACTIVE);
 
 		// из списка связей сделаем словарь, чтобы можно быстрей получить нужную запись по uid
-		$account_user_rel_map = array_column($account_user_rel_list, null, "uid");
+		// и приводим к нижнему регистру
+		$account_user_rel_map = [];
+		foreach ($account_user_rel_list as $rel) {
+			$account_user_rel_map[mb_strtolower((string)$rel->uid)] = $rel;
+		}
 
 		// из списка учетных записей сделаем словарь, чтобы можно быстрей получить нужную запись по uid
 		$found_entry_map = array_column($found_entry_list, null, mb_strtolower(Domain_Ldap_Entity_Config::getUserUniqueAttribute()));
+
+		$unique_attr_key = mb_strtolower(Domain_Ldap_Entity_Config::getUserUniqueAttribute());
+
+		$normalized = [];
+		foreach ($found_entry_map as $uid => $entry) {
+
+			$uid_lower = mb_strtolower($uid);
+
+			// приводим значение внутри entry
+			$entry[$unique_attr_key] = $uid_lower;
+
+			// кладем с lower-ключом
+			$normalized[$uid_lower] = $entry;
+		}
+
+		$found_entry_map = $normalized;
 
 		// массив аккаунтов, что нашли в компасе
 		$found_account_users_list = [];
@@ -213,7 +236,8 @@ class Domain_Ldap_Scenario_Event {
 	 * @throws \returnException
 	 * @throws ParseFatalException
 	 */
-	protected static function _updateCompassProfileList(array $found_account_users_list):void {
+	protected static function _updateCompassProfileList(array $found_account_users_list): void
+	{
 
 		// ищем отключенные аккаунты
 		foreach ($found_account_users_list as $account) {
@@ -231,7 +255,8 @@ class Domain_Ldap_Scenario_Event {
 	/**
 	 * Заменяем null на пустые значения чтобы можно было отправить сокетом
 	 */
-	protected static function _prepareLdapAccountData(array $data):array {
+	protected static function _prepareLdapAccountData(array $data): array
+	{
 
 		foreach ($data as $key => $value) {
 
@@ -250,7 +275,8 @@ class Domain_Ldap_Scenario_Event {
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Gateway\RowNotFoundException
 	 */
-	protected static function _blockDisabledAccountList(array $disabled_account_user_rel_list):void {
+	protected static function _blockDisabledAccountList(array $disabled_account_user_rel_list): void
+	{
 
 		// получаем объект класса, который будет блокировать пользователя Compass у которого отключили связанную учетную запись LDAP
 		$blocker = Domain_Ldap_Entity_UserBlocker::resolveBlocker(Domain_Ldap_Entity_Config::getUserBlockingLevelOnAccountDisabling());
@@ -262,7 +288,7 @@ class Domain_Ldap_Scenario_Event {
 
 				// блокируем
 				$blocker->run($disabled_account_user_rel->user_id);
-			} catch (BaseException|Exception $e) {
+			} catch (BaseException | Exception $e) {
 
 				// отлавливаем исключения, логируем и пропускаем такого пользователя, чтобы не ронять механизм
 				Domain_Ldap_Entity_Logger::log("Блокировка отключенного аккаунта для user_id $disabled_account_user_rel->user_id закончилась неудачей", [
@@ -283,7 +309,8 @@ class Domain_Ldap_Scenario_Event {
 	 *
 	 * @throws ParseFatalException
 	 */
-	protected static function _blockDeletedAccountList(array $deleted_account_user_rel_list):void {
+	protected static function _blockDeletedAccountList(array $deleted_account_user_rel_list): void
+	{
 
 		// получаем объект класса, который будет блокировать пользователя Compass у которого удалили связанную учетную запись LDAP
 		$blocker = Domain_Ldap_Entity_UserBlocker::resolveBlocker(Domain_Ldap_Entity_Config::getUserBlockingLevelOnAccountRemoving());
@@ -295,7 +322,7 @@ class Domain_Ldap_Scenario_Event {
 
 				// блокируем
 				$blocker->run($deleted_account_user_rel->user_id);
-			} catch (BaseException|Exception $e) {
+			} catch (BaseException | Exception $e) {
 
 				// отлавливаем исключения, логируем и пропускаем такого пользователя, чтобы не ронять механизм
 				Domain_Ldap_Entity_Logger::log("Блокировка удаленного аккаунта для user_id $deleted_account_user_rel->user_id закончилась неудачей", [

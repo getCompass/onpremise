@@ -7,8 +7,8 @@ use BaseFrame\System\Character;
 /**
  * Класс для очистки данных для приложения
  */
-class Domain_SmartApp_Entity_Sanitizer {
-
+class Domain_SmartApp_Entity_Sanitizer
+{
 	protected const _MAX_URL_LENGTH            = 1000; // максимальная длина для ссылки приложения
 	protected const _MAX_SMART_APP_NAME_LENGTH = 40; // максимальная длина для smart_app_name
 	protected const _MAX_TITLE_LENGTH          = 40; // максимальная длина title
@@ -16,7 +16,8 @@ class Domain_SmartApp_Entity_Sanitizer {
 	/**
 	 * Очистка имени smart app
 	 */
-	public static function sanitizeSmartAppUniqName(string $smart_app_uniq_name):string {
+	public static function sanitizeSmartAppUniqName(string $smart_app_uniq_name): string
+	{
 
 		// приводим строку к нижнему регистру
 		$smart_app_uniq_name = strtolower($smart_app_uniq_name);
@@ -30,12 +31,9 @@ class Domain_SmartApp_Entity_Sanitizer {
 
 	/**
 	 * Очистка title от лишних символов
-	 *
-	 * @param string $title
-	 *
-	 * @return string
 	 */
-	public static function sanitizeTitle(string $title):string {
+	public static function sanitizeTitle(string $title): string
+	{
 
 		// удаляем все лишнее, кроме точки
 		$special_character_regex = str_replace(".", "", Character::SPECIAL_CHARACTER_REGEX);
@@ -55,7 +53,8 @@ class Domain_SmartApp_Entity_Sanitizer {
 	/**
 	 * Очистка url приложения
 	 */
-	public static function sanitizeUrl(string $url):string {
+	public static function sanitizeUrl(string $url): string
+	{
 
 		// удаляем весь левак
 		$url = preg_replace("/[^\w _.\/\-$&+,:;~!'()*=?%\[\]@#]/uism", "", $url);

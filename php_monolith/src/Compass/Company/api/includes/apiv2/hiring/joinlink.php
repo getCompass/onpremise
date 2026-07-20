@@ -2,15 +2,33 @@
 
 namespace Compass\Company;
 
-use \BaseFrame\Exception\Request\CaseException;
-use \BaseFrame\Exception\Request\ParamException;
+use BaseFrame\ApiGateway\ScopePermission;
+use BaseFrame\Exception\Request\CaseException;
+use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Member;
 
 /**
  * Класс, отвечающий за апи ссылок-приглашений в компанию
  */
-class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
+class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_JOINLINK;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getActiveList",
+		"getInactiveList",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"add",
+		"delete",
+		"edit",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"add",
 		"delete",
@@ -39,7 +57,8 @@ class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @long
 	 */
-	public function add():array {
+	public function add(): array
+	{
 
 		$type              = $this->post(\Formatter::TYPE_STRING, "type");
 		$lives_hour_count  = $this->post(\Formatter::TYPE_INT, "lives_hour_count", false);
@@ -50,9 +69,19 @@ class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
 
 		try {
 
-			$join_link = Domain_JoinLink_Scenario_Api::add($this->user_id, $this->role, $this->permissions, $type, $lives_day_count, $lives_hour_count,
-				$can_use_count, $is_postmoderation, $entry_option, $this->method_version);
-		} catch (cs_IncorrectLivesDayCount|cs_IncorrectLivesHourCount) {
+			$join_link = Domain_JoinLink_Scenario_Api::add(
+				$this->user_id,
+				$this->role,
+				$this->permissions,
+				$type,
+				$lives_day_count,
+				$lives_hour_count,
+				$can_use_count,
+				$is_postmoderation,
+				$entry_option,
+				$this->method_version
+			);
+		} catch (cs_IncorrectLivesDayCount | cs_IncorrectLivesHourCount) {
 			throw new ParamException("invalid lives_day_count: {$lives_day_count}");
 		} catch (cs_IncorrectType) {
 			throw new ParamException("invalid type: {$type}");
@@ -90,13 +119,14 @@ class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @throws CaseException
 	 */
-	public function delete():array {
+	public function delete(): array
+	{
 
 		$join_link_uniq = $this->post(\Formatter::TYPE_STRING, "join_link_uniq");
 
 		try {
 			Domain_JoinLink_Scenario_Api::delete($this->user_id, $this->role, $this->permissions, $join_link_uniq);
-		} catch (cs_IncorrectJoinLinkUniq|cs_JoinLinkNotExist) {
+		} catch (cs_IncorrectJoinLinkUniq | cs_JoinLinkNotExist) {
 			throw new ParamException("invalid join_link_uniq: {$join_link_uniq}");
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2208001, "User has no rights to work with join-links");
@@ -118,7 +148,8 @@ class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws CaseException
 	 */
-	public function edit():array {
+	public function edit(): array
+	{
 
 		$join_link_uniq    = $this->post(\Formatter::TYPE_STRING, "join_link_uniq");
 		$lives_day_count   = $this->post(\Formatter::TYPE_INT, "lives_day_count", false);
@@ -137,12 +168,20 @@ class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
 		try {
 
 			[$join_link, $entry_user_id_list] = Domain_JoinLink_Scenario_Api::edit(
-				$this->user_id, $this->role, $this->permissions, $join_link_uniq, $lives_day_count, $lives_hour_count, $can_use_count,
-				$is_postmoderation, $entry_option, $this->method_version
+				$this->user_id,
+				$this->role,
+				$this->permissions,
+				$join_link_uniq,
+				$lives_day_count,
+				$lives_hour_count,
+				$can_use_count,
+				$is_postmoderation,
+				$entry_option,
+				$this->method_version
 			);
 		} catch (cs_JoinLinkNotExist) {
 			throw new ParamException("link not found");
-		} catch (cs_IncorrectLivesDayCount|cs_IncorrectLivesHourCount) {
+		} catch (cs_IncorrectLivesDayCount | cs_IncorrectLivesHourCount) {
 			throw new ParamException("invalid lives_day_count: {$lives_day_count}");
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2208001, "User has no rights to work with join-links");
@@ -175,13 +214,18 @@ class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
 	 * @throws CaseException
 	 * @long
 	 */
-	public function getActiveList():array {
+	public function getActiveList(): array
+	{
 
 		$type = $this->post(\Formatter::TYPE_STRING, "type", Domain_JoinLink_Action_GetFilteredTypeList::MASS_FILTER_TYPE);
 
 		try {
 			[$join_link_list, $entry_user_id_list_by_uniq] = Domain_JoinLink_Scenario_Api::getActiveList(
-				$type, $this->user_id, $this->role, $this->permissions, $this->method_version
+				$type,
+				$this->user_id,
+				$this->role,
+				$this->permissions,
+				$this->method_version
 			);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2208001, "User has no rights to work with join-links");
@@ -222,7 +266,8 @@ class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
 	 * @throws CaseException
 	 * @long
 	 */
-	public function getInactiveList():array {
+	public function getInactiveList(): array
+	{
 
 		$count  = $this->post(\Formatter::TYPE_INT, "count", false);
 		$offset = $this->post(\Formatter::TYPE_INT, "offset", false);
@@ -230,7 +275,11 @@ class Apiv2_Hiring_JoinLink extends \BaseFrame\Controller\Api {
 		try {
 
 			[$join_link_list, $has_next, $entry_user_id_list_by_uniq] = Domain_JoinLink_Scenario_Api::getInactiveList(
-				$this->role, $this->permissions, $count, $offset, $this->method_version
+				$this->role,
+				$this->permissions,
+				$count,
+				$offset,
+				$this->method_version
 			);
 		} catch (\CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(2208001, "User has no rights to work with join-links");

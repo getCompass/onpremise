@@ -237,8 +237,10 @@ function EmailRegisterDialogContentDesktop() {
 
 	if (auth === null) {
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
+
+	const emailDescriptionParts = langStringEmailRegisterDialogDesc.split("$EMAIL");
 
 	return (
 		<VStack w="100%" gap="0px">
@@ -249,11 +251,13 @@ function EmailRegisterDialogContentDesktop() {
 					{langStringEmailRegisterDialogTitle}
 				</Text>
 
-				<Text mt="6px" textAlign="center" style="lato_14_20_400" ls="-015" maxW="328px" overflow="wrapEllipsis">
-					{langStringEmailRegisterDialogDesc}
+				<Text mt="6px" textAlign="center" style="lato_14_20_400" ls="-015" maxW="328px" overflow="wrapEllipsis"
+				>
+					{emailDescriptionParts[0]}
 					<styled.span fontFamily="lato_bold">
 						«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
+					{emailDescriptionParts[1] ?? ''}
 				</Text>
 
 				<PasswordInput
@@ -540,8 +544,10 @@ const EmailRegisterDialogContentMobile = () => {
 
 	if (auth === null) {
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
+
+	const emailDescriptionParts = langStringEmailRegisterDialogDesc.split("$EMAIL");
 
 	return (
 		<VStack w="100%" gap="0px">
@@ -569,10 +575,11 @@ const EmailRegisterDialogContentMobile = () => {
 					maxW={screenWidth <= 390 ? "326px" : "350px"}
 					overflow="wrapEllipsis"
 				>
-					{langStringEmailRegisterDialogDesc}
+					{emailDescriptionParts[0]}
 					<styled.span fontFamily="lato_bold">
 						«{(auth.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
+					{emailDescriptionParts[1] ?? ''}
 				</Text>
 
 				<PasswordInput
@@ -651,10 +658,10 @@ const EmailRegisterDialogContent = () => {
 	}, [inputRef]);
 
 	if (isMobile) {
-		return <EmailRegisterDialogContentMobile />;
+		return <EmailRegisterDialogContentMobile />
 	}
 
-	return <EmailRegisterDialogContentDesktop />;
+	return <EmailRegisterDialogContentDesktop />
 };
 
 export default EmailRegisterDialogContent;

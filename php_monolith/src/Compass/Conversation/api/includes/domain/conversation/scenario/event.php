@@ -429,6 +429,11 @@ class Domain_Conversation_Scenario_Event
 		$all_user_id_list = [];
 		foreach ($work_conversation_map_list as $conversation_map) {
 
+			Type_System_Admin::log(
+				"clear_conversations",
+				"Работаем с чатом: {$conversation_map}, устанавливаем время чистки {$clear_until}"
+			);
+
 			Type_Conversation_Meta::setConversationClearUntilForAll($conversation_map, $clear_until);
 
 			if (!isset($meta_row_list[$conversation_map])) {
@@ -459,6 +464,8 @@ class Domain_Conversation_Scenario_Event
 			// обновляем badge с непрочитанными для списка пользователей
 			$extra = Gateway_Bus_Company_Timer::getExtraForUserIdListUpdateBadge($user_id_list, [$conversation_map], true);
 			Gateway_Bus_Company_Timer::setTimeoutForUserIdList(Gateway_Bus_Company_Timer::UPDATE_BADGE, generateRandomString(), [], $extra);
+
+			Type_System_Admin::log("clear_conversations", "Закончили чистку чата: {$conversation_map}");
 		}
 
 		// пересчитываем total_unread_count для каждого пользователя из списка

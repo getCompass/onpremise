@@ -162,10 +162,10 @@ const InactiveLink = () => {
 	const isMobile = useIsMobile();
 
 	if (isMobile) {
-		return <DialogMobile content={<InactiveLinkMobile/>} overflow="visible" isNeedExtraPaddingBottom={true}/>;
+		return <DialogMobile content={<InactiveLinkMobile/>} overflow="visible" isNeedExtraPaddingBottom={true}/>
 	}
 
-	return <DialogDesktop content={<InactiveLinkDesktop/>} overflow="visible"/>;
+	return <DialogDesktop content={<InactiveLinkDesktop/>} overflow="visible"/>
 }
 
 export default InactiveLink;

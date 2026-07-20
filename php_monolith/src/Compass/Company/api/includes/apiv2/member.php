@@ -1,9 +1,10 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\CaseException;
 use CompassApp\Domain\Member\Entity\Permission;
@@ -13,12 +14,25 @@ use CompassApp\Domain\Member\Exception\UserIsGuest;
 /**
  * Контроллер для работы с пользователями.
  */
-class Apiv2_Member extends \BaseFrame\Controller\Api {
+class Apiv2_Member extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_MEMBER;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getList",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"getList",
 	];
 
+	// методы, влияющие на активность пользователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [];
 
 	// методы, требующие премиум доступа
@@ -27,7 +41,6 @@ class Apiv2_Member extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить список участников по запросу
 	 *
-	 * @return array
 	 * @throws \ParamException
 	 * @throws CaseException
 	 * @throws ParamException
@@ -40,7 +53,8 @@ class Apiv2_Member extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \queryException
 	 */
-	public function getList():array {
+	public function getList(): array
+	{
 
 		$query              = $this->post(\Formatter::TYPE_STRING, "query", "");
 		$offset             = $this->post(\Formatter::TYPE_INT, "offset", 0);
@@ -53,7 +67,16 @@ class Apiv2_Member extends \BaseFrame\Controller\Api {
 		try {
 
 			$member_id_list = Domain_Member_Scenario_Apiv2::getList(
-				$this->user_id, $this->role, $this->permissions, $query, $limit + 1, $offset, $filter_npc_type, $filter_role, $filter_query_field, $sort_field
+				$this->user_id,
+				$this->role,
+				$this->permissions,
+				$query,
+				$limit + 1,
+				$offset,
+				$filter_npc_type,
+				$filter_role,
+				$filter_query_field,
+				$sort_field
 			);
 		} catch (IsNotAdministrator | \CompassApp\Domain\Member\Exception\ActionNotAllowed) {
 			throw new CaseException(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");

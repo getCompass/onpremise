@@ -2,13 +2,25 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * Контроллер для работы со ссылкой приглашением в компанию
  */
-class Apiv2_JoinLink extends \BaseFrame\Controller\Api {
+class Apiv2_JoinLink extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_JOINLINK;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"accept",
+	];
 
 	// поддерживаемые методы, регистр не имеет значение
 	public const ALLOW_METHODS = [
@@ -18,7 +30,6 @@ class Apiv2_JoinLink extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для принятия ссылки-приглашения
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
@@ -34,7 +45,8 @@ class Apiv2_JoinLink extends \BaseFrame\Controller\Api {
 	 * @throws \userAccessException
 	 * @long
 	 */
-	public function accept():array {
+	public function accept(): array
+	{
 
 		$join_link_uniq = $this->post(\Formatter::TYPE_STRING, "join_link_uniq");
 		$comment        = $this->post(\Formatter::TYPE_STRING, "comment", "");
@@ -45,7 +57,7 @@ class Apiv2_JoinLink extends \BaseFrame\Controller\Api {
 
 			Gateway_Bus_CollectorAgent::init()->inc("row63");
 			[$user_company, $entry_option] = Domain_Company_Scenario_Api::acceptJoinLink($this->user_id, $join_link_uniq, $comment, $this->session_uniq);
-		} catch (cs_JoinLinkIsExpired|cs_IncorrectJoinLink|cs_JoinLinkNotFound|cs_JoinLinkIsNotActive|cs_JoinLinkIsUsed) {
+		} catch (cs_JoinLinkIsExpired | cs_IncorrectJoinLink | cs_JoinLinkNotFound | cs_JoinLinkIsNotActive | cs_JoinLinkIsUsed) {
 
 			Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::JOIN_LINK_VALIDATE);
 			Gateway_Bus_CollectorAgent::init()->inc("row65");

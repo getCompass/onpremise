@@ -384,7 +384,7 @@ function occupant_joined(event)
     module:log("info", "New occupant - %s", json.encode(occupant_data));
 
     -- получаем текущее качество видео в конференции
-    local quality_level = room.quality_level or "high";
+    local quality_level = room.quality_level or "medium";
 
     -- получаем текущий массив записывающих пользователей
     local user_recording_users = room.user_recording_users or {};

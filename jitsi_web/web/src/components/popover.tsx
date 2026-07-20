@@ -2,13 +2,14 @@ import * as Ark from "@ark-ui/react/popover";
 import { styled } from "../../styled-system/jsx";
 import { popover, type PopoverVariantProps } from "../../styled-system/recipes";
 import { createStyleContext } from "../lib/create-style-context";
+import React from "react";
 
 const { withProvider, withContext } = createStyleContext(popover);
 
 export * from "@ark-ui/react/popover";
 export type PopoverProps = Ark.PopoverProps & PopoverVariantProps;
 
-const PopoverRoot = withProvider(styled(Ark.Popover.Root), "root");
+const PopoverRoot = withProvider(styled(Ark.Popover.Root), "root") as typeof Ark.Popover.Root & React.FC<PopoverProps>;
 export const PopoverAnchor = withContext(styled(Ark.Popover.Anchor), "anchor");
 export const PopoverArrow = withContext(styled(Ark.Popover.Arrow), "arrow");
 export const PopoverArrowTip = withContext(styled(Ark.Popover.ArrowTip), "arrowTip");

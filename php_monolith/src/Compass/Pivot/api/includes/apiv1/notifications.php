@@ -2,12 +2,35 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Server\ServerProvider;
 
 /**
  * контроллер для технических методов клиента
  */
-class Apiv1_Notifications extends \BaseFrame\Controller\Api {
+class Apiv1_Notifications extends \BaseFrame\Controller\Api
+{
+	// зоны ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_NOTIFICATIONS;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getCurrentSoundType",
+		"getPreferences",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"addToken",
+		"doDisable",
+		"doDisableForEvent",
+		"doEnable",
+		"doEnableForEvent",
+		"setSnoozedEvent",
+		"setSoundType",
+		"unsetSnoozedEvent",
+		"confirmPushReceiving",
+	];
 
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
@@ -31,7 +54,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для добавления токена в базу
 	 */
-	public function addToken():array {
+	public function addToken(): array
+	{
 
 		$token      = $this->post("?s", "token");
 		$token_type = $this->post("?i", "token_type", Type_User_Notifications::TOKEN_TYPE_FIREBASE_LEGACY);
@@ -54,7 +78,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * приостановить получение уведомлений о новых сообщениях на определенное время
 	 */
-	public function doDisable():array {
+	public function doDisable(): array
+	{
 
 		$interval_minutes = $this->post("?i", "interval_minutes");
 
@@ -81,7 +106,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * Выключает уведомления для определенного вида событий
 	 */
-	public function doDisableForEvent():array {
+	public function doDisableForEvent(): array
+	{
 
 		// получаем параметры из post_data
 		$event_type = $this->post("?i", "event_type");
@@ -102,7 +128,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * обнуляет таймер отключения уведомлений
 	 */
-	public function doEnable():array {
+	public function doEnable(): array
+	{
 
 		// блокируем за превышенное число вызовов метода
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::NOTIFICATION_TOGGLE);
@@ -115,7 +142,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * включает уведомления для определенного вида событий
 	 */
-	public function doEnableForEvent():array {
+	public function doEnableForEvent(): array
+	{
 
 		$event_type = $this->post("?i", "event_type");
 
@@ -135,7 +163,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * получаем текущий тип звуковых файлов
 	 */
-	public function getCurrentSoundType():array {
+	public function getCurrentSoundType(): array
+	{
 
 		// получаем текущий тип звуковых файлов
 		$sound_type = Domain_User_Action_Notifications_GetCurrentSoundType::do();
@@ -148,7 +177,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * получаем информацию о состоянии уведомлений в приложении
 	 */
-	public function getPreferences():array {
+	public function getPreferences(): array
+	{
 
 		// получаем информацию о состоянии уведомлений в приложении
 		$output = Domain_User_Action_Notifications_GetPreferences::do($this->user_id);
@@ -159,7 +189,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * устанавливаем отключение уведомления с таймером для указанного события
 	 */
-	public function setSnoozedEvent():array {
+	public function setSnoozedEvent(): array
+	{
 
 		$event_type = $this->post("?i", "event_type");
 
@@ -179,7 +210,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * устанавливаем тип звуковых файлов
 	 */
-	public function setSoundType():array {
+	public function setSoundType(): array
+	{
 
 		$sound_type = $this->post("?i", "sound_type");
 
@@ -198,7 +230,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	/**
 	 * снимаем отключение уведомления с таймером для указанного события
 	 */
-	public function unsetSnoozedEvent():array {
+	public function unsetSnoozedEvent(): array
+	{
 
 		$event_type = $this->post("?i", "event_type");
 
@@ -220,7 +253,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	 *
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 */
-	public function confirmPushReceiving():array {
+	public function confirmPushReceiving(): array
+	{
 
 		$uuid_list = $this->post(\Formatter::TYPE_ARRAY, "uuid_list");
 

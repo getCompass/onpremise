@@ -1,9 +1,10 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\DBShardingNotFoundException;
@@ -15,9 +16,26 @@ use BaseFrame\Exception\Request\ParamException;
 /**
  * контроллер для работы с smart app
  */
-class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
+class Apiv2_SmartApp extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SMARTAPP;
 
-	const ALLOW_METHODS = [
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getList",
+		"getAuthorizationToken",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"create",
+		"edit",
+		"delete",
+	];
+
+	// разрешенные методы
+	public const ALLOW_METHODS = [
 		"create",
 		"edit",
 		"delete",
@@ -28,7 +46,6 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для создания smart app
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws DBShardingNotFoundException
 	 * @throws ParamException
@@ -39,7 +56,8 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @long
 	 */
-	public function create():array {
+	public function create(): array
+	{
 
 		$title                      = $this->post(\Formatter::TYPE_STRING, "title");
 		$catalog_item_id            = $this->post(\Formatter::TYPE_INT, "catalog_item_id", false);
@@ -50,14 +68,23 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 		$is_notifications_enabled   = $this->post(\Formatter::TYPE_INT, "is_notifications_enabled");
 		$is_sound_enabled           = $this->post(\Formatter::TYPE_INT, "is_sound_enabled");
 		$is_background_work_enabled = $this->post(\Formatter::TYPE_INT, "is_background_work_enabled");
-		$size                       = $this->post( \Formatter::TYPE_STRING, "size");
+		$size                       = $this->post(\Formatter::TYPE_STRING, "size");
 
 		try {
 			[$smart_app, $smart_app_user_rel, $sensitive_data] = Domain_SmartApp_Scenario_Api::create(
-				$this->user_id, $title, $catalog_item_id, $smart_app_uniq_name, $avatar_file_key, $url, $is_open_in_new_window,
-				$is_notifications_enabled, $is_sound_enabled, $is_background_work_enabled, $size
+				$this->user_id,
+				$title,
+				$catalog_item_id,
+				$smart_app_uniq_name,
+				$avatar_file_key,
+				$url,
+				$is_open_in_new_window,
+				$is_notifications_enabled,
+				$is_sound_enabled,
+				$is_background_work_enabled,
+				$size
 			);
-		} catch (Domain_SmartApp_Exception_IncorrectTitle|Domain_SmartApp_Exception_IncorrectParam) {
+		} catch (Domain_SmartApp_Exception_IncorrectTitle | Domain_SmartApp_Exception_IncorrectParam) {
 			throw new CaseException(2217101, "incorrect params");
 		} catch (Domain_SmartApp_Exception_IncorrectUrl) {
 			throw new CaseException(2217102, "incorrect url");
@@ -65,7 +92,7 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 			throw new CaseException(2217103, "incorrect smart_app_uniq_name");
 		} catch (Domain_SmartApp_Exception_NotUniqSmartAppName) {
 			throw new CaseException(2217104, "not uniq smart_app_uniq_name");
-		} catch (Domain_SmartApp_Exception_CreateCustomSmartAppDisabled|Domain_SmartApp_Exception_CreateFromCatalogDisabled) {
+		} catch (Domain_SmartApp_Exception_CreateCustomSmartAppDisabled | Domain_SmartApp_Exception_CreateFromCatalogDisabled) {
 			throw new CaseException(2217108, "create disabled on server");
 		}
 
@@ -78,7 +105,6 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для редактирования smart app
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws DBShardingNotFoundException
 	 * @throws Domain_SmartApp_Exception_IncorrectParam
@@ -88,7 +114,8 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @long
 	 */
-	public function edit():array {
+	public function edit(): array
+	{
 
 		$smart_app_id               = $this->post(\Formatter::TYPE_INT, "smart_app_id");
 		$title                      = $this->post(\Formatter::TYPE_STRING, "title", false);
@@ -103,8 +130,17 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 
 		try {
 			Domain_SmartApp_Scenario_Api::edit(
-				$this->user_id, $smart_app_id, $title, $smart_app_uniq_name, $avatar_file_key, $url, $is_open_in_new_window,
-				$is_notifications_enabled, $is_sound_enabled, $is_background_work_enabled, $size
+				$this->user_id,
+				$smart_app_id,
+				$title,
+				$smart_app_uniq_name,
+				$avatar_file_key,
+				$url,
+				$is_open_in_new_window,
+				$is_notifications_enabled,
+				$is_sound_enabled,
+				$is_background_work_enabled,
+				$size
 			);
 		} catch (Domain_SmartApp_Exception_IncorrectTitle) {
 			throw new CaseException(2217101, "incorrect title");
@@ -118,7 +154,7 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 			throw new CaseException(2217105, "user not a creator");
 		} catch (Domain_SmartApp_Exception_EmptyParams) {
 			throw new CaseException(2217106, "empty params");
-		} catch (Domain_SmartApp_Exception_SmartAppNotFound|Domain_SmartApp_Exception_DeletedStatus) {
+		} catch (Domain_SmartApp_Exception_SmartAppNotFound | Domain_SmartApp_Exception_DeletedStatus) {
 			throw new CaseException(2217107, "smart app not exist or deleted");
 		}
 
@@ -128,7 +164,6 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 	/**
 	 * удаляем приложение
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws CaseException
 	 * @throws DBShardingNotFoundException
@@ -136,7 +171,8 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 	 * @throws ParseFatalException
 	 * @throws QueryFatalException
 	 */
-	public function delete():array {
+	public function delete(): array
+	{
 
 		$smart_app_id = $this->post(\Formatter::TYPE_INT, "smart_app_id");
 
@@ -146,7 +182,7 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 			$deleted_at = Domain_SmartApp_Scenario_Api::delete($this->user_id, $smart_app_id);
 		} catch (Domain_SmartApp_Exception_IsNotCreator) {
 			throw new CaseException(2217105, "user not a creator");
-		} catch (Domain_SmartApp_Exception_SmartAppNotFound|Domain_SmartApp_Exception_DeletedStatus) {
+		} catch (Domain_SmartApp_Exception_SmartAppNotFound | Domain_SmartApp_Exception_DeletedStatus) {
 			throw new CaseException(2217107, "smart app not exist or deleted");
 		}
 
@@ -158,11 +194,11 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения созданны приложений пользователем
 	 *
-	 * @return array
 	 * @throws DBShardingNotFoundException
 	 * @throws QueryFatalException
 	 */
-	public function getList():array {
+	public function getList(): array
+	{
 
 		$smart_app_list = Domain_SmartApp_Scenario_Api::getList($this->user_id);
 
@@ -174,13 +210,13 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения токена авторизации в smart app
 	 *
-	 * @return array
 	 * @throws DBShardingNotFoundException
 	 * @throws ParamException
 	 * @throws QueryFatalException
 	 * @throws \cs_RowIsEmpty
 	 */
-	public function getAuthorizationToken():array {
+	public function getAuthorizationToken(): array
+	{
 
 		$entity        = $this->post(\Formatter::TYPE_STRING, "entity", false);
 		$entity_key    = $this->post(\Formatter::TYPE_STRING, "entity_key", false);
@@ -190,7 +226,12 @@ class Apiv2_SmartApp extends \BaseFrame\Controller\Api {
 
 		try {
 			$authorization_token = Domain_SmartApp_Scenario_Api::getAuthorizationToken(
-				$this->user_id, $entity, $entity_key, $smart_app_id, $client_width, $client_height
+				$this->user_id,
+				$entity,
+				$entity_key,
+				$smart_app_id,
+				$client_width,
+				$client_height
 			);
 		} catch (cs_PlatformNotFound) {
 			throw new ParamException("passed incorrect params");

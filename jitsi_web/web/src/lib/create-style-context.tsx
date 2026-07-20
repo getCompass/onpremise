@@ -1,3 +1,5 @@
+/* eslint-disable  */
+// @TODO типизавия кривая очень надо поправить и убрать все ts-ignore
 import {createContext, forwardRef, useContext, type ComponentType} from "react"
 
 type AnyProps = Record<string, unknown>
@@ -10,7 +12,9 @@ export const createStyleContext = <R extends AnyRecipe>(recipe: R) => {
 	const StyleContext = createContext<Record<string, string> | null>(null)
 
 	const withProvider = <T extends {}>(Component: ComponentType<T>, part?: string) => {
+		// @ts-ignore
 		const Comp = forwardRef((props: T & Parameters<R>[0], ref) => {
+			// @ts-ignore
 			const [variantProps, rest] = recipe.splitVariantProps(props)
 			const styles = recipe(variantProps)
 			return (
@@ -25,6 +29,7 @@ export const createStyleContext = <R extends AnyRecipe>(recipe: R) => {
 	const withContext = <T extends {}>(Component: ComponentType<T>, part?: string) => {
 		if (!part) return Component
 
+		// @ts-ignore
 		const Comp = forwardRef((props: T, ref) => {
 			const styles = useContext(StyleContext)
 			return <Component ref={ref} className={styles?.[part ?? ""]} {...props} />

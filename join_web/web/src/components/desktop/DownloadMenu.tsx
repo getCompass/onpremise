@@ -19,18 +19,18 @@ const DownloadMenu = ({ triggerEl, onOpenFunction, onCloseFunction }: DownloadMe
 
 	const renderedMenuItems = useMemo(() => {
 		if (deviceDetect.isDesktopWindows) {
-			return <WindowsMenuItems isNeedAnotherPlatformItem = {true} />;
+			return <WindowsMenuItems isNeedAnotherPlatformItem = {true} />
 		}
 
 		if (deviceDetect.isDesktopLinux) {
-			return <LinuxMenuItems isNeedAnotherPlatformItem = {true} />;
+			return <LinuxMenuItems isNeedAnotherPlatformItem = {true} />
 		}
 
 		if (deviceDetect.isDesktopMacOs || deviceDetect.isSafariDesktop) {
-			return <MacOsMenuItems isNeedAnotherPlatformItem = {true} />;
+			return <MacOsMenuItems isNeedAnotherPlatformItem = {true} />
 		}
 
-		return <WindowsMenuItems isNeedAnotherPlatformItem = {true} />;
+		return <WindowsMenuItems isNeedAnotherPlatformItem = {true} />
 	}, [ deviceDetect ]);
 
 	return (

@@ -2,14 +2,27 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\PaymentRequiredException;
 
 /**
  * контроллер, отвечающий за работу диалогов
  */
-class Apiv2_Conversations extends \BaseFrame\Controller\Api {
+class Apiv2_Conversations extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"get"
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"get",
 	];
@@ -20,14 +33,14 @@ class Apiv2_Conversations extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Метод для получения списка диалогов
-	 * @return array
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 * @long
 	 */
-	public function get():array {
+	public function get(): array
+	{
 
 		$conversation_key_list = $this->post(\Formatter::TYPE_ARRAY, "conversation_key_list");
 
@@ -37,13 +50,17 @@ class Apiv2_Conversations extends \BaseFrame\Controller\Api {
 
 		try {
 
-			$conversation_map_list = $this->_tryDecryptConversationKeyList($conversation_key_list);
+			$conversation_map_list                                                         = $this->_tryDecryptConversationKeyList($conversation_key_list);
 			[$prepared_conversation_meta_list, $not_allowed_conversation_map_list, $users] = Domain_Conversation_Scenario_Apiv2::get(
-				$this->user_id, $conversation_map_list, $this->extra["space"]["is_restricted_access"], $this->role, $this->permissions
+				$this->user_id,
+				$conversation_map_list,
+				$this->extra["space"]["is_restricted_access"],
+				$this->role,
+				$this->permissions
 			);
 		} catch (cs_IncorrectConversationMapList) {
 			throw new ParamException("Passed conversation_key_list biggest than max");
-		} catch (\cs_DecryptHasFailed|ParamException) {
+		} catch (\cs_DecryptHasFailed | ParamException) {
 			throw new ParamException("You passed invalid conversation key");
 		} catch (Domain_Conversation_Exception_TariffUnpaid) {
 			throw new PaymentRequiredException(PaymentRequiredException::RESTRICTED_ERROR_CODE, "need to pay tariff");
@@ -72,7 +89,8 @@ class Apiv2_Conversations extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @throws \paramException
 	 */
-	protected function _tryDecryptConversationKeyList(array $conversation_key_list):array {
+	protected function _tryDecryptConversationKeyList(array $conversation_key_list): array
+	{
 
 		$conversation_map_list = [];
 		foreach ($conversation_key_list as $conversation_key) {

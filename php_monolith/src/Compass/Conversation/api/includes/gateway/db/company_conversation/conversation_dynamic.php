@@ -86,7 +86,7 @@ class Gateway_Db_CompanyConversation_ConversationDynamic extends Gateway_Db_Comp
 	 */
 	public static function getOrdered(int $limit, int $offset):array {
 
-		$query  = "SELECT * FROM `?p` WHERE TRUE LIMIT ?i OFFSET ?i";
+		$query  = "SELECT * FROM `?p` WHERE TRUE ORDER BY `created_at` ASC LIMIT ?i OFFSET ?i";
 		$result = static::_connect(static::_getDbKey())->getAll($query, self::_getTable(), $limit, $offset);
 
 		return array_map(static fn(array $el) => self::_rowToObject($el), $result);

@@ -13,7 +13,7 @@ const PageContentDesktopConferenceEnded = () => {
 	const langStringDesktopConferenceEndedContentTitle = useLangString("desktop.conference_ended_content.title");
 	const langStringDesktopConferenceEndedContentDesc = useLangString("desktop.conference_ended_content.desc");
 	const langStringDesktopConferenceEndedContentTryCompassButton = useLangString(
-		"desktop.conference_ended_content.try_compass_button"
+		"try_compass_button"
 	);
 
 	const [clickCount, setClickCount] = useState(0);

@@ -1,7 +1,11 @@
 import { Box, Center, VStack } from "../../../styled-system/jsx";
 import Background from "../../components/desktop/Background.tsx";
+import {useLangString} from "../../lib/getLangString.ts";
 
 const PagePreloaderDesktop = () => {
+	const loadingText = useLangString(
+		"loading"
+	);
 	return (
 		<Center h="100vh" mdDown={{ h: "100vh" }}>
 			<Background />
@@ -14,7 +18,7 @@ const PagePreloaderDesktop = () => {
 						/>
 					</svg>
 				</Box>
-				<Box>Загрузка</Box>
+				<Box>{loadingText}</Box>
 			</VStack>
 		</Center>
 	);

@@ -51,6 +51,8 @@ if (isCLi()) {
 	);
 }
 
+\BaseFrame\ApiGateway\GatewayHandler::init(GATEWAY_SECRET_KEY_B64);
+
 // возвращаем обработчики
 return include_once COMPANY_MODULE_ROOT . "_module/route.php";
 

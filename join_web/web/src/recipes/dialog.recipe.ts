@@ -8,7 +8,7 @@ export const dialog = defineSlotRecipe({
 		backdrop: {
 			inset: "0",
 			position: "fixed",
-			zIndex: "overlay",
+			zIndex: "99999",
 			_open: {
 				animation: "backdrop-in",
 			},
@@ -19,7 +19,7 @@ export const dialog = defineSlotRecipe({
 		container: {
 			inset: "0",
 			position: "fixed",
-			zIndex: "modal",
+			zIndex: "999999",
 			pointerEvents: "none",
 		},
 		content: {

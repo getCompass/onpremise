@@ -162,10 +162,10 @@ const InvalidLink = () => {
 	const isMobile = useIsMobile();
 
 	if (isMobile) {
-		return <DialogMobile content={<InvalidLinkMobile/>} overflow="visible" isNeedExtraPaddingBottom={true}/>;
+		return <DialogMobile content={<InvalidLinkMobile/>} overflow="visible" isNeedExtraPaddingBottom={true}/>
 	}
 
-	return <DialogDesktop content={<InvalidLinkDesktop/>} overflow="visible"/>;
+	return <DialogDesktop content={<InvalidLinkDesktop/>} overflow="visible"/>
 }
 
 export default InvalidLink;

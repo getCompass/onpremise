@@ -27,6 +27,7 @@ export const DynamicTimerAuthenticationToken = ({ apiAuthGenerateToken }: Dynami
 
 	const langStringTokenLifeTimeExpired = useLangString("token_life_time_expired");
 	const langStringTokenLifeTime = useLangString(isMobile ? "token_life_time_mobile" : "token_life_time_desktop");
+	const langStringTokenLifeTimeParts = langStringTokenLifeTime.split('$TIME');
 
 	const langStringOneMinute = useLangString(isMobile ? "one_minute" : "two_minutes");
 	const langStringTwoMinutes = useLangString(isMobile ? "two_minutes" : "five_minutes");
@@ -109,9 +110,10 @@ export const DynamicTimerAuthenticationToken = ({ apiAuthGenerateToken }: Dynami
 			alignContent = "start"
 			flexWrap = "wrap">
 			<Text color = "248248248.05" style = "lato_14_20_400" ls = "-015">
-				{langStringTokenLifeTime}
+				{langStringTokenLifeTimeParts[0]}
 				{minutes}
-				{plural(minutes, langStringOneMinute, langStringTwoMinutes, langStringFiveMinutes)}.
+				{plural(minutes, langStringOneMinute, langStringTwoMinutes, langStringFiveMinutes)}
+				{langStringTokenLifeTimeParts[1] ?? ''}
 			</Text>
 		</HStack>
 	);

@@ -2,6 +2,7 @@
 
 namespace Compass\Thread;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
@@ -9,8 +10,19 @@ use BaseFrame\Exception\Request\ParamException;
 /**
  * Контроллер, отвечающий за Напоминания в треде
  */
-class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
+class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_THREAD;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"create",
+		"remove",
+	];
 	public const ALLOW_METHODS = [
 		"create",
 		"remove",
@@ -30,7 +42,8 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 	 * @throws CaseException
 	 * @long try..catch разросся
 	 */
-	public function create():array {
+	public function create(): array
+	{
 
 		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key");
 		$message_map = \CompassApp\Pack\Message::tryDecrypt($message_key);
@@ -44,11 +57,11 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 		// создаём Напоминание
 		try {
 			[$remind_id, $comment] = Domain_Remind_Scenario_Api::create($this->user_id, $message_map, $remind_at, $comment, $is_parent, $this->method_version);
-		} catch (cs_Message_IsTooLong|Gateway_Socket_Exception_Conversation_MessageTextIsTooLong) {
+		} catch (cs_Message_IsTooLong | Gateway_Socket_Exception_Conversation_MessageTextIsTooLong) {
 			throw new CaseException(2218005, "Comment text is too long");
-		} catch (cs_Message_IsDeleted|Gateway_Socket_Exception_Conversation_MessageIsDeleted) {
+		} catch (cs_Message_IsDeleted | Gateway_Socket_Exception_Conversation_MessageIsDeleted) {
 			return $this->error(549, "Message is deleted");
-		} catch (cs_Thread_UserNotMember|cs_Message_HaveNotAccess|Gateway_Socket_Exception_Conversation_UserIsNotMember) {
+		} catch (cs_Thread_UserNotMember | cs_Message_HaveNotAccess | Gateway_Socket_Exception_Conversation_UserIsNotMember) {
 			return $this->error(530, "You are not allow to do this action");
 		} catch (cs_Conversation_IsBlockedOrDisabled $e) {
 			return $this->_returnErrorOnOpponentIsBlockedOrDisabled($e->getAllowStatus());
@@ -56,9 +69,9 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 
 			$extra = $e->getExtra();
 			return $this->_returnErrorOnOpponentIsBlockedOrDisabled($extra["allow_status"]);
-		} catch (Domain_Thread_Exception_Message_NotAllowForRemind|Gateway_Socket_Exception_Conversation_MessageNotAllowForRemind) {
+		} catch (Domain_Thread_Exception_Message_NotAllowForRemind | Gateway_Socket_Exception_Conversation_MessageNotAllowForRemind) {
 			throw new CaseException(2218004, "You are not allowed to do this action");
-		} catch (Domain_Remind_Exception_AlreadyExist|Gateway_Socket_Exception_Conversation_RemindAlreadyExist) {
+		} catch (Domain_Remind_Exception_AlreadyExist | Gateway_Socket_Exception_Conversation_RemindAlreadyExist) {
 			throw new CaseException(2235004, "Remind already set in message");
 		} catch (Gateway_Socket_Exception_Conversation_MessageIsNotExist) {
 			throw new CaseException(2218007, "Message is not exist");
@@ -77,7 +90,8 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 
 	// возвращаем ошибку в зависимости от полученного allow_status
 	// @long - switch..case
-	protected function _returnErrorOnOpponentIsBlockedOrDisabled(int $allow_status):array {
+	protected function _returnErrorOnOpponentIsBlockedOrDisabled(int $allow_status): array
+	{
 
 		// в зависимости от полученного allow_status — подготавливаем код и сообщение об ошибке
 		switch ($allow_status) {
@@ -94,28 +108,28 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 				$error_message = "opponent blocked us";
 				break;
 
-			// в диалог нельзя писать, один из участников заблокирован в системе
+				// в диалог нельзя писать, один из участников заблокирован в системе
 			case Type_Thread_Utils::CONVERSATION_ALLOW_STATUS_MEMBER_IS_DISABLED:
 
 				$error_code    = 532;
 				$error_message = "opponent has blocked in system";
 				break;
 
-			// в диалог нельзя писать, пользователь удалил аккаунт
+				// в диалог нельзя писать, пользователь удалил аккаунт
 			case Type_Thread_Utils::CONVERSATION_ALLOW_STATUS_MEMBER_IS_DELETED:
 
 				$error_code    = 2129001;
 				$error_message = "opponent has delete account";
 				break;
 
-			// в диалог нельзя писать, бот выключен
+				// в диалог нельзя писать, бот выключен
 			case Type_Thread_Utils::CONVERSATION_ALLOW_STATUS_USERBOT_IS_DISABLED:
 
 				$error_code    = 2134001;
 				$error_message = "userbot has disabled";
 				break;
 
-			// в диалог нельзя писать, бот удалён
+				// в диалог нельзя писать, бот удалён
 			case Type_Thread_Utils::CONVERSATION_ALLOW_STATUS_USERBOT_IS_DELETED:
 
 				$error_code    = 2134002;
@@ -141,7 +155,8 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws CaseException
 	 */
-	public function remove():array {
+	public function remove(): array
+	{
 
 		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key");
 		$message_map = \CompassApp\Pack\Message::tryDecrypt($message_key);
@@ -152,7 +167,7 @@ class Apiv2_Threads_Remind extends \BaseFrame\Controller\Api {
 		// удаляем Напоминание с сообщения
 		try {
 			Domain_Remind_Scenario_Api::remove($this->user_id, $message_map);
-		} catch (cs_Message_HaveNotAccess|cs_Thread_UserNotMember) {
+		} catch (cs_Message_HaveNotAccess | cs_Thread_UserNotMember) {
 			return $this->error(530, "You are not allow to do this action");
 		} catch (cs_Message_IsDeleted) {
 			return $this->error(549, "Message is deleted");

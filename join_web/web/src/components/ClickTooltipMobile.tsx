@@ -12,7 +12,7 @@ const ClickTooltipMobile = ({ children, tooltipText, tooltipType }: ClickTooltip
 	const [ isToolTipVisible, setIsToolTipVisible ] = useState(false);
 
 	const renderedTooltipArrow = useMemo(() => {
-		return <TooltipArrow width="8px" height="5px" />;
+		return <TooltipArrow width="8px" height="5px" />
 	}, [ tooltipType ]);
 
 	return (

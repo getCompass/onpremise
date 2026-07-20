@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Request\BlockException;
@@ -15,15 +16,29 @@ use CompassApp\Domain\Member\Exception\IsLeft;
 /**
  * Контроллер, отвечающий за личные диалоги
  */
-class Apiv2_Conversations_Single extends \BaseFrame\Controller\Api {
+class Apiv2_Conversations_Single extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
 
-	public const ALLOW_METHODS = [
+	// методы на чтение
+	public const READ_METHOD_LIST = [];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
 		"mute",
 		"unMute",
 		"clearMessages",
 		"leave",
 	];
 
+	// разрешенные методы
+	public const ALLOW_METHODS = [
+		"mute",
+		"unMute",
+		"clearMessages",
+		"leave",
+	];
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"mute",
 		"unMute",
@@ -47,7 +62,8 @@ class Apiv2_Conversations_Single extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \returnException
 	 */
-	public function mute():array {
+	public function mute(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -79,7 +95,8 @@ class Apiv2_Conversations_Single extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	public function unmute():array {
+	public function unmute(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -98,7 +115,8 @@ class Apiv2_Conversations_Single extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	public function clearMessages():array {
+	public function clearMessages(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
@@ -117,7 +135,8 @@ class Apiv2_Conversations_Single extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	public function leave():array {
+	public function leave(): array
+	{
 
 		$user_id = $this->post(\Formatter::TYPE_INT, "user_id");
 

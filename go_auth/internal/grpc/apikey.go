@@ -515,6 +515,14 @@ func (s *ApiTokenServer) ApikeyGetTemplateList(ctx context.Context, in *pb.Apike
 	}, nil
 }
 
+// GetAvailablesScopeNames Получить доступные имена зон ответственности
+func (s *ApiTokenServer) GetAvailableScopeNames(ctx context.Context, in *pb.GetAvailableScopeNamesRequestStruct) (*pb.GetAvailableScopeNamesResponseStruct, error) {
+
+	return &pb.GetAvailableScopeNamesResponseStruct{
+		ScopeNames: apitoken.ScopeNames,
+	}, nil
+}
+
 // собираем массив ключей в объект ApikeyGetResponseStruct
 func prepareApiKeyResponseStruct(apiToken *apitoken.ApiToken, secretKey []byte) (*pb.ApiKeyStruct, error) {
 

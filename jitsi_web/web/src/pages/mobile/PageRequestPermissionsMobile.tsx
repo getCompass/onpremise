@@ -7,9 +7,10 @@ import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAtomValue } from "jotai/index";
 import { langState } from "../../api/_stores.ts";
+import {APP_NAME_UPPERCASE} from "../../api/_types.ts";
 
 const PageRequestPermissionsMobile = () => {
-	const langStringMobileLogoTitle = useLangString("mobile.logo.title");
+	const langStringMobileLogoTitle = APP_NAME_UPPERCASE;
 	const langStringMobileRequestPermissionsPageDesc = useLangString("mobile.request_permissions_page.desc");
 
 	const [searchParams] = useSearchParams();

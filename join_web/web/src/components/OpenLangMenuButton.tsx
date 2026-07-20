@@ -48,9 +48,6 @@ const OpenLangMenuButton = () => {
 			bgColor="000000.005"
 			p="7px"
 			rounded="100%"
-			position="absolute"
-			top="8px"
-			right="16px"
 		>
 			<LangMenuSelectorMobile
 				selectTrigger={

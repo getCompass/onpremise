@@ -13,7 +13,6 @@
 {{ $RATE_LIMIT_CACHE_SIZE := .Env.PROSODY_RATE_LIMIT_CACHE_SIZE | default "10000" -}}
 {{ $REGION_NAME := .Env.PROSODY_REGION_NAME | default "default" -}}
 {{ $RELEASE_NUMBER := .Env.RELEASE_NUMBER | default "" -}}
-{{ $SHARD_NAME := .Env.SHARD | default "default" -}}
 {{ $S2S_PORT := .Env.PROSODY_S2S_PORT | default "5269" -}}
 {{ $TURN_HOST := .Env.TURN_HOST | default "" -}}
 {{ $TURN_HOSTS := splitList "," $TURN_HOST -}}
@@ -118,16 +117,12 @@ VirtualHost 'v{{ $VISITOR_INDEX }}.{{ $VISITORS_XMPP_DOMAIN }}'
       'conference_duration';
       {{ if $ENABLE_XMPP_WEBSOCKET -}}
       "websocket";
-      "smacks"; -- XEP-0198: Stream Management
       {{ end -}}
       {{ if .Env.XMPP_MODULES }}
       "{{ join "\";\n\"" (splitList "," .Env.XMPP_MODULES) }}";
       {{ end }}
     }
     main_muc = '{{ $VISITORS_MUC_PREFIX }}.v{{ $VISITOR_INDEX }}.{{ $VISITORS_XMPP_DOMAIN }}';
-    shard_name = "{{ $SHARD_NAME }}"
-    region_name = "{{ $REGION_NAME }}"
-    release_number = "{{ $RELEASE_NUMBER }}"
 
     {{ if .Env.XMPP_CONFIGURATION -}}
     {{ join "\n    " (splitList "," .Env.XMPP_CONFIGURATION) }}

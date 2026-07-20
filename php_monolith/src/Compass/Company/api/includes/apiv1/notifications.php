@@ -2,13 +2,29 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * Class Apiv1_Company_Notifications
  */
-class Apiv1_Notifications extends \BaseFrame\Controller\Api {
+class Apiv1_Notifications extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_NOTIFICATIONS;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"doDisable",
+		"doEnable",
+		"setSnoozedEvent",
+		"unsetSnoozedEvent",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"doDisable",
 		"doEnable",
@@ -16,6 +32,7 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 		"unsetSnoozedEvent",
 	];
 
+	// методы, вклияющие на активность пользователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"doDisable",
 		"doEnable",
@@ -34,7 +51,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 */
-	public function doDisable():array {
+	public function doDisable(): array
+	{
 
 		$interval_minutes = $this->post(\Formatter::TYPE_INT, "interval_minutes", 0);
 
@@ -68,7 +86,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 */
-	public function doEnable():array {
+	public function doEnable(): array
+	{
 
 		// блокируем за превышенное число вызовов метода
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::NOTIFICATION_TOGGLE);
@@ -88,7 +107,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public function setSnoozedEvent():array {
+	public function setSnoozedEvent(): array
+	{
 
 		$event_type = $this->post(\Formatter::TYPE_INT, "event_type");
 
@@ -115,7 +135,8 @@ class Apiv1_Notifications extends \BaseFrame\Controller\Api {
 	 * @throws \queryException
 	 * @throws \returnException
 	 */
-	public function unsetSnoozedEvent():array {
+	public function unsetSnoozedEvent(): array
+	{
 
 		$event_type = $this->post(\Formatter::TYPE_INT, "event_type");
 

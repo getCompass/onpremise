@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
 use BaseFrame\Exception\Gateway\QueryFatalException;
@@ -16,8 +17,28 @@ use CompassApp\Domain\Member\Exception\UserIsGuest;
 /**
  * контроллер, отвечающий за подгрузку ленты сообщений
  */
-class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
+class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getMessages",
+		"getReactions",
+		"getThreads",
+		"getBatchingMessages",
+		"getBatchingReactions",
+		"getBatchingThreads",
+		"getMessageReadParticipants",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"readMessage",
+	];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"getMessages",
 		"getReactions",
@@ -28,7 +49,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 		"getBatchingThreads",
 		"getMessageReadParticipants",
 	];
-
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"readMessage",
 	];
@@ -40,7 +60,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения сообщений из диалога
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws PaymentRequiredException
 	 * @throws \cs_DecryptHasFailed
@@ -50,7 +69,8 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws CaseException
 	 */
-	public function getMessages():array {
+	public function getMessages(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$block_id_list    = $this->post("?ai", "block_id_list", []);
@@ -59,7 +79,10 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 		try {
 
 			[$previous_block_id_list, $message_list, $next_block_id_list, $users] = Domain_Conversation_Feed_Scenario_Api::getMessages(
-				$this->user_id, $conversation_map, $block_id_list, $this->extra["space"]["is_restricted_access"]
+				$this->user_id,
+				$conversation_map,
+				$block_id_list,
+				$this->extra["space"]["is_restricted_access"]
 			);
 		} catch (cs_UserIsNotMember) {
 			throw new CaseException(2218001, "User is not conversation member");
@@ -83,7 +106,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения батчингом сообщений для списка диалогов
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws PaymentRequiredException
 	 * @throws \cs_DecryptHasFailed
@@ -92,7 +114,8 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws CaseException
 	 */
-	public function getBatchingMessages():array {
+	public function getBatchingMessages(): array
+	{
 
 		$batch_message_list = $this->post("?a", "batch_message_list");
 
@@ -100,7 +123,9 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 
 		try {
 			[$feed_message_list, $users] = Domain_Conversation_Feed_Scenario_Api::getBatchingMessages(
-				$this->user_id, $filtered_batch_message_list, $this->extra["space"]["is_restricted_access"]
+				$this->user_id,
+				$filtered_batch_message_list,
+				$this->extra["space"]["is_restricted_access"]
 			);
 		} catch (cs_UserIsNotMember) {
 			throw new CaseException(2218001, "User is not conversation member");
@@ -118,7 +143,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения реакций из диалога
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws PaymentRequiredException
 	 * @throws \cs_DecryptHasFailed
@@ -128,7 +152,8 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws CaseException
 	 */
-	public function getReactions():array {
+	public function getReactions(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$block_id_list    = $this->post("?ai", "block_id_list", []);
@@ -136,7 +161,11 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 
 		try {
 			[$reaction_block_list, $users] = Domain_Conversation_Feed_Scenario_Api::getReactions(
-				$this->user_id, $conversation_map, $block_id_list, $this->extra["space"]["is_restricted_access"]);
+				$this->user_id,
+				$conversation_map,
+				$block_id_list,
+				$this->extra["space"]["is_restricted_access"]
+			);
 		} catch (cs_UserIsNotMember) {
 			throw new CaseException(2218001, "User is not conversation member");
 		} catch (Domain_Conversation_Exception_TariffUnpaid) {
@@ -155,7 +184,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения батчингом реакций для списка диалогов
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws PaymentRequiredException
@@ -164,7 +192,8 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws CaseException
 	 */
-	public function getBatchingReactions():array {
+	public function getBatchingReactions(): array
+	{
 
 		$batch_reaction_list = $this->post("?a", "batch_reaction_list");
 
@@ -173,7 +202,9 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 		try {
 
 			[$feed_reaction_list, $users] = Domain_Conversation_Feed_Scenario_Api::getBatchingReactions(
-				$this->user_id, $filtered_batch_reaction_list, $this->extra["space"]["is_restricted_access"]
+				$this->user_id,
+				$filtered_batch_reaction_list,
+				$this->extra["space"]["is_restricted_access"]
 			);
 		} catch (cs_UserIsNotMember) {
 			throw new CaseException(2218001, "User is not conversation member");
@@ -191,7 +222,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получаения тредов из диалога
 	 *
-	 * @return array
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \cs_RowIsEmpty
 	 * @throws \cs_UnpackHasFailed
@@ -200,7 +230,8 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \returnException
 	 * @throws CaseException
 	 */
-	public function getThreads():array {
+	public function getThreads(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$block_id_list    = $this->post("?ai", "block_id_list", []);
@@ -208,7 +239,11 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 
 		try {
 			[$thread_meta_list, $thread_menu_list, $users] = Domain_Conversation_Feed_Scenario_Api::getThreads(
-				$this->user_id, $conversation_map, $block_id_list, $this->extra["space"]["is_restricted_access"]);
+				$this->user_id,
+				$conversation_map,
+				$block_id_list,
+				$this->extra["space"]["is_restricted_access"]
+			);
 		} catch (cs_UserIsNotMember) {
 			throw new CaseException(2218001, "User is not conversation member");
 		} catch (Domain_Conversation_Exception_TariffUnpaid) {
@@ -226,7 +261,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для получения батчингом тредов для списка диалогов
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws PaymentRequiredException
 	 * @throws \cs_DecryptHasFailed
@@ -235,7 +269,8 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws CaseException
 	 */
-	public function getBatchingThreads():array {
+	public function getBatchingThreads(): array
+	{
 
 		$batch_thread_list = $this->post("?a", "batch_thread_list");
 
@@ -244,7 +279,9 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 		try {
 
 			[$feed_batching_list, $users] = Domain_Conversation_Feed_Scenario_Api::getBatchingThreads(
-				$this->user_id, $filtered_batch_thread_list, $this->extra["space"]["is_restricted_access"]
+				$this->user_id,
+				$filtered_batch_thread_list,
+				$this->extra["space"]["is_restricted_access"]
 			);
 		} catch (cs_UserIsNotMember) {
 			throw new CaseException(2218001, "User is not conversation member");
@@ -262,7 +299,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Метод для прочтения одного непрочитанного сообщения диалога
 	 *
-	 * @return array
 	 * @throws CaseException
 	 * @throws ParamException
 	 * @throws \cs_UnpackHasFailed
@@ -270,7 +306,8 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function readMessage():array {
+	public function readMessage(): array
+	{
 
 		$message_key = $this->post("?s", "message_key");
 		$message_map = \CompassApp\Pack\Message::tryDecrypt($message_key);
@@ -291,7 +328,6 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить список прочитавших сообщение
 	 *
-	 * @return array
 	 * @throws BusFatalException
 	 * @throws CaseException
 	 * @throws ControllerMethodNotFoundException
@@ -303,17 +339,22 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws \cs_UnpackHasFailed
 	 * @throws \paramException
 	 */
-	public function getMessageReadParticipants():array {
+	public function getMessageReadParticipants(): array
+	{
 
 		$message_key = $this->post(\Formatter::TYPE_STRING, "message_key");
 		$message_map = \CompassApp\Pack\Message::tryDecrypt($message_key);
 
 		try {
 			[$read_participants, $read_participant_count] = Domain_Conversation_Feed_Scenario_Api::getMessageReadParticipants(
-				$this->user_id, $message_map, $this->role, $this->method_version);
+				$this->user_id,
+				$message_map,
+				$this->role,
+				$this->method_version
+			);
 		} catch (Domain_Conversation_Exception_User_IsNotMember) {
 			throw new CaseException(2218001, "User is not conversation member");
-		} catch (ActionNotAllowed|UserIsGuest|Domain_Member_Exception_ActionNotAllowed) {
+		} catch (ActionNotAllowed | UserIsGuest | Domain_Member_Exception_ActionNotAllowed) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		} catch (Domain_Conversation_Exception_Message_IsNotFromConversation) {
 			throw new ParamException("message is not from conversation");
@@ -337,7 +378,8 @@ class Apiv2_Conversations_Feed extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @throws \paramException
 	 */
-	protected function _prepareParamBatchList(array $batch_list):array {
+	protected function _prepareParamBatchList(array $batch_list): array
+	{
 
 		$filtered_batch_list = [];
 		foreach ($batch_list as $v) {

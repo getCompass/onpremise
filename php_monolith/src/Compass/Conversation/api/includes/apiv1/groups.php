@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Request\BlockException;
@@ -15,9 +16,31 @@ use CompassApp\Domain\Member\Exception\UserIsGuest;
  * контроллер, отвечающий за взаимодействие пользователя с групповыми диалогами
  * @property Type_Api_Action action
  */
-class Apiv1_Groups extends \BaseFrame\Controller\Api {
-
+class Apiv1_Groups extends \BaseFrame\Controller\Api
+{
 	protected const _GET_MANAGED_COUNT = 1000; // количество возвращаемых диалогов в getManaged
+
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_CONVERSATION;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getManaged",
+		"getInvited",
+		"getShared",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"add",
+		"doLeave",
+		"tryKick",
+		"doRevokeInvite",
+		"changeRole",
+		"setOptions",
+		"trySelfAssignAdminRole",
+		"clearMessagesForAll",
+	];
 
 	// поддерживаемые методы. Регистр не имеет значение */
 	public const ALLOW_METHODS = [
@@ -33,7 +56,6 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 		"trySelfAssignAdminRole",
 		"clearMessagesForAll",
 	];
-
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"add",
 		"doLeave",
@@ -74,7 +96,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function add():array {
+	public function add(): array
+	{
 
 		$group_name = $this->post("?s", "name");
 
@@ -131,12 +154,12 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для выхода из диалога
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 */
-	public function doLeave():array {
+	public function doLeave(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -178,7 +201,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @long
 	 */
-	public function tryKick():array {
+	public function tryKick(): array
+	{
 
 		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -222,10 +246,10 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для получения диалогов, в которых пользователь имеет права администратора
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 */
-	public function getManaged():array {
+	public function getManaged(): array
+	{
 
 		$offset = $this->post("?i", "offset", 0);
 
@@ -248,9 +272,9 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Форматируем список для метода getManaged
-	 *
 	 */
-	protected static function _prepareLeftMenuListForGetManaged(array $left_menu_list):array {
+	protected static function _prepareLeftMenuListForGetManaged(array $left_menu_list): array
+	{
 
 		$prepared_left_menu_list = [];
 		foreach ($left_menu_list as $v) {
@@ -286,14 +310,15 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 * @throws \cs_RowIsEmpty
 	 * @throws \paramException
 	 */
-	public function getInvited():array {
+	public function getInvited(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
 
 		try {
 			$member_id_list = Domain_Conversation_Scenario_Api::getInvited($this->user_id, $this->role, $this->method_version, $conversation_map);
-		} catch (Domain_Member_Exception_ActionNotAllowed|UserIsGuest) {
+		} catch (Domain_Member_Exception_ActionNotAllowed | UserIsGuest) {
 			return $this->error(Permission::ACTION_NOT_ALLOWED_ERROR_CODE, "action not allowed");
 		}
 
@@ -306,11 +331,11 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * метод получения общих с пользователем групповых диалогов
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \paramException
 	 */
-	public function getShared():array {
+	public function getShared(): array
+	{
 
 		$opponent_user_id = $this->post("?i", "user_id");
 
@@ -343,14 +368,14 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для отзыва приглашения в групповой диалог
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function doRevokeInvite():array {
+	public function doRevokeInvite(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -388,7 +413,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем параметры
-	protected function _throwIfParamsIsNotCorrect(int $user_id):void {
+	protected function _throwIfParamsIsNotCorrect(int $user_id): void
+	{
 
 		// проверяет что присланный user_id - корректный и не равен user_id совершающему запрос
 		$this->_throwIfUserIdIsMalformed($user_id, "groups", "row422");
@@ -396,7 +422,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// отдаем ответ при некорректном статусе
-	protected function _returnForRevokeIfInviteStatusIsNotExpected(string $conversation_map, int $sender_user_id, int $user_id):array {
+	protected function _returnForRevokeIfInviteStatusIsNotExpected(string $conversation_map, int $sender_user_id, int $user_id): array
+	{
 
 		Gateway_Bus_Statholder::inc("groups", "row431");
 		$invite_row = Type_Conversation_Invite::getByConversationMapAndUserId($sender_user_id, $user_id, $conversation_map);
@@ -412,14 +439,14 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * меняем роль пользователя в группе
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function changeRole():array {
+	public function changeRole(): array
+	{
 
 		$conversation_key = $this->post("?s", "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -467,11 +494,10 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * выбрасываем исключение, если пользователь гость
 	 *
-	 * @param int $role
-	 *
 	 * @throws CaseException
 	 */
-	protected function _throwIfUserGuest(int $role):void {
+	protected function _throwIfUserGuest(int $role): void
+	{
 
 		try {
 			Member::assertUserNotGuest($role);
@@ -487,7 +513,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 *
 	 * @long большой switch
 	 */
-	protected function _tryGetNewRole(string $new_role, int $old_role):int {
+	protected function _tryGetNewRole(string $new_role, int $old_role): int
+	{
 
 		switch ($new_role) {
 
@@ -509,7 +536,6 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 					break;
 				}
 				throw new ParamException("incorrect param role");
-
 			case "member":
 				$new_role = Type_Conversation_Meta_Users::ROLE_DEFAULT;
 				break;
@@ -524,7 +550,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// пробуем поменять роль пользователю
-	protected function _tryChangeRole(string $conversation_map, array $users, int $user_id, int $new_role):array {
+	protected function _tryChangeRole(string $conversation_map, array $users, int $user_id, int $new_role): array
+	{
 
 		// проверяем, быть может собеседник уже имеет нужную роль
 		if (Type_Conversation_Meta_Users::getRole($user_id, $users) == $new_role) {
@@ -543,7 +570,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// отправляем участникам группы событие об изменении роли в групповом диалоге
-	protected function _sendWsNewAndOldClientAfterChangeRole(string $conversation_map, int $user_id, array $users, int $new_role):void {
+	protected function _sendWsNewAndOldClientAfterChangeRole(string $conversation_map, int $user_id, array $users, int $new_role): void
+	{
 
 		$previous_user_role = Type_Conversation_Meta_Users::getRole($user_id, $users);
 		$talking_user_list  = Type_Conversation_Meta_Users::getTalkingUserList($users);
@@ -553,7 +581,6 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для самоназначения администратором в группе
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 * @throws \cs_DecryptHasFailed
@@ -563,7 +590,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException
 	 */
-	public function trySelfAssignAdminRole():array {
+	public function trySelfAssignAdminRole(): array
+	{
 
 		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -594,7 +622,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function setOptions():array {
+	public function setOptions(): array
+	{
 
 		$conversation_key                                = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$conversation_map                                = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -610,16 +639,28 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 
 		// проверяем и подготавливаем изменяемые опции
 		$modifiable_options = self::_checkAndPrepareModifiableOptions(
-			$is_show_history_for_new_members, $is_can_commit_worked_hours, $need_system_message_on_dismissal,
-			$is_need_show_system_message_on_invite_and_join, $is_need_show_system_message_on_leave_and_kicked, $is_need_show_system_deleted_message,
-			$is_reactions_enabled, $is_comments_enabled, $is_channel
+			$is_show_history_for_new_members,
+			$is_can_commit_worked_hours,
+			$need_system_message_on_dismissal,
+			$is_need_show_system_message_on_invite_and_join,
+			$is_need_show_system_message_on_leave_and_kicked,
+			$is_need_show_system_deleted_message,
+			$is_reactions_enabled,
+			$is_comments_enabled,
+			$is_channel
 		);
 
 		// инкрементим блокировку
 		$this->_throwIfBlocked(
-			$is_show_history_for_new_members, $is_can_commit_worked_hours, $need_system_message_on_dismissal,
-			$is_need_show_system_message_on_invite_and_join, $is_need_show_system_message_on_leave_and_kicked, $is_need_show_system_deleted_message,
-			$is_reactions_enabled, $is_comments_enabled, $is_channel
+			$is_show_history_for_new_members,
+			$is_can_commit_worked_hours,
+			$need_system_message_on_dismissal,
+			$is_need_show_system_message_on_invite_and_join,
+			$is_need_show_system_message_on_leave_and_kicked,
+			$is_need_show_system_deleted_message,
+			$is_reactions_enabled,
+			$is_comments_enabled,
+			$is_channel
 		);
 
 		// получаем мету диалога
@@ -646,20 +687,21 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * инкрементим блокировку и выбрасываем exception, если заблокированы
 	 *
-	 * @param int|false $is_show_history_for_new_members
-	 * @param int|false $is_can_commit_worked_hours
-	 * @param int|false $need_system_message_on_dismissal
-	 * @param int|false $is_need_show_system_message_on_invite_and_join
-	 * @param int|false $is_need_show_system_message_on_leave_and_kicked
-	 * @param int|false $is_need_show_system_deleted_message
-	 *
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \blockException
 	 * @throws \parseException
 	 */
-	protected function _throwIfBlocked(int|false $is_show_history_for_new_members, int|false $is_can_commit_worked_hours, int|false $need_system_message_on_dismissal,
-						     int|false $is_need_show_system_message_on_invite_and_join, int|false $is_need_show_system_message_on_leave_and_kicked,
-						     int|false $is_need_show_system_deleted_message, int|false $is_reactions_enabled, int|false $is_comments_enabled, int|false $is_channel):void {
+	protected function _throwIfBlocked(
+		int | false $is_show_history_for_new_members,
+		int | false $is_can_commit_worked_hours,
+		int | false $need_system_message_on_dismissal,
+		int | false $is_need_show_system_message_on_invite_and_join,
+		int | false $is_need_show_system_message_on_leave_and_kicked,
+		int | false $is_need_show_system_deleted_message,
+		int | false $is_reactions_enabled,
+		int | false $is_comments_enabled,
+		int | false $is_channel
+	): void {
 
 		if ($is_show_history_for_new_members !== false) {
 			Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::GROUPS_SETOPTIONS_IS_SHOW_HISTORY, "groups", "row525");
@@ -701,13 +743,11 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * инкрементим блокировку
 	 *
-	 * @param int $user_id
-	 * @param int $is_need_show_system_message_on_invite_and_join
-	 *
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \parseException
 	 */
-	protected static function _incBlockSystemMessageOnInviteAndJoin(int $user_id, int $is_need_show_system_message_on_invite_and_join):void {
+	protected static function _incBlockSystemMessageOnInviteAndJoin(int $user_id, int $is_need_show_system_message_on_invite_and_join): void
+	{
 
 		if ($is_need_show_system_message_on_invite_and_join == 1) {
 
@@ -721,13 +761,11 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * инкрементим блокировку
 	 *
-	 * @param int $user_id
-	 * @param int $is_need_show_system_message_on_leave_and_kicked
-	 *
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \parseException
 	 */
-	protected static function _incBlockSystemMessageOnLeaveAndKicked(int $user_id, int $is_need_show_system_message_on_leave_and_kicked):void {
+	protected static function _incBlockSystemMessageOnLeaveAndKicked(int $user_id, int $is_need_show_system_message_on_leave_and_kicked): void
+	{
 
 		if ($is_need_show_system_message_on_leave_and_kicked == 1) {
 
@@ -741,13 +779,11 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * инкрементим блокировку
 	 *
-	 * @param int $user_id
-	 * @param int $is_need_show_system_deleted_message
-	 *
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \parseException
 	 */
-	protected static function _incBlockSystemDeletedMessage(int $user_id, int $is_need_show_system_deleted_message):void {
+	protected static function _incBlockSystemDeletedMessage(int $user_id, int $is_need_show_system_deleted_message): void
+	{
 
 		if ($is_need_show_system_deleted_message == 1) {
 
@@ -761,20 +797,19 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * подготавливаем массив только лишь с изменяемыми опциями
 	 *
-	 * @param int|false $is_show_history_for_new_members
-	 * @param int|false $is_for_worked_hours
-	 * @param int|false $need_system_message_on_dismissal
-	 * @param int|false $is_need_show_system_message_on_invite_and_join
-	 * @param int|false $is_need_show_system_message_on_leave_and_kicked
-	 * @param int|false $is_need_show_system_deleted_message
-	 *
-	 * @return array
 	 * @throws \paramException
 	 */
-	protected static function _checkAndPrepareModifiableOptions(int|false $is_show_history_for_new_members, int|false $is_for_worked_hours,
-											int|false $need_system_message_on_dismissal, int|false $is_need_show_system_message_on_invite_and_join,
-											int|false $is_need_show_system_message_on_leave_and_kicked, int|false $is_need_show_system_deleted_message,
-											int|false $is_reactions_enabled, int|false $is_comments_enabled, int|false $is_channel):array {
+	protected static function _checkAndPrepareModifiableOptions(
+		int | false $is_show_history_for_new_members,
+		int | false $is_for_worked_hours,
+		int | false $need_system_message_on_dismissal,
+		int | false $is_need_show_system_message_on_invite_and_join,
+		int | false $is_need_show_system_message_on_leave_and_kicked,
+		int | false $is_need_show_system_deleted_message,
+		int | false $is_reactions_enabled,
+		int | false $is_comments_enabled,
+		int | false $is_channel
+	): array {
 
 		// временно сложим их сюда
 		$temp = [
@@ -817,13 +852,13 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	/**
 	 * метод для очистки сообщений в диалоге для всех участников группы
 	 *
-	 * @return array
 	 * @throws BlockException
 	 * @throws ParamException
 	 * @throws ParseFatalException
 	 * @throws ReturnFatalException
 	 */
-	public function clearMessagesForAll():array {
+	public function clearMessagesForAll(): array
+	{
 
 		$conversation_key = $this->post(\Formatter::TYPE_STRING, "conversation_key");
 		$conversation_map = \CompassApp\Pack\Conversation::tryDecrypt($conversation_key);
@@ -844,7 +879,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	// -------------------------------------------------------
 
 	// очищаем имя группы, выкидываем \paramException если прислали некорректные данные
-	protected function _tryFilterGroupName(string $group_name, ?string $namespace = null, ?string $row = null):string {
+	protected function _tryFilterGroupName(string $group_name, ?string $namespace = null, ?string $row = null): string
+	{
 
 		// форматируем название группового диалога
 		$group_name = Type_Api_Filter::sanitizeGroupName($group_name);
@@ -864,7 +900,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем что пользователь является участником диалога
-	protected function _throwIfUserIsNotConversationMember(array $meta_row, int $user_id, ?string $namespace = null, ?string $row = null):void {
+	protected function _throwIfUserIsNotConversationMember(array $meta_row, int $user_id, ?string $namespace = null, ?string $row = null): void
+	{
 
 		if (!Type_Conversation_Meta_Users::isMember($user_id, $meta_row["users"])) {
 
@@ -878,7 +915,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяет что присланный user_id - корректный
-	protected function _throwIfUserIdIsMalformed(int $user_id, ?string $namespace = null, ?string $row = null):void {
+	protected function _throwIfUserIdIsMalformed(int $user_id, ?string $namespace = null, ?string $row = null): void
+	{
 
 		// проверяем user_id
 		if ($user_id < 1) {
@@ -893,7 +931,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяет что присланный user_id не равен user_id пользователя совершающего запрос
-	protected function _throwIfUserIdIsEqualWithYourself(int $user_id, ?string $namespace = null, ?string $row = null):void {
+	protected function _throwIfUserIdIsEqualWithYourself(int $user_id, ?string $namespace = null, ?string $row = null): void
+	{
 
 		if ($user_id == $this->user_id) {
 
@@ -907,7 +946,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем информацию о пользователе
-	protected function _getUserInfo(int $user_id):\CompassApp\Domain\Member\Struct\Short {
+	protected function _getUserInfo(int $user_id): \CompassApp\Domain\Member\Struct\Short
+	{
 
 		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList([$user_id], false);
 		if (!isset($user_info_list[$user_id])) {
@@ -917,7 +957,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// форматируем список диалогов для ответа
-	protected function _returnLeftMenuMethodOk(array $left_menu_list = [], int $max_count = 0):array {
+	protected function _returnLeftMenuMethodOk(array $left_menu_list = [], int $max_count = 0): array
+	{
 
 		// если пришел пустой список
 		if (count($left_menu_list) < 1) {
@@ -953,7 +994,8 @@ class Apiv1_Groups extends \BaseFrame\Controller\Api {
 	}
 
 	// метод возвращает 514 вместе с ролями пользователя и собеседника
-	protected function _return514ErrorWithUserAndOpponentRoles(int $opponent_user_id, array $users):array {
+	protected function _return514ErrorWithUserAndOpponentRoles(int $opponent_user_id, array $users): array
+	{
 
 		// получаем наш и собеседника роли в группе
 		$user_role          = Type_Conversation_Meta_Users::getRole($this->user_id, $users);

@@ -257,6 +257,11 @@ class Type_Script_Source_ClearConversations extends Type_Script_CompanyUpdateTem
 			return;
 		}
 
+		Type_System_Admin::log(
+			"clear_conversations",
+			"Отправляем задачи для времени {$clear_until} чистки {$conversations_count} чатов"
+		);
+
 		// список чатов может быть большой, поэтому делим весь список на чанки
 		$chunk_conversation_map_list = $conversations_count <= 300 ? [$conversation_map_list]
 			: array_chunk($conversation_map_list, ceil($conversations_count / 3));

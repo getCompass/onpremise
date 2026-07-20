@@ -2,6 +2,7 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Request\ParamException;
 use BaseFrame\Exception\Request\BlockException;
@@ -12,7 +13,26 @@ use CompassApp\Domain\Member\Struct\Main;
  * класс для API методов группы invites
  * @property Type_Api_Action action
  */
-class Apiv1_Invites extends \BaseFrame\Controller\Api {
+class Apiv1_Invites extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE        = ScopePermission::SCOPE_CONVERSATION;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"get",
+		"getBatching",
+		"getAllowedUsersForInvite",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"trySend",
+		"tryAccept",
+		"doDecline",
+		"trySendBatching",
+		"trySendBatchingForGroups",
+	];
 
 	// поддерживаемые методы. Регистр не имеет значение */
 	public const ALLOW_METHODS = [
@@ -25,7 +45,6 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 		"getBatching",
 		"trySendBatchingForGroups",
 	];
-
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"trySend",
 		"tryAccept",
@@ -43,7 +62,6 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 			"trySendBatchingForGroups",
 		],
 	];
-
 	protected const _MAX_USERS_COUNT   = 30; // максимальное число пользователей, которое может придти в запрос getAllowedUsersForInvite
 	protected const _MAX_GROUPS_COUNT  = 30; // максимальное число групп, которое может придти в запрос trySendBatchingForGroups
 	protected const _MAX_INVITES_COUNT = 50; // максимальное количество инвайтов, который могут придти в метод getBatching
@@ -61,7 +79,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function trySend():array {
+	public function trySend(): array
+	{
 
 		// сначала пытаемся понять, пришла нам команда на отправку invite или invitation
 		$conversation_key = $this->post("?s", "conversation_key", "");
@@ -100,7 +119,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// пытаемся отослать инвайт
-	protected function _sendInviteIfIsPossible(int $user_id, int $opponent_user_id, array $meta_row):array {
+	protected function _sendInviteIfIsPossible(int $user_id, int $opponent_user_id, array $meta_row): array
+	{
 
 		// возвращаем новую (старую) ошибку
 		$is_return_code_532 = Type_System_Legacy::isNewErrors();
@@ -125,7 +145,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// отсылаем инвайт
-	protected function _sendInvite(int $user_id, int $opponent_user_id, array $meta_row, array $single_meta_row):array {
+	protected function _sendInvite(int $user_id, int $opponent_user_id, array $meta_row, array $single_meta_row): array
+	{
 
 		$platform = Type_Api_Platform::getPlatform();
 
@@ -133,7 +154,7 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 			Helper_Invites::inviteUserFromSingle($user_id, $opponent_user_id, $meta_row, $single_meta_row, true, true, $platform);
 		} catch (cs_InviteActiveSendLimitIsExceeded) {
 			return $this->error(915, "Active invite send limit exceeded");
-		} catch (cs_InviteStatusIsNotExpected|cs_InviteIsDuplicated) {
+		} catch (cs_InviteStatusIsNotExpected | cs_InviteIsDuplicated) {
 			return $this->ok();
 		}
 
@@ -148,10 +169,11 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException|cs_DecryptHasFailed
 	 */
-	public function get():array {
+	public function get(): array
+	{
 
-		$invite_key    = $this->post("?s", "invite_key");
-		$invite_map    = \CompassApp\Pack\Invite::tryDecrypt($invite_key);
+		$invite_key = $this->post("?s", "invite_key");
+		$invite_map = \CompassApp\Pack\Invite::tryDecrypt($invite_key);
 
 		Gateway_Bus_Statholder::inc("invites", "row25");
 
@@ -176,7 +198,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем приглашение если оно существует
-	protected function _tryGetInviteRowIfExist(string $invite_map, string $row):array {
+	protected function _tryGetInviteRowIfExist(string $invite_map, string $row): array
+	{
 
 		$invite_row = Type_Invite_Handler::get($invite_map);
 
@@ -195,7 +218,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function getBatching():array {
+	public function getBatching(): array
+	{
 
 		$invite_key_list = $this->post("?a", "invite_key_list");
 
@@ -233,7 +257,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если пришел некорректный массив инвайтов
-	protected function _throwIfInviteKeyListIsIncorrect(array $invite_key_list):void {
+	protected function _throwIfInviteKeyListIsIncorrect(array $invite_key_list): void
+	{
 
 		// если пришел пустой массив инвайтов
 		if (count($invite_key_list) < 1) {
@@ -251,7 +276,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// преобразуем пришедшие ключи в map
-	protected function _doDecryptInviteList(array $invite_key_list):array {
+	protected function _doDecryptInviteList(array $invite_key_list): array
+	{
 
 		$invite_map_list = [];
 		foreach ($invite_key_list as $item) {
@@ -269,7 +295,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем conversation_meta_list и группируем его по conversation_map
-	protected function _getConversationMetaListGrouppedByConversationMap(array $conversation_map_list):array {
+	protected function _getConversationMetaListGrouppedByConversationMap(array $conversation_map_list): array
+	{
 
 		$conversation_meta_list = Type_Conversation_Meta::getAll($conversation_map_list);
 
@@ -283,7 +310,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем левое меню пользователя и группируем его по conversation_map
-	protected function _getLeftMenuListGrouppedByConversationMap(int $user_id, array $conversation_map_list):array {
+	protected function _getLeftMenuListGrouppedByConversationMap(int $user_id, array $conversation_map_list): array
+	{
 
 		// получаем левое меню пользователя и группируем по conversation_map
 		$left_menu_list = $this->_getUserLeftMenuList($user_id, $conversation_map_list);
@@ -297,13 +325,15 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем записи из левого меню пользователя
-	protected function _getUserLeftMenuList(int $user_id, array $conversation_map_list):array {
+	protected function _getUserLeftMenuList(int $user_id, array $conversation_map_list): array
+	{
 
 		return Type_Conversation_LeftMenu::getList($user_id, $conversation_map_list);
 	}
 
 	// собираем conversation_map_list
-	protected function _makeConversationMapList(array $invite_list):array {
+	protected function _makeConversationMapList(array $invite_list): array
+	{
 
 		$conversation_map_list = [];
 
@@ -315,7 +345,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// собираем ответ
-	protected function _makeOutputForGetBatching(array $invite_list, array $groupped_left_menu_list, array $groupped_conversation_meta_list):array {
+	protected function _makeOutputForGetBatching(array $invite_list, array $groupped_left_menu_list, array $groupped_conversation_meta_list): array
+	{
 
 		$output = [];
 
@@ -342,7 +373,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// форматируем ответ
-	protected function _makeFormattedInvite(array $invite_row, array $left_menu_row, array $meta_row):array {
+	protected function _makeFormattedInvite(array $invite_row, array $left_menu_row, array $meta_row): array
+	{
 
 		$prepared_invite = Type_Invite_Utils::prepareInvite($invite_row, $left_menu_row, $meta_row);
 		return Apiv1_Format::invite($prepared_invite);
@@ -357,7 +389,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \returnException|cs_DecryptHasFailed
 	 */
-	public function tryAccept():array {
+	public function tryAccept(): array
+	{
 
 		$invite_key = $this->post(\Formatter::TYPE_STRING, "invite_key");
 		$invite_map = \CompassApp\Pack\Invite::tryDecrypt($invite_key);
@@ -379,7 +412,7 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 			throw new ParamException("it's not your invite");
 		} catch (cs_ConversationIsLocked) {
 			throw new BlockException(__METHOD__ . " trying to accept invite in locked conversation");
-		} catch (cs_InviteIsDeclined|cs_InviteIsAccepted|cs_InviteIsRevoked|cs_InviteIsNotActive  $e) {
+		} catch (cs_InviteIsDeclined | cs_InviteIsAccepted | cs_InviteIsRevoked | cs_InviteIsNotActive  $e) {
 
 			$error = Helper_Invites::getTryAcceptError($e, $is_new_try_accept_invite_error);
 			return $this->error($error["error_code"], $error["message"]);
@@ -401,7 +434,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// бросаем если инвайт активный
-	protected function _throwIfInviteIsActive(array $invite_row):void {
+	protected function _throwIfInviteIsActive(array $invite_row): void
+	{
 
 		if ($invite_row["status"] == Type_Invite_Handler::STATUS_ACTIVE) {
 			throw new ReturnFatalException(__METHOD__ . " invite is active");
@@ -409,7 +443,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем отформатированный конверсешен
-	protected function _getPreparedConversation(array $invite_row):array {
+	protected function _getPreparedConversation(array $invite_row): array
+	{
 
 		$meta_row      = Type_Conversation_Meta::get($invite_row["group_conversation_map"]);
 		$left_menu_row = $this->_getUserLeftMenuRow($this->user_id, $invite_row["group_conversation_map"]);
@@ -418,7 +453,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// возращаем conversation для принятого инвайта
-	protected function _returnOkIfInviteStatusIsNotExpected(array $prepared_conversation):array {
+	protected function _returnOkIfInviteStatusIsNotExpected(array $prepared_conversation): array
+	{
 
 		Gateway_Bus_Statholder::inc("invites", "row45");
 
@@ -430,15 +466,10 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	/**
 	 * добавляем пользователя в диалог
 	 *
-	 * @param array $invite_row
-	 * @param int   $user_id
-	 * @param int   $member_role
-	 * @param int   $member_permissions
-	 *
-	 * @return array
 	 * @throws \parseException
 	 */
-	protected function _doJoinUserToConversation(array $invite_row, int $user_id, int $member_role, int $member_permissions):array {
+	protected function _doJoinUserToConversation(array $invite_row, int $user_id, int $member_role, int $member_permissions): array
+	{
 
 		// задаем роль обычного участника
 		$role = Type_Conversation_Meta_Users::ROLE_DEFAULT;
@@ -461,7 +492,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException|cs_DecryptHasFailed
 	 */
-	public function doDecline():array {
+	public function doDecline(): array
+	{
 
 		$invite_key = $this->post("?s", "invite_key");
 		$invite_map = \CompassApp\Pack\Invite::tryDecrypt($invite_key);
@@ -488,7 +520,7 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 
 			Gateway_Bus_Statholder::inc("invites", "row63");
 			return $this->ok();
-		} catch (cs_InviteIsAccepted|cs_InviteIsRevoked|cs_InviteIsNotActive $e) {
+		} catch (cs_InviteIsAccepted | cs_InviteIsRevoked | cs_InviteIsNotActive $e) {
 
 			$error = Helper_Invites::getDoDeclinedError($e, $is_do_decline_invite_error);
 			return $this->error($error["error_code"], $error["message"]);
@@ -505,7 +537,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function getAllowedUsersForInvite():array {
+	public function getAllowedUsersForInvite(): array
+	{
 
 		$user_list   = $this->post("?ai", "user_list");
 		$is_new_list = $this->post("?i", "is_new_list", 0);
@@ -528,7 +561,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если пришел некорректный user_list
-	protected function _throwIfPassedIncorrectUserList(array $user_list):void {
+	protected function _throwIfPassedIncorrectUserList(array $user_list): void
+	{
 
 		// если пришло слишком много пользователей в запросе
 		if (count($user_list) > self::_MAX_USERS_COUNT) {
@@ -539,12 +573,13 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 
 		// если передан пустой список пользователей
 		if (count($user_list) < 1) {
-			throw new  ParamException("passed empty user_list");
+			throw new ParamException("passed empty user_list");
 		}
 	}
 
 	// фильтруем список пришедших пользователей
-	protected function _sanitizeUserList(array $user_list):array {
+	protected function _sanitizeUserList(array $user_list): array
+	{
 
 		$sanitized_user_list = [];
 		foreach ($user_list as $item) {
@@ -569,12 +604,11 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * Метод вывода список пользователей доступых для отправки инвайтов
 	 *
 	 * @param Main[] $user_info_list_grouped_by_id
-	 * @param bool  $is_new_list
 	 *
-	 * @return array
 	 * @long
 	 */
-	protected function _makeAllowedUsersOutput(array $user_info_list_grouped_by_id, bool $is_new_list):array {
+	protected function _makeAllowedUsersOutput(array $user_info_list_grouped_by_id, bool $is_new_list): array
+	{
 
 		// формируем списки пользователей, с которыми заблокирован диалог по той или иной причине
 		$allowed_user_list        = [];
@@ -614,7 +648,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 
 	// форматируем ответ для списка доступных пользоватлей для инвайты
 	// @long
-	protected function _formatOutputForGetAllowedUsersForInvite(array $allowed_user_list, array $blocked_by_opponent_list, array $blocked_by_me_list, array $disabled_list, array $account_deleted_list, bool $is_new_list):array {
+	protected function _formatOutputForGetAllowedUsersForInvite(array $allowed_user_list, array $blocked_by_opponent_list, array $blocked_by_me_list, array $disabled_list, array $account_deleted_list, bool $is_new_list): array
+	{
 
 		if (count($allowed_user_list) < 1) {
 
@@ -657,7 +692,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function trySendBatching():array {
+	public function trySendBatching(): array
+	{
 
 		// сначала пытаемся понять, пришла нам команда на отправку invite или invitation
 		$conversation_key = $this->post("?s", "conversation_key", "");
@@ -698,7 +734,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// если пришли некорректные параметры в запроса
-	protected function _throwIfPassedIncorrectParams(string $signature, array $batch_user_list):void {
+	protected function _throwIfPassedIncorrectParams(string $signature, array $batch_user_list): void
+	{
 
 		// апроверяем, что батч и подпись в поряде
 		self::_verifyBatchingList($signature, $batch_user_list);
@@ -707,7 +744,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	/**
 	 * проверяем всех пользователей на кик
 	 */
-	protected static function _isAllUserWasKicked(array $invited_user_list):bool {
+	protected static function _isAllUserWasKicked(array $invited_user_list): bool
+	{
 
 		$kicked_member_list = [];
 		$member_list        = Gateway_Bus_CompanyCache::getMemberList($invited_user_list);
@@ -723,7 +761,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получить количество свободных активных инвайтов
-	protected function _getFreeActiveInviteCount(string $conversation_map):int {
+	protected function _getFreeActiveInviteCount(string $conversation_map): int
+	{
 
 		// получаем количество имеющихся активных инвайтов нашего пользователя
 		$count_sender_active_invite = Type_Invite_Single::getCountSenderActiveInvite($this->user_id, $conversation_map);
@@ -732,7 +771,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// отправляем приглашение каждому пользователю
-	protected function _sendInviteToEveryUser(array $batch_user_list, array $meta_row):array {
+	protected function _sendInviteToEveryUser(array $batch_user_list, array $meta_row): array
+	{
 
 		// проходим по списку пользователей - каждому отправляем инвайт
 		$output = $this->_makeOutputForTrySendBatching();
@@ -744,7 +784,7 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 
 				$output["list_error"][] = $this->_makeError915ItemForTrySendBatching($item);
 				continue;
-			} catch (cs_InviteStatusIsNotExpected|cs_InviteIsDuplicated) {
+			} catch (cs_InviteStatusIsNotExpected | cs_InviteIsDuplicated) {
 
 				$output["list_ok"][] = $this->_makeListOkItemForTrySendBatching($item);
 				continue;
@@ -759,7 +799,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// создаем output для метода trySendBatching
-	protected function _makeOutputForTrySendBatching():array {
+	protected function _makeOutputForTrySendBatching(): array
+	{
 
 		return [
 			"list_ok"    => (array) [],
@@ -768,7 +809,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// формируем error_code 915 для trySendBatching
-	protected function _makeError915ItemForTrySendBatching(int $user_id):array {
+	protected function _makeError915ItemForTrySendBatching(int $user_id): array
+	{
 
 		return [
 			"user_id"    => (int) $user_id,
@@ -778,7 +820,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// формируем ответ для list_ok для trySendBathing
-	protected function _makeListOkItemForTrySendBatching(int $user_id):array {
+	protected function _makeListOkItemForTrySendBatching(int $user_id): array
+	{
 
 		return [
 			"user_id" => (int) $user_id,
@@ -793,7 +836,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	 * @throws \paramException
 	 * @throws \parseException
 	 */
-	public function trySendBatchingForGroups():array {
+	public function trySendBatchingForGroups(): array
+	{
 
 		$user_id                     = $this->post("?i", "user_id");
 		$group_conversation_key_list = $this->post("?a", "group_conversation_key_list");
@@ -832,7 +876,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// если пришли некорректные параметры в запроса
-	protected function _throwIfPassedIncorrectParamsForTrySendBatchingForGroups(int $user_id, array $group_conversation_key_list):void {
+	protected function _throwIfPassedIncorrectParamsForTrySendBatchingForGroups(int $user_id, array $group_conversation_key_list): void
+	{
 
 		// проверяем что присланный user_id корректный
 		$this->_throwIfUserIdIsMalformed($user_id);
@@ -855,7 +900,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// преобразуем пришедшие ключи в map
-	protected function _tryDecryptConversationKeyList(array $conversation_key_list):array {
+	protected function _tryDecryptConversationKeyList(array $conversation_key_list): array
+	{
 
 		$conversation_map_list = [];
 		foreach ($conversation_key_list as $item) {
@@ -873,7 +919,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// создаем output для метода trySendBatchingForGroups
-	protected function _makeOutputForTrySendBatchingForGroups():array {
+	protected function _makeOutputForTrySendBatchingForGroups(): array
+	{
 
 		return [
 			"is_sent"    => (int) 1,
@@ -883,7 +930,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// отправляем инвайты
-	protected function _sendInviteBatchingForGroups(array $conversation_map_list, int $user_id, array $meta_list, array $output):array {
+	protected function _sendInviteBatchingForGroups(array $conversation_map_list, int $user_id, array $meta_list, array $output): array
+	{
 
 		// получаем count_sender_active_invite_list
 		$count_sender_active_invite_list = Type_Invite_Single::getAllCountSenderActiveInviteListForGroupList($this->user_id, $conversation_map_list);
@@ -893,7 +941,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// отправляем приглашение в каждую группу
-	protected function _sendInviteToEveryGroupIfIsPossible(array $output, array $conversation_meta_list, int $user_id, array $count_sender_active_invite_list):array {
+	protected function _sendInviteToEveryGroupIfIsPossible(array $output, array $conversation_meta_list, int $user_id, array $count_sender_active_invite_list): array
+	{
 
 		foreach ($conversation_meta_list as $v) {
 
@@ -920,7 +969,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем ошибку, если не удалось отправить инвайт
-	protected function _getErrorIfNotSendInviteToGroup(int $type, array $users, string $conversation_map, array $count_sender_active_invite_list):array {
+	protected function _getErrorIfNotSendInviteToGroup(int $type, array $users, string $conversation_map, array $count_sender_active_invite_list): array
+	{
 
 		// проверяем, что действия валидно для данного типа диалога
 		if (!Type_Conversation_Action::isValidForAction($type, Type_Conversation_Action::SEND_INVITE_FROM_CONVERSATION)) {
@@ -947,7 +997,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// формируем ответ с error_code для trySendBatchingForGroups
-	protected function _makeErrorForTrySendBathingForGroups(string $conversation_map, int $error_code, string $error_message):array {
+	protected function _makeErrorForTrySendBathingForGroups(string $conversation_map, int $error_code, string $error_message): array
+	{
 
 		return [
 			"conversation_map" => (string) $conversation_map,
@@ -957,7 +1008,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// формируем ответ для list_ok для trySendBatchingForGroups
-	protected function _makeListOkItemForTrySendBathingGroups(string $group_conversation_map):array {
+	protected function _makeListOkItemForTrySendBathingGroups(string $group_conversation_map): array
+	{
 
 		return [
 			"conversation_map" => (string) $group_conversation_map,
@@ -965,7 +1017,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// отправляем инвайты
-	protected function _sendInviteToEveryGroup(array $conversation_meta_list, int $user_id):void {
+	protected function _sendInviteToEveryGroup(array $conversation_meta_list, int $user_id): void
+	{
 
 		// отправляем инвайт в каждую группу ассинхронно
 		foreach ($conversation_meta_list as $v) {
@@ -983,7 +1036,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	// -------------------------------------------------------
 
 	// проверяет что присланный user_id - корректный
-	protected function _throwIfUserIdIsMalformed(int $user_id, ?string $inc_row = null):void {
+	protected function _throwIfUserIdIsMalformed(int $user_id, ?string $inc_row = null): void
+	{
 
 		if ($user_id < 1) {
 
@@ -995,7 +1049,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяет что присланный user_id не равен user_id пользователя совершающего запрос
-	protected function _throwIfUserIdIsEqualWithYourself(int $user_id, ?string $inc_row = null):void {
+	protected function _throwIfUserIdIsEqualWithYourself(int $user_id, ?string $inc_row = null): void
+	{
 
 		if ($user_id == $this->user_id) {
 
@@ -1007,7 +1062,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// выбрасываем ошибку, если пользователя не существует
-	protected function _throwIfUserIsNotExist(int $user_id):void {
+	protected function _throwIfUserIsNotExist(int $user_id): void
+	{
 
 		$user_info_list = Gateway_Bus_CompanyCache::getShortMemberList([$user_id]);
 		if (!isset($user_info_list[$user_id])) {
@@ -1016,7 +1072,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем мету single диалога
-	protected function _getSingleConversationMeta(int $user_id):array {
+	protected function _getSingleConversationMeta(int $user_id): array
+	{
 
 		$single_conversation_map = Type_Conversation_Single::getMapByUsers($this->user_id, $user_id);
 		if ($single_conversation_map) {
@@ -1028,7 +1085,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяем, имеет ли пользователь доступ к этому инвайту
-	protected function _checkIfUserIsAllowedToGetInvite(array $invite_row):void {
+	protected function _checkIfUserIsAllowedToGetInvite(array $invite_row): void
+	{
 
 		if ($this->user_id != $invite_row["user_id"] && $this->user_id != $invite_row["sender_user_id"]) {
 			throw new ParamException("user does not have access to invite");
@@ -1036,13 +1094,15 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// получаем запись из левого меню пользователя
-	protected function _getUserLeftMenuRow(int $user_id, string $conversation_map):array {
+	protected function _getUserLeftMenuRow(int $user_id, string $conversation_map): array
+	{
 
 		return Type_Conversation_LeftMenu::get($user_id, $conversation_map);
 	}
 
 	// добавляем action users если приглашение не отклонено или отозвано
-	protected function _addActionUsersIfInviteNotIsDeclined(string $status, array $users, ?string $row = null):void {
+	protected function _addActionUsersIfInviteNotIsDeclined(string $status, array $users, ?string $row = null): void
+	{
 
 		// проверяем что приглашение отклонено/отозвано
 		if (Type_Invite_Handler::isDeclined($status)) {
@@ -1057,7 +1117,8 @@ class Apiv1_Invites extends \BaseFrame\Controller\Api {
 	}
 
 	// проверяет подпись по пользовтелям при батч вызовах
-	protected static function _verifyBatchingList(string $signature, array $batch_user_list):void {
+	protected static function _verifyBatchingList(string $signature, array $batch_user_list): void
+	{
 
 		// если массив пустой
 		if (count($batch_user_list) < 1) {

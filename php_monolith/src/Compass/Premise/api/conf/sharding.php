@@ -240,4 +240,9 @@ $CONFIG["SHARDING_GO"] = [
 	],
 ];
 
+$CONFIG["SHARDING_MCACHE"] = [
+	"host" => MCACHE_HOST,
+	"port" => MCACHE_PORT,
+];
+
 return $CONFIG;

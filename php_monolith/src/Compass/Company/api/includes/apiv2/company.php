@@ -2,6 +2,7 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Request\BlockException;
 use BaseFrame\Exception\Request\CaseException;
@@ -11,7 +12,25 @@ use CompassApp\Domain\Member\Entity\Member;
 /**
  * Контроллер для методов изменения профиля компании
  */
-class Apiv2_Company extends \BaseFrame\Controller\Api {
+class Apiv2_Company extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_PROFILE;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getActivityData",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"changeInfo",
+		"clearAvatar",
+		"setGeneralChatNotifications",
+		"setUnlimitedMessagesEditing",
+		"setUnlimitedMessagesDeleting",
+		"setLocalLinks",
+	];
 
 	// доступные методы контроллера
 	public const ALLOW_METHODS = [
@@ -41,7 +60,8 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменяем информацию компании
 	 */
-	public function changeInfo():array {
+	public function changeInfo(): array
+	{
 
 		$name            = $this->post(\Formatter::TYPE_STRING, "name", false);
 		$avatar_file_key = $this->post(\Formatter::TYPE_STRING, "avatar_file_key", false);
@@ -69,7 +89,8 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Удаляем аватар компании
 	 */
-	public function clearAvatar():array {
+	public function clearAvatar(): array
+	{
 
 		Type_Antispam_User::throwIfBlocked($this->user_id, Type_Antispam_User::COMPANY_CLEAR_AVATAR);
 
@@ -85,7 +106,8 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменяем настройки оповещений в главный чат
 	 */
-	public function setGeneralChatNotifications():array {
+	public function setGeneralChatNotifications(): array
+	{
 
 		$is_general_chat_notification_enabled = $this->post(\Formatter::TYPE_INT, "is_general_chat_notification_enabled");
 
@@ -105,10 +127,10 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить данные активной компании
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 */
-	public function getActivityData():array {
+	public function getActivityData(): array
+	{
 
 		$activity_data = Domain_Company_Scenario_Api::getActivityData($this->user_id, $this->role, $this->permissions);
 
@@ -124,7 +146,8 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @throws \queryException
 	 */
-	public function setUnlimitedMessagesEditing():array {
+	public function setUnlimitedMessagesEditing(): array
+	{
 
 		$is_unlimited_messages_editing_enabled = $this->post(\Formatter::TYPE_INT, "is_unlimited_messages_editing_enabled");
 
@@ -150,7 +173,8 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @throws \queryException
 	 */
-	public function setUnlimitedMessagesDeleting():array {
+	public function setUnlimitedMessagesDeleting(): array
+	{
 
 		$is_unlimited_messages_deleting_enabled = $this->post(\Formatter::TYPE_INT, "is_unlimited_messages_deleting_enabled");
 
@@ -170,7 +194,8 @@ class Apiv2_Company extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменяем настройки включения локальных ссылок для клиентов
 	 */
-	public function setLocalLinks():array {
+	public function setLocalLinks(): array
+	{
 
 		$is_local_links_enabled = $this->post(\Formatter::TYPE_INT, "is_local_links_enabled");
 

@@ -2,21 +2,39 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\ParamException;
 use CompassApp\Domain\Member\Entity\Member;
 
 /**
  * Контроллер для методов изменения настроек компании
  */
-class Apiv1_Company_Config extends \BaseFrame\Controller\Api {
+class Apiv1_Company_Config extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_MANAGEMENT;
 
-	const ALLOW_METHODS = [
+	// методы чтения
+	public const READ_METHOD_LIST = [
+		"getPushBodyDisplay",
+		"getExtendedEmployeeCard",
+	];
+
+	// методы записи
+	public const WRITE_METHOD_LIST = [
+		"setPushBodyDisplay",
+		"setExtendedEmployeeCard",
+	];
+
+	// разрешенные методы
+	public const ALLOW_METHODS = [
 		"setPushBodyDisplay",
 		"getPushBodyDisplay",
 		"setExtendedEmployeeCard",
 		"getExtendedEmployeeCard",
 	];
 
+	// методы, влияющие на активность пользователя
 	public const MEMBER_ACTIVITY_METHOD_LIST = [
 		"setPushBodyDisplay",
 		"setExtendedEmployeeCard",
@@ -35,13 +53,13 @@ class Apiv1_Company_Config extends \BaseFrame\Controller\Api {
 	/**
 	 * Изменение настройки отображение сообщения в пуше
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Request\BlockException
 	 * @throws \queryException
 	 */
-	public function setPushBodyDisplay():array {
+	public function setPushBodyDisplay(): array
+	{
 
 		$value = $this->post(\Formatter::TYPE_INT, "is_display_push_body");
 
@@ -76,7 +94,8 @@ class Apiv1_Company_Config extends \BaseFrame\Controller\Api {
 	/**
 	 * Получение настройки отображения сообщения в пуше
 	 */
-	public function getPushBodyDisplay():array {
+	public function getPushBodyDisplay(): array
+	{
 
 		$value = Domain_Company_Scenario_Api::getPushBodyDisplayConfig();
 
@@ -88,7 +107,6 @@ class Apiv1_Company_Config extends \BaseFrame\Controller\Api {
 	/**
 	 * Установка настройки для карточки (базовая/расширенная)
 	 *
-	 * @return array
 	 * @throws ParamException
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
@@ -96,7 +114,8 @@ class Apiv1_Company_Config extends \BaseFrame\Controller\Api {
 	 * @throws \parseException
 	 * @throws \queryException
 	 */
-	public function setExtendedEmployeeCard():array {
+	public function setExtendedEmployeeCard(): array
+	{
 
 		$is_enabled = $this->post(\Formatter::TYPE_INT, "is_enabled");
 
@@ -128,10 +147,9 @@ class Apiv1_Company_Config extends \BaseFrame\Controller\Api {
 
 	/**
 	 * Получение значения настройки расширенной карточки
-	 *
-	 * @return array
 	 */
-	public function getExtendedEmployeeCard():array {
+	public function getExtendedEmployeeCard(): array
+	{
 
 		$is_enabled = Domain_Company_Scenario_Api::getExtendedEmployeeCard();
 

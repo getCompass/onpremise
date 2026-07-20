@@ -25,7 +25,7 @@ const PageContentMobileLeaveConference = () => {
 	const langStringMobileConferenceEndedContentTitle = useLangString("mobile.leave_conference_content.title");
 	const langStringMobileConferenceEndedContentDesc = useLangString("mobile.leave_conference_content.desc");
 	const langStringMobileConferenceEndedContentTryCompassButton = useLangString(
-		"mobile.leave_conference_content.try_compass_button"
+		"try_compass_button"
 	);
 	const langStringMobileConferenceEndedContentJoinToConferenceAgainButton = useLangString(
 		"mobile.leave_conference_content.join_to_conference_again_button"

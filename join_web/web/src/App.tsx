@@ -1,10 +1,10 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Provider, useAtomValue } from "jotai";
+import {Provider, useAtom, useAtomValue} from "jotai";
 import GlobalStartProvider from "./providers/GlobalStartProvider.tsx";
 import PageLayout from "./pages/PageLayout.tsx";
 import Auth from "./pages/auth/Auth.tsx";
-import { firstAuthState, joinLinkState, prepareJoinLinkErrorState } from "./api/_stores.ts";
+import {firstAuthState, isShouldShowLogoutButton, joinLinkState, prepareJoinLinkErrorState} from "./api/_stores.ts";
 import PageToken from "./pages/PageToken.tsx";
 import InactiveLink from "./pages/InactiveLink.tsx";
 import InvalidLink from "./pages/InvalidLink.tsx";
@@ -26,63 +26,72 @@ import PageInviteAsGuest from "./pages/PageInviteAsGuest.tsx";
 import ErrorPage from "./error-page.tsx";
 import NeedFinishSpaceLeavingBeforeJoin from "./pages/NeedFinishSpaceLeavingBeforeJoin.tsx";
 import PageInstall from "./pages/PageInstall.tsx";
+import {useEffect} from "react";
 
 const Page = () => {
 	const firstAuth = useAtomValue(firstAuthState);
 	const prepareJoinLinkError = useAtomValue(prepareJoinLinkErrorState);
 	const joinLink = useAtomValue(joinLinkState);
+	const [, setIsShouldShowLogoutPage] = useAtom(isShouldShowLogoutButton);
 	const { activePage } = useNavigatePage();
 	const isJoinLink = useIsJoinLink();
+
+	useEffect(() => {
+		const isLeaving = prepareJoinLinkError?.error_code === NEED_FINISH_SPACE_LEAVING_BEFORE_JOIN;
+		const isToken = activePage === "token" && prepareJoinLinkError?.error_code !== INACTIVE_LINK_ERROR_CODE;
+		setIsShouldShowLogoutPage(isLeaving || isToken);
+
+	}, [activePage, prepareJoinLinkError]);
 
 	switch (activePage) {
 		case "welcome":
 			if (prepareJoinLinkError !== null) {
 				if (prepareJoinLinkError.error_code === NEED_FINISH_SPACE_LEAVING_BEFORE_JOIN) {
-					return <NeedFinishSpaceLeavingBeforeJoin />;
+					return <NeedFinishSpaceLeavingBeforeJoin />
 				}
 
 				if (prepareJoinLinkError.error_code === INACTIVE_LINK_ERROR_CODE) {
-					return <InactiveLink />;
+					return <InactiveLink />
 				}
 
 				if (prepareJoinLinkError.error_code === LIMIT_ERROR_CODE) {
-					return <AcceptLimitLink />;
+					return <AcceptLimitLink />
 				}
 
 				if (prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE) {
-					return <InvalidLink />;
+					return <InvalidLink />
 				}
 			}
-			return <PageWelcomeJoinLink />;
+			return <PageWelcomeJoinLink />
 
 		case "auth":
 			if (prepareJoinLinkError !== null) {
 				if (prepareJoinLinkError.error_code === NEED_FINISH_SPACE_LEAVING_BEFORE_JOIN) {
-					return <NeedFinishSpaceLeavingBeforeJoin />;
+					return <NeedFinishSpaceLeavingBeforeJoin />
 				}
 
 				if (prepareJoinLinkError.error_code === INACTIVE_LINK_ERROR_CODE) {
-					return <InactiveLink />;
+					return <InactiveLink />
 				}
 
 				if (prepareJoinLinkError.error_code === LIMIT_ERROR_CODE) {
-					return <AcceptLimitLink />;
+					return <AcceptLimitLink />
 				}
 
 				if (prepareJoinLinkError.error_code !== ALREADY_MEMBER_ERROR_CODE) {
-					return <InvalidLink />;
+					return <InvalidLink />
 				}
 			}
-			return <Auth />;
+			return <Auth />
 
 		case "token":
 			if (prepareJoinLinkError !== null) {
 				if (prepareJoinLinkError.error_code === NEED_FINISH_SPACE_LEAVING_BEFORE_JOIN) {
-					return <NeedFinishSpaceLeavingBeforeJoin />;
+					return <NeedFinishSpaceLeavingBeforeJoin />
 				}
 
 				if (prepareJoinLinkError.error_code === INACTIVE_LINK_ERROR_CODE) {
-					return <InactiveLink />;
+					return <InactiveLink />
 				}
 
 				if (prepareJoinLinkError.error_code === ALREADY_MEMBER_ERROR_CODE) {
@@ -90,38 +99,38 @@ const Page = () => {
 						(prepareJoinLinkError.data as PrepareJoinLinkErrorAlreadyMemberData)
 							.is_waiting_for_postmoderation == 1
 					) {
-						return <PageInviteWaitingForPostModeration />;
+						return <PageInviteWaitingForPostModeration />
 					}
 
-					return <PageInviteAlreadyMember />;
+					return <PageInviteAlreadyMember />
 				}
 
 				if (prepareJoinLinkError.error_code === LIMIT_ERROR_CODE) {
-					return <AcceptLimitLink />;
+					return <AcceptLimitLink />
 				}
 
-				return <InvalidLink />;
+				return <InvalidLink />
 			}
 
 			// если нужно отрисовать какую-то другую доп страницу
 			if (joinLink !== null && !firstAuth) {
 				if (joinLink.is_postmoderation === 1 || joinLink.is_waiting_for_postmoderation === 1) {
-					return <PageInviteWaitingForPostModeration />;
+					return <PageInviteWaitingForPostModeration />
 				}
 
 				if (joinLink.role === "guest") {
-					return <PageInviteAsGuest />;
+					return <PageInviteAsGuest />
 				}
 			}
 
 			if (isJoinLink && !firstAuth) {
-				return <PageInvite />;
+				return <PageInvite />
 			}
 
-			return <PageToken />;
+			return <PageToken />
 
 		default:
-			return <Auth />;
+			return <Auth />
 	}
 };
 

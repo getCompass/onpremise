@@ -2,6 +2,7 @@
 
 namespace Compass\Pivot;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Domain\ParseFatalException;
 use BaseFrame\Exception\Domain\ReturnFatalException;
 use BaseFrame\Exception\Gateway\BusFatalException;
@@ -15,6 +16,19 @@ use BaseFrame\Restrictions\Exception\ActionRestrictedException;
  */
 class Apiv1_Pivot_Profile extends \BaseFrame\Controller\Api
 {
+	// зона ответственности API токена
+	public const API_SCOPE         = ScopePermission::SCOPE_PROFILE;
+
+	// методы на чтение
+	public const READ_METHOD_LIST  = [];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [
+		"set",
+		"doClearAvatar",
+		"delete",
+	];
+
 	// поддерживаемые методы. регистр не имеет значение
 	public const ALLOW_METHODS = [
 		"set",

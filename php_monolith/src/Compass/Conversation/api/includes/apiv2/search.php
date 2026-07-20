@@ -2,14 +2,28 @@
 
 namespace Compass\Conversation;
 
+use BaseFrame\ApiGateway\ScopePermission;
 use BaseFrame\Exception\Request\CaseException;
 use BaseFrame\Exception\Request\ParamException;
 
 /**
  * Контроллер, отвечающий за функционал поиска в пространстве.
  */
-class Apiv2_Search extends \BaseFrame\Controller\Api {
+class Apiv2_Search extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SEARCH;
 
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"findLocations",
+		"findHits",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [];
+
+	// разрешенные методы
 	public const ALLOW_METHODS = [
 		"findLocations",
 		"findHits",
@@ -24,7 +38,8 @@ class Apiv2_Search extends \BaseFrame\Controller\Api {
 	 * @throws ParamException
 	 * @long
 	 */
-	public function findLocations():array {
+	public function findLocations(): array
+	{
 
 		$type_list = $this->post(\Formatter::TYPE_ARRAY, "type_list", ["conversation"]);
 		$query     = $this->post(\Formatter::TYPE_STRING, "query");
@@ -46,9 +61,15 @@ class Apiv2_Search extends \BaseFrame\Controller\Api {
 		try {
 
 			[$search_result, $has_next] = Domain_Search_Scenario_Api::findLocations(
-				$this->user_id, COMPANY_ID, $query, $type_list, $limit, $offset, $this->extra["space"]["is_restricted_access"]
+				$this->user_id,
+				COMPANY_ID,
+				$query,
+				$type_list,
+				$limit,
+				$offset,
+				$this->extra["space"]["is_restricted_access"]
 			);
-		} catch (Domain_Search_Exception_InvalidQuery|Domain_Search_Exception_IncorrectLocation $e) {
+		} catch (Domain_Search_Exception_InvalidQuery | Domain_Search_Exception_IncorrectLocation $e) {
 			throw new ParamException($e->getMessage());
 		}
 
@@ -73,7 +94,8 @@ class Apiv2_Search extends \BaseFrame\Controller\Api {
 	 * @throws CaseException
 	 * @long
 	 */
-	public function findHits():array {
+	public function findHits(): array
+	{
 
 		$query         = $this->post(\Formatter::TYPE_STRING, "query");
 		$location_type = $this->post(\Formatter::TYPE_STRING, "location_type");
@@ -99,8 +121,14 @@ class Apiv2_Search extends \BaseFrame\Controller\Api {
 		try {
 
 			[$search_result, $total_hit_count, $has_next] = Domain_Search_Scenario_Api::findHits(
-				$this->user_id, COMPANY_ID, $query, $location_type, $location_key,
-				$limit, $offset, $this->extra["space"]["is_restricted_access"]
+				$this->user_id,
+				COMPANY_ID,
+				$query,
+				$location_type,
+				$location_key,
+				$limit,
+				$offset,
+				$this->extra["space"]["is_restricted_access"]
 			);
 		} catch (Domain_Search_Exception_InvalidQuery $e) {
 			throw new ParamException($e->getMessage());
@@ -123,7 +151,8 @@ class Apiv2_Search extends \BaseFrame\Controller\Api {
 	/**
 	 * Парсит user_id из результатов поиска.
 	 */
-	private static function _collectUserData(array $arr):array {
+	private static function _collectUserData(array $arr): array
+	{
 
 		$output = $arr["_user_action_data"] ?? [];
 

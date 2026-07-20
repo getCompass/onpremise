@@ -19,7 +19,7 @@ const HoverTooltipDesktop = ({ children, tooltipText, tooltipType }: HoverToolti
 		// 	);
 		// }
 
-		return <TooltipArrow width="8px" height="5px" />;
+		return <TooltipArrow width="8px" height="5px" />
 	}, [ tooltipType ]);
 
 	return (

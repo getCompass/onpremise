@@ -243,54 +243,54 @@ function Auth() {
 	const content = useMemo(() => {
 
 		if (activeDialog === "auth_email_phone_number") {
-			return <EmailPhoneNumberDialogContent />;
+			return <EmailPhoneNumberDialogContent />
 		}
 
 		if (activeDialog === "auth_phone_number_confirm_code") {
-			return <ConfirmCodePhoneNumberDialogContent />;
+			return <ConfirmCodePhoneNumberDialogContent />
 		}
 
 		if (activeDialog === "auth_create_profile") {
-			return <CreateProfileDialogContent />;
+			return <CreateProfileDialogContent />
 		}
 
 		if (activeDialog === "auth_email_register") {
-			return <EmailRegisterDialogContent />;
+			return <EmailRegisterDialogContent />
 		}
 
 		if (activeDialog === "auth_email_confirm_code") {
-			return <ConfirmCodeEmailDialogContent />;
+			return <ConfirmCodeEmailDialogContent />
 		}
 
 		if (activeDialog === "auth_email_login") {
-			return <EmailLoginDialogContent />;
+			return <EmailLoginDialogContent />
 		}
 
 		if (activeDialog === "auth_forgot_password") {
-			return <ForgotPasswordDialogContent />;
+			return <ForgotPasswordDialogContent />
 		}
 
 		if (activeDialog === "auth_create_new_password") {
-			return <CreateNewPasswordDialogContent />;
+			return <CreateNewPasswordDialogContent />
 		}
 
 		if (activeDialog === "auth_sso_ldap") {
-			return <AuthLdapDialogContent />;
+			return <AuthLdapDialogContent />
 		}
 
 		if (activeDialog === "auth_ldap_2fa_attach_mail") {
-			return <AuthLdap2FaAttachMailDialogContent />;
+			return <AuthLdap2FaAttachMailDialogContent />
 		}
 
 		if (activeDialog === "auth_ldap_2fa_setup_totp") {
-			return <AuthLdap2FaSetupTotpDialogContent />;
+			return <AuthLdap2FaSetupTotpDialogContent />
 		}
 
 		if (activeDialog === "auth_ldap_2fa_confirm_totp") {
-			return <AuthLdap2FaConfirmTotpDialogContent />;
+			return <AuthLdap2FaConfirmTotpDialogContent />
 		}
 
-		return <></>;
+		return <></>
 	}, [ activeDialog ]);
 
 	if (isMobile) {

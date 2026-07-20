@@ -2,10 +2,23 @@
 
 namespace Compass\Company;
 
+use BaseFrame\ApiGateway\ScopePermission;
+
 /**
  * Класс для управление рейтингом участников
  */
-class Apiv2_Member_Rating extends \BaseFrame\Controller\Api {
+class Apiv2_Member_Rating extends \BaseFrame\Controller\Api
+{
+	// зона ответственности API токена
+	public const API_SCOPE = ScopePermission::SCOPE_SPACE_RATING;
+
+	// методы на чтение
+	public const READ_METHOD_LIST = [
+		"getScreenTimeStat",
+	];
+
+	// методы на запись
+	public const WRITE_METHOD_LIST = [];
 
 	// доступные методы контроллера
 	public const ALLOW_METHODS = [
@@ -21,7 +34,6 @@ class Apiv2_Member_Rating extends \BaseFrame\Controller\Api {
 	/**
 	 * Получить статистику экранного времени участника
 	 *
-	 * @return array
 	 * @throws \BaseFrame\Exception\Domain\ParseFatalException
 	 * @throws \BaseFrame\Exception\Domain\ReturnFatalException
 	 * @throws \BaseFrame\Exception\Gateway\BusFatalException
@@ -31,13 +43,14 @@ class Apiv2_Member_Rating extends \BaseFrame\Controller\Api {
 	 * @throws \BaseFrame\Exception\Request\CompanyNotServedException
 	 * @throws \BaseFrame\Exception\Request\ParamException
 	 */
-	public function getScreenTimeStat():array {
+	public function getScreenTimeStat(): array
+	{
 
 		$member_id = $this->post(\Formatter::TYPE_INT, "user_id");
 
 		try {
 			$day_list = Domain_Member_Scenario_Api::getScreenTimeStat($member_id);
-		} catch (\cs_RowIsEmpty|\CompassApp\Domain\Member\Exception\AccountDeleted|\CompassApp\Domain\Member\Exception\IsLeft) {
+		} catch (\cs_RowIsEmpty | \CompassApp\Domain\Member\Exception\AccountDeleted | \CompassApp\Domain\Member\Exception\IsLeft) {
 			throw new \BaseFrame\Exception\Request\CaseException(2209006, "member not found");
 		} catch (Domain_Member_Exception_StatisticIsInfinite) {
 			throw new \BaseFrame\Exception\Request\CaseException(2209010, "member activity is hidden");

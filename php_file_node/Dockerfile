@@ -1,7 +1,7 @@
-FROM docker.getcompass.ru/service/php-8:8.4.12-3
+FROM docker.getcompass.ru/service/php-8:8.4.19-1
 
 RUN apk update && apk add --no-cache vips imagemagick \
-ffmpeg ffmpeg-libavformat ffmpeg-libavfilter ffmpeg-libavcodec ffmpeg-libswscale ffmpeg-libavutil ffmpeg-libavdevice ffmpeg-libpostproc ffmpeg-libswresample
+ffmpeg ffmpeg-libavformat ffmpeg-libavfilter ffmpeg-libavcodec ffmpeg-libswscale ffmpeg-libavutil ffmpeg-libavdevice ffmpeg-libswresample
 
 COPY . /app
 

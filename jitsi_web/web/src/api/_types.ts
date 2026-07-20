@@ -48,6 +48,9 @@ export const MOBILE_PLATFORM_IOS = "ios";
 export const MOBILE_PLATFORM_ANDROID = "android";
 export const MOBILE_PLATFORM_HUAWEI = "huawei";
 
+export const APP_NAME = 'Compass'
+export const APP_NAME_UPPERCASE = APP_NAME.toUpperCase();
+
 export type Size = "default" | "small";
 
 export type APIConferenceData = {

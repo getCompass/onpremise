@@ -51,7 +51,7 @@ func doWork(ctx context.Context) {
 			// если успешно обновили, то удаляем из кэша
 			if result {
 
-				log.Infof("Обновили токены для пользователя: %d, удалили: %d токенов", key.(string), len(value.([]string)))
+				log.Infof("Обновили токены для пользователя: %s, удалили: %d токенов", key.(string), len(value.([]string)))
 				invalidTokenCache.Delete(key)
 			}
 

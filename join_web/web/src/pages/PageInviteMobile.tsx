@@ -21,7 +21,6 @@ import { Button } from "../components/button.tsx";
 import { useApiAuthGenerateToken } from "../api/auth.ts";
 import { copyToClipboard } from "../lib/copyToClipboard.ts";
 import { useApiJoinLinkAccept } from "../api/joinlink.ts";
-import LogoutButtonMobile from "../components/LogoutButtonMobile.tsx";
 import { useAtom } from "jotai/index";
 import Toast, { useShowToast } from "../lib/Toast.tsx";
 import { Menu, MenuContent, MenuItem, MenuItemGroup, MenuPositioner, MenuTrigger } from "../components/menu.tsx";
@@ -654,7 +653,6 @@ const PageInviteMobile = ({ headerContent }: PageInviteMobileProps) => {
 				onClick = {() => setStoreMenuOpen(false)}
 			>
 				<VStack gap = "0px" width = "100%" alignItems = "end" px = "16px">
-					<LogoutButtonMobile />
 					{headerContent}
 				</VStack>
 				<Box w = "100%" px = "24px">

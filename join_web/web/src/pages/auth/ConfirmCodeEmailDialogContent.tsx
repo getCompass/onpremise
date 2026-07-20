@@ -106,7 +106,9 @@ const ConfirmCodeEmailDialogContentDesktop = ({
 	const langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmCurrent = useLangString("confirm_code_email_dialog.title_ldap_change_mail_confirm_current");
 	const langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmNew = useLangString("confirm_code_email_dialog.title_ldap_change_mail_confirm_new");
 	const langStringConfirmCodeEmailDialogDesc = useLangString("confirm_code_email_dialog.desc");
+	const langStringConfirmCodeEmailDialogDescParts = langStringConfirmCodeEmailDialogDesc.split('$EMAIL');
 	const langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent = useLangString("confirm_code_email_dialog.desc_ldap_change_mail_confirm_current");
+	const langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrentParts = langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent.split('$EMAIL');
 	const langStringConfirmCodeEmailDialogBackButton = useLangString("confirm_code_email_dialog.back_button");
 	const langStringConfirmCodeEmailDialogAuthBlocked = useLangString("confirm_code_email_dialog.auth_blocked");
 
@@ -115,18 +117,18 @@ const ConfirmCodeEmailDialogContentDesktop = ({
 
 	const renderedPreloaderButton = useMemo(() => {
 		if (isNetworkError) {
-			return <DesktopRefreshButton setIsServerError = {setIsNetworkError} setIsCompleted = {setCompleted} />;
+			return <DesktopRefreshButton setIsServerError = {setIsNetworkError} setIsCompleted = {setCompleted} />
 		}
 
 		if (isServerError) {
-			return <DesktopRefreshButton setIsServerError = {setIsServerError} setIsCompleted = {setCompleted} />;
+			return <DesktopRefreshButton setIsServerError = {setIsServerError} setIsCompleted = {setCompleted} />
 		}
 
 		if (isCompleted || isLoading) {
-			return <Preloader18 />;
+			return <Preloader18 />
 		}
 
-		return <></>;
+		return <></>
 	}, [ isCompleted, isServerError, isNetworkError, isLoading ]);
 
 	const renderedPinInput = useMemo(() => {
@@ -183,7 +185,7 @@ const ConfirmCodeEmailDialogContentDesktop = ({
 			<VStack gap = "0px" mt = "20px">
 				<MailIcon80 />
 
-				<Text mt = "16px" style = "lato_18_24_900" ls = "-02">
+				<Text mt = "16px" style = "lato_18_24_900" ls = "-02" textAlign="center">
 					{authLdap === null ? langStringConfirmCodeEmailDialogTitle : (
 						authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL ? langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmCurrent
 							: authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_NEW_MAIL ? langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmNew : langStringConfirmCodeEmailDialogTitle
@@ -200,10 +202,12 @@ const ConfirmCodeEmailDialogContentDesktop = ({
 					userSelect = "text"
 				>
 					{(authLdap !== null && authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL)
-						? langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent : langStringConfirmCodeEmailDialogDesc}
+						? langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrentParts[0] : langStringConfirmCodeEmailDialogDescParts[0]}
 					<styled.span fontFamily = "lato_bold">
 						«{isLdapConfirm ? authLdap?.scenario_data.mail_mask : (auth?.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
+					{(authLdap !== null && authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL)
+						? langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrentParts[1] ?? '' : langStringConfirmCodeEmailDialogDescParts[1] ?? ''}
 				</Text>
 
 				{renderedPinInput}
@@ -362,7 +366,9 @@ const ConfirmCodeEmailDialogContentMobile = ({
 	const langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmCurrent = useLangString("confirm_code_email_dialog.title_ldap_change_mail_confirm_current");
 	const langStringConfirmCodeEmailDialogTitleLdapChangeMailConfirmNew = useLangString("confirm_code_email_dialog.title_ldap_change_mail_confirm_new");
 	const langStringConfirmCodeEmailDialogDesc = useLangString("confirm_code_email_dialog.desc");
+	const langStringConfirmCodeEmailDialogDescParts = langStringConfirmCodeEmailDialogDesc.split('$EMAIL');
 	const langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent = useLangString("confirm_code_email_dialog.desc_ldap_change_mail_confirm_current");
+	const langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrentParts = langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent.split('$EMAIL');
 	const langStringConfirmCodeEmailDialogBackButton = useLangString("confirm_code_email_dialog.back_button");
 	const langStringConfirmCodeEmailDialogAuthBlocked = useLangString("confirm_code_email_dialog.auth_blocked");
 
@@ -412,10 +418,10 @@ const ConfirmCodeEmailDialogContentMobile = ({
 		}
 
 		if (isCompleted || isLoading) {
-			return <Preloader18Opacity30 key = "mobile_preloader18_opacity30" />;
+			return <Preloader18Opacity30 key = "mobile_preloader18_opacity30" />
 		}
 
-		return <></>;
+		return <></>
 	}, [ isCompleted, isServerError, isNetworkError, isLoading, screenWidth ]);
 
 	return (
@@ -439,10 +445,12 @@ const ConfirmCodeEmailDialogContentMobile = ({
 					userSelect = "text"
 				>
 					{(authLdap !== null && authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL)
-						? langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrent : langStringConfirmCodeEmailDialogDesc}
+						? langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrentParts[0] : langStringConfirmCodeEmailDialogDescParts[0]}
 					<styled.span fontFamily = "lato_bold">
 						«{isLdapConfirm ? authLdap?.scenario_data.mail_mask : (auth?.data as APIAuthInfoDataTypeRegisterLoginResetPasswordByMail).mail}»
 					</styled.span>
+					{(authLdap !== null && authLdap.scenario_data.stage === API_COMMAND_SCENARIO_DATA_STAGE_CONFIRM_CHANGING_MAIL)
+						? langStringConfirmCodeEmailDialogDescLdapChangeMailConfirmCurrentParts[1] ?? '' : langStringConfirmCodeEmailDialogDescParts[1] ?? ''}
 				</Text>
 
 				{isAuthBlocked ? (
@@ -870,7 +878,7 @@ const ConfirmCodeEmailDialogContent = () => {
 	if (auth === null && authLdap === null) {
 
 		navigateToDialog("auth_email_phone_number");
-		return <></>;
+		return <></>
 	}
 
 	if (isMobile) {
@@ -896,7 +904,7 @@ const ConfirmCodeEmailDialogContent = () => {
 			isServerError = {isServerError}
 			setIsServerError = {setIsServerError}
 			activeDialogId = {activeDialogId}
-		/>;
+		/>
 	}
 
 	return <ConfirmCodeEmailDialogContentDesktop
@@ -921,7 +929,7 @@ const ConfirmCodeEmailDialogContent = () => {
 		isServerError = {isServerError}
 		setIsServerError = {setIsServerError}
 		activeDialogId = {activeDialogId}
-	/>;
+	/>
 };
 
 export default ConfirmCodeEmailDialogContent;

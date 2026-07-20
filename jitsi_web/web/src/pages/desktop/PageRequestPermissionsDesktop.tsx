@@ -7,9 +7,10 @@ import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAtomValue } from "jotai";
 import { langState } from "../../api/_stores.ts";
+import {APP_NAME_UPPERCASE} from "../../api/_types.ts";
 
 const PageRequestPermissionsDesktop = () => {
-	const langStringDesktopLogoTitle = useLangString("desktop.logo.title");
+	const langStringDesktopLogoTitle = APP_NAME_UPPERCASE;
 	const langStringDesktopRequestPermissionsPageDesc = useLangString("desktop.request_permissions_page.desc");
 
 	const [searchParams] = useSearchParams();

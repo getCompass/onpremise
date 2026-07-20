@@ -159,7 +159,7 @@ class Domain_Jitsi_Entity_Node_Request {
 	 */
 	protected function _prepareUrl():string {
 
-        return sprintf("https://%s/api/room", $this->_node_config->domain);
+        return sprintf("%s/api/room", $this->_node_config->entrypoint);
 	}
 
 	/**
@@ -171,6 +171,7 @@ class Domain_Jitsi_Entity_Node_Request {
 
 		return [
 			"authorization" => $this->_node_config->rest_api_auth_token,
+            "Host"          => "conference.meet.jitsi",
 		];
 	}
 

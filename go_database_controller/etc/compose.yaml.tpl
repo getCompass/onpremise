@@ -25,6 +25,7 @@ services:
       mysqld
         --log_bin=/var/lib/mysql/log-bin.log
         --binlog-format=ROW
+        --log-replica-updates=1
         --expire-logs-days=20
         --max-binlog-size=500M
         --sync-binlog=1

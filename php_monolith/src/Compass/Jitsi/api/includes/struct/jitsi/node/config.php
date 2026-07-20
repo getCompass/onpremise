@@ -7,6 +7,7 @@ class Struct_Jitsi_Node_Config {
 
 	public function __construct(
 		public string $domain,
+		public string $entrypoint,
 		public string $subdir,
 		public string $jwt_secret,
 		public string $jwt_issuer,

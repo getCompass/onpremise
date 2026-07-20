@@ -79,7 +79,7 @@ class Migrate_User_To_New_User_Unique_Attribute
 
         // проверяем что прошлое и новое значение отличаются
         if (self::$_new_unique_attribute == self::$_old_unique_attribute) {
-          
+
             console(redText("Одинаковое значение полей old_unique_attribute и new_unique_attribute, миграция не требуется"));
             return false;
         }
@@ -169,9 +169,6 @@ class Migrate_User_To_New_User_Unique_Attribute
      */
     protected static function _getExistProfileList(array $account_user_rel_list, array $found_entry_list):array
     {
-
-        // оставим в списке только активные связи
-        $account_user_rel_list = array_filter($account_user_rel_list, static fn (Struct_Db_LdapData_LdapAccountUserRel $account_user_rel) => $account_user_rel->status == Domain_Ldap_Entity_AccountUserRel::STATUS_ACTIVE);
 
         // из списка связей сделаем словарь, чтобы можно быстрей получить нужную запись по uid
         $account_user_rel_map = array_column($account_user_rel_list, null, "uid");
